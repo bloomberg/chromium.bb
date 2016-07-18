@@ -636,7 +636,7 @@ bool AddTransformNodeIfNeeded(
   }
 
   if (has_surface && !is_root)
-    node->needs_sublayer_scale = true;
+    node->needs_surface_contents_scale = true;
 
   node->source_node_id = source_index;
   node->post_local_scale_factor = post_local_scale_factor;

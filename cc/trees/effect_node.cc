@@ -43,7 +43,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          has_render_surface == other.has_render_surface &&
          has_copy_request == other.has_copy_request &&
          background_filters == other.background_filters &&
-         sublayer_scale == other.sublayer_scale &&
+         surface_contents_scale == other.surface_contents_scale &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
          subtree_hidden == other.subtree_hidden &&
@@ -84,7 +84,8 @@ void EffectNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_mask_layer_id(mask_layer_id);
   data->set_replica_layer_id(replica_layer_id);
   data->set_replica_mask_layer_id(replica_mask_layer_id);
-  Vector2dFToProto(sublayer_scale, data->mutable_sublayer_scale());
+  Vector2dFToProto(surface_contents_scale,
+                   data->mutable_surface_contents_scale());
 }
 
 void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
@@ -113,7 +114,7 @@ void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
   mask_layer_id = data.mask_layer_id();
   replica_layer_id = data.replica_layer_id();
   replica_mask_layer_id = data.replica_mask_layer_id();
-  sublayer_scale = ProtoToVector2dF(data.sublayer_scale());
+  surface_contents_scale = ProtoToVector2dF(data.surface_contents_scale());
 }
 
 void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {

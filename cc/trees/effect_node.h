@@ -35,7 +35,7 @@ struct CC_EXPORT EffectNode {
 
   FilterOperations background_filters;
 
-  gfx::Vector2dF sublayer_scale;
+  gfx::Vector2dF surface_contents_scale;
 
   bool has_render_surface;
   RenderSurfaceImpl* render_surface;

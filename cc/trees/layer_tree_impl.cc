@@ -963,20 +963,23 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         gfx::Transform draw_transform;
         if (occlusion_surface) {
           // We are calculating transform between two render surfaces. So, we
-          // need to apply the sublayer scale at target and remove the sublayer
-          // scale at source.
+          // need to apply the surface contents scale at target and remove the
+          // surface contents scale at source.
           property_trees()->transform_tree.ComputeTransform(
               it->render_surface()->TransformTreeIndex(),
               occlusion_surface->TransformTreeIndex(), &draw_transform);
-          // We don't have to apply sublayer scale when target is root.
+          // We don't have to apply surface contents scale when target is root.
           if (occlusion_surface->TransformTreeIndex() != 0) {
-            draw_property_utils::PostConcatSublayerScale(
-                occlusion_surface->EffectTreeIndex(),
-                property_trees()->effect_tree, &draw_transform);
+            const EffectNode* occlusion_effect_node =
+                property_trees()->effect_tree.Node(
+                    occlusion_surface->EffectTreeIndex());
+            draw_property_utils::PostConcatSurfaceContentsScale(
+                occlusion_effect_node, &draw_transform);
           }
-          draw_property_utils::ConcatInverseSublayerScale(
-              it->render_surface()->EffectTreeIndex(),
-              property_trees()->effect_tree, &draw_transform);
+          const EffectNode* effect_node = property_trees()->effect_tree.Node(
+              it->render_surface()->EffectTreeIndex());
+          draw_property_utils::ConcatInverseSurfaceContentsScale(
+              effect_node, &draw_transform);
         }
 
         Occlusion occlusion =
@@ -1664,7 +1667,7 @@ static const gfx::Transform SurfaceScreenSpaceTransform(
   DCHECK(layer->render_surface());
   return layer->is_drawn_render_surface_layer_list_member()
              ? layer->render_surface()->screen_space_transform()
-             : transform_tree.ToScreenSpaceTransformWithoutSublayerScale(
+             : transform_tree.ToScreenSpaceTransformWithoutSurfaceContentsScale(
                    layer->render_surface()->TransformTreeIndex());
 }
 

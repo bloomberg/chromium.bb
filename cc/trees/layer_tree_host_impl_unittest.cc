@@ -9862,7 +9862,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   TransformNode* node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           test_layer->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 
   gfx::Transform external_transform;
   external_transform.Translate(10, 10);
@@ -9878,7 +9878,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
                      resourceless_software_draw);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       test_layer->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 
   // Clear the external transform.
   external_transform = gfx::Transform();
@@ -9889,7 +9889,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
                      resourceless_software_draw);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       test_layer->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
@@ -10948,7 +10948,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   TransformNode* node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           in_subtree_of_page_scale_layer->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 
   host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
 
@@ -10957,7 +10957,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   in_subtree_of_page_scale_layer = host_impl_->active_tree()->LayerById(100);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       in_subtree_of_page_scale_layer->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 }
 
 TEST_F(LayerTreeHostImplTest, JitterTest) {

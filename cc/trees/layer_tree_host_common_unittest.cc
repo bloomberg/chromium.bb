@@ -10070,13 +10070,13 @@ TEST_F(LayerTreeHostCommonTest,
   TransformTree& tree =
       root->layer_tree_impl()->property_trees()->transform_tree;
   TransformNode* node = tree.Node(render_surface1->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 
   node = tree.Node(between_targets->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1.f, 1.f));
 
   node = tree.Node(render_surface2->transform_tree_index());
-  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 
   EXPECT_EQ(gfx::Rect(15, 15), test_layer->visible_layer_rect());
 }

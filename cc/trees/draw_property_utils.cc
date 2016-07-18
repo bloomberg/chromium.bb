@@ -54,25 +54,30 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
   DCHECK(effect_node->background_filters.IsEmpty());
 }
 
-void VerifySublayerScalesMatch(const int effect_node_id,
-                               const int target_transform_id,
-                               const EffectTree& effect_tree,
-                               const TransformTree& transform_tree) {
+void VerifySurfaceContentsScalesMatch(const int target_effect_id,
+                                      const int target_transform_id,
+                                      const EffectTree& effect_tree,
+                                      const TransformTree& transform_tree) {
   const TransformNode* target_transform_node =
       transform_tree.Node(target_transform_id);
-  const EffectNode* effect_node = effect_tree.Node(effect_node_id);
-  const EffectNode* target_effect_node =
-      effect_node->has_render_surface
-          ? effect_node
-          : effect_tree.Node(effect_node->target_id);
-  DCHECK(target_transform_node->sublayer_scale ==
-         target_effect_node->sublayer_scale)
-      << " sublayer scale from transform tree: "
-      << target_transform_node->sublayer_scale.ToString()
-      << " sublayer scale from effect tree: "
-      << target_effect_node->sublayer_scale.ToString();
+  const EffectNode* target_effect_node = effect_tree.Node(target_effect_id);
+  DCHECK(target_transform_node->surface_contents_scale ==
+         target_effect_node->surface_contents_scale)
+      << " surface contents scale from transform tree: "
+      << target_transform_node->surface_contents_scale.ToString()
+      << " surface contents scale from effect tree: "
+      << target_effect_node->surface_contents_scale.ToString();
 }
 #endif
+
+static const EffectNode* ContentsTargetEffectNode(
+    const int effect_tree_index,
+    const EffectTree& effect_tree) {
+  const EffectNode* effect_node = effect_tree.Node(effect_tree_index);
+  return effect_node->has_render_surface
+             ? effect_node
+             : effect_tree.Node(effect_node->target_id);
+}
 
 template <typename LayerType>
 bool ComputeClipRectInTargetSpace(const LayerType* layer,
@@ -91,22 +96,26 @@ bool ComputeClipRectInTargetSpace(const LayerType* layer,
     // target.
     if (transform_tree.ComputeTransform(clip_node->target_transform_id,
                                         target_node_id, &clip_to_target)) {
-      // We don't have to apply sublayer scale when target is root.
+      // We don't have to apply surface contents scale when target is root.
       if (target_node_id != 0) {
-        PostConcatSublayerScale(layer->effect_tree_index(), effect_tree,
-                                &clip_to_target);
+        const EffectNode* target_effect_node =
+            ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
+        PostConcatSurfaceContentsScale(target_effect_node, &clip_to_target);
 #if DCHECK_IS_ON()
-        VerifySublayerScalesMatch(layer->effect_tree_index(), target_node_id,
-                                  effect_tree, transform_tree);
+        VerifySurfaceContentsScalesMatch(layer->effect_tree_index(),
+                                         target_node_id, effect_tree,
+                                         transform_tree);
 #endif
       }
 
-      const TransformNode* source_node =
-          transform_tree.Node(clip_node->target_transform_id);
-      if (source_node->sublayer_scale.x() != 0.f &&
-          source_node->sublayer_scale.y() != 0.f)
-        clip_to_target.Scale(1.0f / source_node->sublayer_scale.x(),
-                             1.0f / source_node->sublayer_scale.y());
+      const EffectNode* source_node =
+          effect_tree.Node(clip_node->target_effect_id);
+      ConcatInverseSurfaceContentsScale(source_node, &clip_to_target);
+#if DCHECK_IS_ON()
+      VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
+                                       clip_node->target_transform_id,
+                                       effect_tree, transform_tree);
+#endif
       *clip_rect_in_target_space = MathUtil::MapClippedRect(
           clip_to_target, clip_node->clip_in_target_space);
     } else {
@@ -132,13 +141,18 @@ struct ConditionalClip {
 static ConditionalClip ComputeTargetRectInLocalSpace(
     gfx::RectF rect,
     const TransformTree& transform_tree,
+    const EffectTree& effect_tree,
     int current_transform_id,
-    int target_transform_id) {
+    int target_transform_id,
+    const int current_effect_id) {
   gfx::Transform current_to_target;
-  if (!transform_tree.ComputeTransformWithSourceSublayerScale(
-          current_transform_id, target_transform_id, &current_to_target))
+  bool success = transform_tree.ComputeTransform(
+      current_transform_id, target_transform_id, &current_to_target);
+  if (!success)
     // If transform is not invertible, cannot apply clip.
     return ConditionalClip{false, gfx::RectF()};
+  const EffectNode* current_effect_node = effect_tree.Node(current_effect_id);
+  ConcatInverseSurfaceContentsScale(current_effect_node, &current_to_target);
 
   if (current_transform_id > target_transform_id)
     return ConditionalClip{true,  // is_clipped.
@@ -160,12 +174,13 @@ static ConditionalClip ComputeLocalRectInTargetSpace(
                                        target_transform_id, &current_to_target))
     // If transform is not invertible, cannot apply clip.
     return ConditionalClip{false, gfx::RectF()};
-  // We don't have to apply sublayer scale when target is root.
+  // We don't have to apply surface contents scale when target is root.
   if (target_transform_id != 0) {
-    PostConcatSublayerScale(target_effect_id, effect_tree, &current_to_target);
+    const EffectNode* target_effect_node = effect_tree.Node(target_effect_id);
+    PostConcatSurfaceContentsScale(target_effect_node, &current_to_target);
 #if DCHECK_IS_ON()
-    VerifySublayerScalesMatch(target_effect_id, target_transform_id,
-                              effect_tree, transform_tree);
+    VerifySurfaceContentsScalesMatch(target_effect_id, target_transform_id,
+                                     effect_tree, transform_tree);
 #endif
   }
 
@@ -188,10 +203,10 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
                                          target_transform_id, target_effect_id);
 
   gfx::RectF current_clip = clip_node->clip;
-  gfx::Vector2dF sublayer_scale =
-      transform_tree.Node(target_transform_id)->sublayer_scale;
-  if (sublayer_scale.x() > 0 && sublayer_scale.y() > 0)
-    current_clip.Scale(sublayer_scale.x(), sublayer_scale.y());
+  gfx::Vector2dF surface_contents_scale =
+      effect_tree.Node(target_effect_id)->surface_contents_scale;
+  if (surface_contents_scale.x() > 0 && surface_contents_scale.y() > 0)
+    current_clip.Scale(surface_contents_scale.x(), surface_contents_scale.y());
   return ConditionalClip{true /* is_clipped */, current_clip};
 }
 
@@ -374,9 +389,9 @@ void CalculateVisibleRects(
       const EffectNode* copy_request_effect_node =
           effect_tree.Node(effect_ancestor_with_copy_request);
       ConditionalClip clip_in_layer_space = ComputeTargetRectInLocalSpace(
-          accumulated_clip_in_copy_request_space, transform_tree,
-          copy_request_effect_node->transform_id,
-          layer->transform_tree_index());
+          accumulated_clip_in_copy_request_space, transform_tree, effect_tree,
+          copy_request_effect_node->transform_id, layer->transform_tree_index(),
+          copy_request_effect_node->id);
 
       if (clip_in_layer_space.is_clipped) {
         gfx::RectF clip_rect = clip_in_layer_space.clip_rect;
@@ -491,16 +506,25 @@ void CalculateVisibleRects(
     if (transform_node->ancestors_are_invertible) {
       target_to_layer = transform_tree.FromTarget(transform_node->id);
     } else {
-      if (!transform_tree.ComputeTransformWithSourceSublayerScale(
-              target_node_id, transform_node->id, &target_to_layer)) {
+      bool success = transform_tree.ComputeTransform(
+          target_node_id, transform_node->id, &target_to_layer);
+      if (!success) {
         // An animated singular transform may become non-singular during the
         // animation, so we still need to compute a visible rect. In this
         // situation, we treat the entire layer as visible.
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }
+      if (target_node_id != 0) {
+        const EffectNode* target_effect_node =
+            ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
+        ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
+#if DCHECK_IS_ON()
+        VerifySurfaceContentsScalesMatch(target_effect_node->id, target_node_id,
+                                         effect_tree, transform_tree);
+#endif
+      }
     }
-
     gfx::Transform target_to_content;
     target_to_content.Translate(-layer->offset_to_transform_parent().x(),
                                 -layer->offset_to_transform_parent().y());
@@ -700,28 +724,20 @@ static void ResetIfHasNanCoordinate(gfx::RectF* rect) {
     *rect = gfx::RectF();
 }
 
-void PostConcatSublayerScale(const int effect_node_id,
-                             const EffectTree& effect_tree,
-                             gfx::Transform* transform) {
-  // TODO(jaydasika): This function should not compute target effect node id. It
-  // should receive it from callers.
-  const EffectNode* effect_node = effect_tree.Node(effect_node_id);
-  const EffectNode* target_effect_node =
-      effect_node->has_render_surface
-          ? effect_node
-          : effect_tree.Node(effect_node->target_id);
-  transform->matrix().postScale(target_effect_node->sublayer_scale.x(),
-                                target_effect_node->sublayer_scale.y(), 1.f);
+void PostConcatSurfaceContentsScale(const EffectNode* effect_node,
+                                    gfx::Transform* transform) {
+  DCHECK(effect_node->has_render_surface);
+  transform->matrix().postScale(effect_node->surface_contents_scale.x(),
+                                effect_node->surface_contents_scale.y(), 1.f);
 }
 
-void ConcatInverseSublayerScale(const int effect_node_id,
-                                const EffectTree& effect_tree,
-                                gfx::Transform* transform) {
-  const EffectNode* effect_node = effect_tree.Node(effect_node_id);
-  if (effect_node->sublayer_scale.x() != 0.0 &&
-      effect_node->sublayer_scale.y() != 0.0)
-    transform->Scale(1.0 / effect_node->sublayer_scale.x(),
-                     1.0 / effect_node->sublayer_scale.y());
+void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
+                                       gfx::Transform* transform) {
+  DCHECK(effect_node->has_render_surface);
+  if (effect_node->surface_contents_scale.x() != 0.0 &&
+      effect_node->surface_contents_scale.y() != 0.0)
+    transform->Scale(1.0 / effect_node->surface_contents_scale.x(),
+                     1.0 / effect_node->surface_contents_scale.y());
 }
 
 void ComputeClips(ClipTree* clip_tree,
@@ -768,21 +784,28 @@ void ComputeClips(ClipTree* clip_tree,
       success &= transform_tree.ComputeTransform(
           parent_target_transform_node->id, clip_node->target_transform_id,
           &parent_to_current);
-      // We don't have to apply sublayer scale when target is root.
+      // We don't have to apply surface contents scale when target is root.
       if (clip_node->target_transform_id != 0) {
-        PostConcatSublayerScale(clip_node->target_effect_id, effect_tree,
-                                &parent_to_current);
+        const EffectNode* target_effect_node =
+            effect_tree.Node(clip_node->target_effect_id);
+        PostConcatSurfaceContentsScale(target_effect_node, &parent_to_current);
 #if DCHECK_IS_ON()
-        VerifySublayerScalesMatch(clip_node->target_effect_id,
-                                  clip_node->target_transform_id, effect_tree,
-                                  transform_tree);
+        VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
+                                         clip_node->target_transform_id,
+                                         effect_tree, transform_tree);
 #endif
       }
-      if (parent_target_transform_node->sublayer_scale.x() > 0 &&
-          parent_target_transform_node->sublayer_scale.y() > 0)
-        parent_to_current.Scale(
-            1.f / parent_target_transform_node->sublayer_scale.x(),
-            1.f / parent_target_transform_node->sublayer_scale.y());
+      if (parent_clip_node->target_transform_id != 0) {
+        const EffectNode* parent_target_effect_node =
+            effect_tree.Node(parent_clip_node->target_effect_id);
+        ConcatInverseSurfaceContentsScale(parent_target_effect_node,
+                                          &parent_to_current);
+#if DCHECK_IS_ON()
+        VerifySurfaceContentsScalesMatch(parent_clip_node->target_effect_id,
+                                         parent_clip_node->target_transform_id,
+                                         effect_tree, transform_tree);
+#endif
+      }
       // If we can't compute a transform, it's because we had to use the inverse
       // of a singular transform. We won't draw in this case, so there's no need
       // to compute clips.
@@ -842,14 +865,15 @@ void ComputeClips(ClipTree* clip_tree,
         success = transform_tree.ComputeTransform(
             transform_node->id, clip_node->target_transform_id,
             &source_to_target);
-        // We don't have to apply sublayer scale when target is root.
+        // We don't have to apply surface contents scale when target is root.
         if (clip_node->target_transform_id != 0) {
-          PostConcatSublayerScale(clip_node->target_effect_id, effect_tree,
-                                  &source_to_target);
+          const EffectNode* target_effect_node =
+              effect_tree.Node(clip_node->target_effect_id);
+          PostConcatSurfaceContentsScale(target_effect_node, &source_to_target);
 #if DCHECK_IS_ON()
-          VerifySublayerScalesMatch(clip_node->target_effect_id,
-                                    clip_node->target_transform_id, effect_tree,
-                                    transform_tree);
+          VerifySurfaceContentsScalesMatch(clip_node->target_effect_id,
+                                           clip_node->target_transform_id,
+                                           effect_tree, transform_tree);
 #endif
         }
         // source_to_target computation should be successful as target is an
@@ -1004,14 +1028,15 @@ static void VerifyDrawTransformsMatch(LayerImpl* layer,
   gfx::Transform draw_transform;
   property_trees->transform_tree.ComputeTransform(source_id, destination_id,
                                                   &draw_transform);
-  // We don't have to apply sublayer scale when target is root.
+  // We don't have to apply surface contents scale when target is root.
   if (destination_id != 0) {
-    PostConcatSublayerScale(layer->effect_tree_index(),
-                            property_trees->effect_tree, &draw_transform);
+    const EffectNode* target_effect_node = ContentsTargetEffectNode(
+        layer->effect_tree_index(), property_trees->effect_tree);
+    PostConcatSurfaceContentsScale(target_effect_node, &draw_transform);
 #if DCHECK_IS_ON()
-    VerifySublayerScalesMatch(layer->effect_tree_index(), destination_id,
-                              property_trees->effect_tree,
-                              property_trees->transform_tree);
+    VerifySurfaceContentsScalesMatch(layer->effect_tree_index(), destination_id,
+                                     property_trees->effect_tree,
+                                     property_trees->transform_tree);
 #endif
   }
   if (layer->should_flatten_transform_from_property_tree())
@@ -1044,8 +1069,8 @@ static void ComputeVisibleRectsInternal(
   UpdateRenderTarget(&property_trees->effect_tree,
                      property_trees->non_root_surfaces_enabled);
   ComputeTransforms(&property_trees->transform_tree);
-  // Computation of clips uses sublayer scale which is updated while computing
-  // effects. So, ComputeEffects should be before ComputeClips.
+  // Computation of clips uses surface contents scale which is updated while
+  // computing effects. So, ComputeEffects should be before ComputeClips.
   ComputeEffects(&property_trees->effect_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
                property_trees->effect_tree, can_render_to_separate_surface);
@@ -1075,8 +1100,8 @@ void UpdatePropertyTrees(PropertyTrees* property_trees,
     property_trees->effect_tree.set_needs_update(true);
   }
   ComputeTransforms(&property_trees->transform_tree);
-  // Computation of clips uses sublayer scale which is updated while computing
-  // effects. So, ComputeEffects should be before ComputeClips.
+  // Computation of clips uses surface contents scale which is updated while
+  // computing effects. So, ComputeEffects should be before ComputeClips.
   ComputeEffects(&property_trees->effect_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
                property_trees->effect_tree, can_render_to_separate_surface);
@@ -1177,8 +1202,9 @@ gfx::Transform DrawTransform(const LayerImpl* layer,
     xform.Translate(layer->offset_to_transform_parent().x(),
                     layer->offset_to_transform_parent().y());
   } else {
-    // Surfaces need to apply their sublayer scale.
-    xform.Scale(node->sublayer_scale.x(), node->sublayer_scale.y());
+    // Surfaces need to apply their surface contents scale.
+    xform.Scale(node->surface_contents_scale.x(),
+                node->surface_contents_scale.y());
   }
   return xform;
 }
@@ -1201,21 +1227,24 @@ static void SetSurfaceDrawTransform(const TransformTree& transform_tree,
       transform_tree.Node(transform_tree.TargetId(transform_node->id));
   transform_tree.ComputeTransform(transform_node->id, target_transform_node->id,
                                   &render_surface_transform);
-  // We don't have to apply sublayer scale when target is root.
+  // We don't have to apply surface contents scale when target is root.
   if (target_transform_node->id != 0) {
-    PostConcatSublayerScale(effect_node->target_id, effect_tree,
-                            &render_surface_transform);
+    const EffectNode* target_effect_node =
+        effect_tree.Node(effect_node->target_id);
+    PostConcatSurfaceContentsScale(target_effect_node,
+                                   &render_surface_transform);
 #if DCHECK_IS_ON()
-    VerifySublayerScalesMatch(effect_node->target_id, target_transform_node->id,
-                              effect_tree, transform_tree);
+    VerifySurfaceContentsScalesMatch(effect_node->target_id,
+                                     target_transform_node->id, effect_tree,
+                                     transform_tree);
 #endif
   }
 
-  DCHECK(transform_node->sublayer_scale == effect_node->sublayer_scale);
-  if (effect_node->sublayer_scale.x() != 0.0 &&
-      effect_node->sublayer_scale.y() != 0.0)
-    render_surface_transform.Scale(1.0 / effect_node->sublayer_scale.x(),
-                                   1.0 / effect_node->sublayer_scale.y());
+  ConcatInverseSurfaceContentsScale(effect_node, &render_surface_transform);
+#if DCHECK_IS_ON()
+  VerifySurfaceContentsScalesMatch(effect_node->id, transform_node->id,
+                                   effect_tree, transform_tree);
+#endif
   render_surface->SetDrawTransform(render_surface_transform);
 }
 
@@ -1259,14 +1288,16 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
     return;
   }
 
-  // We don't have to apply sublayer scale when target is root.
+  // We don't have to apply surface contents scale when target is root.
   if (transform_tree.TargetId(transform_node->id) != 0) {
-    PostConcatSublayerScale(render_surface->EffectTreeIndex(), effect_tree,
-                            &clip_parent_target_to_target);
+    const EffectNode* effect_node =
+        effect_tree.Node(render_surface->EffectTreeIndex());
+    PostConcatSurfaceContentsScale(effect_node, &clip_parent_target_to_target);
 #if DCHECK_IS_ON()
-    VerifySublayerScalesMatch(render_surface->EffectTreeIndex(),
-                              transform_tree.TargetId(transform_node->id),
-                              effect_tree, transform_tree);
+    VerifySurfaceContentsScalesMatch(
+        render_surface->EffectTreeIndex(),
+        transform_tree.TargetId(transform_node->id), effect_tree,
+        transform_tree);
 #endif
   }
 
@@ -1348,8 +1379,8 @@ static gfx::Transform ReplicaToSurfaceTransform(
   const LayerImpl* replica_layer = render_surface->ReplicaLayer();
   const TransformNode* surface_transform_node =
       tree.Node(render_surface->TransformTreeIndex());
-  replica_to_surface.Scale(surface_transform_node->sublayer_scale.x(),
-                           surface_transform_node->sublayer_scale.y());
+  replica_to_surface.Scale(surface_transform_node->surface_contents_scale.x(),
+                           surface_transform_node->surface_contents_scale.y());
   replica_to_surface.Translate(replica_layer->offset_to_transform_parent().x(),
                                replica_layer->offset_to_transform_parent().y());
   gfx::Transform replica_transform_node_to_surface;
@@ -1357,10 +1388,11 @@ static gfx::Transform ReplicaToSurfaceTransform(
                         render_surface->TransformTreeIndex(),
                         &replica_transform_node_to_surface);
   replica_to_surface.PreconcatTransform(replica_transform_node_to_surface);
-  if (surface_transform_node->sublayer_scale.x() != 0 &&
-      surface_transform_node->sublayer_scale.y() != 0) {
-    replica_to_surface.Scale(1.0 / surface_transform_node->sublayer_scale.x(),
-                             1.0 / surface_transform_node->sublayer_scale.y());
+  if (surface_transform_node->surface_contents_scale.x() != 0 &&
+      surface_transform_node->surface_contents_scale.y() != 0) {
+    replica_to_surface.Scale(
+        1.0 / surface_transform_node->surface_contents_scale.x(),
+        1.0 / surface_transform_node->surface_contents_scale.y());
   }
   return replica_to_surface;
 }
@@ -1421,8 +1453,9 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
   SetSurfaceDrawTransform(property_trees->transform_tree,
                           property_trees->effect_tree, render_surface);
   render_surface->SetScreenSpaceTransform(
-      property_trees->transform_tree.ToScreenSpaceTransformWithoutSublayerScale(
-          render_surface->TransformTreeIndex()));
+      property_trees->transform_tree
+          .ToScreenSpaceTransformWithoutSurfaceContentsScale(
+              render_surface->TransformTreeIndex()));
 
   if (render_surface->HasReplica()) {
     gfx::Transform replica_to_surface = ReplicaToSurfaceTransform(

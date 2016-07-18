@@ -152,18 +152,10 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // including any sublayer scale at |dest_id|.  The function returns false iff
   // the inverse of a singular transform was used (and the result should,
   // therefore, not be trusted).
-  bool ComputeTransformWithDestinationSublayerScale(
+  bool ComputeTransformWithDestinationSurfaceContentsScale(
       int source_id,
       int dest_id,
       gfx::Transform* transform) const;
-
-  // Computes the change of basis transform from node |source_id| to |dest_id|,
-  // including any sublayer scale at |source_id|.  The function returns false
-  // iff the inverse of a singular transform was used (and the result should,
-  // therefore, not be trusted).
-  bool ComputeTransformWithSourceSublayerScale(int source_id,
-                                               int dest_id,
-                                               gfx::Transform* transform) const;
 
   // Returns true iff the nodes indexed by |source_id| and |dest_id| are 2D axis
   // aligned with respect to one another.
@@ -254,7 +246,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return cached_data_;
   }
 
-  gfx::Transform ToScreenSpaceTransformWithoutSublayerScale(int id) const;
+  gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
+      int id) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto,
@@ -283,7 +276,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateScreenSpaceTransform(TransformNode* node,
                                   TransformNode* parent_node,
                                   TransformNode* target_node);
-  void UpdateSublayerScale(TransformNode* node);
+  void UpdateSurfaceContentsScale(TransformNode* node);
   void UpdateTargetSpaceTransform(TransformNode* node,
                                   TransformNode* target_node);
   void UpdateAnimationProperties(TransformNode* node,
@@ -331,7 +324,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   float EffectiveOpacity(const EffectNode* node) const;
 
-  void UpdateSublayerScale(EffectNode* node);
+  void UpdateSurfaceContentsScale(EffectNode* node);
 
   void UpdateEffects(int id);
 

@@ -157,37 +157,18 @@ bool TransformTree::ComputeTransform(int source_id,
   return CombineInversesBetween(source_id, dest_id, transform);
 }
 
-bool TransformTree::ComputeTransformWithDestinationSublayerScale(
+bool TransformTree::ComputeTransformWithDestinationSurfaceContentsScale(
     int source_id,
     int dest_id,
     gfx::Transform* transform) const {
   bool success = ComputeTransform(source_id, dest_id, transform);
 
   const TransformNode* dest_node = Node(dest_id);
-  if (!dest_node->needs_sublayer_scale)
+  if (!dest_node->needs_surface_contents_scale)
     return success;
 
-  transform->matrix().postScale(dest_node->sublayer_scale.x(),
-                                dest_node->sublayer_scale.y(), 1.f);
-  return success;
-}
-
-bool TransformTree::ComputeTransformWithSourceSublayerScale(
-    int source_id,
-    int dest_id,
-    gfx::Transform* transform) const {
-  bool success = ComputeTransform(source_id, dest_id, transform);
-
-  const TransformNode* source_node = Node(source_id);
-  if (!source_node->needs_sublayer_scale)
-    return success;
-
-  if (source_node->sublayer_scale.x() == 0 ||
-      source_node->sublayer_scale.y() == 0)
-    return false;
-
-  transform->Scale(1.f / source_node->sublayer_scale.x(),
-                   1.f / source_node->sublayer_scale.y());
+  transform->matrix().postScale(dest_node->surface_contents_scale.x(),
+                                dest_node->surface_contents_scale.y(), 1.f);
   return success;
 }
 
@@ -220,7 +201,7 @@ void TransformTree::UpdateTransforms(int id) {
   else
     UndoSnapping(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
-  UpdateSublayerScale(node);
+  UpdateSurfaceContentsScale(node);
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
   UpdateTargetSpaceTransform(node, target_node);
@@ -269,17 +250,19 @@ bool TransformTree::CombineTransformsBetween(int source_id,
   // early-out if we get to a node whose target node is the destination, since
   // we can then re-use the target space transform stored at that node. However,
   // we cannot re-use a stored target space transform if the destination has a
-  // zero sublayer scale, since stored target space transforms have sublayer
-  // scale baked in, but we need to compute an unscaled transform.
+  // zero surface contents scale, since stored target space transforms have
+  // surface contents scale baked in, but we need to compute an unscaled
+  // transform.
   std::vector<int> source_to_destination;
   source_to_destination.push_back(current->id);
   current = parent(current);
-  bool destination_has_non_zero_sublayer_scale =
-      dest->sublayer_scale.x() != 0.f && dest->sublayer_scale.y() != 0.f;
-  DCHECK(destination_has_non_zero_sublayer_scale ||
+  bool destination_has_non_zero_surface_contents_scale =
+      dest->surface_contents_scale.x() != 0.f &&
+      dest->surface_contents_scale.y() != 0.f;
+  DCHECK(destination_has_non_zero_surface_contents_scale ||
          !dest->ancestors_are_invertible);
   for (; current && current->id > dest_id; current = parent(current)) {
-    if (destination_has_non_zero_sublayer_scale &&
+    if (destination_has_non_zero_surface_contents_scale &&
         TargetId(current->id) == dest_id &&
         ContentTargetId(current->id) == dest_id)
       break;
@@ -289,10 +272,11 @@ bool TransformTree::CombineTransformsBetween(int source_id,
   gfx::Transform combined_transform;
   if (current->id > dest_id) {
     combined_transform = ToTarget(current->id);
-    // The stored target space transform has sublayer scale baked in, but we
-    // need the unscaled transform.
+    // The stored target space transform has surface contents scale baked in,
+    // but we need the unscaled transform.
     combined_transform.matrix().postScale(
-        1.0f / dest->sublayer_scale.x(), 1.0f / dest->sublayer_scale.y(), 1.0f);
+        1.0f / dest->surface_contents_scale.x(),
+        1.0f / dest->surface_contents_scale.y(), 1.0f);
   } else if (current->id < dest_id) {
     // We have reached the lowest common ancestor of the source and destination
     // nodes. This case can occur when we are transforming between a node
@@ -418,10 +402,11 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
   SetFromScreen(node->id, from_screen);
 }
 
-void TransformTree::UpdateSublayerScale(TransformNode* node) {
-  // The sublayer scale depends on the screen space transform, so update it too.
-  if (!node->needs_sublayer_scale) {
-    node->sublayer_scale = gfx::Vector2dF(1.0f, 1.0f);
+void TransformTree::UpdateSurfaceContentsScale(TransformNode* node) {
+  // The surface contents scale depends on the screen space transform, so update
+  // it too.
+  if (!node->needs_surface_contents_scale) {
+    node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
     return;
   }
 
@@ -429,23 +414,23 @@ void TransformTree::UpdateSublayerScale(TransformNode* node) {
       device_scale_factor_ * device_transform_scale_factor_;
   if (node->in_subtree_of_page_scale_layer)
     layer_scale_factor *= page_scale_factor_;
-  node->sublayer_scale = MathUtil::ComputeTransform2dScaleComponents(
+  node->surface_contents_scale = MathUtil::ComputeTransform2dScaleComponents(
       ToScreen(node->id), layer_scale_factor);
 }
 
 void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
                                                TransformNode* target_node) {
   gfx::Transform target_space_transform;
-  if (node->needs_sublayer_scale) {
+  if (node->needs_surface_contents_scale) {
     target_space_transform.MakeIdentity();
-    target_space_transform.Scale(node->sublayer_scale.x(),
-                                 node->sublayer_scale.y());
+    target_space_transform.Scale(node->surface_contents_scale.x(),
+                                 node->surface_contents_scale.y());
   } else {
     // In order to include the root transform for the root surface, we walk up
     // to the root of the transform tree in ComputeTransform.
     int target_id = target_node->id;
-    ComputeTransformWithDestinationSublayerScale(node->id, target_id,
-                                                 &target_space_transform);
+    ComputeTransformWithDestinationSurfaceContentsScale(
+        node->id, target_id, &target_space_transform);
   }
 
   gfx::Transform from_target;
@@ -661,7 +646,7 @@ void TransformTree::SetContentTargetId(int node_id, int content_target_id) {
   cached_data_[node_id].content_target_id = content_target_id;
 }
 
-gfx::Transform TransformTree::ToScreenSpaceTransformWithoutSublayerScale(
+gfx::Transform TransformTree::ToScreenSpaceTransformWithoutSurfaceContentsScale(
     int id) const {
   DCHECK_GT(id, 0);
   if (id == 1) {
@@ -669,9 +654,10 @@ gfx::Transform TransformTree::ToScreenSpaceTransformWithoutSublayerScale(
   }
   const TransformNode* node = Node(id);
   gfx::Transform screen_space_transform = ToScreen(id);
-  if (node->sublayer_scale.x() != 0.0 && node->sublayer_scale.y() != 0.0)
-    screen_space_transform.Scale(1.0 / node->sublayer_scale.x(),
-                                 1.0 / node->sublayer_scale.y());
+  if (node->surface_contents_scale.x() != 0.0 &&
+      node->surface_contents_scale.y() != 0.0)
+    screen_space_transform.Scale(1.0 / node->surface_contents_scale.x(),
+                                 1.0 / node->surface_contents_scale.y());
   return screen_space_transform;
 }
 
@@ -835,9 +821,9 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
   node->hidden_by_backface_visibility = false;
 }
 
-void EffectTree::UpdateSublayerScale(EffectNode* effect_node) {
+void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   if (!effect_node->has_render_surface || effect_node->transform_id == 0) {
-    effect_node->sublayer_scale = gfx::Vector2dF(1.0f, 1.0f);
+    effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
     return;
   }
 
@@ -848,8 +834,9 @@ void EffectTree::UpdateSublayerScale(EffectNode* effect_node) {
       transform_tree.Node(effect_node->transform_id);
   if (transform_node->in_subtree_of_page_scale_layer)
     layer_scale_factor *= transform_tree.page_scale_factor();
-  effect_node->sublayer_scale = MathUtil::ComputeTransform2dScaleComponents(
-      transform_tree.ToScreen(transform_node->id), layer_scale_factor);
+  effect_node->surface_contents_scale =
+      MathUtil::ComputeTransform2dScaleComponents(
+          transform_tree.ToScreen(transform_node->id), layer_scale_factor);
 }
 
 void EffectTree::UpdateEffects(int id) {
@@ -860,7 +847,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
-  UpdateSublayerScale(node);
+  UpdateSurfaceContentsScale(node);
 }
 
 void EffectTree::AddCopyRequest(int node_id,
@@ -926,7 +913,7 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
     }
     gfx::Transform transform;
     property_trees()
-        ->transform_tree.ComputeTransformWithDestinationSublayerScale(
+        ->transform_tree.ComputeTransformWithDestinationSurfaceContentsScale(
             source_id, destination_id, &transform);
     it->set_area(MathUtil::MapEnclosingClippedRect(transform, it->area()));
   }
