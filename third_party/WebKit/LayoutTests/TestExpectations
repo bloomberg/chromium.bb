@@ -725,7 +725,7 @@ crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [
 crbug.com/378610 [ Win ] svg/custom/focus-ring-text.svg [ Failure ]
 crbug.com/378610 [ Mac ] svg/custom/focus-ring-text.svg [ Failure Pass ]
 
-crbug.com/624285 inspector/console/console-stack-overflow.html [ NeedsManualRebaseline ]
+crbug.com/624285 inspector/console/console-stack-overflow.html [ NeedsRebaseline ]
 
 crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
 
