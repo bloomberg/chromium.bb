@@ -118,19 +118,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
-    self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
-        ['win'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['win'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
+        ['win'], bug=626068)
 
-    self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
-        ['win'], bug=483282)
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['win'], bug=624506)
 
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
         ['win'], bug=614573)
+
+    # ANGLE bug id
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['win'], bug=1246)
+    self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
+        ['win'], bug=1246)
+    self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
+        ['win'], bug=1268)
 
     # Windows 8 only.
 
@@ -140,8 +144,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
         ['win', 'nvidia'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
-        ['win', 'nvidia'], bug=483282)
-    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['win', 'nvidia'], bug=483282)
 
     # Win / AMD
@@ -164,9 +166,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/textureshadow/2d*',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/cube*',
-        ['win', ('amd', 0x6779)], bug=483282)
-
-    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
     # It's unfortunate that these suppressions need to be so broad, but
@@ -226,8 +225,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel'], bug=483282)
-    self.Flaky('deqp/functional/gles3/transformfeedback/*.html',
-        ['win', 'intel'], bug=626068)
 
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
