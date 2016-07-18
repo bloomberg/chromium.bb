@@ -7782,8 +7782,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bengr@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
-    Counts the number of times a pingback was attempted or not attempted based
-    on the reporting fraction.
+    Counts the number of times that pageload metrics were queued to be attempted
+    or not queued based on the reporting fraction. Recorded once per pageload.
   </summary>
 </histogram>
 
@@ -7791,8 +7791,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bengr@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <summary>
-    Counts the number of times that a pingback succeeded or failed at being sent
-    to the server.
+    Counts the number of times that a batched pingback request succeeded or
+    failed at being sent to the server. Recorded everytime a pingback request is
+    attempted.
   </summary>
 </histogram>
 
