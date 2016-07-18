@@ -19,11 +19,11 @@ function test()
     InspectorTest.evaluateInPage("loadIFrame()");
 
     var encodedBytesReceived = 0;
-    function responseReceived(requestId, frameId, loaderId, time, resourceType, response)
+    function responseReceived(requestId, time, resourceType, response)
     {
         var request = InspectorTest.networkLog.requestForId(requestId);
         if (/resource\.php/.exec(request.url))
-            InspectorTest.addResult("Received response. EncodedDataLength is " + (response.encodedDataLength === -1 ? "unknown" : "known") + ".");
+            InspectorTest.addResult("Received response.");
     }
 
     function loadingFinished(requestId, finishTime, encodedDataLength)

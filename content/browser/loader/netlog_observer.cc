@@ -202,7 +202,6 @@ void NetLogObserver::PopulateResponseInfo(net::URLRequest* request,
     return;
   response->head.devtools_info =
       dev_tools_net_log_observer->GetResourceInfo(source_id);
-  response->head.encoded_data_length = request->GetTotalReceivedBytes();
 }
 
 }  // namespace content

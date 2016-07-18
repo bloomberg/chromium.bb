@@ -314,6 +314,7 @@ bool AsyncResourceHandler::OnRequestRedirected(
   }
 
   NetLogObserver::PopulateResponseInfo(request(), response);
+  response->head.encoded_data_length = request()->GetTotalReceivedBytes();
   reported_transfer_size_ = 0;
   response->head.request_start = request()->creation_time();
   response->head.response_start = TimeTicks::Now();
