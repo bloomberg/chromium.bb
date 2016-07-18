@@ -16,6 +16,12 @@ RealTimeDomain::RealTimeDomain(const char* tracing_category)
       tracing_category_(tracing_category),
       task_queue_manager_(nullptr) {}
 
+RealTimeDomain::RealTimeDomain(TimeDomain::Observer* observer,
+                               const char* tracing_category)
+    : TimeDomain(observer),
+      tracing_category_(tracing_category),
+      task_queue_manager_(nullptr) {}
+
 RealTimeDomain::~RealTimeDomain() {}
 
 void RealTimeDomain::OnRegisterWithTaskQueueManager(
@@ -30,12 +36,6 @@ LazyNow RealTimeDomain::CreateLazyNow() const {
 
 base::TimeTicks RealTimeDomain::Now() const {
   return task_queue_manager_->delegate()->NowTicks();
-}
-
-base::TimeTicks RealTimeDomain::ComputeDelayedRunTime(
-    base::TimeTicks time_domain_now,
-    base::TimeDelta delay) const {
-  return time_domain_now + delay;
 }
 
 void RealTimeDomain::RequestWakeup(base::TimeTicks now, base::TimeDelta delay) {

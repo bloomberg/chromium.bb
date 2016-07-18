@@ -98,7 +98,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool NeedsPumping() const override;
   void SetQueuePriority(QueuePriority priority) override;
   QueuePriority GetQueuePriority() const override;
-  void PumpQueue(bool may_post_dowork) override;
+  void PumpQueue(LazyNow* lazy_now, bool may_post_dowork) override;
   void SetPumpPolicy(PumpPolicy pump_policy) override;
   PumpPolicy GetPumpPolicy() const override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
@@ -236,7 +236,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
   // Note this does nothing if its not called from the main thread.
-  void PumpQueueLocked(bool may_post_dowork);
+  void PumpQueueLocked(LazyNow* lazy_now, bool may_post_dowork);
 
   // Returns true if |task| is older than the oldest incoming immediate task.
   // NOTE |any_thread_lock_| must be locked.

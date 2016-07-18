@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "components/scheduler/base/lazy_now.h"
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
@@ -179,7 +180,8 @@ TEST_F(SchedulerHelperTest,
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
-  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PumpQueue(true);
+  LazyNow lazy_now(clock_.get());
+  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PumpQueue(&lazy_now, true);
   RunUntilIdle();
 }
 

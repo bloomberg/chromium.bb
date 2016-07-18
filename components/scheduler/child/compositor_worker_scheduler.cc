@@ -77,7 +77,7 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return PumpPolicy::AUTO;
   };
 
-  void PumpQueue(bool may_post_dowork) override { NOTREACHED(); }
+  void PumpQueue(LazyNow*, bool may_post_dowork) override { NOTREACHED(); }
 
   void AddTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override {

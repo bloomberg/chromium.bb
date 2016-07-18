@@ -18,6 +18,7 @@ class BlameContext;
 }
 
 namespace scheduler {
+class LazyNow;
 class TimeDomain;
 
 class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
@@ -182,7 +183,7 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // TaskQueueManager::MaybeScheduleImmediateWork.
   // TODO(alexclarke): Add a base::RunLoop observer so we can get rid of
   // |may_post_dowork|.
-  virtual void PumpQueue(bool may_post_dowork) = 0;
+  virtual void PumpQueue(LazyNow* lazy_now, bool may_post_dowork) = 0;
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.

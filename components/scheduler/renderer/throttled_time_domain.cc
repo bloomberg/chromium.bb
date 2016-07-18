@@ -4,28 +4,36 @@
 
 #include "components/scheduler/renderer/throttled_time_domain.h"
 
-#include "base/time/tick_clock.h"
-
 namespace scheduler {
 
 ThrottledTimeDomain::ThrottledTimeDomain(TimeDomain::Observer* observer,
-                                         base::TickClock* tick_clock)
-    : VirtualTimeDomain(observer, tick_clock->NowTicks()),
-      tick_clock_(tick_clock) {}
+                                         const char* tracing_category)
+    : RealTimeDomain(observer, tracing_category) {}
 
 ThrottledTimeDomain::~ThrottledTimeDomain() {}
 
-base::TimeTicks ThrottledTimeDomain::ComputeDelayedRunTime(
-    base::TimeTicks,
-    base::TimeDelta delay) const {
-  // We ignore the |time_domain_now| parameter since its the virtual time but we
-  // need to use the current real time when computing the delayed runtime.  If
-  // don't do that, throttled timers may fire sooner than expected.
-  return tick_clock_->NowTicks() + delay;
-}
-
 const char* ThrottledTimeDomain::GetName() const {
   return "ThrottledTimeDomain";
+}
+
+void ThrottledTimeDomain::RequestWakeup(base::TimeTicks now,
+                                        base::TimeDelta delay) {
+  // We assume the owner (i.e. ThrottlingHelper) will manage wakeups on our
+  // behalf.
+}
+
+bool ThrottledTimeDomain::MaybeAdvanceTime() {
+  base::TimeTicks next_run_time;
+  if (!NextScheduledRunTime(&next_run_time))
+    return false;
+
+  base::TimeTicks now = Now();
+  if (now >= next_run_time)
+    return true;  // Causes DoWork to post a continuation.
+
+  // Unlike RealTimeDomain::MaybeAdvanceTime we don't request a wake up here, we
+  // assume the owner (i.e. ThrottlingHelper) will manage wakeups on our behalf.
+  return false;
 }
 
 }  // namespace scheduler

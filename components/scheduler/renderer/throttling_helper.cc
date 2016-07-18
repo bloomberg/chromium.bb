@@ -20,7 +20,7 @@ ThrottlingHelper::ThrottlingHelper(RendererSchedulerImpl* renderer_scheduler,
       renderer_scheduler_(renderer_scheduler),
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
-      time_domain_(new ThrottledTimeDomain(this, tick_clock_)),
+      time_domain_(new ThrottledTimeDomain(this, tracing_category)),
       weak_factory_(this) {
   suspend_timers_when_backgrounded_closure_.Reset(base::Bind(
       &ThrottlingHelper::PumpThrottledTasks, weak_factory_.GetWeakPtr()));
@@ -133,15 +133,14 @@ void ThrottlingHelper::PumpThrottledTasks() {
   TRACE_EVENT0(tracing_category_, "ThrottlingHelper::PumpThrottledTasks");
   pending_pump_throttled_tasks_runtime_ = base::TimeTicks();
 
-  base::TimeTicks now = tick_clock_->NowTicks();
-  time_domain_->AdvanceTo(now);
+  LazyNow lazy_low(tick_clock_);
   for (const TaskQueueMap::value_type& map_entry : throttled_queues_) {
     TaskQueue* task_queue = map_entry.first;
     if (task_queue->IsEmpty())
       continue;
 
     task_queue->SetQueueEnabled(map_entry.second.enabled);
-    task_queue->PumpQueue(false);
+    task_queue->PumpQueue(&lazy_low, false);
   }
   // Make sure NextScheduledRunTime gives us an up-to date result.
   time_domain_->ClearExpiredWakeups();
@@ -151,7 +150,7 @@ void ThrottlingHelper::PumpThrottledTasks() {
   // a pending delayed task. NOTE posting a non-delayed task in the future will
   // result in ThrottlingHelper::OnTimeDomainHasImmediateWork being called.
   if (time_domain_->NextScheduledRunTime(&next_scheduled_delayed_task)) {
-    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, now,
+    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, lazy_low.Now(),
                                           next_scheduled_delayed_task);
   }
 }

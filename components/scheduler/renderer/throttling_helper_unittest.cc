@@ -360,6 +360,18 @@ TEST_F(ThrottlingHelperTest, TaskDelayIsBasedOnRealTime) {
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000.0)));
 }
 
+TEST_F(ThrottlingHelperTest, ThrottledTasksReportRealTime) {
+  EXPECT_EQ(timer_queue_->GetTimeDomain()->Now(), clock_->NowTicks());
+
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_EQ(timer_queue_->GetTimeDomain()->Now(), clock_->NowTicks());
+
+  clock_->Advance(base::TimeDelta::FromMilliseconds(250));
+  // Make sure the throttled time domain's Now() reports the same as the
+  // underlying clock.
+  EXPECT_EQ(timer_queue_->GetTimeDomain()->Now(), clock_->NowTicks());
+}
+
 TEST_F(ThrottlingHelperTest, TaskQueueDisabledTillPump) {
   timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
 

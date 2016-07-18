@@ -6,26 +6,26 @@
 #define COMPONENTS_SCHEDULER_RENDERER_THROTTLED_TIME_DOMAIN_H_
 
 #include "base/macros.h"
-#include "components/scheduler/base/virtual_time_domain.h"
+#include "components/scheduler/base/real_time_domain.h"
 
 namespace scheduler {
 
-// A time domain that's mostly a VirtualTimeDomain except that real time is used
-// when computing the delayed runtime.
-class SCHEDULER_EXPORT ThrottledTimeDomain : public VirtualTimeDomain {
+// A time domain for throttled tasks. behaves like an RealTimeDomain except it
+// relies on the owner (ThrottlingHelper) to schedule wakeups.
+class SCHEDULER_EXPORT ThrottledTimeDomain : public RealTimeDomain {
  public:
   ThrottledTimeDomain(TimeDomain::Observer* observer,
-                      base::TickClock* tick_clock);
+                      const char* tracing_category);
   ~ThrottledTimeDomain() override;
 
   // TimeDomain implementation:
-  base::TimeTicks ComputeDelayedRunTime(base::TimeTicks time_domain_now,
-                                        base::TimeDelta delay) const override;
   const char* GetName() const override;
+  void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override;
+  bool MaybeAdvanceTime() override;
+
+  using TimeDomain::ClearExpiredWakeups;
 
  private:
-  base::TickClock* const tick_clock_;  // NOT OWNED
-
   DISALLOW_COPY_AND_ASSIGN(ThrottledTimeDomain);
 };
 

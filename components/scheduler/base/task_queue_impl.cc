@@ -189,9 +189,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
         main_thread_only().task_queue_manager->GetNextSequenceNumber();
 
     base::TimeTicks time_domain_now = main_thread_only().time_domain->Now();
-    base::TimeTicks time_domain_delayed_run_time =
-        main_thread_only().time_domain->ComputeDelayedRunTime(time_domain_now,
-                                                              delay);
+    base::TimeTicks time_domain_delayed_run_time = time_domain_now + delay;
     PushOntoDelayedIncomingQueueFromMainThread(
         Task(from_here, task, time_domain_delayed_run_time, sequence_number,
              task_type != TaskType::NON_NESTABLE),
@@ -209,8 +207,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
         any_thread().task_queue_manager->GetNextSequenceNumber();
 
     base::TimeTicks time_domain_now = any_thread().time_domain->Now();
-    base::TimeTicks time_domain_delayed_run_time =
-        any_thread().time_domain->ComputeDelayedRunTime(time_domain_now, delay);
+    base::TimeTicks time_domain_delayed_run_time = time_domain_now + delay;
     PushOntoDelayedIncomingQueueLocked(
         Task(from_here, task, time_domain_delayed_run_time, sequence_number,
              task_type != TaskType::NON_NESTABLE));
@@ -450,7 +447,8 @@ void TaskQueueImpl::SetPumpPolicy(PumpPolicy pump_policy) {
   base::AutoLock lock(any_thread_lock_);
   if (pump_policy == PumpPolicy::AUTO &&
       any_thread().pump_policy != PumpPolicy::AUTO) {
-    PumpQueueLocked(true);
+    LazyNow lazy_now(main_thread_only().time_domain->CreateLazyNow());
+    PumpQueueLocked(&lazy_now, true);
   }
   any_thread().pump_policy = pump_policy;
   main_thread_only().pump_policy = pump_policy;
@@ -460,15 +458,14 @@ TaskQueue::PumpPolicy TaskQueueImpl::GetPumpPolicy() const {
   return main_thread_only().pump_policy;
 }
 
-void TaskQueueImpl::PumpQueueLocked(bool may_post_dowork) {
+void TaskQueueImpl::PumpQueueLocked(LazyNow* lazy_now, bool may_post_dowork) {
   TRACE_EVENT1(disabled_by_default_tracing_category_,
                "TaskQueueImpl::PumpQueueLocked", "queue", name_);
   TaskQueueManager* task_queue_manager = any_thread().task_queue_manager;
   if (!task_queue_manager)
     return;
 
-  LazyNow lazy_now(main_thread_only().time_domain->CreateLazyNow());
-  MoveReadyDelayedTasksToDelayedWorkQueue(&lazy_now);
+  MoveReadyDelayedTasksToDelayedWorkQueue(lazy_now);
 
   while (!any_thread().immediate_incoming_queue.empty()) {
     main_thread_only().immediate_work_queue->Push(
@@ -489,9 +486,9 @@ void TaskQueueImpl::PumpQueueLocked(bool may_post_dowork) {
     task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
 }
 
-void TaskQueueImpl::PumpQueue(bool may_post_dowork) {
+void TaskQueueImpl::PumpQueue(LazyNow* lazy_now, bool may_post_dowork) {
   base::AutoLock lock(any_thread_lock_);
-  PumpQueueLocked(may_post_dowork);
+  PumpQueueLocked(lazy_now, may_post_dowork);
 }
 
 const char* TaskQueueImpl::GetName() const {

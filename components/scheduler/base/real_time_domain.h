@@ -16,13 +16,12 @@ namespace scheduler {
 class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
  public:
   explicit RealTimeDomain(const char* tracing_category);
+  RealTimeDomain(TimeDomain::Observer* observer, const char* tracing_category);
   ~RealTimeDomain() override;
 
   // TimeDomain implementation:
   LazyNow CreateLazyNow() const override;
   base::TimeTicks Now() const override;
-  base::TimeTicks ComputeDelayedRunTime(base::TimeTicks time_domain_now,
-                                        base::TimeDelta delay) const override;
   bool MaybeAdvanceTime() override;
   const char* GetName() const override;
 
