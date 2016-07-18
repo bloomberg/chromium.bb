@@ -247,7 +247,7 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
   } else if (to_op.type() == FilterOperation::ZOOM) {
     blended_filter.set_zoom_inset(
         std::max(gfx::Tween::LinearIntValueBetween(
-                     from_op.zoom_inset(), to_op.zoom_inset(), progress),
+                     progress, from_op.zoom_inset(), to_op.zoom_inset()),
                  0));
   } else if (to_op.type() == FilterOperation::ALPHA_THRESHOLD) {
     blended_filter.set_outer_threshold(ClampAmountForFilterType(
