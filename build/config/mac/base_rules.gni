@@ -218,124 +218,222 @@ template("framework_bundle") {
     _output_name = invoker.output_name
   }
 
-  # If the framework is unversioned, the final _target_name will be the
-  # create_bundle(_framework_target), otherwise an action with the name
-  # _target_name will depends on the the create_bundle() in order to prepare
-  # the versioned directory structure.
-  _framework_target = _target_name
-  _framework_name = _output_name + ".framework"
-  _framework_root_dir = "$root_out_dir/$_framework_name"
-  if (defined(invoker.framework_version) && invoker.framework_version != "") {
-    _framework_version = invoker.framework_version
-    _framework_root_dir += "/Versions/$_framework_version"
-    _framework_target = _target_name + "_create_bundle"
+  _is_fat_build = is_ios && additional_toolchains != []
+  if (_is_fat_build) {
+    _is_fat_build_main_target = current_toolchain == default_toolchain
   }
 
-  _shared_library_target = target_name + "_shared_library"
-  _shared_library_bundle_data = _shared_library_target + "_bundle_data"
+  # The expansion of the template is different for fat and thin builds. For
+  # thin build (and default toolchain of a fat build), the template expands
+  # to a "shared_library" target to create the bundle shared library and a
+  # "create_bundle" target (the main target) to create the bundle structure.
+  #
+  # For a fat build, the template just expands to the "shared_library" target
+  # for the non-default toolchain, while the final library is created using
+  # "lipo" in the expansion of the template for the default toolchain.
+  #
+  # The "$target_name+link" group for the non-default toolchain depends on the
+  # target of the same name from the default toolchain as this is the target
+  # that defines the real framework bundle (it will support the current cpu
+  # as it is a fat framework).
 
-  shared_library(_shared_library_target) {
-    visibility = [ ":$_shared_library_bundle_data" ]
-    forward_variables_from(invoker,
-                           "*",
-                           [
-                             "assert_no_deps",
-                             "data_deps",
-                             "info_plist",
-                             "output_name",
-                             "visibility",
-                           ])
-    output_name = _output_name
-    output_prefix_override = true
-    output_extension = ""
-    output_dir = "$target_out_dir/$_shared_library_target"
-  }
+  if (_is_fat_build && !_is_fat_build_main_target) {
+    shared_library(_target_name) {
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "assert_no_deps",
+                               "data_deps",
+                               "info_plist",
+                               "output_name",
+                             ])
+      if (defined(visibility)) {
+        visibility += [ ":${_target_name}_shared_library($default_toolchain)" ]
+      }
+      output_name = _output_name
+      output_prefix_override = true
+      output_extension = ""
+      output_dir = "$target_out_dir/$_target_name"
+    }
 
-  bundle_data(_shared_library_bundle_data) {
-    visibility = [ ":$_framework_target" ]
-    forward_variables_from(invoker, [ "testonly" ])
-    sources = [
-      "$target_out_dir/$_shared_library_target/$_output_name",
-    ]
-    outputs = [
-      "{{bundle_executable_dir}}/$_output_name",
-    ]
-    public_deps = [
-      ":$_shared_library_target",
-    ]
-  }
+    group(_target_name + "+link") {
+      forward_variables_from(invoker,
+                             [
+                               "visibility",
+                               "testonly",
+                             ])
+      public_deps = [
+        ":$_target_name($default_toolchain)",
+      ]
+    }
+  } else {
+    # If the framework is unversioned, the final _target_name will be the
+    # create_bundle(_framework_target), otherwise an action with the name
+    # _target_name will depends on the the create_bundle() in order to prepare
+    # the versioned directory structure.
+    _framework_target = _target_name
+    _framework_name = _output_name + ".framework"
+    _framework_root_dir = "$root_out_dir/$_framework_name"
+    if (defined(invoker.framework_version) && invoker.framework_version != "") {
+      _framework_version = invoker.framework_version
+      _framework_root_dir += "/Versions/$_framework_version"
+      _framework_target = _target_name + "_create_bundle"
+    }
 
-  _framework_public_config = _target_name + "_public_config"
-  config(_framework_public_config) {
-    # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
-    # and include_dirs to avoid duplicate values on the command-line.
-    visibility = [ ":$_framework_target" ]
-    ldflags = [ "-F" + rebase_path("$root_out_dir/.", root_build_dir) ]
-    lib_dirs = [ root_out_dir ]
-    libs = [ _framework_name ]
-  }
+    _link_shared_library_target = target_name + "_shared_library"
+    _shared_library_bundle_data = target_name + "_shared_library_bundle_data"
+    _link_shared_library_visibility = [ ":$_shared_library_bundle_data" ]
 
-  create_bundle(_framework_target) {
-    forward_variables_from(invoker,
-                           [
-                             "data_deps",
-                             "deps",
-                             "public_deps",
-                             "testonly",
-                           ])
+    if (_is_fat_build) {
+      _lipo_shared_library_target = _link_shared_library_target
+      _lipo_shared_library_visibility = _link_shared_library_visibility
+
+      _link_shared_library_visibility = []
+      _link_shared_library_visibility = [ ":$_lipo_shared_library_target" ]
+      _link_shared_library_target = target_name + "_arch_shared_library"
+    }
+
+    shared_library(_link_shared_library_target) {
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "assert_no_deps",
+                               "data_deps",
+                               "info_plist",
+                               "output_name",
+                               "visibility",
+                             ])
+      visibility = _link_shared_library_visibility
+      output_name = _output_name
+      output_prefix_override = true
+      output_extension = ""
+      output_dir = "$target_out_dir/$_link_shared_library_target"
+    }
+
+    if (_is_fat_build) {
+      action(_lipo_shared_library_target) {
+        forward_variables_from(invoker, [ "testonly" ])
+        visibility = _lipo_shared_library_visibility
+        script = "//build/config/mac/xcrun.py"
+        outputs = [
+          "$target_out_dir/$_lipo_shared_library_target/$_output_name",
+        ]
+        inputs = [
+          "$target_out_dir/$_link_shared_library_target/$_output_name",
+        ]
+        deps = [
+          ":$_link_shared_library_target",
+        ]
+        foreach(_additional_toolchain, additional_toolchains) {
+          _additional_toolchain_target = "$_target_name($_additional_toolchain)"
+          deps += [ ":$_additional_toolchain_target" ]
+          inputs += [ get_label_info(_additional_toolchain_target,
+                                     "target_out_dir") + "/$_output_name" ]
+        }
+        args = [
+                 "lipo",
+                 "-create",
+                 "-output",
+                 rebase_path(outputs[0], root_build_dir),
+               ] + rebase_path(inputs, root_build_dir)
+      }
+    }
+
+    bundle_data(_shared_library_bundle_data) {
+      visibility = [ ":$_framework_target" ]
+      forward_variables_from(invoker, [ "testonly" ])
+      outputs = [
+        "{{bundle_executable_dir}}/$_output_name",
+      ]
+      if (_is_fat_build) {
+        sources = [
+          "$target_out_dir/$_lipo_shared_library_target/$_output_name",
+        ]
+        public_deps = [
+          ":$_lipo_shared_library_target",
+        ]
+      } else {
+        sources = [
+          "$target_out_dir/$_link_shared_library_target/$_output_name",
+        ]
+        public_deps = [
+          ":$_link_shared_library_target",
+        ]
+      }
+    }
+
+    _framework_public_config = _target_name + "_public_config"
+    config(_framework_public_config) {
+      # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
+      # and include_dirs to avoid duplicate values on the command-line.
+      visibility = [ ":$_framework_target" ]
+      ldflags = [ "-F" + rebase_path("$root_out_dir/.", root_build_dir) ]
+      lib_dirs = [ root_out_dir ]
+      libs = [ _framework_name ]
+    }
+
+    create_bundle(_framework_target) {
+      forward_variables_from(invoker,
+                             [
+                               "data_deps",
+                               "deps",
+                               "public_deps",
+                               "testonly",
+                             ])
+
+      if (defined(_framework_version)) {
+        visibility = [ ":$_target_name" ]
+      } else {
+        if (defined(invoker.visibility)) {
+          visibility = invoker.visibility
+          visibility += [ ":$_target_name+link" ]
+        }
+      }
+
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += [ ":$_shared_library_bundle_data" ]
+
+      bundle_root_dir = _framework_root_dir
+      bundle_resources_dir = "$bundle_root_dir/Resources"
+      bundle_executable_dir = "$bundle_root_dir"
+    }
 
     if (defined(_framework_version)) {
-      visibility = [ ":$_target_name" ]
-    } else {
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-        visibility += [ ":$_target_name+link" ]
+      action(_target_name) {
+        forward_variables_from(invoker, [ "testonly" ])
+
+        if (defined(invoker.visibility)) {
+          visibility = invoker.visibility
+          visibility += [ ":$_target_name+link" ]
+        }
+
+        script = "//build/config/mac/package_framework.py"
+        outputs = [
+          "$root_out_dir/$_framework_name/Versions/Current",
+        ]
+        args = [
+          "$_framework_name",
+          "$_framework_version",
+        ]
+        public_deps = [
+          ":$_framework_target",
+        ]
       }
     }
 
-    if (!defined(public_deps)) {
-      public_deps = []
-    }
-    public_deps += [ ":$_shared_library_bundle_data" ]
-
-    bundle_root_dir = _framework_root_dir
-    bundle_resources_dir = "$bundle_root_dir/Resources"
-    bundle_executable_dir = "$bundle_root_dir"
-  }
-
-  if (defined(_framework_version)) {
-    action(_target_name) {
-      forward_variables_from(invoker, [ "testonly" ])
-
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-        visibility += [ ":$_target_name+link" ]
-      }
-
-      script = "//build/config/mac/package_framework.py"
-      outputs = [
-        "$root_out_dir/$_framework_name/Versions/Current",
-      ]
-      args = [
-        "$_framework_name",
-        "$_framework_version",
-      ]
+    group(_target_name + "+link") {
+      forward_variables_from(invoker,
+                             [
+                               "visibility",
+                               "testonly",
+                             ])
       public_deps = [
-        ":$_framework_target",
+        ":$_target_name",
       ]
+      public_configs = [ ":$_framework_public_config" ]
     }
-  }
-
-  group(_target_name + "+link") {
-    forward_variables_from(invoker,
-                           [
-                             "visibility",
-                             "testonly",
-                           ])
-    public_deps = [
-      ":$_target_name",
-    ]
-    public_configs = [ ":$_framework_public_config" ]
   }
 }
 

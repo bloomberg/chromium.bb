@@ -162,40 +162,42 @@ test("cronet_unittests") {
   ]
 }
 
-_package_dir = "$root_out_dir/cronet"
+if (additional_toolchains == [] || current_toolchain == default_toolchain) {
+  _package_dir = "$root_out_dir/cronet"
 
-action("generate_license") {
-  _license_path = "$_package_dir/LICENSE"
+  action("generate_license") {
+    _license_path = "$_package_dir/LICENSE"
 
-  script = "//components/cronet/tools/cronet_licenses.py"
-  outputs = [
-    _license_path,
-  ]
-  args = [
-    "license",
-    rebase_path(_license_path, root_build_dir),
-    "--gn",
-  ]
-}
+    script = "//components/cronet/tools/cronet_licenses.py"
+    outputs = [
+      _license_path,
+    ]
+    args = [
+      "license",
+      rebase_path(_license_path, root_build_dir),
+      "--gn",
+    ]
+  }
 
-copy("cronet_package_copy") {
-  sources = [
-    "$root_out_dir/Cronet.framework",
-    "//AUTHORS",
-    "//chrome/VERSION",
-  ]
-  outputs = [
-    "$_package_dir/{{source_file_part}}",
-  ]
+  copy("cronet_package_copy") {
+    sources = [
+      "$root_out_dir/Cronet.framework",
+      "//AUTHORS",
+      "//chrome/VERSION",
+    ]
+    outputs = [
+      "$_package_dir/{{source_file_part}}",
+    ]
 
-  deps = [
-    ":cronet_framework",
-  ]
-}
+    deps = [
+      ":cronet_framework",
+    ]
+  }
 
-group("cronet_package") {
-  deps = [
-    ":cronet_package_copy",
-    ":generate_license",
-  ]
+  group("cronet_package") {
+    deps = [
+      ":cronet_package_copy",
+      ":generate_license",
+    ]
+  }
 }
