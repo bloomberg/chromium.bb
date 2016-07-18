@@ -86,10 +86,12 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<TransformPaintPropertyNode>& printer)
     {
+        if (const TransformPaintPropertyNode* rootTransform = frameView.rootTransform())
+            printer.addPropertyNode(rootTransform, "RootTransform (FrameView)");
         if (const TransformPaintPropertyNode* preTranslation = frameView.preTranslation())
-            printer.addPropertyNode(preTranslation, String("PreTranslation (FrameView)"));
+            printer.addPropertyNode(preTranslation, "PreTranslation (FrameView)");
         if (const TransformPaintPropertyNode* scrollTranslation = frameView.scrollTranslation())
-            printer.addPropertyNode(scrollTranslation, String("ScrollTranslation (FrameView)"));
+            printer.addPropertyNode(scrollTranslation, "ScrollTranslation (FrameView)");
     }
 
     static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<TransformPaintPropertyNode>& printer)
@@ -134,6 +136,8 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<ClipPaintPropertyNode>& printer)
     {
+        if (const ClipPaintPropertyNode* rootClip = frameView.rootClip())
+            printer.addPropertyNode(rootClip, "RootClip (FrameView)");
         if (const ClipPaintPropertyNode* contentClip = frameView.contentClip())
             printer.addPropertyNode(contentClip, "ContentClip (FrameView)");
     }
@@ -162,7 +166,8 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
     {
-        // FrameView does not create any effect nodes.
+        if (const EffectPaintPropertyNode* rootEffect = frameView.rootEffect())
+            printer.addPropertyNode(rootEffect, "RootEffect (FrameView)");
     }
 
     static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
