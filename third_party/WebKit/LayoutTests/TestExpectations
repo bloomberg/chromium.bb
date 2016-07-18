@@ -1080,7 +1080,7 @@ crbug.com/509025 [ Mac10.10 ] fast/css/css2-system-fonts.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/select/hidden-listbox.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failure ]
 
-crbug.com/545140 [ Mac10.10 Mac10.11 Retina ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
+crbug.com/545140 [ Mac10.10 Retina ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 
 crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
@@ -1227,7 +1227,7 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
-crbug.com/587779 [ Linux Mac10.9 Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
+crbug.com/587779 [ Linux Mac10.9 Mac10.10 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
@@ -1240,7 +1240,7 @@ crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-f
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
-crbug.com/591902 [ Linux Mac10.10 Mac10.11 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
+crbug.com/591902 [ Linux Mac10.10 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
 crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
 
@@ -1251,7 +1251,7 @@ crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
-crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
+crbug.com/587737 [ Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 
