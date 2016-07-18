@@ -814,6 +814,8 @@
       'browser/android/data_usage/external_data_use_observer.h',
       'browser/android/data_usage/external_data_use_observer_bridge.cc',
       'browser/android/data_usage/external_data_use_observer_bridge.h',
+      'browser/android/data_usage/external_data_use_reporter.cc',
+      'browser/android/data_usage/external_data_use_reporter.h',
       'browser/android/data_usage/tab_data_use_entry.cc',
       'browser/android/data_usage/tab_data_use_entry.h',
       'browser/android/dev_tools_discovery_provider_android.cc',

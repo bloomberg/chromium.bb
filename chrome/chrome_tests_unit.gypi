@@ -19,6 +19,7 @@
       'browser/android/data_usage/data_use_tab_model_unittest.cc',
       'browser/android/data_usage/data_use_ui_tab_model_unittest.cc',
       'browser/android/data_usage/external_data_use_observer_unittest.cc',
+      'browser/android/data_usage/external_data_use_reporter_unittest.cc',
       'browser/android/data_usage/tab_data_use_entry_unittest.cc',
       'browser/android/download/download_manager_service_unittest.cc',
       'browser/android/history_report/delta_file_backend_leveldb_unittest.cc',
