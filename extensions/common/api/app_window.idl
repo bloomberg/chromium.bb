@@ -225,6 +225,12 @@ namespace app.window {
     // Requires the <code>app.window.ime</code> API permission.
     [nodoc] boolean? ime;
 
+    // If true, the window will have its own shelf icon. Otherwise the window
+    // will be grouped in the shelf with other windows that are associated with
+    // the app. Defaults to false. If showInShelf is set to true you need to
+    // specify an id for the window.
+    boolean? showInShelf;
+
     // Frame type: <code>none</code> or <code>chrome</code> (defaults to
     // <code>chrome</code>). For <code>none</code>, the
     // <code>-webkit-app-region</code> CSS property can be used to apply

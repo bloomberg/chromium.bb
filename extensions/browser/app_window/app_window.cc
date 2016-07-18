@@ -173,8 +173,8 @@ AppWindow::CreateParams::CreateParams()
       resizable(true),
       focused(true),
       always_on_top(false),
-      visible_on_all_workspaces(false) {
-}
+      visible_on_all_workspaces(false),
+      show_in_shelf(false) {}
 
 AppWindow::CreateParams::CreateParams(const CreateParams& other) = default;
 
@@ -255,6 +255,7 @@ AppWindow::AppWindow(BrowserContext* context,
       cached_always_on_top_(false),
       requested_alpha_enabled_(false),
       is_ime_window_(false),
+      show_in_shelf_(false),
       image_loader_ptr_factory_(this) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
@@ -295,8 +296,8 @@ void AppWindow::Init(const GURL& url,
     new_params.always_on_top = false;
 
   requested_alpha_enabled_ = new_params.alpha_enabled;
-
   is_ime_window_ = params.is_ime_window;
+  show_in_shelf_ = params.show_in_shelf;
 
   AppWindowClient* app_window_client = AppWindowClient::Get();
   native_app_window_.reset(

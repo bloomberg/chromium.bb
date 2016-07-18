@@ -186,4 +186,17 @@ IN_PROC_BROWSER_TEST_F(AppWindowTest, MAYBE_DisableAlwaysOnTopInFullscreen) {
   CloseAppWindow(window);
 }
 
+// Tests a window created with showInShelf property enabled is indeed marked
+// as shown in shelf in AppWindow.
+IN_PROC_BROWSER_TEST_F(AppWindowTest, InitShowInShelf) {
+  AppWindow* window =
+      CreateTestAppWindow("{ \"showInShelf\": true , \"id\": \"window\" }");
+  ASSERT_TRUE(window);
+
+  // Ensure that the window created is marked as shown in shelf.
+  EXPECT_TRUE(window->show_in_shelf());
+
+  CloseAppWindow(window);
+}
+
 }  // namespace extensions

@@ -191,6 +191,11 @@ class AppWindow : public content::WebContentsDelegate,
     // If true, the window will be visible on all workspaces. Defaults to false.
     bool visible_on_all_workspaces;
 
+    // If true, the window will have its own shelf icon. Otherwise the window
+    // will be grouped in the shelf with other windows that are associated with
+    // the app. Defaults to false.
+    bool show_in_shelf;
+
     // The API enables developers to specify content or window bounds. This
     // function combines them into a single, constrained window size.
     gfx::Rect GetInitialWindowBounds(const gfx::Insets& frame_insets) const;
@@ -367,6 +372,8 @@ class AppWindow : public content::WebContentsDelegate,
   // anywhere other than app_window_launcher_controller after M45. Otherwise,
   // remove this TODO.
   bool is_ime_window() const { return is_ime_window_; }
+
+  bool show_in_shelf() const { return show_in_shelf_; }
 
   void SetAppWindowContentsForTesting(
       std::unique_ptr<AppWindowContents> contents) {
@@ -569,6 +576,9 @@ class AppWindow : public content::WebContentsDelegate,
 
   // Whether |is_ime_window| was set in the CreateParams.
   bool is_ime_window_;
+
+  // Whether |show_in_shelf| was set in the CreateParams.
+  bool show_in_shelf_;
 
   // PlzNavigate: this is called when the first navigation is ready to commit.
   base::Closure on_first_commit_callback_;

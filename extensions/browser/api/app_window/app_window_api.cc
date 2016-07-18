@@ -75,6 +75,8 @@ const char kImeWindowMustBeImeWindowOrPanel[] =
     "IME extensions must create ime window ( with \"ime: true\" and "
     "\"frame: 'none'\") or panel window (with \"type: panel\").";
 #endif
+const char kShowInShelfWindowKeyNotSet[] =
+    "The \"showInShelf\" option requires the \"id\" option to be set.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -319,6 +321,15 @@ bool AppWindowCreateFunction::RunAsync() {
     if (options->visible_on_all_workspaces.get()) {
       create_params.visible_on_all_workspaces =
           *options->visible_on_all_workspaces;
+    }
+
+    if (options->show_in_shelf.get()) {
+      create_params.show_in_shelf = *options->show_in_shelf.get();
+
+      if (create_params.show_in_shelf && create_params.window_key.empty()) {
+        error_ = app_window_constants::kShowInShelfWindowKeyNotSet;
+        return false;
+      }
     }
 
     if (options->type != app_window::WINDOW_TYPE_PANEL) {
