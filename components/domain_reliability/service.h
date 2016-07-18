@@ -16,6 +16,7 @@
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class GURL;
 class PrefService;
 
 namespace base {
@@ -54,8 +55,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
 
   // Clears browsing data on the associated Monitor. |Init()| must have been
   // called first.
-  virtual void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
-                                 const base::Closure& callback) = 0;
+  virtual void ClearBrowsingData(
+      DomainReliabilityClearMode clear_mode,
+      const base::Callback<bool(const GURL&)>& origin,
+      const base::Closure& callback) = 0;
 
   virtual void GetWebUIData(
       const base::Callback<void(std::unique_ptr<base::Value>)>& callback)

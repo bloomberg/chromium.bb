@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/domain_reliability/monitor.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace domain_reliability {
 
@@ -56,15 +57,18 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
     return monitor;
   }
 
-  void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
-                         const base::Closure& callback) override {
+  void ClearBrowsingData(
+      DomainReliabilityClearMode clear_mode,
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::Closure& callback) override {
     DCHECK(network_task_runner_.get());
 
     network_task_runner_->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&DomainReliabilityMonitor::ClearBrowsingData,
                    monitor_,
-                   clear_mode),
+                   clear_mode,
+                   base::Callback<bool(const GURL&)>(origin_filter)),
         callback);
   }
 

@@ -1001,6 +1001,7 @@ void BrowsingDataRemover::RemoveImpl(
       waiting_for_clear_domain_reliability_monitor_ = true;
       service->ClearBrowsingData(
           mode,
+          filter,
           base::Bind(&BrowsingDataRemover::OnClearedDomainReliabilityMonitor,
                      weak_ptr_factory_.GetWeakPtr()));
     }

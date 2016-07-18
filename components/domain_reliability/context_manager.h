@@ -37,9 +37,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
                  base::TimeDelta max_age);
   void ClearConfig(const GURL& origin);
 
-  // Calls |ClearBeacons| on all contexts added to this manager, but leaves
-  // the contexts themselves intact.
-  void ClearBeaconsInAllContexts();
+  // Calls |ClearBeacons| on all contexts matched by |origin_filter| added
+  // to this manager, but leaves the contexts themselves intact. A null
+  // |origin_filter| is interpreted as an always-true filter, indicating
+  // complete deletion.
+  void ClearBeacons(const base::Callback<bool(const GURL&)>& origin_filter);
 
   // TODO(juliatuttle): Once unit tests test ContextManager directly, they can
   // use a custom Context::Factory to get the created Context, and this can be
@@ -47,9 +49,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   DomainReliabilityContext* AddContextForConfig(
       std::unique_ptr<const DomainReliabilityConfig> config);
 
-  // Removes all contexts from this manager (discarding all queued beacons in
-  // the process).
-  void RemoveAllContexts();
+  // Removes all contexts matched by |origin_filter| from this manager
+  // (discarding all queued beacons in the process). A null |origin_filter|
+  // is interpreted as an always-true filter, indicating complete deletion.
+  void RemoveContexts(const base::Callback<bool(const GURL&)>& origin_filter);
 
   std::unique_ptr<base::Value> GetWebUIData() const;
 

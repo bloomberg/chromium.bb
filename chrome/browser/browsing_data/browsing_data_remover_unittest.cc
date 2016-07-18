@@ -349,7 +349,8 @@ class ProbablySameFilterMatcher
         {kOrigin1, kOrigin2, kOrigin3, GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
       if (filter.Run(url) != to_match_.Run(url)) {
-        *listener << "The filters differ on the URL " << url;
+        if (listener)
+          *listener << "The filters differ on the URL " << url;
         return false;
       }
     }
@@ -371,6 +372,12 @@ class ProbablySameFilterMatcher
 inline Matcher<const base::Callback<bool(const GURL&)>&> ProbablySameFilter(
     const base::Callback<bool(const GURL&)>& filter) {
   return MakeMatcher(new ProbablySameFilterMatcher(filter));
+}
+
+bool ProbablySameFilters(
+    const base::Callback<bool(const GURL&)>& filter1,
+    const base::Callback<bool(const GURL&)>& filter2) {
+  return ProbablySameFilter(filter1).MatchAndExplain(filter2, nullptr);
 }
 
 }  // namespace
@@ -847,10 +854,13 @@ class MockDomainReliabilityService : public DomainReliabilityService {
     return std::unique_ptr<DomainReliabilityMonitor>();
   }
 
-  void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
-                         const base::Closure& callback) override {
+  void ClearBrowsingData(
+      DomainReliabilityClearMode clear_mode,
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::Closure& callback) override {
     clear_count_++;
     last_clear_mode_ = clear_mode;
+    last_filter_ = origin_filter;
     callback.Run();
   }
 
@@ -865,9 +875,14 @@ class MockDomainReliabilityService : public DomainReliabilityService {
     return last_clear_mode_;
   }
 
+  const base::Callback<bool(const GURL&)>& last_filter() const {
+    return last_filter_;
+  }
+
  private:
   unsigned clear_count_ = 0;
   DomainReliabilityClearMode last_clear_mode_;
+  base::Callback<bool(const GURL&)> last_filter_;
 };
 
 struct TestingDomainReliabilityServiceFactoryUserData
@@ -918,6 +933,10 @@ class ClearDomainReliabilityTester {
 
   DomainReliabilityClearMode last_clear_mode() const {
     return mock_service_->last_clear_mode();
+  }
+
+  const base::Callback<bool(const GURL&)>& last_filter() const {
+    return mock_service_->last_filter();
   }
 
  private:
@@ -2274,6 +2293,24 @@ TEST_F(BrowsingDataRemoverTest, DomainReliability_Beacons) {
                                 BrowsingDataRemover::REMOVE_HISTORY, false);
   EXPECT_EQ(1u, tester.clear_count());
   EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
+  EXPECT_TRUE(ProbablySameFilters(
+      BrowsingDataFilterBuilder::BuildNoopFilter(), tester.last_filter()));
+}
+
+TEST_F(BrowsingDataRemoverTest, DomainReliability_Beacons_WithFilter) {
+  const ClearDomainReliabilityTester& tester =
+      clear_domain_reliability_tester();
+
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+
+  BlockUntilOriginDataRemoved(browsing_data::EVERYTHING,
+                              BrowsingDataRemover::REMOVE_HISTORY, builder);
+  EXPECT_EQ(1u, tester.clear_count());
+  EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
+  EXPECT_TRUE(ProbablySameFilters(
+      builder.BuildGeneralFilter(), tester.last_filter()));
 }
 
 TEST_F(BrowsingDataRemoverTest, DomainReliability_Contexts) {
@@ -2284,6 +2321,24 @@ TEST_F(BrowsingDataRemoverTest, DomainReliability_Contexts) {
                                 BrowsingDataRemover::REMOVE_COOKIES, false);
   EXPECT_EQ(1u, tester.clear_count());
   EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+  EXPECT_TRUE(ProbablySameFilters(
+      BrowsingDataFilterBuilder::BuildNoopFilter(), tester.last_filter()));
+}
+
+TEST_F(BrowsingDataRemoverTest, DomainReliability_Contexts_WithFilter) {
+  const ClearDomainReliabilityTester& tester =
+      clear_domain_reliability_tester();
+
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  builder.AddRegisterableDomain(kTestRegisterableDomain1);
+
+  BlockUntilOriginDataRemoved(browsing_data::EVERYTHING,
+                              BrowsingDataRemover::REMOVE_COOKIES, builder);
+  EXPECT_EQ(1u, tester.clear_count());
+  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+  EXPECT_TRUE(ProbablySameFilters(
+      builder.BuildGeneralFilter(), tester.last_filter()));
 }
 
 TEST_F(BrowsingDataRemoverTest, DomainReliability_ContextsWin) {

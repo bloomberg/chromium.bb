@@ -111,10 +111,14 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
-  // Called to remove browsing data. With CLEAR_BEACONS, leaves contexts in
-  // place but clears beacons (which betray browsing history); with
-  // CLEAR_CONTEXTS, removes all contexts (which can behave as cookies).
-  void ClearBrowsingData(DomainReliabilityClearMode mode);
+  // Called to remove browsing data for origins matched by |origin_filter|.
+  // With CLEAR_BEACONS, leaves contexts in place but clears beacons (which
+  // betray browsing history); with CLEAR_CONTEXTS, removes entire contexts
+  // (which can behave as cookies). A null |origin_filter| is interpreted
+  // as an always-true filter, indicating complete deletion.
+  void ClearBrowsingData(
+      DomainReliabilityClearMode mode,
+      const base::Callback<bool(const GURL&)>& origin_filter);
 
   // Gets a Value containing data that can be formatted into a web page for
   // debugging purposes.
