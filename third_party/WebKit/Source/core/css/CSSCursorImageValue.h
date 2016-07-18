@@ -33,7 +33,7 @@ class SVGElement;
 
 class CSSCursorImageValue : public CSSValue {
 public:
-    static CSSCursorImageValue* create(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
+    static const CSSCursorImageValue* create(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
     {
         return new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot);
     }
