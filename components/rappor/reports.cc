@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/string_piece.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/rappor_parameters.h"
 
@@ -20,8 +21,8 @@ ByteVector GenerateReport(const std::string& secret,
   // client's secret key + real data as a seed.  The inclusion of the secret
   // in the seed avoids correlations between real and fake data.
   // The seed isn't a human-readable string.
-  const std::string personalization_string =
-      std::string(value.begin(), value.end());
+  const base::StringPiece personalization_string(
+      reinterpret_cast<const char*>(&value[0]), value.size());
   HmacByteVectorGenerator hmac_generator(value.size(), secret,
                                          personalization_string);
   const ByteVector fake_mask =

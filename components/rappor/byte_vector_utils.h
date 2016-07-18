@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "components/rappor/rappor_parameters.h"
 #include "crypto/hmac.h"
 
@@ -83,7 +84,7 @@ class HmacByteVectorGenerator : public ByteVectorGenerator {
   // number generator.  The string parameters are treated as byte arrays.
   HmacByteVectorGenerator(size_t byte_count,
                           const std::string& entropy_input,
-                          const std::string& personalization_string);
+                          base::StringPiece personalization_string);
 
   ~HmacByteVectorGenerator() override;
 
