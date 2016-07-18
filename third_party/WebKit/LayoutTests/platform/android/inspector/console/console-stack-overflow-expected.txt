@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 6: Uncaught RangeError: Maximum call stack size exceeded
+Tests that when stack overflow exception happens when inspector is open the stack trace is correctly shown in console.
+
+console-stack-overflow.html:6 Uncaught RangeError: Maximum call stack size exceededoverflow @ console-stack-overflow.html:6overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8
+
