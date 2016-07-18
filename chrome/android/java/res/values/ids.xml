@@ -64,4 +64,5 @@
     <item type="id" name="payments_add_option_button" />
     <item type="id" name="payments_edit_cancel_button" />
     <item type="id" name="payments_edit_done_button" />
+    <item type="id" name="payments_edit_checkbox" />
 </resources>

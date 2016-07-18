@@ -57,19 +57,24 @@ public class AutofillContactTest {
         AutofillContact contact =
                 new AutofillContact(profile, mPayerPhone, mPayerEmail, mIsComplete);
 
-        Assert.assertEquals(mIsComplete, contact.isComplete());
-        Assert.assertEquals(profile, contact.getProfile());
-        Assert.assertEquals(profile.getGUID(), contact.getIdentifier());
-        assertPhoneEmailLabelSublabel(mExpectedPayerPhone, mExpectedPayerEmail, mExpectedLabel,
-                mExpectedSublabel, contact);
+        Assert.assertEquals(
+                mIsComplete ? "Contact should be complete" : "Contact should be incomplete",
+                mIsComplete, contact.isComplete());
+        Assert.assertEquals("Contact's profile should be the same as passed into the constructor",
+                profile, contact.getProfile());
+        assertIdPhoneEmailLabelSublabel(profile.getGUID(), mExpectedPayerPhone, mExpectedPayerEmail,
+                mExpectedLabel, mExpectedSublabel, contact);
 
-        contact.completeContact("999-9999", "a@b.com");
-        Assert.assertTrue(contact.isComplete());
-        assertPhoneEmailLabelSublabel("999-9999", "a@b.com", "999-9999", "a@b.com", contact);
+        contact.completeContact("some-guid-here", "999-9999", "a@b.com");
+        Assert.assertTrue("Contact should be complete", contact.isComplete());
+        assertIdPhoneEmailLabelSublabel("some-guid-here", "999-9999", "a@b.com", "999-9999",
+                "a@b.com", contact);
     }
 
-    private void assertPhoneEmailLabelSublabel(String expectedPhone, String expectedEmail,
-            String expectedLabel, String expectedSublabel, AutofillContact actual) {
+    private void assertIdPhoneEmailLabelSublabel(String id, String expectedPhone,
+            String expectedEmail, String expectedLabel, String expectedSublabel,
+            AutofillContact actual) {
+        Assert.assertEquals("Identifier should be " + id, id, actual.getIdentifier());
         Assert.assertEquals(
                 "Phone should be " + expectedPhone, expectedPhone, actual.getPayerPhone());
         Assert.assertEquals(

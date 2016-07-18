@@ -76,6 +76,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
     request_->card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, response.exp_year);
 
   if (request_->card.record_type() == CreditCard::LOCAL_CARD &&
+      !request_->card.guid().empty() &&
       (!response.exp_month.empty() || !response.exp_year.empty())) {
     personal_data_manager_->UpdateCreditCard(request_->card);
   }

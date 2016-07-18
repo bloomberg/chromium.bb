@@ -12,7 +12,7 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{supportedMethods: ['visa']}],
+        [{supportedMethods: ['visa', 'mastercard']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .show()
         .then(function(resp) {

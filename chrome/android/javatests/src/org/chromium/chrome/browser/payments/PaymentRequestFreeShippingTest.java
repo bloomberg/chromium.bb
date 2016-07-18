@@ -86,7 +86,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setSpinnerSelectionInEditor(0 /* Afghanistan */, mReadyToEdit);
+        setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
                 "999-999-9999"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorDismissed);

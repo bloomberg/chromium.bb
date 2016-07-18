@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.chrome.R;
@@ -18,6 +17,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for a merchant that requests phone number from a user that has
  * incomplete phone number stored on disk.
+ *
+ * TODO(rouslan): Add a test to fill in the valid phone number and submit it to the merchant.
  */
 public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
     public PaymentRequestIncompletePhoneTest() {
@@ -50,20 +51,5 @@ public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
-    }
-
-    /** Update the phone number with valid data and provide that to the merchant. */
-    @MediumTest
-    public void testEditIncompletePhoneAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
-        clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"555-555-5555"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"555-555-5555"});
     }
 }

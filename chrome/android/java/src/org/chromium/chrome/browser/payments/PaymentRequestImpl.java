@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -22,8 +23,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.autofill.AutofillLocalCardEditor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.safejson.JsonSanitizer;
@@ -69,12 +68,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
          * Called when an abort request was denied.
          */
         void onPaymentRequestServiceUnableToAbort();
-    }
 
-    /**
-     * The size for the favicon in density-independent pixels.
-     */
-    private static final int FAVICON_SIZE_DP = 24;
+        /**
+         * Called when the controller is notified of billing address change, but does not alter the
+         * editor UI.
+         */
+        void onPaymentRequestServiceBillingAddressChangeProcessed();
+    }
 
     private static final String TAG = "cr_PaymentRequest";
 
@@ -126,6 +126,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private SectionInformation mShippingAddressesSection;
     private SectionInformation mContactSection;
     private List<PaymentApp> mPendingApps;
+    private int mFirstCompletePendingInstrument;
     private List<PaymentInstrument> mPendingInstruments;
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
@@ -133,6 +134,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private boolean mMerchantNeedsShippingAddress;
     private boolean mPaymentAppRunning;
     private AddressEditor mAddressEditor;
+    private CardEditor mCardEditor;
     private ContactEditor mContactEditor;
 
     /**
@@ -157,9 +159,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mOrigin = UrlUtilities.formatUrlForSecurityDisplay(webContents.getVisibleUrl(), false);
 
         final FaviconHelper faviconHelper = new FaviconHelper();
-        float scale = mContext.getResources().getDisplayMetrics().density;
         faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(),
-                webContents.getVisibleUrl(), (int) (FAVICON_SIZE_DP * scale + 0.5f),
+                webContents.getVisibleUrl(),
+                mContext.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
                 new FaviconHelper.FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
@@ -174,6 +176,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 });
 
         mApps = PaymentAppFactory.create(webContents);
+
+        mAddressEditor = new AddressEditor();
+        mCardEditor = new CardEditor(webContents, mAddressEditor, sObserverForTest);
     }
 
     /**
@@ -205,7 +210,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        mMethodData = getValidatedMethodData(methodData);
+        mMethodData = getValidatedMethodData(methodData, mCardEditor);
         if (mMethodData == null) {
             disconnectFromClientWithDebugMessage("Invalid payment methods or data");
             return;
@@ -242,7 +247,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (requestShipping) {
-            mAddressEditor = new AddressEditor();
             List<AutofillAddress> addresses = new ArrayList<>();
 
             for (int i = 0; i < profiles.size(); i++) {
@@ -317,6 +321,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         mPendingApps = new ArrayList<>(mApps);
+        mFirstCompletePendingInstrument = SectionInformation.NO_SELECTION;
         mPendingInstruments = new ArrayList<>();
         boolean isGettingInstruments = false;
 
@@ -342,12 +347,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
 
-        if (mAddressEditor != null) mAddressEditor.setEditorView(mUI.getEditorView());
+        mAddressEditor.setEditorView(mUI.getEditorView());
+        mCardEditor.setEditorView(mUI.getCardEditorView());
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
     }
 
     private static HashMap<String, JSONObject> getValidatedMethodData(
-            PaymentMethodData[] methodData) {
+            PaymentMethodData[] methodData, CardEditor paymentMethodsCollector) {
         // Payment methodData are required.
         if (methodData == null || methodData.length == 0) return null;
         HashMap<String, JSONObject> result = new HashMap<>();
@@ -377,6 +383,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 if (TextUtils.isEmpty(methods[j])) return null;
                 result.put(methods[j], data);
             }
+
+            paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methods);
         }
         return result;
     }
@@ -658,6 +666,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             assert option instanceof PaymentInstrument;
+            if (option instanceof AutofillPaymentInstrument) {
+                AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
+
+                if (!card.isComplete()) {
+                    editCard(card);
+                    return false;
+                }
+            }
+
             mPaymentMethodsSection.setSelectedItem(option);
         }
 
@@ -677,8 +694,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
-            PreferencesLauncher.launchSettingsPage(
-                    mContext, AutofillLocalCardEditor.class.getName());
+            editCard(null);
         }
 
         return false;
@@ -720,6 +736,21 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 }
 
                 mUI.updateSection(PaymentRequestUI.TYPE_CONTACT_DETAILS, mContactSection);
+            }
+        });
+    }
+
+    private void editCard(final AutofillPaymentInstrument toEdit) {
+        mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
+            @Override
+            public void onResult(AutofillPaymentInstrument completeCard) {
+                if (completeCard == null) {
+                    mPaymentMethodsSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
+                } else if (toEdit == null) {
+                    mPaymentMethodsSection.addAndSelectItem(completeCard);
+                }
+
+                mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
             }
         });
     }
@@ -797,6 +828,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
                 if (mMethodData.containsKey(instrument.getMethodName())) {
+                    checkForCompletePaymentInstrument(instrument, mPendingInstruments.size());
                     mPendingInstruments.add(instrument);
                 } else {
                     instrument.dismiss();
@@ -805,11 +837,24 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (mPendingApps.isEmpty()) {
-            mPaymentMethodsSection = new SectionInformation(
-                    PaymentRequestUI.TYPE_PAYMENT_METHODS, 0, mPendingInstruments);
+            mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS,
+                    mFirstCompletePendingInstrument, mPendingInstruments);
             mPendingInstruments.clear();
 
             if (mPaymentInformationCallback != null) providePaymentInformation();
+        }
+    }
+
+    private void checkForCompletePaymentInstrument(PaymentInstrument instrument, int index) {
+        boolean isComplete = true;
+        if (instrument instanceof AutofillPaymentInstrument) {
+            AutofillPaymentInstrument autofillInstrument = (AutofillPaymentInstrument) instrument;
+            isComplete = mCardEditor.isCardComplete(autofillInstrument.getCard());
+            if (isComplete) autofillInstrument.setIsComplete();
+        }
+
+        if (isComplete && mFirstCompletePendingInstrument == SectionInformation.NO_SELECTION) {
+            mFirstCompletePendingInstrument = index;
         }
     }
 

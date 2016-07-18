@@ -15,19 +15,19 @@ public class PaymentOption implements Completable {
     public static final int NO_ICON = 0;
 
     protected boolean mIsComplete;
-    private final String mId;
-    private final int mIcon;
+    private String mId;
     @Nullable private String mLabel;
     @Nullable private String mSublabel;
+    private int mIcon;
     private boolean mIsValid = true;
 
     /**
      * Constructs a payment option.
      *
-     * @param id The identifier.
-     * @param label The label.
+     * @param id       The identifier.
+     * @param label    The label.
      * @param sublabel The optional sublabel.
-     * @param icon The drawable icon identifier or NO_ICON.
+     * @param icon     The drawable icon identifier or NO_ICON.
      */
     public PaymentOption(String id, @Nullable String label, @Nullable String sublabel, int icon) {
         mId = id;
@@ -64,19 +64,37 @@ public class PaymentOption implements Completable {
     }
 
     /**
-     * Updates the label and sublabel of this option. Called after the user has edited this option.
+     * Updates the identifier, label, and sublabel of this option. Called after the user has edited
+     * this option.
      *
+     * @param id       The new id to use. Should not be null.
      * @param label    The new label to use. Should not be null.
      * @param sublabel The new sublabel to use. Can be null.
      */
-    protected void updateLabels(String label, @Nullable String sublabel) {
-        mLabel = label;
-        mSublabel = sublabel;
+    protected void updateIdentifierAndLabels(String id, String label, @Nullable String sublabel) {
+        updateIdentifierLabelsAndIcon(id, label, sublabel, mIcon);
     }
 
     /**
-     * The identifier for the drawable icon for this payment option. For example,
-     * R.drawable.visa_card_issuer_icon or NO_ICON.
+     * Updates the identifier, label, sublabel, and icon of this option. Called after the user has
+     * edited this option.
+     *
+     * @param id       The new id to use. Should not be null.
+     * @param label    The new label to use. Should not be null.
+     * @param sublabel The new sublabel to use. Can be null.
+     * @param icon     The drawable icon identifier or NO_ICON.
+     */
+    protected void updateIdentifierLabelsAndIcon(
+            String id, String label, @Nullable String sublabel, int icon) {
+        mId = id;
+        mLabel = label;
+        mSublabel = sublabel;
+        mIcon = icon;
+    }
+
+    /**
+     * The identifier for the drawable icon for this payment option. For example, R.drawable.pr_visa
+     * or NO_ICON.
      */
     public int getDrawableIconId() {
         return mIcon;

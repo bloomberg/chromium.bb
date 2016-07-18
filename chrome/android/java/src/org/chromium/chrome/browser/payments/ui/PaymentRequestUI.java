@@ -222,6 +222,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private final Dialog mDialog;
     private final EditorView mEditorView;
+    private final EditorView mCardEditorView;
     private final ViewGroup mFullContainer;
     private final ViewGroup mRequestView;
     private final PaymentRequestUiErrorView mErrorView;
@@ -331,6 +332,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mFullContainer.addView(mRequestView, bottomSheetParams);
 
         mEditorView = new EditorView(activity, sObserverForTest);
+        mCardEditorView = new EditorView(activity, sObserverForTest);
 
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
@@ -446,7 +448,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 activity.getString(R.string.payments_contact_details_label),
                 activity.getString(R.string.payments_select_contact_details_prompt), this);
         mPaymentMethodSection = new OptionSection(activity,
-                activity.getString(R.string.payments_method_of_payment_label), null, this);
+                activity.getString(R.string.payments_method_of_payment_label),
+                activity.getString(R.string.payments_select_method_of_payment_prompt), this);
 
         // Add the necessary sections to the layout.
         mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
@@ -617,9 +620,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         updatePayButtonEnabled();
     }
 
-    /** @return The editor user interface. */
+    /** @return The common editor user interface. */
     public EditorView getEditorView() {
         return mEditorView;
+    }
+
+    /** @return The card editor user interface. Distinct from the common editor user interface,
+     * because the credit card editor can launch the address editor. */
+    public EditorView getCardEditorView() {
+        return mCardEditorView;
     }
 
     /**
@@ -798,7 +807,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mPaymentContainerLayout.requestLayout();
 
             // Switch the 'edit' button to a 'cancel' button.
-            mEditButton.setText(mContext.getString(R.string.payments_cancel_button));
+            mEditButton.setText(mContext.getString(R.string.cancel));
 
             // Make the dialog take the whole screen.
             mDialog.getWindow().setLayout(
@@ -1097,6 +1106,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public ViewGroup getShippingAddressSectionForTest() {
         return mShippingAddressSection;
+    }
+
+    @VisibleForTesting
+    public ViewGroup getPaymentMethodSectionForTest() {
+        return mPaymentMethodSection;
     }
 
     @VisibleForTesting

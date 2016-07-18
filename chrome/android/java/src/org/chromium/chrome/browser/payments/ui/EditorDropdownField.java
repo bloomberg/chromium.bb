@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.payments.ui;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -21,7 +23,7 @@ import java.util.List;
 /**
  * Helper class for creating a dropdown view with a label.
  */
-class EditorDropdownField {
+class EditorDropdownField implements Validatable {
     private final EditorFieldModel mFieldModel;
     private final View mLayout;
     private final TextView mLabel;
@@ -32,20 +34,23 @@ class EditorDropdownField {
      * Builds a dropdown view.
      *
      * @param context         The application context to use when creating widgets.
+     * @param root            The object that provides a set of LayoutParams values for the view.
      * @param fieldModel      The data model of the dropdown.
      * @param changedCallback The callback to invoke after user's dropdwn item selection has been
      *                        processed.
      */
-    public EditorDropdownField(Context context, final EditorFieldModel fieldModel,
+    public EditorDropdownField(Context context, ViewGroup root, final EditorFieldModel fieldModel,
             final Runnable changedCallback) {
         assert fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mFieldModel = fieldModel;
 
         mLayout = LayoutInflater.from(context).inflate(
-                R.layout.payment_request_editor_dropdown, null, false);
+                R.layout.payment_request_editor_dropdown, root, false);
 
         mLabel = (TextView) mLayout.findViewById(R.id.spinner_label);
-        mLabel.setText(mFieldModel.getLabel());
+        mLabel.setText(mFieldModel.isRequired()
+                ? mFieldModel.getLabel() + EditorView.REQUIRED_FIELD_INDICATOR
+                : mFieldModel.getLabel());
 
         final List<DropdownKeyValue> dropdownKeyValues = mFieldModel.getDropdownKeyValues();
         for (int j = 0; j < dropdownKeyValues.size(); j++) {
@@ -60,6 +65,7 @@ class EditorDropdownField {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mDropdown = (Spinner) mLayout.findViewById(R.id.spinner);
+        mDropdown.setTag(this);
         mDropdown.setContentDescription(mFieldModel.getLabel());
         mDropdown.setAdapter(adapter);
         mDropdown.setSelection(mSelectedIndex);
@@ -94,7 +100,29 @@ class EditorDropdownField {
     }
 
     /** @return The dropdown view itself. */
-    public View getDropdown() {
+    public Spinner getDropdown() {
         return mDropdown;
+    }
+
+    @Override
+    public boolean isValid() {
+        return mFieldModel.isValid();
+    }
+
+    @Override
+    public void updateDisplayedError(boolean showError) {
+        View view = mDropdown.getSelectedView();
+        if (view != null && view instanceof TextView) {
+            ((TextView) view).setError(showError ? mFieldModel.getErrorMessage() : null);
+        }
+    }
+
+    @Override
+    public void scrollToAndFocus() {
+        ViewGroup parent = (ViewGroup) mDropdown.getParent();
+        if (parent != null) parent.requestChildFocus(mDropdown, mDropdown);
+        // Open the dropdown to prompt user selection.
+        mDropdown.performClick();
+        mDropdown.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 }
