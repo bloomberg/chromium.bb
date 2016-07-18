@@ -62,8 +62,6 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddLocalizedString(version_ui::kARC, IDS_ARC_LABEL);
   html_source->AddLocalizedString(version_ui::kPlatform, IDS_PLATFORM_LABEL);
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());
-  html_source->AddString(version_ui::kBlinkVersion,
-                         content::GetWebKitVersion());
   html_source->AddString(version_ui::kJSEngine, "V8");
   html_source->AddString(version_ui::kJSVersion, v8::V8::GetVersion());
 

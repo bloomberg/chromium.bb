@@ -9330,9 +9330,6 @@ I don't think this site should be blocked!
       </if> <!-- not is_android -->
 
       <if expr="chromeos">
-        <message name="IDS_WEBKIT" desc="The name of the WebKit project; should not require translation.">
-          WebKit
-        </message>
         <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
           Firmware
         </message>

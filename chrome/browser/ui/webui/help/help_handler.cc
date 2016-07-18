@@ -46,7 +46,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/user_agent.h"
 #include "grit/components_chromium_strings.h"
 #include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
@@ -298,7 +297,6 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON},
     {"channelChangePageCancelButton",
      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON},
-    {"webkit", IDS_WEBKIT},
     {"userAgent", IDS_VERSION_UI_USER_AGENT},
     {"commandLine", IDS_VERSION_UI_COMMAND_LINE},
     {"buildDate", IDS_VERSION_UI_BUILD_DATE},
@@ -377,8 +375,6 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
   base::string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
   localized_strings->SetString("productTOS", tos);
-
-  localized_strings->SetString("webkitVersion", content::GetWebKitVersion());
 
   localized_strings->SetString("jsEngine", "V8");
   localized_strings->SetString("jsEngineVersion", v8::V8::GetVersion());
