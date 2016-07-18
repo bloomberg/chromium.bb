@@ -4506,11 +4506,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   net::SSLInfo info;
   web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
 
-  // TODO(crbug.com/602298): Remove |status| variable, once |presentSSLError:|
-  // callback is dropped.
-  web::SSLStatus status;
-  status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  status.cert_status = info.cert_status;
   if (!info.cert) {
     // |info.cert| can be null if certChain in NSError is empty or can not be
     // parsed, in this case do not ask delegate if error should be allowed, it
@@ -4519,8 +4514,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  status.cert_id = web::CertStore::GetInstance()->StoreCert(info.cert.get(),
-                                                            self.certGroupID);
+  web::CertStore::GetInstance()->StoreCert(info.cert.get(), self.certGroupID);
 
   // Retrieve verification results from _certVerificationErrors cache to avoid
   // unnecessary recalculations. Verification results are cached for the leaf
@@ -4542,7 +4536,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       bool cacheHit = error != _certVerificationErrors->end();
       if (cacheHit) {
         recoverable = error->second.is_recoverable;
-        status.cert_status = error->second.status;
         info.cert_status = error->second.status;
       }
       UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
@@ -4550,36 +4543,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   }
 
-  // Present SSL interstitial and inform everyone that the load is cancelled.
-  void (^proceedBlock)() = ^{
-    DCHECK(recoverable);
-    // The interstitial will be removed during reload.
-    [_certVerificationController allowCert:leafCert
-                                   forHost:host
-                                    status:status.cert_status];
-    [self loadCurrentURL];
-  };
-  // TODO(crbug.com/602298): Remove SSL error API from CRWWebDelegate.
-  if ([self.delegate respondsToSelector:@selector(presentSSLError:
-                                                     forSSLStatus:
-                                                      recoverable:
-                                                         callback:)]) {
-    [self.delegate presentSSLError:info
-                      forSSLStatus:status
-                       recoverable:recoverable
-                          callback:^(BOOL proceed) {
-                            if (proceed)
-                              proceedBlock();
-                          }];
-  } else {
-    web::GetWebClient()->AllowCertificateError(
-        self.webState, net::MapCertStatusToNetError(info.cert_status), info,
-        net::GURLWithNSURL(requestURL), recoverable,
-        base::BindBlock(^(bool proceed) {
-          if (proceed)
-            proceedBlock();
-        }));
-  }
+  // Ask web client if this cert error should be allowed.
+  web::GetWebClient()->AllowCertificateError(
+      self.webState, net::MapCertStatusToNetError(info.cert_status), info,
+      net::GURLWithNSURL(requestURL), recoverable,
+      base::BindBlock(^(bool proceed) {
+        if (proceed) {
+          DCHECK(recoverable);
+          [_certVerificationController allowCert:leafCert
+                                         forHost:host
+                                          status:info.cert_status];
+          [self loadCurrentURL];
+        }
+      }));
 
   [self didUpdateSSLStatusForCurrentNavigationItem];
   [self loadCancelled];

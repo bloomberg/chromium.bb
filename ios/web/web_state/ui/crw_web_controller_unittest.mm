@@ -73,18 +73,6 @@ using web::NavigationManagerImpl;
 // Blocked popup info received in |webController:didBlockPopup:| call.
 // nullptr if that delegate method was not called.
 @property(nonatomic, readonly) web::BlockedPopupInfo* blockedPopupInfo;
-// SSL info received in |presentSSLError:forSSLStatus:recoverable:callback:|
-// call.
-@property(nonatomic, readonly) net::SSLInfo SSLInfo;
-// SSL status received in |presentSSLError:forSSLStatus:recoverable:callback:|
-// call.
-@property(nonatomic, readonly) web::SSLStatus SSLStatus;
-// Recoverable flag received in
-// |presentSSLError:forSSLStatus:recoverable:callback:| call.
-@property(nonatomic, readonly) BOOL recoverable;
-// Callback received in |presentSSLError:forSSLStatus:recoverable:callback:|
-// call.
-@property(nonatomic, readonly) SSLErrorCallback shouldContinueCallback;
 @end
 
 // Stub implementation for CRWWebUserInterfaceDelegate protocol.
@@ -157,10 +145,6 @@ using web::NavigationManagerImpl;
 @synthesize sourceURL = _sourceURL;
 @synthesize blockPopups = _blockPopups;
 @synthesize childWebController = _childWebController;
-@synthesize SSLInfo = _SSLInfo;
-@synthesize SSLStatus = _SSLStatus;
-@synthesize recoverable = _recoverable;
-@synthesize shouldContinueCallback = _shouldContinueCallback;
 
 typedef void (^webPageOrderedOpenBlankBlockType)();
 typedef void (^webPageOrderedOpenBlockType)(const GURL&,
@@ -212,16 +196,6 @@ typedef BOOL (^openExternalURLBlockType)(const GURL&);
 
 - (web::BlockedPopupInfo*)blockedPopupInfo {
   return _blockedPopupInfo.get();
-}
-
-- (void)presentSSLError:(const net::SSLInfo&)info
-           forSSLStatus:(const web::SSLStatus&)status
-            recoverable:(BOOL)recoverable
-               callback:(SSLErrorCallback)shouldContinue {
-  _SSLInfo = info;
-  _SSLStatus = status;
-  _recoverable = recoverable;
-  _shouldContinueCallback = shouldContinue;
 }
 
 @end
@@ -445,52 +419,9 @@ TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
   }
 }
 
-// Tests that presentSSLError:forSSLStatus:recoverable:callback: is called with
-// correct arguments if WKWebView fails to load a page with bad SSL cert.
-// TODO(crbug.com/602298): Remove this test.
-TEST_F(CRWWebControllerTest, SslCertErrorDeprecatedApi) {
-  ASSERT_FALSE([mockDelegate_ SSLInfo].is_valid());
-
-  scoped_refptr<net::X509Certificate> cert =
-      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-
-  NSArray* chain = @[ static_cast<id>(cert->os_cert_handle()) ];
-  NSError* error =
-      [NSError errorWithDomain:NSURLErrorDomain
-                          code:NSURLErrorServerCertificateHasUnknownRoot
-                      userInfo:@{
-                        web::kNSErrorPeerCertificateChainKey : chain,
-                      }];
-
-  CRWWebControllerContainerView* containerView =
-      static_cast<CRWWebControllerContainerView*>([web_controller() view]);
-  WKWebView* webView =
-      static_cast<WKWebView*>(containerView.webViewContentView.webView);
-  base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
-  [static_cast<id<WKNavigationDelegate>>(web_controller())
-                            webView:webView
-      didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
-  [static_cast<id<WKNavigationDelegate>>(web_controller())
-                           webView:webView
-      didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
-                         withError:error];
-
-  // Verify correctness of delegate's method arguments.
-  EXPECT_TRUE([mockDelegate_ SSLInfo].is_valid());
-  EXPECT_EQ(net::CERT_STATUS_INVALID, [mockDelegate_ SSLInfo].cert_status);
-  EXPECT_EQ(net::CERT_STATUS_INVALID, [mockDelegate_ SSLStatus].cert_status);
-  EXPECT_EQ(web::SECURITY_STYLE_AUTHENTICATION_BROKEN,
-            [mockDelegate_ SSLStatus].security_style);
-  EXPECT_FALSE([mockDelegate_ recoverable]);
-  EXPECT_TRUE([mockDelegate_ shouldContinueCallback]);
-}
-
 // Tests that AllowCertificateError is called with correct arguments if
 // WKWebView fails to load a page with bad SSL cert.
 TEST_F(CRWWebControllerTest, SslCertError) {
-  // TODO(crbug.com/602298): Remove this call.
-  [web_controller() setDelegate:nil];
-
   // Last arguments passed to AllowCertificateError must be in default state.
   ASSERT_FALSE(GetWebClient()->last_cert_error_code());
   ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().is_valid());

@@ -32,9 +32,6 @@ class BlockedPopupInfo;
 struct Referrer;
 }
 
-// Callback for -presentSSLError:forSSLStatus:onUrl:recoverable:callback:
-typedef void (^SSLErrorCallback)(BOOL);
-
 // Methods implemented by the delegate of the CRWWebController.
 @protocol CRWWebDelegate<NSObject>
 
@@ -142,16 +139,6 @@ typedef void (^SSLErrorCallback)(BOOL);
 // ---------------------------------------------------------------------
 
 @optional
-
-// This method is called when a network request has an issue with the SSL
-// connection to present it to the user. The user will decide if the request
-// should continue or not and the callback should be invoked to let the backend
-// know.
-// The callback is safe to call until CRWWebController is closed.
-- (void)presentSSLError:(const net::SSLInfo&)info
-           forSSLStatus:(const web::SSLStatus&)status
-            recoverable:(BOOL)recoverable
-               callback:(SSLErrorCallback)shouldContinue;
 
 // Called to ask CRWWebDelegate if |CRWWebController| should open the given URL.
 // CRWWebDelegate can intercept the request by returning NO and processing URL
