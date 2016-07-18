@@ -236,15 +236,6 @@ ShellSurface::ShellSurface(Surface* surface)
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
-  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  if (surface_) {
-    if (scale_ != 1.0)
-      surface_->window()->SetTransform(gfx::Transform());
-    surface_->SetSurfaceDelegate(nullptr);
-    surface_->RemoveSurfaceObserver(this);
-  }
-  if (parent_)
-    parent_->RemoveObserver(this);
   if (resizer_)
     EndDrag(false /* revert */);
   if (widget_) {
@@ -253,6 +244,15 @@ ShellSurface::~ShellSurface() {
     if (widget_->IsVisible())
       widget_->Hide();
     widget_->CloseNow();
+  }
+  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  if (parent_)
+    parent_->RemoveObserver(this);
+  if (surface_) {
+    if (scale_ != 1.0)
+      surface_->window()->SetTransform(gfx::Transform());
+    surface_->SetSurfaceDelegate(nullptr);
+    surface_->RemoveSurfaceObserver(this);
   }
 }
 
