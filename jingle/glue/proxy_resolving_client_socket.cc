@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
@@ -144,7 +143,6 @@ int ProxyResolvingClientSocket::Connect(
   int status = network_session_->proxy_service()->ResolveProxy(
       proxy_url_,
       std::string(),
-      net::LOAD_NORMAL,
       &proxy_info_,
       proxy_resolve_callback_,
       &pac_request_,
@@ -293,8 +291,8 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   }
 
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      proxy_url_, std::string(), net::LOAD_NORMAL, error, &proxy_info_,
-      proxy_resolve_callback_, &pac_request_, NULL, bound_net_log_);
+      proxy_url_, std::string(), error, &proxy_info_, proxy_resolve_callback_,
+      &pac_request_, NULL, bound_net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();
   } else {

@@ -12,7 +12,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
 #include "net/url_request/url_request_context.h"
@@ -147,7 +146,6 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
                      base::Owned(proxy_info));
       int result = proxy_service_->ResolveProxy(request.url,
                                                 std::string(),
-                                                net::LOAD_NORMAL,
                                                 proxy_info,
                                                 callback,
                                                 &pending_request,

@@ -36,7 +36,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_request_headers.h"
@@ -303,7 +302,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
-  int load_flags = net::LOAD_NORMAL;
   GURL url("http://www.google.com/");
 
   // Data reduction proxy info
@@ -350,7 +348,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   net::ProxyInfo result;
   // Another proxy is used. It should be used afterwards.
   result.Use(other_proxy_info);
-  OnResolveProxyHandler(url, "GET", load_flags, data_reduction_proxy_config,
+  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
                         empty_proxy_retry_info, config(), &result);
   EXPECT_EQ(other_proxy_info.proxy_server(), result.proxy_server());
 
@@ -359,7 +357,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   // Another proxy is used. It should be used afterwards.
   result.Use(direct_proxy_info);
   net::ProxyConfig::ID prev_id = result.config_id();
-  OnResolveProxyHandler(url, "GET", load_flags, data_reduction_proxy_config,
+  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
                         empty_proxy_retry_info, config(), &result);
   EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
   // Only the proxy list should be updated, not the proxy info.
@@ -369,7 +367,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   // list. A direct connection should be used afterwards.
   result.Use(direct_proxy_info);
   prev_id = result.config_id();
-  OnResolveProxyHandler(GURL("ws://echo.websocket.org/"), "GET", load_flags,
+  OnResolveProxyHandler(GURL("ws://echo.websocket.org/"), "GET",
                         data_reduction_proxy_config,
                         data_reduction_proxy_retry_info, config(), &result);
   EXPECT_TRUE(result.proxy_server().is_direct());
@@ -377,31 +375,31 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
 
   // Test that ws:// and wss:// URLs bypass the data reduction proxy.
   result.UseDirect();
-  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET", load_flags,
+  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET",
                         data_reduction_proxy_config, empty_proxy_retry_info,
                         config(), &result);
   EXPECT_TRUE(result.is_direct());
 
   result.UseDirect();
-  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET", load_flags,
+  OnResolveProxyHandler(GURL("wss://echo.websocket.org/"), "GET",
                         data_reduction_proxy_config, empty_proxy_retry_info,
                         config(), &result);
   EXPECT_TRUE(result.is_direct());
 
   // POST methods go direct.
   result.UseDirect();
-  OnResolveProxyHandler(url, "POST", load_flags, data_reduction_proxy_config,
+  OnResolveProxyHandler(url, "POST", data_reduction_proxy_config,
                         empty_proxy_retry_info, config(), &result);
   EXPECT_TRUE(result.is_direct());
 
   // Without DataCompressionProxyCriticalBypass Finch trial set, the
   // BYPASS_DATA_REDUCTION_PROXY load flag should be ignored.
   result.UseDirect();
-  OnResolveProxyHandler(url, "GET", load_flags, data_reduction_proxy_config,
+  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
                         empty_proxy_retry_info, config(), &result);
   EXPECT_FALSE(result.is_direct());
 
-  OnResolveProxyHandler(url, "GET", load_flags, data_reduction_proxy_config,
+  OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
                         empty_proxy_retry_info, config(), &other_proxy_info);
   EXPECT_FALSE(other_proxy_info.is_direct());
 }
@@ -483,9 +481,8 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
 
     net::ProxyInfo result;
     result.Use(direct_proxy_info);
-    OnResolveProxyHandler(url, "GET", net::LOAD_NORMAL,
-                          data_reduction_proxy_config, empty_proxy_retry_info,
-                          config(), &result);
+    OnResolveProxyHandler(url, "GET", data_reduction_proxy_config,
+                          empty_proxy_retry_info, config(), &result);
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.HTTPRequests",
         tests[i].expect_histogram ? 1 : 0);

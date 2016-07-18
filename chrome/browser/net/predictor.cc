@@ -40,7 +40,6 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
@@ -961,7 +960,7 @@ bool Predictor::WouldLikelyProxyURL(const GURL& url) {
 
   net::ProxyInfo info;
   bool synchronous_success = proxy_service_->TryResolveProxySynchronously(
-      url, std::string(), net::LOAD_NORMAL, &info, nullptr, net::BoundNetLog());
+      url, std::string(), &info, nullptr, net::BoundNetLog());
 
   return synchronous_success && !info.is_direct();
 }

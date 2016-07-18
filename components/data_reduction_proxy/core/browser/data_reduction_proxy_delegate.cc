@@ -48,12 +48,10 @@ DataReductionProxyDelegate::~DataReductionProxyDelegate() {
 void DataReductionProxyDelegate::OnResolveProxy(
     const GURL& url,
     const std::string& method,
-    int load_flags,
     const net::ProxyService& proxy_service,
     net::ProxyInfo* result) {
   DCHECK(result);
-  OnResolveProxyHandler(url, method, load_flags,
-                        configurator_->GetProxyConfig(),
+  OnResolveProxyHandler(url, method, configurator_->GetProxyConfig(),
                         proxy_service.proxy_retry_info(), config_, result);
 }
 
@@ -99,7 +97,6 @@ void DataReductionProxyDelegate::OnTunnelHeadersReceived(
 
 void OnResolveProxyHandler(const GURL& url,
                            const std::string& method,
-                           int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyConfig* config,

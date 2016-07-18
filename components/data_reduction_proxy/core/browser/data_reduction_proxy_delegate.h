@@ -48,7 +48,6 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   // net::ProxyDelegate implementation:
   void OnResolveProxy(const GURL& url,
                       const std::string& method,
-                      int load_flags,
                       const net::ProxyService& proxy_service,
                       net::ProxyInfo* result) override;
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
@@ -80,7 +79,6 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
 // This is visible for test purposes.
 void OnResolveProxyHandler(const GURL& url,
                            const std::string& method,
-                           int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyConfig* config,
