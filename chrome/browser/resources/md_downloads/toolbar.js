@@ -45,9 +45,8 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onClearAllTap_: function() {
-      assert(this.canClearAll());
-      downloads.ActionService.getInstance().clearAll();
+    closeMoreActions_: function() {
+      this.$.more.close();
     },
 
     /** @private */
@@ -56,16 +55,36 @@ cr.define('downloads', function() {
     },
 
     /** @private */
+    onClearAllTap_: function() {
+      assert(this.canClearAll());
+      downloads.ActionService.getInstance().clearAll();
+    },
+
+    /** @private */
     onPaperDropdownClose_: function() {
-      window.removeEventListener('resize', assert(this.boundResize_));
+      window.removeEventListener('resize', assert(this.boundClose_));
+    },
+
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onItemBlur_: function(e) {
+      var menu = /** @type {PaperMenuElement} */(this.$$('paper-menu'));
+      if (menu.items.indexOf(e.relatedTarget) >= 0)
+        return;
+
+      // This can be this.$.more.restoreFocusOnClose = false when this lands:
+      // https://github.com/PolymerElements/paper-menu-button/pull/94
+      this.$.more.$.dropdown.restoreFocusOnClose = false;
+      this.closeMoreActions_();
+      this.$.more.$.dropdown.restoreFocusOnClose = true;
     },
 
     /** @private */
     onPaperDropdownOpen_: function() {
-      this.boundResize_ = this.boundResize_ || function() {
-        this.$.more.close();
-      }.bind(this);
-      window.addEventListener('resize', this.boundResize_);
+      this.boundClose_ = this.boundClose_ || this.closeMoreActions_.bind(this);
+      window.addEventListener('resize', this.boundClose_);
     },
 
     /**

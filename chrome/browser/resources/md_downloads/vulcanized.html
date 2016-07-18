@@ -2650,10 +2650,10 @@ paper-button {
       <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
         <paper-icon-button icon="cr:more-vert" title="$i18n{moreActions}" class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
-          <paper-item class="clear-all" on-tap="onClearAllTap_">
+          <paper-item class="clear-all" on-tap="onClearAllTap_" on-blur="onItemBlur_">
             $i18n{clearAll}
           </paper-item>
-          <paper-item on-tap="onOpenDownloadsFolderTap_">
+          <paper-item on-tap="onOpenDownloadsFolderTap_" on-blur="onItemBlur_">
             $i18n{openDownloadsFolder}
           </paper-item>
         </paper-menu>
