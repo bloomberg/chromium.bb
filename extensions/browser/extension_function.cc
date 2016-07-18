@@ -488,6 +488,26 @@ UIThreadExtensionFunction::AsUIThreadExtensionFunction() {
   return this;
 }
 
+bool UIThreadExtensionFunction::PreRunValidation(std::string* error) {
+  if (!ExtensionFunction::PreRunValidation(error))
+    return false;
+
+  // TODO(crbug.com/625646) This is a partial fix to avoid crashes when certain
+  // extension functions run during shutdown. Browser or Notification creation
+  // for example create a ScopedKeepAlive, which hit a CHECK if the browser is
+  // shutting down. This fixes the current problem as the known issues happen
+  // through synchronous calls from Run(), but posted tasks will not be covered.
+  // A possible fix would involve refactoring ExtensionFunction: unrefcount
+  // here and use weakptrs for the tasks, then have it owned by something that
+  // will be destroyed naturally in the course of shut down.
+  if (extensions::ExtensionsBrowserClient::Get()->IsShuttingDown()) {
+    *error = "The browser is shutting down.";
+    return false;
+  }
+
+  return true;
+}
+
 bool UIThreadExtensionFunction::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

@@ -485,6 +485,7 @@
       'browser/extensions/bookmark_app_helper_unittest.cc',
       'browser/extensions/chrome_app_sorting_unittest.cc',
       'browser/extensions/chrome_component_extension_resource_manager_unittest.cc',
+      'browser/extensions/chrome_extension_function_unittest.cc',
       'browser/extensions/chrome_info_map_unittest.cc',
       'browser/extensions/component_loader_unittest.cc',
       'browser/extensions/component_migration_helper_unittest.cc',

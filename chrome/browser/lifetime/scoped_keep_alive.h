@@ -12,6 +12,8 @@ enum class KeepAliveRestartOption;
 
 // Registers with KeepAliveRegistry on creation and unregisters them
 // on destruction. Use these objects with a scoped_ptr for easy management.
+// Note: The registration will hit a CHECK if it happens while we are
+// shutting down. Caller code should make sure that this can't happen.
 class ScopedKeepAlive {
  public:
   ScopedKeepAlive(KeepAliveOrigin origin, KeepAliveRestartOption restart);

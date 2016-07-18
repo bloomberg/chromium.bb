@@ -493,6 +493,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   UIThreadExtensionFunction* AsUIThreadExtensionFunction() override;
 
+  bool PreRunValidation(std::string* error) override;
+
   void set_test_delegate(DelegateForTests* delegate) {
     delegate_ = delegate;
   }

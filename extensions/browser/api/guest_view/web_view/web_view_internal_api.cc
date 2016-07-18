@@ -260,6 +260,9 @@ bool LegacyWebViewInternalExtensionFunction::RunAsync() {
 }
 
 bool WebViewInternalExtensionFunction::PreRunValidation(std::string* error) {
+  if (!UIThreadExtensionFunction::PreRunValidation(error))
+    return false;
+
   int instance_id = 0;
   EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetInteger(0, &instance_id));
   guest_ = WebViewGuest::From(render_frame_host()->GetProcess()->GetID(),

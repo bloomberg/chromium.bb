@@ -195,6 +195,12 @@ void PushMessagingServiceImpl::ShutdownHandler() {
 
 void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
                                          const gcm::IncomingMessage& message) {
+  // We won't have time to process and act on the message.
+  // TODO(peter) This should be checked at the level of the GCMDriver, so that
+  // the message is not consumed. See https://crbug.com/612815
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   in_flight_message_deliveries_.insert(app_id);
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
