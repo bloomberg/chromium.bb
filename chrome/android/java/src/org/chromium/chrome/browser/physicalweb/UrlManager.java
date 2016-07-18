@@ -78,15 +78,6 @@ class UrlManager {
     private NotificationManagerProxy mNotificationManager;
     private PwsClient mPwsClient;
 
-    private final Comparator<String> mScanTimestampComparator = new Comparator<String>() {
-        @Override
-        public int compare(String url1, String url2) {
-            UrlInfo urlInfo1 = mUrlInfoMap.get(url1);
-            UrlInfo urlInfo2 = mUrlInfoMap.get(url2);
-            return Long.compare(urlInfo1.getScanTimestamp(), urlInfo2.getScanTimestamp());
-        }
-    };
-
     /**
      * Interface for observers that should be notified when the nearby URL list changes.
      */
@@ -113,7 +104,14 @@ class UrlManager {
         mNearbyUrls = new HashSet<>();
         mResolvedUrls = new HashSet<>();
         mUrlInfoMap = new HashMap<>();
-        mUrlsSortedByTimestamp = new PriorityQueue<String>(1, mScanTimestampComparator);
+        mUrlsSortedByTimestamp = new PriorityQueue<String>(1, new Comparator<String>() {
+            @Override
+            public int compare(String url1, String url2) {
+                Long scanTimestamp1 = Long.valueOf(mUrlInfoMap.get(url1).getScanTimestamp());
+                Long scanTimestamp2 = Long.valueOf(mUrlInfoMap.get(url2).getScanTimestamp());
+                return scanTimestamp1.compareTo(scanTimestamp2);
+            }
+        });
         initSharedPreferences();
     }
 
@@ -250,7 +248,9 @@ class UrlManager {
         Collections.sort(urlInfos, new Comparator<UrlInfo>() {
             @Override
             public int compare(UrlInfo urlInfo1, UrlInfo urlInfo2) {
-                return Double.compare(urlInfo1.getDistance(), urlInfo2.getDistance());
+                Double distance1 = Double.valueOf(urlInfo1.getDistance());
+                Double distance2 = Double.valueOf(urlInfo2.getDistance());
+                return distance1.compareTo(distance2);
             }
         });
         return urlInfos;
