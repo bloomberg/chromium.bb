@@ -96,7 +96,6 @@ LayerImpl::~LayerImpl() {
 
   layer_tree_impl_->UnregisterScrollLayer(this);
   layer_tree_impl_->UnregisterLayer(this);
-  layer_tree_impl_->RemoveLayerShouldPushProperties(this);
 
   layer_tree_impl_->RemoveFromElementMap(this);
 

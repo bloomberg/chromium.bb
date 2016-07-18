@@ -1000,8 +1000,14 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         node->is_currently_animating_opacity = true;
         break;
       case 2:
+        node->is_currently_animating_opacity = true;
+        break;
+      case 3:
         node->is_currently_animating_opacity = false;
         break;
+      case 4:
+        node->opacity = 0.25f;
+        node->is_currently_animating_opacity = true;
     }
   }
 
@@ -1016,11 +1022,19 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 1:
         EXPECT_EQ(node->opacity, 0.75f);
-        impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
+        EXPECT_EQ(node->opacity, 0.75f);
+        impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
         EXPECT_EQ(node->opacity, 0.5f);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 4:
+        EXPECT_EQ(node->opacity, 0.25f);
         EndTest();
         break;
     }
@@ -1061,6 +1075,10 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
       case 3:
         node->is_currently_animating = false;
         break;
+      case 4:
+        node->local = gfx::Transform();
+        node->is_currently_animating = true;
+        break;
     }
   }
 
@@ -1081,8 +1099,6 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
         break;
       case 1:
         EXPECT_EQ(node->local, rotate20);
-        impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
-            rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
@@ -1093,6 +1109,10 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
         break;
       case 3:
         EXPECT_EQ(node->local, rotate10);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 4:
+        EXPECT_EQ(node->local, gfx::Transform());
         EndTest();
     }
   }
