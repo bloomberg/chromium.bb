@@ -3657,7 +3657,7 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     GLint sorting_context_id = ca_layer_overlay.sorting_context_id;
     GLfloat transform[16];
     ca_layer_overlay.transform.asColMajorf(transform);
-    unsigned filter = GL_LINEAR;
+    unsigned filter = ca_layer_overlay.filter;
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.opacity,
         ca_layer_overlay.background_color, ca_layer_overlay.edge_aa_mask,
