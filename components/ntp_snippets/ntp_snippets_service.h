@@ -68,9 +68,6 @@ class NTPSnippetsService : public KeyedService,
                            public image_fetcher::ImageFetcherDelegate,
                            public ContentSuggestionsProvider {
  public:
-  using ImageFetchedCallback =
-      base::Callback<void(const std::string& suggestion_id, const gfx::Image&)>;
-
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
@@ -240,7 +237,7 @@ class NTPSnippetsService : public KeyedService,
 
   // Triggers a state transition depending on the provided reason to be
   // disabled (or lack thereof). This method is called when a change is detected
-  // by |snippets_status_service_|
+  // by |snippets_status_service_|.
   void UpdateStateForStatus(DisabledReason disabled_reason);
 
   // Verifies state transitions (see |State|'s documentation) and applies them.

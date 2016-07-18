@@ -78,6 +78,8 @@ std::string MapCategoryName(ContentSuggestionsCategory category) {
   switch (category) {
     case ContentSuggestionsCategory::ARTICLES:
       return "Articles";
+    case ContentSuggestionsCategory::OFFLINE_PAGES:
+      return "Offline pages (continue browsing)";
     case ContentSuggestionsCategory::COUNT:
       NOTREACHED() << "Category::COUNT must not be used as a value";
   }
@@ -255,6 +257,10 @@ void SnippetsInternalsMessageHandler::SendInitialData() {
 
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
                                    chrome::android::kNTPSnippetsFeature));
+
+  SendBoolean("flag-offline-page-suggestions",
+              base::FeatureList::IsEnabled(
+                  chrome::android::kNTPOfflinePageSuggestionsFeature));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.setHostRestricted",

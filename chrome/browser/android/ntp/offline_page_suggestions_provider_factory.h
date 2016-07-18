@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NTP_SNIPPETS_CONTENT_SUGGESTIONS_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_NTP_SNIPPETS_CONTENT_SUGGESTIONS_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_ANDROID_NTP_OFFLINE_PAGE_SUGGESTIONS_PROVIDER_FACTORY_H_
+#define CHROME_BROWSER_ANDROID_NTP_OFFLINE_PAGE_SUGGESTIONS_PROVIDER_FACTORY_H_
 
 #include <memory>
 
@@ -19,26 +19,28 @@ struct DefaultSingletonTraits;
 
 namespace ntp_snippets {
 class ContentSuggestionsService;
+class OfflinePageSuggestionsProvider;
 }  // namespace ntp_snippets
 
-class ContentSuggestionsServiceFactory
+class OfflinePageSuggestionsProviderFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static ContentSuggestionsServiceFactory* GetInstance();
-  static ntp_snippets::ContentSuggestionsService* GetForProfile(
+  static OfflinePageSuggestionsProviderFactory* GetInstance();
+  static ntp_snippets::OfflinePageSuggestionsProvider* GetForProfile(
       Profile* profile);
 
  private:
-  friend struct base::DefaultSingletonTraits<ContentSuggestionsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<
+      OfflinePageSuggestionsProviderFactory>;
 
-  ContentSuggestionsServiceFactory();
-  ~ContentSuggestionsServiceFactory() override;
+  OfflinePageSuggestionsProviderFactory();
+  ~OfflinePageSuggestionsProviderFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(OfflinePageSuggestionsProviderFactory);
 };
 
-#endif  // CHROME_BROWSER_NTP_SNIPPETS_CONTENT_SUGGESTIONS_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_ANDROID_NTP_OFFLINE_PAGE_SUGGESTIONS_PROVIDER_FACTORY_H_

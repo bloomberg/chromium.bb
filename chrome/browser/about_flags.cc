@@ -1818,6 +1818,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(chrome::android::kNTPSnippetsFeature,
                                         kNTPSnippetsFeatureVariations,
                                         ntp_snippets::kStudyName)},
+    {"enable-ntp-offline-page-suggestions",
+     IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_NAME,
+     IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePageSuggestionsFeature)},
 #endif  // defined(OS_ANDROID)
 #if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
     {"enable-webrtc-h264-with-openh264-ffmpeg",

@@ -222,6 +222,8 @@ NTPSnippetsService::NTPSnippetsService(
   database_->SetErrorCallback(base::Bind(&NTPSnippetsService::OnDatabaseError,
                                          base::Unretained(this)));
 
+  // TODO(pke): Move this to SetObserver as soon as the UI reads from the
+  // ContentSuggestionsService directly.
   // We transition to other states while finalizing the initialization, when the
   // database is done loading.
   database_->LoadSnippets(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,

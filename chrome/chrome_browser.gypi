@@ -914,6 +914,8 @@
       'browser/android/ntp/ntp_snippets_bridge.h',
       'browser/android/ntp/ntp_snippets_launcher.cc',
       'browser/android/ntp/ntp_snippets_launcher.h',
+      'browser/android/ntp/offline_page_suggestions_provider_factory.cc',
+      'browser/android/ntp/offline_page_suggestions_provider_factory.h',
       'browser/android/ntp/popular_sites.cc',
       'browser/android/ntp/popular_sites.h',
       'browser/android/omnibox/answers_image_bridge.cc',

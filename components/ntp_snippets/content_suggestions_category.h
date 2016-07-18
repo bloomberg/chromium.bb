@@ -8,7 +8,7 @@
 namespace ntp_snippets {
 
 // A category groups ContentSuggestions which belong together.
-enum class ContentSuggestionsCategory { ARTICLES, COUNT };
+enum class ContentSuggestionsCategory { ARTICLES, OFFLINE_PAGES, COUNT };
 
 }  // namespace ntp_snippets
 

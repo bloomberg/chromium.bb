@@ -14972,6 +14972,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION" desc="Description for the flag to enable snippets on the New Tab page." translateable="false">
         If enabled, the New Tab page will show a list of content snippets
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_NAME" desc="Name for the flag to enable offline page suggestions on the New Tab page." translateable="false">
+        Show offline pages on the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable offline page suggestions on the New Tab page." translateable="false">
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that were captured offline during browsing (see #offlining-recent-pages) 
+      </message>
     </if>
 
     <if expr="is_android">

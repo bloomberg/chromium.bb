@@ -34,7 +34,7 @@ class NTPSnippetsServiceFactory : public BrowserContextKeyedServiceFactory {
   NTPSnippetsServiceFactory();
   ~NTPSnippetsServiceFactory() override;
 
-  // BrowserStateKeyedServiceFactory implementation.
+  // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
