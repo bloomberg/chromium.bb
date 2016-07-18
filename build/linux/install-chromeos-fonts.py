@@ -19,10 +19,10 @@ URL_TEMPLATE = ('https://commondatastorage.googleapis.com/chromeos-localmirror/'
 SOURCES = [
   {
     'name': 'notofonts',
-    'version': '20150706'
+    'version': '20160310'
   }, {
     'name': 'robotofonts',
-    'version': '20150625'
+    'version': '2.132'
   }
 ]
 
