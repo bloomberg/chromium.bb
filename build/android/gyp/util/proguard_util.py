@@ -45,6 +45,7 @@ class ProguardCmdBuilder(object):
     self._outjar = None
     self._cmd = None
     self._verbose = False
+    self._disabled_optimizations = []
 
   def outjar(self, path):
     assert self._cmd is None
@@ -87,6 +88,10 @@ class ProguardCmdBuilder(object):
     assert self._cmd is None
     self._verbose = verbose
 
+  def disable_optimizations(self, optimizations):
+    assert self._cmd is None
+    self._disabled_optimizations += optimizations
+
   def build(self):
     if self._cmd:
       return self._cmd
@@ -122,6 +127,9 @@ class ProguardCmdBuilder(object):
       cmd += [
         '-libraryjars', ':'.join(self._libraries),
       ]
+
+    for optimization in self._disabled_optimizations:
+      cmd += [ '-optimizations', '!' + optimization ]
 
     cmd += [
       '-injars', ':'.join(self._injars)

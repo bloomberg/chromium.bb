@@ -12,6 +12,15 @@ from util import build_utils
 from util import proguard_util
 
 
+_DANGEROUS_OPTIMIZATIONS = [
+    # See crbug.com/625992
+    "code/allocation/variable",
+    # See crbug.com/625994
+    "field/propagation/value",
+    "method/propagation/parameter",
+    "method/propagation/returnvalue",
+]
+
 def _ParseOptions(args):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -31,6 +40,8 @@ def _ParseOptions(args):
   parser.add_option('--classpath', action='append',
                     help='Classpath for proguard.')
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--enable-dangerous-optimizations', action='store_true',
+                    help='Enable optimizations which are known to have issues.')
   parser.add_option('--verbose', '-v', action='store_true',
                     help='Print all proguard output')
 
@@ -62,6 +73,8 @@ def main(args):
   classpath = list(set(options.classpath))
   proguard.libraryjars(classpath)
   proguard.verbose(options.verbose)
+  if not options.enable_dangerous_optimizations:
+    proguard.disable_optimizations(_DANGEROUS_OPTIMIZATIONS)
 
   input_paths = proguard.GetInputs()
 

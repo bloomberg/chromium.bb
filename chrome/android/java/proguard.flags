@@ -5,7 +5,7 @@
 -keep @interface ***
 
 # Disable obfuscation for the following two packages.
--keepnames class com.google.android.apps.chrome.**,org.chromium.** {
+-keepnames,allowoptimization class com.google.android.apps.chrome.**,org.chromium.** {
   *;
 }
 
