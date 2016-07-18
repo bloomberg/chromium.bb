@@ -383,7 +383,6 @@ PersonalDataManagerAndroid::GetAddressLabelForPaymentRequest(
   label_fields.push_back(ADDRESS_HOME_ZIP);
   label_fields.push_back(ADDRESS_HOME_SORTING_CODE);
   label_fields.push_back(ADDRESS_HOME_COUNTRY);
-  label_fields.push_back(PHONE_HOME_WHOLE_NUMBER);
 
   AutofillProfile profile;
   PopulateNativeProfileFromJava(jprofile, env, &profile);
@@ -629,7 +628,6 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     suggested_fields->push_back(ADDRESS_HOME_ZIP);
     suggested_fields->push_back(ADDRESS_HOME_SORTING_CODE);
     suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
-    suggested_fields->push_back(PHONE_HOME_WHOLE_NUMBER);
     minimal_fields_shown = suggested_fields->size();
   }
 

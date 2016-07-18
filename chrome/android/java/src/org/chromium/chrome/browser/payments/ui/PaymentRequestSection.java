@@ -83,6 +83,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** Called when the user requests adding a new PaymentOption to a given section. */
         void onAddPaymentOption(OptionSection section);
 
+        /** Checks whether or not the text should be formatted with a bold label. */
+        boolean isBoldLabelNeeded(OptionSection section);
+
         /** Checks whether or not the user should be allowed to click on controls. */
         boolean isAcceptingUserInput();
 
@@ -650,7 +653,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
                     ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
                             ? R.style.PaymentsUiSectionDefaultText
                             : R.style.PaymentsUiSectionDisabledText);
-                    labelView.setText(convertOptionToString(mOption));
+                    labelView.setText(convertOptionToString(
+                            mOption, mDelegate.isBoldLabelNeeded(OptionSection.this)));
                     labelView.setEnabled(isEnabled);
                 } else if (mRowType == OPTION_ROW_TYPE_ADD) {
                     // Shows string saying that the user can add a new option, e.g. credit card no.
@@ -861,7 +865,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 }
             } else {
                 setLogoResource(selectedItem.getDrawableIconId());
-                setSummaryText(convertOptionToString(selectedItem), null);
+                setSummaryText(convertOptionToString(selectedItem, false), null);
             }
         }
 
@@ -913,9 +917,24 @@ public abstract class PaymentRequestSection extends LinearLayout {
             }
         }
 
-        private CharSequence convertOptionToString(PaymentOption item) {
-            if (TextUtils.isEmpty(item.getSublabel())) return item.getLabel();
-            return new StringBuilder(item.getLabel()).append("\n").append(item.getSublabel());
+        private CharSequence convertOptionToString(PaymentOption item, boolean useBoldLabel) {
+            SpannableStringBuilder builder = new SpannableStringBuilder(item.getLabel());
+            if (useBoldLabel) {
+                builder.setSpan(
+                        new StyleSpan(android.graphics.Typeface.BOLD), 0, builder.length(), 0);
+            }
+
+            if (!TextUtils.isEmpty(item.getSublabel())) {
+                if (builder.length() > 0) builder.append("\n");
+                builder.append(item.getSublabel());
+            }
+
+            if (!TextUtils.isEmpty(item.getTertiaryLabel())) {
+                if (builder.length() > 0) builder.append("\n");
+                builder.append(item.getTertiaryLabel());
+            }
+
+            return builder;
         }
 
         /**
