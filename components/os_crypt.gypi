@@ -50,7 +50,7 @@
             },
           },
         }],
-        ['OS=="linux" and chromeos!=1 and (use_glib==1 or use_dbus==1)', {
+        ['OS=="linux" and chromeos!=1', {
           'sources': [
             'os_crypt/key_storage_linux.cc',
             'os_crypt/key_storage_linux.h',
@@ -117,7 +117,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
-        ['OS=="linux" and chromeos!=1 and (use_glib==1 or use_dbus)', {
+        ['OS=="linux" and chromeos!=1', {
           'sources': [
             'os_crypt/os_crypt_mocker_linux.cc',
             'os_crypt/os_crypt_mocker_linux.h',

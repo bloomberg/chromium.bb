@@ -17,8 +17,10 @@ class KeyStorageLinux {
   KeyStorageLinux() = default;
   virtual ~KeyStorageLinux() = default;
 
-  // Tries to load all known key storages. Returns the first that succeeds or
-  // null if none succeed.
+  // Force OSCrypt to use a specific linux password store.
+  static void SetStore(const std::string& store_type);
+
+  // Tries to load the appropriate key storage. Returns null if none succeed.
   static std::unique_ptr<KeyStorageLinux> CreateService();
 
   // Gets the encryption key from the OS password-managing library. If a key is

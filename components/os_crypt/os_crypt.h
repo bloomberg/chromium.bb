@@ -11,9 +11,9 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
-#if defined(USE_LIBSECRET)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "components/os_crypt/key_storage_linux.h"
-#endif
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // The OSCrypt class gives access to simple encryption and decryption of
 // strings. Note that on Mac, access to the system Keychain is required and
@@ -21,6 +21,13 @@
 // true for Linux, if a password management tool is available.
 class OSCrypt {
  public:
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // If |store_type| is a known password store, we will attempt to use it.
+  // In any other case, we default to auto-detecting the store.
+  // This should not be changed after OSCrypt has been used.
+  static void SetStore(const std::string& store_type);
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
   // Encrypt a string16. The output (second argument) is really an array of
   // bytes, but we're passing it back as a std::string.
   static bool EncryptString16(const base::string16& plaintext,
@@ -52,7 +59,7 @@ class OSCrypt {
   DISALLOW_IMPLICIT_CONSTRUCTORS(OSCrypt);
 };
 
-#if (defined(USE_LIBSECRET) || defined(USE_KWALLET)) && defined(UNIT_TEST)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(UNIT_TEST)
 // For unit testing purposes, inject methods to be used.
 // |get_key_storage_mock| provides the desired |KeyStorage| implementation.
 // If the provider returns |nullptr|, a hardcoded password will be used.
@@ -60,7 +67,6 @@ class OSCrypt {
 // If both parameters are |nullptr|, the real implementation is restored.
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)());
-#endif  // (defined(USE_LIBSECRET) || defined(USE_KWALLET)) &&
-        // defined(UNIT_TEST)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(UNIT_TEST)
 
 #endif  // COMPONENTS_OS_CRYPT_OS_CRYPT_H_
