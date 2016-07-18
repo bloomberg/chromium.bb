@@ -207,7 +207,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   params.bounds = GetTextFilterPosition(root_window);
   *text_filter_bottom = params.bounds.bottom();
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      widget, kShellWindowId_OverlayContainer, &params);
+      widget, kShellWindowId_StatusContainer, &params);
   widget->Init(params);
 
   // Use |container| to specify the padding surrounding the text and to give

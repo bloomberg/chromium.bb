@@ -294,7 +294,7 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
     close_button_widget_.reset(new views::Widget);
     close_button_widget_->set_focus_on_creation(false);
     window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-        close_button_widget_.get(), kShellWindowId_OverlayContainer, &params);
+        close_button_widget_.get(), kShellWindowId_StatusContainer, &params);
     close_button_widget_->Init(params);
     close_button_->SetVisible(false);
     close_button_widget_->SetContentsView(close_button_);
@@ -534,7 +534,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   window_label_->set_focus_on_creation(false);
   root_window_->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
-          window_label_.get(), kShellWindowId_OverlayContainer, &params);
+          window_label_.get(), kShellWindowId_StatusContainer, &params);
   window_label_->Init(params);
   window_label_button_view_ = new OverviewLabelButton(this, title);
   window_label_button_view_->SetBorder(views::Border::NullBorder());
