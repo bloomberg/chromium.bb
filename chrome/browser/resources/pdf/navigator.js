@@ -11,19 +11,19 @@
  * @param {Object} paramsParser The object for URL parsing.
  * @param {Function} navigateInCurrentTabCallback The Callback function that
  *    gets called when navigation happens in the current tab.
- * @param {Function} navigateInNewTabCallback The Callback function that gets
- *    called when navigation happens in the new tab.
+ * @param {Function} navigateInNewBackgroundTabCallback The Callback function
+ *    that gets called when navigation happens in the new background tab.
  */
 function Navigator(originalUrl,
                    viewport,
                    paramsParser,
                    navigateInCurrentTabCallback,
-                   navigateInNewTabCallback) {
+                   navigateInNewBackgroundTabCallback) {
   this.originalUrl_ = originalUrl;
   this.viewport_ = viewport;
   this.paramsParser_ = paramsParser;
   this.navigateInCurrentTabCallback_ = navigateInCurrentTabCallback;
-  this.navigateInNewTabCallback_ = navigateInNewTabCallback;
+  this.navigateInNewBackgroundTabCallback_ = navigateInNewBackgroundTabCallback;
 }
 
 Navigator.prototype = {
@@ -59,7 +59,7 @@ Navigator.prototype = {
       return;
 
     if (newTab) {
-      this.navigateInNewTabCallback_(url);
+      this.navigateInNewBackgroundTabCallback_(url);
     } else {
       this.paramsParser_.getViewportFromUrlParams(
           url, this.onViewportReceived_.bind(this));

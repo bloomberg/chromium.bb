@@ -231,6 +231,38 @@ class PDFExtensionTest : public ExtensionApiTest,
         &success));
     ASSERT_EQ(expect_success, success);
   }
+
+  void ConvertPageCoordToScreenCoord(content::WebContents* contents,
+                                     gfx::Point* point) {
+    ASSERT_TRUE(contents);
+    ASSERT_TRUE(content::ExecuteScript(contents,
+        "var visiblePage = viewer.viewport.getMostVisiblePage();"
+        "var visiblePageDimensions ="
+        "    viewer.viewport.getPageScreenRect(visiblePage);"
+        "var viewportPosition = viewer.viewport.position;"
+        "var screenOffsetX = visiblePageDimensions.x - viewportPosition.x;"
+        "var screenOffsetY = visiblePageDimensions.y - viewportPosition.y;"
+        "var linkScreenPositionX ="
+        "    Math.floor(" + base::IntToString(point->x()) + " + screenOffsetX);"
+        "var linkScreenPositionY ="
+        "    Math.floor(" + base::IntToString(point->y()) + " +"
+        "    screenOffsetY);"));
+
+    int x;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        contents,
+        "window.domAutomationController.send(linkScreenPositionX);",
+        &x));
+
+    int y;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        contents,
+        "window.domAutomationController.send(linkScreenPositionY);",
+        &y));
+
+    point->SetPoint(x, y);
+  }
+
 };
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, Load) {
@@ -588,6 +620,49 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
       << "\n\nActual:\n" << ax_tree_dump;
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // The link position of the test-link.pdf in page coordinates is (110, 110).
+  // Convert the link position from page coordinates to screen coordinates.
+  gfx::Point link_position(110, 110);
+  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+#if defined(OS_MACOSX)
+  int modifiers = blink::WebInputEvent::MetaKey;
+#else
+  int modifiers = blink::WebInputEvent::ControlKey;
+#endif
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, modifiers,
+      blink::WebMouseEvent::ButtonLeft, link_position);
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
+}
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
@@ -596,29 +671,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
 
   // The link position of the test-link.pdf in page coordinates is (110, 110).
   // Convert the link position from page coordinates to screen coordinates.
-  ASSERT_TRUE(content::ExecuteScript(guest_contents,
-      "var visiblePage = viewer.viewport.getMostVisiblePage();"
-      "var visiblePageDimensions ="
-      "    viewer.viewport.getPageScreenRect(visiblePage);"
-      "var viewportPosition = viewer.viewport.position;"
-      "var screenOffsetX = visiblePageDimensions.x - viewportPosition.x;"
-      "var screenOffsetY = visiblePageDimensions.y - viewportPosition.y;"
-      "var linkScreenPositionX = Math.floor(110 + screenOffsetX);"
-      "var linkScreenPositionY = Math.floor(110 + screenOffsetY);"));
+  gfx::Point link_position(110, 110);
+  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
 
-  int x;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      guest_contents,
-      "window.domAutomationController.send(linkScreenPositionX);",
-      &x));
-
-  int y;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      guest_contents,
-      "window.domAutomationController.send(linkScreenPositionY);",
-      &y));
-
-  gfx::Point point(x, y);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -626,16 +681,19 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, 0,
-      blink::WebMouseEvent::ButtonMiddle, point);
+      blink::WebMouseEvent::ButtonMiddle, link_position);
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
 
-  // TODO(jaepark): Middle mouse clicking on a link should not change
-  // the focus of the tab. See http://crbug.com/628054.
-  content::WebContents* new_web_contents =
+  content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
   ASSERT_NE(web_contents, new_web_contents);
 
   const GURL& url = new_web_contents->GetURL();

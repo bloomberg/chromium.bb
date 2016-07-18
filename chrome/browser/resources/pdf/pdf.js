@@ -56,14 +56,14 @@ function onNavigateInCurrentTab(isInTab, isSourceFileUrl, url) {
 }
 
 /**
- * Called when navigation happens in the new tab.
- * @param {string} url The url to be opened in the new tab.
+ * Called when navigation happens in the new background tab.
+ * @param {string} url The url to be opened in the new background tab.
  */
-function onNavigateInNewTab(url) {
+function onNavigateInNewBackgroundTab(url) {
   // Prefer the tabs API because it guarantees we can just open a new tab.
   // window.open doesn't have this guarantee.
   if (chrome.tabs)
-    chrome.tabs.create({url: url});
+    chrome.tabs.create({url: url, active: false});
   else
     window.open(url);
 }
@@ -264,7 +264,7 @@ function PDFViewer(browserApi) {
                                   onNavigateInCurrentTab.bind(undefined,
                                                               isInTab,
                                                               isSourceFileUrl),
-                                  onNavigateInNewTab);
+                                  onNavigateInNewBackgroundTab);
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
 
