@@ -245,7 +245,8 @@
             android:textAllCaps="true"
             android:textColor="@android:color/white"
             android:textSize="14sp"
-            chrome:buttonColor="@color/light_active_color"/>
+            chrome:buttonColor="@color/light_active_color"
+            chrome:buttonRaised="false"/>
 
         <View
             android:id="@+id/positive_button_end_padding"
