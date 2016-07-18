@@ -220,10 +220,15 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   if (ui::MaterialDesignController::IsModeMaterial())
     fill_rect.Inset(0, 1, 0, 0);
 
-  // The detached bar overlaps the |contents_container_| and so uses the same
-  // background color (the NTP background color).
+  // In detached mode, the bar is meant to overlap with |contents_container_|.
+  // The detached background color may be partially transparent, but the layer
+  // for |view| must be painted opaquely to avoid subpixel anti-aliasing
+  // artifacts, so we recreate the contents container base color here.
   canvas->FillRect(fill_rect,
-                   tp->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND));
+                   tp->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND));
+  canvas->FillRect(
+      fill_rect,
+      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND));
 
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
@@ -2065,7 +2070,7 @@ void BrowserView::InitViews() {
 
   contents_container_ = new views::View();
   contents_container_->set_background(views::Background::CreateSolidBackground(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND)));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND)));
   contents_container_->AddChildView(devtools_web_view_);
   contents_container_->AddChildView(contents_web_view_);
   contents_container_->SetLayoutManager(new ContentsLayoutManager(

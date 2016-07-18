@@ -908,6 +908,7 @@ void Gtk2UI::LoadGtkValues() {
   SkColor label_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
 
+  colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
   colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
 
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] =

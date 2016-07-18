@@ -49,7 +49,7 @@ namespace {
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 43;
+const int kThemePackVersion = 42;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -791,12 +791,9 @@ bool BrowserThemePack::GetColor(int id, SkColor* color) const {
       if (colors_[i].id == id) {
         *color = colors_[i].color;
         // The theme provider is intentionally made to ignore alpha for toolbar
-        // color, as we don't want to allow transparent toolbars. Same for the
-        // ntp background color.
-        if (id == ThemeProperties::COLOR_TOOLBAR ||
-            id == ThemeProperties::COLOR_NTP_BACKGROUND) {
+        // color, as we don't want to allow transparent toolbars.
+        if (id == ThemeProperties::COLOR_TOOLBAR)
           *color = SkColorSetA(*color, SK_AlphaOPAQUE);
-        }
         return true;
       }
     }

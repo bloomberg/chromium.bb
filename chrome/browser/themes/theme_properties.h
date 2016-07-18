@@ -82,9 +82,11 @@ class ThemeProperties {
   // The enum takes on values >= 1000 as not to overlap with
   // OverwritableByUserThemeProperties.
   enum NotOverwritableByUserThemeProperty {
+    COLOR_CONTROL_BACKGROUND = 1000,
+
     // The color of the line separating the bottom of the toolbar from the
     // contents.
-    COLOR_TOOLBAR_BOTTOM_SEPARATOR = 1000,
+    COLOR_TOOLBAR_BOTTOM_SEPARATOR,
 
     // The color of a normal toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON,
@@ -109,6 +111,7 @@ class ThemeProperties {
     COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT,
 
     // Colors used for the detached (NTP) bookmark bar.
+    COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,
 
     // The throbber colors for tabs or anything on a toolbar (currently, only
