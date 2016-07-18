@@ -41,6 +41,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -2800,6 +2801,38 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Ensure the entry's title hasn't changed after the ignored commit.
   EXPECT_EQ(title, entry->GetTitle());
+}
+
+// Ensure that document hosted on file: URL can successfully execute pushState
+// with arbitrary origin, when universal access setting is enabled.
+// TODO(nasko): The test is disabled on Mac, since universal access from file
+// scheme behaves differently.
+#if defined(OS_MACOSX)
+#define MAYBE_EnsureUniversalAccessFromFileSchemeSucceeds \
+  DISABLED_EnsureUniversalAccessFromFileSchemeSucceeds
+#else
+#define MAYBE_EnsureUniversalAccessFromFileSchemeSucceeds \
+  EnsureUniversalAccessFromFileSchemeSucceeds
+#endif
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       MAYBE_EnsureUniversalAccessFromFileSchemeSucceeds) {
+  StartEmbeddedServer();
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  WebPreferences prefs =
+      web_contents->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.allow_universal_access_from_file_urls = true;
+  web_contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  GURL file_url = GetTestUrl("", "title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), file_url));
+  EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
+  EXPECT_TRUE(ExecuteScript(
+      root, "window.history.pushState({}, '', 'https://chromium.org');"));
+  EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
+  EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
 }
 
 }  // namespace content

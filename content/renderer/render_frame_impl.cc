@@ -4773,6 +4773,20 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     render_view_->SetZoomLevel(render_view_->page_zoom_level());
   }
 
+  // Standard URLs must match the reported origin, when it is not unique.
+  // This check is very similar to RenderFrameHostImpl::CanCommitOrigin, but
+  // adapted to the renderer process side.
+  if (!params.origin.unique() && params.url.IsStandard() &&
+      render_view_->GetWebkitPreferences().web_security_enabled) {
+    // Exclude file: URLs when settings allow them access any origin.
+    if (params.origin.scheme() != url::kFileScheme ||
+        !render_view_->GetWebkitPreferences()
+             .allow_universal_access_from_file_urls) {
+      CHECK(params.origin.IsSameOriginWith(url::Origin(params.url)))
+          << " url:" << params.url << " origin:" << params.origin;
+    }
+  }
+
   // This message needs to be sent before any of allowScripts(),
   // allowImages(), allowPlugins() is called for the new page, so that when
   // these functions send a ViewHostMsg_ContentBlocked message, it arrives
