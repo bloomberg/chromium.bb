@@ -166,6 +166,7 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
       const GURL& requestor_url,
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
+      Profile* profile_unused,
       const CheckDownloadCallback& callback) override {
     const auto iter =
         test_configuration_->result_map.find(default_file_path.Extension());

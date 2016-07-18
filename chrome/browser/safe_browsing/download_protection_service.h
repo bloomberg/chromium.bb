@@ -28,7 +28,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-
 namespace content {
 class DownloadItem;
 class PageNavigator;
@@ -37,6 +36,8 @@ class PageNavigator;
 namespace net {
 class X509Certificate;
 }  // namespace net
+
+class Profile;
 
 namespace safe_browsing {
 class BinaryFeatureExtractor;
@@ -115,6 +116,7 @@ class DownloadProtectionService {
       const GURL& requestor_url,
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
+      Profile* profile,
       const CheckDownloadCallback& callback);
 
   // Display more information to the user regarding the download specified by

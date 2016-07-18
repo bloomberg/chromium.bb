@@ -73,9 +73,23 @@
 using content::BrowserThread;
 
 namespace {
-static const int64_t kDownloadRequestTimeoutMs = 7000;
+
+const int64_t kDownloadRequestTimeoutMs = 7000;
 // We sample 1% of whitelisted downloads to still send out download pings.
-static const double kWhitelistDownloadSampleRate = 0.01;
+const double kWhitelistDownloadSampleRate = 0.01;
+
+enum WhitelistType {
+  NO_WHITELIST_MATCH,
+  URL_WHITELIST,
+  SIGNATURE_WHITELIST,
+  WHITELIST_TYPE_MAX
+};
+
+void RecordCountOfWhitelistedDownload(WhitelistType type) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckWhitelistResult", type,
+                            WHITELIST_TYPE_MAX);
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -760,20 +774,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 #endif  // defined(OS_MACOSX)
 
-  enum WhitelistType {
-    NO_WHITELIST_MATCH,
-    URL_WHITELIST,
-    SIGNATURE_WHITELIST,
-    WHITELIST_TYPE_MAX
-  };
-
-  static void RecordCountOfWhitelistedDownload(WhitelistType type) {
-    UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckWhitelistResult",
-                              type,
-                              WHITELIST_TYPE_MAX);
-  }
-
-  virtual bool ShouldSampleWhitelistedDownload() {
+  bool ShouldSampleWhitelistedDownload() {
     // We currently sample 1% whitelisted downloads from users who opted
     // in extended reporting and are not in incognito mode.
     return service_ && is_extended_reporting_ && !is_incognito_ &&
@@ -1200,6 +1201,7 @@ class DownloadProtectionService::PPAPIDownloadRequest
       const GURL& requestor_url,
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
+      Profile* profile,
       const CheckDownloadCallback& callback,
       DownloadProtectionService* service,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager)
@@ -1212,7 +1214,13 @@ class DownloadProtectionService::PPAPIDownloadRequest
         start_time_(base::TimeTicks::Now()),
         supported_path_(
             GetSupportedFilePath(default_file_path, alternate_extensions)),
-        weakptr_factory_(this) {}
+        sample_url_whitelist_(false),
+        weakptr_factory_(this) {
+    DCHECK(profile);
+    is_extended_reporting_ = profile->GetPrefs()->GetBoolean(
+        prefs::kSafeBrowsingExtendedReportingEnabled);
+    is_incognito_ = profile->IsOffTheRecord();
+  }
 
   ~PPAPIDownloadRequest() override {
     if (fetcher_ && !callback_.is_null())
@@ -1262,6 +1270,13 @@ class DownloadProtectionService::PPAPIDownloadRequest
   }
 
  private:
+  bool ShouldSampleWhitelistedDownload() {
+    // We currently sample 1% whitelisted downloads from users who opted
+    // in extended reporting and are not in incognito mode.
+    return service_ && !is_incognito_ && is_extended_reporting_ &&
+           base::RandDouble() < service_->whitelist_sample_rate();
+  }
+
   // Whitelist checking needs to the done on the IO thread.
   static void CheckWhitelistsOnIOThread(
       const GURL& requestor_url,
@@ -1282,10 +1297,14 @@ class DownloadProtectionService::PPAPIDownloadRequest
   void WhitelistCheckComplete(bool was_on_whitelist) {
     DVLOG(2) << __FUNCTION__ << " was_on_whitelist:" << was_on_whitelist;
     if (was_on_whitelist) {
-      // TODO(asanka): Should sample whitelisted downloads based on
-      // service_->whitelist_sample_rate(). http://crbug.com/610924
-      Finish(RequestOutcome::WHITELIST_HIT, SAFE);
-      return;
+      RecordCountOfWhitelistedDownload(URL_WHITELIST);
+      if (!ShouldSampleWhitelistedDownload()) {
+        Finish(RequestOutcome::WHITELIST_HIT, SAFE);
+        return;
+      }
+      sample_url_whitelist_ = true;
+    } else {
+      RecordCountOfWhitelistedDownload(NO_WHITELIST_MATCH);
     }
 
     // Not on whitelist, so we are going to check with the SafeBrowsing
@@ -1306,6 +1325,11 @@ class DownloadProtectionService::PPAPIDownloadRequest
     request.set_file_basename(supported_path_.BaseName().AsUTF8Unsafe());
     request.set_length(0);
     request.mutable_digests()->set_md5(std::string());
+    request.set_skipped_url_whitelist(sample_url_whitelist_);
+    // Download protection does not check certificate whitelist for
+    // base::RunLoop()
+    // downloads.
+    request.set_skipped_certificate_whitelist(false);
     for (const auto& alternate_extension : alternate_extensions_) {
       if (alternate_extension.empty())
         continue;
@@ -1368,12 +1392,13 @@ class DownloadProtectionService::PPAPIDownloadRequest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DVLOG(2) << __FUNCTION__ << " response: " << response;
     UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "SBClientDownload.PPAPIDownloadRequest.RequestOutcome",
+        "SBClientDownload.base::RunLoop()DownloadRequest.RequestOutcome",
         static_cast<int>(reason));
-    UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.PPAPIDownloadRequest.Result",
-                                response);
-    UMA_HISTOGRAM_TIMES("SBClientDownload.PPAPIDownloadRequest.RequestDuration",
-                        start_time_ - base::TimeTicks::Now());
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "SBClientDownload.base::RunLoop()DownloadRequest.Result", response);
+    UMA_HISTOGRAM_TIMES(
+        "SBClientDownload.base::RunLoop()DownloadRequest.RequestDuration",
+        start_time_ - base::TimeTicks::Now());
     if (!callback_.is_null())
       base::ResetAndReturn(&callback_).Run(response);
     fetcher_.reset();
@@ -1457,6 +1482,12 @@ class DownloadProtectionService::PPAPIDownloadRequest
   // path is therefore used as the download target when sending the SafeBrowsing
   // ping.
   const base::FilePath supported_path_;
+
+  bool sample_url_whitelist_;
+
+  bool is_extended_reporting_;
+
+  bool is_incognito_;
 
   base::WeakPtrFactory<PPAPIDownloadRequest> weakptr_factory_;
 
@@ -1563,12 +1594,13 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
     const GURL& requestor_url,
     const base::FilePath& default_file_path,
     const std::vector<base::FilePath::StringType>& alternate_extensions,
+    Profile* profile,
     const CheckDownloadCallback& callback) {
   DVLOG(1) << __FUNCTION__ << " url:" << requestor_url
            << " default_file_path:" << default_file_path.value();
   std::unique_ptr<PPAPIDownloadRequest> request(new PPAPIDownloadRequest(
-      requestor_url, default_file_path, alternate_extensions, callback, this,
-      database_manager_));
+      requestor_url, default_file_path, alternate_extensions, profile, callback,
+      this, database_manager_));
   PPAPIDownloadRequest* request_copy = request.get();
   auto insertion_result = ppapi_download_requests_.insert(
       std::make_pair(request_copy, std::move(request)));

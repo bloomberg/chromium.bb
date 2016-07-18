@@ -21,7 +21,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sha1.h"
@@ -73,7 +72,7 @@ using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::_;
-using base::MessageLoop;
+using base::RunLoop;
 using content::BrowserThread;
 namespace safe_browsing {
 namespace {
@@ -188,7 +187,7 @@ class TestURLFetcherWatcher : public net::TestURLFetcherDelegateForTests {
  private:
   net::TestURLFetcherFactory* factory_;
   int fetcher_id_;
-  base::RunLoop run_loop_;
+  RunLoop run_loop_;
 };
 }  // namespace
 
@@ -258,7 +257,7 @@ class DownloadProtectionServiceTest : public testing::Test {
         download_service_->RegisterClientDownloadRequestCallback(
             base::Bind(&DownloadProtectionServiceTest::OnClientDownloadRequest,
                        base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
+    RunLoop().RunUntilIdle();
     has_result_ = false;
 
     base::FilePath source_path;
@@ -346,7 +345,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   void FlushThreadMessageLoops() {
     BrowserThread::GetBlockingPool()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
-    base::RunLoop().RunUntilIdle();
+    RunLoop().RunUntilIdle();
   }
 
   // Proxy for private method.
@@ -441,32 +440,31 @@ class DownloadProtectionServiceTest : public testing::Test {
 
  private:
   // Helper functions for FlushThreadMessageLoops.
-  void RunAllPendingAndQuitUI() {
-    base::RunLoop().RunUntilIdle();
+  void RunAllPendingAndQuitUI(base::Closure quit_closure) {
+    RunLoop().RunUntilIdle();
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::QuitMessageLoop,
-                   base::Unretained(this)));
+                   base::Unretained(this), quit_closure));
   }
 
-  void QuitMessageLoop() { base::MessageLoop::current()->QuitWhenIdle(); }
+  void QuitMessageLoop(base::Closure quit_closure) { quit_closure.Run(); }
 
-  void PostRunMessageLoopTask(BrowserThread::ID thread) {
+  void PostRunMessageLoopTask(base::Closure quit_closure,
+                              BrowserThread::ID thread) {
     BrowserThread::PostTask(
-        thread,
-        FROM_HERE,
+        thread, FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::RunAllPendingAndQuitUI,
-                   base::Unretained(this)));
+                   base::Unretained(this), quit_closure));
   }
 
   void FlushMessageLoop(BrowserThread::ID thread) {
+    RunLoop run_loop;
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
-                   base::Unretained(this), thread));
-    base::RunLoop().Run();
+                   base::Unretained(this), run_loop.QuitClosure(), thread));
+    run_loop.Run();
   }
 
   void OnClientDownloadRequest(content::DownloadItem* download,
@@ -481,10 +479,11 @@ class DownloadProtectionServiceTest : public testing::Test {
   enum ArchiveType { ZIP, DMG };
 
   void CheckDoneCallback(
+      base::Closure quit_closure,
       DownloadProtectionService::DownloadCheckResult result) {
     result_ = result;
     has_result_ = true;
-    MessageLoop::current()->QuitWhenIdle();
+    quit_closure.Run();
   }
 
   void SyncCheckDoneCallback(
@@ -556,8 +555,7 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
       &factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
-                                   is_extended_reporting);
+  SetExtendedReportingPreference(is_extended_reporting);
   content::MockDownloadItem item;
   if (type == ZIP) {
     PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.zip"},  // url_chain
@@ -583,11 +581,11 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
   ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
       tmp_path_, file_contents.data(), file_contents.size()));
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   const bool expect_request =
       type == ZIP ? is_extended_reporting && !is_incognito : true;
@@ -612,34 +610,35 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   content::MockDownloadItem item;
-  PrepareBasicDownloadItem(
-    &item,
-    std::vector<std::string>(),   // empty url_chain
-    "http://www.google.com/",     // referrer
-    FILE_PATH_LITERAL("a.tmp"),   // tmp_path
-    FILE_PATH_LITERAL("a.exe"));  // final_path
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
-  Mock::VerifyAndClearExpectations(&item);
+  {
+    PrepareBasicDownloadItem(&item,
+                             std::vector<std::string>(),   // empty url_chain
+                             "http://www.google.com/",     // referrer
+                             FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));  // final_path
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
+    Mock::VerifyAndClearExpectations(&item);
+  }
 
-  PrepareBasicDownloadItem(
-    &item,
-    {"file://www.google.com/"},   // url_chain
-    "http://www.google.com/",     // referrer
-    FILE_PATH_LITERAL("a.tmp"),   // tmp_path
-    FILE_PATH_LITERAL("a.exe"));  // final_path
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
+  {
+    PrepareBasicDownloadItem(&item, {"file://www.google.com/"},  // url_chain
+                             "http://www.google.com/",           // referrer
+                             FILE_PATH_LITERAL("a.tmp"),         // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));        // final_path
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
@@ -650,11 +649,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
     "http://www.google.com/",     // referrer
     FILE_PATH_LITERAL("a.tmp"),   // tmp_path
     FILE_PATH_LITERAL("a.txt"));  // final_path
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 }
@@ -691,62 +690,71 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(GURL("http://www.google.com/a.exe")))
       .WillRepeatedly(Return(true));
-
-  // With no referrer and just the bad url, should be marked DANGEROUS.
-  url_chain_.push_back(GURL("http://www.evil.com/bla.exe"));
   // Set sample rate to 0 to prevent sampling.
   SetWhitelistedDownloadSampleRate(0);
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
-  EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-  ClearClientDownloadRequest();
+  {
+    // With no referrer and just the bad url, should be marked DANGEROUS.
+    url_chain_.push_back(GURL("http://www.evil.com/bla.exe"));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  // Check that the referrer is not matched against the whitelist.
-  referrer_ = GURL("http://www.google.com/");
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
+    EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
+    ClearClientDownloadRequest();
+  }
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
-  EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-  ClearClientDownloadRequest();
+  {
+    // Check that the referrer is not matched against the whitelist.
+    referrer_ = GURL("http://www.google.com/");
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  // Redirect from a site shouldn't be checked either.
-  url_chain_.insert(url_chain_.begin(), GURL("http://www.google.com/redirect"));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
+    EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
+    ClearClientDownloadRequest();
+  }
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
-  EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-  ClearClientDownloadRequest();
+  {
+    // Redirect from a site shouldn't be checked either.
+    url_chain_.insert(url_chain_.begin(),
+                      GURL("http://www.google.com/redirect"));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  // Only if the final url is whitelisted should it be SAFE.
-  url_chain_.push_back(GURL("http://www.google.com/a.exe"));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  // TODO(grt): Make the service produce the request even when the URL is
-  // whitelisted.
-  EXPECT_FALSE(HasClientDownloadRequest());
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    EXPECT_FALSE(GetClientDownloadRequest()->skipped_url_whitelist());
+    EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
+    ClearClientDownloadRequest();
+  }
+
+  {
+    // Only if the final url is whitelisted should it be SAFE.
+    url_chain_.push_back(GURL("http://www.google.com/a.exe"));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    // TODO(grt): Make the service produce the request even when the URL is
+    // whitelisted.
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest,
@@ -781,57 +789,66 @@ TEST_F(DownloadProtectionServiceTest,
   // Set sample rate to 1.00, so download_service_ will always send download
   // pings for whitelisted downloads.
   SetWhitelistedDownloadSampleRate(1.00);
-  // Case (1): is_extended_reporting && is_incognito.
-  //           ClientDownloadRequest should NOT be sent.
-  SetExtendedReportingPreference(true);
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  EXPECT_FALSE(HasClientDownloadRequest());
 
-  // Case (2): is_extended_reporting && !is_incognito.
-  //           ClientDownloadRequest should be sent.
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_.get()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  EXPECT_TRUE(GetClientDownloadRequest()->skipped_url_whitelist());
-  ClearClientDownloadRequest();
+  {
+    // Case (1): is_extended_reporting && is_incognito.
+    //           ClientDownloadRequest should NOT be sent.
+    SetExtendedReportingPreference(true);
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
 
-  // Case (3): !is_extended_reporting && is_incognito.
-  //           ClientDownloadRequest should NOT be sent.
-  SetExtendedReportingPreference(false);
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  EXPECT_FALSE(HasClientDownloadRequest());
+  {
+    // Case (2): is_extended_reporting && !is_incognito.
+    //           ClientDownloadRequest should be sent.
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_.get()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    EXPECT_TRUE(GetClientDownloadRequest()->skipped_url_whitelist());
+    ClearClientDownloadRequest();
+  }
 
-  // Case (4): !is_extended_reporting && !is_incognito.
-  //           ClientDownloadRequest should NOT be sent.
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_.get()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  EXPECT_FALSE(HasClientDownloadRequest());
+  {
+    // Case (3): !is_extended_reporting && is_incognito.
+    //           ClientDownloadRequest should NOT be sent.
+    SetExtendedReportingPreference(false);
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
+
+  {
+    // Case (4): !is_extended_reporting && !is_incognito.
+    //           ClientDownloadRequest should NOT be sent.
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_.get()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
@@ -859,70 +876,77 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
   // Set ping sample rate to 1.00 so download_service_ will always send a
   // "light" ping for unknown types if allowed.
   SetBinarySamplingProbability(1.0);
-
-  // Case (1): is_extended_reporting && is_incognito.
-  //           ClientDownloadRequest should NOT be sent.
-  SetExtendedReportingPreference(true);
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
-
-  // Case (2): is_extended_reporting && !is_incognito.
-  //           A "light" ClientDownloadRequest should be sent.
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_.get()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  // Verify it's a "light" ping, check that URLs don't have paths, and
-  // and verify filename is just an extension.
-  auto* req = GetClientDownloadRequest();
-  EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
-            req->download_type());
-  EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
-  for (auto resource : req->resources()) {
-    EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
-    EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
-              resource.referrer());
+  {
+    // Case (1): is_extended_reporting && is_incognito.
+    //           ClientDownloadRequest should NOT be sent.
+    SetExtendedReportingPreference(true);
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
   }
-  EXPECT_EQ('.', req->file_basename()[0]);
+
+  {
+    // Case (2): is_extended_reporting && !is_incognito.
+    //           A "light" ClientDownloadRequest should be sent.
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_.get()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    // Verify it's a "light" ping, check that URLs don't have paths, and
+    // and verify filename is just an extension.
+    auto* req = GetClientDownloadRequest();
+    EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
+              req->download_type());
+    EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
+    for (auto resource : req->resources()) {
+      EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
+      EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
+                resource.referrer());
+    }
+    EXPECT_EQ('.', req->file_basename()[0]);
+  }
 
   ClearClientDownloadRequest();
 
-  // Case (3): !is_extended_reporting && is_incognito.
-  //           ClientDownloadRequest should NOT be sent.
-  SetExtendedReportingPreference(false);
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
+  {
+    // Case (3): !is_extended_reporting && is_incognito.
+    //           ClientDownloadRequest should NOT be sent.
+    SetExtendedReportingPreference(false);
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
 
-  // Case (4): !is_extended_reporting && !is_incognito.
-  //           ClientDownloadRequest should NOT be sent.
-  EXPECT_CALL(item, GetBrowserContext())
-          .WillRepeatedly(Return(profile_.get()));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
+  {
+    // Case (4): !is_extended_reporting && !is_incognito.
+    //           ClientDownloadRequest should NOT be sent.
+    EXPECT_CALL(item, GetBrowserContext())
+        .WillRepeatedly(Return(profile_.get()));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
@@ -949,11 +973,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       ExtractImageFeatures(tmp_path_, BinaryFeatureExtractor::kDefaultOptions,
                            _, _));
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
 
@@ -980,126 +1004,135 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .Times(7);
-
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
-
-  // Invalid response should result in UNKNOWN.
-  ClientDownloadResponse invalid_response;
-  factory.SetFakeResponse(
-      DownloadProtectionService::GetDownloadRequestUrl(),
-      invalid_response.SerializePartialAsString(),
-      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
   std::string feedback_ping;
   std::string feedback_response;
-  EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
-      item, &feedback_ping, &feedback_response));
-
-  // If the response is dangerous the result should also be marked as dangerous.
-  PrepareResponse(
-      &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
-      item, &feedback_ping, &feedback_response));
-
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
-
-  // If the response is uncommon the result should also be marked as uncommon.
-  PrepareResponse(
-      &factory, ClientDownloadResponse::UNCOMMON, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNCOMMON));
-  EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
-      item, &feedback_ping, &feedback_response));
-  ClientDownloadRequest decoded_request;
-  EXPECT_TRUE(decoded_request.ParseFromString(feedback_ping));
-  EXPECT_EQ(url_chain_.back().spec(), decoded_request.url());
   ClientDownloadResponse expected_response;
-  expected_response.set_verdict(ClientDownloadResponse::UNCOMMON);
-  EXPECT_EQ(expected_response.SerializeAsString(), feedback_response);
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
 
-  // If the response is dangerous_host the result should also be marked as
-  // dangerous_host.
-  PrepareResponse(
-      &factory, ClientDownloadResponse::DANGEROUS_HOST, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  {
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS_HOST));
-  EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
-      item, &feedback_ping, &feedback_response));
-  expected_response.set_verdict(ClientDownloadResponse::DANGEROUS_HOST);
-  EXPECT_EQ(expected_response.SerializeAsString(), feedback_response);
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
 
-  // If the response is POTENTIALLY_UNWANTED the result should also be marked as
-  // POTENTIALLY_UNWANTED.
-  PrepareResponse(
-      &factory, ClientDownloadResponse::POTENTIALLY_UNWANTED, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  {
+    // Invalid response should result in UNKNOWN.
+    ClientDownloadResponse invalid_response;
+    factory.SetFakeResponse(DownloadProtectionService::GetDownloadRequestUrl(),
+                            invalid_response.SerializePartialAsString(),
+                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::POTENTIALLY_UNWANTED));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
+    EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+        item, &feedback_ping, &feedback_response));
+  }
 
-  // If the response is UNKNOWN the result should also be marked as
-  // UNKNOWN
-  PrepareResponse(
-      &factory, ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  {
+    // If the response is dangerous the result should also be marked as
+    // dangerous.
+    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+        item, &feedback_ping, &feedback_response));
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
+  {
+    // If the response is uncommon the result should also be marked as uncommon.
+    PrepareResponse(&factory, ClientDownloadResponse::UNCOMMON, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNCOMMON));
+    EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+        item, &feedback_ping, &feedback_response));
+    ClientDownloadRequest decoded_request;
+    EXPECT_TRUE(decoded_request.ParseFromString(feedback_ping));
+    EXPECT_EQ(url_chain_.back().spec(), decoded_request.url());
+    expected_response.set_verdict(ClientDownloadResponse::UNCOMMON);
+    EXPECT_EQ(expected_response.SerializeAsString(), feedback_response);
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
+
+  {
+    // If the response is dangerous_host the result should also be marked as
+    // dangerous_host.
+    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS_HOST,
+                    net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS_HOST));
+    EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+        item, &feedback_ping, &feedback_response));
+    expected_response.set_verdict(ClientDownloadResponse::DANGEROUS_HOST);
+    EXPECT_EQ(expected_response.SerializeAsString(), feedback_response);
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
+
+  {
+    // If the response is POTENTIALLY_UNWANTED the result should also be marked
+    // as
+    // POTENTIALLY_UNWANTED.
+    PrepareResponse(&factory, ClientDownloadResponse::POTENTIALLY_UNWANTED,
+                    net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_TRUE(IsResult(DownloadProtectionService::POTENTIALLY_UNWANTED));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
+
+  {
+    // If the response is UNKNOWN the result should also be marked as
+    // UNKNOWN
+    PrepareResponse(&factory, ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
@@ -1125,11 +1158,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .Times(1);
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
@@ -1159,11 +1192,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .Times(1);
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
@@ -1194,11 +1227,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .Times(1);
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   ASSERT_TRUE(HasClientDownloadRequest());
@@ -1242,114 +1275,128 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
     FILE_PATH_LITERAL("a.tmp"),     // tmp_path
     FILE_PATH_LITERAL("a.zip"));    // final_path
 
-  // Write out a zip archive to the temporary file.  In this case, it
-  // only contains a text file.
+  // Write out a zip archive to the temporary file.
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
   std::string file_contents = "dummy file";
-  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
-      zip_source_dir.path().Append(FILE_PATH_LITERAL("file.txt")),
-      file_contents.data(), file_contents.size()));
-  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-  EXPECT_FALSE(HasClientDownloadRequest());
-  Mock::VerifyAndClearExpectations(sb_service_.get());
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+  {
+    // In this case, it only contains a text file.
+    ASSERT_EQ(static_cast<int>(file_contents.size()),
+              base::WriteFile(
+                  zip_source_dir.path().Append(FILE_PATH_LITERAL("file.txt")),
+                  file_contents.data(), file_contents.size()));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
 
-  // Now check with an executable in the zip file as well.
-  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
-      zip_source_dir.path().Append(FILE_PATH_LITERAL("file.exe")),
-      file_contents.data(), file_contents.size()));
-  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_FALSE(HasClientDownloadRequest());
+    Mock::VerifyAndClearExpectations(sb_service_.get());
+    Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+  }
 
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              MatchDownloadWhitelistUrl(_))
-      .WillRepeatedly(Return(false));
+  {
+    // Now check with an executable in the zip file as well.
+    ASSERT_EQ(static_cast<int>(file_contents.size()),
+              base::WriteFile(
+                  zip_source_dir.path().Append(FILE_PATH_LITERAL("file.exe")),
+                  file_contents.data(), file_contents.size()));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(_))
+        .WillRepeatedly(Return(false));
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  const ClientDownloadRequest& request = *GetClientDownloadRequest();
-  EXPECT_TRUE(request.has_download_type());
-  EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
-            request.download_type());
-  EXPECT_EQ(1, request.archived_binary_size());
-  const ClientDownloadRequest_ArchivedBinary* archived_binary =
-      GetRequestArchivedBinary(request, "file.exe");
-  ASSERT_NE(nullptr, archived_binary);
-  EXPECT_EQ(ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
-            archived_binary->download_type());
-  EXPECT_EQ(static_cast<int64_t>(file_contents.size()),
-            archived_binary->length());
-  ClearClientDownloadRequest();
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  // If the response is dangerous the result should also be marked as
-  // dangerous.
-  PrepareResponse(
-      &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    const ClientDownloadRequest& request = *GetClientDownloadRequest();
+    EXPECT_TRUE(request.has_download_type());
+    EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
+              request.download_type());
+    EXPECT_EQ(1, request.archived_binary_size());
+    const ClientDownloadRequest_ArchivedBinary* archived_binary =
+        GetRequestArchivedBinary(request, "file.exe");
+    ASSERT_NE(nullptr, archived_binary);
+    EXPECT_EQ(ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+              archived_binary->download_type());
+    EXPECT_EQ(static_cast<int64_t>(file_contents.size()),
+              archived_binary->length());
+    ClearClientDownloadRequest();
+    Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+  }
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+  {
+    // If the response is dangerous the result should also be marked as
+    // dangerous.
+    PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
 
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  // Repeat the test with an archive inside the zip file in addition to the
-  // executable.
-  ASSERT_EQ(static_cast<int>(file_contents.size()),
-            base::WriteFile(
-                zip_source_dir.path().Append(FILE_PATH_LITERAL("file.rar")),
-                file_contents.data(), file_contents.size()));
-  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+    Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+  }
 
-  download_service_->CheckClientDownload(
-      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                        base::Unretained(this)));
-  base::RunLoop().Run();
+  {
+    // Repeat the test with an archive inside the zip file in addition to the
+    // executable.
+    ASSERT_EQ(static_cast<int>(file_contents.size()),
+              base::WriteFile(
+                  zip_source_dir.path().Append(FILE_PATH_LITERAL("file.rar")),
+                  file_contents.data(), file_contents.size()));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
 
-  ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_EQ(1, GetClientDownloadRequest()->archived_binary_size());
-  EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
-  EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
-            GetClientDownloadRequest()->download_type());
-  ClearClientDownloadRequest();
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
 
-  // Repeat the test with just the archive inside the zip file.
-  ASSERT_TRUE(
-      base::DeleteFile(zip_source_dir.path().AppendASCII("file.exe"), false));
-  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+    ASSERT_TRUE(HasClientDownloadRequest());
+    EXPECT_EQ(1, GetClientDownloadRequest()->archived_binary_size());
+    EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
+    EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
+              GetClientDownloadRequest()->download_type());
+    ClearClientDownloadRequest();
+    Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+  }
 
-  download_service_->CheckClientDownload(
-      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                        base::Unretained(this)));
-  base::RunLoop().Run();
+  {
+    // Repeat the test with just the archive inside the zip file.
+    ASSERT_TRUE(
+        base::DeleteFile(zip_source_dir.path().AppendASCII("file.exe"), false));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
 
-  ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
-  EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
-  EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_ARCHIVE,
-            GetClientDownloadRequest()->download_type());
-  ClearClientDownloadRequest();
-  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    ASSERT_TRUE(HasClientDownloadRequest());
+    EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
+    EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
+    EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_ARCHIVE,
+              GetClientDownloadRequest()->download_type());
+    ClearClientDownloadRequest();
+    Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest,
@@ -1415,10 +1462,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       ExtractImageFeatures(tmp_path_, BinaryFeatureExtractor::kDefaultOptions,
                            _, _))
       .WillOnce(SetDosHeaderContents("dummy dos header"));
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
 
   // Run the message loop(s) until SendRequest is called.
   FlushThreadMessageLoops();
@@ -1455,11 +1502,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_EQ("dummy dos header", headers.pe_headers().dos_header());
 
   // Simulate the request finishing.
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 // Similar to above, but with an unsigned binary.
@@ -1486,10 +1534,10 @@ TEST_F(DownloadProtectionServiceTest,
               ExtractImageFeatures(tmp_path_,
                                    BinaryFeatureExtractor::kDefaultOptions,
                                    _, _));
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
 
   // Run the message loop(s) until SendRequest is called.
   FlushThreadMessageLoops();
@@ -1519,7 +1567,7 @@ TEST_F(DownloadProtectionServiceTest,
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 // Similar to above, but with tab history.
@@ -1558,10 +1606,10 @@ TEST_F(DownloadProtectionServiceTest,
   // First test with no history match for the tab URL.
   {
     TestURLFetcherWatcher fetcher_watcher(&factory);
+    RunLoop run_loop;
     download_service_->CheckClientDownload(
-        &item,
-        base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                   base::Unretained(this)));
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
 
     EXPECT_EQ(0, fetcher_watcher.WaitForRequest());
     EXPECT_TRUE(HasClientDownloadRequest());
@@ -1607,7 +1655,7 @@ TEST_F(DownloadProtectionServiceTest,
         FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                    base::Unretained(this), fetcher));
-    base::RunLoop().Run();
+    run_loop.Run();
   }
 
   // Now try with a history match.
@@ -1629,10 +1677,11 @@ TEST_F(DownloadProtectionServiceTest,
                   false);
 
     TestURLFetcherWatcher fetcher_watcher(&factory);
+    RunLoop run_loop;
     download_service_->CheckClientDownload(
-        &item,
-        base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                   base::Unretained(this)));
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+
     EXPECT_EQ(0, fetcher_watcher.WaitForRequest());
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
@@ -1679,7 +1728,7 @@ TEST_F(DownloadProtectionServiceTest,
         FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                    base::Unretained(this), fetcher));
-    base::RunLoop().Run();
+    run_loop.Run();
   }
 }
 
@@ -1697,57 +1746,63 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
   EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
 
-  // CheckDownloadURL returns immediately which means the client object callback
-  // will never be called.  Nevertheless the callback provided to
-  // CheckClientDownload must still be called.
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
-      .WillOnce(Return(true));
-  download_service_->CheckDownloadUrl(
-      item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  Mock::VerifyAndClearExpectations(sb_service_.get());
+  {
+    // CheckDownloadURL returns immediately which means the client object
+    // callback
+    // will never be called.  Nevertheless the callback provided to
+    // CheckClientDownload must still be called.
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
+        .WillOnce(Return(true));
+    RunLoop run_loop;
+    download_service_->CheckDownloadUrl(
+        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                         base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    Mock::VerifyAndClearExpectations(sb_service_.get());
+  }
 
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
-      .WillOnce(DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_SAFE),
-                      Return(false)));
-  download_service_->CheckDownloadUrl(
-      item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  Mock::VerifyAndClearExpectations(sb_service_.get());
+  {
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
+        .WillOnce(
+            DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_SAFE), Return(false)));
+    RunLoop run_loop;
+    download_service_->CheckDownloadUrl(
+        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                         base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    Mock::VerifyAndClearExpectations(sb_service_.get());
+  }
 
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
-      .WillOnce(DoAll(
-          CheckDownloadUrlDone(SB_THREAT_TYPE_URL_MALWARE),
-          Return(false)));
-  download_service_->CheckDownloadUrl(
-      item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
-  Mock::VerifyAndClearExpectations(sb_service_.get());
+  {
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
+        .WillOnce(DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_URL_MALWARE),
+                        Return(false)));
+    RunLoop run_loop;
+    download_service_->CheckDownloadUrl(
+        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                         base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+    Mock::VerifyAndClearExpectations(sb_service_.get());
+  }
 
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              CheckDownloadUrl(ContainerEq(url_chain),
-                               NotNull()))
-      .WillOnce(DoAll(
-          CheckDownloadUrlDone(SB_THREAT_TYPE_BINARY_MALWARE_URL),
-          Return(false)));
-  download_service_->CheckDownloadUrl(
-      item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+  {
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
+        .WillOnce(DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_BINARY_MALWARE_URL),
+                        Return(false)));
+    RunLoop run_loop;
+    download_service_->CheckDownloadUrl(
+        item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                         base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+  }
 }
 
 TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
@@ -1771,14 +1826,14 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
                                    _, _));
 
   download_service_->download_request_timeout_ms_ = 10;
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
 
   // The request should time out because the HTTP request hasn't returned
   // anything yet.
-  base::RunLoop().Run();
+  run_loop.Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -1841,12 +1896,12 @@ TEST_F(DownloadProtectionServiceTest,
                                    BinaryFeatureExtractor::kDefaultOptions,
                                    _, _));
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      item.get(),
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+      item.get(), base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                             base::Unretained(this), run_loop.QuitClosure()));
 
-  base::RunLoop().Run();
+  run_loop.Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 }
@@ -1987,8 +2042,10 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
   std::vector<base::FilePath::StringType> alternate_extensions{
       FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".asdfasdf")};
+  SetExtendedReportingPreference(false);
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
                  base::Unretained(this)));
   ASSERT_TRUE(IsResult(DownloadProtectionService::SAFE));
@@ -2019,11 +2076,14 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
     factory.ClearFakeResponses();
     PrepareResponse(&factory, test_case.verdict, net::HTTP_OK,
                     net::URLRequestStatus::SUCCESS);
+    SetExtendedReportingPreference(false);
+    RunLoop run_loop;
     download_service_->CheckPPAPIDownloadRequest(
         GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+        profile_.get(),
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                   base::Unretained(this)));
-    base::RunLoop().Run();
+                   base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_TRUE(IsResult(test_case.expected_result));
   }
 }
@@ -2038,29 +2098,95 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedAlternate) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
+  SetExtendedReportingPreference(false);
+  RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   ASSERT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 }
 
-TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_WhitelistedURL) {
+TEST_F(DownloadProtectionServiceTest,
+       PPAPIDownloadRequest_WhitelistedURLNotExtendedReporting) {
   net::FakeURLFetcherFactory factory(nullptr);
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
+  // Configs "server" side response to DANGEROUS, in case a request is send out.
+  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(true));
+  SetExtendedReportingPreference(false);
+  // Sets the sample rate to 1.00.
+  SetWhitelistedDownloadSampleRate(1.00);
+  RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
+  // Result should be SAFE, since download matches whitelist but user is not in
+  // extended reporting group (a.k.a no request sents out).
   ASSERT_TRUE(IsResult(DownloadProtectionService::SAFE));
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       PPAPIDownloadRequest_WhitelistedURLIncognito) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  // Configs "server" side response to DANGEROUS, in case a request is send out.
+  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(true));
+  SetExtendedReportingPreference(true);
+  RunLoop run_loop;
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_->GetOffTheRecordProfile(),
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Result should still be SAFE, since download matches whitelist and user is
+  // in incognito mode.
+  ASSERT_TRUE(IsResult(DownloadProtectionService::SAFE));
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       PPAPIDownloadRequest_SampleWhitelistedURL) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  // Configs "server" side response to DANGEROUS.
+  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(true));
+  // Sets the sample rate to 1.00 to trigger ClientDownloadRequest.
+  SetWhitelistedDownloadSampleRate(1.00);
+  SetExtendedReportingPreference(true);
+  RunLoop run_loop;
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Result should be Dangerous, since we will sample this download and ping SB
+  // Server (server returns DANGEROUS verdict).
+  ASSERT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_FetchFailed) {
@@ -2072,11 +2198,14 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_FetchFailed) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
+  SetExtendedReportingPreference(false);
+  RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   ASSERT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
@@ -2091,11 +2220,14 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_InvalidResponse) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
+  SetExtendedReportingPreference(false);
+  RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   ASSERT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
@@ -2110,11 +2242,14 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Timeout) {
   PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   download_service_->download_request_timeout_ms_ = 0;
+  SetExtendedReportingPreference(false);
+  RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   ASSERT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
 }
@@ -2170,11 +2305,13 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
   PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   const GURL kRequestorUrl("http://example.com/foo");
+  SetExtendedReportingPreference(false);
+  RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
-      kRequestorUrl, default_file_path, alternate_extensions,
+      kRequestorUrl, default_file_path, alternate_extensions, profile_.get(),
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   ASSERT_FALSE(upload_data.empty());
 
@@ -2233,11 +2370,11 @@ TEST_F(DownloadProtectionServiceFlagTest, CheckClientDownloadOverridenByFlag) {
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   EXPECT_FALSE(HasClientDownloadRequest());
   // Overriden by flag:
@@ -2261,10 +2398,11 @@ TEST_F(DownloadProtectionServiceFlagTest,
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
 
+  RunLoop run_loop;
   download_service_->CheckClientDownload(
       &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                        base::Unretained(this)));
-  base::RunLoop().Run();
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 
   EXPECT_FALSE(HasClientDownloadRequest());
   // Overriden by flag:
