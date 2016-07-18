@@ -119,11 +119,13 @@ bool CreateDesktopShortcut(
     const web_app::ShortcutInfo& shortcut_info,
     const web_app::ShortcutLocations& creation_locations);
 
+#if defined(ENABLE_APP_LIST)
 // Create shortcuts in the application menu for the app launcher. Duplicate
 // shortcuts are avoided, so if a requested shortcut already exists it is
 // deleted first. Also creates the icon required by the shortcut.
 bool CreateAppListDesktopShortcut(const std::string& wm_class,
                                   const std::string& title);
+#endif
 
 // Delete any desktop shortcuts on desktop or in the application menu that have
 // been added for the extension with |extension_id| in |profile_path|.

@@ -5,7 +5,7 @@
      it is the caller's responsibility to do the right thing when the
      display is not at 100P device scale factor.
   -->
-<grit latest_public_release="0" current_release="1">
+<grit latest_public_release="0" current_release="1" output_all_resource_defines="false">
   <outputs>
     <output filename="grit/chrome_unscaled_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
@@ -76,16 +76,18 @@
       <if expr="is_linux and enable_app_list">
         <!-- App Launcher icons for desktop icon. -->
         <if expr="_google_chrome">
-          <include name="IDR_APP_LIST_16" file="google_chrome/linux/app_list_16.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_32" file="google_chrome/linux/app_list_32.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_48" file="google_chrome/linux/app_list_48.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_256" file="google_chrome/linux/app_list_256.png" type="BINDATA" />
-        </if>
-        <if expr="not _google_chrome">
-          <include name="IDR_APP_LIST_16" file="chromium/linux/app_list_16.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_32" file="chromium/linux/app_list_32.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_48" file="chromium/linux/app_list_48.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_256" file="chromium/linux/app_list_256.png" type="BINDATA" />
+          <then>
+            <include name="IDR_APP_LIST_16" file="google_chrome/linux/app_list_16.png" type="BINDATA" />
+            <include name="IDR_APP_LIST_32" file="google_chrome/linux/app_list_32.png" type="BINDATA" />
+            <include name="IDR_APP_LIST_48" file="google_chrome/linux/app_list_48.png" type="BINDATA" />
+            <include name="IDR_APP_LIST_256" file="google_chrome/linux/app_list_256.png" type="BINDATA" />
+          </then>
+          <else>
+            <include name="IDR_APP_LIST_16" file="chromium/linux/app_list_16.png" type="BINDATA" />
+            <include name="IDR_APP_LIST_32" file="chromium/linux/app_list_32.png" type="BINDATA" />
+            <include name="IDR_APP_LIST_48" file="chromium/linux/app_list_48.png" type="BINDATA" />
+            <include name="IDR_APP_LIST_256" file="chromium/linux/app_list_256.png" type="BINDATA" />
+          </else>
         </if>
       </if>
       <if expr="is_macosx">

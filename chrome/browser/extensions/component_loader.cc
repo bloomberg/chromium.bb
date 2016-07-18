@@ -347,17 +347,21 @@ void ComponentLoader::AddHangoutServicesExtension() {
 }
 
 void ComponentLoader::AddHotwordAudioVerificationApp() {
+#if defined(ENABLE_HOTWORDING)
   if (HotwordServiceFactory::IsAlwaysOnAvailable()) {
     Add(IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword_audio_verification")));
   }
+#endif
 }
 
 void ComponentLoader::AddHotwordHelperExtension() {
+#if defined(ENABLE_HOTWORDING)
   if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
     Add(IDR_HOTWORD_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword")));
   }
+#endif
 }
 
 void ComponentLoader::AddImageLoaderExtension() {

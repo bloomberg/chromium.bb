@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grit latest_public_release="0" current_release="1">
+<grit latest_public_release="0" current_release="1" output_all_resource_defines="false">
   <outputs>
     <output filename="grit/browser_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
@@ -196,8 +196,10 @@
         <!-- Hangout Services extension, included in Google Chrome builds only. -->
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       </if>
-      <include name="IDR_HOTWORD_MANIFEST" file="resources\hotword\manifest.json" type="BINDATA" />
-      <include name="IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST" file="resources\hotword_audio_verification\manifest.json" type="BINDATA" />
+      <if expr="enable_hotwording">
+        <include name="IDR_HOTWORD_MANIFEST" file="resources\hotword\manifest.json" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST" file="resources\hotword_audio_verification\manifest.json" type="BINDATA" />
+      </if>
       <if expr="not is_android">
         <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HELP_PAGE_JS" file="resources\help\help_page.js" flattenhtml="true" type="BINDATA" />
@@ -317,10 +319,12 @@
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
       </if>
       <if expr="is_android">
-        <include name="IDR_POLICY_CSS" file="resources\policy_android.css" type="BINDATA"/>
-      </if>
-      <if expr="not is_android">
-        <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
+        <then>
+          <include name="IDR_POLICY_CSS" file="resources\policy_android.css" type="BINDATA"/>
+        </then>
+        <else>
+          <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
+        </else>
       </if>
       <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA"/>
@@ -514,17 +518,19 @@
       </if>
       <if expr="chromeos">
         <if expr="_google_chrome">
-          <include name="IDR_GOOGLE_XKB_MANIFEST" file="resources\chromeos\input_method\google_xkb_manifest.json" type="BINDATA" />
-          <include name="IDR_GOOGLE_INPUT_TOOLS_MANIFEST" file="resources\chromeos\input_method\google_input_tools_manifest.json" type="BINDATA" />
-        </if>
-        <if expr="not _google_chrome">
-          <include name="IDR_XKB_MANIFEST" file="resources\chromeos\input_method\xkb_manifest.json" type="BINDATA" />
-          <include name="IDR_M17N_MANIFEST" file="resources\chromeos\input_method\m17n_manifest.json" type="BINDATA" />
-          <include name="IDR_PINYIN_MANIFEST" file="resources\chromeos\input_method\pinyin_manifest.json" type="BINDATA" />
-          <include name="IDR_ZHUYIN_MANIFEST" file="resources\chromeos\input_method\zhuyin_manifest.json" type="BINDATA" />
-          <include name="IDR_CANGJIE_MANIFEST" file="resources\chromeos\input_method\cangjie_manifest.json" type="BINDATA" />
-          <include name="IDR_MOZC_MANIFEST" file="resources\chromeos\input_method\mozc_manifest.json" type="BINDATA" />
-          <include name="IDR_HANGUL_MANIFEST" file="resources\chromeos\input_method\hangul_manifest.json" type="BINDATA" />
+          <then>
+            <include name="IDR_GOOGLE_XKB_MANIFEST" file="resources\chromeos\input_method\google_xkb_manifest.json" type="BINDATA" />
+            <include name="IDR_GOOGLE_INPUT_TOOLS_MANIFEST" file="resources\chromeos\input_method\google_input_tools_manifest.json" type="BINDATA" />
+          </then>
+          <else>
+            <include name="IDR_XKB_MANIFEST" file="resources\chromeos\input_method\xkb_manifest.json" type="BINDATA" />
+            <include name="IDR_M17N_MANIFEST" file="resources\chromeos\input_method\m17n_manifest.json" type="BINDATA" />
+            <include name="IDR_PINYIN_MANIFEST" file="resources\chromeos\input_method\pinyin_manifest.json" type="BINDATA" />
+            <include name="IDR_ZHUYIN_MANIFEST" file="resources\chromeos\input_method\zhuyin_manifest.json" type="BINDATA" />
+            <include name="IDR_CANGJIE_MANIFEST" file="resources\chromeos\input_method\cangjie_manifest.json" type="BINDATA" />
+            <include name="IDR_MOZC_MANIFEST" file="resources\chromeos\input_method\mozc_manifest.json" type="BINDATA" />
+            <include name="IDR_HANGUL_MANIFEST" file="resources\chromeos\input_method\hangul_manifest.json" type="BINDATA" />
+          </else>
         </if>
         <include name="IDR_BRAILLE_MANIFEST" file="resources\chromeos\braille_ime\manifest.json" type="BINDATA" />
       </if>
@@ -537,7 +543,7 @@
         <include name="IDR_CAST_JS" file="resources\cast\cast.js" type="BINDATA" />
         <include name="IDR_CAST_FAVICON" file="resources\cast\cast_favicon.ico" type="BINDATA" />
       </if>
-      <if expr="not is_android and not is_ios and not chromeos">
+      <if expr="not is_android and not is_ios">
         <include name="IDR_IME_WINDOW_CLOSE" file="resources\input_ime\ime_window_close.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />

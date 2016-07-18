@@ -252,9 +252,11 @@ namespace shell_integration_linux {
 
 namespace {
 
+#if defined(ENABLE_APP_LIST)
 // The Categories for the App Launcher desktop shortcut. Should be the same as
 // the Chrome desktop shortcut, so they are in the same sub-menu.
 const char kAppListCategories[] = "Network;WebBrowser;";
+#endif
 
 std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
                                const base::FilePath& shortcut_filename) {
@@ -482,10 +484,12 @@ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 
 const char kDirectoryFilename[] = "chrome-apps.directory";
 
+#if defined(ENABLE_APP_LIST)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kAppListDesktopName[] = "chrome-app-list";
 #else  // CHROMIUM_BUILD
 const char kAppListDesktopName[] = "chromium-app-list";
+#endif
 #endif
 
 // Get the value of NoDisplay from the [Desktop Entry] section of a .desktop
@@ -974,6 +978,7 @@ bool CreateDesktopShortcut(
   return success;
 }
 
+#if defined(ENABLE_APP_LIST)
 bool CreateAppListDesktopShortcut(
     const std::string& wm_class,
     const std::string& title) {
@@ -1013,6 +1018,7 @@ bool CreateAppListDesktopShortcut(
   return CreateShortcutInApplicationsMenu(
       shortcut_filename, contents, base::FilePath(), "");
 }
+#endif
 
 void DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             const std::string& extension_id) {
