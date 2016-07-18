@@ -56,14 +56,6 @@ Polymer({
     return this.$$('#pin-input');
   },
 
-  /**
-   * Gets the submit button.
-   * @type {!HTMLElement}
-   */
-  get submitButton() {
-    return this.$$('.submit-button');
-  },
-
   /** Transfers focus to the input element. */
   focus: function() {
     this.$$('#pin-input').focus();

@@ -712,6 +712,11 @@ cr.define('login', function() {
       this.addEventListener('click', this.handleClickOnPod_.bind(this));
       this.addEventListener('mousedown', this.handlePodMouseDown_.bind(this));
 
+      if (this.pinKeyboard) {
+        this.pinKeyboard.addEventListener('submit',
+            this.handlePinSubmitted_.bind(this));
+      }
+
       this.actionBoxAreaElement.addEventListener('mousedown',
                                                  stopEventPropagation);
       this.actionBoxAreaElement.addEventListener('click',
@@ -1791,6 +1796,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Handles click event on submit button on the pin keyboard.
+     * @param {Event} e Click event.
+     */
+    handlePinSubmitted_: function(e) {
+      if (this.parentNode.isFocused(this))
+        this.parentNode.setActivatedPod(this);
+    },
+
+    /**
      * Handles click event on a user pod.
      * @param {Event} e Click event.
      */
@@ -1804,11 +1818,6 @@ cr.define('login', function() {
         } else if (this.isAuthTypeUserClick && this.userClickAuthAllowed_) {
           // Note that this.userClickAuthAllowed_ is set in mouse down event
           // handler.
-          this.parentNode.setActivatedPod(this);
-        } else if (this.pinKeyboard.submitButton &&
-                   e.target == this.pinKeyboard.submitButton) {
-          // Sets the pod as activated if the submit button is clicked so that
-          // it simulates what the enter button does for the password/pin.
           this.parentNode.setActivatedPod(this);
         }
 
