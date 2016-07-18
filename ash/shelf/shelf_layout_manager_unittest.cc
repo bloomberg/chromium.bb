@@ -9,6 +9,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shell_window_ids.h"
@@ -139,10 +140,11 @@ class ShelfAnimationWaiter : views::WidgetObserver {
 class ShelfDragCallback {
  public:
   ShelfDragCallback(const gfx::Rect& not_visible, const gfx::Rect& visible)
-      : not_visible_bounds_(not_visible),
-        visible_bounds_(visible),
+      : auto_hidden_shelf_widget_bounds_(not_visible),
+        shelf_widget_bounds_(visible),
         was_visible_on_drag_start_(false) {
-    EXPECT_EQ(not_visible_bounds_.bottom(), visible_bounds_.bottom());
+    EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
+              shelf_widget_bounds_.bottom());
   }
 
   virtual ~ShelfDragCallback() {}
@@ -166,16 +168,17 @@ class ShelfDragCallback {
 
     gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
     if (GetShelfLayoutManager()->IsHorizontalAlignment()) {
-      EXPECT_EQ(not_visible_bounds_.bottom(), shelf_bounds.bottom());
-      EXPECT_EQ(visible_bounds_.bottom(), shelf_bounds.bottom());
+      EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
+                shelf_bounds.bottom());
+      EXPECT_EQ(shelf_widget_bounds_.bottom(), shelf_bounds.bottom());
     } else if (SHELF_ALIGNMENT_RIGHT ==
                GetShelfLayoutManager()->GetAlignment()) {
-      EXPECT_EQ(not_visible_bounds_.right(), shelf_bounds.right());
-      EXPECT_EQ(visible_bounds_.right(), shelf_bounds.right());
+      EXPECT_EQ(auto_hidden_shelf_widget_bounds_.right(), shelf_bounds.right());
+      EXPECT_EQ(shelf_widget_bounds_.right(), shelf_bounds.right());
     } else if (SHELF_ALIGNMENT_LEFT ==
                GetShelfLayoutManager()->GetAlignment()) {
-      EXPECT_EQ(not_visible_bounds_.x(), shelf_bounds.x());
-      EXPECT_EQ(visible_bounds_.x(), shelf_bounds.x());
+      EXPECT_EQ(auto_hidden_shelf_widget_bounds_.x(), shelf_bounds.x());
+      EXPECT_EQ(shelf_widget_bounds_.x(), shelf_bounds.x());
     }
 
     // if the shelf is being dimmed test dimmer bounds as well.
@@ -183,10 +186,15 @@ class ShelfDragCallback {
       EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(),
                 GetShelfWidget()->GetDimmerBoundsForTest());
 
-    // The shelf should never be smaller than the hidden state when shelf is
-    // visible; the shelf has a height of 0 when it is hidden.
-    if (was_visible_on_drag_start_)
-      EXPECT_GE(shelf_bounds.height(), not_visible_bounds_.height());
+    // Auto hidden shelf has a visible height of 0 in MD (where this inequality
+    // does not apply); whereas auto hidden shelf has a visible height of 3 in
+    // non-MD.
+    if (!ash::MaterialDesignController::IsShelfMaterial() ||
+        GetShelf()->GetAutoHideState() != ash::SHELF_AUTO_HIDE_HIDDEN) {
+      EXPECT_GE(shelf_bounds.height(),
+                auto_hidden_shelf_widget_bounds_.height());
+    }
+
     float scroll_delta =
         GetShelfLayoutManager()->PrimaryAxisValue(scroll_.y(), scroll_.x());
     bool increasing_drag =
@@ -195,9 +203,10 @@ class ShelfDragCallback {
     int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
         shelf_bounds.height(), shelf_bounds.width());
     int visible_bounds_size = GetShelfLayoutManager()->PrimaryAxisValue(
-        visible_bounds_.height(), visible_bounds_.width());
+        shelf_widget_bounds_.height(), shelf_widget_bounds_.width());
     int not_visible_bounds_size = GetShelfLayoutManager()->PrimaryAxisValue(
-        not_visible_bounds_.height(), not_visible_bounds_.width());
+        auto_hidden_shelf_widget_bounds_.height(),
+        auto_hidden_shelf_widget_bounds_.width());
     if (was_visible_on_drag_start_) {
       if (increasing_drag) {
         // If dragging inwards from the visible state, then the shelf should
@@ -227,8 +236,8 @@ class ShelfDragCallback {
   }
 
  private:
-  const gfx::Rect not_visible_bounds_;
-  const gfx::Rect visible_bounds_;
+  const gfx::Rect auto_hidden_shelf_widget_bounds_;
+  const gfx::Rect shelf_widget_bounds_;
   gfx::Vector2dF scroll_;
   bool was_visible_on_drag_start_;
 
@@ -592,7 +601,13 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
 
   gfx::Rect bounds_fullscreen = window->bounds();
   EXPECT_TRUE(widget->IsFullscreen());
-  EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
+
+  // Shelf hints are removed in immersive full screen mode in MD; and some shelf
+  // hints are shown in non-MD mode.
+  if (ash::MaterialDesignController::IsShelfMaterial())
+    EXPECT_EQ(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
+  else
+    EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
 
   // Swipe up. This should show the shelf.
   end = below_start - delta;
@@ -813,7 +828,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
   int shelf_insets = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
-  EXPECT_EQ(root->bounds().bottom() - shelf_insets,
+
+  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(root->bounds().bottom() - shelf_insets,
             display::Screen::GetScreen()
@@ -830,7 +846,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   layout_manager->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - layout_manager->GetIdealBounds().height(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(root->bounds().bottom() - kShelfAutoHideSize,
+  EXPECT_EQ(root->bounds().bottom() - shelf_insets,
             display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(root)
                 .work_area()
@@ -1704,8 +1720,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(kShelfAutoHideSize, display.GetWorkAreaInsets().right());
-  EXPECT_EQ(kShelfAutoHideSize,
+  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
+            display.GetWorkAreaInsets().right());
+  EXPECT_EQ(GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE),
             display.bounds().right() - display.work_area().right());
 }
 
