@@ -5628,6 +5628,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_QUIC_DESCRIPTION" desc="Description for the flag to enable QUIC.">
         Enable experimental QUIC protocol support.
       </message>
+      <message name="IDS_FLAGS_SSL_VERSION_MAX_NAME" desc="Title for the flag to switch the maximum TLS version.">
+        Maximum TLS version enabled.
+      </message>
+      <message name="IDS_FLAGS_SSL_VERSION_MAX_DESCRIPTION" desc="Description for the flag to switch the maximum TLS version.">
+        Set maximum enabled TLS version.
+      </message>
+      <message name="IDS_FLAGS_SSL_VERSION_MAX_TLS12">
+        TLS 1.2
+      </message>
+      <message name="IDS_FLAGS_SSL_VERSION_MAX_TLS13">
+        TLS 1.3
+      </message>
       <message name="IDS_FLAGS_ENABLE_TOKEN_BINDING_NAME" desc="Title for the flag to enable Token Binding. Please do not translate 'Token Binding'.">
         Token Binding.
       </message>

@@ -53,6 +53,7 @@
 #include "components/search/search_switches.h"
 #include "components/security_state/switches.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "components/ssl_config/ssl_config_switches.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -589,6 +590,12 @@ const FeatureEntry::Choice kEnableWebFontsInterventionV2Choices[] = {
     {IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_V2_CHOICE_DISABLED,
      switches::kEnableWebFontsInterventionV2,
      switches::kEnableWebFontsInterventionV2SwitchValueDisabled},
+};
+
+const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+    {IDS_FLAGS_SSL_VERSION_MAX_TLS12, switches::kSSLVersionMax, "tls1.2"},
+    {IDS_FLAGS_SSL_VERSION_MAX_TLS13, switches::kSSLVersionMax, "tls1.3"},
 };
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -1791,6 +1798,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-grouped-history", IDS_FLAGS_ENABLE_GROUPED_HISTORY_NAME,
      IDS_FLAGS_ENABLE_GROUPED_HISTORY_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kHistoryEnableGroupByDomain)},
+    {"ssl-version-max", IDS_FLAGS_SSL_VERSION_MAX_NAME,
+     IDS_FLAGS_SSL_VERSION_MAX_DESCRIPTION, kOsAll,
+     MULTI_VALUE_TYPE(kSSLVersionMaxChoices)},
     {"enable-token-binding", IDS_FLAGS_ENABLE_TOKEN_BINDING_NAME,
      IDS_FLAGS_ENABLE_TOKEN_BINDING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kTokenBinding)},
