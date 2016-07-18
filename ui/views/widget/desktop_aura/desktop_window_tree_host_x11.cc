@@ -1008,6 +1008,8 @@ void DesktopWindowTreeHostX11::SetBounds(
   XWindowChanges changes = {0};
   unsigned value_mask = 0;
 
+  delayed_resize_task_.Cancel();
+
   if (size_changed) {
     // Update the minimum and maximum sizes in case they have changed.
     UpdateMinAndMaxSize();
