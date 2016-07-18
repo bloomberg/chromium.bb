@@ -330,7 +330,6 @@ GLRenderer::GLRenderer(RendererClient* client,
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
       use_sync_query_(false),
-      on_demand_tile_raster_resource_id_(0),
       bound_geometry_(NO_BINDING) {
   DCHECK(gl_);
   DCHECK(context_support_);
@@ -3571,9 +3570,6 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (offscreen_framebuffer_id_)
     gl_->DeleteFramebuffers(1, &offscreen_framebuffer_id_);
-
-  if (on_demand_tile_raster_resource_id_)
-    resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
 
   ReleaseRenderPassTextures();
 }

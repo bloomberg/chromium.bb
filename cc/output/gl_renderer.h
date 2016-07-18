@@ -521,8 +521,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool use_blend_equation_advanced_;
   bool use_blend_equation_advanced_coherent_;
 
-  SkBitmap on_demand_tile_raster_bitmap_;
-  ResourceId on_demand_tile_raster_resource_id_;
   BoundGeometry bound_geometry_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
