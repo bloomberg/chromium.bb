@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/locale_settings.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -28,6 +29,7 @@
 #include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -84,6 +86,12 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
 
   source->AddString("deleteWarning",
                     HistoryUI::GetDeleteWarningString(profile));
+  source->AddString(
+      "sidebarFooter",
+      l10n_util::GetStringFUTF16(
+          IDS_HISTORY_OTHER_FORMS_OF_HISTORY,
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_HISTORY)));
 
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);

@@ -10,6 +10,8 @@ Polymer({
       type: String,
       notify: true
     },
+
+    showFooter: Boolean,
   },
 
   toggle: function() {

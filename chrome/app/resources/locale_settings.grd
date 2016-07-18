@@ -321,6 +321,11 @@
         https://history.google.com/history/?utm_source=chrome_n
       </message>
 
+      <!-- Links on the History page. -->
+      <message name="IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_HISTORY" translateable="false">
+        https://history.google.com/history/?utm_source=chrome_h
+      </message>
+
     </messages>
   </release>
 </grit>

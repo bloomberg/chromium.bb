@@ -77,6 +77,13 @@ Polymer({
   },
 
   /**
+   * @return {HistorySideBarElement} The side bar of this history app.
+   */
+  getSideBar: function() {
+    return this.$['side-bar'];
+  },
+
+  /**
    * Listens for call to cancel selection and loops through all items to set
    * checkbox to be unselected.
    * @private

@@ -11,6 +11,7 @@
     <style include="shared-style">
       :host {
         display: block;
+        height: 100%;
         padding-top: 5px;
         width: var(--side-bar-width);
       }
@@ -41,7 +42,7 @@
       }
 
       paper-item {
-        -webkit-padding-start: 25px;
+        -webkit-padding-start: 24px;
         cursor: pointer;
         font-size: 14px;
         font-weight: 500;
@@ -55,6 +56,26 @@
       iron-selector {
         -webkit-user-select: none;
         color: #5a5a5a;
+      }
+
+      #footer {
+        /* This compensates the 120px by which app-drawer protrudes under
+         * the viewport. */
+        bottom: 120px;
+        color: var(--paper-grey-600);
+        position: absolute;
+        width: var(--side-bar-width);
+      }
+
+      #footer-text {
+        -webkit-padding-end: 16px;
+        -webkit-padding-start: 24px;
+        margin: 24px 0;
+      }
+
+      #footer a {
+        color: var(--google-blue-700);
+        text-decoration: none;
       }
     </style>
 
@@ -76,6 +97,10 @@
         <paper-item on-tap="onClearBrowsingDataTap_" id="clear-browsing-data">
           $i18n{clearBrowsingData}
         </paper-item>
+        <div id="footer" hidden="[[!showFooter]]">
+          <div class="separator"></div>
+          <div id="footer-text">$i18nRaw{sidebarFooter}</div>
+        </div>
       </iron-selector>
     </app-drawer>
   </template>
