@@ -19,6 +19,7 @@ class Chromium(config_util.Config):
                  'url'    : url,
                  'managed'   : False,
                  'custom_deps': {},
+                 'safesync_url': '',
     }
     spec = {
       'solutions': [solution],

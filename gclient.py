@@ -213,18 +213,19 @@ class GClientKeywords(object):
 class DependencySettings(GClientKeywords):
   """Immutable configuration settings."""
   def __init__(
-      self, parent, url, managed, custom_deps, custom_vars,
+      self, parent, url, safesync_url, managed, custom_deps, custom_vars,
       custom_hooks, deps_file, should_process):
     GClientKeywords.__init__(self)
 
     # These are not mutable:
     self._parent = parent
+    self._safesync_url = safesync_url
     self._deps_file = deps_file
     self._url = url
     # 'managed' determines whether or not this dependency is synced/updated by
     # gclient after gclient checks it out initially.  The difference between
     # 'managed' and 'should_process' is that the user specifies 'managed' via
-    # the --managed command-line flag or a .gclient config, where
+    # the --unmanaged command-line flag or a .gclient config, where
     # 'should_process' is dynamically set by gclient if it goes over its
     # recursion limit and controls gclient's behavior so it does not misbehave.
     self._managed = managed
@@ -281,6 +282,10 @@ class DependencySettings(GClientKeywords):
     return self.parent.root
 
   @property
+  def safesync_url(self):
+    return self._safesync_url
+
+  @property
   def should_process(self):
     """True if this dependency should be processed, i.e. checked out."""
     return self._should_process
@@ -319,11 +324,11 @@ class DependencySettings(GClientKeywords):
 class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
-  def __init__(self, parent, name, url, managed, custom_deps,
+  def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
-        self, parent, url, managed, custom_deps, custom_vars,
+        self, parent, url, safesync_url, managed, custom_deps, custom_vars,
         custom_hooks, deps_file, should_process)
 
     # This is in both .gclient and DEPS files:
@@ -722,7 +727,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         if ent is not None:
           deps_file = ent['deps_file']
       deps_to_add.append(Dependency(
-          self, name, url, None, None, self.custom_vars, None,
+          self, name, url, None, None, None, self.custom_vars, None,
           deps_file, should_process))
     deps_to_add.sort(key=lambda x: x.name)
 
@@ -1129,7 +1134,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def __str__(self):
     out = []
-    for i in ('name', 'url', 'parsed_url', 'custom_deps',
+    for i in ('name', 'url', 'parsed_url', 'safesync_url', 'custom_deps',
               'custom_vars', 'deps_hooks', 'file_list', 'should_process',
               'processed', 'hooks_ran', 'deps_parsed', 'requirements',
               'allowed_hosts'):
@@ -1178,26 +1183,26 @@ class GClient(Dependency):
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
 solutions = [
-  {
-    "name"        : "%(solution_name)s",
+  { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
     "deps_file"   : "%(deps_file)s",
     "managed"     : %(managed)s,
-    "custom_deps" : {},
+    "custom_deps" : {
+    },
+    "safesync_url": "%(safesync_url)s",
   },
 ]
 cache_dir = %(cache_dir)r
 """)
 
   DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
-  {
-    "name"        : "%(solution_name)s",
+  { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
     "deps_file"   : "%(deps_file)s",
     "managed"     : %(managed)s,
     "custom_deps" : {
-%(solution_deps)s
-    },
+%(solution_deps)s    },
+    "safesync_url": "%(safesync_url)s",
   },
 """)
 
@@ -1211,7 +1216,7 @@ solutions = [
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, True, None, None, None,
+    Dependency.__init__(self, None, None, None, None, True, None, None, None,
                         'unused', True)
     self._options = options
     if options.deps_os:
@@ -1252,8 +1257,8 @@ The local checkout in %(checkout_path)s reports:
 
 You should ensure that the URL listed in .gclient is correct and either change
 it or fix the checkout. If you're managing your own git checkout in
-%(checkout_path)s but the URL in .gclient is for an svn repository, you should
-set 'managed': False in .gclient.
+%(checkout_path)s but the URL in .gclient is for an svn repository, you probably
+want to set 'managed': False in .gclient.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': gclient_scm.GetScmName(dep.url),
@@ -1294,13 +1299,11 @@ set 'managed': False in .gclient.
 
     deps_to_add = []
     for s in config_dict.get('solutions', []):
-      if s.get('safesync_url'):
-        raise gclient_utils.Error('safesync_url is not supported anymore. '
-                                  'Please remove it from your .gclient file.')
       try:
         deps_to_add.append(Dependency(
             self, s['name'], s['url'],
-            s.get('managed', False),
+            s.get('safesync_url', None),
+            s.get('managed', True),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
             s.get('custom_hooks', []),
@@ -1426,11 +1429,12 @@ been automagically updated.  The previous version is available at %s.old.
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,
-                       managed=False, cache_dir=None):
+                       safesync_url, managed=True, cache_dir=None):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
       'deps_file': deps_file,
+      'safesync_url' : safesync_url,
       'managed': managed,
       'cache_dir': cache_dir,
     })
@@ -1473,21 +1477,47 @@ been automagically updated.  The previous version is available at %s.old.
   def _EnforceRevisions(self):
     """Checks for revision overrides."""
     revision_overrides = {}
+    if self._options.head:
+      return revision_overrides
+    # Do not check safesync_url if one or more --revision flag is specified.
     if not self._options.revisions:
       for s in self.dependencies:
-        if not s.managed and not self._options.__dict__.get('head', False):
+        if not s.managed:
           self._options.revisions.append('%s@unmanaged' % s.name)
+        elif s.safesync_url:
+          self._ApplySafeSyncRev(dep=s)
     if not self._options.revisions:
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]
-    for i, revision in enumerate(self._options.revisions):
-      if '@' in revision:
-        name, rev = revision.split('@', 1)
-      else:
+    index = 0
+    for revision in self._options.revisions:
+      if not '@' in revision:
         # Support for --revision 123
-        name, rev = solutions_names[i], revision
+        revision = '%s@%s' % (solutions_names[index], revision)
+      name, rev = revision.split('@', 1)
       revision_overrides[name] = rev
+      index += 1
     return revision_overrides
+
+  def _ApplySafeSyncRev(self, dep):
+    """Finds a valid revision from the content of the safesync_url and apply it
+    by appending revisions to the revision list. Throws if revision appears to
+    be invalid for the given |dep|."""
+    assert len(dep.safesync_url) > 0
+    handle = urllib.urlopen(dep.safesync_url)
+    rev = handle.read().strip()
+    handle.close()
+    if not rev:
+      raise gclient_utils.Error(
+          'It appears your safesync_url (%s) is not working properly\n'
+          '(as it returned an empty response). Check your config.' %
+          dep.safesync_url)
+    scm = gclient_scm.CreateSCM(
+        dep.url, dep.root.root_dir, dep.name, self.outbuf)
+    safe_rev = scm.GetUsableRev(rev, self._options)
+    if self._options.verbose:
+      print('Using safesync_url revision: %s.\n' % safe_rev)
+    self._options.revisions.append('%s@%s' % (dep.name, safe_rev))
 
   def RunOnDeps(self, command, args, ignore_requirements=False, progress=True):
     """Runs a command on each dependency in a client and its dependencies.
@@ -1673,6 +1703,7 @@ been automagically updated.  The previous version is available at %s.old.
             'solution_name': d.name,
             'solution_url': d.url,
             'deps_file': d.deps_file,
+            'safesync_url' : d.safesync_url or '',
             'managed': d.managed,
             'solution_deps': ''.join(custom_deps),
         }
@@ -1838,7 +1869,7 @@ def CMDroot(parser, args):
     print(os.path.abspath('.'))
 
 
-@subcommand.usage('[url]')
+@subcommand.usage('[url] [safesync url]')
 def CMDconfig(parser, args):
   """Creates a .gclient file in the current directory.
 
@@ -1861,13 +1892,11 @@ def CMDconfig(parser, args):
   parser.add_option('--deps-file', default='DEPS',
                     help='overrides the default name for the DEPS file for the'
                          'main solutions and all sub-dependencies')
-  parser.add_option('--managed', action='store_true', default=False,
+  parser.add_option('--unmanaged', action='store_true', default=False,
                     help='overrides the default behavior to make it possible '
-                         'to have the main solution managed by gclient '
-                         '(gclient will always auto-sync managed solutions '
-                         ' rather than leaving them untouched)')
-  parser.add_option('--unmanaged', action='store_true', default=True,
-                    help='This flag is a no-op; unmanaged is now the default.')
+                         'to have the main solution untouched by gclient '
+                         '(gclient will check out unmanaged dependencies but '
+                         'will never sync them)')
   parser.add_option('--cache-dir',
                     help='(git only) Cache all git repos into this dir and do '
                          'shared clones from the cache, instead of cloning '
@@ -1899,8 +1928,11 @@ def CMDconfig(parser, args):
         parser.error('Do not include relative path components in --name.')
 
     deps_file = options.deps_file
-    client.SetDefaultConfig(name, deps_file, base_url,
-                            managed=options.managed,
+    safesync_url = ''
+    if len(args) > 1:
+      safesync_url = args[1]
+    client.SetDefaultConfig(name, deps_file, base_url, safesync_url,
+                            managed=not options.unmanaged,
                             cache_dir=options.cache_dir)
   client.SaveConfig()
   return 0
@@ -1988,7 +2020,8 @@ def CMDsync(parser, args):
                          'format src@rev. The src@ part is optional and can be '
                          'skipped. -r can be used multiple times when .gclient '
                          'has multiple solutions configured and will work even '
-                         'if the src@ part is skipped.')
+                         'if the src@ part is skipped. Note that specifying '
+                         '--revision means your safesync_url gets ignored.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
@@ -2001,9 +2034,8 @@ def CMDsync(parser, args):
                           'the dependencies to the date of the given revision. '
                           'Only supported for SVN repositories.')
   parser.add_option('-H', '--head', action='store_true',
-                    help='Begin by automatically syncing the root gclient '
-                         'solutions to HEAD of the remote repository. Similar '
-                         'to making the solution temporarily "managed".')
+                    help='skips any safesync_urls specified in '
+                         'configured solutions and sync to head instead')
   parser.add_option('-D', '--delete_unversioned_trees', action='store_true',
                     help='Deletes from the working copy any dependencies that '
                          'have been removed since the last sync, as long as '
@@ -2057,6 +2089,10 @@ def CMDsync(parser, args):
 
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
+
+  if options.revisions and options.head:
+    # TODO(maruel): Make it a parser.error if it doesn't break any builder.
+    print('Warning: you cannot use both --head and --revision')
 
   if options.verbose:
     client.PrintLocationAndContents()
@@ -2264,6 +2300,8 @@ class OptionParser(optparse.OptionParser):
     if not hasattr(options, 'revisions'):
       # GClient.RunOnDeps expects it even if not applicable.
       options.revisions = []
+    if not hasattr(options, 'head'):
+      options.head = None
     if not hasattr(options, 'nohooks'):
       options.nohooks = True
     if not hasattr(options, 'noprehooks'):

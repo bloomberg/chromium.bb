@@ -20,6 +20,7 @@ class Chromium(config_util.Config):
                  'deps_file': '.DEPS.git',
                  'managed'   : False,
                  'custom_deps': {},
+                 'safesync_url': '',
     }
     if props.get('webkit_revision', '') == 'ToT':
       solution['custom_vars'] = {'webkit_revision': ''}

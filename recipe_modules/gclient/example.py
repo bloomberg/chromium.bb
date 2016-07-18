@@ -76,6 +76,9 @@ def RunSteps(api):
   soln.url = 'svn://svn.chromium.org/blink/trunk'
   bl_cfg.revisions['third_party/WebKit'] = '123'
 
+  # Use safesync url for lkgr.
+  soln.safesync_url = 'https://blink-status.appspot.com/lkgr'
+
   bl_cfg.got_revision_mapping['src/blatley'] = 'got_blatley_revision'
   api.gclient.checkout(
       gclient_config=bl_cfg,

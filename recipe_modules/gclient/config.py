@@ -25,6 +25,7 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
         managed = Single(bool, empty_val=True, required=False, hidden=False),
         custom_deps = Dict(value_type=(basestring, types.NoneType)),
         custom_vars = Dict(value_type=basestring),
+        safesync_url = Single(basestring, required=False),
 
         revision = Single(
             (basestring, gclient_api.RevisionResolver),
@@ -185,12 +186,24 @@ def chromium(c):
 
 @config_ctx(includes=['chromium'])
 def chromium_lkcr(c):
+  # TODO(phajdan.jr): Add git hashes for LKCR crbug.com/349277.
+  if c.GIT_MODE:
+    raise BadConf('Git has problems with safesync_url and LKCR, '
+                  'crbug.com/349277 crbug.com/109191')  # pragma: no cover
   s = c.solutions[0]
+  s.safesync_url = 'https://build.chromium.org/p/chromium/lkcr-status/lkgr'
+  # TODO(hinoka): Once lkcr exists and is a tag, it should just be lkcr
+  #               rather than origin/lkcr.
   s.revision = 'origin/lkcr'
 
 @config_ctx(includes=['chromium'])
 def chromium_lkgr(c):
   s = c.solutions[0]
+  safesync_url = 'https://chromium-status.appspot.com/lkgr'
+  if c.GIT_MODE:  # pragma: no cover
+    safesync_url = 'https://chromium-status.appspot.com/git-lkgr'
+    raise BadConf('Git has problems with safesync_url, crbug.com/109191.')
+  s.safesync_url = safesync_url
   s.revision = 'origin/lkgr'
 
 @config_ctx(includes=['chromium_bare'])

@@ -653,6 +653,12 @@ def solutions_to_git(input_solutions):
       first_solution = False
 
     solution['managed'] = False
+    # We don't want gclient to be using a safesync URL. Instead it should
+    # using the lkgr/lkcr branch/tags.
+    if 'safesync_url' in solution:
+      print 'Removing safesync url %s from %s' % (solution['safesync_url'],
+                                                  parsed_path)
+      del solution['safesync_url']
   return solutions, root, buildspec
 
 

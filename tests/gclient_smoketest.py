@@ -205,36 +205,52 @@ class GClientSmoke(GClientSmokeBase):
 
     test(['config', self.svn_base + 'trunk/src/'],
          ('solutions = [\n'
-          '  {\n'
-          '    "name"        : "src",\n'
+          '  { "name"        : "src",\n'
           '    "url"         : "%strunk/src",\n'
           '    "deps_file"   : "DEPS",\n'
-          '    "managed"     : False,\n'
-          '    "custom_deps" : {},\n'
+          '    "managed"     : True,\n'
+          '    "custom_deps" : {\n'
+          '    },\n'
+          '    "safesync_url": "",\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.svn_base)
 
     test(['config', self.git_base + 'repo_1', '--name', 'src'],
          ('solutions = [\n'
-          '  {\n'
-          '    "name"        : "src",\n'
+          '  { "name"        : "src",\n'
           '    "url"         : "%srepo_1",\n'
           '    "deps_file"   : "DEPS",\n'
-          '    "managed"     : False,\n'
-          '    "custom_deps" : {},\n'
+          '    "managed"     : True,\n'
+          '    "custom_deps" : {\n'
+          '    },\n'
+          '    "safesync_url": "",\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.git_base)
 
+    test(['config', 'foo', 'faa'],
+         'solutions = [\n'
+         '  { "name"        : "foo",\n'
+         '    "url"         : "foo",\n'
+         '    "deps_file"   : "DEPS",\n'
+          '    "managed"     : True,\n'
+         '    "custom_deps" : {\n'
+         '    },\n'
+         '    "safesync_url": "faa",\n'
+         '  },\n'
+         ']\n'
+         'cache_dir = None\n')
+
     test(['config', 'foo', '--deps', 'blah'],
          'solutions = [\n'
-         '  {\n'
-         '    "name"        : "foo",\n'
+         '  { "name"        : "foo",\n'
          '    "url"         : "foo",\n'
          '    "deps_file"   : "blah",\n'
-         '    "managed"     : False,\n'
-         '    "custom_deps" : {},\n'
+         '    "managed"     : True,\n'
+         '    "custom_deps" : {\n'
+         '    },\n'
+          '    "safesync_url": "",\n'
          '  },\n'
          ']\n'
          'cache_dir = None\n')
@@ -243,7 +259,7 @@ class GClientSmoke(GClientSmokeBase):
 
     os.remove(p)
     results = self.gclient(['config', 'foo', 'faa', 'fuu'])
-    err = ('Usage: gclient.py config [options] [url]\n\n'
+    err = ('Usage: gclient.py config [options] [url] [safesync url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
     self.check(('', err, 2), results)
@@ -287,14 +303,14 @@ class GClientSmokeGIT(GClientSmokeBase):
     super(GClientSmokeGIT, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
 
-  def testSyncManaged(self):
+  def testSync(self):
     if not self.enabled:
       return
-    self.gclient([
-        'config', self.git_base + 'repo_1', '--name', 'src', '--managed'])
+    # TODO(maruel): safesync.
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(
-        ['sync', '--deps', 'mac', '--jobs', '8'],
+        ['sync', '--deps', 'mac', '--jobs', '1'],
         ['running', 'running'])
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
@@ -312,7 +328,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     # Test incremental versioned sync: sync backward.
     self.parseGclient(
         ['sync', '--jobs', '1', '--revision',
-        'src@' + self.githash('repo_1', 1), '--jobs', '1',
+        'src@' + self.githash('repo_1', 1),
         '--deps', 'mac', '--delete_unversioned_trees'],
         ['deleting'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
@@ -323,7 +339,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
     self.parseGclient(
-        ['sync', '--deps', 'mac', '--jobs', '8'],
+        ['sync', '--deps', 'mac', '--jobs', '1'],
         ['running', 'running'])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
@@ -365,6 +381,56 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
+    self.assertTree(tree)
+
+  def testSyncJobs(self):
+    if not self.enabled:
+      return
+    # TODO(maruel): safesync.
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    # Test unversioned checkout.
+    self.parseGclient(
+        ['sync', '--deps', 'mac', '--jobs', '8'],
+        ['running', 'running'],
+        untangle=True)
+    # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
+    # add sync parsing to get the list of updated files.
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+
+    # Manually remove git_hooked1 before synching to make sure it's not
+    # recreated.
+    os.remove(join(self.root_dir, 'src', 'git_hooked1'))
+
+    # Test incremental versioned sync: sync backward.
+    # Use --jobs 1 otherwise the order is not deterministic.
+    self.parseGclient(
+        ['sync', '--revision', 'src@' + self.githash('repo_1', 1),
+          '--deps', 'mac', '--delete_unversioned_trees', '--jobs', '1'],
+        ['deleting'],
+        untangle=True)
+    tree = self.mangle_git_tree(('repo_1@1', 'src'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@1', 'src/repo2/repo3'),
+                                ('repo_4@2', 'src/repo4'))
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+    # Test incremental sync: delete-unversioned_trees isn't there.
+    self.parseGclient(
+        ['sync', '--deps', 'mac', '--jobs', '8'],
+        ['running', 'running'],
+        untangle=True)
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@1', 'src/repo2/repo3'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'),
+                                ('repo_4@2', 'src/repo4'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
   def testRunHooks(self):

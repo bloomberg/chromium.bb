@@ -30,6 +30,10 @@ GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 
 
+class NoUsableRevError(gclient_utils.Error):
+  """Raised if requested revision isn't found in checkout."""
+
+
 class DiffFiltererWrapper(object):
   """Simple base class which tracks which file is being diffed and
   replaces instances of its file name in the original and
@@ -749,9 +753,15 @@ class GitWrapper(SCMWrapper):
       deps_revision = default_rev
     if deps_revision.startswith('refs/heads/'):
       deps_revision = deps_revision.replace('refs/heads/', self.remote + '/')
-    if not scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=deps_revision):
-      # There's a chance we just don't have the corresponding object.
-      self._Fetch(options)
+    try:
+      deps_revision = self.GetUsableRev(deps_revision, options)
+    except NoUsableRevError as e:
+      # If the DEPS entry's url and hash changed, try to update the origin.
+      # See also http://crbug.com/520067.
+      logging.warn(
+          'Couldn\'t find usable revision, will retrying to update instead: %s',
+          e.message)
+      return self.update(options, [], file_list)
 
     if file_list is not None:
       files = self._Capture(['diff', deps_revision, '--name-only']).split()
@@ -781,6 +791,73 @@ class GitWrapper(SCMWrapper):
       if file_list is not None:
         files = self._Capture(['diff', '--name-only', merge_base]).split()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+
+  def GetUsableRev(self, rev, options):
+    """Finds a useful revision for this repository.
+
+    If SCM is git-svn and the head revision is less than |rev|, git svn fetch
+    will be called on the source."""
+    sha1 = None
+    if not os.path.isdir(self.checkout_path):
+      raise NoUsableRevError(
+          ( 'We could not find a valid hash for safesync_url response "%s".\n'
+            'Safesync URLs with a git checkout currently require the repo to\n'
+            'be cloned without a safesync_url before adding the safesync_url.\n'
+            'For more info, see: '
+            'http://code.google.com/p/chromium/wiki/UsingNewGit'
+            '#Initial_checkout' ) % rev)
+    elif rev.isdigit() and len(rev) < 7:
+      # Handles an SVN rev.  As an optimization, only verify an SVN revision as
+      # [0-9]{1,6} for now to avoid making a network request.
+      if scm.GIT.IsGitSvn(cwd=self.checkout_path):
+        local_head = scm.GIT.GetGitSvnHeadRev(cwd=self.checkout_path)
+        if not local_head or local_head < int(rev):
+          try:
+            logging.debug('Looking for git-svn configuration optimizations.')
+            if scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
+                             cwd=self.checkout_path):
+              self._Fetch(options)
+          except subprocess2.CalledProcessError:
+            logging.debug('git config --get svn-remote.svn.fetch failed, '
+                          'ignoring possible optimization.')
+          if options.verbose:
+            self.Print('Running git svn fetch. This might take a while.\n')
+          scm.GIT.Capture(['svn', 'fetch'], cwd=self.checkout_path)
+        try:
+          sha1 = scm.GIT.GetBlessedSha1ForSvnRev(
+              cwd=self.checkout_path, rev=rev)
+        except gclient_utils.Error, e:
+          sha1 = e.message
+          self.Print('Warning: Could not find a git revision with accurate\n'
+                 '.DEPS.git that maps to SVN revision %s.  Sync-ing to\n'
+                 'the closest sane git revision, which is:\n'
+                 '  %s\n' % (rev, e.message))
+        if not sha1:
+          raise NoUsableRevError(
+              ( 'It appears that either your git-svn remote is incorrectly\n'
+                'configured or the revision in your safesync_url is\n'
+                'higher than git-svn remote\'s HEAD as we couldn\'t find a\n'
+                'corresponding git hash for SVN rev %s.' ) % rev)
+    else:
+      if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
+        sha1 = rev
+      else:
+        # May exist in origin, but we don't have it yet, so fetch and look
+        # again.
+        self._Fetch(options)
+        if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
+          sha1 = rev
+
+    if not sha1:
+      raise NoUsableRevError(
+          ( 'We could not find a valid hash for safesync_url response "%s".\n'
+            'Safesync URLs with a git checkout currently require a git-svn\n'
+            'remote or a safesync_url that provides git sha1s. Please add a\n'
+            'git-svn remote or change your safesync_url. For more info, see:\n'
+            'http://code.google.com/p/chromium/wiki/UsingNewGit'
+            '#Initial_checkout' ) % rev)
+
+    return sha1
 
   def FullUrlForRelativeUrl(self, url):
     # Strip from last '/'
@@ -1585,6 +1662,14 @@ class SVNWrapper(SCMWrapper):
       # There's no file list to retrieve.
     else:
       self._RunAndGetFileList(command, options, file_list)
+
+  def GetUsableRev(self, rev, _options):
+    """Verifies the validity of the revision for this repository."""
+    if not scm.SVN.IsValidRevision(url='%s@%s' % (self.url, rev)):
+      raise NoUsableRevError(
+        ( '%s isn\'t a valid revision. Please check that your safesync_url is\n'
+          'correct.') % rev)
+    return rev
 
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.
