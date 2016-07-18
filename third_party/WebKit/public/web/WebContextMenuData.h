@@ -184,9 +184,6 @@ struct WebContextMenuData {
     // Which edit operations are available in the context.
     int editFlags;
 
-    // Security information for the context.
-    WebCString securityInfo;
-
     // The referrer policy applicable to this context.
     WebReferrerPolicy referrerPolicy;
 

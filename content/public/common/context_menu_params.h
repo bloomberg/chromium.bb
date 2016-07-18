@@ -16,7 +16,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
@@ -145,9 +144,6 @@ struct CONTENT_EXPORT ContextMenuParams {
   // These flags indicate to the browser whether the renderer believes it is
   // able to perform the corresponding action.
   int edit_flags;
-
-  // The security info for the resource we are showing the menu on.
-  SSLStatus security_info;
 
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;

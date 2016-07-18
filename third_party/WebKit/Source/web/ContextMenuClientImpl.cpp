@@ -330,12 +330,6 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu, bool
     if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "rtl") != FalseTriState)
         data.writingDirectionRightToLeft |= WebContextMenuData::CheckableMenuItemChecked;
 
-    // Now retrieve the security info.
-    DocumentLoader* dl = selectedFrame->loader().documentLoader();
-    WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
-    if (ds)
-        data.securityInfo = ds->response().securityInfo();
-
     data.referrerPolicy = static_cast<WebReferrerPolicy>(selectedFrame->document()->getReferrerPolicy());
 
     // Filter out custom menu elements and add them into the data.
