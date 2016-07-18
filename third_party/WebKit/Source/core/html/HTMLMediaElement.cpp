@@ -1638,7 +1638,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                     // observer didn't had time to fire yet. We can avoid
                     // creating a new one in this case.
                     if (!m_autoplayVisibilityObserver) {
-                        m_autoplayVisibilityObserver = new ElementVisibilityObserver(this, WTF::bind(&HTMLMediaElement::onVisibilityChangedForAutoplay, wrapPersistent(this)));
+                        m_autoplayVisibilityObserver = new ElementVisibilityObserver(this, WTF::bind(&HTMLMediaElement::onVisibilityChangedForAutoplay, wrapWeakPersistent(this)));
                         m_autoplayVisibilityObserver->start();
                     }
                 } else {
@@ -3923,6 +3923,9 @@ void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible)
         updatePlayState();
     }
 
+    // TODO(zqzhang): There's still flaky leak if onVisibilityChangedForAutoplay() is never called.
+    // The leak comes from either ElementVisibilityObserver or IntersectionObserver. Should keep an eye on it.
+    // See https://crbug.com/627539
     m_autoplayVisibilityObserver->stop();
     m_autoplayVisibilityObserver = nullptr;
 }
