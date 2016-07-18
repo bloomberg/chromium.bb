@@ -83,6 +83,7 @@ source_set("lib") {
   deps = [
     "//components/user_manager",
     "//ui/app_list/presenter",
+    "//ui/message_center",
   ]
 
   public_deps = [
@@ -111,7 +112,11 @@ source_set("lib") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//chromeos:power_manager_proto",
+      "//device/bluetooth",
+    ]
   }
 }
 
@@ -147,6 +152,7 @@ repack("resources") {
   sources = [
     "$root_gen_dir/ash/mus/resources/ash_mus_resources_100_percent.pak",
     "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
+    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -156,6 +162,7 @@ repack("resources") {
   deps = [
     "//ash/mus/resources",
     "//ash/resources",
+    "//ash/strings",
     "//ui/resources",
     "//ui/strings",
     "//ui/views/mus:resources",

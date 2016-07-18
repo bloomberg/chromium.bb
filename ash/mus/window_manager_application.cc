@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/mus/accelerator_registrar_impl.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/shelf_layout_impl.h"
@@ -21,14 +22,47 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/events/event.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/mus/aura_init.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
 #endif
 
 namespace ash {
 namespace mus {
+namespace {
+
+void InitializeComponents() {
+  message_center::MessageCenter::Initialize();
+#if defined(OS_CHROMEOS)
+  // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
+  // before WindowManager::Init().
+  chromeos::DBusThreadManager::Initialize();
+  bluez::BluezDBusManager::Initialize(
+      chromeos::DBusThreadManager::Get()->GetSystemBus(),
+      chromeos::DBusThreadManager::Get()->IsUsingStub(
+          chromeos::DBusClientBundle::BLUETOOTH));
+  // TODO(jamescook): Initialize real audio handler.
+  chromeos::CrasAudioHandler::InitializeForTesting();
+  PowerStatus::Initialize();
+#endif
+}
+
+void ShutdownComponents() {
+#if defined(OS_CHROMEOS)
+  PowerStatus::Shutdown();
+  chromeos::CrasAudioHandler::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
+  chromeos::DBusThreadManager::Shutdown();
+#endif
+  message_center::MessageCenter::Shutdown();
+}
+
+}  // namespace
 
 WindowManagerApplication::WindowManagerApplication()
     : connector_(nullptr), screenlock_state_listener_binding_(this) {}
@@ -45,9 +79,7 @@ WindowManagerApplication::~WindowManagerApplication() {
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
 
-#if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Shutdown();
-#endif
+  ShutdownComponents();
 }
 
 void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
@@ -57,11 +89,8 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 
 void WindowManagerApplication::InitWindowManager(
     ::ui::WindowTreeClient* window_tree_client) {
-#if defined(OS_CHROMEOS)
-  // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
-  // before WindowManager::Init().
-  chromeos::DBusThreadManager::Initialize();
-#endif
+  InitializeComponents();
+
   window_manager_->Init(window_tree_client);
   window_manager_->AddObserver(this);
 }
@@ -74,6 +103,7 @@ void WindowManagerApplication::OnStart(shell::Connector* connector,
   window_manager_.reset(new WindowManager(connector_));
 
   aura_init_.reset(new views::AuraInit(connector_, "ash_mus_resources.pak"));
+  MaterialDesignController::Initialize();
 
   tracing_.Initialize(connector, identity.name());
 
