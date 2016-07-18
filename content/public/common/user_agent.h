@@ -14,10 +14,6 @@ namespace content {
 // Returns the WebKit version, in the form "major.minor (branch@revision)".
 CONTENT_EXPORT std::string GetWebKitVersion();
 
-// The following 2 functions return the major and minor webkit versions.
-CONTENT_EXPORT int GetWebKitMajorVersion();
-CONTENT_EXPORT int GetWebKitMinorVersion();
-
 CONTENT_EXPORT std::string GetWebKitRevision();
 
 // Builds a User-agent compatible string that describes the OS and CPU type.

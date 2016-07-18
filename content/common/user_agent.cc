@@ -30,14 +30,6 @@ std::string GetWebKitVersion() {
                             WEBKIT_SVN_REVISION);
 }
 
-int GetWebKitMajorVersion() {
-  return WEBKIT_VERSION_MAJOR;
-}
-
-int GetWebKitMinorVersion() {
-  return WEBKIT_VERSION_MINOR;
-}
-
 std::string GetWebKitRevision() {
   return WEBKIT_SVN_REVISION;
 }
