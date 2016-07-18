@@ -35,12 +35,6 @@ WebRtcBrowserTest.CallAndModifyStream
 # http://crbug.com/470507
 SRC_ClearKey/EncryptedMediaTest.Playback_VideoClearAudio_WebM/0
 
-# http://crbug.com/484351
-PluginTest.VerifyPluginWindowRect
-
-# http://crbug.com/484852
-PluginTest.NPObjectIdentity
-
 # http://crbug.com/500070
 DumpAccessibilityEventsTest.AccessibilityEventsListboxNext
 
