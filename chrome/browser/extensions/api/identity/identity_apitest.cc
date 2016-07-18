@@ -97,7 +97,7 @@ class SendResponseDelegate
 
   bool GetResponse() {
     EXPECT_TRUE(HasResponse());
-    return *response_.get();
+    return *response_;
   }
 
   void OnSendResponse(UIThreadExtensionFunction* function,
@@ -626,7 +626,7 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
     func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
     std::unique_ptr<base::Value> value(
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
-    return api::identity::ProfileUserInfo::FromValue(*value.get());
+    return api::identity::ProfileUserInfo::FromValue(*value);
   }
 
   std::unique_ptr<api::identity::ProfileUserInfo>
@@ -636,7 +636,7 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
     func->set_extension(CreateExtensionWithEmailPermission());
     std::unique_ptr<base::Value> value(
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
-    return api::identity::ProfileUserInfo::FromValue(*value.get());
+    return api::identity::ProfileUserInfo::FromValue(*value);
   }
 
  private:

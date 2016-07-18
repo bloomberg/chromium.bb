@@ -170,11 +170,11 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
 
   base::string16 title;  // Optional.
   if (details.title.get())
-    title = base::UTF8ToUTF16(*details.title.get());
+    title = base::UTF8ToUTF16(*details.title);
 
   std::string url_string;  // Optional.
   if (details.url.get())
-    url_string = *details.url.get();
+    url_string = *details.url;
 
   GURL url(url_string);
   if (!url_string.empty() && !url.is_valid()) {

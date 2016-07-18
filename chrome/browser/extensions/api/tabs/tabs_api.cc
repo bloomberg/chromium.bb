@@ -135,7 +135,7 @@ class ApiParameterExtractor {
   WindowController::TypeFilter type_filters() {
     if (params_->get_info.get() && params_->get_info->window_types.get())
       return WindowController::GetFilterFromWindowTypes(
-          *params_->get_info->window_types.get());
+          *params_->get_info->window_types);
     return WindowController::kNoWindowFilter;
   }
 
@@ -209,7 +209,7 @@ template <typename T>
 void AssignOptionalValue(const std::unique_ptr<T>& source,
                          std::unique_ptr<T>& destination) {
   if (source.get()) {
-    destination.reset(new T(*source.get()));
+    destination.reset(new T(*source));
   }
 }
 
@@ -1459,7 +1459,7 @@ bool TabsMoveFunction::RunSync() {
     return false;
   } else if (num_tabs == 1) {
     std::unique_ptr<base::Value> value;
-    CHECK(tab_values.get()->Remove(0, &value));
+    CHECK(tab_values->Remove(0, &value));
     SetResult(std::move(value));
   } else {
     // Only return the results as an array if there are multiple tabs.
@@ -1639,7 +1639,7 @@ bool TabsRemoveFunction::RunSync() {
     }
   } else {
     EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer);
-    if (!RemoveTab(*params->tab_ids.as_integer.get()))
+    if (!RemoveTab(*params->tab_ids.as_integer))
       return false;
   }
   return true;

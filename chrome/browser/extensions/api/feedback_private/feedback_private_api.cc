@@ -259,15 +259,15 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   feedback_data->set_description(feedback_info.description);
 
   if (feedback_info.category_tag.get())
-    feedback_data->set_category_tag(*feedback_info.category_tag.get());
+    feedback_data->set_category_tag(*feedback_info.category_tag);
   if (feedback_info.page_url.get())
-    feedback_data->set_page_url(*feedback_info.page_url.get());
+    feedback_data->set_page_url(*feedback_info.page_url);
   if (feedback_info.email.get())
-    feedback_data->set_user_email(*feedback_info.email.get());
+    feedback_data->set_user_email(*feedback_info.email);
 
   if (!attached_file_uuid.empty()) {
     feedback_data->set_attached_filename(
-        StripFakepath((*feedback_info.attached_file.get()).name));
+        StripFakepath((*feedback_info.attached_file).name));
     feedback_data->set_attached_file_uuid(attached_file_uuid);
   }
 
@@ -275,7 +275,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
     feedback_data->set_screenshot_uuid(screenshot_uuid);
 
   if (feedback_info.trace_id.get()) {
-    feedback_data->set_trace_id(*feedback_info.trace_id.get());
+    feedback_data->set_trace_id(*feedback_info.trace_id);
   }
 
   std::unique_ptr<FeedbackData::SystemLogsMap> sys_logs(

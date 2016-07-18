@@ -117,9 +117,9 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   ASSERT_TRUE(manifest.get() != NULL);
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
-      manifest_path.DirName(), Manifest::INVALID_LOCATION, *manifest.get(),
-      Extension::NO_FLAGS, &error));
+  scoped_refptr<Extension> extension(
+      Extension::Create(manifest_path.DirName(), Manifest::INVALID_LOCATION,
+                        *manifest, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
   TestIconManager icon_manager(this);
 

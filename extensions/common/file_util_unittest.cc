@@ -53,9 +53,8 @@ scoped_refptr<Extension> LoadExtensionManifest(
   if (!result.get())
     return NULL;
   CHECK_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  return LoadExtensionManifest(
-      *base::DictionaryValue::From(std::move(result)).get(), manifest_dir,
-      location, extra_flags, error);
+  return LoadExtensionManifest(*base::DictionaryValue::From(std::move(result)),
+                               manifest_dir, location, extra_flags, error);
 }
 
 }  // namespace
@@ -295,8 +294,8 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
 
   std::string error;
   std::vector<extensions::InstallWarning> warnings;
-  scoped_refptr<Extension> extension = LoadExtensionManifest(
-      *value.get(), temp.path(), Manifest::UNPACKED, 0, &error);
+  scoped_refptr<Extension> extension =
+      LoadExtensionManifest(*value, temp.path(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   EXPECT_FALSE(
@@ -310,8 +309,8 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   scripts->Clear();
   scripts->AppendString("http://google.com/foo.js");
 
-  extension = LoadExtensionManifest(*value.get(), temp.path(),
-                                    Manifest::UNPACKED, 0, &error);
+  extension =
+      LoadExtensionManifest(*value, temp.path(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   warnings.clear();

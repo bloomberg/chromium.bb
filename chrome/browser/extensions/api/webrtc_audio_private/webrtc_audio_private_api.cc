@@ -140,9 +140,9 @@ bool WebrtcAudioPrivateFunction::GetControllerList(const RequestInfo& request) {
   // If |guest_process_id| is defined, directly use this id to find the
   // corresponding RenderProcessHost.
   if (request.guest_process_id.get()) {
-    rph = content::RenderProcessHost::FromID(*request.guest_process_id.get());
+    rph = content::RenderProcessHost::FromID(*request.guest_process_id);
   } else if (request.tab_id.get()) {
-    int tab_id = *request.tab_id.get();
+    int tab_id = *request.tab_id;
     content::WebContents* contents = NULL;
     if (!ExtensionTabUtil::GetTabById(tab_id, GetProfile(), true, NULL, NULL,
                                       &contents, NULL)) {
@@ -323,9 +323,9 @@ bool WebrtcAudioPrivateSetActiveSinkFunction::RunAsync() {
 
   if (params->request.guest_process_id.get()) {
     request_info_.guest_process_id.reset(
-        new int(*params->request.guest_process_id.get()));
+        new int(*params->request.guest_process_id));
   } else if (params->request.tab_id.get()) {
-    request_info_.tab_id.reset(new int(*params->request.tab_id.get()));
+    request_info_.tab_id.reset(new int(*params->request.tab_id));
   } else {
     return false;
   }
@@ -343,10 +343,10 @@ void WebrtcAudioPrivateSetActiveSinkFunction::OnControllerList(
   int requested_process_id;
   if (request_info_.guest_process_id.get()) {
     requested_process_type = "guestProcessId";
-    requested_process_id = *request_info_.guest_process_id.get();
+    requested_process_id = *request_info_.guest_process_id;
   } else {
     requested_process_type = "tabId";
-    requested_process_id = *request_info_.tab_id.get();
+    requested_process_id = *request_info_.tab_id;
   }
 
   controllers_ = controllers;

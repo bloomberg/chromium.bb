@@ -100,11 +100,11 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
         function, ParamsToString(parameters), browser()));
     if (expect_results) {
       EXPECT_TRUE(result.get());
-      return result.get() != nullptr;
+      return result != nullptr;
     }
 
     EXPECT_FALSE(result.get());
-    return result.get() == nullptr;
+    return result == nullptr;
   }
 
   template<typename Function>

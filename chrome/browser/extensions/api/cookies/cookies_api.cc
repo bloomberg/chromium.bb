@@ -406,7 +406,7 @@ void CookiesSetFunction::SetCookieOnIOThread() {
       base::Time(),
       expiration_time,
       base::Time(),
-      parsed_args_->details.secure.get() ? *parsed_args_->details.secure.get()
+      parsed_args_->details.secure.get() ? *parsed_args_->details.secure
                                          : false,
       parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
                                             : false,

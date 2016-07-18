@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
   std::unique_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
       recordings_info_start(
           extensions::api::webrtc_logging_private::RecordingInfo::FromValue(
-              *start_result.get()));
+              *start_result));
   ASSERT_TRUE(recordings_info_start.get());
   base::FilePath file_name_start(
       base::FilePath::FromUTF8Unsafe(recordings_info_start->prefix_path));
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
   std::unique_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
       recordings_info_stop(
           extensions::api::webrtc_logging_private::RecordingInfo::FromValue(
-              *stop_result.get()));
+              *stop_result));
   ASSERT_TRUE(recordings_info_stop.get());
   base::FilePath file_name_stop(
       base::FilePath::FromUTF8Unsafe(recordings_info_stop->prefix_path));
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
   std::unique_ptr<extensions::api::webrtc_logging_private::RecordingInfo>
       recordings_info_start(
           extensions::api::webrtc_logging_private::RecordingInfo::FromValue(
-              *start_result.get()));
+              *start_result));
   ASSERT_TRUE(recordings_info_start.get());
   base::FilePath file_name_start(
       base::FilePath::FromUTF8Unsafe(recordings_info_start->prefix_path));

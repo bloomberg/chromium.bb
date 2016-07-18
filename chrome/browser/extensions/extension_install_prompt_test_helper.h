@@ -22,7 +22,7 @@ class ExtensionInstallPromptTestHelper {
   // Note: This ADD_FAILURE()s if result_ has not been set.
   ExtensionInstallPrompt::Result result() const;
 
-  bool has_result() const { return result_.get() != nullptr; }
+  bool has_result() const { return result_ != nullptr; }
 
  private:
   void HandleResult(ExtensionInstallPrompt::Result result);

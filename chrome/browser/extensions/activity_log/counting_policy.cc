@@ -289,7 +289,7 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
   insert_str += ")";
 
   for (ActionQueue::iterator i = queue.begin(); i != queue.end(); ++i) {
-    const Action& action = *i->first.get();
+    const Action& action = *i->first;
     int count = i->second;
 
     base::Time day_start = action.time().LocalMidnight();

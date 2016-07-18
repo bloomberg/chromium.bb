@@ -304,7 +304,7 @@ void ExtensionMessagePort::SendToPort(std::unique_ptr<IPC::Message> msg) {
     return;
   }
   for (content::RenderFrameHost* rfh : frames_) {
-    IPC::Message* msg_copy = new IPC::Message(*msg.get());
+    IPC::Message* msg_copy = new IPC::Message(*msg);
     msg_copy->set_routing_id(rfh->GetRoutingID());
     rfh->Send(msg_copy);
   }

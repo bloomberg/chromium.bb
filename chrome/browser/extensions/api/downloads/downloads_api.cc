@@ -513,11 +513,11 @@ void RunDownloadQuery(
 
   size_t limit = 1000;
   if (query_in.limit.get()) {
-    if (*query_in.limit.get() < 0) {
+    if (*query_in.limit < 0) {
       *error = errors::kInvalidQueryLimit;
       return;
     }
-    limit = *query_in.limit.get();
+    limit = *query_in.limit;
   }
   if (limit > 0) {
     query_out.Limit(limit);
@@ -544,13 +544,13 @@ void RunDownloadQuery(
     query_out.AddFilter(danger_type);
   }
   if (query_in.order_by.get()) {
-    CompileDownloadQueryOrderBy(*query_in.order_by.get(), error, &query_out);
+    CompileDownloadQueryOrderBy(*query_in.order_by, error, &query_out);
     if (!error->empty())
       return;
   }
 
   std::unique_ptr<base::DictionaryValue> query_in_value(query_in.ToValue());
-  for (base::DictionaryValue::Iterator query_json_field(*query_in_value.get());
+  for (base::DictionaryValue::Iterator query_json_field(*query_in_value);
        !query_json_field.IsAtEnd(); query_json_field.Advance()) {
     FilterTypeMap::const_iterator filter_type =
         filter_types.Get().find(query_json_field.key());
@@ -564,9 +564,9 @@ void RunDownloadQuery(
 
   DownloadQuery::DownloadVector all_items;
   if (query_in.id.get()) {
-    DownloadItem* download_item = manager->GetDownload(*query_in.id.get());
+    DownloadItem* download_item = manager->GetDownload(*query_in.id);
     if (!download_item && incognito_manager)
-      download_item = incognito_manager->GetDownload(*query_in.id.get());
+      download_item = incognito_manager->GetDownload(*query_in.id);
     if (download_item)
       all_items.push_back(download_item);
   } else {
@@ -625,7 +625,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     }
   }
 
-  const base::DictionaryValue& json() const { return *json_.get(); }
+  const base::DictionaryValue& json() const { return *json_; }
   void set_json(std::unique_ptr<base::DictionaryValue> json_item) {
     json_ = std::move(json_item);
   }
@@ -990,7 +990,7 @@ bool DownloadsDownloadFunction::RunAsync() {
         kFilenameKey, &filename16));
     creator_suggested_filename = base::FilePath(filename16);
 #elif defined(OS_POSIX)
-    creator_suggested_filename = base::FilePath(*options.filename.get());
+    creator_suggested_filename = base::FilePath(*options.filename);
 #endif
     if (!net::IsSafePortableRelativePath(creator_suggested_filename)) {
       error_ = errors::kInvalidFilename;
@@ -999,7 +999,7 @@ bool DownloadsDownloadFunction::RunAsync() {
   }
 
   if (options.save_as.get())
-    download_params->set_prompt(*options.save_as.get());
+    download_params->set_prompt(*options.save_as);
 
   if (options.headers.get()) {
     for (const downloads::HeaderNameValuePair& name_value : *options.headers) {
@@ -1024,7 +1024,7 @@ bool DownloadsDownloadFunction::RunAsync() {
   if (!method_string.empty())
     download_params->set_method(method_string);
   if (options.body.get())
-    download_params->set_post_body(*options.body.get());
+    download_params->set_post_body(*options.body);
   download_params->set_callback(base::Bind(
       &DownloadsDownloadFunction::OnStarted, this,
       creator_suggested_filename, options.conflict_action));
@@ -1482,7 +1482,7 @@ bool DownloadsGetFileIconFunction::RunAsync() {
       params->options.get();
   int icon_size = kDefaultIconSize;
   if (options && options->size.get())
-    icon_size = *options->size.get();
+    icon_size = *options->size;
   DownloadItem* download_item =
       GetDownload(GetProfile(), include_incognito(), params->download_id);
   if (InvalidId(download_item, &error_) ||
@@ -1807,8 +1807,8 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
   // the bytesReceived field, if the field has changed from the previous old
   // json, set the differences in the |delta| object and remember that something
   // significant changed.
-  for (base::DictionaryValue::Iterator iter(*new_json.get());
-       !iter.IsAtEnd(); iter.Advance()) {
+  for (base::DictionaryValue::Iterator iter(*new_json); !iter.IsAtEnd();
+       iter.Advance()) {
     new_fields.insert(iter.key());
     if (IsDownloadDeltaField(iter.key())) {
       const base::Value* old_value = NULL;

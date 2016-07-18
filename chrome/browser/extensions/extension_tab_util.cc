@@ -456,7 +456,7 @@ void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
   } else {
     api_permission =
         extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
-    url = *tab->url.get();
+    url = *tab->url;
   }
   bool host_permission = extension->permissions_data()
                              ->active_permissions()

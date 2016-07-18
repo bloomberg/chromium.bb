@@ -468,7 +468,7 @@ bool BluetoothLowEnergyConnectFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   bool persistent = false;  // Not persistent by default.
-  apibtle::ConnectProperties* properties = params.get()->properties.get();
+  apibtle::ConnectProperties* properties = params->properties.get();
   if (properties)
     persistent = properties->persistent;
 
@@ -901,7 +901,7 @@ bool BluetoothLowEnergyStartCharacteristicNotificationsFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   bool persistent = false;  // Not persistent by default.
-  apibtle::NotificationProperties* properties = params.get()->properties.get();
+  apibtle::NotificationProperties* properties = params->properties.get();
   if (properties)
     persistent = properties->persistent;
 

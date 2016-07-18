@@ -599,11 +599,8 @@ scoped_refptr<Extension>
   }
 
   return Extension::Create(
-      base::FilePath(),
-      Manifest::INTERNAL,
-      localized_manifest.get() ? *localized_manifest.get() : *manifest,
-      flags,
-      id,
+      base::FilePath(), Manifest::INTERNAL,
+      localized_manifest.get() ? *localized_manifest : *manifest, flags, id,
       error);
 }
 

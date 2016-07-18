@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetWindow) {
   EXPECT_EQ(window_id, GetWindowId(result.get()));
   // "populate" was enabled so tabs should be populated.
   base::ListValue* tabs = nullptr;
-  EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
+  EXPECT_TRUE(result->GetList(keys::kTabsKey, &tabs));
 
   base::Value* tab0 = nullptr;
   EXPECT_TRUE(tabs->Get(0, &tab0));
@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
   // to RunFunctionAndReturnSingleResult.
   EXPECT_EQ(new_id, GetWindowId(result.get()));
   base::ListValue* tabs = nullptr;
-  EXPECT_FALSE(result.get()->GetList(keys::kTabsKey, &tabs));
+  EXPECT_FALSE(result->GetList(keys::kTabsKey, &tabs));
 
   // Get the current window using the old window and make the tabs populated.
   function = new WindowsGetCurrentFunction();
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
   // to RunFunctionAndReturnSingleResult.
   EXPECT_EQ(window_id, GetWindowId(result.get()));
   // "populate" was enabled so tabs should be populated.
-  EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
+  EXPECT_TRUE(result->GetList(keys::kTabsKey, &tabs));
 
   // The tab id should not be -1 as this is a browser window.
   base::Value* tab0 = nullptr;

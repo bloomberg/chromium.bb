@@ -177,9 +177,8 @@ void ImageWriterPrivateListRemovableStorageDevicesFunction::OnDeviceListReady(
     scoped_refptr<StorageDeviceList> device_list,
     bool success) {
   if (success) {
-    results_ =
-      image_writer_api::ListRemovableStorageDevices::Results::Create(
-        device_list.get()->data);
+    results_ = image_writer_api::ListRemovableStorageDevices::Results::Create(
+        device_list->data);
     SendResponse(true);
   } else {
     error_ = image_writer::error::kDeviceListError;

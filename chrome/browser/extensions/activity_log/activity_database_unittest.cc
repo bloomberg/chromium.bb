@@ -86,7 +86,7 @@ bool ActivityDatabaseTestPolicy::FlushDatabase(sql::Connection* db) {
 
   std::vector<scoped_refptr<Action> >::size_type i;
   for (i = 0; i < queue_.size(); i++) {
-    const Action& action = *queue_[i].get();
+    const Action& action = *queue_[i];
     sql::Statement statement(db->GetCachedStatement(
         sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
     statement.BindString(0, action.extension_id());

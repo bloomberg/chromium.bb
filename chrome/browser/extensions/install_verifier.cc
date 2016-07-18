@@ -239,7 +239,7 @@ void InstallVerifier::Init() {
         InstallSignature::FromValue(*pref);
     if (!signature_from_prefs.get()) {
       LogInitResultHistogram(INIT_UNPARSEABLE_PREF);
-    } else if (!InstallSigner::VerifySignature(*signature_from_prefs.get())) {
+    } else if (!InstallSigner::VerifySignature(*signature_from_prefs)) {
       LogInitResultHistogram(INIT_INVALID_SIGNATURE);
       DVLOG(1) << "Init - ignoring invalid signature";
     } else {
@@ -458,7 +458,7 @@ ExtensionIdSet InstallVerifier::GetExtensionsToVerify() const {
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end();
        ++iter) {
-    if (NeedsVerification(*iter->get()))
+    if (NeedsVerification(**iter))
       result.insert((*iter)->id());
   }
   return result;
@@ -596,10 +596,10 @@ void InstallVerifier::SaveToPrefs() {
     if (VLOG_IS_ON(1)) {
       DVLOG(1) << "SaveToPrefs - saving";
 
-      DCHECK(InstallSigner::VerifySignature(*signature_.get()));
+      DCHECK(InstallSigner::VerifySignature(*signature_));
       std::unique_ptr<InstallSignature> rehydrated =
           InstallSignature::FromValue(pref);
-      DCHECK(InstallSigner::VerifySignature(*rehydrated.get()));
+      DCHECK(InstallSigner::VerifySignature(*rehydrated));
     }
     prefs_->SetInstallSignature(&pref);
   }

@@ -196,7 +196,7 @@ bool GetFileTypesFromAcceptOption(
     return false;
 
   if (accept_option.description.get())
-    *description = base::UTF8ToUTF16(*accept_option.description.get());
+    *description = base::UTF8ToUTF16(*accept_option.description);
   else if (description_id)
     *description = l10n_util::GetStringUTF16(description_id);
 

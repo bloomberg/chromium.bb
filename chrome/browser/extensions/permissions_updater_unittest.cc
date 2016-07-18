@@ -186,14 +186,13 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Make sure the extension's active permissions reflect the change.
   active_permissions = PermissionSet::CreateUnion(default_permissions, delta);
-  ASSERT_EQ(*active_permissions.get(),
+  ASSERT_EQ(*active_permissions,
             extension->permissions_data()->active_permissions());
 
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
   // be equal to the active permissions.
-  ASSERT_EQ(*active_permissions.get(),
-            *prefs->GetActivePermissions(extension->id()));
+  ASSERT_EQ(*active_permissions, *prefs->GetActivePermissions(extension->id()));
   granted_permissions = active_permissions->Clone();
   ASSERT_EQ(*granted_permissions,
             *prefs->GetGrantedPermissions(extension->id()));

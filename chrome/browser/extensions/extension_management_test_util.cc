@@ -60,7 +60,7 @@ void ExtensionManagementPrefUpdaterBase::SetBlacklistedByDefault(bool value) {
 
 void ExtensionManagementPrefUpdaterBase::
     ClearInstallationModesForIndividualExtensions() {
-  for (base::DictionaryValue::Iterator it(*pref_.get()); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*pref_); !it.IsAtEnd();
        it.Advance()) {
     DCHECK(it.value().IsType(base::Value::TYPE_DICTIONARY));
     if (it.key() != schema::kWildcard) {

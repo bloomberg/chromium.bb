@@ -118,7 +118,7 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
       commands_info->page_action_command.reset(binding.release());
     } else {
       if (command_name[0] != '_')  // All commands w/underscore are reserved.
-        commands_info->named_commands[command_name] = *binding.get();
+        commands_info->named_commands[command_name] = *binding;
     }
   }
 

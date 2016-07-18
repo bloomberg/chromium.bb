@@ -66,7 +66,7 @@ void MDnsAPI::SetDnsSdRegistryForTesting(
     std::unique_ptr<DnsSdRegistry> dns_sd_registry) {
   dns_sd_registry_ = std::move(dns_sd_registry);
   if (dns_sd_registry_.get())
-    dns_sd_registry_.get()->AddObserver(this);
+    dns_sd_registry_->AddObserver(this);
 }
 
 void MDnsAPI::ForceDiscovery() {

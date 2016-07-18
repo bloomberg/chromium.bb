@@ -58,7 +58,7 @@ class CallbackHelper {
   }
 
   // Check if we have receved any result, and if it matches the expected one.
-  bool has_result() const { return result_.get() != nullptr; }
+  bool has_result() const { return result_ != nullptr; }
   bool result_matches(ExtensionReenabler::ReenableResult expected) const {
     return result_.get() && *result_ == expected;
   }

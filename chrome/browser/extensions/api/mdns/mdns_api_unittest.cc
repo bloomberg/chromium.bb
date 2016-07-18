@@ -376,7 +376,7 @@ TEST_F(MDnsAPITest, ExtensionRespectsWhitelist) {
   scoped_refptr<extensions::Extension> extension =
       CreateExtension("Dinosaur networker", false, kExtId);
   ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
-  ASSERT_EQ(Manifest::TYPE_EXTENSION, extension.get()->GetType());
+  ASSERT_EQ(Manifest::TYPE_EXTENSION, extension->GetType());
 
   // There is a whitelist of mdns service types extensions may access, which
   // includes "_testing._tcp.local" and exludes "_trex._tcp.local"
@@ -426,7 +426,7 @@ TEST_F(MDnsAPITest, PlatformAppsNotSubjectToWhitelist) {
   scoped_refptr<extensions::Extension> extension =
       CreateExtension("Dinosaur networker", true, kExtId);
   ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
-  ASSERT_TRUE(extension.get()->is_platform_app());
+  ASSERT_TRUE(extension->is_platform_app());
 
   base::DictionaryValue filter;
   filter.SetString(kEventFilterServiceTypeKey, "_trex._tcp.local");

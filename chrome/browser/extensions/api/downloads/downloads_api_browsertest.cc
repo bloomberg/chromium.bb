@@ -208,7 +208,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
     waiting_for_.reset(new Event(profile, event_name, json_args, base::Time()));
     for (std::deque<Event*>::const_iterator iter = events_.begin();
          iter != events_.end(); ++iter) {
-      if ((*iter)->Satisfies(*waiting_for_.get())) {
+      if ((*iter)->Satisfies(*waiting_for_)) {
         return true;
       }
     }

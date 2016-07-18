@@ -377,9 +377,9 @@ TEST(PermissionsTest, CreateUnion) {
                                scriptable_hosts2));
   union_set = PermissionSet::CreateUnion(*set1, *set2);
   EXPECT_TRUE(set1->Contains(*set2));
-  EXPECT_TRUE(set1->Contains(*union_set.get()));
+  EXPECT_TRUE(set1->Contains(*union_set));
   EXPECT_FALSE(set2->Contains(*set1));
-  EXPECT_FALSE(set2->Contains(*union_set.get()));
+  EXPECT_FALSE(set2->Contains(*union_set));
   EXPECT_TRUE(union_set->Contains(*set1));
   EXPECT_TRUE(union_set->Contains(*set2));
 
@@ -434,9 +434,9 @@ TEST(PermissionsTest, CreateUnion) {
   union_set = PermissionSet::CreateUnion(*set1, *set2);
 
   EXPECT_FALSE(set1->Contains(*set2));
-  EXPECT_FALSE(set1->Contains(*union_set.get()));
+  EXPECT_FALSE(set1->Contains(*union_set));
   EXPECT_FALSE(set2->Contains(*set1));
-  EXPECT_FALSE(set2->Contains(*union_set.get()));
+  EXPECT_FALSE(set2->Contains(*union_set));
   EXPECT_TRUE(union_set->Contains(*set1));
   EXPECT_TRUE(union_set->Contains(*set2));
 

@@ -128,11 +128,11 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
                      DictionaryBuilder().Build(), action_type);
 
   ASSERT_TRUE(extension.get());
-  const ExtensionAction* action = GetAction(action_type, *extension.get());
+  const ExtensionAction* action = GetAction(action_type, *extension);
   ASSERT_TRUE(action);
 
-  ASSERT_TRUE(TitlesMatch(*extension.get(), *action));
-  ASSERT_TRUE(IconsMatch(*extension.get(), 48, *action, 38));
+  ASSERT_TRUE(TitlesMatch(*extension, *action));
+  ASSERT_TRUE(IconsMatch(*extension, 48, *action, 38));
 
   // Test that the action's missing default_icons are not replaced with smaller
   // icons.
@@ -141,11 +141,11 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
                      DictionaryBuilder().Build(), action_type);
 
   ASSERT_TRUE(extension.get());
-  action = GetAction(action_type, *extension.get());
+  action = GetAction(action_type, *extension);
   ASSERT_TRUE(action);
 
-  ASSERT_TRUE(IconsMatch(*extension.get(), 24, *action, 19));
-  ASSERT_FALSE(IconsMatch(*extension.get(), 24, *action, 38));
+  ASSERT_TRUE(IconsMatch(*extension, 24, *action, 19));
+  ASSERT_FALSE(IconsMatch(*extension, 24, *action, 38));
 
   // Test that an action's 19px icon is not replaced if a 38px action icon
   // exists.
@@ -158,10 +158,10 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
       action_type);
 
   ASSERT_TRUE(extension.get());
-  action = GetAction(action_type, *extension.get());
+  action = GetAction(action_type, *extension);
   ASSERT_TRUE(action);
 
-  ASSERT_FALSE(IconsMatch(*extension.get(), 128, *action, 19));
+  ASSERT_FALSE(IconsMatch(*extension, 128, *action, 19));
 
   // Test that existing default_icons and default_title are not replaced.
   extension =
@@ -176,12 +176,12 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
                      action_type);
 
   ASSERT_TRUE(extension.get());
-  action = GetAction(action_type, *extension.get());
+  action = GetAction(action_type, *extension);
   ASSERT_TRUE(action);
 
-  ASSERT_FALSE(TitlesMatch(*extension.get(), *action));
-  ASSERT_FALSE(IconsMatch(*extension.get(), 128, *action, 19));
-  ASSERT_FALSE(IconsMatch(*extension.get(), 128, *action, 38));
+  ASSERT_FALSE(TitlesMatch(*extension, *action));
+  ASSERT_FALSE(IconsMatch(*extension, 128, *action, 19));
+  ASSERT_FALSE(IconsMatch(*extension, 128, *action, 38));
 }
 
 namespace {
@@ -208,7 +208,7 @@ TEST_F(ExtensionActionManagerTest, GetBestFitActionTest) {
 
   // Get a "best fit" browser action for |extension|.
   std::unique_ptr<ExtensionAction> action =
-      manager()->GetBestFitAction(*extension.get(), ActionInfo::TYPE_BROWSER);
+      manager()->GetBestFitAction(*extension, ActionInfo::TYPE_BROWSER);
   ASSERT_TRUE(action.get());
   ASSERT_EQ(action->action_type(), ActionInfo::TYPE_BROWSER);
 
@@ -223,13 +223,12 @@ TEST_F(ExtensionActionManagerTest, GetBestFitActionTest) {
                      DictionaryBuilder().Build(), kPageAction);
   ASSERT_TRUE(extension.get());
 
-  action =
-      manager()->GetBestFitAction(*extension.get(), ActionInfo::TYPE_BROWSER);
+  action = manager()->GetBestFitAction(*extension, ActionInfo::TYPE_BROWSER);
 
   // Now these values match because |extension| does not have page action
   // defaults.
-  ASSERT_TRUE(TitlesMatch(*extension.get(), *action));
-  ASSERT_TRUE(IconsMatch(*extension.get(), 48, *action, 38));
+  ASSERT_TRUE(TitlesMatch(*extension, *action));
+  ASSERT_TRUE(IconsMatch(*extension, 48, *action, 38));
 }
 
 }  // namespace

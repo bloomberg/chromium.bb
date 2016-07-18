@@ -59,14 +59,14 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
   // If |guest_process_id| is defined, directly use this id to find the
   // corresponding RenderProcessHost.
   if (request.guest_process_id.get())
-    return content::RenderProcessHost::FromID(*request.guest_process_id.get());
+    return content::RenderProcessHost::FromID(*request.guest_process_id);
 
   // Otherwise, use the |tab_id|. If there's no |tab_id| and no
   // |guest_process_id|, we can't look up the RenderProcessHost.
   if (!request.tab_id.get())
     return NULL;
 
-  int tab_id = *request.tab_id.get();
+  int tab_id = *request.tab_id;
   content::WebContents* contents = NULL;
   if (!ExtensionTabUtil::GetTabById(
            tab_id, GetProfile(), true, NULL, NULL, &contents, NULL)) {
@@ -168,7 +168,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
 
   std::unique_ptr<MetaDataMap> meta_data(new MetaDataMap());
   for (const MetaDataEntry& entry : params->meta_data)
-    (*meta_data.get())[entry.key] = entry.value;
+    (*meta_data)[entry.key] = entry.value;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
       &WebRtcLoggingHandlerHost::SetMetaData, webrtc_logging_handler_host,

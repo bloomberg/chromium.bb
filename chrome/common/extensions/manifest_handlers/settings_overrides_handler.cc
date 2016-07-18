@@ -173,7 +173,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
         extension,
         new SettingsOverrideAPIPermission(
             PermissionsInfo::GetInstance()->GetByID(APIPermission::kHomepage),
-            RemoveWwwPrefix(info->homepage.get()->GetContent())));
+            RemoveWwwPrefix(info->homepage->GetContent())));
   }
   extension->SetManifestData(manifest_keys::kSettingsOverride,
                              info.release());
