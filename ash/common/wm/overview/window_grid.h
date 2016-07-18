@@ -55,6 +55,9 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
              WindowSelector* window_selector);
   ~WindowGrid() override;
 
+  // Exits overview mode, fading out the |shield_widget_| if necessary.
+  void Shutdown();
+
   // Prepares the windows in this grid for overview. This will restore all
   // minimized windows and ensure they are visible.
   void PrepareForOverview();

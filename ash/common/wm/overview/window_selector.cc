@@ -398,6 +398,9 @@ void WindowSelector::Shutdown() {
     PanelLayoutManager::Get(window)->SetShowCalloutWidgets(true);
   }
 
+  for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)
+    window_grid->Shutdown();
+
   DCHECK(num_items_ >= remaining_items);
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.OverviewClosedItems",
                            num_items_ - remaining_items);

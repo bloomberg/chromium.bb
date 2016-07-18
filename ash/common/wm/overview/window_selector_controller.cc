@@ -19,7 +19,14 @@ namespace ash {
 
 WindowSelectorController::WindowSelectorController() {}
 
-WindowSelectorController::~WindowSelectorController() {}
+WindowSelectorController::~WindowSelectorController() {
+  // Destroy widgets that may be still animating if shell shuts down soon after
+  // exiting overview mode.
+  for (std::unique_ptr<DelayedAnimationObserver>& animation_observer :
+       delayed_animations_) {
+    animation_observer->Shutdown();
+  }
+}
 
 // static
 bool WindowSelectorController::CanSelect() {
@@ -77,6 +84,31 @@ void WindowSelectorController::OnSelectionEnded() {
   window_selector_.reset();
   last_selection_time_ = base::Time::Now();
   WmShell::Get()->OnOverviewModeEnded();
+}
+
+void WindowSelectorController::AddDelayedAnimationObserver(
+    std::unique_ptr<DelayedAnimationObserver> animation_observer) {
+  animation_observer->SetOwner(this);
+  delayed_animations_.push_back(std::move(animation_observer));
+}
+
+void WindowSelectorController::RemoveAndDestroyAnimationObserver(
+    DelayedAnimationObserver* animation_observer) {
+  class IsEqual {
+   public:
+    explicit IsEqual(DelayedAnimationObserver* animation_observer)
+        : animation_observer_(animation_observer) {}
+    bool operator()(const std::unique_ptr<DelayedAnimationObserver>& other) {
+      return (other.get() == animation_observer_);
+    }
+
+   private:
+    const DelayedAnimationObserver* animation_observer_;
+  };
+  delayed_animations_.erase(
+      std::remove_if(delayed_animations_.begin(), delayed_animations_.end(),
+                     IsEqual(animation_observer)),
+      delayed_animations_.end());
 }
 
 void WindowSelectorController::OnSelectionStarted() {

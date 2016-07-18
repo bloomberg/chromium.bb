@@ -44,6 +44,10 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
 
   // WindowSelectorDelegate:
   void OnSelectionEnded() override;
+  void AddDelayedAnimationObserver(
+      std::unique_ptr<DelayedAnimationObserver> animation) override;
+  void RemoveAndDestroyAnimationObserver(
+      DelayedAnimationObserver* animation) override;
 
  private:
   friend class WindowSelectorTest;
@@ -51,6 +55,11 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // Dispatched when window selection begins.
   void OnSelectionStarted();
 
+  // Collection of DelayedAnimationObserver objects that own widgets that may be
+  // still animating after overview mode ends. If shell needs to shut down while
+  // those animations are in progress, the animations are shut down and the
+  // widgets destroyed.
+  std::vector<std::unique_ptr<DelayedAnimationObserver>> delayed_animations_;
   std::unique_ptr<WindowSelector> window_selector_;
   base::Time last_selection_time_;
 
