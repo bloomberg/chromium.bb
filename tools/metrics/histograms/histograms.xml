@@ -96682,6 +96682,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="UsageReportsBufferBackend"
       label="The result of the first attempt to open the usage reports buffer
              backend database."/>
+  <suffix name="BackgroundBudgetService"
+      label="Database for storing budget information for origins."/>
   <affected-histogram name="LevelDB.Open"/>
 </histogram_suffixes>
 

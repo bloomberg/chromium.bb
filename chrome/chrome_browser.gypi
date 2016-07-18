@@ -122,6 +122,8 @@
       'browser/budget_service/background_budget_service.h',
       'browser/budget_service/background_budget_service_factory.cc',
       'browser/budget_service/background_budget_service_factory.h',
+      'browser/budget_service/budget_database.cc',
+      'browser/budget_service/budget_database.h',
       'browser/character_encoding.cc',
       'browser/character_encoding.h',
       'browser/chrome_browser_application_mac.h',
@@ -3382,6 +3384,7 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
+	    'budget_proto',
             'common_mojo_bindings',
             'common_net',
             'debugger',
@@ -4128,6 +4131,18 @@
         'proto_out_dir': 'chrome/browser/safe_browsing/incident_reporting',
       },
       'includes': [ '../build/protoc.gypi' ],
+    },
+    {
+      # Protobuf compiler / generator for the budget database protocol buffer.
+      # GN version: //chrome/browser/budget_service:budget_proto
+      'target_name': 'budget_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/budget_service/budget.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/budget_service',
+        'proto_out_dir': 'chrome/browser/budget_service',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # Protobuf compiler / generator for reset reports

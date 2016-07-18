@@ -1,0 +1,30 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package budget_service;
+
+// Chrome requires this.
+option optimize_for = LITE_RUNTIME;
+
+// Next available id: 3
+message Budget {
+  // How much budget the origin needs to accumulate before it will be allowed to
+  // perform another budget action.
+  optional double debt = 1;
+
+  // The sequence of budget chunks and their expiration times.
+  repeated BudgetChunk budget = 2;
+}
+
+// Next available id: 3
+message BudgetChunk {
+  // The amount of budget remaining in this chunk.
+  optional double budget_amount = 1;
+
+  // The timestamp when the budget expires. Format is double to integrate with
+  // Site Engagement and Blink and is the number of seconds since Jan 1, 1970.
+  optional double expiration_timestamp = 2;
+}
