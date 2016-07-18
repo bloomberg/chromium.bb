@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "net/base/net_errors.h"
@@ -16,6 +17,11 @@ namespace shell {
 void CastResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {
   if (url_request->status().status() == net::URLRequestStatus::FAILED) {
+    metrics::CastMetricsHelper* metrics_helper =
+        metrics::CastMetricsHelper::GetInstance();
+    metrics_helper->RecordApplicationEventWithValue(
+        "Cast.Platform.ResourceRequestError",
+        url_request->status().error());
     LOG(ERROR) << "Failed to load resource " << url_request->url()
                << "; status:" << url_request->status().status() << ", error:"
                << net::ErrorToShortString(url_request->status().error());
