@@ -3,13 +3,39 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/check-layout-th.js"></script>
-<body onload="checkLayout('.flexbox')">
-<div id=log></div>
+<style>
+#container {
+  height: 300px;
+  outline: 2px solid black;
+}
 
-<!-- This isn't "correct" per the spec, but it is an interim fix
-     to avoid bad results.
-     See https://crbug.com/580196
-  -->
-<div class="flexbox column" style="height: 0px;" data-expected-height="0">
-  <div data-expected-height="0" style="display: flex;">Some text</div>
+.inner
+{
+  width: 400px;
+  flex: 1;
+  background-color: green;
+}
+</style>
+<script>
+function change() {
+  var container = document.getElementById('container');
+  container.offsetHeight;
+  container.style.height = '80px';
+  checkLayout('#container');
+}
+</script>
+<body onload="change()">
+<p>Green rectangle should be entirely within the black rectangle</p>
+<div id="log"></div>
+<div id="container">
+  <div class="flexbox column" style="height: 100%;">
+    <div class="flexbox flex-one">
+        <div class="flexbox column">
+          <div class="flexbox column flex-one">
+            <div class="inner" data-expected-height="80">
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
 </div>
