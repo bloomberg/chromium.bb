@@ -93,7 +93,7 @@ TEST(FuzzyPatternMatchingTest, AllOccurrences) {
     std::vector<size_t> failure;
     BuildFailureFunctionFuzzy(test_case.subpattern, &failure);
 
-    const auto& occurrences = AllOccurrencesFuzzy(
+    const auto& occurrences = AllOccurrencesFuzzy<size_t>(
         test_case.text, test_case.subpattern, failure.data());
     std::vector<size_t> matches(occurrences.begin(), occurrences.end());
     EXPECT_EQ(test_case.expected_matches, matches);

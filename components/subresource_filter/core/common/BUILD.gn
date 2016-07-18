@@ -19,7 +19,6 @@ source_set("common") {
     "uint64_hasher.h",
     "url_pattern.cc",
     "url_pattern.h",
-    "url_pattern_matching.cc",
     "url_pattern_matching.h",
   ]
 

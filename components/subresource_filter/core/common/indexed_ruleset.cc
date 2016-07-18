@@ -27,6 +27,13 @@ RulesetIndexer::RulesetIndexer() = default;
 RulesetIndexer::~RulesetIndexer() = default;
 
 bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
+  if (rule.url_pattern().size() >
+      static_cast<size_t>(std::numeric_limits<uint8_t>::max())) {
+    // Failure function can not always be stored as an array of uint8_t in case
+    // the pattern's length exceeds 255.
+    return false;
+  }
+
   flatbuffers::Offset<
       flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>>
       domains_offset;
@@ -49,10 +56,15 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
 
   auto url_pattern_offset = builder_.CreateString(rule.url_pattern());
 
+  std::vector<uint8_t> failure;
+  BuildFailureFunction(UrlPattern(rule), &failure);
+  auto failure_function_offset =
+      builder_.CreateVector(failure.data(), failure.size());
+
   flat::UrlRuleBuilder rule_builder(builder_);
   rule_builder.add_url_pattern(url_pattern_offset);
   rule_builder.add_domains(domains_offset);
-  // TODO(pkalinnikov): Build failure function for URL pattern of the |rule|.
+  rule_builder.add_failure_function(failure_function_offset);
 
   uint8_t options = 0;
 
@@ -335,12 +347,9 @@ bool MatchesAny(const FlatUrlRuleList* rules,
     DCHECK_NE(rule, nullptr);
 
     if (rule->url_pattern_type() != flat::UrlPatternType_REGEXP) {
-      // TODO(pkalinnikov): Build failure function once on the index building
-      // phase and store it to the FlatBuffer. Retrieve it here for matching.
-      std::vector<size_t> failure_function;
-      const UrlPattern url_pattern(*rule);
-      BuildFailureFunction(url_pattern, &failure_function);
-      if (!IsMatch(url, url_pattern, failure_function))
+      const uint8_t* begin = rule->failure_function()->data();
+      const uint8_t* end = begin + rule->failure_function()->size();
+      if (!IsMatch(url, UrlPattern(*rule), begin, end))
         continue;
     } else {
       // TODO(pkalinnikov): Implement REGEXP rules matching.

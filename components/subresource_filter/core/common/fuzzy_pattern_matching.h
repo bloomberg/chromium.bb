@@ -19,6 +19,7 @@
 
 #include <stddef.h>
 
+#include <type_traits>
 #include <vector>
 
 #include "base/logging.h"
@@ -75,23 +76,33 @@ bool EndsWithFuzzy(base::StringPiece text, base::StringPiece subpattern);
 // equality predicate transitive and symmetric which is needed for KMP. However,
 // the separators will need to be checked in a second pass for KMP match
 // candidates, which is implemented by AllOccurrencesFuzzy.
+template <typename FailureFunctionElement>
 void BuildFailureFunctionFuzzy(base::StringPiece subpattern,
-                               std::vector<size_t>* failure);
+                               std::vector<FailureFunctionElement>* failure) {
+  static_assert(std::is_unsigned<FailureFunctionElement>::value,
+                "The type is not unsigned.");
+  BuildFailureFunction<FailureFunctionElement, IsEqualOrBothSeparators>(
+      subpattern, failure);
+}
 
 // Iterator range that yields all fuzzy occurrences of |subpattern| in |text|.
 // The values in the range are the positions just beyond each occurrence.
+// Out-of-range iterators are dereferenced to base::StringPiece::npos.
 //
 // The |failure| array is the failure function created by
 // BuildFailureFunctionFuzzy for the same |subpattern|, and containing at least
 // subpattern.size() values.
-class AllOccurrencesFuzzy : private AllOccurrences<IsEqualOrBothSeparators> {
+template <typename IntType>
+class AllOccurrencesFuzzy
+    : private AllOccurrences<IntType, IsEqualOrBothSeparators> {
  public:
-  using Base = AllOccurrences<IsEqualOrBothSeparators>;
+  using Base = AllOccurrences<IntType, IsEqualOrBothSeparators>;
+  using BaseIterator = typename Base::Iterator;
 
-  class Iterator : public Base::Iterator {
+  class Iterator : public BaseIterator {
    public:
     Iterator& operator++() {
-      Base::Iterator::operator++();
+      BaseIterator::operator++();
       AdvanceWhileFalsePositive();
       return *this;
     }
@@ -105,38 +116,38 @@ class AllOccurrencesFuzzy : private AllOccurrences<IsEqualOrBothSeparators> {
    private:
     friend class AllOccurrencesFuzzy;
 
-    explicit Iterator(const Base::Iterator& base_iterator)
-        : Base::Iterator(base_iterator) {
+    explicit Iterator(const BaseIterator& base_iterator)
+        : BaseIterator(base_iterator) {
       AdvanceWhileFalsePositive();
     }
 
     const AllOccurrencesFuzzy& owner() const {
-      return *static_cast<const AllOccurrencesFuzzy*>(owner_);
+      return *static_cast<const AllOccurrencesFuzzy*>(BaseIterator::owner_);
     }
 
     // Moves the iterator forward until it either reaches the end, or meets an
     // occurrence exactly matching all non-placeholder separators.
     void AdvanceWhileFalsePositive() {
-      while (match_end_ != base::StringPiece::npos && !IsMatch())
-        Base::Iterator::operator++();
+      while (BaseIterator::match_end_ != base::StringPiece::npos && !IsMatch())
+        BaseIterator::operator++();
     }
 
     // Returns whether the currenct match meets all separators.
     bool IsMatch() const {
-      DCHECK_LE(match_end_, owner().text_.size());
-      DCHECK_GE(match_end_, owner().pattern_.size());
+      DCHECK_LE(BaseIterator::match_end_, owner().text_.size());
+      DCHECK_GE(BaseIterator::match_end_, owner().pattern_.size());
 
       // TODO(pkalinnikov): Store a vector of separator positions externally and
       // check if they are equal to the corresponding characters of the |text|.
-      return StartsWithFuzzy(
-          owner().text_.substr(match_end_ - owner().pattern_.size()),
-          owner().pattern_);
+      return StartsWithFuzzy(owner().text_.substr(BaseIterator::match_end_ -
+                                                  owner().pattern_.size()),
+                             owner().pattern_);
     }
   };
 
   AllOccurrencesFuzzy(base::StringPiece text,
                       base::StringPiece subpattern,
-                      const size_t* failure)
+                      const IntType* failure)
       : Base(text, subpattern, failure) {}
 
   Iterator begin() const { return Iterator(Base::begin()); }

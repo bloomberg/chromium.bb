@@ -124,8 +124,8 @@ TEST(UrlPatternMatchingTest, IsMatch) {
 
     std::vector<size_t> failure;
     BuildFailureFunction(test_case.url_pattern, &failure);
-    const bool is_match =
-        IsMatch(GURL(test_case.url), test_case.url_pattern, failure);
+    const bool is_match = IsMatch(GURL(test_case.url), test_case.url_pattern,
+                                  failure.begin(), failure.end());
     EXPECT_EQ(test_case.expect_match, is_match);
   }
 }

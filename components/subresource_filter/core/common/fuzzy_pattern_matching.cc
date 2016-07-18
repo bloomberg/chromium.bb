@@ -24,11 +24,6 @@ bool StartsWithFuzzyImpl(base::StringPiece text, base::StringPiece subpattern) {
 
 }  // namespace
 
-void BuildFailureFunctionFuzzy(base::StringPiece subpattern,
-                               std::vector<size_t>* failure) {
-  BuildFailureFunction<IsEqualOrBothSeparators>(subpattern, failure);
-}
-
 bool StartsWithFuzzy(base::StringPiece text, base::StringPiece subpattern) {
   if (subpattern.size() <= text.size())
     return StartsWithFuzzyImpl(text, subpattern);

@@ -24,8 +24,12 @@
 
 #include <functional>
 #include <iterator>
+#include <limits>
+#include <type_traits>
 #include <vector>
 
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 
 namespace subresource_filter {
@@ -34,10 +38,13 @@ namespace subresource_filter {
 // |pattern| at the end of the |failure| vector. The EquivalentTo should be a
 // bool(char, char) functor returning true iff the two characters are
 // equivalent, and is required to be reflexive, symmetric and transitive.
-template <typename EquivalentTo = std::equal_to<char>>
+template <typename IntType, typename EquivalentTo = std::equal_to<char>>
 void BuildFailureFunction(base::StringPiece pattern,
-                          std::vector<size_t>* failure,
+                          std::vector<IntType>* failure,
                           EquivalentTo equivalent_to = EquivalentTo()) {
+  static_assert(std::is_unsigned<IntType>::value, "IntType is not unsigned.");
+  DCHECK_LE(pattern.size(), std::numeric_limits<IntType>::max());
+
   if (pattern.empty())
     return;
 
@@ -46,7 +53,7 @@ void BuildFailureFunction(base::StringPiece pattern,
   for (size_t i = 1; i != pattern.size(); ++i) {
     const char c = pattern[i];
 
-    size_t prefix_match_size = failure->back();
+    IntType prefix_match_size = failure->back();
     DCHECK_LT(prefix_match_size, i);
     while (prefix_match_size && !equivalent_to(pattern[prefix_match_size], c))
       prefix_match_size = (*failure)[base_index + prefix_match_size - 1];
@@ -71,13 +78,16 @@ void BuildFailureFunction(base::StringPiece pattern,
 // The |failure| array is the failure function created by BuildFailureFunction
 // with the same EquivalentTo and |pattern|, and containing at least
 // pattern.size() values.
-template <typename EquivalentTo = std::equal_to<char>>
+template <typename IntType, typename EquivalentTo = std::equal_to<char>>
 size_t FindOccurrence(base::StringPiece text,
                       base::StringPiece pattern,
-                      const size_t* failure,
-                      size_t prefix_match_size,
+                      const IntType* failure,
+                      IntType prefix_match_size,
                       EquivalentTo equivalent_to = EquivalentTo()) {
+  static_assert(std::is_unsigned<IntType>::value, "IntType is not unsigned.");
   DCHECK_LE(prefix_match_size, pattern.size());
+  DCHECK_LE(pattern.size(), std::numeric_limits<IntType>::max());
+
   if (prefix_match_size == pattern.size())
     return 0;
 
@@ -95,27 +105,28 @@ size_t FindOccurrence(base::StringPiece text,
 
 // Same as FindOccurrence, but starts the search from scratch, i.e. with
 // prefix_match_size == 0.
-template <typename EquivalentTo = std::equal_to<char>>
+template <typename IntType, typename EquivalentTo = std::equal_to<char>>
 size_t FindFirstOccurrence(base::StringPiece text,
                            base::StringPiece pattern,
-                           const size_t* failure,
+                           const IntType* failure,
                            EquivalentTo equivalent_to = EquivalentTo()) {
-  return FindOccurrence(text, pattern, failure, 0, equivalent_to);
+  return FindOccurrence(text, pattern, failure, static_cast<IntType>(0),
+                        equivalent_to);
 }
 
 // Same as FindOccurrence, but preforms the search assuming the |text| starts
 // right after a full match of the |pattern|. The returned value is either
 // base::StringPiece::npos if no more occurrences found, or is within the range
 // [1, text.size()] if there are occurrences apart from the virtual prefix.
-template <typename EquivalentTo = std::equal_to<char>>
+template <typename IntType, typename EquivalentTo = std::equal_to<char>>
 size_t FindNextOccurrence(base::StringPiece text,
                           base::StringPiece pattern,
-                          const size_t* failure,
+                          const IntType* failure,
                           EquivalentTo equivalent_to = EquivalentTo()) {
   if (pattern.empty())
     return text.empty() ? base::StringPiece::npos : 1;
 
-  const size_t prefix_match_size = failure[pattern.size() - 1];
+  const IntType prefix_match_size = failure[pattern.size() - 1];
   return FindOccurrence(text, pattern, failure, prefix_match_size,
                         equivalent_to);
 }
@@ -124,10 +135,13 @@ size_t FindNextOccurrence(base::StringPiece text,
 // with respect to EquivalentTo relation between characters, and iterate over
 // them using an input iterator. The values pointed to by an iterator indicate
 // positions of occurrences, i.e. indices of |text| characters coming *after*
-// the occurrences.
-template <typename EquivalentTo = std::equal_to<char>>
+// the occurrences. Out-of-range iterators are dereferenced to
+// base::StringPiece::npos.
+template <typename IntType, typename EquivalentTo = std::equal_to<char>>
 class AllOccurrences {
  public:
+  static_assert(std::is_unsigned<IntType>::value, "IntType is not unsigned.");
+
   class Iterator : public std::iterator<std::input_iterator_tag, size_t> {
    public:
     bool operator==(const Iterator& rhs) const {
@@ -173,7 +187,7 @@ class AllOccurrences {
 
   AllOccurrences(base::StringPiece text,
                  base::StringPiece pattern,
-                 const size_t* failure,
+                 const IntType* failure,
                  EquivalentTo equivalent_to = EquivalentTo())
       : text_(text),
         pattern_(pattern),
@@ -198,7 +212,7 @@ class AllOccurrences {
 
   base::StringPiece text_;
   base::StringPiece pattern_;
-  const size_t* failure_;
+  const IntType* failure_;
 
   EquivalentTo equivalent_to_;
 };
@@ -220,13 +234,14 @@ class AllOccurrences {
 //     //   text[|match_end|-pattern.size()..|match_end|-1]
 //     ... process the |match_end| ...
 //   }
-template <typename EquivalentTo = std::equal_to<char>>
-AllOccurrences<EquivalentTo> CreateAllOccurrences(
+template <typename IntType, typename EquivalentTo = std::equal_to<char>>
+AllOccurrences<IntType, EquivalentTo> CreateAllOccurrences(
     base::StringPiece text,
     base::StringPiece pattern,
-    const size_t* failure,
+    const IntType* failure,
     EquivalentTo equivalent_to = EquivalentTo()) {
-  return AllOccurrences<EquivalentTo>(text, pattern, failure, equivalent_to);
+  return AllOccurrences<IntType, EquivalentTo>(text, pattern, failure,
+                                               equivalent_to);
 }
 
 }  // namespace subresource_filter
