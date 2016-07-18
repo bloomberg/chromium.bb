@@ -1052,8 +1052,9 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  bool have_es3_occlusion_query =
-      gl_version_info_->IsAtLeastGLES(3, 0);
+  bool have_occlusion_query =
+      gl_version_info_->IsAtLeastGLES(3, 0) ||
+      gl_version_info_->IsAtLeastGL(3, 3);
   bool have_ext_occlusion_query_boolean =
       extensions.Contains("GL_EXT_occlusion_query_boolean");
   bool have_arb_occlusion_query2 =
@@ -1061,7 +1062,7 @@ void FeatureInfo::InitializeFeatures() {
   bool have_arb_occlusion_query =
       extensions.Contains("GL_ARB_occlusion_query");
 
-  if (have_es3_occlusion_query ||
+  if (have_occlusion_query ||
       have_ext_occlusion_query_boolean ||
       have_arb_occlusion_query2 ||
       have_arb_occlusion_query) {
@@ -1070,7 +1071,9 @@ void FeatureInfo::InitializeFeatures() {
     }
     feature_flags_.occlusion_query_boolean = true;
     feature_flags_.use_arb_occlusion_query2_for_occlusion_query_boolean =
-        !have_ext_occlusion_query_boolean && have_arb_occlusion_query2;
+        !have_ext_occlusion_query_boolean && (have_arb_occlusion_query2 ||
+        (gl_version_info_->IsAtLeastGL(3, 3) &&
+         gl_version_info_->IsLowerThanGL(4, 3)));
     feature_flags_.use_arb_occlusion_query_for_occlusion_query_boolean =
         !have_ext_occlusion_query_boolean && have_arb_occlusion_query &&
         !have_arb_occlusion_query2;
