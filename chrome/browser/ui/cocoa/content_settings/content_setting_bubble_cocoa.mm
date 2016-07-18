@@ -323,8 +323,10 @@ const ContentTypeToNibPath kNibPaths[] = {
 - (void)initializeRadioGroup {
   // NOTE! Tags in the xib files must match the order of the radio buttons
   // passed in the radio_group and be 1-based, not 0-based.
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      contentSettingBubbleModel_->bubble_content();
   const ContentSettingBubbleModel::RadioGroup& radio_group =
-      contentSettingBubbleModel_->bubble_content().radio_group;
+      bubble_content.radio_group;
 
   // Xcode 5.1 Interface Builder doesn't allow a font property to be set for
   // NSMatrix. The implementation of GTMUILocalizerAndLayoutTweaker assumes that
@@ -338,6 +340,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     DCHECK([font isEqual:[cell font]]);
   }
   [allowBlockRadioGroup_ setFont:font];
+  [allowBlockRadioGroup_ setEnabled:bubble_content.radio_group_enabled];
 
   // Select appropriate radio button.
   [allowBlockRadioGroup_ selectCellWithTag: radio_group.default_item + 1];
