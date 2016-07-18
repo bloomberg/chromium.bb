@@ -11,7 +11,7 @@ namespace net {
 
 SSLServerConfig::SSLServerConfig()
     : version_min(kDefaultSSLVersionMin),
-      version_max(SSL_PROTOCOL_VERSION_TLS1_2),
+      version_max(kDefaultSSLVersionMax),
       require_ecdhe(false),
       client_cert_type(NO_CLIENT_CERT),
       client_cert_verifier(nullptr) {}

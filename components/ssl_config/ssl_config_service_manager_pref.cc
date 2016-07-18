@@ -79,6 +79,8 @@ uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_1;
   } else if (version_str == switches::kSSLVersionTLSv12) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_2;
+  } else if (version_str == switches::kSSLVersionTLSv13) {
+    version = net::SSL_PROTOCOL_VERSION_TLS1_3;
   }
   return version;
 }
@@ -285,8 +287,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->version_min = version_min;
   }
   if (version_max) {
-    uint16_t supported_version_max = config->version_max;
-    config->version_max = std::min(supported_version_max, version_max);
+    config->version_max = version_max;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
   config->dhe_enabled = dhe_enabled_.GetValue();

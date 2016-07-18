@@ -2115,6 +2115,9 @@ std::string SSLClientSocketImpl::GetSessionCacheKey() const {
     case SSL_PROTOCOL_VERSION_TLS1_2:
       result.append("tls1.2");
       break;
+    case SSL_PROTOCOL_VERSION_TLS1_3:
+      result.append("tls1.3");
+      break;
     default:
       NOTREACHED();
   }

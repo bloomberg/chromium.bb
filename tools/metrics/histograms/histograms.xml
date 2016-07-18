@@ -91638,6 +91638,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="TLS 1.0"/>
   <int value="4" label="TLS 1.1"/>
   <int value="5" label="TLS 1.2"/>
+  <int value="6" label="TLS 1.3"/>
   <int value="7" label="QUIC"/>
 </enum>
 
