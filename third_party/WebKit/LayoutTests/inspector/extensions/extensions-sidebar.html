@@ -44,9 +44,7 @@ function extension_sidebarSetPage(panelName, nextTest)
         dumpObject(sidebar);
         function onShown(win)
         {
-            var sidebarHeight = win.document.documentElement.getBoundingClientRect().height;
-            if (win.innerHeight !== sidebarHeight)
-                output("sidebar height mismatch, expected: " + win.innerHeight + ", actual:" + sidebarHeight);
+            output("sidebar height " + win.document.documentElement.getBoundingClientRect().height);
             sidebar.onShown.removeListener(onShown);
             nextTest();
         }
