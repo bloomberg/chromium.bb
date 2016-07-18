@@ -132,8 +132,12 @@ void ShellDevToolsFrontend::Focus() {
 }
 
 void ShellDevToolsFrontend::InspectElementAt(int x, int y) {
-  if (agent_host_)
-    agent_host_->InspectElement(x, y);
+  if (agent_host_) {
+    agent_host_->InspectElement(this, x, y);
+  } else {
+    inspect_element_at_x_ = x;
+    inspect_element_at_y_ = y;
+  }
 }
 
 void ShellDevToolsFrontend::Close() {
@@ -152,6 +156,8 @@ ShellDevToolsFrontend::ShellDevToolsFrontend(Shell* frontend_shell,
     : WebContentsObserver(frontend_shell->web_contents()),
       frontend_shell_(frontend_shell),
       inspected_contents_(inspected_contents),
+      inspect_element_at_x_(-1),
+      inspect_element_at_y_(-1),
       weak_factory_(this) {
 }
 
@@ -173,6 +179,12 @@ void ShellDevToolsFrontend::RenderViewCreated(
 void ShellDevToolsFrontend::DocumentAvailableInMainFrame() {
   agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
   agent_host_->AttachClient(this);
+  if (inspect_element_at_x_ != -1) {
+    agent_host_->InspectElement(
+        this, inspect_element_at_x_, inspect_element_at_y_);
+    inspect_element_at_x_ = -1;
+    inspect_element_at_y_ = -1;
+  }
 }
 
 void ShellDevToolsFrontend::WebContentsDestroyed() {

@@ -51,7 +51,7 @@ public:
 
     virtual void dispatchOnInspectorBackend(int sessionId, int callId, const WebString& method, const WebString& message) = 0;
 
-    virtual void inspectElementAt(const WebPoint&) = 0;
+    virtual void inspectElementAt(int sessionId, const WebPoint&) = 0;
     virtual void failedToRequestDevTools() = 0;
 
     // Exposed for TestRunner.

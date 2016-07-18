@@ -102,7 +102,7 @@ public:
     void detach() override;
     void continueProgram() override;
     void dispatchOnInspectorBackend(int sessionId, int callId, const WebString& method, const WebString& message) override;
-    void inspectElementAt(const WebPoint&) override;
+    void inspectElementAt(int sessionId, const WebPoint&) override;
     void failedToRequestDevTools() override;
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;
 

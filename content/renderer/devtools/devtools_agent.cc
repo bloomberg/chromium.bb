@@ -278,10 +278,11 @@ void DevToolsAgent::OnDispatchOnInspectorBackend(int session_id,
                                             WebString::fromUTF8(message));
 }
 
-void DevToolsAgent::OnInspectElement(int x, int y) {
+void DevToolsAgent::OnInspectElement(int session_id, int x, int y) {
   blink::WebFloatRect point_rect(x, y, 0, 0);
   frame_->GetRenderWidget()->convertWindowToViewport(&point_rect);
-  GetWebAgent()->inspectElementAt(WebPoint(point_rect.x, point_rect.y));
+  GetWebAgent()->inspectElementAt(
+      session_id, WebPoint(point_rect.x, point_rect.y));
 }
 
 void DevToolsAgent::OnRequestNewWindowACK(bool success) {

@@ -549,9 +549,9 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(int sessionId, const Stri
     m_session->dispatchProtocolMessage(method, message);
 }
 
-void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
+void WebDevToolsAgentImpl::inspectElementAt(int sessionId, const WebPoint& pointInRootFrame)
 {
-    if (!m_domAgent)
+    if (!m_domAgent || !m_session || m_session->sessionId() != sessionId)
         return;
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     HitTestRequest request(hitType);

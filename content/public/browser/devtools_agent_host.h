@@ -128,8 +128,10 @@ class CONTENT_EXPORT DevToolsAgentHost
   virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                        const std::string& message) = 0;
 
-  // Starts inspecting element at position (|x|, |y|) in the specified page.
-  virtual void InspectElement(int x, int y) = 0;
+  // Starts inspecting element at position (|x|, |y|).
+  virtual void InspectElement(DevToolsAgentHostClient* client,
+                              int x,
+                              int y) = 0;
 
   // Returns the unique id of the agent.
   virtual std::string GetId() = 0;

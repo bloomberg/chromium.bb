@@ -153,7 +153,13 @@ bool DevToolsAgentHostImpl::IsAttached() {
   return !!client_;
 }
 
-void DevToolsAgentHostImpl::InspectElement(int x, int y) {
+void DevToolsAgentHostImpl::InspectElement(
+    DevToolsAgentHostClient* client,
+    int x,
+    int y) {
+ if (!client_ || client_ != client)
+   return;
+ InspectElement(x, y);
 }
 
 std::string DevToolsAgentHostImpl::GetId() {
@@ -193,6 +199,9 @@ void DevToolsAgentHostImpl::HostClosed() {
   DevToolsAgentHostClient* client = client_;
   client_ = NULL;
   client->AgentHostClosed(this, false);
+}
+
+void DevToolsAgentHostImpl::InspectElement(int x, int y) {
 }
 
 void DevToolsAgentHostImpl::SendMessageToClient(int session_id,

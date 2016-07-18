@@ -553,12 +553,12 @@ void DevToolsWindow::InspectElement(
     OpenDevToolsWindow(Profile::FromBrowserContext(agent->GetBrowserContext()),
                        agent);
   }
-
-  agent->InspectElement(x, y);
-
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
-  if (should_measure_time && window)
-    window->inspect_element_start_time_ = start_time;
+  if (window) {
+    agent->InspectElement(window->bindings_, x, y);
+    if (should_measure_time)
+      window->inspect_element_start_time_ = start_time;
+  }
 }
 
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {

@@ -104,7 +104,7 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
                                int call_id,
                                const std::string& method,
                                const std::string& message);
-  void InspectElement(int x, int y);
+  void InspectElement(int session_id, int x, int y);
   void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
   void Suspend();
   void Resume();
@@ -211,10 +211,10 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
-    int x, int y) {
+    int session_id, int x, int y) {
   DCHECK(attached_);
   host_->Send(new DevToolsAgentMsg_InspectElement(
-      host_->GetRoutingID(), x, y));
+      host_->GetRoutingID(), session_id, x, y));
 }
 
 void
@@ -510,9 +510,9 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
 
 void RenderFrameDevToolsAgentHost::InspectElement(int x, int y) {
   if (current_)
-    current_->InspectElement(x, y);
+    current_->InspectElement(session_id(), x, y);
   if (pending_)
-    pending_->InspectElement(x, y);
+    pending_->InspectElement(session_id(), x, y);
 }
 
 void RenderFrameDevToolsAgentHost::OnClientAttached() {

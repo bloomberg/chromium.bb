@@ -73,6 +73,8 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   Shell* frontend_shell_;
   WebContents* inspected_contents_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
+  int inspect_element_at_x_;
+  int inspect_element_at_y_;
   std::unique_ptr<DevToolsFrontendHost> frontend_host_;
   using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
   PendingRequestsMap pending_requests_;
