@@ -95,6 +95,7 @@ class ArcSettingsServiceImpl
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
   void SyncUse24HourClock() const;
+  void SyncBackupEnabled() const;
 
   void OnBluetoothAdapterInitialized(
       scoped_refptr<device::BluetoothAdapter> adapter);
@@ -149,6 +150,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(prefs::kUse24HourClock);
   AddPrefToObserve(proxy_config::prefs::kProxy);
+  AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
 
   reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       chromeos::kStatsReportingPref,
@@ -215,6 +217,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncUse24HourClock();
   } else if (pref_name == proxy_config::prefs::kProxy) {
     SyncProxySettings();
+  } else if (pref_name == prefs::kArcBackupRestoreEnabled) {
+    SyncBackupEnabled();
   } else {
     LOG(ERROR) << "Unknown pref changed.";
   }
@@ -360,6 +364,20 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
   }
 
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_PROXY", extras);
+}
+
+void ArcSettingsServiceImpl::SyncBackupEnabled() const {
+  const PrefService::Preference* const pref =
+      registrar_.prefs()->FindPreference(prefs::kArcBackupRestoreEnabled);
+  DCHECK(pref);
+  bool enabled = false;
+  bool value_exists = pref->GetValue()->GetAsBoolean(&enabled);
+  DCHECK(value_exists);
+  base::DictionaryValue extras;
+  extras.SetBoolean("enabled", enabled);
+  extras.SetBoolean("managed", !pref->IsUserModifiable());
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_BACKUP_ENABLED",
+                        extras);
 }
 
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
