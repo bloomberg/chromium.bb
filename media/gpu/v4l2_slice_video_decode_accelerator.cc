@@ -1562,9 +1562,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     // the client, or by ourselves, if we are allocating.
     output_record.at_client = true;
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
-      std::vector<base::ScopedFD> dmabuf_fds =
-          std::move(device_->GetDmabufsForV4L2Buffer(
-              i, output_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE));
+      std::vector<base::ScopedFD> dmabuf_fds = device_->GetDmabufsForV4L2Buffer(
+          i, output_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
       if (dmabuf_fds.empty()) {
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
