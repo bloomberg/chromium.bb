@@ -1625,10 +1625,11 @@ static int64_t pick_intra_angle_routine_sbuv(
   return this_rd;
 }
 
-static int rd_pick_intra_angle_sbuv(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
-                                    int *rate_tokenonly, int64_t *distortion,
-                                    int *skippable, BLOCK_SIZE bsize,
-                                    int rate_overhead, int64_t best_rd) {
+static int rd_pick_intra_angle_sbuv(const AV1_COMP *cpi, MACROBLOCK *x,
+                                    int *rate, int *rate_tokenonly,
+                                    int64_t *distortion, int *skippable,
+                                    BLOCK_SIZE bsize, int rate_overhead,
+                                    int64_t best_rd) {
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
   int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
   int8_t angle_delta, best_angle_delta = 0;
