@@ -613,14 +613,22 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   audio_pref_handler_->SetVolumeGainValue(*device, volume);
 
   if (initializing_audio_state_) {
-    // Reset the flag after the first OutputNodeVolumeChanged, just in case
-    // cras didn't respond to the initial SetOutputNodeVolume request.
-    initializing_audio_state_ = false;
     // Do not notify the observers for volume changed event if CrasAudioHandler
-    // is initializing its state, i.e., the volume change event is not from
-    // user action, no need to notify UI to pop uo the volume slider bar.
-    if (init_node_id_ == node_id && init_volume_ ==  volume)
+    // is initializing its state, i.e., the volume change event is in responding
+    // to SetOutputNodeVolume request from intializaing audio state, not
+    // from user action, no need to notify UI to pop uo the volume slider bar.
+    if (init_node_id_ == node_id && init_volume_ == volume) {
+      init_volume_count_--;
+      if (!init_volume_count_)
+        initializing_audio_state_ = false;
       return;
+    } else {
+      // Reset the initializing_audio_state_ in case SetOutputNodeVolume request
+      // is lost by cras due to cras is not ready when CrasAudioHandler is being
+      // initialized.
+      initializing_audio_state_ = false;
+      init_volume_count_ = 0;
+    }
   }
 
   FOR_EACH_OBSERVER(AudioObserver, observers_,
@@ -730,6 +738,11 @@ void CrasAudioHandler::SetupAudioOutputState() {
   SetOutputMuteInternal(output_mute_on_);
 
   if (initializing_audio_state_) {
+    // During power up, InitializeAudioState() could be called twice, first
+    // by CrasAudioHandler constructor, then by cras server restarting signal,
+    // both sending SetOutputNodeVolume requests, and could lead to two
+    // OutputNodeVolumeChanged signals.
+    init_volume_count_++;
     init_node_id_ = active_output_node_id_;
     init_volume_ = output_volume_;
   }

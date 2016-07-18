@@ -435,6 +435,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool initializing_audio_state_ = false;
   int init_volume_;
   uint64_t init_node_id_;
+  int init_volume_count_ = 0;
 
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
 
