@@ -130,7 +130,7 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     return success;
 }
 
-CSSValue* CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
+const CSSValue* CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
 {
     ASSERT(!isShorthandProperty(id));
 
@@ -138,7 +138,7 @@ CSSValue* CSSVariableResolver::resolveVariableReferences(StyleVariableData* styl
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
         return CSSUnsetValue::create();
-    CSSValue* result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
+    const CSSValue* result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
     if (!result)
         return CSSUnsetValue::create();
     return result;
@@ -153,7 +153,7 @@ const CSSValue* CSSVariableResolver::resolveVariableReferences(StyleResolverStat
     if (resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens)) {
         CSSParserContext context(HTMLStandardMode, nullptr);
 
-        CSSValue* value = CSSPropertyParser::parseSingleValue(id, CSSParserTokenRange(tokens), context);
+        const CSSValue* value = CSSPropertyParser::parseSingleValue(id, CSSParserTokenRange(tokens), context);
         if (value)
             return value;
     }

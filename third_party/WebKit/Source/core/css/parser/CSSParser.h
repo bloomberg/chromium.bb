@@ -42,7 +42,7 @@ public:
     static ImmutableStylePropertySet* parseCustomPropertySet(CSSParserTokenRange);
 
     // This is for non-shorthands only
-    static CSSValue* parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
+    static const CSSValue* parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
 
     static const CSSValue* parseFontFaceDescriptor(CSSPropertyID, const String&, const CSSParserContext&);
 

@@ -100,7 +100,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
     return CSSParserImpl::parseValue(declaration, unresolvedProperty, string, important, context);
 }
 
-CSSValue* CSSParser::parseSingleValue(CSSPropertyID propertyID, const String& string, const CSSParserContext& context)
+const CSSValue* CSSParser::parseSingleValue(CSSPropertyID propertyID, const String& string, const CSSParserContext& context)
 {
     if (string.isEmpty())
         return nullptr;
@@ -146,7 +146,7 @@ bool CSSParser::parseColor(Color& color, const String& string, bool strict)
         return true;
     }
 
-    CSSValue* value = CSSParserFastPaths::parseColor(string, strict ? HTMLStandardMode : HTMLQuirksMode);
+    const CSSValue* value = CSSParserFastPaths::parseColor(string, strict ? HTMLStandardMode : HTMLQuirksMode);
     // TODO(timloh): Why is this always strict mode?
     if (!value)
         value = parseSingleValue(CSSPropertyColor, string, strictCSSParserContext());

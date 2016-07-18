@@ -45,7 +45,7 @@ public:
         HeapVector<CSSProperty, 256>&, StyleRule::RuleType);
 
     // Parses a non-shorthand CSS property
-    static CSSValue* parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
+    static const CSSValue* parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
 
 private:
     CSSPropertyParser(const CSSParserTokenRange&, const CSSParserContext&,
@@ -54,7 +54,7 @@ private:
     // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
     bool parseValueStart(CSSPropertyID unresolvedProperty, bool important);
     bool consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important);
-    CSSValue* parseSingleValue(CSSPropertyID, CSSPropertyID = CSSPropertyInvalid);
+    const CSSValue* parseSingleValue(CSSPropertyID, CSSPropertyID = CSSPropertyInvalid);
 
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
 

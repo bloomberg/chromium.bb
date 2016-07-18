@@ -70,7 +70,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
     if (string.isEmpty())
         return;
 
-    if (CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
+    if (const CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
         // Check for a "none" transform. In these cases we can use the default identity matrix.
         if (value->isPrimitiveValue() && (toCSSPrimitiveValue(value))->getValueID() == CSSValueNone)
             return;

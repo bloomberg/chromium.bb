@@ -17,7 +17,8 @@ CSSValue* CSSUnsupportedStyleValue::toCSSValue() const
 
 CSSValue* CSSUnsupportedStyleValue::toCSSValueWithProperty(CSSPropertyID propertyID) const
 {
-    return CSSParser::parseSingleValue(propertyID, m_cssText, strictCSSParserContext());
+    // TODO(sashab): Make CSSStyleValue return const CSSValue*s and remove this cast.
+    return const_cast<CSSValue*>(CSSParser::parseSingleValue(propertyID, m_cssText, strictCSSParserContext()));
 }
 
 } // namespace blink

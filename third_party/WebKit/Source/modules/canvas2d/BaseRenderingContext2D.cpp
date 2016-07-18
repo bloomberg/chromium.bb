@@ -392,7 +392,7 @@ void BaseRenderingContext2D::setFilter(const String& filterString)
     if (filterString == state().unparsedFilter())
         return;
 
-    CSSValue* filterValue = CSSParser::parseSingleValue(CSSPropertyFilter, filterString, CSSParserContext(HTMLStandardMode, nullptr));
+    const CSSValue* filterValue = CSSParser::parseSingleValue(CSSPropertyFilter, filterString, CSSParserContext(HTMLStandardMode, nullptr));
 
     if (!filterValue || filterValue->isInitialValue() || filterValue->isInheritedValue())
         return;

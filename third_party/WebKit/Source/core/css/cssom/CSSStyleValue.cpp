@@ -30,7 +30,7 @@ ScriptValue CSSStyleValue::parse(ScriptState* scriptState, const String& propert
         return ScriptValue::createNull(scriptState);
     }
 
-    CSSValue* cssValue = CSSParser::parseSingleValue(propertyID, value, strictCSSParserContext());
+    const CSSValue* cssValue = CSSParser::parseSingleValue(propertyID, value, strictCSSParserContext());
     if (!cssValue)
         return ScriptValue::createNull(scriptState);
 

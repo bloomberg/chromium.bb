@@ -23,8 +23,8 @@ struct TestCase {
 static void verifyCSSCalc(String text, double value, bool valid, unsigned fontSize, unsigned viewportWidth, unsigned viewportHeight)
 {
     CSSLengthArray lengthArray;
-    CSSValue* cssValue = CSSParser::parseSingleValue(CSSPropertyLeft, text);
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
+    const CSSValue* cssValue = CSSParser::parseSingleValue(CSSPropertyLeft, text);
+    const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
     if (primitiveValue)
         primitiveValue->accumulateLengthArray(lengthArray);
     else

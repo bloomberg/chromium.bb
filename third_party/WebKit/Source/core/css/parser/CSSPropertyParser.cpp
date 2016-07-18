@@ -133,13 +133,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     return parseSuccess;
 }
 
-CSSValue* CSSPropertyParser::parseSingleValue(
+const CSSValue* CSSPropertyParser::parseSingleValue(
     CSSPropertyID property, const CSSParserTokenRange& range, const CSSParserContext& context)
 {
     if (hasInvalidNumericValues(range))
         return nullptr;
     CSSPropertyParser parser(range, context, nullptr);
-    CSSValue* value = parser.parseSingleValue(property);
+    const CSSValue* value = parser.parseSingleValue(property);
     if (!value || !parser.m_range.atEnd())
         return nullptr;
     return value;
@@ -3579,7 +3579,7 @@ static void countKeywordOnlyPropertyUsage(CSSPropertyID property, UseCounter* co
     }
 }
 
-CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, CSSPropertyID currentShorthand)
+const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, CSSPropertyID currentShorthand)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
     if (CSSParserFastPaths::isKeywordPropertyID(property)) {
@@ -4387,7 +4387,7 @@ bool CSSPropertyParser::consumeColumns(bool important)
 bool CSSPropertyParser::consumeShorthandGreedily(const StylePropertyShorthand& shorthand, bool important)
 {
     ASSERT(shorthand.length() <= 6); // Existing shorthands have at most 6 longhands.
-    CSSValue* longhands[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+    const CSSValue* longhands[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
     const CSSPropertyID* shorthandProperties = shorthand.properties();
     do {
         bool foundLonghand = false;
@@ -4468,7 +4468,7 @@ bool CSSPropertyParser::consumeFlex(bool important)
 bool CSSPropertyParser::consumeBorder(bool important)
 {
     CSSValue* width = nullptr;
-    CSSValue* style = nullptr;
+    const CSSValue* style = nullptr;
     CSSValue* color = nullptr;
 
     while (!width || !style || !color) {
@@ -4512,13 +4512,13 @@ bool CSSPropertyParser::consume4Values(const StylePropertyShorthand& shorthand, 
 {
     ASSERT(shorthand.length() == 4);
     const CSSPropertyID* longhands = shorthand.properties();
-    CSSValue* top = parseSingleValue(longhands[0], shorthand.id());
+    const CSSValue* top = parseSingleValue(longhands[0], shorthand.id());
     if (!top)
         return false;
 
-    CSSValue* right = parseSingleValue(longhands[1], shorthand.id());
-    CSSValue* bottom = nullptr;
-    CSSValue* left = nullptr;
+    const CSSValue* right = parseSingleValue(longhands[1], shorthand.id());
+    const CSSValue* bottom = nullptr;
+    const CSSValue* left = nullptr;
     if (right) {
         bottom = parseSingleValue(longhands[2], shorthand.id());
         if (bottom)
@@ -5077,7 +5077,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyWebkitTextStroke:
         return consumeShorthandGreedily(webkitTextStrokeShorthand(), important);
     case CSSPropertyMarker: {
-        CSSValue* marker = parseSingleValue(CSSPropertyMarkerStart);
+        const CSSValue* marker = parseSingleValue(CSSPropertyMarkerStart);
         if (!marker || !m_range.atEnd())
             return false;
         addProperty(CSSPropertyMarkerStart, CSSPropertyMarker, *marker, important);

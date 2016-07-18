@@ -27,7 +27,7 @@ public:
     static const CSSValue* resolvePendingSubstitutions(StyleResolverState&, CSSPropertyID, const CSSPendingSubstitutionValue&);
 
     // Shorthand properties are not supported.
-    static CSSValue* resolveVariableReferences(StyleVariableData*, CSSPropertyID, const CSSVariableReferenceValue&);
+    static const CSSValue* resolveVariableReferences(StyleVariableData*, CSSPropertyID, const CSSVariableReferenceValue&);
 
 private:
     CSSVariableResolver(StyleVariableData*);

@@ -210,7 +210,7 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
         return nullptr;
     }
 
-    CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
+    const CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
     if (!value || !value->isValueList()) {
         ASSERT(!value || value->isCSSWideKeyword());
         bool throwTypeError = true;
@@ -247,7 +247,7 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
         exceptionState.throwTypeError("'" + string + "' is not a valid value for easing");
         return nullptr;
     }
-    CSSValueList* valueList = toCSSValueList(value);
+    const CSSValueList* valueList = toCSSValueList(value);
     if (valueList->length() > 1) {
         exceptionState.throwTypeError("Easing may not be set to a list of values");
         return nullptr;
