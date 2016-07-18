@@ -90,7 +90,8 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
 
   // List of overlay formats that are known to be supported.
   // TODO(reveman): Determine this at runtime.
-  const gfx::BufferFormat kOverlayFormats[] = {gfx::BufferFormat::BGRX_8888};
+  const gfx::BufferFormat kOverlayFormats[] = {gfx::BufferFormat::RGBA_8888,
+                                               gfx::BufferFormat::RGBX_8888};
   bool is_overlay_candidate =
       std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
                 format) != std::end(kOverlayFormats);

@@ -799,6 +799,8 @@ void Surface::UpdateSurface(bool full_damage) {
                          current_resource_.id, true, uv_top_left,
                          uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
                          false, false, state_.only_visible_on_secure_output);
+    if (current_resource_.is_overlay_candidate)
+      texture_quad->set_resource_size_in_pixels(current_resource_.size);
     delegated_frame->resource_list.push_back(current_resource_);
   } else {
     cc::SolidColorDrawQuad* solid_quad =
