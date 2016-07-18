@@ -23,6 +23,7 @@
  * SOFTWARE.
  */
 
+#include <stdint.h>
 #include <unistd.h>
 
 #include "wayland-server.h"

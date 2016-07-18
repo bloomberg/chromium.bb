@@ -30,6 +30,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define WL_HIDE_DEPRECATED 1
 

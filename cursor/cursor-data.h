@@ -25,6 +25,8 @@
 * Author:  Keith Packard, SuSE, Inc.
 */
 
+#include <stdint.h>
+
 static uint32_t cursor_data[] = {
 	0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,

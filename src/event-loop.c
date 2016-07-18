@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/socket.h>
