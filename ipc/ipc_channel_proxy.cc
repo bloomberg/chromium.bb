@@ -324,12 +324,15 @@ void ChannelProxy::Context::OnDispatchConnected() {
   if (channel_connected_called_)
     return;
 
-  if (channel_) {
-    Channel::AssociatedInterfaceSupport* associated_interface_support =
-        channel_->GetAssociatedInterfaceSupport();
-    if (associated_interface_support) {
-      channel_associated_group_.reset(new mojo::AssociatedGroup(
-          *associated_interface_support->GetAssociatedGroup()));
+  {
+    base::AutoLock l(channel_lifetime_lock_);
+    if (channel_) {
+      Channel::AssociatedInterfaceSupport* associated_interface_support =
+          channel_->GetAssociatedInterfaceSupport();
+      if (associated_interface_support) {
+        channel_associated_group_.reset(new mojo::AssociatedGroup(
+            *associated_interface_support->GetAssociatedGroup()));
+      }
     }
   }
 

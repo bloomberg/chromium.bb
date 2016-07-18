@@ -267,9 +267,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/582274
 "race:usrsctp_close\n"
 
-// http://crbug.com/628481
-"race:IPC::SyncChannel::SyncContext::OnChannelClose\n"
-
 // End of suppressions.
 ;  // Please keep this semicolon.
 
