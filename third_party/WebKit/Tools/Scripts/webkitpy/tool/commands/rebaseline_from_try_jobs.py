@@ -16,6 +16,7 @@ from webkitpy.common.net.rietveld import latest_try_jobs
 from webkitpy.common.net.web import Web
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
+from webkitpy.tool.commands.rebaseline import Build
 
 
 _log = logging.getLogger(__name__)
@@ -46,9 +47,9 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         if args:
             test_prefix_list = {}
             try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
-            builders = [j.builder_name for j in try_jobs]
+            builds = [Build(j.builder_name, j.build_number) for j in try_jobs]
             for t in args:
-                test_prefix_list[t] = {b: BASELINE_SUFFIX_LIST for b in builders}
+                test_prefix_list[t] = {b: BASELINE_SUFFIX_LIST for b in builds}
         else:
             test_prefix_list = self._test_prefix_list(issue_number)
         self._log_test_prefix_list(test_prefix_list)
@@ -76,27 +77,27 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
 
     def _test_prefix_list(self, issue_number):
         """Returns a collection of test, builder and file extensions to get new baselines for."""
-        builders_to_tests = self._builders_to_tests(issue_number)
+        builds_to_tests = self._builds_to_tests(issue_number)
         result = {}
-        for builder, tests in builders_to_tests.iteritems():
+        for build, tests in builds_to_tests.iteritems():
             for test in tests:
                 if test not in result:
                     result[test] = {}
-                # TODO(qyearsley): Consider using TestExpectations.suffixes_for_test_result.
-                result[test][builder] = BASELINE_SUFFIX_LIST
+                result[test][build] = BASELINE_SUFFIX_LIST
         return result
 
-    def _builders_to_tests(self, issue_number):
+    def _builds_to_tests(self, issue_number):
         """Fetches a list of try bots, and for each, fetches tests with new baselines."""
         _log.debug('Getting results for Rietveld issue %d.' % issue_number)
         try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
         if not try_jobs:
             _log.debug('No try job results for builders in: %r.' % (self._try_bots(),))
-        builders_to_tests = {}
+        builds_to_tests = {}
         for job in try_jobs:
             test_results = self._unexpected_mismatch_results(job)
-            builders_to_tests[job.builder_name] = sorted(r.test_name() for r in test_results)
-        return builders_to_tests
+            build = Build(job.builder_name, job.build_number)
+            builds_to_tests[build] = sorted(r.test_name() for r in test_results)
+        return builds_to_tests
 
     def _try_bots(self):
         """Retuns a collection of try bot builders to fetch results for."""
@@ -119,5 +120,6 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
             _log.info('No tests to rebaseline.')
             return
         _log.info('Tests to rebaseline:')
-        for test, builders in test_prefix_list.iteritems():
-            _log.info('  %s: %s', test, ', '.join(sorted(builders)))
+        for test, builds in test_prefix_list.iteritems():
+            builds_str = ', '.join(sorted('%s (%s)' % (b.builder_name, b.build_number) for b in builds))
+            _log.info('  %s: %s', test, builds_str)

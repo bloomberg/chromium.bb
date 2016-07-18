@@ -49,6 +49,33 @@ from webkitpy.tool.commands.command import Command
 _log = logging.getLogger(__name__)
 
 
+class Build(object):
+    """Represents a combination of builder and build number.
+
+    If build number is None, this represents the latest build
+    for a given builder.
+
+    TODO(qyearsley): Move this somewhere else; note it's very similar to TryJob,
+    and it seems like it might belong in the buildbot module.
+    TODO(qyearsley): Make this a subclass of namedtuple so that __hash__,
+    __eq__ and __cmp__ don't need to be explicitly added.
+    """
+    def __init__(self, builder_name, build_number=None):
+        self.builder_name = builder_name
+        self.build_number = build_number
+
+    # Having __hash__ and __eq__ allow instances of this class to be used
+    # as keys in dictionaries.
+    def __hash__(self):
+        return hash((self.builder_name, self.build_number))
+
+    def __eq__(self, other):
+        return (self.builder_name, self.build_number) == (other.builder_name, other.build_number)
+
+    def __cmp__(self, other):
+        return cmp((self.builder_name, self.build_number), (other.builder_name, other.build_number))
+
+
 class AbstractRebaseliningCommand(Command):
     """Base class for rebaseline-related commands."""
     # Not overriding execute() - pylint: disable=abstract-method
@@ -287,16 +314,22 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         super(AbstractParallelRebaselineCommand, self).__init__(options=options)
 
     @memoized
-    def builder_data(self):
-        builder_to_results = {}
+    def build_data(self):
+        """Returns a map of Build objects to LayoutTestResult objects.
+
+        The Build objects are the latest builds for the release builders,
+        and LayoutTestResult objects for results fetched from archived layout
+        test results.
+        """
+        build_to_results = {}
         for builder_name in self._release_builders():
             builder = self._tool.buildbot.builder_with_name(builder_name)
             builder_results = builder.latest_layout_test_results()
             if builder_results:
-                builder_to_results[builder_name] = builder_results
+                build_to_results[Build(builder_name)] = builder_results
             else:
                 raise Exception("No result for builder %s." % builder_name)
-        return builder_to_results
+        return build_to_results
 
     # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
@@ -320,15 +353,15 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             traceback.print_exc(file=sys.stderr)
 
     def _builders_to_fetch_from(self, builders_to_check):
-        """Returns the subset of builders that will cover all of the baseline search paths
-        used in the input list.
+        """Returns the subset of builders that will cover all of the baseline
+        search paths used in the input list.
 
         In particular, if the input list contains both Release and Debug
         versions of a configuration, we *only* return the Release version
         (since we don't save debug versions of baselines).
 
         Args:
-          builders_to_check: List of builder names.
+            builders_to_check: List of builder names.
         """
         release_builders = set()
         debug_builders = set()
@@ -346,6 +379,12 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 builders_to_fallback_paths[builder] = fallback_path
         return builders_to_fallback_paths.keys()
 
+    @staticmethod
+    def _builder_names(builds):
+        # TODO(qyearsley): If test_prefix_list dicts are converted to instances
+        # of some class, then this could be replaced with  a method on that class.
+        return [b.builder_name for b in builds]
+
     def _rebaseline_commands(self, test_prefix_list, options, skip_checking_actual_results=False):
         path_to_webkit_patch = self._tool.path()
         cwd = self._tool.scm().checkout_root
@@ -356,14 +395,19 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         for test_prefix in test_prefix_list:
             for test in port.tests([test_prefix]):
-                for builder in self._builders_to_fetch_from(test_prefix_list[test_prefix]):
+                builders_to_fetch_from = self._builders_to_fetch_from(self._builder_names(test_prefix_list[test_prefix]))
+                for build in sorted(test_prefix_list[test_prefix]):
                     # TODO(qyearsley): Remove the parameter skip_checking_actual_results
                     # and instead refactor the existing code so that this is not necessary.
+                    builder, build_number = build.builder_name, build.build_number
+
+                    if builder not in builders_to_fetch_from:
+                        break
                     if skip_checking_actual_results:
-                        actual_failures_suffixes = test_prefix_list[test_prefix][builder]
+                        actual_failures_suffixes = test_prefix_list[test_prefix][build]
                     else:
                         actual_failures_suffixes = self._suffixes_for_actual_failures(
-                            test, builder, test_prefix_list[test_prefix][builder])
+                            test, build, test_prefix_list[test_prefix][build])
                     if not actual_failures_suffixes:
                         # If we're not going to rebaseline the test because it's passing on this
                         # builder, we still want to remove the line from TestExpectations.
@@ -374,6 +418,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
                     suffixes = ','.join(actual_failures_suffixes)
                     cmd_line = ['--suffixes', suffixes, '--builder', builder, '--test', test]
+                    if build_number:
+                        cmd_line.extend(['--build-number', build_number])
                     if options.results_directory:
                         cmd_line.extend(['--results-directory', options.results_directory])
                     if options.verbose:
@@ -418,8 +464,11 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         optimize_commands = []
         for test in test_prefix_list:
             all_suffixes = set()
-            for builder in self._builders_to_fetch_from(test_prefix_list[test]):
-                all_suffixes.update(self._suffixes_for_actual_failures(test, builder, test_prefix_list[test][builder]))
+            builders_to_fetch_from = self._builders_to_fetch_from(self._builder_names(test_prefix_list[test]))
+            for build in sorted(test_prefix_list[test]):
+                if build.builder_name not in builders_to_fetch_from:
+                    break
+                all_suffixes.update(self._suffixes_for_actual_failures(test, build, test_prefix_list[test][build]))
 
             # No need to optimize baselines for a test with no failures.
             if not all_suffixes:
@@ -502,25 +551,27 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         Args:
             options: An object with the options passed to the current command.
-            test_prefix_list: A map of test names to builder names to baseline
-                suffixes to rebaseline. For example:
+            test_prefix_list: A map of test names to Build objects to file suffixes
+                for new baselines. For example:
                 {
-                    "some/test.html": {"builder-1": ["txt"], "builder-2": ["txt"]},
-                    "some/other.html": {"builder-1": ["txt"]}
+                    "some/test.html": {Build("builder-1", 412): ["txt"], Build("builder-2", 100): ["txt"]},
+                    "some/other.html": {Build("builder-1", 412): ["txt"]}
                 }
                 This would mean that new text baselines should be downloaded for
-                "some/test.html" on both builder-1 and builder-2, and new text
-                baselines should be downloaded for "some/other.html" but only
-                from builder-1.
+                "some/test.html" on both builder-1 (build 412) and builder-2
+                (build 100), and new text baselines should be downloaded for
+                "some/other.html" but only from builder-1.
+                TODO(qyearsley): Replace test_prefix_list everywhere with some
+                sort of class that contains the same data.
             skip_checking_actual_results: If True, then the lists of suffixes
                 to rebaseline from |test_prefix_list| will be used directly;
                 if False, then the list of suffixes will filtered to include
                 suffixes with mismatches in actual results.
         """
-        for test, builders_to_check in sorted(test_prefix_list.items()):
+        for test, builds_to_check in sorted(test_prefix_list.items()):
             _log.info("Rebaselining %s" % test)
-            for builder, suffixes in sorted(builders_to_check.items()):
-                _log.debug("  %s: %s" % (builder, ",".join(suffixes)))
+            for build, suffixes in sorted(builds_to_check.items()):
+                _log.debug("  %s: %s" % (build, ",".join(suffixes)))
 
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
             test_prefix_list, options, skip_checking_actual_results)
@@ -544,10 +595,20 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             # auto-rebaseline itself.
             self._run_in_parallel_and_update_scm(self._optimize_baselines(test_prefix_list, options.verbose))
 
-    def _suffixes_for_actual_failures(self, test, builder_name, existing_suffixes):
-        if builder_name not in self.builder_data():
+    def _suffixes_for_actual_failures(self, test, build, existing_suffixes):
+        """Gets the baseline suffixes for actual mismatch failures in some results.
+
+        Args:
+            test: A full test path string.
+            build: A Build object.
+            existing_suffixes: A collection of all suffixes to consider.
+
+        Returns:
+            A set of file suffix strings.
+        """
+        if build not in self.build_data():
             return set()
-        test_result = self.builder_data()[builder_name].result_for_test(test)
+        test_result = self.build_data()[build].result_for_test(test)
         if not test_result:
             return set()
         return set(existing_suffixes) & TestExpectations.suffixes_for_test_result(test_result)
@@ -600,7 +661,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
             _log.info("    %s (%s)" % (test_name, ','.join(suffixes)))
             if test_name not in self._test_prefix_list:
                 self._test_prefix_list[test_name] = {}
-            self._test_prefix_list[test_name][builder_name] = suffixes
+            self._test_prefix_list[test_name][Build(builder_name)] = suffixes
 
     def execute(self, options, args, tool):
         options.results_directory = None
@@ -658,7 +719,8 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             for test in args:
                 if test not in test_prefix_list:
                     test_prefix_list[test] = {}
-                test_prefix_list[test][builder.name()] = suffixes_to_update
+                build = Build(builder.name())
+                test_prefix_list[test][build] = suffixes_to_update
 
         if options.verbose:
             _log.debug("rebaseline-json: " + str(test_prefix_list))
@@ -705,7 +767,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     def bot_revision_data(self, scm):
         revisions = []
-        for result in self.builder_data().values():
+        for result in self.build_data().values():
             if result.run_was_interrupted():
                 _log.error("Can't rebaseline because the latest run on %s exited early." % result.builder_name())
                 return []
@@ -805,7 +867,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                     lines_to_remove[test] = []
                     test_prefix_list[test] = {}
                 lines_to_remove[test].append(builder_name)
-                test_prefix_list[test][builder_name] = BASELINE_SUFFIX_LIST
+                test_prefix_list[test][Build(builder_name)] = BASELINE_SUFFIX_LIST
 
         return test_prefix_list, lines_to_remove
 
