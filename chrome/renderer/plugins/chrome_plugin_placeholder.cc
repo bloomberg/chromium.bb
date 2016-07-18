@@ -260,9 +260,6 @@ void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {
 void ChromePluginPlaceholder::PluginListChanged() {
   if (!GetFrame() || !plugin())
     return;
-  blink::WebDocument document = GetFrame()->top()->document();
-  if (document.isNull())
-    return;
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
   std::string mime_type(GetPluginParams().mimeType.utf8());
