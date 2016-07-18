@@ -1986,6 +1986,7 @@ test("base_unittests") {
     ":base",
     ":i18n",
     ":message_loop_tests",
+    "//base/allocator:features",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",

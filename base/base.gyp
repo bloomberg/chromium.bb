@@ -621,6 +621,7 @@
         '<@(trace_event_test_sources)',
       ],
       'dependencies': [
+        'allocator/allocator.gyp:allocator_features#target',
         'base',
         'base_i18n',
         'base_message_loop_tests',
