@@ -3,6 +3,7 @@ include_rules = [
   "+cc",
   "-chrome",
   "+content/public",
+  "+mojo/edk/embedder",
   "+net",
   "+ui/gfx",
 ]

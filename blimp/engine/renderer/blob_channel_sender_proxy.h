@@ -21,7 +21,11 @@ namespace engine {
 class BLIMP_COMMON_EXPORT BlobChannelSenderProxy : public BlobChannelSender {
  public:
   BlobChannelSenderProxy();
+
   ~BlobChannelSenderProxy() override;
+
+  static std::unique_ptr<BlobChannelSenderProxy> CreateForTest(
+      mojom::BlobChannelPtr blob_channel);
 
   // Returns true if the blob is known to exist within the Engine cache.
   bool IsInEngineCache(const std::string& id) const;
@@ -34,6 +38,9 @@ class BLIMP_COMMON_EXPORT BlobChannelSenderProxy : public BlobChannelSender {
   void DeliverBlob(const BlobId& id) override;
 
  private:
+  // Testing constructor, used to supply a BlobChannel Mojo proxy directly.
+  explicit BlobChannelSenderProxy(mojom::BlobChannelPtr blob_channel);
+
   // BlobChannel Mojo IPC stub, used for delivering blobs to the browser
   // process.
   mojom::BlobChannelPtr blob_channel_;

@@ -399,7 +399,6 @@ source_set("app_unit_tests") {
     ":app_net",
     ":app_settings",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/common",
     "//blimp/common:test_support",
@@ -427,7 +426,6 @@ source_set("common_unit_tests") {
   deps = [
     ":common",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/metrics:metrics",
     "//content/public/browser",
@@ -449,7 +447,6 @@ source_set("feature_unit_tests") {
   deps = [
     ":feature",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/common",
     "//blimp/common/proto",
@@ -472,11 +469,19 @@ source_set("renderer_unit_tests") {
 
   sources = [
     "renderer/blimp_engine_picture_cache_unittest.cc",
+    "renderer/blob_channel_sender_proxy_unittest.cc",
   ]
 
   deps = [
     ":renderer",
+    "//base",
+    "//blimp/common",
+    "//blimp/common:test_support",
+    "//blimp/engine:blob_channel_mojo_cpp_sources",
+    "//blimp/engine:blob_channel_service",
+    "//blimp/net:test_support",
     "//blimp/test:support",
+    "//mojo/public",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

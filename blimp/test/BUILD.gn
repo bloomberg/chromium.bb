@@ -2,6 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
+source_set("run_all_unittests") {
+  testonly = true
+
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//mojo/edk/system",
+  ]
+}
+
 source_set("support") {
   testonly = true
 

@@ -10,6 +10,9 @@
 
 namespace blimp {
 
+// Blob size upper limit, for abuse prevention.
+const size_t kMaxBlobSizeBytes = 10 * 1024 * 1024;
+
 class BLIMP_NET_EXPORT BlobChannelSender {
  public:
   virtual ~BlobChannelSender() {}

@@ -4,7 +4,10 @@
 
 #include "blimp/engine/mojo/blob_channel_service.h"
 
+#include <utility>
+
 #include "blimp/net/blob_channel/blob_channel_sender.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace blimp {
 namespace engine {
@@ -19,8 +22,25 @@ BlobChannelService::BlobChannelService(BlobChannelSender* blob_channel_sender,
 BlobChannelService::~BlobChannelService() {}
 
 void BlobChannelService::PutBlob(const mojo::String& id,
-                                 const mojo::String& data) {
-  blob_channel_sender_->PutBlob(id, new BlobData(data));
+                                 mojo::ScopedSharedBufferHandle data,
+                                 uint32_t size) {
+  // Map |data| into the address space and copy out its contents.
+  if (!data.is_valid()) {
+    LOG(ERROR) << "Invalid data handle received from renderer process.";
+    return;
+  }
+
+  if (size > kMaxBlobSizeBytes) {
+    LOG(ERROR) << "Blob size too big: " << size;
+    return;
+  }
+
+  mojo::ScopedSharedBufferMapping mapping = data->Map(size);
+  CHECK(mapping) << "Failed to mmap region of " << size << " bytes.";
+
+  scoped_refptr<BlobData> new_blob(new BlobData);
+  new_blob->data.assign(reinterpret_cast<const char*>(mapping.get()), size);
+  blob_channel_sender_->PutBlob(id, std::move(new_blob));
 }
 
 void BlobChannelService::DeliverBlob(const mojo::String& id) {

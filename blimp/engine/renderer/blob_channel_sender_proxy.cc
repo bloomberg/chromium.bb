@@ -4,6 +4,9 @@
 
 #include "blimp/engine/renderer/blob_channel_sender_proxy.h"
 
+#include <utility>
+
+#include "blimp/common/blob_cache/id_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/shell/public/cpp/interface_provider.h"
 
@@ -19,30 +22,85 @@ mojom::BlobChannelPtr GetConnectedBlobChannel() {
   return blob_channel_ptr;
 }
 
+// Manages the creation and lifetime of Mojo shared memory buffers for blobs.
+class SharedMemoryBlob {
+ public:
+  explicit SharedMemoryBlob(BlobDataPtr data);
+  ~SharedMemoryBlob();
+
+  mojo::ScopedSharedBufferHandle CreateRemoteHandle();
+
+ private:
+  mojo::ScopedSharedBufferHandle local_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryBlob);
+};
+
+SharedMemoryBlob::SharedMemoryBlob(BlobDataPtr data) {
+  DCHECK_GE(kMaxBlobSizeBytes, data->data.size());
+
+  local_handle_ = mojo::SharedBufferHandle::Create(data->data.size());
+  DCHECK(local_handle_.is_valid());
+
+  mojo::ScopedSharedBufferMapping mapped =
+      local_handle_->Map(data->data.size());
+  DCHECK(mapped);
+  memcpy(mapped.get(), data->data.data(), data->data.size());
+}
+
+SharedMemoryBlob::~SharedMemoryBlob() {}
+
+mojo::ScopedSharedBufferHandle SharedMemoryBlob::CreateRemoteHandle() {
+  mojo::ScopedSharedBufferHandle remote_handle =
+      local_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+  CHECK(remote_handle.is_valid())
+      << "Mojo error when creating read-only buffer handle.";
+  return remote_handle;
+}
+
 }  // namespace
 
 BlobChannelSenderProxy::BlobChannelSenderProxy()
-    : blob_channel_(GetConnectedBlobChannel()) {}
+    : BlobChannelSenderProxy(GetConnectedBlobChannel()) {}
 
 BlobChannelSenderProxy::~BlobChannelSenderProxy() {}
+
+BlobChannelSenderProxy::BlobChannelSenderProxy(
+    mojom::BlobChannelPtr blob_channel)
+    : blob_channel_(std::move(blob_channel)) {}
+
+// static
+std::unique_ptr<BlobChannelSenderProxy> BlobChannelSenderProxy::CreateForTest(
+    mojom::BlobChannelPtr blob_channel) {
+  return base::WrapUnique(new BlobChannelSenderProxy(std::move(blob_channel)));
+}
 
 bool BlobChannelSenderProxy::IsInEngineCache(const std::string& id) const {
   return replication_state_.find(id) != replication_state_.end();
 }
 
 bool BlobChannelSenderProxy::IsInClientCache(const std::string& id) const {
-  return replication_state_.find(id)->second;
+  auto found = replication_state_.find(id);
+  return found != replication_state_.end() && found->second;
 }
 
 void BlobChannelSenderProxy::PutBlob(const BlobId& id, BlobDataPtr data) {
   DCHECK(!IsInEngineCache(id));
 
+  size_t size = data->data.size();
+  CHECK(!data->data.empty()) << "Zero length blob sent: " << BlobIdToString(id);
+
   replication_state_[id] = false;
-  blob_channel_->PutBlob(id, data->data);
+  std::unique_ptr<SharedMemoryBlob> shared_mem_blob(
+      new SharedMemoryBlob(std::move(data)));
+  blob_channel_->PutBlob(id, shared_mem_blob->CreateRemoteHandle(), size);
 }
 
 void BlobChannelSenderProxy::DeliverBlob(const std::string& id) {
-  DCHECK(!IsInClientCache(id));
+  DCHECK(IsInEngineCache(id)) << "Attempted to deliver an invalid blob: "
+                              << BlobIdToString(id);
+  DCHECK(!IsInClientCache(id)) << "Blob is already in the remote cache:"
+                               << BlobIdToString(id);
 
   // We assume that the client will have the blob if we push it.
   // TODO(kmarshall): Revisit this assumption when asynchronous blob transport

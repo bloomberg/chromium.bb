@@ -93,15 +93,20 @@ source_set("test_support") {
   sources = [
     "blob_channel/mock_blob_channel_receiver.cc",
     "blob_channel/mock_blob_channel_receiver.h",
+    "blob_channel/mock_blob_channel_sender.cc",
+    "blob_channel/mock_blob_channel_sender.h",
     "test_common.cc",
     "test_common.h",
   ]
 
   deps = [
     ":net",
-    "//blimp/common/proto",
     "//net:test_support",
     "//testing/gmock",
+  ]
+
+  public_deps = [
+    "//blimp/common/proto",
   ]
 }
 
@@ -138,7 +143,6 @@ source_set("unit_tests") {
     ":net",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/common",
     "//blimp/common:test_support",

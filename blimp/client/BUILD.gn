@@ -89,7 +89,6 @@ source_set("blimp_client_unit_tests") {
     ":session",
     ":switches",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/common",
     "//testing/gmock",
@@ -125,7 +124,6 @@ source_set("app_unit_tests") {
   deps = [
     ":client",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -258,7 +256,6 @@ source_set("feature_unit_tests") {
     ":compositor",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/common",
     "//blimp/common/proto",

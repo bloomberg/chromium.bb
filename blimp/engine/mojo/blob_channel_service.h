@@ -31,7 +31,9 @@ class BlobChannelService : public mojom::BlobChannel {
                      mojom::BlobChannelRequest request);
 
   // BlobChannel implementation.
-  void PutBlob(const mojo::String& id, const mojo::String& data) override;
+  void PutBlob(const mojo::String& id,
+               mojo::ScopedSharedBufferHandle data,
+               uint32_t size) override;
   void DeliverBlob(const mojo::String& id) override;
 
   // Binds |this| and its object lifetime to a Mojo connection.
