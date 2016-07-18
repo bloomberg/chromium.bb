@@ -39,17 +39,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
 
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_byte.html', bug=483282)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html', bug=483282)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html', bug=483282)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-              'tex-2d-rgb-rgb-unsigned_byte.html', bug=483282)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', bug=483282)
-
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
 
     # Mark this test Flaky on all platforms but Intel Linux that is failing
@@ -71,6 +60,26 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms with AMD GPU.
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
+
+    self.Fail('conformance2/rendering/framebuffer-unsupported.html',
+        bug=628861)
+
+    # Linux passes because 2D canvas is not GPU accelerated.
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgba-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=628954)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['win', 'mac'], bug=628954)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['win', 'mac'], bug=628954)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgb-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=628954)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['win', 'mac'], bug=628954)
 
     # Windows only.
     self.Fail('conformance/glsl/bugs/' +
@@ -542,9 +551,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                ['linux'], bug=627525)
 
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
-        ['linux'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
         ['linux'], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
