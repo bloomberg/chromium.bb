@@ -245,8 +245,6 @@ per-file webdata_services.gypi=file://components/webdata_services/OWNERS
 
 per-file webmessaging.gypi=file://components/webmessaging/OWNERS
 
-per-file webp_transcode.gypi=file://components/webp_transcode/OWNERS
-
 per-file wifi.gypi=file://components/wifi/OWNERS
 
 per-file *.isolate=maruel@chromium.org

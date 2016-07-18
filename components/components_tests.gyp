@@ -1052,7 +1052,7 @@
         '<@(gcm_driver_unittest_sources)',
         '<@(google_unittest_sources)',
         '<@(history_unittest_sources)',
-	'<@(image_fetcher_unittest_sources)',
+        '<@(image_fetcher_unittest_sources)',
         '<@(instance_id_unittest_sources)',
         '<@(json_schema_unittest_sources)',
         '<@(keyed_service_unittest_sources)',
@@ -1419,9 +1419,6 @@
             }],
           ],
         }, { # 'OS == "ios"'
-          'sources': [
-            'webp_transcode/webp_decoder_unittest.mm',
-          ],
           'sources/': [
             # Exclude all tests that depends on //content (based on layered-
             # component directory structure).
@@ -1438,7 +1435,6 @@
             'components.gyp:signin_ios_browser',
             'components.gyp:signin_ios_browser_test_support',
             'components.gyp:translate_ios_browser',
-            'components.gyp:webp_transcode',
           ],
           'actions': [
             {

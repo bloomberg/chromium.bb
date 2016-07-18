@@ -161,11 +161,6 @@ test("components_unittests") {
       "//components/signin/ios/browser:unit_tests",
       "//components/translate/ios/browser:unit_tests",
     ]
-
-    if (current_cpu != "arm") {
-      # TODO(GYP): iOS arm builds of libwebp don't work yet.
-      deps += [ "//components/webp_transcode:unit_tests" ]
-    }
   } else {  # !iOS
     deps += [
       "//components/autofill/content/browser:unit_tests",

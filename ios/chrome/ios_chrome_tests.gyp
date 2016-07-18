@@ -88,6 +88,7 @@
         'browser/ui/uikit_ui_util_unittest.mm',
         'browser/update_client/ios_chrome_update_query_params_delegate_unittest.cc',
         'browser/web_resource/web_resource_util_unittest.cc',
+        'browser/webp_transcode/webp_decoder_unittest.mm',
         'common/string_util_unittest.mm',
       ],
       'actions': [
@@ -96,7 +97,7 @@
           'variables': {
             'test_data_files': [
               '../../net/data/ssl/certificates/',
-              'test/data/webdata/bookmarkimages',
+              'test/data',
             ],
             'test_data_prefix': 'ios/chrome',
           },

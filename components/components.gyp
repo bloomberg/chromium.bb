@@ -143,11 +143,6 @@
         'zoom.gypi',
       ],
     }],
-    ['OS == "ios"', {
-      'includes': [
-        'webp_transcode.gypi',
-      ],
-    }],
     ['OS != "ios" and OS != "android"', {
       'includes': [
         'feedback.gypi',

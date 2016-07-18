@@ -11,6 +11,12 @@ bundle_data("ios_chrome_unittests_bundle_data") {
   sources = [
     "test/data/webdata/bookmarkimages/image.jpg",
     "test/data/webdata/bookmarkimages/index.html",
+    "test/data/webp_transcode/test.jpg",
+    "test/data/webp_transcode/test.webp",
+    "test/data/webp_transcode/test_alpha.png",
+    "test/data/webp_transcode/test_alpha.webp",
+    "test/data/webp_transcode/test_small.tiff",
+    "test/data/webp_transcode/test_small.webp",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
@@ -69,6 +75,7 @@ test("ios_chrome_unittests") {
     "browser/ui/uikit_ui_util_unittest.mm",
     "browser/update_client/ios_chrome_update_query_params_delegate_unittest.cc",
     "browser/web_resource/web_resource_util_unittest.cc",
+    "browser/webp_transcode/webp_decoder_unittest.mm",
     "common/string_util_unittest.mm",
   ]
 

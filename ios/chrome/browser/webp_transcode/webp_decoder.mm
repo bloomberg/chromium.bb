@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webp_transcode/webp_decoder.h"
+#include "ios/chrome/browser/webp_transcode/webp_decoder.h"
 
 #import <Foundation/Foundation.h>
 #include <stdint.h>

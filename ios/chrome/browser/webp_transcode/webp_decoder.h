@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
-#define COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
+#ifndef IOS_CHROME_BROWSER_WEBP_TRANSCODE_WEBP_DECODER_H_
+#define IOS_CHROME_BROWSER_WEBP_TRANSCODE_WEBP_DECODER_H_
 
 #import <Foundation/Foundation.h>
 #include <stddef.h>
@@ -75,4 +75,4 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
 
 }  // namespace webp_transcode
 
-#endif  // COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
+#endif  // IOS_CHROME_BROWSER_WEBP_TRANSCODE_WEBP_DECODER_H_

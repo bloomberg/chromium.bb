@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/task_runner.h"
-#include "components/webp_transcode/webp_decoder.h"
+#include "ios/chrome/browser/webp_transcode/webp_decoder.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"

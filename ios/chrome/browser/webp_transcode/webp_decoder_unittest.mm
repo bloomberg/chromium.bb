@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webp_transcode/webp_decoder.h"
+#include "ios/chrome/browser/webp_transcode/webp_decoder.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
@@ -55,7 +55,7 @@ class WebpDecoderTest : public testing::Test {
   NSData* LoadImage(const base::FilePath& filename) {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("components/test/data/webp_transcode")
+    path = path.AppendASCII("ios/chrome/test/data/webp_transcode")
                .Append(filename);
     return
         [NSData dataWithContentsOfFile:base::SysUTF8ToNSString(path.value())];
@@ -227,8 +227,9 @@ TEST_F(WebpDecoderTest, DecodeToTiff) {
   ASSERT_TRUE(tiff_image != nil);
   // Convert to TIFF.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
-  EXPECT_CALL(*delegate_, SetImageFeatures([tiff_image length],
-                                           WebpDecoder::TIFF)).Times(1);
+  EXPECT_CALL(*delegate_,
+              SetImageFeatures([tiff_image length], WebpDecoder::TIFF))
+      .Times(1);
   decoder_->OnDataReceived(webp_image);
   // Compare to reference image.
   EXPECT_TRUE(CheckTiffImagesEqual(tiff_image, delegate_->GetImage()));
