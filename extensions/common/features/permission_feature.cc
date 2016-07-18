@@ -33,20 +33,22 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   return CreateAvailability(IS_AVAILABLE);
 }
 
-std::string PermissionFeature::Parse(const base::DictionaryValue* value) {
-  std::string error = SimpleFeature::Parse(value);
-  if (!error.empty())
-    return error;
+bool PermissionFeature::Validate(std::string* error) {
+  if (!SimpleFeature::Validate(error))
+    return false;
 
   if (extension_types()->empty()) {
-    return name() + ": Permission features must specify at least one " +
-        "value for extension_types.";
+    *error = name() + ": Permission features must specify at least one " +
+             "value for extension_types.";
+    return false;
   }
 
-  if (value->HasKey("contexts"))
-    return name() + ": Permission features do not support contexts.";
+  if (!contexts()->empty()) {
+    *error = name() + ": Permission features do not support contexts.";
+    return false;
+  }
 
-  return std::string();
+  return true;
 }
 
 }  // namespace extensions

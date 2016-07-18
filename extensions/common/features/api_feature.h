@@ -17,12 +17,7 @@ class APIFeature : public SimpleFeature {
   ~APIFeature() override;
 
   // extensions::Feature:
-  bool IsInternal() const override;
-
-  std::string Parse(const base::DictionaryValue* value) override;
-
- private:
-  bool internal_;
+  bool Validate(std::string* error) override;
 };
 
 }  // namespace extensions

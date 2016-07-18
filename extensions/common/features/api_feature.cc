@@ -6,27 +6,21 @@
 
 namespace extensions {
 
-APIFeature::APIFeature()
-    : internal_(false) {}
+APIFeature::APIFeature() {}
 
 APIFeature::~APIFeature() {
 }
 
-bool APIFeature::IsInternal() const {
-  return internal_;
-}
+bool APIFeature::Validate(std::string* error) {
+  if (!SimpleFeature::Validate(error))
+    return false;
 
-std::string APIFeature::Parse(const base::DictionaryValue* value) {
-  std::string error = SimpleFeature::Parse(value);
-  if (!error.empty())
-    return error;
+  if (contexts()->empty()) {
+    *error = name() + ": API features must specify at least one context.";
+    return false;
+  }
 
-  value->GetBoolean("internal", &internal_);
-
-  if (contexts()->empty())
-    return name() + ": API features must specify at least one context.";
-
-  return std::string();
+  return true;
 }
 
 }  // namespace extensions

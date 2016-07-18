@@ -310,11 +310,12 @@ SimpleFeature::SimpleFeature()
     : location_(UNSPECIFIED_LOCATION),
       min_manifest_version_(0),
       max_manifest_version_(0),
-      component_extensions_auto_granted_(true) {}
+      component_extensions_auto_granted_(true),
+      internal_(false) {}
 
 SimpleFeature::~SimpleFeature() {}
 
-std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
+void SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
   static base::LazyInstance<SimpleFeature::Mappings> mappings =
       LAZY_INSTANCE_INITIALIZER;
 
@@ -358,6 +359,8 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
       channel_.reset(new version_info::Channel(version_info::Channel::UNKNOWN));
       ParseEnum<version_info::Channel>(value, channel_.get(),
                                        mappings.Get().channels);
+    } else if (key == "internal") {
+      value->GetAsBoolean(&internal_);
     }
   }
 
@@ -369,13 +372,18 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
   // and "matches" google.com/*. Then a sub-feature "foo.bar" might override
   // "matches" to be chromium.org/*. That sub-feature doesn't need to specify
   // "web_page" context because it's inherited, but we don't know that here.
+}
 
+bool SimpleFeature::Validate(std::string* error) {
+  DCHECK(error);
   // All features must be channel-restricted, either directly or through
   // dependents.
-  if (!channel_ && dependencies_.empty())
-    return name() + ": Must supply a value for channel or dependencies.";
+  if (!channel_ && dependencies_.empty()) {
+    *error = name() + ": Must supply a value for channel or dependencies.";
+    return false;
+  }
 
-  return std::string();
+  return true;
 }
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(
@@ -583,7 +591,7 @@ Feature::Availability SimpleFeature::CreateAvailability(
 }
 
 bool SimpleFeature::IsInternal() const {
-  return false;
+  return internal_;
 }
 
 bool SimpleFeature::IsIdInBlacklist(const std::string& extension_id) const {

@@ -22,7 +22,7 @@ class ManifestFeature : public SimpleFeature {
       const GURL& url,
       Feature::Platform platform) const override;
 
-  std::string Parse(const base::DictionaryValue* value) override;
+  bool Validate(std::string* error) override;
 };
 
 }  // namespace extensions

@@ -35,10 +35,12 @@ bool ParseFeature(const base::DictionaryValue* value,
                   const std::string& name,
                   SimpleFeature* feature) {
   feature->set_name(name);
-  std::string error = feature->Parse(value);
-  if (!error.empty())
+  feature->Parse(value);
+  std::string error;
+  bool valid = feature->Validate(&error);
+  if (!valid)
     LOG(ERROR) << error;
-  return error.empty();
+  return valid;
 }
 
 }  // namespace

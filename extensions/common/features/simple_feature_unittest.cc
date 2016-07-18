@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
+#include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/json_feature_provider.h"
@@ -841,77 +842,62 @@ TEST_F(SimpleFeatureTest, SupportedChannel) {
 
 // Tests the validation of features with channel entries.
 TEST_F(SimpleFeatureTest, FeatureValidation) {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-
-  base::DictionaryValue* feature1 = new base::DictionaryValue();
-  feature1->SetString("channel", "trunk");
-  value->Set("feature1", feature1);
-
-  base::DictionaryValue* feature2 = new base::DictionaryValue();
-  feature2->SetString("channel", "trunk");
-  base::ListValue* extension_types = new base::ListValue();
-  extension_types->AppendString("extension");
-  feature2->Set("extension_types", extension_types);
-  base::ListValue* contexts = new base::ListValue();
-  contexts->AppendString("blessed_extension");
-  feature2->Set("contexts", contexts);
-  value->Set("feature2", feature2);
-
-  std::unique_ptr<JSONFeatureProvider> provider(
-      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
-
-  // feature1 won't validate because it lacks an extension type.
-  EXPECT_FALSE(provider->GetFeature("feature1"));
-
-  // If we add one, it works.
-  feature1->Set("extension_types", extension_types->DeepCopy());
-  provider.reset(
-      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
-  EXPECT_TRUE(provider->GetFeature("feature1"));
-
-  // Remove the channel, and feature1 won't validate.
-  feature1->Remove("channel", NULL);
-  provider.reset(
-      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
-  EXPECT_FALSE(provider->GetFeature("feature1"));
-
-  // feature2 won't validate because of the presence of "contexts".
-  EXPECT_FALSE(provider->GetFeature("feature2"));
-
-  // If we remove it, it works.
-  feature2->Remove("contexts", NULL);
-  provider.reset(
-      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
-  EXPECT_TRUE(provider->GetFeature("feature2"));
+  std::string error;
+  {
+    PermissionFeature feature;
+    feature.channel_.reset(
+        new version_info::Channel(version_info::Channel::UNKNOWN));
+    // The feature won't validate because it lacks an extension type.
+    EXPECT_FALSE(feature.Validate(&error));
+    // If we add one, it works.
+    feature.extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    EXPECT_TRUE(feature.Validate(&error));
+    // Remove the channel, and feature1 won't validate.
+    feature.channel_.reset();
+    EXPECT_FALSE(feature.Validate(&error));
+  }
+  {
+    PermissionFeature feature;
+    feature.channel_.reset(
+        new version_info::Channel(version_info::Channel::UNKNOWN));
+    feature.extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    feature.contexts_.push_back(Feature::BLESSED_EXTENSION_CONTEXT);
+    // The feature won't validate because of the presence of "contexts".
+    EXPECT_FALSE(feature.Validate(&error));
+    feature.contexts_.clear();
+    EXPECT_TRUE(feature.Validate(&error));
+  }
+  {
+    APIFeature feature;
+    feature.channel_.reset(
+        new version_info::Channel(version_info::Channel::STABLE));
+    // API features require contexts.
+    EXPECT_FALSE(feature.Validate(&error));
+    feature.contexts_.push_back(Feature::CONTENT_SCRIPT_CONTEXT);
+    EXPECT_TRUE(feature.Validate(&error));
+  }
 }
 
 // Tests simple feature availability across channels.
 TEST_F(SimpleFeatureTest, SimpleFeatureAvailability) {
-  std::unique_ptr<base::DictionaryValue> rule(
-      DictionaryBuilder()
-          .Set("feature1",
-               ListBuilder()
-                   .Append(DictionaryBuilder()
-                               .Set("channel", "beta")
-                               .Set("extension_types",
-                                    ListBuilder().Append("extension").Build())
-                               .Build())
-                   .Append(DictionaryBuilder()
-                               .Set("channel", "beta")
-                               .Set("extension_types",
-                                    ListBuilder()
-                                        .Append("legacy_packaged_app")
-                                        .Build())
-                               .Build())
-                   .Build())
-          .Build());
+  std::unique_ptr<ComplexFeature> complex_feature;
+  {
+    std::unique_ptr<SimpleFeature> feature1(CreateFeature<SimpleFeature>());
+    feature1->channel_.reset(
+        new version_info::Channel(version_info::Channel::BETA));
+    feature1->extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    std::unique_ptr<SimpleFeature> feature2(CreateFeature<SimpleFeature>());
+    feature2->channel_.reset(
+        new version_info::Channel(version_info::Channel::BETA));
+    feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+    std::unique_ptr<ComplexFeature::FeatureList> list(
+        new ComplexFeature::FeatureList());
+    list->push_back(std::move(feature1));
+    list->push_back(std::move(feature2));
+    complex_feature.reset(new ComplexFeature(std::move(list)));
+  }
 
-  std::unique_ptr<JSONFeatureProvider> provider(
-      new JSONFeatureProvider(*rule, CreateFeature<SimpleFeature>));
-
-  Feature* feature = provider->GetFeature("feature1");
-  EXPECT_TRUE(feature);
-
+  Feature* feature = static_cast<Feature*>(complex_feature.get());
   // Make sure both rules are applied correctly.
   {
     ScopedCurrentChannel current_channel(version_info::Channel::BETA);
@@ -947,66 +933,52 @@ TEST_F(SimpleFeatureTest, SimpleFeatureAvailability) {
 
 // Tests complex feature availability across channels.
 TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
-  std::unique_ptr<ComplexFeature::FeatureList> features(
-      new ComplexFeature::FeatureList());
+  std::unique_ptr<ComplexFeature> complex_feature;
+  {
+    // Rule: "extension", channel trunk.
+    std::unique_ptr<SimpleFeature> feature1(CreateFeature<SimpleFeature>());
+    feature1->channel_.reset(
+        new version_info::Channel(version_info::Channel::UNKNOWN));
+    feature1->extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    std::unique_ptr<SimpleFeature> feature2(CreateFeature<SimpleFeature>());
+    // Rule: "legacy_packaged_app", channel stable.
+    feature2->channel_.reset(
+        new version_info::Channel(version_info::Channel::STABLE));
+    feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+    std::unique_ptr<ComplexFeature::FeatureList> list(
+        new ComplexFeature::FeatureList());
+    list->push_back(std::move(feature1));
+    list->push_back(std::move(feature2));
+    complex_feature.reset(new ComplexFeature(std::move(list)));
+  }
 
-  // Rule: "extension", channel trunk.
-  std::unique_ptr<SimpleFeature> simple_feature(CreateFeature<SimpleFeature>());
-  std::unique_ptr<base::DictionaryValue> rule(
-      DictionaryBuilder()
-          .Set("channel", "trunk")
-          .Set("extension_types", ListBuilder().Append("extension").Build())
-          .Build());
-  simple_feature->Parse(rule.get());
-  features->push_back(std::move(simple_feature));
-
-  // Rule: "legacy_packaged_app", channel stable.
-  simple_feature.reset(CreateFeature<SimpleFeature>());
-  rule = DictionaryBuilder()
-             .Set("channel", "stable")
-             .Set("extension_types",
-                  ListBuilder().Append("legacy_packaged_app").Build())
-             .Build();
-  simple_feature->Parse(rule.get());
-  features->push_back(std::move(simple_feature));
-
-  std::unique_ptr<ComplexFeature> feature(
-      new ComplexFeature(std::move(features)));
-
-  // Test match 1st rule.
+  Feature* feature = static_cast<Feature*>(complex_feature.get());
   {
     ScopedCurrentChannel current_channel(version_info::Channel::UNKNOWN);
-    EXPECT_EQ(
-        Feature::IS_AVAILABLE,
-        feature->IsAvailableToManifest("1",
-                                       Manifest::TYPE_EXTENSION,
-                                       Manifest::INVALID_LOCATION,
-                                       Feature::UNSPECIFIED_PLATFORM,
-                                       Feature::GetCurrentPlatform()).result());
+    EXPECT_EQ(Feature::IS_AVAILABLE,
+              feature
+                  ->IsAvailableToManifest("1", Manifest::TYPE_EXTENSION,
+                                          Manifest::INVALID_LOCATION,
+                                          Feature::UNSPECIFIED_PLATFORM)
+                  .result());
   }
-
-  // Test match 2nd rule.
   {
     ScopedCurrentChannel current_channel(version_info::Channel::BETA);
-    EXPECT_EQ(
-        Feature::IS_AVAILABLE,
-        feature->IsAvailableToManifest("2",
-                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
-                                       Manifest::INVALID_LOCATION,
-                                       Feature::UNSPECIFIED_PLATFORM,
-                                       Feature::GetCurrentPlatform()).result());
+    EXPECT_EQ(Feature::IS_AVAILABLE,
+              feature
+                  ->IsAvailableToManifest(
+                      "2", Manifest::TYPE_LEGACY_PACKAGED_APP,
+                      Manifest::INVALID_LOCATION, Feature::UNSPECIFIED_PLATFORM)
+                  .result());
   }
-
-  // Test feature not available to extensions above channel unknown.
   {
     ScopedCurrentChannel current_channel(version_info::Channel::BETA);
-    EXPECT_NE(
-        Feature::IS_AVAILABLE,
-        feature->IsAvailableToManifest("1",
-                                       Manifest::TYPE_EXTENSION,
-                                       Manifest::INVALID_LOCATION,
-                                       Feature::UNSPECIFIED_PLATFORM,
-                                       Feature::GetCurrentPlatform()).result());
+    EXPECT_NE(Feature::IS_AVAILABLE,
+              feature
+                  ->IsAvailableToManifest("1", Manifest::TYPE_EXTENSION,
+                                          Manifest::INVALID_LOCATION,
+                                          Feature::UNSPECIFIED_PLATFORM)
+                  .result());
   }
 }
 

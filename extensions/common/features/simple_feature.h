@@ -47,10 +47,13 @@ class SimpleFeature : public Feature {
   ~SimpleFeature() override;
 
   // Parses the JSON representation of a feature into the fields of this object.
-  // Unspecified values in the JSON are not modified in the object. This allows
-  // us to implement inheritance by parsing one value after another. Returns
-  // the error found, or an empty string on success.
-  virtual std::string Parse(const base::DictionaryValue* dictionary);
+  // Note: Validate() should be called after this.
+  void Parse(const base::DictionaryValue* dictionary);
+
+  // Checks whether the feature is valid. Invalid features should not be used.
+  // Subclasses can override to implement specific checking, but should always
+  // call this method as well.
+  virtual bool Validate(std::string* error);
 
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context) const {
@@ -153,7 +156,9 @@ class SimpleFeature : public Feature {
   FRIEND_TEST_ALL_PREFIXES(ManifestUnitTest, Extension);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Blacklist);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, CommandLineSwitch);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ComplexFeatureAvailability);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Context);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, FeatureValidation);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdBlacklist);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdWhitelist);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Inheritance);
@@ -168,6 +173,7 @@ class SimpleFeature : public Feature {
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParsePlatforms);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseWhitelist);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Platform);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, SimpleFeatureAvailability);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Whitelist);
 
   // Holds String to Enum value mappings.
@@ -200,6 +206,7 @@ class SimpleFeature : public Feature {
   bool component_extensions_auto_granted_;
   std::string command_line_switch_;
   std::unique_ptr<version_info::Channel> channel_;
+  bool internal_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };
