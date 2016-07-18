@@ -445,7 +445,7 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCal
         return false;
 
     const std::vector<std::pair<int, int>>& ranges = itBlackboxedPositions->second;
-    auto itRange = std::lower_bound(ranges.cbegin(), ranges.cend(),
+    auto itRange = std::lower_bound(ranges.begin(), ranges.end(),
         std::make_pair(frame->line(), frame->column()), positionComparator);
     // Ranges array contains positions in script where blackbox state is changed.
     // [(0,0) ... ranges[0]) isn't blackboxed, [ranges[0] ... ranges[1]) is blackboxed...

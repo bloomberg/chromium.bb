@@ -243,6 +243,7 @@ public:
 };
 } // namespace WTF
 
+#if !defined(__APPLE__) || defined(_LIBCPP_VERSION)
 
 namespace std {
 template<> struct hash<String16> {
@@ -253,6 +254,8 @@ template<> struct hash<String16> {
 };
 
 } // namespace std
+
+#endif // !defined(__APPLE__) || defined(_LIBCPP_VERSION)
 
 using String = WTF::String;
 

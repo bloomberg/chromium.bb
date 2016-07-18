@@ -57,8 +57,8 @@
           ['debug_devtools=="node"', {
               # Node build
               'jinja_module_files': [
-                '../../deps/jinja2/jinja2/__init__.py',
-                '../../deps/markupsafe/markupsafe/__init__.py',  # jinja2 dep
+                '../../../jinja2/jinja2/__init__.py',
+                '../../../markupsafe/markupsafe/__init__.py',  # jinja2 dep
               ],
             }, {
               'jinja_module_files': [
@@ -145,8 +145,8 @@
       ],
       'include_dirs': [
         '../..',
-        '../../../v8/include',
-        '../../../v8',
+        '../../../../../v8/include',
+        '../../../../../v8',
         '<(SHARED_INTERMEDIATE_DIR)/blink',
       ],
       'sources': [
@@ -238,8 +238,8 @@
         'public/V8StackTrace.h',
         'public/V8ToProtocolValue.h',
 
-        '<(blink_platform_output_dir/v8_inspector/DebuggerScript.h',
-        '<(blink_platform_output_dir/v8_inspector/InjectedScriptSource.h',
+        '<(blink_platform_output_dir)/v8_inspector/DebuggerScript.h',
+        '<(blink_platform_output_dir)/v8_inspector/InjectedScriptSource.h',
       ],
     },
   ],  # targets

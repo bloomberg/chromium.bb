@@ -879,7 +879,7 @@ void V8DebuggerImpl::disconnect(V8InspectorSessionImpl* session)
 InspectedContext* V8DebuggerImpl::getContext(int groupId, int contextId) const
 {
     ContextsByGroupMap::const_iterator contextGroupIt = m_contexts.find(groupId);
-    if (contextGroupIt == m_contexts.cend())
+    if (contextGroupIt == m_contexts.end())
         return nullptr;
 
     ContextByIdMap::iterator contextIt = contextGroupIt->second->find(contextId);

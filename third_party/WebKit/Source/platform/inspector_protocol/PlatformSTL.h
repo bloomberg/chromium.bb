@@ -122,6 +122,7 @@ public:
 
     unique_ptr() : m_ptr(nullptr) {}
     unique_ptr(std::nullptr_t) : m_ptr(nullptr) {}
+    unique_ptr(const unique_ptr&);
     unique_ptr(unique_ptr&&);
     template <typename U, typename = typename enable_if<is_convertible<U*, T*>::value>::type> unique_ptr(unique_ptr<U>&&);
 
@@ -134,7 +135,10 @@ public:
     PtrType get() const { return m_ptr; }
 
     void reset(PtrType = nullptr);
-    PtrType release();
+    PtrType release()
+    {
+        return this->internalRelease();
+    }
 
     ValueType& operator*() const { DCHECK(m_ptr); return *m_ptr; }
     PtrType operator->() const { DCHECK(m_ptr); return m_ptr; }
@@ -146,7 +150,7 @@ public:
 
     unique_ptr& operator=(std::nullptr_t) { reset(); return *this; }
 
-
+    unique_ptr& operator=(const unique_ptr&);
     unique_ptr& operator=(unique_ptr&&);
     template <typename U> unique_ptr& operator=(unique_ptr<U>&&);
 
@@ -157,6 +161,12 @@ public:
     explicit unique_ptr(PtrType ptr) : m_ptr(ptr) {}
 
 private:
+    PtrType internalRelease() const
+    {
+        PtrType ptr = m_ptr;
+        m_ptr = nullptr;
+        return ptr;
+    }
 
     // We should never have two unique_ptrs for the same underlying object
     // (otherwise we'll get double-destruction), so these equality operators
@@ -172,7 +182,7 @@ private:
         return false;
     }
 
-    PtrType m_ptr;
+    mutable PtrType m_ptr;
 };
 
 
@@ -180,14 +190,8 @@ template <typename T> inline void unique_ptr<T>::reset(PtrType ptr)
 {
     PtrType p = m_ptr;
     m_ptr = ptr;
+    DCHECK(!p || m_ptr != p);
     OwnedPtrDeleter<T>::deletePtr(p);
-}
-
-template <typename T> inline typename unique_ptr<T>::PtrType unique_ptr<T>::release()
-{
-    PtrType ptr = m_ptr;
-    m_ptr = nullptr;
-    return ptr;
 }
 
 template <typename T> inline typename unique_ptr<T>::ValueType& unique_ptr<T>::operator[](std::ptrdiff_t i) const
@@ -198,8 +202,13 @@ template <typename T> inline typename unique_ptr<T>::ValueType& unique_ptr<T>::o
     return m_ptr[i];
 }
 
+template <typename T> inline unique_ptr<T>::unique_ptr(const unique_ptr<T>& o)
+    : m_ptr(o.internalRelease())
+{
+}
+
 template <typename T> inline unique_ptr<T>::unique_ptr(unique_ptr<T>&& o)
-    : m_ptr(o.release())
+    : m_ptr(o.internalRelease())
 {
 }
 
@@ -210,13 +219,15 @@ template <typename U, typename> inline unique_ptr<T>::unique_ptr(unique_ptr<U>&&
     static_assert(!is_array<T>::value, "pointers to array must never be converted");
 }
 
+template <typename T> inline unique_ptr<T>& unique_ptr<T>::operator=(const unique_ptr<T>& o)
+{
+    reset(o.internalRelease());
+    return *this;
+}
+
 template <typename T> inline unique_ptr<T>& unique_ptr<T>::operator=(unique_ptr<T>&& o)
 {
-    PtrType ptr = m_ptr;
-    m_ptr = o.release();
-    DCHECK(!ptr || m_ptr != ptr);
-    OwnedPtrDeleter<T>::deletePtr(ptr);
-
+    reset(o.internalRelease());
     return *this;
 }
 

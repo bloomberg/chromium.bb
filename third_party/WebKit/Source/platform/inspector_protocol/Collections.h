@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-#if V8_INSPECTOR_USE_OLD_STL
+#if defined(__APPLE__) && !defined(_LIBCPP_VERSION)
 #include <map>
 #include <set>
 
@@ -33,7 +33,7 @@ template <class Key> using HashSet = std::unordered_set<Key>;
 } // namespace protocol
 } // namespace blink
 
-#endif // V8_INSPECTOR_USE_STL
+#endif // defined(__APPLE__) && !defined(_LIBCPP_VERSION)
 
 // Macro that returns a compile time constant with the length of an array, but gives an error if passed a non-array.
 template<typename T, std::size_t Size> char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
