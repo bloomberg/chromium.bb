@@ -35,6 +35,8 @@ enum CALayerResult {
   CA_LAYER_FAILED_RENDER_PASS,
   CA_LAYER_FAILED_SURFACE_CONTENT,
   CA_LAYER_FAILED_YUV_VIDEO_CONTENT,
+  CA_LAYER_FAILED_DIFFERENT_CLIP_SETTINGS,
+  CA_LAYER_FAILED_DIFFERENT_VERTEX_OPACITIES,
   CA_LAYER_FAILED_COUNT,
 };
 
@@ -86,7 +88,7 @@ CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
   ca_layer_overlay->background_color = quad->background_color;
   for (int i = 1; i < 4; ++i) {
     if (quad->vertex_opacity[i] != quad->vertex_opacity[0])
-      return CA_LAYER_FAILED_UNKNOWN;
+      return CA_LAYER_FAILED_DIFFERENT_VERTEX_OPACITIES;
   }
   ca_layer_overlay->opacity *= quad->vertex_opacity[0];
   ca_layer_overlay->filter = quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR;
@@ -210,8 +212,7 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
           previous_ca_layer.sorting_context_id == ca_layer.sorting_context_id) {
         if (previous_ca_layer.is_clipped != ca_layer.is_clipped ||
             previous_ca_layer.clip_rect != ca_layer.clip_rect) {
-          // TODO(ccameron): Add a histogram value for this.
-          result = CA_LAYER_FAILED_UNKNOWN;
+          result = CA_LAYER_FAILED_DIFFERENT_CLIP_SETTINGS;
           break;
         }
       }
