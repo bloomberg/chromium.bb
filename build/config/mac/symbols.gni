@@ -21,4 +21,13 @@ declare_args() {
   # linked target and apply custom -Wcrl,strip flags. See
   # //build/toolchain/mac/linker_driver.py for more information.
   enable_stripping = is_official_build
+
+  # Save unstripped copies of targets with a ".unstripped" suffix. This is
+  # useful to preserve the original output when enable_stripping=true.
+  save_unstripped_output = false
+}
+
+if (save_unstripped_output) {
+  assert(enable_stripping,
+         "save_unstripped_output=true requires enable_stripping=true")
 }

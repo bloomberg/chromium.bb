@@ -48,6 +48,10 @@ config("compiler") {
   cflags_objc = cflags_c
 
   ldflags = common_mac_flags
+
+  if (save_unstripped_output) {
+    ldflags += [ "-Wcrl,unstripped," + rebase_path(root_out_dir) ]
+  }
 }
 
 # This is included by reference in the //build/config/compiler:runtime_library

@@ -104,8 +104,14 @@ template("mac_toolchain") {
     # If dSYMs are enabled, this flag will be added to the link tools.
     if (enable_dsyms) {
       dsym_switch = " -Wcrl,dsym," + rebase_path(root_out_dir) + " "
+      _dsym_output =
+          "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/"
     } else {
       dsym_switch = ""
+    }
+
+    if (save_unstripped_output) {
+      _unstripped_output = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.unstripped"
     }
 
     tool("cc") {
@@ -232,7 +238,10 @@ template("mac_toolchain") {
       depend_output = tocname
 
       if (enable_dsyms) {
-        outputs += [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/" ]
+        outputs += [ _dsym_output ]
+      }
+      if (save_unstripped_output) {
+        outputs += [ _unstripped_output ]
       }
     }
 
@@ -263,7 +272,10 @@ template("mac_toolchain") {
       ]
 
       if (enable_dsyms) {
-        outputs += [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/" ]
+        outputs += [ _dsym_output ]
+      }
+      if (save_unstripped_output) {
+        outputs += [ _unstripped_output ]
       }
     }
 
@@ -287,7 +299,10 @@ template("mac_toolchain") {
       ]
 
       if (enable_dsyms) {
-        outputs += [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/" ]
+        outputs += [ _dsym_output ]
+      }
+      if (save_unstripped_output) {
+        outputs += [ _unstripped_output ]
       }
 
       default_output_dir = "{{root_out_dir}}"
