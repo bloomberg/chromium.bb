@@ -437,7 +437,7 @@ InspectorTest.toggleMatchedStyleProperty = function(propertyName, checked)
 InspectorTest.eventListenersWidget = function()
 {
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-    sidebarPane.expand();
+    sidebarPane.expandPane();
     return sidebarPane.children()[0];
 }
 
