@@ -99,4 +99,8 @@ class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
+    # http://crbug.com/629163
+    if possible_browser.platform.GetDeviceTypeName() == 'Nexus 9':
+      return True
+
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop'

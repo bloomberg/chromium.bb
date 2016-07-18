@@ -110,10 +110,16 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # http://crbug.com/612144 (reference on Nexus 5X).
-    return possible_browser.platform.GetDeviceTypeName() == 'Desktop' or (
-        possible_browser.browser_type == 'reference' and
-        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+    # http://crbug.com/612144
+    if (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
+      return True
+
+    # http://crbug.com/629163
+    if possible_browser.platform.GetDeviceTypeName() == 'Nexus 9':
+      return True
+
+    return possible_browser.platform.GetDeviceTypeName() == 'Desktop'
 
 
 @benchmark.Enabled('android-webview')
