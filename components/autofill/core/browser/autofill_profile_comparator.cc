@@ -135,10 +135,35 @@ bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
                                              const AutofillProfile& p2) const {
   // Sorted in order to relative expense of the tests to fail early and cheaply
   // if possible.
-  return HaveMergeableEmailAddresses(p1, p2) &&
-         HaveMergeableCompanyNames(p1, p2) &&
-         HaveMergeablePhoneNumbers(p1, p2) && HaveMergeableNames(p1, p2) &&
-         HaveMergeableAddresses(p1, p2);
+  DVLOG(1) << "Comparing profiles:\np1 = " << p1 << "\np2 = " << p2;
+
+  if (!HaveMergeableEmailAddresses(p1, p2)) {
+    DVLOG(1) << "Different email addresses.";
+    return false;
+  }
+
+  if (!HaveMergeableCompanyNames(p1, p2)) {
+    DVLOG(1) << "Different email company names.";
+    return false;
+  }
+
+  if (!HaveMergeablePhoneNumbers(p1, p2)) {
+    DVLOG(1) << "Different phone numbers.";
+    return false;
+  }
+
+  if (!HaveMergeableNames(p1, p2)) {
+    DVLOG(1) << "Different names.";
+    return false;
+  }
+
+  if (!HaveMergeableAddresses(p1, p2)) {
+    DVLOG(1) << "Different addresses.";
+    return false;
+  }
+
+  DVLOG(1) << "Profiles are mergeable.";
+  return true;
 }
 
 bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
@@ -299,10 +324,10 @@ bool AutofillProfileComparator::MergePhoneNumbers(
   std::string new_number;
   phone_util->Format(merged_number, format, &new_number);
 
-  VLOG(1) << "n1 = {" << n1 << "}";
-  VLOG(1) << "n2 = {" << n2 << "}";
-  VLOG(1) << "merged_number = {" << merged_number << "}";
-  VLOG(1) << "new_number = \"" << new_number << "\"";
+  DVLOG(2) << "n1 = {" << n1 << "}";
+  DVLOG(2) << "n2 = {" << n2 << "}";
+  DVLOG(2) << "merged_number = {" << merged_number << "}";
+  DVLOG(2) << "new_number = \"" << new_number << "\"";
 
   // Check if it's a North American number that's missing the area code.
   // Libphonenumber doesn't know how to format short numbers; it will still

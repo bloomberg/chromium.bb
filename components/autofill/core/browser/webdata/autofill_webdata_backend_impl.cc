@@ -29,13 +29,15 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-    const base::Closure& on_changed_callback)
+    const base::Closure& on_changed_callback,
+    const base::Callback<void(syncer::ModelType)>& on_sync_started_callback)
     : base::RefCountedDeleteOnMessageLoop<AutofillWebDataBackendImpl>(
           db_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       web_database_backend_(web_database_backend),
-      on_changed_callback_(on_changed_callback) {
+      on_changed_callback_(on_changed_callback),
+      on_sync_started_callback_(on_sync_started_callback) {
 }
 
 void AutofillWebDataBackendImpl::AddObserver(
@@ -74,6 +76,18 @@ void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
 
   // UI thread notification.
   ui_thread_->PostTask(FROM_HERE, on_changed_callback_);
+}
+
+void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
+    syncer::ModelType model_type) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+
+  if (on_sync_started_callback_.is_null())
+    return;
+
+  // UI thread notification.
+  ui_thread_->PostTask(FROM_HERE,
+                       base::Bind(on_sync_started_callback_, model_type));
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {

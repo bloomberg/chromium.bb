@@ -34,30 +34,34 @@ AutofillWebDataService::AutofillWebDataService(
     : WebDataServiceBase(wdbs, callback, ui_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
-      autofill_backend_(NULL),
+      autofill_backend_(nullptr),
       weak_ptr_factory_(this) {
   base::Closure on_changed_callback = Bind(
       &AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread,
       weak_ptr_factory_.GetWeakPtr());
-
+  base::Callback<void(syncer::ModelType)> on_sync_started_callback = Bind(
+      &AutofillWebDataService::NotifySyncStartedOnUIThread,
+      weak_ptr_factory_.GetWeakPtr());
   autofill_backend_ = new AutofillWebDataBackendImpl(
-      wdbs_->GetBackend(), ui_thread_, db_thread_, on_changed_callback);
+      wdbs_->GetBackend(), ui_thread_, db_thread_, on_changed_callback,
+      on_sync_started_callback);
 }
 
 AutofillWebDataService::AutofillWebDataService(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread)
-    : WebDataServiceBase(NULL,
+    : WebDataServiceBase(nullptr,
                          WebDataServiceBase::ProfileErrorCallback(),
                          ui_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
-      autofill_backend_(new AutofillWebDataBackendImpl(NULL,
-                                                       ui_thread_,
-                                                       db_thread_,
-                                                       base::Closure())),
-      weak_ptr_factory_(this) {
-}
+      autofill_backend_(new AutofillWebDataBackendImpl(
+          nullptr,
+          ui_thread_,
+          db_thread_,
+          base::Closure(),
+          base::Callback<void(syncer::ModelType)>())),
+      weak_ptr_factory_(this) {}
 
 void AutofillWebDataService::ShutdownOnUIThread() {
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -294,6 +298,14 @@ void AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread() {
   FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnUIThread,
                     ui_observer_list_,
                     AutofillMultipleChanged());
+}
+
+void AutofillWebDataService::NotifySyncStartedOnUIThread(
+    syncer::ModelType model_type) {
+  DCHECK(ui_thread_->BelongsToCurrentThread());
+  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnUIThread,
+                    ui_observer_list_,
+                    SyncStarted(model_type));
 }
 
 }  // namespace autofill

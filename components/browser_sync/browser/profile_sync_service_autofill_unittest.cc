@@ -45,6 +45,7 @@
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/version_info/version_info.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata_services/web_data_service_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -100,6 +101,8 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, true);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillWalletImportEnabled,
                                 true);
+  registry->RegisterIntegerPref(autofill::prefs::kAutofillLastVersionDeduped,
+                                atoi(version_info::GetVersionNumber().c_str()));
 }
 
 void RunAndSignal(const base::Closure& cb, WaitableEvent* event) {
@@ -169,11 +172,14 @@ class WebDatabaseFake : public WebDatabase {
 
 class MockAutofillBackend : public autofill::AutofillWebDataBackend {
  public:
-  MockAutofillBackend(WebDatabase* web_database,
-                      const base::Closure& on_changed,
-                      const scoped_refptr<base::SequencedTaskRunner>& ui_thread)
+  MockAutofillBackend(
+      WebDatabase* web_database,
+      const base::Closure& on_changed,
+      const base::Callback<void(syncer::ModelType)>& on_sync_started,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_thread)
       : web_database_(web_database),
         on_changed_(on_changed),
+        on_sync_started_(on_sync_started),
         ui_thread_(ui_thread) {}
 
   ~MockAutofillBackend() override {}
@@ -187,10 +193,15 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
     DCHECK(!ui_thread_->RunsTasksOnCurrentThread());
     ui_thread_->PostTask(FROM_HERE, on_changed_);
   }
+  void NotifyThatSyncHasStarted(syncer::ModelType model_type) override {
+    DCHECK(!ui_thread_->RunsTasksOnCurrentThread());
+    ui_thread_->PostTask(FROM_HERE, base::Bind(on_sync_started_, model_type));
+  }
 
  private:
   WebDatabase* web_database_;
   base::Closure on_changed_;
+  base::Callback<void(syncer::ModelType)> on_sync_started_;
   const scoped_refptr<base::SequencedTaskRunner> ui_thread_;
 };
 
@@ -263,10 +274,14 @@ class WebDataServiceFake : public AutofillWebDataService {
     const base::Closure& on_changed_callback = base::Bind(
         &WebDataServiceFake::NotifyAutofillMultipleChangedOnUIThread,
         AsWeakPtr());
+    const base::Callback<void(syncer::ModelType)> on_sync_started_callback =
+        base::Bind(&WebDataServiceFake::NotifySyncStartedOnUIThread,
+                   AsWeakPtr());
 
-    db_thread_->PostTask(
-        FROM_HERE, base::Bind(&WebDataServiceFake::CreateSyncableService,
-                              base::Unretained(this), on_changed_callback));
+    db_thread_->PostTask(FROM_HERE,
+                         base::Bind(&WebDataServiceFake::CreateSyncableService,
+                                    base::Unretained(this), on_changed_callback,
+                                    on_sync_started_callback));
     syncable_service_created_or_destroyed_.Wait();
   }
 
@@ -312,11 +327,13 @@ class WebDataServiceFake : public AutofillWebDataService {
  private:
   ~WebDataServiceFake() override {}
 
-  void CreateSyncableService(const base::Closure& on_changed_callback) {
+  void CreateSyncableService(
+      const base::Closure& on_changed_callback,
+      const base::Callback<void(syncer::ModelType)>& on_sync_started) {
     ASSERT_TRUE(db_thread_->RunsTasksOnCurrentThread());
     // These services are deleted in DestroySyncableService().
     backend_.reset(new MockAutofillBackend(GetDatabase(), on_changed_callback,
-                                           ui_thread_.get()));
+                                           on_sync_started, ui_thread_.get()));
     AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
         this, backend_.get());
     AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_BACKEND_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_BACKEND_H_
 
+#include "sync/internal_api/public/base/model_type.h"
+
 class WebDatabase;
 
 namespace autofill {
@@ -36,6 +38,11 @@ class AutofillWebDataBackend {
   // NOTE: This method is intended to be called from the DB thread. The UI
   // thread notifications are asynchronous.
   virtual void NotifyOfMultipleAutofillChanges() = 0;
+
+  // Notifies listeners on the UI thread that sync has started for |model_type|.
+  // NOTE: This method is intended to be called from the DB thread. The UI
+  // thread notifications are asynchronous.
+  virtual void NotifyThatSyncHasStarted(syncer::ModelType model_type) = 0;
 };
 
 } // namespace autofill

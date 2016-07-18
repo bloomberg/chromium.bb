@@ -36,6 +36,10 @@ class SigninManagerBase;
 class PersonalDataManagerFactory;
 #endif
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace autofill {
 class AutofillInteractiveTest;
 class AutofillTest;
@@ -75,12 +79,17 @@ class PersonalDataManager : public KeyedService,
             SigninManagerBase* signin_manager,
             bool is_off_the_record);
 
+  // Called once the sync service is known to be instantiated. Note that it may
+  // not be started, but it's preferences can be queried.
+  void OnSyncServiceInitialized(sync_driver::SyncService* sync_service);
+
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
                                    const WDTypedResult* result) override;
 
   // AutofillWebDataServiceObserverOnUIThread:
   void AutofillMultipleChanged() override;
+  void SyncStarted(syncer::ModelType model_type) override;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);
@@ -483,6 +492,10 @@ class PersonalDataManager : public KeyedService,
 
   // An observer to listen for changes to prefs::kAutofillWalletImportEnabled.
   std::unique_ptr<BooleanPrefMember> wallet_enabled_pref_;
+
+  // Set to true if autofill profile deduplication is enabled and needs to be
+  // performed on the next data refresh.
+  bool is_autofill_profile_dedupe_pending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

@@ -155,6 +155,7 @@ class NoOpWebData : public AutofillWebDataBackend {
       AutofillWebDataServiceObserverOnDBThread* observer) override {}
   void RemoveExpiredFormElements() override {}
   void NotifyOfMultipleAutofillChanges() override {}
+  void NotifyThatSyncHasStarted(syncer::ModelType /* model_type */) override {}
 
   DISALLOW_COPY_AND_ASSIGN(NoOpWebData);
 };

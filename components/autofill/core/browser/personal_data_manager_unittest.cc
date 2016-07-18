@@ -176,6 +176,7 @@ class PersonalDataManagerTest : public testing::Test {
         signin_manager_.get(),
         is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
+    personal_data_->OnSyncServiceInitialized(nullptr);
 
     // Verify that the web database has been updated and the notification sent.
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -201,6 +202,7 @@ class PersonalDataManagerTest : public testing::Test {
     feature_list->InitializeFromCommandLine(kAutofillProfileCleanup.name,
                                             std::string());
     base::FeatureList::SetInstance(std::move(feature_list));
+    personal_data_->is_autofill_profile_dedupe_pending_ = true;
   }
 
   void SetupReferenceProfile() {
@@ -4601,7 +4603,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MergedProfileValues) {
 
   base::HistogramTester histogram_tester;
 
-  personal_data_->ApplyDedupingRoutine();
+  EXPECT_TRUE(personal_data_->ApplyDedupingRoutine());
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::RunLoop().Run();
@@ -4694,7 +4696,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileFirst) {
 
   base::HistogramTester histogram_tester;
 
-  personal_data_->ApplyDedupingRoutine();
+  EXPECT_TRUE(personal_data_->ApplyDedupingRoutine());
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::RunLoop().Run();
@@ -4766,7 +4768,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_VerifiedProfileLast) {
 
   base::HistogramTester histogram_tester;
 
-  personal_data_->ApplyDedupingRoutine();
+  EXPECT_TRUE(personal_data_->ApplyDedupingRoutine());
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::RunLoop().Run();
@@ -4837,7 +4839,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleVerifiedProfiles) {
 
   base::HistogramTester histogram_tester;
 
-  personal_data_->ApplyDedupingRoutine();
+  EXPECT_TRUE(personal_data_->ApplyDedupingRoutine());
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::RunLoop().Run();
@@ -5067,7 +5069,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
   // |Homer1| should get merged into |Homer2| which should then be merged into
   // |Homer3|. |Marge2| should be discarded in favor of |Marge1| which is
   // verified. |Homer4| and |Barney| should not be deduped at all.
-  personal_data_->ApplyDedupingRoutine();
+  EXPECT_TRUE(personal_data_->ApplyDedupingRoutine());
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::RunLoop().Run();

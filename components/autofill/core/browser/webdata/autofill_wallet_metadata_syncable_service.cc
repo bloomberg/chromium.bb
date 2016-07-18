@@ -225,7 +225,10 @@ AutofillWalletMetadataSyncableService::MergeDataAndStartSyncing(
 
   cache_ = initial_sync_data;
 
-  return MergeData(initial_sync_data);
+  syncer::SyncMergeResult result = MergeData(initial_sync_data);
+  if (web_data_backend_)
+    web_data_backend_->NotifyThatSyncHasStarted(type);
+  return result;
 }
 
 void AutofillWalletMetadataSyncableService::StopSyncing(

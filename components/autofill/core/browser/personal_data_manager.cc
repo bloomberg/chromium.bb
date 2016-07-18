@@ -39,6 +39,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/sync_driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -287,6 +288,7 @@ void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
   LoadCreditCards();
 
   database_->AddObserver(this);
+  is_autofill_profile_dedupe_pending_ = IsAutofillProfileCleanupEnabled();
 }
 
 PersonalDataManager::~PersonalDataManager() {
@@ -297,6 +299,27 @@ PersonalDataManager::~PersonalDataManager() {
 
   if (database_.get())
     database_->RemoveObserver(this);
+}
+
+void PersonalDataManager::OnSyncServiceInitialized(
+    sync_driver::SyncService* sync_service) {
+  // We want to know when, if at all, we need to run autofill profile de-
+  // duplication: now or after waiting until sync has started.
+  if (!is_autofill_profile_dedupe_pending_) {
+    // De-duplication isn't enabled.
+    return;
+  }
+
+  // If the sync service is configured to start and to sync autofill profiles,
+  // then we can just let the notification that sync has started trigger the
+  // de-duplication.
+  if (sync_service && sync_service->CanSyncStart() &&
+      sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
+    return;
+  }
+
+  // Otherwise, run the de-duplication now.
+  ApplyDedupingRoutine();
 }
 
 void PersonalDataManager::OnWebDataServiceRequestDone(
@@ -326,10 +349,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         ReceiveLoadedDbValues(h, result, &pending_profiles_query_,
                               &web_profiles_);
         LogProfileCount();  // This only logs local profiles.
-        // Since these two routines both re-launch the database queries, don't
-        // run them on the same query response.
-        if (!ApplyDedupingRoutine())
-          ApplyProfileUseDatesFix();
+        ApplyProfileUseDatesFix();
       } else {
         ReceiveLoadedDbValues(h, result, &pending_server_profiles_query_,
                               &server_profiles_);
@@ -381,6 +401,13 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 
 void PersonalDataManager::AutofillMultipleChanged() {
   Refresh();
+}
+
+void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
+  if (model_type == syncer::AUTOFILL_PROFILE &&
+      is_autofill_profile_dedupe_pending_) {
+    ApplyDedupingRoutine();
+  }
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
@@ -1606,16 +1633,22 @@ void PersonalDataManager::ApplyProfileUseDatesFix() {
 }
 
 bool PersonalDataManager::ApplyDedupingRoutine() {
-  if (!IsAutofillProfileCleanupEnabled())
+  if (!is_autofill_profile_dedupe_pending_)
     return false;
 
-  int current_major_version = atoi(version_info::GetVersionNumber().c_str());
+  DCHECK(IsAutofillProfileCleanupEnabled());
+  is_autofill_profile_dedupe_pending_ = false;
 
   // Check if the deduping routine has already been run on this major version.
+  int current_major_version = atoi(version_info::GetVersionNumber().c_str());
   if (pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
-      current_major_version)
+      current_major_version) {
+    DVLOG(1)
+        << "Autofill profile de-duplication already performed for this version";
     return false;
+  }
 
+  DVLOG(1) << "Starting autofill profile de-duplication.";
   std::vector<AutofillProfile*> existing_profiles = web_profiles_.get();
   std::unordered_set<AutofillProfile*> profiles_to_delete;
   profiles_to_delete.reserve(existing_profiles.size());

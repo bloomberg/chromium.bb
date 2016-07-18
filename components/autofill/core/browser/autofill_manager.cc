@@ -214,6 +214,8 @@ AutofillManager::AutofillManager(
     download_manager_.reset(new AutofillDownloadManager(driver, this));
   }
   CountryNames::SetLocaleString(app_locale_);
+  if (personal_data_ && client_)
+    personal_data_->OnSyncServiceInitialized(client_->GetSyncService());
 }
 
 AutofillManager::~AutofillManager() {}

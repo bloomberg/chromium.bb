@@ -194,8 +194,10 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   }
 
-  if (webdata_backend_)
+  if (webdata_backend_) {
     webdata_backend_->NotifyOfMultipleAutofillChanges();
+    webdata_backend_->NotifyThatSyncHasStarted(type);
+  }
 
   return merge_result;
 }
@@ -550,6 +552,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
       // we will merge them.
       bundle->candidates_to_merge.insert(
           std::make_pair(local_profile->guid(), new_profile));
+      break;
     }
   }
   profiles_.push_back(new_profile);

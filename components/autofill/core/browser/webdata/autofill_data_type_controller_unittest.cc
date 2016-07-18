@@ -44,6 +44,7 @@ class NoOpAutofillBackend : public AutofillWebDataBackend {
       autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
   void RemoveExpiredFormElements() override {}
   void NotifyOfMultipleAutofillChanges() override {}
+  void NotifyThatSyncHasStarted(syncer::ModelType /* model_type */) override {}
 };
 
 // Fake WebDataService implementation that stubs out the database loading.

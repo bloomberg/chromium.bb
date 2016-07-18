@@ -158,6 +158,8 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   // Sync error when that item's deletion is propagated to Sync.
   web_data_backend_->RemoveExpiredFormElements();
 
+  web_data_backend_->NotifyThatSyncHasStarted(type);
+
   return merge_result;
 }
 

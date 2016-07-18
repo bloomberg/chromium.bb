@@ -216,7 +216,10 @@ syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_processor_ = std::move(sync_processor);
-  return SetSyncData(initial_sync_data);
+  syncer::SyncMergeResult result = SetSyncData(initial_sync_data);
+  if (webdata_backend_)
+    webdata_backend_->NotifyThatSyncHasStarted(type);
+  return result;
 }
 
 void AutofillWalletSyncableService::StopSyncing(syncer::ModelType type) {

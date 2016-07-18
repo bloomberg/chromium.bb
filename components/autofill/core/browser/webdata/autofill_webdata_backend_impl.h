@@ -52,7 +52,8 @@ class AutofillWebDataBackendImpl
       scoped_refptr<WebDatabaseBackend> web_database_backend,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-      const base::Closure& on_changed_callback);
+      const base::Closure& on_changed_callback,
+      const base::Callback<void(syncer::ModelType)>& on_sync_started_callback);
 
   // AutofillWebDataBackend implementation.
   void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer) override;
@@ -61,6 +62,7 @@ class AutofillWebDataBackendImpl
   WebDatabase* GetDatabase() override;
   void RemoveExpiredFormElements() override;
   void NotifyOfMultipleAutofillChanges() override;
+  void NotifyThatSyncHasStarted(syncer::ModelType model_type) override;
 
   // Returns a SupportsUserData objects that may be used to store data
   // owned by the DB thread on this object. Should be called only from
@@ -224,6 +226,7 @@ class AutofillWebDataBackendImpl
   scoped_refptr<WebDatabaseBackend> web_database_backend_;
 
   base::Closure on_changed_callback_;
+  base::Callback<void(syncer::ModelType)> on_sync_started_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataBackendImpl);
 };

@@ -446,6 +446,8 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
   PhoneNumber phone_number(this);
   Address address;
 
+  DVLOG(1) << "Merging profiles:\nSource = " << profile << "\nDest = " << *this;
+
   // The comparator's merge operations are biased to prefer the data in the
   // first profile parameter when the data is the same modulo case. We pass the
   // incoming profile in this position to prefer accepting updates instead of
