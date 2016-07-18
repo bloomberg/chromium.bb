@@ -321,9 +321,9 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
 // modal window's modal parent window.
 TEST_F(WindowModalityControllerTest, ReleaseCapture) {
   // Create a window hierachy like this:
-  //                            w0
-  //            /               |              \
-  //           w1     <------   w3              w2
+  //            _______________w0______________
+  //            |               |              |
+  //           w1     <------   w3             w2
   //            |    (modal to)
   //           w11
 
