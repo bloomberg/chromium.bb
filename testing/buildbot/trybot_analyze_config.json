@@ -27,10 +27,6 @@
       "third_party/android_platform/development/scripts/.*",
       "tools/clang/blink_gc_plugin/CMakeLists.txt",
       "tools/luci-go/.*"
-    ],
-    "ignores": [
-      "OWNERS",
-      ".*/OWNERS"
     ]
   },
   "chromium": {
