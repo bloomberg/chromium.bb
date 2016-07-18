@@ -53,6 +53,14 @@ class WebGLNonChromiumImageSharedPageState(gpu_test_base.GpuSharedPageState):
       ['--disable-webgl-image-chromium'])
 
 
+class DisableMacOverlaysSharedPageState(gpu_test_base.GpuSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(DisableMacOverlaysSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    finder_options.browser_options.AppendExtraBrowserArgs(
+      ['--disable-mac-overlays'])
+
+
 class PixelTestsStorySet(story_set_module.StorySet):
 
   """ Some basic test cases for GPU. """
@@ -123,6 +131,25 @@ class PixelTestsStorySet(story_set_module.StorySet):
         revision=1,
         story_set=self,
         shared_page_state_class=WebGLNonChromiumImageSharedPageState,
+        expectations=expectations))
+
+      # On macOS, test CSS filter effects with and without the CA compositor.
+      self.AddStory(PixelTestsPage(
+        url='file://../../data/gpu/filter_effects.html',
+        name=base_name + '.CSSFilterEffects',
+        test_rect=[0, 0, 300, 300],
+        revision=1,
+        story_set=self,
+        shared_page_state_class=gpu_test_base.GpuSharedPageState,
+        expectations=expectations))
+
+      self.AddStory(PixelTestsPage(
+        url='file://../../data/gpu/filter_effects.html',
+        name=base_name + '.CSSFilterEffects.NoOverlays',
+        test_rect=[0, 0, 300, 300],
+        revision=1,
+        story_set=self,
+        shared_page_state_class=DisableMacOverlaysSharedPageState,
         expectations=expectations))
 
   def _AddAllPages(self, expectations, base_name, use_es3):
