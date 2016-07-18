@@ -104,9 +104,6 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   }
 
   container->setPlugin(new_plugin);
-  // Save the element in case the plugin is removed from the page during
-  // initialization.
-  blink::WebElement element = container->element();
   bool plugin_needs_initialization =
       !premade_throttler_ || new_plugin != premade_throttler_->GetWebPlugin();
   if (plugin_needs_initialization && !new_plugin->initialize(container)) {
@@ -115,14 +112,11 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
       // still exists, restore the placeholder and destroy the new plugin.
       container->setPlugin(plugin());
       new_plugin->destroy();
+    } else {
+      // The container has been destroyed, along with the new plugin. Destroy
+      // our placeholder plugin also.
+      plugin()->destroy();
     }
-    return;
-  }
-
-  // The plugin has been removed from the page. Destroy the old plugin. We
-  // will be destroyed as soon as V8 garbage collects us.
-  if (!element.pluginContainer()) {
-    plugin()->destroy();
     return;
   }
 
