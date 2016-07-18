@@ -76782,6 +76782,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1438" label="BeforeInstallPromptEventPreventDefault"/>
   <int value="1439" label="BeforeInstallPromptEventPrompt"/>
   <int value="1440" label="ExecCommandAltersHTMLStructure"/>
+  <int value="1441" label="SecureContextCheckPassed"/>
+  <int value="1442" label="SecureContextCheckFailed"/>
+  <int value="1443" label="SecureContextCheckForSandboxedOriginPassed"/>
+  <int value="1444" label="SecureContextCheckForSandboxedOriginFailed"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

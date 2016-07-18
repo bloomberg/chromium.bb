@@ -5873,15 +5873,35 @@ v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const
 
 bool Document::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
-    if (isSecureContextImpl(privilegeContextCheck))
+    bool isSecure = isSecureContextImpl(privilegeContextCheck);
+    if (getSandboxFlags() != SandboxNone) {
+        UseCounter::count(*this, isSecure
+            ? UseCounter::SecureContextCheckForSandboxedOriginPassed
+            : UseCounter::SecureContextCheckForSandboxedOriginFailed);
+    }
+    UseCounter::count(*this, isSecure
+        ? UseCounter::SecureContextCheckPassed
+        : UseCounter::SecureContextCheckFailed);
+
+    if (isSecure)
         return true;
+
     errorMessage = SecurityOrigin::isPotentiallyTrustworthyErrorMessage();
     return false;
 }
 
 bool Document::isSecureContext(const SecureContextCheck privilegeContextCheck) const
 {
-    return isSecureContextImpl(privilegeContextCheck);
+    bool isSecure = isSecureContextImpl(privilegeContextCheck);
+    if (getSandboxFlags() != SandboxNone) {
+        UseCounter::count(*this, isSecure
+            ? UseCounter::SecureContextCheckForSandboxedOriginPassed
+            : UseCounter::SecureContextCheckForSandboxedOriginFailed);
+    }
+    UseCounter::count(*this, isSecure
+        ? UseCounter::SecureContextCheckPassed
+        : UseCounter::SecureContextCheckFailed);
+    return isSecure;
 }
 
 void Document::enforceInsecureRequestPolicy(WebInsecureRequestPolicy policy)
