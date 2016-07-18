@@ -7,10 +7,10 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build_overrides/v8.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
-import("//v8/gni/v8.gni")
 
 content_tests_gypi_values =
     exec_script("//build/gypi_to_gn.py",

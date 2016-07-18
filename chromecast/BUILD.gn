@@ -6,12 +6,12 @@ import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//build/config/ui.gni")
+import("//build_overrides/v8.gni")
 import("//chromecast/build/tests/cast_test.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 import("//tools/grit/repack.gni")
 import("//ui/ozone/ozone.gni")
-import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")

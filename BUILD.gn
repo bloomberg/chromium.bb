@@ -16,7 +16,6 @@ import("//build_overrides/v8.gni")
 import("//media/media_options.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
-import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
 
 if (is_android) {
