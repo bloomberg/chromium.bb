@@ -18,7 +18,7 @@ class SystemHealthStorySet(story.StorySet):
   """
   def __init__(self, platform, case=None, take_memory_measurement=False):
     super(SystemHealthStorySet, self).__init__(
-        archive_data_file=('../data/memory_system_health_%s.json' % platform),
+        archive_data_file=('../data/system_health_%s.json' % platform),
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     assert platform in platforms.ALL_PLATFORMS

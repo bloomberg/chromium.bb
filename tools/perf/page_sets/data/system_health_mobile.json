@@ -1,6 +1,6 @@
 {
     "archives": {
-        "memory_system_health_mobile_000.wpr": [
+        "system_health_mobile_000.wpr": [
             "load:search:amazon",
             "load:search:baidu",
             "load:search:yandex",
@@ -9,17 +9,17 @@
             "load:search:ebay",
             "load:search:yahoo"
         ],
-        "memory_system_health_mobile_001.wpr": [
+        "system_health_mobile_001.wpr": [
             "load:social:tumblr",
             "load:social:pinterest",
             "load:social:instagram"
         ],
-        "memory_system_health_mobile_002.wpr": [
+        "system_health_mobile_002.wpr": [
             "load:news:sohu",
             "load:news:bbc",
             "load:news:wikipedia"
         ],
-        "memory_system_health_mobile_003.wpr": [
+        "system_health_mobile_003.wpr": [
             "load:media:9gag",
             "load:media:google_images",
             "load:media:soundcloud",
@@ -27,7 +27,7 @@
             "load:media:dailymotion",
             "load:media:flickr"
         ],
-        "memory_system_health_mobile_004.wpr": [
+        "system_health_mobile_004.wpr": [
             "load:tools:gmail",
             "load:tools:maps",
             "load:tools:stackoverflow",
@@ -36,57 +36,57 @@
             "load:tools:drive",
             "load:tools:docs"
         ],
-        "memory_system_health_mobile_005.wpr": [
+        "system_health_mobile_005.wpr": [
             "load:games:lazors",
             "load:games:bubbles",
             "load:games:spychase"
         ],
-        "memory_system_health_mobile_006.wpr": [
+        "system_health_mobile_006.wpr": [
             "load:news:cnn"
         ],
-        "memory_system_health_mobile_007.wpr": [
+        "system_health_mobile_007.wpr": [
             "load:social:facebook"
         ],
-        "memory_system_health_mobile_008.wpr": [
+        "system_health_mobile_008.wpr": [
             "load:news:hackernews"
         ],
-        "memory_system_health_mobile_009.wpr": [
+        "system_health_mobile_009.wpr": [
             "load:news:nytimes"
         ],
-        "memory_system_health_mobile_010.wpr": [
+        "system_health_mobile_010.wpr": [
             "load:news:qq"
         ],
-        "memory_system_health_mobile_011.wpr": [
+        "system_health_mobile_011.wpr": [
             "load:news:reddit"
         ],
-        "memory_system_health_mobile_012.wpr": [
+        "system_health_mobile_012.wpr": [
             "load:social:twitter"
         ],
-        "memory_system_health_mobile_013.wpr": [
+        "system_health_mobile_013.wpr": [
             "load:news:washingtonpost"
         ],
-        "browsing_mobile_000.wpr": [
+        "system_health_mobile_014.wpr": [
             "browse:news:cnn"
         ],
-        "browsing_mobile_001.wpr": [
+        "system_health_mobile_015.wpr": [
             "browse:social:facebook"
         ],
-        "browsing_mobile_002.wpr": [
+        "system_health_mobile_016.wpr": [
             "browse:news:hackernews"
         ],
-        "browsing_mobile_003.wpr": [
+        "system_health_mobile_017.wpr": [
             "browse:news:nytimes"
         ],
-        "browsing_mobile_004.wpr": [
+        "system_health_mobile_018.wpr": [
             "browse:news:qq"
         ],
-        "browsing_mobile_005.wpr": [
+        "system_health_mobile_019.wpr": [
             "browse:news:reddit"
         ],
-        "browsing_mobile_006.wpr": [
+        "system_health_mobile_020.wpr": [
             "browse:social:twitter"
         ],
-        "browsing_mobile_007.wpr": [
+        "system_health_mobile_021.wpr": [
             "browse:news:washingtonpost"
         ]
     },
