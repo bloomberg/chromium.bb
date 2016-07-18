@@ -32,6 +32,27 @@ Polymer({
         return !!(sessionStorage.appealClosed_ || localStorage.appealClosed_);
       },
     },
+
+    /** @private */
+    appealBugUrl_: {
+      type: String,
+      value: function() {
+        var url =
+            'https://bugs.chromium.org/p/chromium/issues/entry?' +
+            'labels=Proj-MaterialDesign-WebUI,Pri-2,Type-Bug&' +
+            'components=UI%3ESettings&description=';
+        var description =
+            'What steps will reproduce the problem?\n' +
+            '(1) \n(2) \n(3) \n\nWhat is the expected result?\n\n\n' +
+            'What happens instead?\n\n\nPlease provide any additional ' +
+            'information below. Attach a screenshot if possible.\n\n';
+        var version = navigator.userAgent.match(/Chrom(?:e|ium)\/([\d.]+)/);
+        if (version)
+          description += 'Version: ' + version[1];
+        url += encodeURIComponent(description);
+        return url;
+      },
+    },
   },
 
   listeners: {
