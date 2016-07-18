@@ -620,11 +620,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         updatePayButtonEnabled();
     }
 
-    @Override
-    public boolean isBoldLabelNeeded(OptionSection section) {
-        return section == mShippingAddressSection;
-    }
-
     /** @return The common editor user interface. */
     public EditorView getEditorView() {
         return mEditorView;

@@ -40,8 +40,7 @@ public class AutofillAddress extends PaymentOption {
      * @param profile The autofill profile containing the address information.
      */
     public AutofillAddress(AutofillProfile profile, boolean isComplete) {
-        super(profile.getGUID(), profile.getFullName(), profile.getLabel(),
-                profile.getPhoneNumber(), PaymentOption.NO_ICON);
+        super(profile.getGUID(), profile.getFullName(), profile.getLabel(), PaymentOption.NO_ICON);
         mProfile = profile;
         mIsComplete = isComplete;
     }
@@ -53,15 +52,14 @@ public class AutofillAddress extends PaymentOption {
 
     /**
      * Updates the address and marks it "complete." Called after the user has edited this address.
-     * Updates the identifier and labels.
+     * Updates the identifier, label, and sublabel.
      *
      * @param profile The new profile to use.
      */
     public void completeAddress(AutofillProfile profile) {
         mProfile = profile;
         mIsComplete = true;
-        updateIdentifierAndLabels(mProfile.getGUID(), mProfile.getFullName(), mProfile.getLabel(),
-                mProfile.getPhoneNumber());
+        updateIdentifierAndLabels(mProfile.getGUID(), mProfile.getFullName(), mProfile.getLabel());
     }
 
     /** @return The country code to use, e.g., when constructing an editor for this address. */

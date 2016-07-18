@@ -16,27 +16,24 @@ public class PaymentOption implements Completable {
 
     protected boolean mIsComplete;
     private String mId;
+    @Nullable private String mLabel;
+    @Nullable private String mSublabel;
     private int mIcon;
-    private String[] mLabels = {null, null, null};
     private boolean mIsValid = true;
-
-    /** See {@link #PaymentOption(String, String, String, String, int)}. */
-    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel, int icon) {
-        this(id, label, sublabel, null, icon);
-    }
 
     /**
      * Constructs a payment option.
      *
-     * @param id            The identifier.
-     * @param label         The label.
-     * @param sublabel      The optional sublabel.
-     * @param tertiarylabel The optional tertiary label.
-     * @param icon          The drawable icon identifier or NO_ICON.
+     * @param id       The identifier.
+     * @param label    The label.
+     * @param sublabel The optional sublabel.
+     * @param icon     The drawable icon identifier or NO_ICON.
      */
-    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel,
-            @Nullable String tertiarylabel, int icon) {
-        updateIdentifierLabelsAndIcon(id, label, sublabel, tertiarylabel, icon);
+    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel, int icon) {
+        mId = id;
+        mLabel = label;
+        mSublabel = sublabel;
+        mIcon = icon;
     }
 
     @Override
@@ -56,51 +53,42 @@ public class PaymentOption implements Completable {
      * The primary label of this option. For example, “Visa***1234” or "2-day shipping".
      */
     @Nullable public String getLabel() {
-        return mLabels[0];
+        return mLabel;
     }
 
     /**
      * The optional sublabel of this option. For example, “Expiration date: 12/2025”.
      */
     @Nullable public String getSublabel() {
-        return mLabels[1];
+        return mSublabel;
     }
 
     /**
-     * The optional tertiary label of this option.  For example, "(555) 867-5309".
+     * Updates the identifier, label, and sublabel of this option. Called after the user has edited
+     * this option.
+     *
+     * @param id       The new id to use. Should not be null.
+     * @param label    The new label to use. Should not be null.
+     * @param sublabel The new sublabel to use. Can be null.
      */
-    @Nullable public String getTertiaryLabel() {
-        return mLabels[2];
-    }
-
-    /** See {@link #updateIdentifierAndLabels(String, String, String, String)}. */
     protected void updateIdentifierAndLabels(String id, String label, @Nullable String sublabel) {
-        updateIdentifierAndLabels(id, label, sublabel, null);
-    }
-
-    /** See {@link #updateIdentifierLabelsAndIcon(String, String, String, String, int)}. */
-    protected void updateIdentifierAndLabels(
-            String id, String label, @Nullable String sublabel, @Nullable String tertiarylabel) {
-        mId = id;
-        mLabels[0] = label;
-        mLabels[1] = sublabel;
-        mLabels[2] = tertiarylabel;
+        updateIdentifierLabelsAndIcon(id, label, sublabel, mIcon);
     }
 
     /**
-     * Updates the identifier, labels, and icon of this option. Called after the user has
+     * Updates the identifier, label, sublabel, and icon of this option. Called after the user has
      * edited this option.
      *
-     * @param id            The new id to use. Should not be null.
-     * @param label         The new label to use. Should not be null.
-     * @param sublabel      The new sublabel to use. Can be null.
-     * @param tertiarylabel The new tertiary label to use. Can be null.
-     * @param icon          The drawable icon identifier or NO_ICON.
+     * @param id       The new id to use. Should not be null.
+     * @param label    The new label to use. Should not be null.
+     * @param sublabel The new sublabel to use. Can be null.
+     * @param icon     The drawable icon identifier or NO_ICON.
      */
     protected void updateIdentifierLabelsAndIcon(
-            String id, String label, @Nullable String sublabel, @Nullable String tertiarylabel,
-            int icon) {
-        updateIdentifierAndLabels(id, label, sublabel, tertiarylabel);
+            String id, String label, @Nullable String sublabel, int icon) {
+        mId = id;
+        mLabel = label;
+        mSublabel = sublabel;
         mIcon = icon;
     }
 

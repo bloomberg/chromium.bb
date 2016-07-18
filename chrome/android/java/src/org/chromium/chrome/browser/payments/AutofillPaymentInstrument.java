@@ -160,7 +160,7 @@ public class AutofillPaymentInstrument
         mBillingAddress = billingAddress;
         mIsComplete = true;
         updateIdentifierLabelsAndIcon(card.getGUID(), card.getObfuscatedNumber(), card.getName(),
-                null, card.getIssuerIconDrawableId());
+                card.getIssuerIconDrawableId());
     }
 
     /** @return The credit card represented by this payment instrument. */
