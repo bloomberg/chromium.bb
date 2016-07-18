@@ -295,7 +295,6 @@ class UI_BASE_EXPORT ResourceBundle {
   void LoadMaterialDesignResources();
 #endif
 
- protected:
   // Returns true if |scale_factor| is supported by this platform.
   static bool IsScaleFactorSupported(ScaleFactor scale_factor);
 

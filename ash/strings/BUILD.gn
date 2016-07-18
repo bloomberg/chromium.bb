@@ -66,29 +66,40 @@ grit("strings") {
   ]
 }
 
-# Creates a pak file containing strings for ash_unittests, etc.
-repack("ash_test_strings") {
-  output = "$root_build_dir/ash_test_strings.pak"
+# Creates locale-specific pak files with strings needed for ash_unittests, etc.
+template("repack_one_locale_ash") {
+  locale = invoker.locale
+  output = invoker.output
 
-  sources = [
-    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
-    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
-    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-  ]
-
-  deps = [
-    "//ash/strings",
-    "//ui/strings",
-  ]
-
-  if (is_chromeos) {
-    sources += [
-      "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_en-US.pak",
-      "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
+  repack(target_name) {
+    # Each input pak file should also have a deps line for completeness.
+    sources = [
+      "$root_gen_dir/ash/strings/ash_strings_${locale}.pak",
+      "$root_gen_dir/ui/strings/app_locale_settings_${locale}.pak",
+      "$root_gen_dir/ui/strings/ui_strings_${locale}.pak",
     ]
-    deps += [
-      "//device/bluetooth/strings",
-      "//ui/chromeos/strings",
+
+    deps = [
+      "//ash/strings",
+      "//ui/strings:app_locale_settings",
+      "//ui/strings:ui_strings",
     ]
+
+    if (is_chromeos) {
+      sources += [
+        "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_${locale}.pak",
+        "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_${locale}.pak",
+      ]
+      deps += [
+        "//device/bluetooth/strings",
+        "//ui/chromeos/strings",
+      ]
+    }
   }
+}
+
+# Creates a pak file containing en-US strings for ash_unittests, etc.
+repack_one_locale_ash("ash_test_strings") {
+  output = "$root_build_dir/ash_test_strings.pak"
+  locale = "en-US"
 }

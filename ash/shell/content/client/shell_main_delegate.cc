@@ -41,8 +41,7 @@ content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
-  // Load ash resources and en-US strings; not 'common' (Chrome) resources.
-  // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+  // Load ash resources and strings; not 'common' (Chrome) resources.
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   base::FilePath ash_test_strings =
@@ -54,8 +53,10 @@ void ShellMainDelegate::InitializeResourceBundle() {
 
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
-  rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P))
+    rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P))
+    rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
 }
 
 }  // namespace shell

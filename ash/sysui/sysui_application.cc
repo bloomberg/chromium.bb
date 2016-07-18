@@ -59,9 +59,9 @@ namespace sysui {
 
 namespace {
 
-const char kResourceFileStrings[] = "ash_resources_strings.pak";
-const char kResourceFile100[] = "ash_resources_100_percent.pak";
-const char kResourceFile200[] = "ash_resources_200_percent.pak";
+const char kResourceFileStrings[] = "ash_test_strings.pak";
+const char kResourceFile100[] = "ash_test_resources_100_percent.pak";
+const char kResourceFile200[] = "ash_test_resources_200_percent.pak";
 
 // Tries to determine the corresponding mash container from widget init params.
 bool GetContainerForWidget(const views::Widget::InitParams& params,
@@ -266,16 +266,19 @@ class AshInit {
     connector->ConnectToInterface("mojo:catalog", &directory);
     CHECK(loader.OpenFiles(std::move(directory), resource_paths));
 
-    // Load ash resources and en-US strings; not 'common' (Chrome) resources.
-    // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+    // Load ash resources and strings; not 'common' (Chrome) resources.
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
         loader.TakeFile(kResourceFileStrings),
         base::MemoryMappedFile::Region::kWholeFile);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    rb.AddDataPackFromFile(loader.TakeFile(kResourceFile100),
-                           ui::SCALE_FACTOR_100P);
-    rb.AddDataPackFromFile(loader.TakeFile(kResourceFile200),
-                           ui::SCALE_FACTOR_200P);
+    if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P)) {
+      rb.AddDataPackFromFile(loader.TakeFile(kResourceFile100),
+                             ui::SCALE_FACTOR_100P);
+    }
+    if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P)) {
+      rb.AddDataPackFromFile(loader.TakeFile(kResourceFile200),
+                             ui::SCALE_FACTOR_200P);
+    }
   }
 
   void InitializeComponents() {

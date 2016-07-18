@@ -53,8 +53,7 @@ void AuraShellTestSuite::Initialize() {
   // it'll pass regardless of the system language.
   base::i18n::SetICUDefaultLocale("en_US");
 
-  // Load ash resources and en-US strings; not 'common' (Chrome) resources.
-  // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+  // Load ash test resources and en-US strings; not 'common' (Chrome) resources.
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   base::FilePath ash_test_strings =
@@ -66,8 +65,10 @@ void AuraShellTestSuite::Initialize() {
 
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
-  rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P))
+    rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P))
+    rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance();

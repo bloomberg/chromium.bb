@@ -17,7 +17,7 @@ grit("resources") {
   ]
 }
 
-# Generates a rule to repack ash resources for a given percentage (e.g. "100").
+# Repacks resources needed for ash_unittests, etc. at a given scale.
 # TODO(msw): Use ui_test.pak instead of its pieces? (no 200% support?)
 template("ash_test_resources") {
   percent = invoker.percent
