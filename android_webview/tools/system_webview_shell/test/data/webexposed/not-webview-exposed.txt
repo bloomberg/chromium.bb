@@ -20,6 +20,7 @@ interface SharedWorker : EventTarget
 # push API not supported in webview
 interface PushManager
 interface PushSubscription
+interface PushSubscriptionOptions
 
 # presentation api not supported in webview crbug.com/521319
 interface Presentation
