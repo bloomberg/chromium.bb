@@ -16,9 +16,9 @@ from grit import util
 def GetFormatter(type):
   if type == 'resource_map_header':
     return _FormatHeader
-  elif type == 'resource_map_source':
+  if type == 'resource_map_source':
     return partial(_FormatSource, _GetItemName)
-  elif type == 'resource_file_map_source':
+  if type == 'resource_file_map_source':
     return partial(_FormatSource, _GetItemPath)
 
 
@@ -37,9 +37,9 @@ def GetMapName(root):
     raise Exception('unable to find resource header filename')
   filename = os.path.splitext(os.path.split(rc_header_file)[1])[0]
   filename = filename[0].upper() + filename[1:]
-  while filename.find('_') != -1:
+  while True:
     pos = filename.find('_')
-    if pos >= len(filename):
+    if pos == -1 or pos >= len(filename):
       break
     filename = filename[:pos] + filename[pos + 1].upper() + filename[pos + 2:]
   return 'k' + filename
