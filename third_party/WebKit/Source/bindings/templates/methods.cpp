@@ -208,7 +208,9 @@ if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
 {{declare_enum_validation_variable(argument.enum_values)}}
 if (!isValidEnum({{argument.name}}, validValues, WTF_ARRAY_LENGTH(validValues), "{{argument.enum_type}}", exceptionState)) {
+    {% if not method.returns_promise %}
     exceptionState.throwIfNeeded();
+    {% endif %}
     return;
 }
 {% elif argument.idl_type == 'Promise' %}
