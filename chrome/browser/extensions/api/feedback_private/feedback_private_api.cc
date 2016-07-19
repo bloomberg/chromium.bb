@@ -157,13 +157,8 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
   SET_STRING("screenshot", IDS_FEEDBACK_SCREENSHOT_LABEL);
   SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
 #if defined(OS_CHROMEOS)
-  // We must check ArcBridgeService::available() before
-  // ArcAuthService::IsArcEnabled() to avoid crashes in browsertests when
-  // |profile_| is not set in ArcAuthService when ARC is not available.
-  if (arc::ArcBridgeService::Get() &&
-      arc::ArcBridgeService::Get()->available() &&
-      arc::ArcAuthService::Get() &&
-      arc::ArcAuthService::Get()->IsArcEnabled()) {
+  const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+  if (auth_service && auth_service->IsArcEnabled()) {
     SET_STRING("sys-info",
                IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX_ARC);
   } else {

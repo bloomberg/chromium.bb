@@ -342,9 +342,6 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   Shutdown();
 
-  profile_ = profile;
-  SetState(State::STOPPED);
-
   if (!IsAllowedForProfile(profile))
     return;
 
@@ -353,6 +350,9 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     VLOG(2) << "Enterprise users are not supported in ARC.";
     return;
   }
+
+  profile_ = profile;
+  SetState(State::STOPPED);
 
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
       prefs::kArcEnabled, this);
@@ -637,6 +637,9 @@ bool ArcAuthService::IsArcManaged() const {
 
 bool ArcAuthService::IsArcEnabled() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!IsAllowed())
+    return false;
+
   DCHECK(profile_);
   return profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
 }

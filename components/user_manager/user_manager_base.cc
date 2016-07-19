@@ -643,7 +643,8 @@ bool UserManagerBase::IsUserCryptohomeDataEphemeral(
     return true;
 
   // Ephemeral users.
-  if (user && user->GetType() == USER_TYPE_REGULAR &&
+  if (AreEphemeralUsersEnabled() && user &&
+      user->GetType() == USER_TYPE_REGULAR &&
       FindUserInList(account_id) == nullptr) {
     return true;
   }

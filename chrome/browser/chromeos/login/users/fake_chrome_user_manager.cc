@@ -82,6 +82,10 @@ const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
   return user;
 }
 
+bool FakeChromeUserManager::AreEphemeralUsersEnabled() const {
+  return fake_ephemeral_users_enabled_;
+}
+
 void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
   UserLoggedIn(account_id, ProfileHelper::GetUserIdHashByUserIdForTesting(
                                account_id.GetUserEmail()),

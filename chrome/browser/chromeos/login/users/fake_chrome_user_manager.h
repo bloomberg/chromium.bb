@@ -45,6 +45,7 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   const user_manager::User* AddUser(const AccountId& account_id) override;
   const user_manager::User* AddUserWithAffiliation(const AccountId& account_id,
                                                    bool is_affiliated) override;
+  bool AreEphemeralUsersEnabled() const override;
 
   // UserManagerInterface implementation.
   BootstrapManager* GetBootstrapManager() override;
@@ -83,6 +84,10 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
                              std::string* out_resolved_locale) const override;
   bool IsValidDefaultUserImageId(int image_index) const override;
 
+  void set_ephemeral_users_enabled(bool ephemeral_users_enabled) {
+    fake_ephemeral_users_enabled_ = ephemeral_users_enabled;
+  }
+
   void set_owner_id(const AccountId& owner_account_id) {
     owner_account_id_ = owner_account_id;
   }
@@ -102,6 +107,7 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
 
   std::unique_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   AccountId owner_account_id_ = EmptyAccountId();
+  bool fake_ephemeral_users_enabled_ = false;
 
   BootstrapManager* bootstrap_manager_;
   MultiProfileUserController* multi_profile_user_controller_;

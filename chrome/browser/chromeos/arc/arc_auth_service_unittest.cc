@@ -147,13 +147,13 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
   fake_user_manager->AddUser(fake_user_manager->GetGuestAccountId());
   fake_user_manager->SwitchActiveUser(fake_user_manager->GetGuestAccountId());
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   fake_user_manager->AddUser(chromeos::login::DemoAccountId());
   fake_user_manager->SwitchActiveUser(chromeos::login::DemoAccountId());
   auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   const AccountId public_account_id(
       AccountId::FromUserEmail("public_user@gmail.com"));
@@ -161,16 +161,17 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
   fake_user_manager->SwitchActiveUser(public_account_id);
   auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   const AccountId not_in_list_account_id(
       AccountId::FromUserEmail("not_in_list_user@gmail.com"));
+  fake_user_manager->set_ephemeral_users_enabled(true);
   fake_user_manager->AddUser(not_in_list_account_id);
   fake_user_manager->SwitchActiveUser(not_in_list_account_id);
   fake_user_manager->RemoveUserFromList(not_in_list_account_id);
   auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();
@@ -327,7 +328,7 @@ TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
   // Check that user without GAIA account can't use ARC.
   device_local_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
   auth_service()->OnPrimaryUserProfilePrepared(device_local_profile.get());
-  EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  EXPECT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();
