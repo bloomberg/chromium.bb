@@ -62,9 +62,6 @@
         "system_health_desktop_011.wpr": [
             "load:news:reddit"
         ],
-        "system_health_desktop_012.wpr": [
-            "load:social:twitter"
-        ],
         "system_health_desktop_013.wpr": [
             "browse:news:cnn"
         ],
@@ -77,7 +74,10 @@
         "system_health_desktop_016.wpr": [
             "browse:news:reddit"
         ],
-        "system_health_desktop_017.wpr": [
+        "system_health_desktop_018.wpr": [
+            "load:social:twitter"
+        ],
+        "system_health_desktop_019.wpr": [
             "browse:social:twitter"
         ]
     },

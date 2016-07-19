@@ -76,7 +76,7 @@ class LoadFacebookStory(_LoadingStory):
 
 class LoadTwitterStory(_LoadingStory):
   NAME = 'load:social:twitter'
-  URL = 'https://www.twitter.com/justinbieber?skip_interstitial=true'
+  URL = 'https://www.twitter.com/nasa'
 
 
 class LoadVkStory(_LoadingStory):

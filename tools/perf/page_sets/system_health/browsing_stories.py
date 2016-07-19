@@ -94,9 +94,17 @@ class FacebookMobileStory(_NewsBrowsingStory):
   NAME = 'browse:social:facebook'
   URL = 'https://www.facebook.com/rihanna'
   ITEM_SELECTOR = 'article ._5msj'
-  # Facebook on desktop is not interesting because it embeds post comments
-  # directly in the main timeline.
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+
+class FacebookDesktopStory(_NewsBrowsingStory):
+  NAME = 'browse:social:facebook'
+  URL = 'https://www.facebook.com/rihanna'
+  ITEM_SELECTOR = '._4-eo'
+  IS_SINGLE_PAGE_APP = True
+  # Web-page-replay does not work for this website:
+  # https://github.com/chromium/web-page-replay/issues/79.
+  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
 
 
 class HackerNewsStory(_NewsBrowsingStory):
@@ -152,14 +160,14 @@ class RedditMobileStory(_NewsBrowsingStory):
 
 class TwitterMobileStory(_NewsBrowsingStory):
   NAME = 'browse:social:twitter'
-  URL = 'https://www.twitter.com/justinbieber?skip_interstitial=true'
+  URL = 'https://www.twitter.com/nasa'
   ITEM_SELECTOR = '.Tweet-text'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
 class TwitterDesktopStory(_NewsBrowsingStory):
   NAME = 'browse:social:twitter'
-  URL = 'https://www.twitter.com/justinbieber?skip_interstitial=true'
+  URL = 'https://www.twitter.com/nasa'
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR = '.tweet-text'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
