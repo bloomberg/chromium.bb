@@ -34,6 +34,8 @@ template("remoting_android_client_java_tmpl") {
       "HostListManager.java",
       "InputEventSender.java",
       "InputModeChangedEventParameter.java",
+      "InputMonitor.java",
+      "InputState.java",
       "InputStrategyInterface.java",
       "InputStub.java",
       "NavigationMenuAdapter.java",

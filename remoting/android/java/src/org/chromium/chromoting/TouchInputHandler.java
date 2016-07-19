@@ -469,7 +469,7 @@ public class TouchInputHandler {
                 return false;
             }
 
-            if (pointerCount == 3 && !mSwipeCompleted) {
+            if (pointerCount >= 3 && !mSwipeCompleted) {
                 // Note that distance values are reversed. For example, dragging a finger in the
                 // direction of increasing Y coordinate (downwards) results in distanceY being
                 // negative.
