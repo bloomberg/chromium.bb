@@ -54,10 +54,4 @@ double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end) const
     return isResultOK ? result : 0.0;
 }
 
-StringView CSSTokenizerInputStream::rangeAt(unsigned start, unsigned length) const
-{
-    DCHECK(start + length <= m_stringLength);
-    return StringView(m_string.get(), start, length);
-}
-
 } // namespace blink

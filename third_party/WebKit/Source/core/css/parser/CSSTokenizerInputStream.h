@@ -49,7 +49,12 @@ public:
 
     unsigned length() const { return m_stringLength; }
     unsigned offset() const { return std::min(m_offset, m_stringLength); }
-    StringView rangeAt(unsigned start, unsigned length) const;
+
+    StringView rangeAt(unsigned start, unsigned length) const
+    {
+        DCHECK(start + length <= m_stringLength);
+        return StringView(*m_string, start, length);
+    }
 
 private:
     size_t m_offset;

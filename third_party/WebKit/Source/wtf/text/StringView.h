@@ -43,6 +43,14 @@ public:
     StringView(StringImpl*, unsigned offset);
     StringView(StringImpl*, unsigned offset, unsigned length);
 
+    // From a non-null StringImpl, avoids the null check.
+    StringView(StringImpl& impl)
+        : m_impl(&impl)
+        , m_bytes(impl.bytes())
+        , m_length(impl.length()) {}
+    StringView(StringImpl&, unsigned offset);
+    StringView(StringImpl&, unsigned offset, unsigned length);
+
     // From an String, implemented in String.h
     inline StringView(const String&, unsigned offset, unsigned length);
     inline StringView(const String&, unsigned offset);
@@ -173,6 +181,16 @@ inline StringView::StringView(StringImpl* impl, unsigned offset)
 inline StringView::StringView(StringImpl* impl, unsigned offset, unsigned length)
 {
     impl ? set(*impl, offset, length) : clear();
+}
+
+inline StringView::StringView(StringImpl& impl, unsigned offset)
+{
+    set(impl, offset, impl.length() - offset);
+}
+
+inline StringView::StringView(StringImpl& impl, unsigned offset, unsigned length)
+{
+    set(impl, offset, length);
 }
 
 inline void StringView::clear()
