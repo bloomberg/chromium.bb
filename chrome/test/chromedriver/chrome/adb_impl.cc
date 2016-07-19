@@ -208,9 +208,12 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
     std::vector<base::StringPiece> tokens = base::SplitStringPiece(
         line, base::kWhitespaceASCII,
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (tokens.size() != 9)
+    if (tokens.size() != 8 && tokens.size() != 9)
       continue;
-    if (tokens[8] == process_name) {
+    // The ps command on Android M+ does not always output a value for WCHAN,
+    // so the process name might appear in the 8th or 9th column. Use the
+    // right-most column for process name.
+    if (tokens[tokens.size() - 1] == process_name) {
       if (base::StringToInt(tokens[1], pid)) {
         return Status(kOk);
       } else {
