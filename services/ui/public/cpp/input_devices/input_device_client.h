@@ -50,18 +50,18 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
  private:
   // mojom::InputDeviceObserverMojo:
   void OnKeyboardDeviceConfigurationChanged(
-      mojo::Array<ui::InputDevice> devices) override;
+      const std::vector<ui::InputDevice>& devices) override;
   void OnTouchscreenDeviceConfigurationChanged(
-      mojo::Array<ui::TouchscreenDevice> devices) override;
+      const std::vector<ui::TouchscreenDevice>& devices) override;
   void OnMouseDeviceConfigurationChanged(
-      mojo::Array<ui::InputDevice> devices) override;
+      const std::vector<ui::InputDevice>& devices) override;
   void OnTouchpadDeviceConfigurationChanged(
-      mojo::Array<ui::InputDevice> devices) override;
+      const std::vector<ui::InputDevice>& devices) override;
   void OnDeviceListsComplete(
-      mojo::Array<ui::InputDevice> keyboard_devices,
-      mojo::Array<ui::TouchscreenDevice> touchscreen_devices,
-      mojo::Array<ui::InputDevice> mouse_devices,
-      mojo::Array<ui::InputDevice> touchpad_devices) override;
+      const std::vector<ui::InputDevice>& keyboard_devices,
+      const std::vector<ui::TouchscreenDevice>& touchscreen_devices,
+      const std::vector<ui::InputDevice>& mouse_devices,
+      const std::vector<ui::InputDevice>& touchpad_devices) override;
 
   mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
 

@@ -23,47 +23,47 @@ void InputDeviceClient::Connect(mojom::InputDeviceServerPtr server) {
 }
 
 void InputDeviceClient::OnKeyboardDeviceConfigurationChanged(
-    mojo::Array<ui::InputDevice> devices) {
-  keyboard_devices_ = devices.To<std::vector<ui::InputDevice>>();
+    const std::vector<ui::InputDevice>& devices) {
+  keyboard_devices_ = devices;
   FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
                     OnKeyboardDeviceConfigurationChanged());
 }
 
 void InputDeviceClient::OnTouchscreenDeviceConfigurationChanged(
-    mojo::Array<ui::TouchscreenDevice> devices) {
-  touchscreen_devices_ = devices.To<std::vector<ui::TouchscreenDevice>>();
+    const std::vector<ui::TouchscreenDevice>& devices) {
+  touchscreen_devices_ = devices;
   FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
                     OnTouchscreenDeviceConfigurationChanged());
 }
 
 void InputDeviceClient::OnMouseDeviceConfigurationChanged(
-    mojo::Array<ui::InputDevice> devices) {
-  mouse_devices_ = devices.To<std::vector<ui::InputDevice>>();
+    const std::vector<ui::InputDevice>& devices) {
+  mouse_devices_ = devices;
   FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
                     OnMouseDeviceConfigurationChanged());
 }
 
 void InputDeviceClient::OnTouchpadDeviceConfigurationChanged(
-    mojo::Array<ui::InputDevice> devices) {
-  touchpad_devices_ = devices.To<std::vector<ui::InputDevice>>();
+    const std::vector<ui::InputDevice>& devices) {
+  touchpad_devices_ = devices;
   FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
                     OnTouchpadDeviceConfigurationChanged());
 }
 
 void InputDeviceClient::OnDeviceListsComplete(
-    mojo::Array<ui::InputDevice> keyboard_devices,
-    mojo::Array<ui::TouchscreenDevice> touchscreen_devices,
-    mojo::Array<ui::InputDevice> mouse_devices,
-    mojo::Array<ui::InputDevice> touchpad_devices) {
+    const std::vector<ui::InputDevice>& keyboard_devices,
+    const std::vector<ui::TouchscreenDevice>& touchscreen_devices,
+    const std::vector<ui::InputDevice>& mouse_devices,
+    const std::vector<ui::InputDevice>& touchpad_devices) {
   // Update the cached device lists if the received list isn't empty.
   if (!keyboard_devices.empty())
-    OnKeyboardDeviceConfigurationChanged(std::move(keyboard_devices));
+    OnKeyboardDeviceConfigurationChanged(keyboard_devices);
   if (!touchscreen_devices.empty())
-    OnTouchscreenDeviceConfigurationChanged(std::move(touchscreen_devices));
+    OnTouchscreenDeviceConfigurationChanged(touchscreen_devices);
   if (!mouse_devices.empty())
-    OnMouseDeviceConfigurationChanged(std::move(mouse_devices));
+    OnMouseDeviceConfigurationChanged(mouse_devices);
   if (!touchpad_devices.empty())
-    OnTouchpadDeviceConfigurationChanged(std::move(touchpad_devices));
+    OnTouchpadDeviceConfigurationChanged(touchpad_devices);
 
   if (!device_lists_complete_) {
     device_lists_complete_ = true;

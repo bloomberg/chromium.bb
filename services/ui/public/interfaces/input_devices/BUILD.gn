@@ -12,6 +12,4 @@ mojom("input_devices") {
   public_deps = [
     "//ui/events/devices/mojo",
   ]
-
-  use_new_wrapper_types = false
 }
