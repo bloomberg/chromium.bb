@@ -651,7 +651,7 @@ private:
 
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
     // TODO(nainar): Make this const ComputedStyle&.
-    StyleRecalcChange buildOwnLayout(ComputedStyle&);
+    StyleRecalcChange buildLayoutTree(ComputedStyle&);
 
     inline void checkForEmptyStyleChange();
 

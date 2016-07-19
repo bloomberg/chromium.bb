@@ -1778,10 +1778,10 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     if (localChange == Reattach) {
-        // TODO(nainar): Remove the style parameter being passed into buildOwnLayout().
-        // ComputedStyle will now be stored on Node and accessed in buildOwnLayout()
+        // TODO(nainar): Remove the style parameter being passed into buildLayoutTree().
+        // ComputedStyle will now be stored on Node and accessed in buildLayoutTree()
         // using mutableComputedStyle().
-        return buildOwnLayout(*newStyle);
+        return buildLayoutTree(*newStyle);
     }
 
     DCHECK(oldStyle);
@@ -1820,7 +1820,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     return localChange;
 }
 
-StyleRecalcChange Element::buildOwnLayout(ComputedStyle& newStyle)
+StyleRecalcChange Element::buildLayoutTree(ComputedStyle& newStyle)
 {
     AttachContext reattachContext;
     reattachContext.resolvedStyle = &newStyle;
