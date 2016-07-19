@@ -91,9 +91,9 @@ void HTMLLIElement::parseAttribute(const QualifiedName& name, const AtomicString
     }
 }
 
-void HTMLLIElement::attach(const AttachContext& context)
+void HTMLLIElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 
     if (layoutObject() && layoutObject()->isListItem()) {
         LayoutLIItem liLayoutItem = LayoutLIItem(toLayoutListItem(layoutObject()));

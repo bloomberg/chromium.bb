@@ -144,10 +144,10 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     clearChildNeedsStyleRecalc();
 }
 
-void ShadowRoot::attach(const AttachContext& context)
+void ShadowRoot::attachLayoutTree(const AttachContext& context)
 {
     StyleSharingDepthScope sharingScope(*this);
-    DocumentFragment::attach(context);
+    DocumentFragment::attachLayoutTree(context);
 }
 
 void ShadowRoot::detach(const AttachContext& context)

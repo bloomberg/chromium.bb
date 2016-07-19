@@ -349,9 +349,9 @@ LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style)
     return image;
 }
 
-void HTMLImageElement::attach(const AttachContext& context)
+void HTMLImageElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 
     if (layoutObject() && layoutObject()->isImage()) {
         LayoutImage* layoutImage = toLayoutImage(layoutObject());

@@ -115,11 +115,11 @@ void PseudoElement::dispose()
     removedFrom(parent);
 }
 
-void PseudoElement::attach(const AttachContext& context)
+void PseudoElement::attachLayoutTree(const AttachContext& context)
 {
     DCHECK(!layoutObject());
 
-    Element::attach(context);
+    Element::attachLayoutTree(context);
 
     LayoutObject* layoutObject = this->layoutObject();
     if (!layoutObject)

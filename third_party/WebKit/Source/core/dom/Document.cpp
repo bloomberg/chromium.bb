@@ -2100,7 +2100,7 @@ StyleResolver& Document::ensureStyleResolver() const
     return m_styleEngine->ensureResolver();
 }
 
-void Document::attach(const AttachContext& context)
+void Document::attachLayoutTree(const AttachContext& context)
 {
     DCHECK_EQ(m_lifecycle.state(), DocumentLifecycle::Inactive);
     DCHECK(!m_axObjectCache || this != &axObjectCacheOwner());
@@ -2112,7 +2112,7 @@ void Document::attach(const AttachContext& context)
     m_layoutView->setStyle(StyleResolver::styleForDocument(*this));
     m_layoutView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 
-    ContainerNode::attach(context);
+    ContainerNode::attachLayoutTree(context);
 
     // The TextAutosizer can't update layout view info while the Document is detached, so update now in case anything changed.
     if (TextAutosizer* autosizer = textAutosizer())

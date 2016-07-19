@@ -52,7 +52,7 @@ private:
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     void accessKeyAction(bool sendMouseEvents) override;
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
-    void attach(const AttachContext& = AttachContext()) override;
+    void attachLayoutTree(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
     bool matchesEnabledPseudoClass() const override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;

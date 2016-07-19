@@ -52,7 +52,7 @@ public:
 
     void updateTextFragments();
 
-    void attach(const AttachContext& = AttachContext()) override;
+    void attachLayoutTree(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
 
 private:

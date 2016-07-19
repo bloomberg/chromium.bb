@@ -63,7 +63,7 @@ public:
 
     void lazyReattachDistributedNodesIfNeeded();
 
-    void attach(const AttachContext& = AttachContext()) final;
+    void attachLayoutTree(const AttachContext& = AttachContext()) final;
     void detach(const AttachContext& = AttachContext()) final;
 
     void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason = ModifiedDirectly) final;

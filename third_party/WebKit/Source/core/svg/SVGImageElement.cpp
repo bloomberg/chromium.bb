@@ -162,9 +162,9 @@ bool SVGImageElement::haveLoadedRequiredResources()
     return !m_needsLoaderURIUpdate && !imageLoader().hasPendingActivity();
 }
 
-void SVGImageElement::attach(const AttachContext& context)
+void SVGImageElement::attachLayoutTree(const AttachContext& context)
 {
-    SVGGraphicsElement::attach(context);
+    SVGGraphicsElement::attachLayoutTree(context);
 
     if (LayoutSVGImage* imageObj = toLayoutSVGImage(layoutObject())) {
         if (imageObj->imageResource()->hasImage())

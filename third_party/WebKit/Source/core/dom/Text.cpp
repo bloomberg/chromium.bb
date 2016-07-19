@@ -343,7 +343,7 @@ LayoutText* Text::createTextLayoutObject(const ComputedStyle& style)
     return new LayoutText(this, dataImpl());
 }
 
-void Text::attach(const AttachContext& context)
+void Text::attachLayoutTree(const AttachContext& context)
 {
     if (ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this)) {
         if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
@@ -351,7 +351,7 @@ void Text::attach(const AttachContext& context)
                 LayoutTreeBuilderForText(*this, parentLayoutObject).createLayoutObject();
         }
     }
-    CharacterData::attach(context);
+    CharacterData::attachLayoutTree(context);
 }
 
 void Text::reattachIfNeeded(const AttachContext& context)
@@ -377,7 +377,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
         detach(reattachContext);
     if (layoutObjectIsNeeded)
         LayoutTreeBuilderForText(*this, layoutParent->layoutObject()).createLayoutObject();
-    CharacterData::attach(reattachContext);
+    CharacterData::attachLayoutTree(reattachContext);
 }
 
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)

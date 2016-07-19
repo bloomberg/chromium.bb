@@ -235,9 +235,9 @@ static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)
     return true;
 }
 
-void HTMLFormControlElement::attach(const AttachContext& context)
+void HTMLFormControlElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 
     if (!layoutObject())
         return;

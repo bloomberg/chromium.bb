@@ -212,9 +212,9 @@ void FirstLetterPseudoElement::setRemainingTextLayoutObject(LayoutTextFragment* 
     m_remainingTextLayoutObject = fragment;
 }
 
-void FirstLetterPseudoElement::attach(const AttachContext& context)
+void FirstLetterPseudoElement::attachLayoutTree(const AttachContext& context)
 {
-    PseudoElement::attach(context);
+    PseudoElement::attachLayoutTree(context);
     attachFirstLetterTextLayoutObjects();
 }
 

@@ -742,7 +742,7 @@ void ContainerNode::notifyNodeRemoved(Node& root)
     }
 }
 
-void ContainerNode::attach(const AttachContext& context)
+void ContainerNode::attachLayoutTree(const AttachContext& context)
 {
     AttachContext childrenContext(context);
     childrenContext.resolvedStyle = nullptr;
@@ -752,11 +752,11 @@ void ContainerNode::attach(const AttachContext& context)
         DCHECK(child->needsAttach() || childAttachedAllowedWhenAttachingChildren(this));
 #endif
         if (child->needsAttach())
-            child->attach(childrenContext);
+            child->attachLayoutTree(childrenContext);
     }
 
     clearChildNeedsStyleRecalc();
-    Node::attach(context);
+    Node::attachLayoutTree(context);
 }
 
 void ContainerNode::detach(const AttachContext& context)

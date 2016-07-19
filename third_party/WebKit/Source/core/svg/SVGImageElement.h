@@ -62,7 +62,7 @@ private:
 
     void svgAttributeChanged(const QualifiedName&) override;
 
-    void attach(const AttachContext& = AttachContext()) override;
+    void attachLayoutTree(const AttachContext& = AttachContext()) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;

@@ -55,7 +55,7 @@ class CORE_EXPORT SVGElement : public Element {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~SVGElement() override;
-    void attach(const AttachContext&) override;
+    void attachLayoutTree(const AttachContext&) override;
     void detach(const AttachContext&) override;
 
     short tabIndex() const override;

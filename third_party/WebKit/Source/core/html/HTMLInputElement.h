@@ -317,7 +317,7 @@ private:
 
     void copyNonAttributePropertiesFromElement(const Element&) final;
 
-    void attach(const AttachContext& = AttachContext()) final;
+    void attachLayoutTree(const AttachContext& = AttachContext()) final;
 
     void appendToFormData(FormData&) final;
     String resultForDialogSubmit() final;

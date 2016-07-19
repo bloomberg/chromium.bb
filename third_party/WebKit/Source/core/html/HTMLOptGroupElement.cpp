@@ -69,13 +69,13 @@ void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const Atomic
     }
 }
 
-void HTMLOptGroupElement::attach(const AttachContext& context)
+void HTMLOptGroupElement::attachLayoutTree(const AttachContext& context)
 {
     if (context.resolvedStyle) {
         ASSERT(!m_style || m_style == context.resolvedStyle);
         m_style = context.resolvedStyle;
     }
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 }
 
 void HTMLOptGroupElement::detach(const AttachContext& context)

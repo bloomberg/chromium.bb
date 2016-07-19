@@ -86,9 +86,9 @@ void HTMLProgressElement::parseAttribute(const QualifiedName& name, const Atomic
     }
 }
 
-void HTMLProgressElement::attach(const AttachContext& context)
+void HTMLProgressElement::attachLayoutTree(const AttachContext& context)
 {
-    LabelableElement::attach(context);
+    LabelableElement::attachLayoutTree(context);
     if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress()))
         layoutItem.updateFromElement();
 }

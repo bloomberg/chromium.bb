@@ -917,10 +917,10 @@ void Node::reattach(const AttachContext& context)
     // We only need to detach if the node has already been through attach().
     if (getStyleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
-    attach(reattachContext);
+    attachLayoutTree(reattachContext);
 }
 
-void Node::attach(const AttachContext&)
+void Node::attachLayoutTree(const AttachContext&)
 {
     DCHECK(document().inStyleRecalc() || isDocumentNode());
     DCHECK(!document().lifecycle().inDetach());

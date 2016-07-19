@@ -137,7 +137,7 @@ private:
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    void attach(const AttachContext& = AttachContext()) override;
+    void attachLayoutTree(const AttachContext& = AttachContext()) override;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     bool canStartSelection() const override { return false; }

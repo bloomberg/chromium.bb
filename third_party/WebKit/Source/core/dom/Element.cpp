@@ -1532,7 +1532,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         document().frame()->eventHandler().elementRemoved(this);
 }
 
-void Element::attach(const AttachContext& context)
+void Element::attachLayoutTree(const AttachContext& context)
 {
     DCHECK(document().inStyleRecalc());
 
@@ -1564,7 +1564,7 @@ void Element::attach(const AttachContext& context)
     if (ElementShadow* shadow = this->shadow())
         shadow->attach(context);
 
-    ContainerNode::attach(context);
+    ContainerNode::attachLayoutTree(context);
 
     createPseudoElementIfNeeded(PseudoIdAfter);
     createPseudoElementIfNeeded(PseudoIdBackdrop);
@@ -2952,7 +2952,7 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
     if (pseudoId == PseudoIdBackdrop)
         document().addToTopLayer(element, this);
     element->insertedInto(this);
-    element->attach();
+    element->attachLayoutTree();
 
     InspectorInstrumentation::pseudoElementCreated(element);
 

@@ -57,9 +57,9 @@ bool HTMLFrameElement::noResize() const
     return hasAttribute(noresizeAttr);
 }
 
-void HTMLFrameElement::attach(const AttachContext& context)
+void HTMLFrameElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLFrameElementBase::attach(context);
+    HTMLFrameElementBase::attachLayoutTree(context);
 
     if (HTMLFrameSetElement* frameSetElement = Traversal<HTMLFrameSetElement>::firstAncestor(*this)) {
         if (!m_frameBorderSet)

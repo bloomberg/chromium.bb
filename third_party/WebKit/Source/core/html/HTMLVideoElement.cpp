@@ -83,9 +83,9 @@ LayoutObject* HTMLVideoElement::createLayoutObject(const ComputedStyle&)
     return new LayoutVideo(this);
 }
 
-void HTMLVideoElement::attach(const AttachContext& context)
+void HTMLVideoElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLMediaElement::attach(context);
+    HTMLMediaElement::attachLayoutTree(context);
 
     updateDisplayState();
     if (shouldDisplayPosterImage()) {

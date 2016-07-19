@@ -131,9 +131,9 @@ void HTMLPlugInElement::didMoveToNewDocument(Document& oldDocument)
     HTMLFrameOwnerElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLPlugInElement::attach(const AttachContext& context)
+void HTMLPlugInElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLFrameOwnerElement::attach(context);
+    HTMLFrameOwnerElement::attachLayoutTree(context);
 
     if (!layoutObject() || useFallbackContent()) {
         // If we don't have a layoutObject we have to dispose of any plugins

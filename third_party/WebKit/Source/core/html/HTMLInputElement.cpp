@@ -795,9 +795,9 @@ LayoutObject* HTMLInputElement::createLayoutObject(const ComputedStyle& style)
     return m_inputTypeView->createLayoutObject(style);
 }
 
-void HTMLInputElement::attach(const AttachContext& context)
+void HTMLInputElement::attachLayoutTree(const AttachContext& context)
 {
-    HTMLTextFormControlElement::attach(context);
+    HTMLTextFormControlElement::attachLayoutTree(context);
 
     m_inputTypeView->startResourceLoading();
     m_inputType->countUsage();

@@ -163,7 +163,7 @@ LayoutObject* HTMLFrameSetElement::createLayoutObject(const ComputedStyle& style
     return new LayoutFrameSet(this);
 }
 
-void HTMLFrameSetElement::attach(const AttachContext& context)
+void HTMLFrameSetElement::attachLayoutTree(const AttachContext& context)
 {
     // Inherit default settings from parent frameset
     // FIXME: This is not dynamic.
@@ -180,7 +180,7 @@ void HTMLFrameSetElement::attach(const AttachContext& context)
             m_noresize = frameset->noResize();
     }
 
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 }
 
 void HTMLFrameSetElement::defaultEventHandler(Event* evt)

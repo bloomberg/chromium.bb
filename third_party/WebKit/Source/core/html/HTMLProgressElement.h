@@ -61,7 +61,7 @@ private:
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
-    void attach(const AttachContext& = AttachContext()) override;
+    void attachLayoutTree(const AttachContext& = AttachContext()) override;
 
     void didElementStateChange();
     void didAddUserAgentShadowRoot(ShadowRoot&) override;

@@ -169,9 +169,9 @@ void HTMLFrameElementBase::didNotifySubtreeInsertionsToDocument()
     setNameAndOpenURL();
 }
 
-void HTMLFrameElementBase::attach(const AttachContext& context)
+void HTMLFrameElementBase::attachLayoutTree(const AttachContext& context)
 {
-    HTMLFrameOwnerElement::attach(context);
+    HTMLFrameOwnerElement::attachLayoutTree(context);
 
     if (layoutPart()) {
         if (Frame* frame = contentFrame()) {

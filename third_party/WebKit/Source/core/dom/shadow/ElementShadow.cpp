@@ -204,7 +204,7 @@ void ElementShadow::attach(const Node::AttachContext& context)
 
     for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         if (root->needsAttach())
-            root->attach(childrenContext);
+            root->attachLayoutTree(childrenContext);
     }
 }
 

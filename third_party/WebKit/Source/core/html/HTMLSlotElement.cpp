@@ -186,14 +186,14 @@ AtomicString HTMLSlotElement::name() const
     return normalizeSlotName(fastGetAttribute(HTMLNames::nameAttr));
 }
 
-void HTMLSlotElement::attach(const AttachContext& context)
+void HTMLSlotElement::attachLayoutTree(const AttachContext& context)
 {
     for (auto& node : m_distributedNodes) {
         if (node->needsAttach())
-            node->attach(context);
+            node->attachLayoutTree(context);
     }
 
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 }
 
 void HTMLSlotElement::detach(const AttachContext& context)

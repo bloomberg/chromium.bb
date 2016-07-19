@@ -56,7 +56,7 @@ public:
     LayoutText* createTextLayoutObject(const ComputedStyle&);
     void updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData);
 
-    void attach(const AttachContext& = AttachContext()) final;
+    void attachLayoutTree(const AttachContext& = AttachContext()) final;
     void reattachIfNeeded(const AttachContext& = AttachContext());
 
     bool canContainRangeEndPoint() const final { return true; }

@@ -109,7 +109,7 @@ public:
 
     void cloneChildNodes(ContainerNode* clone);
 
-    void attach(const AttachContext& = AttachContext()) override;
+    void attachLayoutTree(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
     LayoutRect boundingBox() const final;
     void setFocus(bool) override;

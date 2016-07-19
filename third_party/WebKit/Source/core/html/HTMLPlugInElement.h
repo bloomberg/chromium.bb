@@ -107,7 +107,7 @@ private:
     bool canStartSelection() const override;
     bool willRespondToMouseClickEvents() final;
     void defaultEventHandler(Event*) final;
-    void attach(const AttachContext& = AttachContext()) final;
+    void attachLayoutTree(const AttachContext& = AttachContext()) final;
     void detach(const AttachContext& = AttachContext()) final;
     void finishParsingChildren() final;
 

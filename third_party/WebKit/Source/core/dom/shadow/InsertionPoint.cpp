@@ -98,7 +98,7 @@ void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes)
     m_distributedNodes.shrinkToFit();
 }
 
-void InsertionPoint::attach(const AttachContext& context)
+void InsertionPoint::attachLayoutTree(const AttachContext& context)
 {
     // We need to attach the distribution here so that they're inserted in the right order
     // otherwise the n^2 protection inside LayoutTreeBuilder will cause them to be
@@ -106,10 +106,10 @@ void InsertionPoint::attach(const AttachContext& context)
     // the n^2 protection.
     for (size_t i = 0; i < m_distributedNodes.size(); ++i) {
         if (m_distributedNodes.at(i)->needsAttach())
-            m_distributedNodes.at(i)->attach(context);
+            m_distributedNodes.at(i)->attachLayoutTree(context);
     }
 
-    HTMLElement::attach(context);
+    HTMLElement::attachLayoutTree(context);
 }
 
 void InsertionPoint::detach(const AttachContext& context)

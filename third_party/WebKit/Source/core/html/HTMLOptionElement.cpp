@@ -88,7 +88,7 @@ HTMLOptionElement* HTMLOptionElement::createForJSConstructor(Document& document,
     return element;
 }
 
-void HTMLOptionElement::attach(const AttachContext& context)
+void HTMLOptionElement::attachLayoutTree(const AttachContext& context)
 {
     AttachContext optionContext(context);
     if (context.resolvedStyle) {
@@ -98,7 +98,7 @@ void HTMLOptionElement::attach(const AttachContext& context)
         updateNonComputedStyle();
         optionContext.resolvedStyle = m_style.get();
     }
-    HTMLElement::attach(optionContext);
+    HTMLElement::attachLayoutTree(optionContext);
 }
 
 void HTMLOptionElement::detach(const AttachContext& context)

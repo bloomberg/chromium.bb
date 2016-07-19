@@ -83,9 +83,9 @@ void SVGElement::detach(const AttachContext& context)
         element->removeInstanceMapping(this);
 }
 
-void SVGElement::attach(const AttachContext& context)
+void SVGElement::attachLayoutTree(const AttachContext& context)
 {
-    Element::attach(context);
+    Element::attachLayoutTree(context);
     if (SVGElement* element = correspondingElement())
         element->mapInstanceToElement(this);
 }
