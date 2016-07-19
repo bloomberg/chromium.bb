@@ -5,8 +5,8 @@
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
-#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"

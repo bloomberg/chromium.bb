@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/decoding_image_generator.h"
+#include "blimp/client/core/compositor/decoding_image_generator.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "blimp/client/feature/compositor/blimp_image_decoder.h"
-#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
+#include "blimp/client/core/compositor/blimp_image_decoder.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/common/proto/blob_cache.pb.h"
 #include "third_party/libwebp/webp/decode.h"
 #include "third_party/libwebp/webp/demux.h"

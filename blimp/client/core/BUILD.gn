@@ -36,6 +36,7 @@ group("core") {
   deps = [
     ":context",
     ":switches",
+    "//blimp/client/core/compositor",
     "//blimp/client/core/contents",
     "//blimp/client/core/session",
   ]
@@ -75,6 +76,7 @@ source_set("unit_tests") {
 
   deps = [
     ":context",
+    "//blimp/client/core/compositor:unit_tests",
     "//blimp/client/core/contents:unit_tests",
     "//blimp/client/core/session:unit_tests",
     "//blimp/client/public:public_headers",

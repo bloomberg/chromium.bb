@@ -6,8 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
-#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
 

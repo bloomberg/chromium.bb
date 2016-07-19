@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_image_decoder.h"
+#include "blimp/client/core/compositor/blimp_image_decoder.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"

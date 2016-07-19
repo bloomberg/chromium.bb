@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_CLIENT_PICTURE_CACHE_H_
-#define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_CLIENT_PICTURE_CACHE_H_
+#ifndef BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_CLIENT_PICTURE_CACHE_H_
+#define BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_CLIENT_PICTURE_CACHE_H_
 
 #include <stdint.h>
 #include <memory>
@@ -81,4 +81,4 @@ class BlimpClientPictureCache : public cc::ClientPictureCache {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_CLIENT_PICTURE_CACHE_H_
+#endif  // BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_CLIENT_PICTURE_CACHE_H_

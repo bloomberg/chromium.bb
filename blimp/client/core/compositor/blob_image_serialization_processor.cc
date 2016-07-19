@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 
 #include <stddef.h>
 #include <string>
@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "blimp/client/feature/compositor/blimp_client_picture_cache.h"
-#include "blimp/client/feature/compositor/blimp_image_decoder.h"
+#include "blimp/client/core/compositor/blimp_client_picture_cache.h"
+#include "blimp/client/core/compositor/blimp_image_decoder.h"
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/proto/blob_cache.pb.h"

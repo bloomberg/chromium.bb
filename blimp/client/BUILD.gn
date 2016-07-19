@@ -24,6 +24,7 @@ source_set("session") {
   deps = [
     ":compositor",
     "//base",
+    "//blimp/client/core/compositor",
     "//blimp/client/core/session",
     "//blimp/common",
     "//blimp/common/proto",
@@ -45,6 +46,7 @@ source_set("client") {
   public_deps = [
     ":session",
     "//blimp/client/core:switches",
+    "//blimp/client/core/compositor",
     "//components/safe_json",
     "//components/url_formatter",
     "//skia",
@@ -142,8 +144,6 @@ source_set("test_support") {
 
 source_set("compositor") {
   sources = [
-    "feature/compositor/blimp_client_picture_cache.cc",
-    "feature/compositor/blimp_client_picture_cache.h",
     "feature/compositor/blimp_compositor.cc",
     "feature/compositor/blimp_compositor.h",
     "feature/compositor/blimp_compositor_manager.cc",
@@ -152,8 +152,6 @@ source_set("compositor") {
     "feature/compositor/blimp_context_provider.h",
     "feature/compositor/blimp_gpu_memory_buffer_manager.cc",
     "feature/compositor/blimp_gpu_memory_buffer_manager.h",
-    "feature/compositor/blimp_image_decoder.cc",
-    "feature/compositor/blimp_image_decoder.h",
     "feature/compositor/blimp_input_handler_wrapper.cc",
     "feature/compositor/blimp_input_handler_wrapper.h",
     "feature/compositor/blimp_input_manager.cc",
@@ -162,13 +160,10 @@ source_set("compositor") {
     "feature/compositor/blimp_layer_tree_settings.h",
     "feature/compositor/blimp_output_surface.cc",
     "feature/compositor/blimp_output_surface.h",
-    "feature/compositor/blob_image_serialization_processor.cc",
-    "feature/compositor/blob_image_serialization_processor.h",
-    "feature/compositor/decoding_image_generator.cc",
-    "feature/compositor/decoding_image_generator.h",
   ]
 
   deps = [
+    "//blimp/client/core/compositor",
     "//blimp/common",
     "//blimp/net",
     "//cc",
@@ -201,7 +196,6 @@ source_set("feature_unit_tests") {
   testonly = true
 
   sources = [
-    "feature/compositor/blimp_client_picture_cache_unittest.cc",
     "feature/compositor/blimp_compositor_manager_unittest.cc",
     "feature/navigation_feature_unittest.cc",
     "feature/render_widget_feature_unittest.cc",
@@ -213,6 +207,7 @@ source_set("feature_unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//blimp/client/core/compositor",
     "//blimp/common",
     "//blimp/common/proto",
     "//blimp/net",

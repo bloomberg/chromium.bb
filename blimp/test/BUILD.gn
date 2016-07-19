@@ -26,11 +26,14 @@ source_set("support") {
   ]
 
   deps = [
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  public_deps = [
     "//blimp/common",
     "//cc",
     "//skia",
     "//testing/gmock",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
   ]
 }

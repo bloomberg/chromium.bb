@@ -8,9 +8,9 @@
 #include <map>
 
 #include "base/macros.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
-#include "blimp/client/feature/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "cc/trees/layer_tree_settings.h"
 

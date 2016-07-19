@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "blimp/client/app/blimp_discardable_memory_allocator.h"
-#include "blimp/client/feature/compositor/decoding_image_generator.h"
+#include "blimp/client/core/compositor/decoding_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gl/init/gl_factory.h"
 
