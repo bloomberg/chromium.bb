@@ -93,7 +93,6 @@ public class NewTabPageLayout extends LinearLayout {
 
     /**
      * Sets whether the cards UI is enabled.
-     * This view assumes that a peeking card will always be present when the cards UI is used.
      */
     public void setUseCardsUiEnabled(boolean useCardsUi) {
         mCardsUiEnabled = useCardsUi;
@@ -107,31 +106,29 @@ public class NewTabPageLayout extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (getMeasuredHeight() > mParentViewportHeight) {
-            // This layout is bigger than its parent's viewport, so the user will need to scroll
-            // to see all of it. Extra spacing should be added at the bottom so the user can scroll
-            // until Most Visited is at the top.
+            // No scroll spacing needed when using the cards ui.
+            if (!mCardsUiEnabled) {
+                // This layout is bigger than its parent's viewport, so the user will need to scroll
+                // to see all of it. Extra spacing should be added at the bottom so the user can
+                // scroll until Most Visited is at the top.
 
-            // The top, middle, and bottom spacers should have a measured height of 0 at this point
-            // since they use weights to set height, and there was no extra space.
-            assert mTopSpacer.getMeasuredHeight() == 0;
-            assert mMiddleSpacer.getMeasuredHeight() == 0;
-            assert mBottomSpacer.getMeasuredHeight() == 0;
+                // The top, middle, and bottom spacers should have a measured height of 0 at this
+                // point since they use weights to set height, and there was no extra space.
+                assert mTopSpacer.getMeasuredHeight() == 0;
+                assert mMiddleSpacer.getMeasuredHeight() == 0;
+                assert mBottomSpacer.getMeasuredHeight() == 0;
 
-            final int topOfMostVisited = calculateTopOfMostVisited();
-            final int belowTheFoldHeight = getMeasuredHeight() - mParentViewportHeight;
-            if (belowTheFoldHeight < topOfMostVisited) {
-                mScrollCompensationSpacer.getLayoutParams().height =
-                        topOfMostVisited - belowTheFoldHeight;
+                final int topOfMostVisited = calculateTopOfMostVisited();
+                final int belowTheFoldHeight = getMeasuredHeight() - mParentViewportHeight;
+                if (belowTheFoldHeight < topOfMostVisited) {
+                    // Include the scroll spacer in the layout and call super.onMeasure again so it
+                    // is measured.
+                    mScrollCompensationSpacer.getLayoutParams().height =
+                            topOfMostVisited - belowTheFoldHeight;
 
-                if (mCardsUiEnabled) {
-                    // If we have a peeking card, allow that to show at the bottom of the screen.
-                    mScrollCompensationSpacer.getLayoutParams().height -= mPeekingCardHeight;
+                    mScrollCompensationSpacer.setVisibility(View.INVISIBLE);
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
-
-                // Include the scroll spacer in the layout and call super.onMeasure again so it is
-                // measured.
-                mScrollCompensationSpacer.setVisibility(View.INVISIBLE);
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             }
         } else {
             // This layout is smaller than or equal to its parent viewport. Redistribute any

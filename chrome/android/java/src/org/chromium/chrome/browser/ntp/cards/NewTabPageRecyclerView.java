@@ -31,7 +31,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      */
     private static final int ABOVE_THE_FOLD_ITEM_POSITION = 0;
     private static final int ARTICLES_HEADER_ITEM_POSITION = 1;
-    private static final int PEEKING_CARD_ITEM_POSITION = 2;
+    private static final int FIRST_CARD_ITEM_POSITION = 2;
 
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
@@ -208,7 +208,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The viewholder for the first card or null if no card is available.
      */
     private CardViewHolder findFirstCard() {
-        int firstCardIndex = PEEKING_CARD_ITEM_POSITION;
+        int firstCardIndex = FIRST_CARD_ITEM_POSITION;
         ViewHolder viewHolder = findViewHolderForAdapterPosition(firstCardIndex);
         if (!(viewHolder instanceof CardViewHolder)) return null;
 
@@ -297,7 +297,11 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // Snap scroll to prevent resting in the middle of the peeking card transition
         // and to allow the peeking card to peek a bit before snapping back.
         if (findFirstCard() != null && isFirstItemVisible()) {
-            View peekingCard = findFirstCard().itemView;
+            CardViewHolder peekingCardViewHolder = findFirstCard();
+
+            if (!peekingCardViewHolder.canPeek()) return;
+
+            View peekingCardView = findFirstCard().itemView;
             View headerView = findHeaderView().itemView;
             final int peekingHeight = getResources().getDimensionPixelSize(
                     R.dimen.snippets_padding_and_peeking_card_height);
@@ -310,14 +314,14 @@ public class NewTabPageRecyclerView extends RecyclerView {
             // of the screen.
             // Finally, we get |A + B - C - D + E| because the transition starts from the
             // peeking card's resting point, which is |E| from the bottom of the screen.
-            int start = peekingCard.getTop()  // A.
+            int start = peekingCardView.getTop()  // A.
                     + parentScrollY // B.
                     - headerView.getHeight()  // C.
                     - parentHeight  // D.
                     + peekingHeight;  // E.
 
             // The height of the region in which the the peeking card will snap.
-            int snapScrollHeight = (peekingCard.getHeight() / 2) + headerView.getHeight();
+            int snapScrollHeight = (peekingCardView.getHeight() / 2) + headerView.getHeight();
 
             scrollOutOfRegion(start,
                               start + snapScrollHeight,

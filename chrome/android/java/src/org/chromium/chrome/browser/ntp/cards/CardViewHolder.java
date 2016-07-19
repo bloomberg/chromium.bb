@@ -127,9 +127,21 @@ public class CardViewHolder extends NewTabPageViewHolder {
                 viewportHeight - mMaxPeekPadding - itemView.getTop(), 0, mMaxPeekPadding));
     }
 
-    /** Returns whether the card is currently peeking. */
+    /**
+     * @return Whether the card is peeking.
+     */
     public boolean isPeeking() {
         return mPeekPadding < mMaxPeekPadding;
+    }
+
+    /**
+     * @return Whether the card can peek.
+     */
+    public boolean canPeek() {
+        // Only allow the card to peek if the user has not scrolled on the page beyond the
+        // |mMaxPeekPadding| height. There will only ever be one peeking card on the page and only
+        // when there is enough space to show the peeking card on the first screen at the bottom.
+        return mRecyclerView.computeVerticalScrollOffset() <= itemView.getHeight();
     }
 
     @Override
@@ -148,7 +160,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
     private void setPeekingStateForPadding(int padding) {
         // TODO(mcwilliams): Change the 'padding' value to a percentage of what the transition
         // should be which can be used for alpha and bleed.
-        mPeekPadding = padding;
+        mPeekPadding = canPeek() ? padding : mMaxPeekPadding;
 
         // Modify the padding so as the margin increases, the padding decreases, keeping the card's
         // contents in the same position. The top and bottom remain the same.

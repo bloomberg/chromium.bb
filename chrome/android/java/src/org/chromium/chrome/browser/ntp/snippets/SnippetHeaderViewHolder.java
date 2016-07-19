@@ -50,22 +50,40 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
     }
 
     /**
+     * Is the header in a state where the height can vary from show to hidden.
+     * @return Whether the header can transition.
+     */
+    private boolean canTransition() {
+        // Only allow the header to transition if the user has not scrolled on the page beyond the
+        // |mMaxPeekPadding + mMaxSnippetHeaderHeight|.
+        return mRecyclerView.computeVerticalScrollOffset()
+                <= mMaxSnippetHeaderHeight + mMaxPeekPadding;
+    }
+
+    /**
+     * @return The header height we want to set.
+     */
+    private int getHeaderHeight() {
+        if (!mHeader.isVisible()) return 0;
+
+        // If the header cannot transition but is visible - set the height to the maximum so
+        // it always displays
+        if (!canTransition()) return mMaxSnippetHeaderHeight;
+
+        // Check if snippet header top is within range to start showing. Set the header height,
+        // this is a percentage of how much is scrolled. The balance of the scroll will be used
+        // to display the peeking card.
+        int amountScrolled = (mRecyclerView.getHeight() - mMaxPeekPadding) - itemView.getTop();
+        return MathUtils.clamp((int) (amountScrolled * SCROLL_HEADER_HEIGHT_PERCENTAGE),
+                0, mMaxSnippetHeaderHeight);
+    }
+
+    /**
      * Update the view for the fade in/out and heading height.
      */
     public void updateDisplay() {
         RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) itemView.getLayoutParams();
-        int headerHeight = 0;
-        int snippetHeaderTop = itemView.getTop();
-        int recyclerViewHeight = mRecyclerView.getHeight();
-
-        // Check if snippet header top is within range to start showing. Set the header height, this
-        // is a percentage of how much is scrolled. The balance of the scroll will
-        // be used to display the peeking card.
-        int amountScrolled = (recyclerViewHeight - mMaxPeekPadding) - snippetHeaderTop;
-        if (mHeader.isVisible()) {
-            headerHeight = MathUtils.clamp((int) (amountScrolled * SCROLL_HEADER_HEIGHT_PERCENTAGE),
-                    0, mMaxSnippetHeaderHeight);
-        }
+        int headerHeight = getHeaderHeight();
 
         itemView.setAlpha((float) headerHeight / mMaxSnippetHeaderHeight);
         params.height = headerHeight;
