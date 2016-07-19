@@ -76866,6 +76866,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1442" label="SecureContextCheckFailed"/>
   <int value="1443" label="SecureContextCheckForSandboxedOriginPassed"/>
   <int value="1444" label="SecureContextCheckForSandboxedOriginFailed"/>
+  <int value="1445" label="V8DefineGetterOrSetterWouldThrow"/>
+  <int value="1446" label="V8FunctionConstructorReturnedUndefined"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

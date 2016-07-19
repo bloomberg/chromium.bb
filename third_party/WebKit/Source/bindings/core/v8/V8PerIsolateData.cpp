@@ -191,6 +191,12 @@ void V8PerIsolateData::useCounterCallback(v8::Isolate* isolate, v8::Isolate::Use
     case v8::Isolate::kLegacyDateParser:
         blinkFeature = UseCounter::V8LegacyDateParser;
         break;
+    case v8::Isolate::kDefineGetterOrSetterWouldThrow:
+        blinkFeature = UseCounter::V8DefineGetterOrSetterWouldThrow;
+        break;
+    case v8::Isolate::kFunctionConstructorReturnedUndefined:
+        blinkFeature = UseCounter::V8FunctionConstructorReturnedUndefined;
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.

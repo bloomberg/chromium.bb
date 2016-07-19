@@ -1246,6 +1246,8 @@ public:
         SecureContextCheckFailed = 1442,
         SecureContextCheckForSandboxedOriginPassed = 1443,
         SecureContextCheckForSandboxedOriginFailed = 1444,
+        V8DefineGetterOrSetterWouldThrow = 1445,
+        V8FunctionConstructorReturnedUndefined = 1446,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
