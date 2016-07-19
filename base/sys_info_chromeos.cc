@@ -163,7 +163,7 @@ class ChromeOSVersionInfo {
   bool is_running_on_chromeos_;
 };
 
-static LazyInstance<ChromeOSVersionInfo>
+static LazyInstance<ChromeOSVersionInfo>::Leaky
     g_chrome_os_version_info = LAZY_INSTANCE_INITIALIZER;
 
 ChromeOSVersionInfo& GetChromeOSVersionInfo() {
