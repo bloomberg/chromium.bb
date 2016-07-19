@@ -383,7 +383,7 @@ Polymer({
             ': Response: ' + options.response + ': Error: ' +
             chrome.runtime.lastError.message);
       }
-      this.closeDialog_();
+      this.$$('#deviceDialog').close();
     }.bind(this));
   },
 
@@ -457,7 +457,7 @@ Polymer({
       }
 
       if (!error) {
-        this.closeDialog_();
+        this.$$('#deviceDialog').close();
         return;
       }
 
@@ -529,22 +529,13 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_: function() {
-    if (!this.dialogId)
-      return;
-    var dialog = this.$$('#deviceDialog');
-    dialog.close();
+  onDialogClosed_: function() {
+    this.stopDiscovery_();
     this.dialogId = '';
     this.pairingDevice = null;
     this.pairingEvent = null;
   },
 
   /** @private */
-  onCloseDialog_: function(event) { this.closeDialog_(); },
-
-  /** @private */
   onDialogOpened_: function() { this.startDiscovery_(); },
-
-  /** @private */
-  onDialogClosed_: function() { this.stopDiscovery_(); },
 });

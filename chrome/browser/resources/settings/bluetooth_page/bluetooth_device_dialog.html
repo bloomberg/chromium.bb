@@ -77,8 +77,7 @@
       }
     </style>
     <cr-dialog id="dialog" class="layout vertical"
-        on-iron-overlay-canceled="onIronOverlayCanceled_"
-        on-iron-overlay-closed="onIronOverlayClosed_">
+        on-iron-overlay-canceled="onIronOverlayCanceled_">
       <div class="title">[[getTitle_(dialogId)]]</div>
       <div class="body">
         <template is="dom-if" if="[[isDialogType_(dialogId, 'addDevice')]]">
@@ -153,14 +152,14 @@
               disabled="[[!enableConnect_(pairingEvent, pinOrPass)]]"
               on-tap="onConnectTap_">$i18n{bluetoothConnect}</paper-button>
           <paper-button hidden$="[[!showDismiss_(pairingDevice, pairingEvent)]]"
-              on-tap="onDismissTap_">$i18n{bluetoothDismiss}</paper-button>
+              on-tap="close">$i18n{bluetoothDismiss}</paper-button>
           <paper-button hidden$="[[showDismiss_(pairingDevice, pairingEvent)]]"
               on-tap="onCancelTap_">
             $i18n{cancel}
           </paper-button>
         </template>
         <template is="dom-if" if="[[isDialogType_(dialogId, 'connectError')]]">
-          <paper-button  on-tap="onDismissTap_">$i18n{bluetoothDismiss}
+          <paper-button  on-tap="close">$i18n{bluetoothDismiss}
           </paper-button>
         </template>
       </div>

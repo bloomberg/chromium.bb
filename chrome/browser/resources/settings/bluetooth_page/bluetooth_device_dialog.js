@@ -37,8 +37,8 @@ settings.BluetoothAddDeviceBehavior = {
 
   /** @private */
   adapterStateChanged_: function() {
-    if (!this.adapterState.powered)
-      this.fire('close-dialog');
+    if (!this.adapterState.powered && this.$.dialog.opened)
+      this.close();
   },
 
   /**
@@ -108,7 +108,7 @@ settings.BluetoothPairDeviceBehavior = {
   pairingChanged_: function(pairingDevice, pairingEvent) {
     // Auto-close the dialog when pairing completes.
     if (pairingDevice && pairingDevice.connected) {
-      this.fire('close-dialog', '');
+      this.close();
       return;
     }
     this.pinOrPass = '';
@@ -234,9 +234,6 @@ settings.BluetoothPairDeviceBehavior = {
   onRejectTap_: function() {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.REJECT);
   },
-
-  /** @private */
-  onDismissTap_: function() { this.fire('close-dialog', ''); },
 
   /** @private */
   sendResponse_: function(response) {
@@ -386,9 +383,6 @@ Polymer({
     if (this.dialogId == 'pairDevice')
       this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
   },
-
-  /** @private */
-  onIronOverlayClosed_: function() { this.fire('close-dialog', ''); },
 });
 
 })();
