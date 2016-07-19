@@ -185,7 +185,15 @@ def _FindLinkerOutput(full_args):
   argument list. As this is a required linker argument, raises an error if it
   cannot be found.
   """
-  return full_args[full_args.index('-o') + 1]
+  # The linker_driver.py script may be used to wrap either the compiler linker
+  # (uses -o to configure the output) or lipo (uses -output to configure the
+  # output). Since wrapping the compiler linker is the most likely possibility
+  # use try/except and fallback to checking for -output if -o is not found.
+  try:
+    output_flag_index = full_args.index('-o')
+  except ValueError:
+    output_flag_index = full_args.index('-output')
+  return full_args[output_flag_index + 1]
 
 
 def _RemovePath(path):

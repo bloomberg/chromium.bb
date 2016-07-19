@@ -4,6 +4,7 @@
 
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/base_rules.gni")
+import("//build/config/mac/symbols.gni")
 
 # Generates Info.plist files for Mac apps and frameworks.
 #
@@ -279,7 +280,7 @@ template("ios_app_bundle") {
       action(_lipo_executable) {
         forward_variables_from(invoker, [ "testonly" ])
         visibility = _lipo_executable_visibility
-        script = "//build/config/mac/xcrun.py"
+        script = "//build/toolchain/mac/linker_driver.py"
         outputs = [
           _executable_path,
         ]
@@ -296,11 +297,43 @@ template("ios_app_bundle") {
                                      "root_out_dir") + "/$_output_name" ]
         }
         args = [
+                 "xcrun",
                  "lipo",
                  "-create",
                  "-output",
                  rebase_path(outputs[0], root_build_dir),
                ] + rebase_path(inputs, root_build_dir)
+
+        if (enable_dsyms) {
+          outputs += [ "$root_out_dir/$_output_name.dSYM/" ]
+          args +=
+              [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
+        }
+
+        if (enable_stripping) {
+          # Check whether //build/config/mac:strip_all has been removed from
+          # the configs variable (as this is how stripping is disabled for a
+          # single target).
+          _strip_all_in_config = false
+          if (defined(invoker.configs)) {
+            foreach(_config, invoker.configs) {
+              if (_config == "//build/config/mac:strip_all") {
+                _strip_all_in_config = true
+              }
+            }
+          }
+
+          if (_strip_all_in_config) {
+            args += [ "-Wcrl,strip,-x,-S" ]
+
+            if (save_unstripped_output) {
+              outputs += [ outputs[0] + ".unstripped" ]
+              args += [ "-Wcrl,unstripped," +
+                        rebase_path(get_path_info(outputs[0], "dir"),
+                                    root_build_dir) ]
+            }
+          }
+        }
       }
     }
 

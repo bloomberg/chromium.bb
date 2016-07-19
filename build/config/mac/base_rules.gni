@@ -5,6 +5,7 @@
 # This file contains rules that are shared between Mac and iOS.
 
 import("//build/toolchain/toolchain.gni")
+import("//build/config/mac/symbols.gni")
 
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
@@ -314,7 +315,7 @@ template("framework_bundle") {
       action(_lipo_shared_library_target) {
         forward_variables_from(invoker, [ "testonly" ])
         visibility = _lipo_shared_library_visibility
-        script = "//build/config/mac/xcrun.py"
+        script = "//build/toolchain/mac/linker_driver.py"
         outputs = [
           "$target_out_dir/$_lipo_shared_library_target/$_output_name",
         ]
@@ -331,11 +332,43 @@ template("framework_bundle") {
                                      "target_out_dir") + "/$_output_name" ]
         }
         args = [
+                 "xcrun",
                  "lipo",
                  "-create",
                  "-output",
                  rebase_path(outputs[0], root_build_dir),
                ] + rebase_path(inputs, root_build_dir)
+
+        if (enable_dsyms) {
+          outputs += [ "$root_out_dir/$_output_name.dSYM/" ]
+          args +=
+              [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
+        }
+
+        if (enable_stripping) {
+          # Check whether //build/config/mac:strip_all has been removed from
+          # the configs variable (as this is how stripping is disabled for a
+          # single target).
+          _strip_all_in_config = false
+          if (defined(invoker.configs)) {
+            foreach(_config, invoker.configs) {
+              if (_config == "//build/config/mac:strip_all") {
+                _strip_all_in_config = true
+              }
+            }
+          }
+
+          if (_strip_all_in_config) {
+            args += [ "-Wcrl,strip,-x,-S" ]
+
+            if (save_unstripped_output) {
+              outputs += [ outputs[0] + ".unstripped" ]
+              args += [ "-Wcrl,unstripped," +
+                        rebase_path(get_path_info(outputs[0], "dir"),
+                                    root_build_dir) ]
+            }
+          }
+        }
       }
     }
 

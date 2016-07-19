@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/sysroot.gni")
+import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/mac_sdk.gni")
 import("//build/config/mac/symbols.gni")
 
@@ -49,7 +50,16 @@ config("compiler") {
 
   ldflags = common_mac_flags
 
-  if (save_unstripped_output) {
+  if (is_ios && additional_toolchains != []) {
+    # For fat build, the generation of the dSYM happens after the fat binary has
+    # been created with "lipo" thus the stripping cannot happen at link time but
+    # after running "lipo" too.
+    _save_unstripped_output = false
+  } else {
+    _save_unstripped_output = save_unstripped_output
+  }
+
+  if (_save_unstripped_output) {
     ldflags += [ "-Wcrl,unstripped," + rebase_path(root_out_dir) ]
   }
 }
@@ -107,7 +117,16 @@ config("mac_executable_flags") {
 # from a binary, but some targets may wish to specify a saves file to preserve
 # specific symbols.
 config("strip_all") {
-  if (enable_stripping) {
+  if (is_ios && additional_toolchains != []) {
+    # For fat build, the generation of the dSYM happens after the fat binary has
+    # been created with "lipo" thus the stripping cannot happen at link time but
+    # after running "lipo" too.
+    _enable_stripping = false
+  } else {
+    _enable_stripping = enable_stripping
+  }
+
+  if (_enable_stripping) {
     ldflags = [ "-Wcrl,strip,-x,-S" ]
   }
 }

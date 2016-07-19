@@ -92,6 +92,17 @@ template("mac_toolchain") {
         "TOOL_VERSION=${tool_versions.linker_driver} " +
         rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
 
+    if (is_ios && additional_toolchains != []) {
+      # For a fat build, the generation of dSYM needs to be performed after the
+      # generation of the fat binaries using "lipo". So disable the generation
+      # of the dSYM for intermediate architecture specific binaries.
+      _enable_dsyms = false
+      _save_unstripped_output = false
+    } else {
+      _enable_dsyms = enable_dsyms
+      _save_unstripped_output = save_unstripped_output
+    }
+
     # Make these apply to all tools below.
     lib_switch = "-l"
     lib_dir_switch = "-L"
@@ -102,7 +113,7 @@ template("mac_toolchain") {
     object_subdir = "{{target_out_dir}}/{{label_name}}"
 
     # If dSYMs are enabled, this flag will be added to the link tools.
-    if (enable_dsyms) {
+    if (_enable_dsyms) {
       dsym_switch = " -Wcrl,dsym," + rebase_path(root_out_dir) + " "
       _dsym_output =
           "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/"
@@ -110,7 +121,7 @@ template("mac_toolchain") {
       dsym_switch = ""
     }
 
-    if (save_unstripped_output) {
+    if (_save_unstripped_output) {
       _unstripped_output = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.unstripped"
     }
 
@@ -237,10 +248,10 @@ template("mac_toolchain") {
       link_output = dylib
       depend_output = tocname
 
-      if (enable_dsyms) {
+      if (_enable_dsyms) {
         outputs += [ _dsym_output ]
       }
-      if (save_unstripped_output) {
+      if (_save_unstripped_output) {
         outputs += [ _unstripped_output ]
       }
     }
@@ -271,10 +282,10 @@ template("mac_toolchain") {
         sofile,
       ]
 
-      if (enable_dsyms) {
+      if (_enable_dsyms) {
         outputs += [ _dsym_output ]
       }
-      if (save_unstripped_output) {
+      if (_save_unstripped_output) {
         outputs += [ _unstripped_output ]
       }
     }
@@ -298,10 +309,10 @@ template("mac_toolchain") {
         outfile,
       ]
 
-      if (enable_dsyms) {
+      if (_enable_dsyms) {
         outputs += [ _dsym_output ]
       }
-      if (save_unstripped_output) {
+      if (_save_unstripped_output) {
         outputs += [ _unstripped_output ]
       }
 

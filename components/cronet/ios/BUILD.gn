@@ -107,7 +107,6 @@ ios_framework_bundle("cronet_framework") {
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += [ "//build/config/compiler:symbols" ]
-  configs += [ "//build/config/mac:strip_all" ]
 }
 
 bundle_data("cronet_test_bundle_data") {
