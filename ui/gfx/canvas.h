@@ -163,7 +163,12 @@ class GFX_EXPORT Canvas {
   ImageSkiaRep ExtractImageRep() const;
 
   // Draws a dashed rectangle of the specified color.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawDashedRect(const Rect& rect, SkColor color);
+
+  // Draws a dashed rectangle of the specified color.
+  void DrawDashedRect(const RectF& rect, SkColor color);
 
   // Unscales by the image scale factor (aka device scale factor), and returns
   // that factor.  This is useful when callers want to draw directly in the
@@ -222,29 +227,65 @@ class GFX_EXPORT Canvas {
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
   // NOTE: if you need a single pixel line, use DrawLine.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawRect(const Rect& rect, SkColor color);
+
+  // Draws a single pixel rect in the specified region with the specified
+  // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
+  //
+  // NOTE: if you need a single pixel line, use DrawLine.
+  void DrawRect(const RectF& rect, SkColor color);
 
   // Draws a single pixel rect in the specified region with the specified
   // color and transfer mode.
   //
   // NOTE: if you need a single pixel line, use DrawLine.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawRect(const Rect& rect, SkColor color, SkXfermode::Mode mode);
 
+  // Draws a single pixel rect in the specified region with the specified
+  // color and transfer mode.
+  //
+  // NOTE: if you need a single pixel line, use DrawLine.
+  void DrawRect(const RectF& rect, SkColor color, SkXfermode::Mode mode);
+
   // Draws the given rectangle with the given |paint| parameters.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawRect(const Rect& rect, const SkPaint& paint);
 
+  // Draws the given rectangle with the given |paint| parameters.
+  void DrawRect(const RectF& rect, const SkPaint& paint);
+
   // Draw the given point with the given |paint| parameters.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawPoint(const Point& p, const SkPaint& paint);
 
+  // Draw the given point with the given |paint| parameters.
+  void DrawPoint(const PointF& p, const SkPaint& paint);
+
   // Draws a single pixel line with the specified color.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawLine(const Point& p1, const Point& p2, SkColor color);
+
+  // Draws a single pixel line with the specified color.
   void DrawLine(const PointF& p1, const PointF& p2, SkColor color);
 
   // Draws a line with the given |paint| parameters.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawLine(const Point& p1, const Point& p2, const SkPaint& paint);
+
+  // Draws a line with the given |paint| parameters.
   void DrawLine(const PointF& p1, const PointF& p2, const SkPaint& paint);
 
   // Draws a circle with the given |paint| parameters.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawCircle(const Point& center_point,
                   int radius,
                   const SkPaint& paint);
@@ -372,11 +413,22 @@ class GFX_EXPORT Canvas {
                                  const ShadowValues& shadows);
 
   // Draws a dotted gray rectangle used for focus purposes.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawFocusRect(const Rect& rect);
+
+  // Draws a dotted gray rectangle used for focus purposes.
+  void DrawFocusRect(const RectF& rect);
 
   // Draws a |rect| in the specified region with the specified |color| with a
   // with of one logical pixel which might be more device pixels.
+  // DEPRECATED in favor of the RectF version below.
+  // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawSolidFocusRect(const Rect& rect, SkColor color);
+
+  // Draws a |rect| in the specified region with the specified |color| with a
+  // with of one logical pixel which might be more device pixels.
+  void DrawSolidFocusRect(const RectF& rect, SkColor color);
 
   // Tiles the image in the specified region.
   // Parameters are specified relative to current canvas scale not in pixels.
