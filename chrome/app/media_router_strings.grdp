@@ -137,8 +137,8 @@
   </message>
 
   <!-- Sink List -->
-  <message name="IDS_MEDIA_ROUTER_DEVICE_MISSING" desc="Link to display when no devices are found which, on click, opens a page to the Chromecast help center explaining possible reasons why no devices are detected.">
-    Device missing?
+  <message name="IDS_MEDIA_ROUTER_DESTINATION_MISSING" desc="Link to display when no Cast destinations are found which, on click, opens a page to the Chromecast help center explaining possible reasons why none are detected.">
+    No Cast destinations found. Need help?
   </message>
 
   <!-- Sink Search -->
