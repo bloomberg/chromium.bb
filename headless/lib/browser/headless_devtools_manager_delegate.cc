@@ -57,11 +57,11 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
 
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
     const base::DictionaryValue* params) {
-  std::string initial_url;
+  std::string url;
   std::string browser_context_id;
   int width = 800;
   int height = 600;
-  params->GetString("initialUrl", &initial_url);
+  params->GetString("url", &url);
   params->GetString("browserContextId", &browser_context_id);
   params->GetInteger("width", &width);
   params->GetInteger("height", &height);
@@ -70,14 +70,14 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
   if (find_it != browser_context_map_.end()) {
     web_contents_impl = HeadlessWebContentsImpl::From(
         browser_->CreateWebContentsBuilder()
-            .SetInitialURL(GURL(initial_url))
+            .SetInitialURL(GURL(url))
             .SetWindowSize(gfx::Size(width, height))
             .SetBrowserContext(find_it->second.get())
             .Build());
   } else {
     web_contents_impl = HeadlessWebContentsImpl::From(
         browser_->CreateWebContentsBuilder()
-            .SetInitialURL(GURL(initial_url))
+            .SetInitialURL(GURL(url))
             .SetWindowSize(gfx::Size(width, height))
             .Build());
   }
