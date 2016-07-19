@@ -4,8 +4,10 @@
 
 #include "tools/gn/visibility.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
@@ -83,6 +85,14 @@ std::string Visibility::Describe(int indent, bool include_brackets) const {
   return result;
 }
 
+std::unique_ptr<base::Value> Visibility::AsValue() const {
+  auto* res = new base::ListValue();
+  for (const auto& pattern : patterns_)
+    res->AppendString(pattern.Describe());
+
+  return WrapUnique(res);
+}
+
 // static
 bool Visibility::CheckItemVisibility(const Item* from,
                                      const Item* to,
@@ -93,7 +103,7 @@ bool Visibility::CheckItemVisibility(const Item* from,
         "The item " + from->label().GetUserVisibleName(false) + "\n"
         "can not depend on " + to_label + "\n"
         "because it is not in " + to_label + "'s visibility list: " +
-        to->visibility().Describe(0, true));
+                   to->visibility().Describe(0, true));
     return false;
   }
   return true;

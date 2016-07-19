@@ -5,11 +5,16 @@
 #ifndef TOOLS_GN_VISIBILITY_H_
 #define TOOLS_GN_VISIBILITY_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "tools/gn/label_pattern.h"
 #include "tools/gn/source_dir.h"
+
+namespace base {
+class Value;
+}
 
 class Err;
 class Item;
@@ -42,6 +47,9 @@ class Visibility {
   // result will be wrapped in "[ ]" and the contents further indented. The
   // result will end in a newline.
   std::string Describe(int indent, bool include_brackets) const;
+
+  // Returns value representation of this visibility
+  std::unique_ptr<base::Value> AsValue() const;
 
   // Helper function to check visibility between the given two items. If
   // to is invisible to from, returns false and sets the error.

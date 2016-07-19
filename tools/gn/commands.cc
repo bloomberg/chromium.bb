@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
+#include "base/values.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
@@ -280,22 +281,20 @@ base::FilePath BuildFileForItem(const Item* item) {
   return item->defined_from()->GetRange().begin().file()->physical_name();
 }
 
-void PrintTargetsAsBuildfiles(bool indent,
-                              const std::vector<const Target*>& targets) {
+void PrintTargetsAsBuildfiles(const std::vector<const Target*>& targets,
+                              base::ListValue* out) {
   // Output the set of unique source files.
   std::set<std::string> unique_files;
   for (const Target* target : targets)
     unique_files.insert(FilePathToUTF8(BuildFileForItem(target)));
 
   for (const std::string& file : unique_files) {
-    if (indent)
-      OutputString("  ");
-    OutputString(file + "\n");
+    out->AppendString(file);
   }
 }
 
-void PrintTargetsAsLabels(bool indent,
-                          const std::vector<const Target*>& targets) {
+void PrintTargetsAsLabels(const std::vector<const Target*>& targets,
+                          base::ListValue* out) {
   // Putting the labels into a set automatically sorts them for us.
   std::set<Label> unique_labels;
   for (auto* target : targets)
@@ -307,16 +306,13 @@ void PrintTargetsAsLabels(bool indent,
 
   for (const Label& label : unique_labels) {
     // Print toolchain only for ones not in the default toolchain.
-    if (indent)
-      OutputString("  ");
-    OutputString(label.GetUserVisibleName(
-        label.GetToolchainLabel() != default_tc_label));
-    OutputString("\n");
+    out->AppendString(label.GetUserVisibleName(label.GetToolchainLabel() !=
+                                               default_tc_label));
   }
 }
 
-void PrintTargetsAsOutputs(bool indent,
-                           const std::vector<const Target*>& targets) {
+void PrintTargetsAsOutputs(const std::vector<const Target*>& targets,
+                           base::ListValue* out) {
   if (targets.empty())
     return;
 
@@ -336,10 +332,7 @@ void PrintTargetsAsOutputs(bool indent,
     std::string result = RebasePath(output_as_source.value(),
                                     build_settings->build_dir(),
                                     build_settings->root_path_utf8());
-    if (indent)
-      OutputString("  ");
-    OutputString(result);
-    OutputString("\n");
+    out->AppendString(result);
   }
 }
 
@@ -490,7 +483,8 @@ bool FilterPatternsFromString(const BuildSettings* build_settings,
   return true;
 }
 
-void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets) {
+void FilterAndPrintTargets(std::vector<const Target*>* targets,
+                           base::ListValue* out) {
   if (targets->empty())
     return;
 
@@ -504,14 +498,27 @@ void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets) {
     return;
   switch (printing_mode) {
     case TARGET_PRINT_BUILDFILE:
-      PrintTargetsAsBuildfiles(indent, *targets);
+      PrintTargetsAsBuildfiles(*targets, out);
       break;
     case TARGET_PRINT_LABEL:
-      PrintTargetsAsLabels(indent, *targets);
+      PrintTargetsAsLabels(*targets, out);
       break;
     case TARGET_PRINT_OUTPUT:
-      PrintTargetsAsOutputs(indent, *targets);
+      PrintTargetsAsOutputs(*targets, out);
       break;
+  }
+}
+
+void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets) {
+  base::ListValue tmp;
+  FilterAndPrintTargets(targets, &tmp);
+  for (const auto& value : tmp) {
+    std::string string;
+    value->GetAsString(&string);
+    if (indent)
+      OutputString("  ");
+    OutputString(string);
+    OutputString("\n");
   }
 }
 
@@ -519,6 +526,12 @@ void FilterAndPrintTargetSet(bool indent,
                              const std::set<const Target*>& targets) {
   std::vector<const Target*> target_vector(targets.begin(), targets.end());
   FilterAndPrintTargets(indent, &target_vector);
+}
+
+void FilterAndPrintTargetSet(const std::set<const Target*>& targets,
+                             base::ListValue* out) {
+  std::vector<const Target*> target_vector(targets.begin(), targets.end());
+  FilterAndPrintTargets(&target_vector, out);
 }
 
 }  // namespace commands

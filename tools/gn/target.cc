@@ -14,6 +14,7 @@
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
+#include "tools/gn/functions.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/source_file_type.h"
 #include "tools/gn/substitution_writer.h"
@@ -215,29 +216,29 @@ Target::~Target() {
 const char* Target::GetStringForOutputType(OutputType type) {
   switch (type) {
     case UNKNOWN:
-      return "Unknown";
+      return "unknown";
     case GROUP:
-      return "Group";
+      return functions::kGroup;
     case EXECUTABLE:
-      return "Executable";
+      return functions::kExecutable;
     case LOADABLE_MODULE:
-      return "Loadable module";
+      return functions::kLoadableModule;
     case SHARED_LIBRARY:
-      return "Shared library";
+      return functions::kSharedLibrary;
     case STATIC_LIBRARY:
-      return "Static library";
+      return functions::kStaticLibrary;
     case SOURCE_SET:
-      return "Source set";
+      return functions::kSourceSet;
     case COPY_FILES:
-      return "Copy";
+      return functions::kCopy;
     case ACTION:
-      return "Action";
+      return functions::kAction;
     case ACTION_FOREACH:
-      return "ActionForEach";
+      return functions::kActionForEach;
     case BUNDLE_DATA:
-      return "Bundle data";
+      return functions::kBundleData;
     case CREATE_BUNDLE:
-      return "Create bundle";
+      return functions::kCreateBundle;
     default:
       return "";
   }
