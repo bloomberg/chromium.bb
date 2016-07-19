@@ -18,7 +18,7 @@
 // base_static (see base/base.gyp) are allowed here.
 #include "base/win/pe_image.h"
 #include "chrome_elf/blacklist/blacklist.h"
-#include "chrome_elf/breakpad/breakpad.h"
+#include "chrome_elf/blacklist/crashpad_helper.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_util.h"

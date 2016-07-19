@@ -83,10 +83,9 @@ typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
 void InitializeWindowProcExceptions() {
   // Get the breakpad pointer from chrome.exe
   base::win::WinProcExceptionFilter exception_filter =
-      reinterpret_cast<base::win::WinProcExceptionFilter>(
-          ::GetProcAddress(::GetModuleHandle(
-                               chrome::kBrowserProcessExecutableName),
-                           "CrashForException"));
+      reinterpret_cast<base::win::WinProcExceptionFilter>(::GetProcAddress(
+          ::GetModuleHandle(chrome::kChromeElfDllName), "CrashForException"));
+  CHECK(exception_filter);
   exception_filter = base::win::SetWinProcExceptionFilter(exception_filter);
   DCHECK(!exception_filter);
 }

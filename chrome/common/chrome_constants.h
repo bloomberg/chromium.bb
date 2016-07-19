@@ -32,7 +32,7 @@ extern const base::FilePath::CharType kFrameworkName[];
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kBrowserResourcesDll[];
-extern const base::FilePath::CharType kMetroDriverDll[];
+extern const base::FilePath::CharType kChromeElfDllName[];
 extern const base::FilePath::CharType kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 
@@ -96,13 +96,6 @@ extern const float kMaxShareOfExtensionProcesses;
 // (oom_score_adj) used by the OomPriority Manager.
 extern const int kLowestRendererOomScore;
 extern const int kHighestRendererOomScore;
-#endif
-
-#if defined(OS_WIN)
-// Used by Metro Chrome to initiate navigation and search requests.
-extern const wchar_t kMetroNavigationAndSearchMessage[];
-// Used by Metro Chrome to get information about the current tab.
-extern const wchar_t kMetroGetCurrentTabInfoMessage[];
 #endif
 
 #if defined(OS_CHROMEOS)

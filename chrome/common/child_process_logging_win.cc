@@ -29,10 +29,10 @@ typedef void(__cdecl* ClearCrashKeyValue)(const wchar_t*);
 
 void SetCrashKeyValueTrampoline(const base::StringPiece& key,
                                 const base::StringPiece& value) {
-  static SetCrashKeyValue set_crash_key = [](){
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+  static SetCrashKeyValue set_crash_key = []() {
+    HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
     return reinterpret_cast<SetCrashKeyValue>(
-        exe_module ? GetProcAddress(exe_module, "SetCrashKeyValueImpl")
+        elf_module ? GetProcAddress(elf_module, "SetCrashKeyValueImpl")
                    : nullptr);
   }();
   if (set_crash_key) {
@@ -42,10 +42,10 @@ void SetCrashKeyValueTrampoline(const base::StringPiece& key,
 }
 
 void ClearCrashKeyValueTrampoline(const base::StringPiece& key) {
-  static ClearCrashKeyValue clear_crash_key = [](){
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+  static ClearCrashKeyValue clear_crash_key = []() {
+    HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
     return reinterpret_cast<ClearCrashKeyValue>(
-        exe_module ? GetProcAddress(exe_module, "ClearCrashKeyValueImpl")
+        elf_module ? GetProcAddress(elf_module, "ClearCrashKeyValueImpl")
                    : nullptr);
   }();
   if (clear_crash_key)
@@ -55,7 +55,6 @@ void ClearCrashKeyValueTrampoline(const base::StringPiece& key) {
 }  // namespace
 
 void Init() {
-  crash_keys::RegisterChromeCrashKeys();
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueTrampoline,
                                              &ClearCrashKeyValueTrampoline);
 
@@ -63,10 +62,39 @@ void Init() {
   // because of the aforementioned issue, crash keys aren't ready yet at the
   // time of Breakpad initialization, load the client id backed up in Google
   // Update settings instead.
+  // Please note if we are using Crashpad via chrome_elf then we need to call
+  // into chrome_elf to pass in the client id.
   std::unique_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
-  if (client_info)
-    crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);
+
+  // Set the client id in chrome_elf if it is loaded. We should not be
+  // registering crash keys in this case as that would already have been
+  // done by chrome_elf.
+  HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
+  if (elf_module) {
+// TODO(ananta)
+// Remove this when the change to not require crash key registration lands.
+// Please note that we are registering the crash keys twice if chrome_elf is
+// loaded. Once in chrome_elf and once in the current module. Alternatively
+// we could implement a crash key lookup trampoline which defers to
+// chrome_elf. We decided to go with the duplicate key registration for
+// simplicity.
+#if !defined(COMPONENT_BUILD)
+    crash_keys::RegisterChromeCrashKeys();
+#endif
+    using SetMetricsClientIdFunction = void (*)(const char* client_id);
+    SetMetricsClientIdFunction set_metrics_id_fn =
+        reinterpret_cast<SetMetricsClientIdFunction>(
+            ::GetProcAddress(elf_module, "SetMetricsClientId"));
+    DCHECK(set_metrics_id_fn);
+    set_metrics_id_fn(client_info ? client_info->client_id.c_str() : nullptr);
+  } else {
+    // TODO(ananta)
+    // Remove this when the change to not require crash key registration lands.
+    crash_keys::RegisterChromeCrashKeys();
+    if (client_info)
+      crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);
+  }
 }
 
 }  // namespace child_process_logging

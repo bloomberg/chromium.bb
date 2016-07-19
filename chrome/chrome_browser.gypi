@@ -3946,7 +3946,7 @@
             'installer_util_strings',
             'metrics_constants_util_win',
             '../chrome/common_constants.gyp:version_header',
-            '../chrome_elf/chrome_elf.gyp:chrome_elf',
+            '../chrome_elf/chrome_elf.gyp:blacklist',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
             '../chrome_elf/chrome_elf.gyp:dll_hash',
             '../components/components.gyp:browser_watcher',

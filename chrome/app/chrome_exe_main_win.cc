@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/app/main_dll_loader_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/win/chrome_process_finder.h"
@@ -31,7 +30,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome_elf/chrome_elf_main.h"
-#include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
@@ -41,12 +39,6 @@
 #include "content/public/common/result_codes.h"
 
 namespace {
-
-base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
-    LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<std::vector<crash_reporter::Report>>::Leaky g_crash_reports =
-    LAZY_INSTANCE_INITIALIZER;
 
 // List of switches that it's safe to rendezvous early with. Fast start should
 // not be done if a command line contains a switch not in this set.
@@ -209,18 +201,6 @@ bool RemoveAppCompatFlagsEntry() {
 
 }  // namespace
 
-// This helper is looked up in the browser to retrieve the crash reports. See
-// CrashUploadListCrashpad. Note that we do not pass an std::vector here,
-// because we do not want to allocate/free in different modules. The returned
-// pointer is read-only.
-extern "C" __declspec(dllexport) void GetCrashReportsImpl(
-    const crash_reporter::Report** reports,
-    size_t* report_count) {
-  crash_reporter::GetReports(g_crash_reports.Pointer());
-  *reports = g_crash_reports.Pointer()->data();
-  *report_count = g_crash_reports.Pointer()->size();
-}
-
 #if !defined(WIN_CONSOLE_APP)
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 #else
@@ -249,10 +229,6 @@ int main() {
     return crash_reporter::RunAsCrashpadHandler(
         *base::CommandLine::ForCurrentProcess());
   }
-
-  crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
-  crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
-                                                        process_type);
 
   startup_metric_utils::RecordExeMainEntryPointTime(base::Time::Now());
 

@@ -47,7 +47,6 @@
       'dependencies': [
         '../chrome/chrome.gyp:install_static_util',
         'blacklist',
-        'chrome_elf_breakpad',
         'chrome_elf_hook_util',
         'chrome_elf_resources',
         'chrome_elf_security',
@@ -87,24 +86,6 @@
       'sources': [
         'chrome_elf_constants.cc',
         'chrome_elf_constants.h',
-      ],
-    },
-    {
-      'target_name': 'chrome_elf_breakpad',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-        '<(SHARED_INTERMEDIATE_DIR)',
-      ],
-      'sources': [
-        'breakpad/breakpad.cc',
-        'breakpad/breakpad.h',
-      ],
-      'dependencies': [
-        '../breakpad/breakpad.gyp:breakpad_handler',
-        '../chrome/chrome.gyp:install_static_util',
-        '../chrome/common_constants.gyp:version_header',
-        'nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
       ],
     },
     {

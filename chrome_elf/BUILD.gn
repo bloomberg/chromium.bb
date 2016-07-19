@@ -42,10 +42,10 @@ shared_library("chrome_elf") {
   ]
   deps = [
     ":blacklist",
-    ":breakpad",
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
     ":chrome_elf_security",
+    ":constants",
     ":hook_util",
     "//base",
     "//build/config/sanitizers:deps",
@@ -54,6 +54,7 @@ shared_library("chrome_elf") {
     "//components/crash/content/app",
     "//components/crash/core/common",
     "//content/public/common:result_codes",
+    "//third_party/crashpad/crashpad/client:client",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
@@ -128,12 +129,13 @@ static_library("blacklist") {
     "blacklist/blacklist.h",
     "blacklist/blacklist_interceptions.cc",
     "blacklist/blacklist_interceptions.h",
+    "blacklist/crashpad_helper.cc",
+    "blacklist/crashpad_helper.h",
   ]
   public_deps = [
     "//sandbox",
   ]
   deps = [
-    ":breakpad",
     ":constants",
     ":hook_util",
     "//chrome/install_static:install_static_util",
@@ -141,20 +143,7 @@ static_library("blacklist") {
 
     # Still uses base/win/pe_image.h
     "//base",
-  ]
-}
-
-static_library("breakpad") {
-  include_dirs = [ "$target_gen_dir" ]
-  sources = [
-    "breakpad/breakpad.cc",
-    "breakpad/breakpad.h",
-  ]
-  deps = [
-    "//breakpad:breakpad_handler",
-    "//chrome/common:version_header",
-    "//chrome/install_static:install_static_util",
-    "//chrome_elf/nt_registry:nt_registry",
+    "//third_party/crashpad/crashpad/client:client",
   ]
 }
 
@@ -235,6 +224,18 @@ shared_library("blacklist_test_main_dll") {
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
     "//chrome_elf/nt_registry:nt_registry",
+  ]
+  ldflags = [
+    "/NODEFAULTLIB:user32.lib",
+    "/DELAYLOAD:dbghelp.dll",
+    "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:psapi.dll",
+    "/DELAYLOAD:rpcrt4.dll",
+    "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:winhttp.dll",
+    "/DELAYLOAD:winmm.dll",
+    "/DELAYLOAD:ws2_32.dll",
   ]
 }
 

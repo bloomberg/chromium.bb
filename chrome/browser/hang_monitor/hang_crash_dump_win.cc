@@ -24,9 +24,9 @@ void CrashDumpAndTerminateHungChildProcess(HANDLE hprocess) {
   typedef HANDLE (__cdecl *DumpFunction)(HANDLE);
   static DumpFunction request_dump = NULL;
   if (!request_dump) {
-    request_dump = reinterpret_cast<DumpFunction>(GetProcAddress(
-        GetModuleHandle(chrome::kBrowserProcessExecutableName),
-            "InjectDumpProcessWithoutCrash"));
+    request_dump = reinterpret_cast<DumpFunction>(
+        GetProcAddress(GetModuleHandle(chrome::kChromeElfDllName),
+                       "InjectDumpProcessWithoutCrash"));
     DCHECK(request_dump) << "Failed loading DumpProcessWithoutCrash: error " <<
         GetLastError();
   }
@@ -49,17 +49,16 @@ void CrashDumpForHangDebugging(HANDLE hprocess) {
   if (hprocess == GetCurrentProcess()) {
     typedef void (__cdecl *DumpFunction)();
     DumpFunction request_dump = reinterpret_cast<DumpFunction>(GetProcAddress(
-        GetModuleHandle(chrome::kBrowserProcessExecutableName),
-        "DumpProcessWithoutCrash"));
+        GetModuleHandle(chrome::kChromeElfDllName), "DumpProcessWithoutCrash"));
     DCHECK(request_dump) << "Failed loading DumpProcessWithoutCrash: error " <<
         GetLastError();
     if (request_dump)
       request_dump();
   } else {
     typedef HANDLE (__cdecl *DumpFunction)(HANDLE);
-    DumpFunction request_dump = reinterpret_cast<DumpFunction>(GetProcAddress(
-        GetModuleHandle(chrome::kBrowserProcessExecutableName),
-        "InjectDumpForHangDebugging"));
+    DumpFunction request_dump = reinterpret_cast<DumpFunction>(
+        GetProcAddress(GetModuleHandle(chrome::kChromeElfDllName),
+                       "InjectDumpForHangDebugging"));
     DCHECK(request_dump) << "Failed loading InjectDumpForHangDebugging: error "
                          << GetLastError();
     if (request_dump) {

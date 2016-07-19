@@ -818,13 +818,6 @@ std::string GetSwitchValueFromCommandLine(const std::string& command_line,
   assert(!command_line.empty());
   assert(!switch_name.empty());
 
-  // We don't handle command lines with quoted strings. For e.g. something like
-  // --ignored=" --type=renderer ", which we used for Google Desktop.
-  if (command_line.find('"') != std::string::npos) {
-    assert(false);
-    return std::string();
-  }
-
   std::string command_line_copy = command_line;
   // Remove leading and trailing spaces.
   TrimT<std::string>(&command_line_copy);

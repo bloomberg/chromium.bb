@@ -835,7 +835,7 @@ split_static_library("browser") {
       "//chrome/chrome_watcher:client",
       "//chrome/common:metrics_constants_util_win",
       "//chrome/common:version_header",
-      "//chrome_elf",
+      "//chrome_elf:blacklist",
       "//chrome_elf:constants",
       "//chrome_elf:dll_hash",
       "//components/browser_watcher",

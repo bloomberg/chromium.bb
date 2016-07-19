@@ -228,15 +228,10 @@ void InitializeCrashpadImpl(bool initial_client,
   g_simple_string_dictionary = new crashpad::SimpleStringDictionary();
   crashpad_info->set_simple_annotations(g_simple_string_dictionary);
 
-#if !defined(OS_WIN) || !defined(COMPONENT_BUILD)
-  // chrome/common/child_process_logging_win.cc registers crash keys for
-  // chrome.dll. In a component build, that is sufficient as chrome.dll and
-  // chrome.exe share a copy of base (in base.dll). In a static build, the EXE
-  // must separately initialize the crash keys configuration as it has its own
-  // statically linked copy of base.
+  // On Windows chrome_elf registers crash keys. This should work identically
+  // for component and non component builds.
   base::debug::SetCrashKeyReportingFunctions(SetCrashKeyValue, ClearCrashKey);
   crash_reporter_client->RegisterCrashKeys();
-#endif
 
   SetCrashKeyValue("ptype", browser_process ? base::StringPiece("browser")
                                             : base::StringPiece(process_type));
