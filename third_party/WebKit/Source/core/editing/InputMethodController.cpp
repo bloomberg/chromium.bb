@@ -364,6 +364,10 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (!frame().document())
         return;
 
+    // TODO(yosin): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited. see http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     // Find out what node has the composition now.
     Position base = mostForwardCaretPosition(frame().selection().base());
     Node* baseNode = base.anchorNode();
@@ -398,10 +402,6 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     Element* rootEditableElement = frame().selection().rootEditableElement();
     if (!rootEditableElement)
         return;
-
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    rootEditableElement->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // In case of exceeding the right boundary.
     // If both |value1| and |value2| exceed right boundary,
