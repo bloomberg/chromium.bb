@@ -61,11 +61,11 @@ BUILDERS = {
     },
     "WebKit Mac10.11": {
         "port_name": "mac-mac10.11",
-        "specifiers": ['10.11', 'Release']
+        "specifiers": ['Mac10.11', 'Release']
     },
     "WebKit Mac10.11 (dbg)": {
         "port_name": "mac-mac10.11",
-        "specifiers": ['10.11', 'Debug']
+        "specifiers": ['Mac10.11', 'Debug']
     },
     "WebKit Mac10.11 (retina)": {
         "port_name": "mac-retina",
