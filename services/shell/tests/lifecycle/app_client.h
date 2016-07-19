@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
@@ -32,7 +32,7 @@ class AppClient : public Service,
   explicit AppClient(shell::mojom::ServiceRequest request);
   ~AppClient() override;
 
-  void set_runner(ApplicationRunner* runner) {
+  void set_runner(ServiceRunner* runner) {
     runner_ = runner;
   }
 
@@ -51,7 +51,7 @@ class AppClient : public Service,
  private:
   void BindingLost();
 
-  ApplicationRunner* runner_ = nullptr;
+  ServiceRunner* runner_ = nullptr;
   mojo::BindingSet<LifecycleControl> bindings_;
   std::unique_ptr<ServiceContext> context_;
 

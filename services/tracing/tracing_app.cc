@@ -44,7 +44,7 @@ bool TracingApp::OnConnect(shell::Connection* connection) {
 
 bool TracingApp::OnStop() {
   // TODO(beng): This is only required because TracingApp isn't run by
-  // ApplicationRunner - instead it's launched automatically by the standalone
+  // ServiceRunner - instead it's launched automatically by the standalone
   // shell. It shouldn't be.
   base::MessageLoop::current()->QuitWhenIdle();
   return false;

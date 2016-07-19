@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/tracing/tracing_app.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new tracing::TracingApp);
+  shell::ServiceRunner runner(new tracing::TracingApp);
   return runner.Run(shell_handle);
 }

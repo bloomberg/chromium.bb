@@ -14,9 +14,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"

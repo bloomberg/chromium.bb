@@ -15,10 +15,10 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
@@ -140,8 +140,8 @@ class ProvidedService
 
   // base::SimpleThread:
   void Run() override {
-    ApplicationRunner(this).Run(request_.PassMessagePipe().release().value(),
-                                false);
+    ServiceRunner(this).Run(request_.PassMessagePipe().release().value(),
+                            false);
     delete this;
   }
 
@@ -233,7 +233,7 @@ class ConnectTestService
 }  // namespace shell
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  MojoResult rv = shell::ApplicationRunner(new shell::ConnectTestService)
+  MojoResult rv = shell::ServiceRunner(new shell::ConnectTestService)
                       .Run(shell_handle);
   return rv;
 }

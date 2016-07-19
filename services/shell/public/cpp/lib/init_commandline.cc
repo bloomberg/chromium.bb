@@ -6,8 +6,8 @@
 
 namespace shell {
 
-extern int g_application_runner_argc;
-extern const char* const* g_application_runner_argv;
+extern int g_service_runner_argc;
+extern const char* const* g_service_runner_argv;
 
 }  // namespace shell
 
@@ -15,8 +15,8 @@ extern const char* const* g_application_runner_argv;
 extern "C" {
 __attribute__((visibility("default"))) void InitCommandLineArgs(
     int argc, const char* const* argv) {
-  shell::g_application_runner_argc = argc;
-  shell::g_application_runner_argv = argv;
+  shell::g_service_runner_argc = argc;
+  shell::g_service_runner_argv = argv;
 }
 }
 #endif

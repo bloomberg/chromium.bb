@@ -5,10 +5,10 @@
 #include "base/macros.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/tests/shutdown/shutdown_unittest.mojom.h"
 
 namespace shell {
@@ -66,6 +66,6 @@ class ShutdownClientApp
 
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  return shell::ApplicationRunner(new shell::ShutdownClientApp)
+  return shell::ServiceRunner(new shell::ShutdownClientApp)
       .Run(shell_handle);
 }

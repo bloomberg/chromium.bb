@@ -4,8 +4,8 @@
 
 #include "base/macros.h"
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 namespace shell {
 
@@ -29,6 +29,6 @@ class ConnectTestSingletonApp : public Service {
 
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  return shell::ApplicationRunner(new shell::ConnectTestSingletonApp)
+  return shell::ServiceRunner(new shell::ConnectTestSingletonApp)
       .Run(shell_handle);
 }

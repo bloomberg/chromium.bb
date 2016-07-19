@@ -5,9 +5,9 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/background/tests/test.mojom.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 namespace shell {
 
@@ -47,6 +47,6 @@ class TestClient : public Service,
 }  // namespace shell
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new shell::TestClient);
+  shell::ServiceRunner runner(new shell::TestClient);
   return runner.Run(shell_handle);
 }

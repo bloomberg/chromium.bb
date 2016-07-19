@@ -4,9 +4,9 @@
 
 #include "mash/webtest/webtest.h"
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new mash::webtest::Webtest);
+  shell::ServiceRunner runner(new mash::webtest::Webtest);
   return runner.Run(shell_handle);
 }

@@ -12,7 +12,6 @@ group("cpp") {
 # TODO(rockot): Rename this to "cpp".
 static_library("sources") {
   sources = [
-    "application_runner.h",
     "capabilities.h",
     "connect.h",
     "connection.h",
@@ -23,7 +22,6 @@ static_library("sources") {
     "interface_factory_impl.h",
     "interface_provider.h",
     "interface_registry.h",
-    "lib/application_runner.cc",
     "lib/callback_binder.cc",
     "lib/callback_binder.h",
     "lib/capabilities.cc",
@@ -39,10 +37,12 @@ static_library("sources") {
     "lib/service.cc",
     "lib/service_context.cc",
     "lib/service_context_ref.cc",
+    "lib/service_runner.cc",
     "names.h",
     "service.h",
     "service_context.h",
     "service_context_ref.h",
+    "service_runner.h",
   ]
 
   public_deps = [

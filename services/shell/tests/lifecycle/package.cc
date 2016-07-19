@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/service_context.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/tests/lifecycle/app_client.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
@@ -93,7 +93,7 @@ class Package
   Package() {}
   ~Package() override {}
 
-  void set_runner(shell::ApplicationRunner* runner) {
+  void set_runner(shell::ServiceRunner* runner) {
     app_client_.set_runner(runner);
   }
 
@@ -147,7 +147,7 @@ class Package
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   Package* package = new Package;
-  shell::ApplicationRunner runner(package);
+  shell::ServiceRunner runner(package);
   package->set_runner(&runner);
   return runner.Run(shell_handle);
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -15,28 +15,28 @@
 
 namespace shell {
 
-int g_application_runner_argc;
-const char* const* g_application_runner_argv;
+int g_service_runner_argc;
+const char* const* g_service_runner_argv;
 
-ApplicationRunner::ApplicationRunner(Service* client)
-    : client_(std::unique_ptr<Service>(client)),
+ServiceRunner::ServiceRunner(Service* service)
+    : service_(base::WrapUnique(service)),
       message_loop_type_(base::MessageLoop::TYPE_DEFAULT),
       has_run_(false) {}
 
-ApplicationRunner::~ApplicationRunner() {}
+ServiceRunner::~ServiceRunner() {}
 
-void ApplicationRunner::InitBaseCommandLine() {
-  base::CommandLine::Init(g_application_runner_argc, g_application_runner_argv);
+void ServiceRunner::InitBaseCommandLine() {
+  base::CommandLine::Init(g_service_runner_argc, g_service_runner_argv);
 }
 
-void ApplicationRunner::set_message_loop_type(base::MessageLoop::Type type) {
+void ServiceRunner::set_message_loop_type(base::MessageLoop::Type type) {
   DCHECK_NE(base::MessageLoop::TYPE_CUSTOM, type);
   DCHECK(!has_run_);
 
   message_loop_type_ = type;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle service_request_handle,
+MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
                                   bool init_base) {
   DCHECK(!has_run_);
   has_run_ = true;
@@ -52,26 +52,26 @@ MojoResult ApplicationRunner::Run(MojoHandle service_request_handle,
     loop.reset(new base::MessageLoop(message_loop_type_));
 
     context_.reset(new ServiceContext(
-        client_.get(),
+        service_.get(),
         mojo::MakeRequest<mojom::Service>(mojo::MakeScopedHandle(
             mojo::MessagePipeHandle(service_request_handle)))));
     base::RunLoop run_loop;
     context_->SetConnectionLostClosure(run_loop.QuitClosure());
     run_loop.Run();
-    // It's very common for the client to cache the app and terminate on errors.
-    // If we don't delete the client before the app we run the risk of the
-    // client having a stale reference to the app and trying to use it.
+    // It's very common for the service to cache the app and terminate on
+    // errors. If we don't delete the service before the app we run the risk of
+    // the service having a stale reference to the app and trying to use it.
     // Note that we destruct the message loop first because that might trigger
     // connection error handlers and they might access objects created by the
-    // client.
+    // service.
     loop.reset();
-    client_.reset();
+    service_.reset();
     context_.reset();
   }
   return MOJO_RESULT_OK;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle service_request_handle) {
+MojoResult ServiceRunner::Run(MojoHandle service_request_handle) {
   bool init_base = true;
   if (base::CommandLine::InitializedForCurrentProcess()) {
     init_base =
@@ -80,11 +80,11 @@ MojoResult ApplicationRunner::Run(MojoHandle service_request_handle) {
   return Run(service_request_handle, init_base);
 }
 
-void ApplicationRunner::DestroyServiceContext() {
+void ServiceRunner::DestroyServiceContext() {
   context_.reset();
 }
 
-void ApplicationRunner::Quit() {
+void ServiceRunner::Quit() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 

@@ -9,9 +9,9 @@
 #include "base/run_loop.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
 namespace {
@@ -78,5 +78,5 @@ class Parent : public shell::Service,
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   Parent* parent = new Parent;
-  return shell::ApplicationRunner(parent).Run(shell_handle);
+  return shell::ServiceRunner(parent).Run(shell_handle);
 }

@@ -8,10 +8,10 @@
 #include "base/run_loop.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
@@ -92,7 +92,7 @@ class ConnectTestClassApp
 
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  MojoResult rv = shell::ApplicationRunner(new shell::ConnectTestClassApp)
+  MojoResult rv = shell::ServiceRunner(new shell::ConnectTestClassApp)
                       .Run(shell_handle);
   return rv;
 }

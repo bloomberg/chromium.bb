@@ -5,14 +5,14 @@
 #include "base/macros.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/tests/shutdown/shutdown_unittest.mojom.h"
 
 namespace shell {
 namespace {
 
-shell::ApplicationRunner* g_app = nullptr;
+shell::ServiceRunner* g_app = nullptr;
 
 class ShutdownServiceApp
     : public Service,
@@ -51,7 +51,7 @@ class ShutdownServiceApp
 
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new shell::ShutdownServiceApp);
+  shell::ServiceRunner runner(new shell::ShutdownServiceApp);
   shell::g_app = &runner;
   return runner.Run(shell_handle);
 }

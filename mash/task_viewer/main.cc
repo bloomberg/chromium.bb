@@ -4,9 +4,9 @@
 
 #include "mash/task_viewer/task_viewer.h"
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new mash::task_viewer::TaskViewer);
+  shell::ServiceRunner runner(new mash::task_viewer::TaskViewer);
   return runner.Run(shell_handle);
 }

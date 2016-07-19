@@ -4,9 +4,9 @@
 
 #include "mash/browser/browser.h"
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new mash::browser::Browser);
+  shell::ServiceRunner runner(new mash::browser::Browser);
   return runner.Run(shell_handle);
 }

@@ -5,9 +5,9 @@
 #include "base/macros.h"
 #include "components/filesystem/file_system_app.h"
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 
 MojoResult MojoMain(MojoHandle request) {
-  shell::ApplicationRunner runner(new filesystem::FileSystemApp());
+  shell::ServiceRunner runner(new filesystem::FileSystemApp());
   return runner.Run(request);
 }

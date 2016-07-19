@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "mojo/public/c/system/main.h"
-#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/service_runner.h"
 #include "services/ui/demo/mus_demo.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new ui::demo::MusDemo);
+  shell::ServiceRunner runner(new ui::demo::MusDemo);
   runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
   return runner.Run(shell_handle);
 }

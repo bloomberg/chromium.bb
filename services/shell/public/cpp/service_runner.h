@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_H_
-#define SERVICES_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_H_
+#ifndef SERVICES_SHELL_PUBLIC_CPP_SERVICE_RUNNER_H_
+#define SERVICES_SHELL_PUBLIC_CPP_SERVICE_RUNNER_H_
 
 #include <memory>
 
@@ -15,22 +15,22 @@ namespace shell {
 class Service;
 class ServiceContext;
 
-// A utility for running a chromium based mojo Application. The typical use
+// A utility for running a chromium based mojo Service. The typical use
 // case is to use when writing your MojoMain:
 //
 //  MojoResult MojoMain(MojoHandle shell_handle) {
-//    shell::ApplicationRunner runner(new MyDelegate());
+//    shell::ServiceRunner runner(new MyService);
 //    return runner.Run(shell_handle);
 //  }
 //
-// ApplicationRunner takes care of chromium environment initialization and
-// shutdown, and starting a MessageLoop from which your application can run and
+// ServiceRunner takes care of chromium environment initialization and
+// shutdown, and starting a MessageLoop from which your service can run and
 // ultimately Quit().
-class ApplicationRunner {
+class ServiceRunner {
  public:
-  // Takes ownership of |client|.
-  explicit ApplicationRunner(Service* client);
-  ~ApplicationRunner();
+  // Takes ownership of |service|.
+  explicit ServiceRunner(Service* service);
+  ~ServiceRunner();
 
   static void InitBaseCommandLine();
 
@@ -38,11 +38,11 @@ class ApplicationRunner {
 
   // Once the various parameters have been set above, use Run to initialize an
   // ServiceContext wired to the provided delegate, and run a MessageLoop until
-  // the application exits.
+  // the service exits.
   //
   // Iff |init_base| is true, the runner will perform some initialization of
   // base globals (e.g. CommandLine and AtExitManager) before starting the
-  // application.
+  // service.
   MojoResult Run(MojoHandle shell_handle, bool init_base);
 
   // Calls Run above with |init_base| set to |true|.
@@ -54,13 +54,13 @@ class ApplicationRunner {
   // and handle requests from others.
   void DestroyServiceContext();
 
-  // Allows the caller to explicitly quit the application. Must be called from
-  // the thread which created the ApplicationRunner.
+  // Allows the caller to explicitly quit the service. Must be called from
+  // the thread which created the ServiceRunner.
   void Quit();
 
  private:
   std::unique_ptr<ServiceContext> context_;
-  std::unique_ptr<Service> client_;
+  std::unique_ptr<Service> service_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
   // the underlying message pump).
@@ -68,9 +68,9 @@ class ApplicationRunner {
   // Whether Run() has been called.
   bool has_run_;
 
-  DISALLOW_COPY_AND_ASSIGN(ApplicationRunner);
+  DISALLOW_COPY_AND_ASSIGN(ServiceRunner);
 };
 
 }  // namespace shell
 
-#endif  // SERVICES_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_H_
+#endif  // SERVICES_SHELL_PUBLIC_CPP_SERVICE_RUNNER_H_
