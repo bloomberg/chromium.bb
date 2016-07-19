@@ -39,12 +39,14 @@ crypto.subtle.generateKey(algorithmKeyGen, extractable, ["encrypt", "decrypt", "
     shouldBe("bytesToHexString(keyPair.privateKey.algorithm.publicExponent)", "'010001'");
     shouldBe("keyPair.privateKey.algorithm.hash.name", "'SHA-1'");
 
-    debug("\nTesting that the keys can't be used with different algorithms...");
+    debug("\nUsing the RSA-OAEP private key for AES-CBC encryption...");
     iv = hexStringToUint8Array("000102030405060708090a0b0c0d0e0f");
 
     return crypto.subtle.encrypt({name: "aes-cbc", iv: iv}, keyPair.privateKey, hexStringToUint8Array("00"));
 }, failAndFinishJSTest).then(failAndFinishJSTest, function(result) {
     logError(result);
+
+    debug("\nUsing the RSA-OAEP public key for AES-CBC encryption...");
     return crypto.subtle.encrypt({name: "aes-cbc", iv: iv}, keyPair.publicKey, hexStringToUint8Array("00"));
 }, failAndFinishJSTest).then(failAndFinishJSTest, function(result) {
     logError(result);

@@ -21,7 +21,7 @@ var extractable = true;
 debug("Importing a raw HMAC key from string literal...");
 crypto.subtle.importKey("raw", hmacKey, {name: 'hmac', hash: {name: 'sha-1'}}, extractable, ["sign", "verify"]).then(function(result) {
     key = result;
-    debug("Using the key to encrypt plaintext...");
+    debug("Using the HMAC key for AES-CBC encryption...");
     return crypto.subtle.encrypt({name: "aes-cbc", iv: iv}, key, plaintext);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);

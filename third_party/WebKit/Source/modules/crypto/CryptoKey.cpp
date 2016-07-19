@@ -178,13 +178,27 @@ Vector<String> CryptoKey::usages() const
 
 bool CryptoKey::canBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsage usage, CryptoResult* result) const
 {
-    if (!(m_key.usages() & usage)) {
-        result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");
-        return false;
-    }
+    // This order of tests on keys is done throughout the WebCrypto spec when
+    // testing if a key can be used for an algorithm.
+    //
+    // For instance here are the steps as written for encrypt():
+    //
+    // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-encrypt
+    //
+    // (8) If the name member of normalizedAlgorithm is not equal to the name
+    //     attribute of the [[algorithm]] internal slot of key then throw an
+    //     InvalidAccessError.
+    //
+    // (9) If the [[usages]] internal slot of key does not contain an entry
+    //     that is "encrypt", then throw an InvalidAccessError.
 
     if (m_key.algorithm().id() != algorithm.id()) {
         result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key.algorithm does not match that of operation");
+        return false;
+    }
+
+    if (!(m_key.usages() & usage)) {
+        result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");
         return false;
     }
 
