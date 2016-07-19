@@ -60,9 +60,11 @@
 #include <memory>
 #include <sstream>
 
-using blink::WebSourceBuffer;
+#ifndef BLINK_SBLOG
+#define BLINK_SBLOG DVLOG(3)
+#endif
 
-#define SBLOG DVLOG(3)
+using blink::WebSourceBuffer;
 
 namespace blink {
 
@@ -128,7 +130,7 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> webSourceBuffer, Med
     , m_streamMaxSize(0)
     , m_appendStreamAsyncPartRunner(AsyncMethodRunner<SourceBuffer>::create(this, &SourceBuffer::appendStreamAsyncPart))
 {
-    SBLOG << __FUNCTION__ << " this=" << this;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this;
 
     DCHECK(m_webSourceBuffer);
     DCHECK(m_source);
@@ -141,7 +143,7 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> webSourceBuffer, Med
 
 SourceBuffer::~SourceBuffer()
 {
-    SBLOG << __FUNCTION__ << " this=" << this;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this;
 }
 
 void SourceBuffer::dispose()
@@ -165,7 +167,7 @@ const AtomicString& SourceBuffer::sequenceKeyword()
 
 void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " newMode=" << newMode;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " newMode=" << newMode;
     // Section 3.1 On setting mode attribute steps.
     // 1. Let new mode equal the new value being assigned to this attribute.
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
@@ -214,7 +216,7 @@ double SourceBuffer::timestampOffset() const
 
 void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " offset=" << offset;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " offset=" << offset;
     // Section 3.1 timestampOffset attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-timestampOffset
     // 1. Let new timestamp offset equal the new value being assigned to this attribute.
@@ -259,7 +261,7 @@ double SourceBuffer::appendWindowStart() const
 
 void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " start=" << start;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " start=" << start;
     // Section 3.1 appendWindowStart attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowStart
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -288,7 +290,7 @@ double SourceBuffer::appendWindowEnd() const
 
 void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " end=" << end;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " end=" << end;
     // Section 3.1 appendWindowEnd attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowEnd
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -317,7 +319,7 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
 
 void SourceBuffer::appendBuffer(DOMArrayBuffer* data, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " size=" << data->byteLength();
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " size=" << data->byteLength();
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->data()), data->byteLength(), exceptionState);
@@ -325,7 +327,7 @@ void SourceBuffer::appendBuffer(DOMArrayBuffer* data, ExceptionState& exceptionS
 
 void SourceBuffer::appendBuffer(DOMArrayBufferView* data, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " size=" << data->byteLength();
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " size=" << data->byteLength();
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->baseAddress()), data->byteLength(), exceptionState);
@@ -339,7 +341,7 @@ void SourceBuffer::appendStream(Stream* stream, ExceptionState& exceptionState)
 
 void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " maxSize=" << maxSize;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " maxSize=" << maxSize;
     m_streamMaxSizeValid = maxSize > 0;
     if (m_streamMaxSizeValid)
         m_streamMaxSize = maxSize;
@@ -348,7 +350,7 @@ void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, Exce
 
 void SourceBuffer::abort(ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this;
     // http://w3c.github.io/media-source/#widl-SourceBuffer-abort-void
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source
     //    then throw an InvalidStateError exception and abort these steps.
@@ -394,7 +396,7 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
 
 void SourceBuffer::remove(double start, double end, ExceptionState& exceptionState)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " start=" << start << " end=" << end;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " start=" << start << " end=" << end;
 
     // Section 3.2 remove() method steps.
     // 1. If duration equals NaN, then throw an InvalidAccessError exception and abort these steps.
@@ -514,7 +516,7 @@ void SourceBuffer::removedFromMediaSource()
     if (isRemoved())
         return;
 
-    SBLOG << __FUNCTION__ << " this=" << this;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this;
     if (m_pendingRemoveStart != -1) {
         cancelRemove();
     } else {
@@ -540,7 +542,7 @@ double SourceBuffer::highestPresentationTimestamp()
     DCHECK(!isRemoved());
 
     double pts = m_webSourceBuffer->highestPresentationTimestamp();
-    SBLOG << __FUNCTION__ << " this=" << this << ", pts=" << pts;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << ", pts=" << pts;
     return pts;
 }
 
@@ -661,7 +663,7 @@ AtomicString SourceBuffer::defaultTrackLanguage(const AtomicString& trackType, c
 
 bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>& newTracks)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " tracks=" << newTracks.size();
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " tracks=" << newTracks.size();
     DCHECK(m_source);
     DCHECK(m_source->mediaElement());
     DCHECK(m_updating);
@@ -692,17 +694,17 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
             if (m_firstInitializationSegmentReceived)
                 track = findExistingTrackById(videoTracks(), trackInfo.id);
         } else {
-            SBLOG << __FUNCTION__ << " this=" << this << " failed: unsupported track type " << trackInfo.trackType;
+            BLINK_SBLOG << __FUNCTION__ << " this=" << this << " failed: unsupported track type " << trackInfo.trackType;
             // TODO(servolk): Add handling of text tracks.
             NOTREACHED();
         }
         if (m_firstInitializationSegmentReceived && !track) {
-            SBLOG << __FUNCTION__ << " this=" << this << " failed: tracks mismatch the first init segment.";
+            BLINK_SBLOG << __FUNCTION__ << " this=" << this << " failed: tracks mismatch the first init segment.";
             return false;
         }
 #if !LOG_DISABLED
         const char* logTrackTypeStr = (trackInfo.trackType == WebMediaPlayer::AudioTrack) ? "audio" : "video";
-        SBLOG << __FUNCTION__ << " this=" << this << " : " << logTrackTypeStr << " track "
+        BLINK_SBLOG << __FUNCTION__ << " this=" << this << " : " << logTrackTypeStr << " track "
             << " id=" << String(trackInfo.id) << " byteStreamTrackID=" << String(trackInfo.byteStreamTrackID)
             << " kind=" << String(trackInfo.kind) << " label=" << String(trackInfo.label) << " language=" << String(trackInfo.language);
 #endif
@@ -713,7 +715,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
 
     // 2. If the initialization segment has no audio, video, or text tracks, then run the append error algorithm with the decode error parameter set to true and abort these steps.
     if (newTracks.size() == 0) {
-        SBLOG << __FUNCTION__ << " this=" << this << " failed: no tracks found in the init segment.";
+        BLINK_SBLOG << __FUNCTION__ << " this=" << this << " failed: no tracks found in the init segment.";
         // The append error algorithm will be called at the top level after we return false here to indicate failure.
         return false;
     }
@@ -750,7 +752,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
         }
 
         if (!tracksMatchFirstInitSegment) {
-            SBLOG << __FUNCTION__ << " this=" << this << " failed: tracks mismatch the first init segment.";
+            BLINK_SBLOG << __FUNCTION__ << " this=" << this << " failed: tracks mismatch the first init segment.";
             // The append error algorithm will be called at the top level after we return false here to indicate failure.
             return false;
         }
@@ -941,7 +943,7 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
     // 5. Run the coded frame eviction algorithm.
     if (!evictCodedFrames(newDataSize)) {
         // 6. If the buffer full flag equals true, then throw a QUOTA_EXCEEDED_ERR exception and abort these steps.
-        SBLOG << __FUNCTION__ << " this=" << this << " -> throw QuotaExceededError";
+        BLINK_SBLOG << __FUNCTION__ << " this=" << this << " -> throw QuotaExceededError";
         MediaSource::logAndThrowDOMException(exceptionState, QuotaExceededError, "The SourceBuffer is full, and cannot free space to append additional buffers.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
         return false;
@@ -958,7 +960,7 @@ bool SourceBuffer::evictCodedFrames(size_t newDataSize)
     double currentTime = m_source->mediaElement()->currentTime();
     bool result = m_webSourceBuffer->evictCodedFrames(currentTime, newDataSize);
     if (!result) {
-        SBLOG << __FUNCTION__ << " this=" << this << " failed. newDataSize=" << newDataSize
+        BLINK_SBLOG << __FUNCTION__ << " this=" << this << " failed. newDataSize=" << newDataSize
             << " currentTime=" << currentTime << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
     }
     return result;
@@ -1054,7 +1056,7 @@ void SourceBuffer::appendBufferAsyncPart()
     }
 
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
-    SBLOG << __FUNCTION__ << " done. this=" << this << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
+    BLINK_SBLOG << __FUNCTION__ << " done. this=" << this << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
 }
 
 void SourceBuffer::removeAsyncPart()
@@ -1168,7 +1170,7 @@ void SourceBuffer::appendStreamDone(AppendStreamDoneAction action)
     // 14. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
-    SBLOG << __FUNCTION__ << " ended. this=" << this << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
+    BLINK_SBLOG << __FUNCTION__ << " ended. this=" << this << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
 }
 
 void SourceBuffer::clearAppendStreamState()
@@ -1181,7 +1183,7 @@ void SourceBuffer::clearAppendStreamState()
 
 void SourceBuffer::appendError(AppendError err)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " AppendError=" << err;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " AppendError=" << err;
     // Section 3.5.3 Append Error Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
 
@@ -1209,12 +1211,12 @@ void SourceBuffer::appendError(AppendError err)
 
 void SourceBuffer::didStartLoading()
 {
-    SBLOG << __FUNCTION__ << " this=" << this;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this;
 }
 
 void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " dataLength=" << dataLength;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " dataLength=" << dataLength;
     DCHECK(m_updating);
     DCHECK(m_loader);
 
@@ -1234,14 +1236,14 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
 
 void SourceBuffer::didFinishLoading()
 {
-    SBLOG << __FUNCTION__ << " this=" << this;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this;
     DCHECK(m_loader);
     appendStreamDone(NoError);
 }
 
 void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
-    SBLOG << __FUNCTION__ << " this=" << this << " errorCode=" << errorCode;
+    BLINK_SBLOG << __FUNCTION__ << " this=" << this << " errorCode=" << errorCode;
     // m_loader might be already released, in case appendStream has failed due
     // to evictCodedFrames or WebSourceBuffer append failing in
     // didReceiveDataForClient. In that case appendStreamDone will be invoked
