@@ -190,13 +190,15 @@ class PacketReceiverInterface {
 };
 
 struct VpxFrame {
+  enum VideoCodec { kVP8, kVP9 };
   VpxFrame() = default;
   ~VpxFrame() = default;
-  explicit VpxFrame(std::int64_t pts_in_nanoseconds)
-      : nanosecond_pts(pts_in_nanoseconds) {}
+  VpxFrame(std::int64_t pts_in_nanoseconds, VideoCodec vpx_codec)
+      : nanosecond_pts(pts_in_nanoseconds), codec(vpx_codec) {}
   std::unique_ptr<std::uint8_t[]> data;
   std::size_t length = 0;
   std::int64_t nanosecond_pts = 0;
+  VideoCodec codec = kVP9;
 };
 
 // Converts the VP9 track of a WebM file to a Packetized Elementary Stream
@@ -205,8 +207,7 @@ struct VpxFrame {
 // https://en.wikipedia.org/wiki/MPEG_transport_stream
 class Webm2Pes {
  public:
-  enum VideoCodec { VP8, VP9 };
-  const std::size_t kMaxPayloadSize = 32768;
+  static const std::size_t kMaxPayloadSize;
 
   Webm2Pes(const std::string& input_file, const std::string& output_file)
       : input_file_name_(input_file), output_file_name_(output_file) {}
@@ -229,11 +230,14 @@ class Webm2Pes {
   // an error occurs.
   bool ConvertToPacketReceiver();
 
+  // Writes |vpx_frame| out as PES packet[s] and stores output in |packet_data|.
+  // Returns true for success, false for failure.
+  bool WritePesPacket(const VpxFrame& vpx_frame, PacketDataBuffer* packet_data);
+
  private:
   bool InitWebmParser();
   bool ReadVpxFrame(const mkvparser::Block::Frame& mkvparser_frame,
                     VpxFrame* vpx_frame);
-  bool WritePesPacket(const VpxFrame& vpx_frame);
 
   const std::string input_file_name_;
   const std::string output_file_name_;
@@ -245,7 +249,7 @@ class Webm2Pes {
   int video_track_num_ = 0;
 
   // Video codec reported by CodecName from Video TrackEntry.
-  VideoCodec codec_;
+  VpxFrame::VideoCodec codec_;
 
   // Input timecode scale.
   std::int64_t timecode_scale_ = 1000000;
