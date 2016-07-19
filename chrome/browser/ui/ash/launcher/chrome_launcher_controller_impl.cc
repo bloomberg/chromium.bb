@@ -1487,7 +1487,7 @@ void ChromeLauncherControllerImpl::CloseWindowedAppsFromRemovedExtension(
     const std::string& app_id,
     const Profile* profile) {
   // This function cannot rely on the controller's enumeration functionality
-  // since the extension has already be unloaded.
+  // since the extension has already been unloaded.
   const BrowserList* browser_list = BrowserList::GetInstance();
   std::vector<Browser*> browser_to_close;
   for (BrowserList::const_reverse_iterator it =
@@ -1504,7 +1504,8 @@ void ChromeLauncherControllerImpl::CloseWindowedAppsFromRemovedExtension(
   }
   while (!browser_to_close.empty()) {
     TabStripModel* tab_strip = browser_to_close.back()->tab_strip_model();
-    tab_strip->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
+    if (!tab_strip->empty())
+      tab_strip->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
     browser_to_close.pop_back();
   }
 }
