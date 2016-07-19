@@ -90,10 +90,6 @@ paper-item {
   min-height: 40px;
 }
 
-paper-item:hover {
-  background: #eaeaea;  /* TODO(dbeam): real color? */
-}
-
 @media not all and (max-width: 1024px) {
   /* Hide vertical dot menu when there's enough room for #actions. */
   paper-menu-button {
