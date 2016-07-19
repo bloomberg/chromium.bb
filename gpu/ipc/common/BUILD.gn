@@ -126,8 +126,6 @@ mojom("interfaces") {
     "mailbox_holder.mojom",
     "sync_token.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("test_interfaces") {
@@ -139,6 +137,4 @@ mojom("test_interfaces") {
   public_deps = [
     ":interfaces",
   ]
-
-  use_new_wrapper_types = false
 }

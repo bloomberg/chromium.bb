@@ -60,8 +60,6 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("interfaces_surfaceid_only") {
@@ -69,8 +67,6 @@ mojom("interfaces_surfaceid_only") {
     "surface_id.mojom",
     "surface_sequence.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("test_interfaces") {
@@ -83,6 +79,4 @@ mojom("test_interfaces") {
     ":interfaces",
     ":interfaces_surfaceid_only",
   ]
-
-  use_new_wrapper_types = false
 }
