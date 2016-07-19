@@ -159,13 +159,31 @@ void VisibilityTimerTabHelper::RunTask(const base::Closure& task) {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
 
-NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
+NotificationPermissionContext::NotificationPermissionContext(
+    Profile* profile,
+    content::PermissionType permission_type)
     : PermissionContextBase(profile,
-                            content::PermissionType::NOTIFICATIONS,
+                            permission_type,
                             CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
-      weak_factory_ui_thread_(this) {}
+      weak_factory_ui_thread_(this) {
+  DCHECK(permission_type == content::PermissionType::NOTIFICATIONS ||
+         permission_type == content::PermissionType::PUSH_MESSAGING);
+}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
+
+ContentSetting NotificationPermissionContext::GetPermissionStatus(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  // Push messaging is only allowed to be granted on top-level origins.
+  if (permission_type() == content::PermissionType::PUSH_MESSAGING &&
+      requesting_origin != embedding_origin) {
+    return CONTENT_SETTING_BLOCK;
+  }
+
+  return PermissionContextBase::GetPermissionStatus(requesting_origin,
+                                                    embedding_origin);
+}
 
 void NotificationPermissionContext::ResetPermission(
     const GURL& requesting_origin,
@@ -241,5 +259,5 @@ void NotificationPermissionContext::UpdateContentSetting(
 }
 
 bool NotificationPermissionContext::IsRestrictedToSecureOrigins() const {
-  return false;
+  return permission_type() == content::PermissionType::PUSH_MESSAGING;
 }

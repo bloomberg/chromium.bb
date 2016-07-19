@@ -19,7 +19,6 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/features.h"
@@ -222,9 +221,11 @@ PermissionManager::PermissionManager(Profile* profile)
   permission_contexts_[PermissionType::MIDI_SYSEX] =
       base::WrapUnique(new MidiPermissionContext(profile));
   permission_contexts_[PermissionType::PUSH_MESSAGING] =
-      base::WrapUnique(new PushMessagingPermissionContext(profile));
+      base::WrapUnique(new NotificationPermissionContext(
+          profile, PermissionType::PUSH_MESSAGING));
   permission_contexts_[PermissionType::NOTIFICATIONS] =
-      base::WrapUnique(new NotificationPermissionContext(profile));
+      base::WrapUnique(new NotificationPermissionContext(
+          profile, PermissionType::NOTIFICATIONS));
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   permission_contexts_[PermissionType::GEOLOCATION] =
       base::WrapUnique(new GeolocationPermissionContext(profile));

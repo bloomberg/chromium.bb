@@ -511,8 +511,6 @@
       'browser/push_messaging/push_messaging_app_identifier.h',
       'browser/push_messaging/push_messaging_constants.cc',
       'browser/push_messaging/push_messaging_constants.h',
-      'browser/push_messaging/push_messaging_permission_context.cc',
-      'browser/push_messaging/push_messaging_permission_context.h',
       'browser/push_messaging/push_messaging_service_factory.cc',
       'browser/push_messaging/push_messaging_service_factory.h',
       'browser/push_messaging/push_messaging_service_impl.cc',
