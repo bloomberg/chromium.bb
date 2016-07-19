@@ -122,6 +122,10 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   void DidFinishUsingResource(std::unique_ptr<PoolResource> resource);
   void DeleteResource(std::unique_ptr<PoolResource> resource);
+  static void UpdateResourceContentIdAndInvalidation(
+      PoolResource* resource,
+      uint64_t new_content_id,
+      const gfx::Rect& new_invalidated_rect);
 
   // Functions which manage periodic eviction of expired resources.
   void ScheduleEvictExpiredResourcesIn(base::TimeDelta time_from_now);
