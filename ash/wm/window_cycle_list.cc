@@ -109,8 +109,8 @@ class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
 
   // views::View:
   gfx::Size GetPreferredSize() const override {
-    const int kMaxWidth = 800;
-    const int kMaxHeight = 600;
+    const int kMaxWidth = 512;
+    const int kMaxHeight = 256;
 
     gfx::Size target_size = target_->GetBounds().size();
     if (target_size.width() <= kMaxWidth &&
@@ -169,24 +169,29 @@ class WindowCycleView : public views::View {
  public:
   explicit WindowCycleView(const WindowCycleList::WindowList& windows)
       : mirror_container_(new views::View()),
-        selector_view_(new views::View()),
+        highlight_view_(new views::View()),
         target_window_(nullptr) {
     DCHECK(!windows.empty());
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
 
-    // TODO(estade): adjust constants in this function (colors, spacing, corner
-    // radius) as per mocks.
-    const float kCornerRadius = 5;
-    set_background(views::Background::CreateBackgroundPainter(
-        true, views::Painter::CreateSolidRoundRectPainter(
-                  SkColorSetA(SK_ColorBLACK, 0xA5), kCornerRadius)));
+    set_background(views::Background::CreateSolidBackground(
+        SkColorSetA(SK_ColorBLACK, 0xCC)));
 
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 25, 25, 20);
+    const int kInsideBorderPaddingDip = 64;
+    const int kBetweenChildPaddingDip = 10;
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, kInsideBorderPaddingDip,
+        kInsideBorderPaddingDip, kBetweenChildPaddingDip);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     mirror_container_->SetLayoutManager(layout);
+    mirror_container_->SetPaintToLayer(true);
+    mirror_container_->layer()->SetFillsBoundsOpaquely(false);
+    // The preview list animates bounds changes (other animatable properties
+    // never change).
+    mirror_container_->layer()->SetAnimator(
+        ui::LayerAnimator::CreateImplicitAnimator());
 
     for (WmWindow* window : windows) {
       WindowMirrorView* view = new WindowMirrorView(window);
@@ -195,11 +200,19 @@ class WindowCycleView : public views::View {
       mirror_container_->AddChildView(view);
     }
 
-    selector_view_->set_background(views::Background::CreateBackgroundPainter(
-        true, views::Painter::CreateSolidRoundRectPainter(SK_ColorBLUE,
-                                                          kCornerRadius)));
+    const float kHighlightCornerRadius = 4;
+    highlight_view_->set_background(views::Background::CreateBackgroundPainter(
+        true, views::Painter::CreateRoundRectWith1PxBorderPainter(
+                  SkColorSetA(SK_ColorWHITE, 0x4D),
+                  SkColorSetA(SK_ColorWHITE, 0x33), kHighlightCornerRadius)));
+    highlight_view_->SetPaintToLayer(true);
+    highlight_view_->layer()->SetFillsBoundsOpaquely(false);
+    // The selection highlight also animates all bounds changes and never
+    // changes other animatable properties.
+    highlight_view_->layer()->SetAnimator(
+        ui::LayerAnimator::CreateImplicitAnimator());
 
-    AddChildView(selector_view_);
+    AddChildView(highlight_view_);
     AddChildView(mirror_container_);
     SetTargetWindow(windows.front());
   }
@@ -230,13 +243,25 @@ class WindowCycleView : public views::View {
     if (!target_window_)
       return;
 
+    // The preview list (|mirror_container_|) starts flush to the left of
+    // the screen but moves to the left (off the edge of the screen) as the use
+    // iterates over the previews. The list will move just enough to ensure the
+    // highlighted preview is at or to the left of the center of the workspace.
     views::View* target_view = window_view_map_[target_window_];
     gfx::RectF target_bounds(target_view->GetLocalBounds());
-    views::View::ConvertRectToTarget(target_view, this, &target_bounds);
-    target_bounds.Inset(gfx::InsetsF(-15));
-    selector_view_->SetBoundsRect(gfx::ToEnclosingRect(target_bounds));
+    views::View::ConvertRectToTarget(target_view, mirror_container_,
+                                     &target_bounds);
+    gfx::Rect container_bounds(mirror_container_->GetPreferredSize());
+    int x_offset = width() / 2 - target_bounds.CenterPoint().x();
+    x_offset = std::min(x_offset, 0);
+    container_bounds.set_x(x_offset);
+    mirror_container_->SetBoundsRect(container_bounds);
 
-    mirror_container_->SetBoundsRect(GetLocalBounds());
+    // Calculate the target preview's bounds relative to |this|.
+    views::View::ConvertRectToTarget(mirror_container_, this, &target_bounds);
+    const int kHighlightPaddingDip = 5;
+    target_bounds.Inset(gfx::InsetsF(-kHighlightPaddingDip));
+    highlight_view_->SetBoundsRect(gfx::ToEnclosingRect(target_bounds));
   }
 
   WmWindow* target_window() { return target_window_; }
@@ -244,7 +269,7 @@ class WindowCycleView : public views::View {
  private:
   std::map<WmWindow*, WindowMirrorView*> window_view_map_;
   views::View* mirror_container_;
-  views::View* selector_view_;
+  views::View* highlight_view_;
   WmWindow* target_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleView);
@@ -330,9 +355,9 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
     // there are too many windows. Handle this more gracefully. Also, if
     // the display metrics change, cancel the UI.
     gfx::Rect widget_rect = widget->GetWorkAreaBoundsInScreen();
-    gfx::Size widget_size = cycle_view_->GetPreferredSize();
-    widget_rect.ClampToCenteredSize(widget_size);
-    widget_rect.set_width(widget_size.width());
+    int widget_height = cycle_view_->GetPreferredSize().height();
+    widget_rect.set_y((widget_rect.height() - widget_height) / 2);
+    widget_rect.set_height(widget_height);
     widget->SetBounds(widget_rect);
     widget->Show();
     cycle_ui_widget_.reset(widget);
