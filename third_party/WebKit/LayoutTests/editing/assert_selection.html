@@ -114,4 +114,11 @@ test(() => {
         `\t but got  foo,\n` +
         `\t sameupto fo`);
 }, 'Compare result');
+
+test(() => {
+    assert_selection(
+        '<div contenteditable><p>^test|</p></div>',
+        'insertHTML <span style="color: green">green</span>',
+        '<div contenteditable><p><span style="color: green">green|</span></p></div>');
+}, 'multiple spaces in function');
 </script>

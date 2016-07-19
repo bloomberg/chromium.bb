@@ -661,7 +661,7 @@ function assertSelection(
   if (typeof(tester) === 'function') {
     tester.call(window, sample.selection);
   } else if (typeof(tester) === 'string') {
-    const strings = tester.split(' ');
+    const strings = tester.split(/ (.+)/);
     sample.document.execCommand(strings[0], false, strings[1]);
   } else {
     throw new Error(`Invalid tester: ${tester}`);
