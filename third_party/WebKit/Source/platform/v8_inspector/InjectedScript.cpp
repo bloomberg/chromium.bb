@@ -47,7 +47,6 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "platform/v8_inspector/public/V8ToProtocolValue.h"
 
 using blink::protocol::Array;
 using blink::protocol::Debugger::CallFrame;

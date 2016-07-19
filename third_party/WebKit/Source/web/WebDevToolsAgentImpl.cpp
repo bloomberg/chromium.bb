@@ -389,7 +389,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorApplicationCacheAgent::create(m_inspectedFrames.get()));
 
-    m_session->append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
+    m_session->append(new InspectorIndexedDBAgent(m_inspectedFrames.get(), m_session->v8Session()));
 
     InspectorWorkerAgent* workerAgent = new InspectorWorkerAgent(m_inspectedFrames.get());
     m_session->append(workerAgent);

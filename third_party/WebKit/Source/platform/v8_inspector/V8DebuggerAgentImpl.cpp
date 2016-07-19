@@ -19,7 +19,6 @@
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "platform/v8_inspector/public/V8ToProtocolValue.h"
 
 #include <algorithm>
 

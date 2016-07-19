@@ -236,7 +236,6 @@
         'public/V8Inspector.h',
         'public/V8InspectorSession.h',
         'public/V8StackTrace.h',
-        'public/V8ToProtocolValue.h',
 
         '<(blink_platform_output_dir)/v8_inspector/DebuggerScript.h',
         '<(blink_platform_output_dir)/v8_inspector/InjectedScriptSource.h',

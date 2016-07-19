@@ -9,7 +9,6 @@
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
-#include "platform/v8_inspector/public/V8ToProtocolValue.h"
 
 namespace blink {
 

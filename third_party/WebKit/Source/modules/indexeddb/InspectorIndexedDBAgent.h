@@ -39,16 +39,16 @@
 namespace blink {
 
 class InspectedFrames;
-
+class V8InspectorSession;
 
 class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<protocol::IndexedDB::Metainfo> {
 public:
-    static InspectorIndexedDBAgent* create(InspectedFrames*);
-
+    InspectorIndexedDBAgent(InspectedFrames*, V8InspectorSession*);
     ~InspectorIndexedDBAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     void restore() override;
+    void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Called from the front-end.
     void enable(ErrorString*) override;
@@ -59,9 +59,8 @@ public:
     void clearObjectStore(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, std::unique_ptr<ClearObjectStoreCallback>) override;
 
 private:
-    explicit InspectorIndexedDBAgent(InspectedFrames*);
-
     Member<InspectedFrames> m_inspectedFrames;
+    V8InspectorSession* m_v8Session;
 };
 
 } // namespace blink
