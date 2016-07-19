@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -41,10 +43,25 @@ class ArcUserDataService : public ArcService,
   // removal of user data if both conditions are true.
   void ClearIfDisabled();
 
+  // Callback when the kArcEnabled preference changes.  It watches for instances
+  // where the preference is disabled and remembers this so that it can wipe
+  // user data once the bridge has stopped.
+  void OnOptInPreferenceChanged();
+
   const std::unique_ptr<BooleanPrefMember> arc_enabled_pref_;
 
   // Account ID for the account for which we currently have opt-in information.
   AccountId primary_user_account_id_;
+
+  // Registrar used to monitor ARC enabled state.
+  PrefChangeRegistrar pref_change_registrar_;
+
+  // Set to true when kArcEnabled goes from true to false and set to false
+  // again after user data has been wiped.  This ensures data is wiped even if
+  // the user tries to enable ARC before the bridge has shut down.
+  bool arc_disabled_ = false;
+
+  base::WeakPtrFactory<ArcUserDataService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcUserDataService);
 };

@@ -663,6 +663,14 @@ void ArcAuthService::DisableArc() {
 void ArcAuthService::StartUI() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (!arc_bridge_service()->stopped()) {
+    // If the user attempts to re-enable ARC while the bridge is still running
+    // the user should not be able to continue until the bridge has stopped.
+    ShowUI(UIPage::ERROR, l10n_util::GetStringUTF16(
+                              IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR));
+    return;
+  }
+
   SetState(State::FETCHING_CODE);
 
   if (initial_opt_in_) {

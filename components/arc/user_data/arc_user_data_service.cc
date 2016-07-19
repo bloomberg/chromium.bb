@@ -23,8 +23,14 @@ ArcUserDataService::ArcUserDataService(
     const AccountId& account_id)
     : ArcService(bridge_service),
       arc_enabled_pref_(std::move(arc_enabled_pref)),
-      primary_user_account_id_(account_id) {
+      primary_user_account_id_(account_id),
+      weak_ptr_factory_(this) {
   arc_bridge_service()->AddObserver(this);
+  pref_change_registrar_.Init(arc_enabled_pref_->prefs());
+  pref_change_registrar_.Add(
+      arc_enabled_pref_->GetPrefName(),
+      base::Bind(&ArcUserDataService::OnOptInPreferenceChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
   ClearIfDisabled();
 }
 
@@ -53,15 +59,21 @@ void ArcUserDataService::ClearIfDisabled() {
     LOG(ERROR) << "ARC instance not stopped, user data can't be cleared";
     return;
   }
-  if (arc_enabled_pref_->GetValue() ||
+  if ((arc_enabled_pref_->GetValue() && !arc_disabled_) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableArcDataWipe)) {
     return;
   }
+  arc_disabled_ = false;
   const cryptohome::Identification cryptohome_id(primary_user_account_id_);
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->RemoveArcData(cryptohome_id);
+}
+
+void ArcUserDataService::OnOptInPreferenceChanged() {
+  if (!arc_enabled_pref_->GetValue())
+    arc_disabled_ = true;
 }
 
 }  // namespace arc
