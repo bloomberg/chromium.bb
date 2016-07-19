@@ -574,18 +574,22 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux with ANGLE only
     self.Fail('conformance/misc/uninitialized-test.html',
-              ['linux', 'opengl'], bug=483282)
+        ['linux', 'opengl'], bug=483282)
     self.Fail('conformance/state/state-uneffected-after-compositing.html',
-              ['linux', 'opengl'], bug=483282)
+        ['linux', 'opengl'], bug=483282)
     self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-              ['linux', 'opengl'], bug=483282)
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['linux', 'opengl'], bug=483282)
     self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-              ['linux', 'opengl'], bug=483282)
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['linux', 'opengl'], bug=483282)
     self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-              ['linux', 'opengl'], bug=483282)
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['linux', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['linux', 'opengl'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
+        ['linux', 'opengl'], bug=483282)
 
     # Linux NVIDIA only.
     # La la la la la la la la la la ...
@@ -892,6 +896,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_01.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_02.html',
+        ['linux', 'amd'], bug=483282)
+
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
