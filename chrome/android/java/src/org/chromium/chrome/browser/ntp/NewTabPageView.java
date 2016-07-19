@@ -292,11 +292,53 @@ public class NewTabPageView extends FrameLayout
         mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
 
+        initializeSearchBoxTextView();
+        initializeVoiceSearchButton();
+        initializeToolbar();
+
+        mNewTabPageLayout.addOnLayoutChangeListener(this);
+        setSearchProviderHasLogo(searchProviderHasLogo);
+
+        mPendingLoadTasks++;
+        mManager.setMostVisitedURLsObserver(
+                this, mMostVisitedDesign.getNumberOfTiles(searchProviderHasLogo));
+
+        // Set up snippets
+        if (mUseCardsUi) {
+            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge);
+            mRecyclerView.setAdapter(mNewTabPageAdapter);
+
+            // Set up swipe-to-dismiss
+            ItemTouchHelper helper =
+                    new ItemTouchHelper(mNewTabPageAdapter.getItemTouchCallbacks());
+            helper.attachToRecyclerView(mRecyclerView);
+
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                private boolean mScrolledOnce = false;
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    if (newState != RecyclerView.SCROLL_STATE_DRAGGING) return;
+                    RecordUserAction.record("MobileNTP.Snippets.Scrolled");
+                    if (mScrolledOnce) return;
+                    mScrolledOnce = true;
+                    NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SCROLLED);
+                }
+            });
+            initializeSearchBoxRecyclerViewScrollHandling();
+        } else {
+            initializeSearchBoxScrollHandling();
+        }
+    }
+
+    /**
+     * Sets up the hint text and event handlers for the search box text view.
+     */
+    private void initializeSearchBoxTextView() {
         final TextView searchBoxTextView = (TextView) mSearchBoxView
                 .findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_url);
 
-        if (!DeviceFormFactor.isTablet(getContext()) || manager.isFakeOmniboxTextEnabledTablet()) {
+        if (!DeviceFormFactor.isTablet(getContext()) || mManager.isFakeOmniboxTextEnabledTablet()) {
             searchBoxTextView.setHint(hintText);
         } else {
             searchBoxTextView.setContentDescription(hintText);
@@ -323,7 +365,9 @@ public class NewTabPageView extends FrameLayout
                 searchBoxTextView.setText("");
             }
         });
+    }
 
+    private void initializeVoiceSearchButton() {
         mVoiceSearchButton = (ImageView) mNewTabPageLayout.findViewById(R.id.voice_search_button);
         mVoiceSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -331,10 +375,15 @@ public class NewTabPageView extends FrameLayout
                 mManager.focusSearchBox(true, null);
             }
         });
+    }
 
-        // Set up the toolbar
+    /**
+     * Sets up event listeners for the bottom toolbar if it is enabled. Removes the bottom toolbar
+     * if it is disabled.
+     */
+    private void initializeToolbar() {
         NewTabPageToolbar toolbar = (NewTabPageToolbar) findViewById(R.id.ntp_toolbar);
-        if (manager.isToolbarEnabled()) {
+        if (mManager.isToolbarEnabled()) {
             toolbar.getRecentTabsButton().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -351,39 +400,6 @@ public class NewTabPageView extends FrameLayout
             ((ViewGroup) toolbar.getParent()).removeView(toolbar);
             MarginLayoutParams params = (MarginLayoutParams) getWrapperView().getLayoutParams();
             params.bottomMargin = 0;
-        }
-
-        mNewTabPageLayout.addOnLayoutChangeListener(this);
-        setSearchProviderHasLogo(searchProviderHasLogo);
-
-        mPendingLoadTasks++;
-        mManager.setMostVisitedURLsObserver(this,
-                mMostVisitedDesign.getNumberOfTiles(searchProviderHasLogo));
-
-        // Set up snippets
-        if (mUseCardsUi) {
-            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge);
-            mRecyclerView.setAdapter(mNewTabPageAdapter);
-
-            // Set up swipe-to-dismiss
-            ItemTouchHelper helper =
-                    new ItemTouchHelper(mNewTabPageAdapter.getItemTouchCallbacks());
-            helper.attachToRecyclerView(mRecyclerView);
-
-            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                private boolean mScrolledOnce = false;
-                @Override
-                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                    if (newState != RecyclerView.SCROLL_STATE_DRAGGING) return;
-                    RecordUserAction.record("MobileNTP.Snippets.Scrolled");
-                    if (mScrolledOnce) return;
-                    mScrolledOnce = true;
-                    NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SCROLLED);
-                }
-            });
-            initializeSearchBoxRecyclerViewScrollHandling();
-        } else {
-            initializeSearchBoxScrollHandling();
         }
     }
 
