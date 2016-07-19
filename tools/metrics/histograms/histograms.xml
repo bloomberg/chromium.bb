@@ -37561,8 +37561,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.ClientRedirect.FirstPaintToNavigation"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The delay between first paint and a client-side redirect navigation, for
+    pages that reported a first paint. This metric is only intended to help in
+    choosing a heuristic delay to distinguish between client-side redirects and
+    other client initiated navigations, and will be deprecated in M54. Please
+    contact bmcquade@chromium.org before using this metric.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.ClientRedirect.NavigationWithoutPaint"
+    enum="Boolean">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Counts how often a client-side redirect was initiated from a page that did
+    not report a first paint. This metric is only intended to help in choosing a
+    heuristic delay to distinguish between client-side redirects and other
+    client initiated navigations, and will be deprecated in M54. Please contact
+    bmcquade@chromium.org before using this metric.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.ClientRedirectDelayAfterPaint" units="ms">
   <owner>bmcquade@chromium.org</owner>
+  <obsolete>
+    Deprecated in favor of
+    PageLoad.Internal.ClientRedirect.FirstPaintToNavigation and
+    PageLoad.Internal.ClientRedirect.NavigationWithoutPaint.
+  </obsolete>
   <summary>
     The delay between first paint and a client-side redirection. This metric is
     only intended to help in choosing a heuristic delay to distinguish between

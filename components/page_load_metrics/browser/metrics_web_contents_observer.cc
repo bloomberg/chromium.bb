@@ -47,8 +47,10 @@ const char kAbortChainSizeSameURL[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.SameURL";
 const char kAbortChainSizeNoCommit[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.NoCommit";
-const char kClientRedirectDelayAfterPaint[] =
-    "PageLoad.Internal.ClientRedirectDelayAfterPaint";
+const char kClientRedirectFirstPaintToNavigation[] =
+    "PageLoad.Internal.ClientRedirect.FirstPaintToNavigation";
+const char kClientRedirectWithoutPaint[] =
+    "PageLoad.Internal.ClientRedirect.NavigationWithoutPaint";
 
 }  // namespace internal
 
@@ -386,16 +388,18 @@ void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
 
 void PageLoadTracker::NotifyClientRedirectTo(
     const PageLoadTracker& destination) {
-  base::TimeDelta redirect_delay_after_paint;
   if (timing_.first_paint) {
     base::TimeTicks first_paint_time =
         navigation_start() + timing_.first_paint.value();
+    base::TimeDelta first_paint_to_navigation;
     if (destination.navigation_start() > first_paint_time)
-      redirect_delay_after_paint =
+      first_paint_to_navigation =
           destination.navigation_start() - first_paint_time;
+    PAGE_LOAD_HISTOGRAM(internal::kClientRedirectFirstPaintToNavigation,
+                        first_paint_to_navigation);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN(internal::kClientRedirectWithoutPaint, true);
   }
-  PAGE_LOAD_HISTOGRAM(internal::kClientRedirectDelayAfterPaint,
-                      redirect_delay_after_paint);
 }
 
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
