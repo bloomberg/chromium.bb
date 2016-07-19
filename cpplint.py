@@ -524,6 +524,10 @@ _error_suppressions = {}
 # This is set by --root flag.
 _root = None
 
+# The project root directory. Used for deriving header guard CPP variable.
+# This is set by --project_root flag. Must be an absolute path.
+_project_root = None
+
 # The allowed line length of files.
 # This is set by --linelength flag.
 _line_length = 80
@@ -1064,6 +1068,10 @@ class FileInfo(object):
 
     if os.path.exists(fullname):
       project_dir = os.path.dirname(fullname)
+
+      if _project_root:
+        prefix = os.path.commonprefix([_project_root, project_dir])
+        return fullname[len(prefix) + 1:]
 
       if os.path.exists(os.path.join(project_dir, ".svn")):
         # If there's a .svn file in the current directory, we recursively look
@@ -6025,7 +6033,8 @@ def ParseArguments(args):
                                                  'filter=',
                                                  'root=',
                                                  'linelength=',
-                                                 'extensions='])
+                                                 'extensions=',
+                                                 'project_root='])
   except getopt.GetoptError:
     PrintUsage('Invalid arguments.')
 
@@ -6054,6 +6063,11 @@ def ParseArguments(args):
     elif opt == '--root':
       global _root
       _root = val
+    elif opt == '--project_root':
+      global _project_root
+      _project_root = val
+      if not os.path.isabs(_project_root):
+        PrintUsage('Project root must be an absolute path.')
     elif opt == '--linelength':
       global _line_length
       try:
