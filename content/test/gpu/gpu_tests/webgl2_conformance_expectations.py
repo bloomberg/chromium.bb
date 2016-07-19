@@ -131,9 +131,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['win'], bug=624506)
 
-    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
-        ['win'], bug=614573)
-
     # ANGLE bug id
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win'], bug=1246)
