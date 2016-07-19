@@ -621,10 +621,10 @@
 
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
-      'win': 'gyp_official',
+      'win': 'gn_official_x86',
       'win-asan': 'gyp_official_syzyasan',
       'win-pgo': 'gyp_official_winpgo',
-      'win64': 'gyp_official_x64',
+      'win64': 'gn_official_x64',
       'win64-pgo': 'gyp_official_winpgo_x64',
     },
 
@@ -637,8 +637,8 @@
       'precise64 trunk': 'gn_official',
       'win beta': 'gyp_official_six_concurrent_links',
       'win stable': 'gyp_official_six_concurrent_links',
-      'win trunk': 'gyp_official_six_concurrent_links',
-      'win64 trunk': 'gyp_official_x64_six_concurrent_links',
+      'win trunk': 'gn_official_six_concurrent_links_x86',
+      'win64 trunk': 'gn_official_six_concurrent_links_x64',
     },
 
     'tryserver.blink': {
@@ -1157,6 +1157,22 @@
       'gyp', 'official', 'goma', 'minimal_symbols', 'x86',
     ],
 
+    'gn_official_six_concurrent_links_x86': [
+      'gn', 'official', 'six_concurrent_links', 'x86',
+    ],
+
+    'gn_official_six_concurrent_links_x64': [
+      'gn', 'official', 'six_concurrent_links', 'x64',
+    ],
+
+    'gn_official_x64': [
+      'gn', 'official', 'x64',
+    ],
+
+    'gn_official_x86': [
+      'gn', 'official', 'x86',
+    ],
+
     'gn_release_bot': [
       'gn', 'release_bot',
     ],
@@ -1349,14 +1365,6 @@
 
     'gyp_official_winpgo_x64': [
       'gyp', 'error', 'x64',
-    ],
-
-    'gyp_official_x64': [
-      'gyp', 'official', 'x64',
-    ],
-
-    'gyp_official_x64_six_concurrent_links': [
-      'gyp', 'official', 'x64', 'six_concurrent_links',
     ],
 
     'gyp_release_bot': [
