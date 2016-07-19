@@ -8,6 +8,7 @@
     '../cc/cc.gyp:cc',
     '../cc/cc.gyp:cc_surfaces',
     '../components/components.gyp:display_compositor',
+    '../components/components.gyp:memory_coordinator_browser',
     '../components/leveldb/leveldb.gyp:leveldb_lib',
     '../components/link_header_util/link_header_util.gyp:link_header_util',
     '../components/mime_util/mime_util.gyp:mime_util',

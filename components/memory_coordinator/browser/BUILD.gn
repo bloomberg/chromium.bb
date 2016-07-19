@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("child") {
+source_set("browser") {
   sources = [
-    "child_memory_coordinator_impl.cc",
-    "child_memory_coordinator_impl.h",
+    "memory_coordinator.cc",
+    "memory_coordinator.h",
   ]
 
   deps = [
@@ -15,19 +15,5 @@ source_set("child") {
 
   public_deps = [
     "//components/memory_coordinator/common",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-
-  sources = [
-    "child_memory_coordinator_impl_unittest.cc",
-  ]
-
-  deps = [
-    ":child",
-    "//mojo/common",
-    "//testing/gtest",
   ]
 }
