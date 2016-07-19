@@ -334,9 +334,9 @@ class AndroidDevices(object):
     # to participate in running the layout tests.
     MINIMUM_BATTERY_PERCENTAGE = 30
 
-    def __init__(self, executive, default_device=None, debug_logging=False):
+    def __init__(self, default_devices=None, debug_logging=False):
         self._usable_devices = []
-        self._default_device = default_device
+        self._default_devices = default_devices
         self._prepared_devices = []
         self._debug_logging = debug_logging
 
@@ -347,8 +347,10 @@ class AndroidDevices(object):
         if self._usable_devices:
             return self._usable_devices
 
-        if self._default_device:
-            self._usable_devices = [AndroidCommands(executive, self._default_device, self._debug_logging)]
+        if self._default_devices:
+            self._usable_devices = [
+                AndroidCommands(executive, d, self._debug_logging)
+                for d in self._default_devices]
             return self._usable_devices
 
         # Example "adb devices" command output:
@@ -437,12 +439,12 @@ class AndroidPort(base.Port):
         self._driver_details = ContentShellDriverDetails()
 
         # Initialize the AndroidDevices class which tracks available devices.
-        default_device = None
-        if hasattr(self._options, 'adb_device') and len(self._options.adb_device):
-            default_device = self._options.adb_device
+        default_devices = None
+        if hasattr(self._options, 'adb_devices') and len(self._options.adb_devices):
+            default_devices = self._options.adb_devices
 
         self._debug_logging = self.get_option('android_logging')
-        self._devices = AndroidDevices(self._executive, default_device, self._debug_logging)
+        self._devices = AndroidDevices(default_devices, self._debug_logging)
 
         # Tell AndroidCommands where to search for the "adb" command.
         AndroidCommands.set_adb_command_path_options(['adb',

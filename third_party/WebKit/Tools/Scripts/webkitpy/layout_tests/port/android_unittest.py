@@ -186,7 +186,7 @@ class AndroidPortTest(port_testcase.PortTestCase):
     # Test that the number of child processes to create depends on the devices.
     def test_default_child_processes(self):
         port_default = self.make_port(device_count=5)
-        port_fixed_device = self.make_port(device_count=5, options=optparse.Values({'adb_device': '123456789ABCDEF9'}))
+        port_fixed_device = self.make_port(device_count=5, options=optparse.Values({'adb_devices': ['123456789ABCDEF9']}))
 
         self.assertEquals(5, port_default.default_child_processes())
         self.assertEquals(1, port_fixed_device.default_child_processes())

@@ -99,6 +99,7 @@ def parse_args(args):
                 "--adb-device",
                 action="append",
                 default=[],
+                dest='adb_devices',
                 help="Run Android layout tests on these devices."),
             # FIXME: Flip this to be off by default once we can log the
             # device setup more cleanly.
