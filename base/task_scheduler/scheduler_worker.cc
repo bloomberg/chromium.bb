@@ -36,7 +36,7 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     // A SchedulerWorker starts out waiting for work.
     WaitForWork();
 
-    while (!outer_->task_tracker_->shutdown_completed() &&
+    while (!outer_->task_tracker_->IsShutdownComplete() &&
            !outer_->ShouldExitForTesting()) {
       DCHECK(outer_);
       // Get the sequence containing the next task to execute.
