@@ -21,6 +21,7 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/window_cycle_event_filter_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/focus_client.h"
@@ -139,6 +140,11 @@ std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
     wm::WindowState* window_state) {
   return base::WrapUnique(
       DragWindowResizer::Create(next_window_resizer.release(), window_state));
+}
+
+std::unique_ptr<WindowCycleEventFilter>
+WmShellAura::CreateWindowCycleEventFilter() {
+  return base::MakeUnique<WindowCycleEventFilterAura>();
 }
 
 std::unique_ptr<wm::MaximizeModeEventHandler>

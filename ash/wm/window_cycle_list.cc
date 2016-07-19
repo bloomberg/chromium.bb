@@ -16,8 +16,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
-#include "ash/wm/window_animations.h"
-#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/background.h"

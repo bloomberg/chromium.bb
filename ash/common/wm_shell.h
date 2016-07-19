@@ -35,6 +35,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
+class WindowCycleEventFilter;
 class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
@@ -170,6 +171,9 @@ class ASH_EXPORT WmShell {
   virtual std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) = 0;
+
+  virtual std::unique_ptr<WindowCycleEventFilter>
+  CreateWindowCycleEventFilter() = 0;
 
   virtual std::unique_ptr<wm::MaximizeModeEventHandler>
   CreateMaximizeModeEventHandler() = 0;

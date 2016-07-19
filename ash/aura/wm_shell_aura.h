@@ -47,6 +47,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
+  std::unique_ptr<WindowCycleEventFilter> CreateWindowCycleEventFilter()
+      override;
   std::unique_ptr<wm::MaximizeModeEventHandler> CreateMaximizeModeEventHandler()
       override;
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>

@@ -16,6 +16,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm/mru_window_tracker.h"
+#include "ash/common/wm/window_cycle_event_filter.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
@@ -245,6 +246,12 @@ std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
     wm::WindowState* window_state) {
   return base::WrapUnique(
       new DragWindowResizer(std::move(next_window_resizer), window_state));
+}
+
+std::unique_ptr<WindowCycleEventFilter>
+WmShellMus::CreateWindowCycleEventFilter() {
+  // TODO: implement me, http://crbug.com/629191.
+  return nullptr;
 }
 
 std::unique_ptr<wm::MaximizeModeEventHandler>

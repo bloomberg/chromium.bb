@@ -17,6 +17,7 @@ class EventHandler;
 
 namespace ash {
 
+class WindowCycleEventFilter;
 class WindowCycleList;
 class WmWindow;
 
@@ -66,8 +67,8 @@ class ASH_EXPORT WindowCycleController {
   // if the active Window changed in when ending cycling.
   WmWindow* active_window_before_window_cycle_ = nullptr;
 
-  // Event handler to watch for release of alt key.
-  std::unique_ptr<ui::EventHandler> event_handler_;
+  // Non-null while actively cycling.
+  std::unique_ptr<WindowCycleEventFilter> event_filter_;
 
   base::Time cycle_start_time_;
 
