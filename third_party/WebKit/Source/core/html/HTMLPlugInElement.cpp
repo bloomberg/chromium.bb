@@ -555,7 +555,8 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
         fastGetAttribute(HTMLNames::typeAttr);
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
         || !document().contentSecurityPolicy()->allowPluginTypeForDocument(document(), mimeType, declaredMimeType, url)) {
-        layoutEmbeddedItem().setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
+        if (LayoutEmbeddedItem layoutItem = layoutEmbeddedItem())
+            layoutItem.setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }
     // If the URL is empty, a plugin could still be instantiated if a MIME-type
