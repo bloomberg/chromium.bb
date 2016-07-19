@@ -50,9 +50,12 @@ extern const char kAlsaFixedOutputSampleRate[];
 // Memory pressure switches
 extern const char kMemPressureSystemReservedKb[];
 
-// GPU switches
+// GPU process switches
 extern const char kCastInitialScreenWidth[];
 extern const char kCastInitialScreenHeight[];
+
+// Graphics switches
+extern const char kDesktopWindow1080p[];
 
 }  // namespace switches
 

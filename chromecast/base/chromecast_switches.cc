@@ -83,6 +83,10 @@ const char kMemPressureSystemReservedKb[] = "mem-pressure-system-reserved-kb";
 const char kCastInitialScreenWidth[] = "cast-initial-screen-width";
 const char kCastInitialScreenHeight[] = "cast-initial-screen-height";
 
+// When present, desktop cast_shell will create 1080p window (provided display
+// resolution is high enough).  Otherwise, cast_shell defaults to 720p.
+const char kDesktopWindow1080p[] = "desktop-window-1080p";
+
 }  // namespace switches
 
 namespace chromecast {
