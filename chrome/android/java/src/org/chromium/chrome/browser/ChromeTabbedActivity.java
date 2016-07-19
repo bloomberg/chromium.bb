@@ -25,7 +25,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
@@ -105,6 +107,7 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -190,6 +193,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private boolean mUIInitialized = false;
 
     private boolean mIsOnFirstRun = false;
+    private Boolean mMergeTabsOnResume;
 
     private Boolean mIsAccessibilityEnabled;
 
@@ -346,6 +350,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         super.onResumeWithNative();
         CookiesFetcher.restoreCookies(this);
         StartupMetrics.getInstance().recordHistogram(false);
+
+        if (FeatureUtilities.isTabModelMergingEnabled()) {
+            boolean inMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(this);
+            // Merge tabs if the activity is not in multi-window mode and mMergeTabsOnResume is true
+            // or unset because the activity is just starting or was destroyed.
+            if (!inMultiWindowMode && (mMergeTabsOnResume == null || mMergeTabsOnResume)) {
+                maybeMergeTabs();
+            }
+            mMergeTabsOnResume = false;
+        }
     }
 
     @Override
@@ -1436,5 +1450,77 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     protected void setStatusBarColor(Tab tab, int color) {
         super.setStatusBarColor(tab, isInOverviewMode() ? Color.BLACK : color);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        if (!FeatureUtilities.isTabModelMergingEnabled()) return;
+        if (!isInMultiWindowMode) {
+            // If the activity is currently resumed when multi-window mode is exited, try to merge
+            // tabs from the other activity instance.
+            if (ApplicationStatus.getStateForActivity(this) == ActivityState.RESUMED) {
+                maybeMergeTabs();
+            } else {
+                mMergeTabsOnResume = true;
+            }
+        }
+    }
+
+    /**
+     * Writes the tab state to disk.
+     */
+    @VisibleForTesting
+    public void saveState() {
+        mTabModelSelectorImpl.saveState();
+    }
+
+    /**
+     * Merges tabs from a second ChromeTabbedActivity instance if necesssary and calls
+     * finishAndRemoveTask() on the other activity.
+     */
+    @VisibleForTesting
+    public void maybeMergeTabs() {
+        // TODO(twellington): Handle merging while the tab switcher is showing. Currently the tabs
+        // are merged but the tab switcher view doesn't update.
+
+        if (!FeatureUtilities.isTabModelMergingEnabled()) return;
+
+        Class<?> otherWindowActivityClass =
+                MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(this);
+
+        // 1. Find the other activity's task if it's still running so that it can be removed from
+        //    Android recents.
+        ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.AppTask> appTasks = activityManager.getAppTasks();
+        ActivityManager.AppTask otherActivityTask = null;
+        for (ActivityManager.AppTask task : appTasks) {
+            if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) continue;
+            String baseActivity = task.getTaskInfo().baseActivity.getClassName();
+            if (baseActivity.equals(otherWindowActivityClass.getName())) {
+                otherActivityTask = task;
+            }
+        }
+
+        if (otherActivityTask != null) {
+            for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
+                Activity activity = activityRef.get();
+                if (activity == null) continue;
+                // 2. If the other activity is still running (not destroyed), save its tab list.
+                //    Saving the tab list prevents missing tabs or duplicate tabs if tabs have been
+                //    reparented.
+                // TODO(twellington): saveState() gets called in onStopWithNative() after the merge
+                // starts, causing some duplicate work to be done. Avoid the redundancy.
+                if (activity.getClass().equals(otherWindowActivityClass)) {
+                    ((ChromeTabbedActivity) activity).saveState();
+                    break;
+                }
+            }
+            // 3. Kill the other activity's task to remove it from Android recents.
+            otherActivityTask.finishAndRemoveTask();
+        }
+
+        // 4. Ask TabPersistentStore to merge state.
+        mTabModelSelectorImpl.mergeState();
     }
 }

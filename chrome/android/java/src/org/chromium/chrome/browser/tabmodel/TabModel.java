@@ -34,7 +34,10 @@ public interface TabModel extends TabList {
          */
         FROM_CHROME_UI,
 
-        /** Opened during the restoration process on startup. */
+        /**
+         * Opened during the restoration process on startup or when merging two instances of
+         * Chrome in Android N+ multi-instance mode.
+         */
         FROM_RESTORE,
 
         /**

@@ -43,6 +43,8 @@ public class FeatureUtilities {
     private static final String HERB_EXPERIMENT_NAME = "TabManagementExperiment";
     private static final String HERB_EXPERIMENT_FLAVOR_PARAM = "type";
 
+    public static final String MERGE_TABS_FLAG = "multi-instance-merge-tabs";
+
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
     private static Boolean sDocumentModeDisabled;
@@ -256,6 +258,14 @@ public class FeatureUtilities {
     public static boolean areTabSwitcherThemeColorsEnabled() {
         return CommandLine.getInstance().hasSwitch(
                 ChromeSwitches.ENABLE_TAB_SWITCHER_THEME_COLORS);
+    }
+
+    /**
+     * @return True if tab model merging for Android N+ is enabled.
+     */
+    public static boolean isTabModelMergingEnabled() {
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.M
+                && CommandLine.getInstance().hasSwitch(MERGE_TABS_FLAG);
     }
 
     private static native void nativeSetDocumentModeEnabled(boolean enabled);

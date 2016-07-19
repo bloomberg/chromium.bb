@@ -302,6 +302,7 @@ extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kForceShowUpdateMenuItemNewFeaturesSummary[];
 extern const char kForceShowUpdateMenuItemSummary[];
 extern const char kMarketUrlForTesting[];
+extern const char kMultiInstanceMergeTabs[];
 extern const char kNtpSwitchToExistingTab[];
 extern const char kProgressBarAnimation[];
 extern const char kTabManagementExperimentTypeAnise[];

@@ -84,7 +84,8 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
 
         // Build the TabPersistentStore which will try to move the files.
         MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
+        TabPersistentStore store =
+                new TabPersistentStore(selector, 0, mAppContext, null, null, false);
         store.waitForMigrationToFinish();
 
         // Make sure we don't hit the migration path again.
@@ -159,7 +160,8 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
 
         // Build the TabPersistentStore which will try to move the files.
         MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
+        TabPersistentStore store =
+                new TabPersistentStore(selector, 0, mAppContext, null, null, false);
         store.waitForMigrationToFinish();
 
         // Check that the other file wasn't moved.
@@ -223,7 +225,8 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
 
         // Build the TabPersistentStore which will try to move the files.
         MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
+        TabPersistentStore store =
+                new TabPersistentStore(selector, 0, mAppContext, null, null, false);
         store.waitForMigrationToFinish();
 
         // Check that "tab0" still exists and has the expected last modified time.

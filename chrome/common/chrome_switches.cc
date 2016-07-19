@@ -1093,6 +1093,9 @@ const char kForceShowUpdateMenuItemSummary[] = "show_summary";
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";
 
+// Turns on auto-merging of tabs in multi-instance mode.
+const char kMultiInstanceMergeTabs[] = "multi-instance-merge-tabs";
+
 // Switch to an existing tab for a suggestion opened from the New Tab Page.
 const char kNtpSwitchToExistingTab[] = "ntp-switch-to-existing-tab";
 

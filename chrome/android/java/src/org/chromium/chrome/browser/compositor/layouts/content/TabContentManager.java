@@ -332,6 +332,7 @@ public class TabContentManager {
 
             @Override
             protected void onPostExecute(String[] fileNames) {
+                if (fileNames == null) return;
                 for (String fileName : fileNames) {
                     try {
                         int id = Integer.parseInt(fileName);

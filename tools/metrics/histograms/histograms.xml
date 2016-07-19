@@ -82058,6 +82058,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1980011075" label="debug-packed-apps"/>
   <int value="1993258379" label="enable-icon-ntp"/>
   <int value="2000091128" label="enable-touch-hover"/>
+  <int value="2004483175" label="multi-instance-merge-tabs"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2037756154" label="enable-impl-side-painting"/>

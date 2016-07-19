@@ -2005,8 +2005,13 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableFilesQuickView,
                                chromeos::switches::kDisableFilesQuickView)},
 #endif  // defined(OS_CHROMEOS)
-        // NOTE: Adding new command-line switches requires adding corresponding
-        // entries to enum "LoginCustomFlags" in histograms.xml. See note in
+#if defined(OS_ANDROID)
+    {"multi-instance-merge-tabs", IDS_FLAGS_MULTI_INSTANCE_MERGE_TABS_NAME,
+     IDS_FLAGS_MULTI_INSTANCE_MERGE_TABS_DESCRIPTION, kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kMultiInstanceMergeTabs)},
+#endif
+    // NOTE: Adding new command-line switches requires adding corresponding
+    // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
 };
 

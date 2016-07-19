@@ -99,7 +99,8 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         // Build the TabPersistentStore which will try to move the files.
         MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
+        TabPersistentStore store =
+                new TabPersistentStore(selector, 0, mAppContext, null, null, false);
         store.waitForMigrationToFinish();
 
         // Make sure we don't hit the migration path again.
@@ -166,7 +167,8 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         // Build the TabPersistentStore which will try to move the files.
         MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
+        TabPersistentStore store =
+                new TabPersistentStore(selector, 0, mAppContext, null, null, false);
         store.waitForMigrationToFinish();
 
         assertTrue("Could not find new state file", newStateFile.exists());
@@ -212,7 +214,8 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         // Build the TabPersistentStore which will try to move the files.
         MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
+        TabPersistentStore store =
+                new TabPersistentStore(selector, 0, mAppContext, null, null, false);
         store.waitForMigrationToFinish();
 
         assertFalse("Could still find old state file", stateFile.exists());
@@ -246,7 +249,8 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         writeStateFile(selector1, 1);
 
         TabModelSelector selectorIn = new MockTabModelSelector(0, 0, null);
-        TabPersistentStore storeIn = new TabPersistentStore(selectorIn, 0, mAppContext, null, null);
+        TabPersistentStore storeIn =
+                new TabPersistentStore(selectorIn, 0, mAppContext, null, null, false);
 
         int maxId = Math.max(getMaxId(selector0), getMaxId(selector1));
         RecordHistogram.disableForTests();
@@ -275,16 +279,17 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         TabModelSelector selectorIn1 = new MockTabModelSelector(0, 0, null);
 
         TabPersistentStore storeIn0 = new TabPersistentStore(
-                selectorIn0, 0, mAppContext, null, null);
+                selectorIn0, 0, mAppContext, null, null, false);
+
         TabPersistentStore storeIn1 = new TabPersistentStore(
-                selectorIn1, 1, mAppContext, null, null);
+                selectorIn1, 1, mAppContext, null, null, false);
 
         RecordHistogram.disableForTests();
         storeIn0.loadState();
         storeIn1.loadState();
 
         assertEquals("Unexpected number of tabs to load", 6, storeIn0.getRestoredTabCount());
-        assertEquals("Unexpected number of tabst o load", 3, storeIn1.getRestoredTabCount());
+        assertEquals("Unexpected number of tabs to load", 3, storeIn1.getRestoredTabCount());
 
     }
 }

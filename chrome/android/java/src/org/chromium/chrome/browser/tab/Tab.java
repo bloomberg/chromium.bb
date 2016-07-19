@@ -660,9 +660,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         // Restore data from the TabState, if it existed.
-        if (frozenState == null) {
-            assert type != TabLaunchType.FROM_RESTORE;
-        } else {
+        if (frozenState != null) {
             assert type == TabLaunchType.FROM_RESTORE;
             restoreFieldsFromState(frozenState);
         }
@@ -691,8 +689,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (creationState != null) {
             mTabUma = new TabUma(creationState);
             if (frozenState == null) {
-                assert type != TabLaunchType.FROM_RESTORE
-                        && creationState != TabCreationState.FROZEN_ON_RESTORE;
+                assert creationState != TabCreationState.FROZEN_ON_RESTORE;
             } else {
                 assert type == TabLaunchType.FROM_RESTORE
                         && creationState == TabCreationState.FROZEN_ON_RESTORE;

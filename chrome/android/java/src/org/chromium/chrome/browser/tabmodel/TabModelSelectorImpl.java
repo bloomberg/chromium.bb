@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.tabmodel;
 import android.content.Context;
 import android.os.Handler;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -16,6 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -85,6 +88,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             }
 
             @Override
+            public void onStateMerged() {
+            }
+
+            @Override
             public void onDetailsRead(int index, int id, String url, boolean isStandardActiveIndex,
                     boolean isIncognitoActiveIndex) {
             }
@@ -99,8 +106,16 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             }
         };
         mIsUndoSupported = supportUndo;
+        // Merge tabs if this is the TabModelSelector for ChromeTabbedActivity and there are no
+        // other instances running. This indicates that it is a complete cold start of
+        // ChromeTabbedActivity. Tabs should only be merged during a cold start of
+        // ChromeTabbedActivity and not other instances (e.g. ChromeTabbedActivity2).
+        boolean mergeTabs = FeatureUtilities.isTabModelMergingEnabled()
+                && mActivity.getClass().equals(ChromeTabbedActivity.class)
+                && TabWindowManager.getInstance().getNumberOfAssignedTabModelSelectors() == 0;
+
         mTabSaver = new TabPersistentStore(this, selectorIndex, mActivity, mActivity,
-                persistentStoreObserver);
+                persistentStoreObserver, mergeTabs);
         mOrderController = new TabModelOrderController(this);
         mRegularTabCreator = new ChromeTabCreator(
                 mActivity, windowAndroid, mOrderController, mTabSaver, false);
@@ -280,6 +295,13 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     }
 
     /**
+     * Merges the tab states from two tab models.
+     */
+    public void mergeState() {
+        mTabSaver.mergeState();
+    }
+
+    /**
      * Restore the saved tabs which were loaded by {@link #loadState}.
      *
      * @param setActiveTab If true, synchronously load saved active tab and set it as the current
@@ -401,5 +423,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @Override
     public void notifyChanged() {
         super.notifyChanged();
+    }
+
+    @VisibleForTesting
+    public TabPersistentStore getTabPersistentStoreForTesting() {
+        return mTabSaver;
     }
 }

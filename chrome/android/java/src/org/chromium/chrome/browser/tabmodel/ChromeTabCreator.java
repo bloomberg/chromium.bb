@@ -147,9 +147,6 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 // On low memory devices the tabs opened in background are not loaded automatically
                 // to preserve resources (cpu, memory, strong renderer binding) for the foreground
                 // tab.
-                // TODO(dfalcantara): Fallback Tabs created when the TabState couldn't be restored
-                //                    on startup should go through this path, as well, but there's
-                //                    currently no way to pipe that information to this function.
                 tab = Tab.createTabForLazyLoad(mActivity, mIncognito, mNativeWindow, type,
                         parentId, loadUrlParams);
                 tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
@@ -319,6 +316,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     private int getTransitionType(TabLaunchType type, Intent intent) {
         int transition = PageTransition.LINK;
         switch (type) {
+            case FROM_RESTORE:
             case FROM_LINK:
             case FROM_EXTERNAL_APP:
                 transition = PageTransition.LINK | PageTransition.FROM_API;
