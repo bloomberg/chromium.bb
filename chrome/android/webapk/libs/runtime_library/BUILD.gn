@@ -21,9 +21,10 @@ android_aidl("webapk_service_aidl") {
   ]
 }
 
-android_library("runtime_library_java") {
-  # The dx tool expects files ending in .dex.jar
-  dex_path = "$target_gen_dir/$runtime_library_dex_asset_name.jar"
+# runtime_library_from_assets_java cannot be used as a dependency of another
+# library because the dx tool expects files ending in .dex.jar
+android_library("runtime_library_for_assets_java") {
+  dex_path = "$target_gen_dir/$runtime_library_dex_asset_name"
   java_files = [
     "src/org/chromium/webapk/lib/runtime_library/HostBrowserLauncher.java",
     "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java",
@@ -34,18 +35,24 @@ android_library("runtime_library_java") {
   ]
 }
 
+# The subset of runtime_library_from_assets_java needed for tests.
+android_library("runtime_library_for_tests_java") {
+  java_files =
+      [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
+  srcjar_deps = [ ":webapk_service_aidl" ]
+}
+
 android_assets("runtime_library_assets") {
   write_file("$target_gen_dir/webapk_dex_version.txt", runtime_library_version)
 
   sources = [
+    "$target_gen_dir/$runtime_library_dex_asset_name",
     "$target_gen_dir/webapk_dex_version.txt",
   ]
-  renaming_sources = [ "$target_gen_dir/$runtime_library_dex_asset_name.jar" ]
-  renaming_destinations = [ "$runtime_library_dex_asset_name" ]
   disable_compression = true
 
   deps = [
-    ":runtime_library_java",
+    ":runtime_library_for_assets_java",
   ]
 }
 
@@ -53,7 +60,7 @@ android_library("runtime_library_javatests") {
   testonly = true
   java_files = [ "javatests/src/org/chromium/webapk/lib/runtime_library/WebApkServiceImplTest.java" ]
   deps = [
-    ":runtime_library_java",
+    ":runtime_library_for_tests_java",
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",
