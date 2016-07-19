@@ -43,22 +43,21 @@ RunState* g_state = NULL;
 // when there are no pending messages.
 class Waitable {
  public:
-  static Waitable* GetInstance() { return base::Singleton<Waitable>::get(); }
+  static Waitable* GetInstance() {
+    return base::Singleton<Waitable,
+                           base::LeakySingletonTraits<Waitable>>::get();
+  }
 
-   // Signals that there are more work to do.
-   void Signal() {
-     waitable_event_.Signal();
-   }
+  // Signals that there are more work to do.
+  void Signal() { waitable_event_.Signal(); }
 
-   // Blocks until more work is scheduled.
-   void Block() {
-     waitable_event_.Wait();
-   }
+  // Blocks until more work is scheduled.
+  void Block() { waitable_event_.Wait(); }
 
-   void Quit() {
-     g_state->should_quit = true;
-     Signal();
-   }
+  void Quit() {
+    g_state->should_quit = true;
+    Signal();
+  }
 
  private:
   friend struct base::DefaultSingletonTraits<Waitable>;
