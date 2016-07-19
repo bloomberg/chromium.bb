@@ -106,7 +106,7 @@ static const float kPreCloseScale = 0.02f;
 
 // Calculates the |window| bounds after being transformed to the selector's
 // space. The returned Rect is in virtual screen coordinates.
-gfx::Rect GetTransformedBounds(WmWindow* window) {
+gfx::Rect GetTransformedBounds(WmWindow* window, bool hide_header) {
   gfx::RectF bounds(
       window->GetRootWindow()->ConvertRectToScreen(window->GetTargetBounds()));
   gfx::Transform new_transform = TransformAboutPivot(
@@ -116,7 +116,7 @@ gfx::Rect GetTransformedBounds(WmWindow* window) {
   // With Material Design the preview title is shown above the preview window.
   // Hide the window header for apps or browser windows with no tabs (web apps)
   // to avoid showing both the window header and the preview title.
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+  if (ash::MaterialDesignController::IsOverviewMaterial() && hide_header) {
     gfx::RectF header_bounds(bounds);
     header_bounds.set_height(
         window->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET));
@@ -214,6 +214,9 @@ class RoundedContainerView : public views::View {
 };
 
 }  // namespace
+
+bool WindowSelectorItem::use_mask_ = false;
+bool WindowSelectorItem::use_shape_ = false;
 
 WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
     views::ButtonListener* listener,
@@ -457,9 +460,12 @@ void WindowSelectorItem::OnWindowTitleChanged(WmWindow* window) {
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
   gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMarginMD);
+  const int header_inset =
+      hide_header()
+          ? GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET)
+          : 0;
   return ScopedTransformOverviewWindow::GetItemScale(
-      GetWindow()->GetTargetBounds().size(), inset_size,
-      GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET),
+      GetWindow()->GetTargetBounds().size(), inset_size, header_inset,
       close_button_->GetPreferredSize().height());
 }
 
@@ -476,8 +482,10 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   int top_view_inset = 0;
   int title_height = 0;
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    top_view_inset =
-        GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
+    if (hide_header()) {
+      top_view_inset =
+          GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
+    }
     title_height = close_button_->GetPreferredSize().height();
   }
   gfx::Rect selector_item_bounds =
@@ -491,7 +499,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   // before the transform. Dividing by scale factor obtains the corner radius
   // which when scaled will yield |kLabelBackgroundRadius|.
   transform_window_.SetTransform(
-      root_window_, transform,
+      root_window_, transform, use_mask_, use_shape_,
       (kLabelBackgroundRadius / GetItemScale(target_bounds.size())));
   transform_window_.set_overview_transform(transform);
 }
@@ -589,8 +597,8 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 
 void WindowSelectorItem::UpdateHeaderLayout(
     OverviewAnimationType animation_type) {
-  gfx::Rect transformed_window_bounds =
-      root_window_->ConvertRectFromScreen(GetTransformedBounds(GetWindow()));
+  gfx::Rect transformed_window_bounds = root_window_->ConvertRectFromScreen(
+      GetTransformedBounds(GetWindow(), hide_header()));
 
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     gfx::Rect label_rect(close_button_->GetPreferredSize());

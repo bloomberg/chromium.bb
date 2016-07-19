@@ -98,6 +98,16 @@ const char kAshMaterialDesignDisabled[] = "disabled";
 const char kAshMaterialDesignEnabled[] = "enabled";
 const char kAshMaterialDesignExperimental[] = "experimental";
 
+// Specifies a maximum number of preview windows in overview mode that still
+// allows using mask layers to hide the original window header and use rounded
+// corners.
+const char kAshMaxWindowsToUseMaskInOverview[] = "ash-max-previews-to-use-mask";
+
+// Specifies a maximum number of preview windows in overview mode that still
+// allows using alpha shapes to hide the original window header.
+const char kAshMaxWindowsToUseShapeInOverview[] =
+    "ash-max-previews-to-use-shape";
+
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

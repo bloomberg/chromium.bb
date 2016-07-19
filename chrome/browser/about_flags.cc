@@ -378,6 +378,34 @@ const FeatureEntry::Choice kAshMaterialDesignChoices[] = {
      ash::switches::kAshMaterialDesignExperimental},
 };
 
+const FeatureEntry::Choice kAshMaxWindowsToUseMaskInOverviewChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_UNLIMITED,
+     ash::switches::kAshMaxWindowsToUseMaskInOverview, "-1"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_ZERO,
+     ash::switches::kAshMaxWindowsToUseMaskInOverview, "0"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_FIVE,
+     ash::switches::kAshMaxWindowsToUseMaskInOverview, "5"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_TEN,
+     ash::switches::kAshMaxWindowsToUseMaskInOverview, "10"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_FIFTEEN,
+     ash::switches::kAshMaxWindowsToUseMaskInOverview, "15"},
+};
+
+const FeatureEntry::Choice kAshMaxWindowsToUseShapeInOverviewChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_UNLIMITED,
+     ash::switches::kAshMaxWindowsToUseShapeInOverview, "-1"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_ZERO,
+     ash::switches::kAshMaxWindowsToUseShapeInOverview, "0"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_FIVE,
+     ash::switches::kAshMaxWindowsToUseShapeInOverview, "5"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_TEN,
+     ash::switches::kAshMaxWindowsToUseShapeInOverview, "10"},
+    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_FIFTEEN,
+     ash::switches::kAshMaxWindowsToUseShapeInOverview, "15"},
+};
+
 const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST,
@@ -777,9 +805,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
-    {"enable-web-bluetooth", // FLAGS:RECORD_UMA
-     IDS_FLAGS_WEB_BLUETOOTH_NAME,
-     IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
+    {"enable-web-bluetooth",  // FLAGS:RECORD_UMA
+     IDS_FLAGS_WEB_BLUETOOTH_NAME, IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
      kOsCrOS | kOsMac | kOsAndroid | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kEnableWebBluetooth)},
 #if defined(ENABLE_EXTENSIONS)
@@ -952,6 +979,18 @@ const FeatureEntry kFeatureEntries[] = {
         ENABLE_DISABLE_VALUE_TYPE(
             ash::switches::kAshEnableStableOverviewOrder,
             ash::switches::kAshDisableStableOverviewOrder),
+    },
+    {
+        "ash-max-previews-to-use-mask",
+        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_NAME,
+        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_DESCRIPTION, kOsCrOS,
+        MULTI_VALUE_TYPE(kAshMaxWindowsToUseMaskInOverviewChoices),
+    },
+    {
+        "ash-max-previews-to-use-shape",
+        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_NAME,
+        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_DESCRIPTION, kOsCrOS,
+        MULTI_VALUE_TYPE(kAshMaxWindowsToUseShapeInOverviewChoices),
     },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
@@ -1814,8 +1853,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(ENABLE_EXTENSIONS)
     {"tab-for-desktop-share", IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE,
      IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(
-         extensions::switches::kDisableTabForDesktopShare)},
+     SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
     {"disable-desktop-capture-picker-new-ui",
      IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_NEW_UI,
      IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_NEW_UI_DESCRIPTION, kOsAll,
@@ -1909,8 +1947,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"important-sites-in-cbd", IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
      IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
-    {"autoplay-muted-videos",
-     IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_NAME,
+    {"autoplay-muted-videos", IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_NAME,
      IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAutoplayMutedVideos)},
 #endif
@@ -1968,8 +2005,8 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableFilesQuickView,
                                chromeos::switches::kDisableFilesQuickView)},
 #endif  // defined(OS_CHROMEOS)
-    // NOTE: Adding new command-line switches requires adding corresponding
-    // entries to enum "LoginCustomFlags" in histograms.xml. See note in
+        // NOTE: Adding new command-line switches requires adding corresponding
+        // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
 };
 

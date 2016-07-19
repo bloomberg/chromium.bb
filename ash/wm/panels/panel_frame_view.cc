@@ -4,6 +4,8 @@
 
 #include "ash/wm/panels/panel_frame_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
@@ -29,9 +31,12 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
   DCHECK(!frame_->widget_delegate()->CanMaximize());
   if (frame_type != FRAME_NONE)
     InitHeaderPainter();
+  WmShell::Get()->AddShellObserver(this);
 }
 
-PanelFrameView::~PanelFrameView() {}
+PanelFrameView::~PanelFrameView() {
+  WmShell::Get()->RemoveShellObserver(this);
+}
 
 void PanelFrameView::SetFrameColors(SkColor active_frame_color,
                                     SkColor inactive_frame_color) {
@@ -105,6 +110,19 @@ void PanelFrameView::UpdateWindowTitle() {
 
 void PanelFrameView::SizeConstraintsChanged() {}
 
+gfx::Rect PanelFrameView::GetBoundsForClientView() const {
+  gfx::Rect client_bounds = bounds();
+  client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
+  return client_bounds;
+}
+
+gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
+    const gfx::Rect& client_bounds) const {
+  gfx::Rect window_bounds = client_bounds;
+  window_bounds.Inset(0, -NonClientTopBorderHeight(), 0, 0);
+  return window_bounds;
+}
+
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!header_painter_)
     return HTNOWHERE;
@@ -124,17 +142,17 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   header_painter_->PaintHeader(canvas, header_mode);
 }
 
-gfx::Rect PanelFrameView::GetBoundsForClientView() const {
-  gfx::Rect client_bounds = bounds();
-  client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
-  return client_bounds;
+///////////////////////////////////////////////////////////////////////////////
+// PanelFrameView, ShellObserver overrides:
+
+void PanelFrameView::OnOverviewModeStarting() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    caption_button_container_->SetVisible(false);
 }
 
-gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
-    const gfx::Rect& client_bounds) const {
-  gfx::Rect window_bounds = client_bounds;
-  window_bounds.Inset(0, -NonClientTopBorderHeight(), 0, 0);
-  return window_bounds;
+void PanelFrameView::OnOverviewModeEnded() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    caption_button_container_->SetVisible(true);
 }
 
 }  // namespace ash

@@ -114,6 +114,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool dimmed() const { return dimmed_; }
 
   const gfx::Rect& target_bounds() const { return target_bounds_; }
+  static void set_use_mask(bool use_mask) { use_mask_ = use_mask; }
+  static void set_use_shape(bool use_shape) { use_shape_ = use_shape; }
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -153,6 +155,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // Updates the close buttons accessibility name.
   void UpdateCloseButtonAccessibilityName();
+
+  static bool hide_header() { return use_mask_ || use_shape_; }
 
   // True if the item is being shown in the overview, false if it's being
   // filtered.
@@ -202,6 +206,16 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.
   WindowSelector* window_selector_;
+
+  // If true, mask the original window header while in overview and make corners
+  // rounded using a mask layer. This has performance implications so it can be
+  // disabled when there are many windows.
+  static bool use_mask_;
+
+  // If true, hide the original window header while in overview using alpha
+  // shape. This has performance implications so it can be disabled when there
+  // are many windows.
+  static bool use_shape_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

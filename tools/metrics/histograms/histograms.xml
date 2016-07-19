@@ -81726,6 +81726,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
   <int value="-204355195" label="secondary-ui-md"/>
+  <int value="-201208150" label="ash-max-previews-to-use-mask"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
@@ -81746,6 +81747,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-52483823" label="disable-new-video-renderer"/>
   <int value="-52241456" label="enable-single-click-autofill"/>
   <int value="-48920737" label="enable-smooth-scrolling"/>
+  <int value="-45063580" label="ash-max-previews-to-use-shape"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
   <int value="-13918890" label="disable-download-notification"/>

@@ -9,6 +9,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state.h"
@@ -165,6 +166,8 @@ class CustomFrameViewAsh::HeaderView
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ShellObserver:
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 
@@ -309,6 +312,16 @@ void CustomFrameViewAsh::HeaderView::ChildPreferredSizeChanged(
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh::HeaderView, ShellObserver overrides:
+
+void CustomFrameViewAsh::HeaderView::OnOverviewModeStarting() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    caption_button_container_->SetVisible(false);
+}
+
+void CustomFrameViewAsh::HeaderView::OnOverviewModeEnded() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    caption_button_container_->SetVisible(true);
+}
 
 void CustomFrameViewAsh::HeaderView::OnMaximizeModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();

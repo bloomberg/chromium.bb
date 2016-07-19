@@ -44,6 +44,8 @@ ASH_EXPORT extern const char kAshMaterialDesign[];
 ASH_EXPORT extern const char kAshMaterialDesignDisabled[];
 ASH_EXPORT extern const char kAshMaterialDesignEnabled[];
 ASH_EXPORT extern const char kAshMaterialDesignExperimental[];
+ASH_EXPORT extern const char kAshMaxWindowsToUseMaskInOverview[];
+ASH_EXPORT extern const char kAshMaxWindowsToUseShapeInOverview[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAshUseFirstDisplayAsInternal[];

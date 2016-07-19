@@ -30,6 +30,7 @@
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -72,6 +73,10 @@ const float kCardAspectRatio = 4.0f / 3.0f;
 // The minimum number of cards along the major axis (i.e. horizontally on a
 // landscape orientation).
 const int kMinCardsMajor = 3;
+
+// Hiding window headers can be resource intensive. Only hide the headers when
+// the number of windows in this grid is less or equal than this number.
+const int kMaxWindowsCountToHideHeader = 10;
 
 const int kOverviewSelectorTransitionMilliseconds = 250;
 
@@ -452,6 +457,34 @@ void WindowGrid::PrepareForOverview() {
 void WindowGrid::PositionWindowsMD(bool animate) {
   if (window_list_.empty())
     return;
+
+  const int kUnlimited = -1;
+  const size_t windows_count = window_list_.size();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  int windows_to_use_masks = kMaxWindowsCountToHideHeader;
+  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseMaskInOverview) &&
+      (!base::StringToInt(command_line->GetSwitchValueASCII(
+                              switches::kAshMaxWindowsToUseMaskInOverview),
+                          &windows_to_use_masks) ||
+       windows_to_use_masks <= kUnlimited)) {
+    windows_to_use_masks = kMaxWindowsCountToHideHeader;
+  }
+  int windows_to_use_shapes = kUnlimited;
+  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseShapeInOverview) &&
+      (!base::StringToInt(command_line->GetSwitchValueASCII(
+                              switches::kAshMaxWindowsToUseShapeInOverview),
+                          &windows_to_use_shapes) ||
+       windows_to_use_shapes <= kUnlimited)) {
+    windows_to_use_shapes = kUnlimited;
+  }
+  WindowSelectorItem::set_use_mask(windows_to_use_masks <= kUnlimited ||
+                                   static_cast<int>(windows_count) <=
+                                       windows_to_use_masks);
+  WindowSelectorItem::set_use_shape(windows_to_use_shapes <= kUnlimited ||
+                                    static_cast<int>(windows_count) <=
+                                        windows_to_use_shapes);
+
   gfx::Rect total_bounds =
       root_window_->ConvertRectToScreen(wm::GetDisplayWorkAreaBoundsInParent(
           root_window_->GetChildByShellWindowId(
@@ -560,7 +593,7 @@ void WindowGrid::PositionWindowsMD(bool animate) {
   }
   // Position the windows centering the left-aligned rows vertically.
   gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
-  for (size_t i = 0; i < window_list_.size(); ++i) {
+  for (size_t i = 0; i < windows_count; ++i) {
     window_list_[i]->SetBounds(
         rects[i] + offset,
         animate
