@@ -135,19 +135,27 @@ static LocaleMap createLocaleFallbackMap()
     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/Hyphenator.java
     using LocaleFallback = const char*[2];
     static LocaleFallback localeFallbackData[] = {
-        { "en-AS", "en-US" }, // English (American Samoa)
-        { "en-GU", "en-US" }, // English (Guam)
-        { "en-MH", "en-US" }, // English (Marshall Islands)
-        { "en-MP", "en-US" }, // English (Northern Mariana Islands)
-        { "en-PR", "en-US" }, // English (Puerto Rico)
-        { "en-UM", "en-US" }, // English (United States Minor Outlying Islands)
-        { "en-VI", "en-US" }, // English (Virgin Islands)
+        { "en-AS", "en-us" }, // English (American Samoa)
+        { "en-GU", "en-us" }, // English (Guam)
+        { "en-MH", "en-us" }, // English (Marshall Islands)
+        { "en-MP", "en-us" }, // English (Northern Mariana Islands)
+        { "en-PR", "en-us" }, // English (Puerto Rico)
+        { "en-UM", "en-us" }, // English (United States Minor Outlying Islands)
+        { "en-VI", "en-us" }, // English (Virgin Islands)
+        // All English locales other than those falling back to en-US are mapped to en-GB.
+        { "en", "en-gb" },
+        // For German, we're assuming the 1996 (and later) orthography by default.
+        { "de", "de-1996" },
+        // Liechtenstein uses the Swiss hyphenation rules for the 1901 orthography.
+        { "de-LI-1901", "de-ch-1901" },
+        // Norwegian is very probably Norwegian Bokmål.
         { "no", "nb" },
-        { "am", "und-Ethi" }, // Amharic
-        { "byn", "und-Ethi" }, // Blin
-        { "gez", "und-Ethi" }, // Geʻez
-        { "ti", "und-Ethi" }, // Tigrinya
-        { "wal", "und-Ethi" }, // Wolaytta
+        { "mn", "mn-cyrl" }, // Mongolian
+        { "am", "und-ethi" }, // Amharic
+        { "byn", "und-ethi" }, // Blin
+        { "gez", "und-ethi" }, // Geʻez
+        { "ti", "und-ethi" }, // Tigrinya
+        { "wal", "und-ethi" }, // Wolaytta
     };
     LocaleMap map;
     for (const auto& it : localeFallbackData)

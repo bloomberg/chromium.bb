@@ -18,10 +18,12 @@ Hyphenation* Hyphenation::get(const AtomicString& locale)
 {
     DCHECK(!locale.isNull());
     Hyphenation::HyphenationMap& hyphenationMap = getHyphenationMap();
-    auto result = hyphenationMap.add(locale, nullptr);
-    if (result.isNewEntry)
-        result.storedValue->value = platformGetHyphenation(locale);
-    return result.storedValue->value.get();
+    const auto& it = hyphenationMap.find(locale);
+    if (it != hyphenationMap.end())
+        return it->value.get();
+
+    return hyphenationMap.add(locale, platformGetHyphenation(locale))
+        .storedValue->value.get();
 }
 
 void Hyphenation::setForTesting(const AtomicString& locale, PassRefPtr<Hyphenation> hyphenation)

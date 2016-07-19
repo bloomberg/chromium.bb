@@ -10,6 +10,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -18,8 +19,9 @@ namespace {
 using DictionaryFileMap = std::unordered_map<std::string, base::File>;
 
 static bool IsValidLocale(const std::string& locale) {
-  return std::all_of(locale.cbegin(), locale.cend(),
-                     [](const char ch) { return isalpha(ch) || ch == '-'; });
+  return std::all_of(locale.cbegin(), locale.cend(), [](const char ch) {
+    return base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch) || ch == '-';
+  });
 }
 
 static base::File& GetDictionaryFile(const std::string& locale) {
