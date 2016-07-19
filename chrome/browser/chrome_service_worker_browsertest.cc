@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -215,7 +216,13 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest, EmbedPdfSameOrigin) {
+// Flaky on Windows; https://crbug.com/628898.
+#if defined(OS_WIN)
+#define MAYBE_EmbedPdfSameOrigin DISABLED_EmbedPdfSameOrigin
+#else
+#define MAYBE_EmbedPdfSameOrigin EmbedPdfSameOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest, MAYBE_EmbedPdfSameOrigin) {
   // <embed src="test.pdf">
   const std::string result(ExecuteScriptAndExtractString(
       "var embed = document.createElement('embed');"
@@ -224,7 +231,14 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest, EmbedPdfSameOrigin) {
   EXPECT_EQ(RequestString(GetURL("/test.pdf"), "no-cors", "include"), result);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest, EmbedPdfOtherOrigin) {
+// Flaky on Windows; https://crbug.com/628898.
+#if defined(OS_WIN)
+#define MAYBE_EmbedPdfOtherOrigin DISABLED_EmbedPdfOtherOrigin
+#else
+#define MAYBE_EmbedPdfOtherOrigin EmbedPdfOtherOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchTest,
+                       MAYBE_EmbedPdfOtherOrigin) {
   // <embed src="https://www.example.com/test.pdf">
   const std::string result(ExecuteScriptAndExtractString(
       "var embed = document.createElement('embed');"
