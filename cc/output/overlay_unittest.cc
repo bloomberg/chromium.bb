@@ -522,21 +522,6 @@ TEST_F(SingleOverlayOnTopTest, MultipleRenderPasses) {
   EXPECT_EQ(1U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, RejectPremultipliedAlpha) {
-  std::unique_ptr<RenderPass> pass = CreateRenderPass();
-  TextureDrawQuad* quad =
-      CreateFullscreenCandidateQuad(resource_provider_.get(),
-                                    pass->shared_quad_state_list.back(),
-                                    pass.get());
-  quad->premultiplied_alpha = true;
-
-  OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
-                                         &candidate_list, nullptr,
-                                         &damage_rect_);
-  EXPECT_EQ(0U, candidate_list.size());
-}
-
 TEST_F(SingleOverlayOnTopTest, RejectBlending) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   TextureDrawQuad* quad =

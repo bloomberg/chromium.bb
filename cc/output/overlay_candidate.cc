@@ -185,7 +185,8 @@ OverlayCandidate::~OverlayCandidate() {}
 bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
                                     const DrawQuad* quad,
                                     OverlayCandidate* candidate) {
-  if (quad->needs_blending || quad->shared_quad_state->opacity != 1.f ||
+  if (quad->ShouldDrawWithBlending() ||
+      quad->shared_quad_state->opacity != 1.f ||
       quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
     return false;
 
@@ -252,7 +253,6 @@ bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
   gfx::OverlayTransform overlay_transform = GetOverlayTransform(
       quad->shared_quad_state->quad_to_target_transform, quad->y_flipped);
   if (quad->background_color != SK_ColorTRANSPARENT ||
-      quad->premultiplied_alpha ||
       overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
   candidate->resource_id = quad->resource_id();
