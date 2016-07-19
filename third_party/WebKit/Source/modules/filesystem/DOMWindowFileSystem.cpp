@@ -55,17 +55,17 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& windowArg, int type
         UseCounter::count(document, UseCounter::RequestFileSystemNonWebbyOrigin);
 
     if (!document->getSecurityOrigin()->canAccessFileSystem()) {
-        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
         return;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::INVALID_MODIFICATION_ERR));
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::INVALID_MODIFICATION_ERR);
         return;
     }
 
-    LocalFileSystem::from(*document)->requestFileSystem(document, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, document, fileSystemType));
+    LocalFileSystem::from(*document)->requestFileSystem(document, fileSystemType, size, FileSystemCallbacks::create(successCallback, ScriptErrorCallback::wrap(errorCallback), document, fileSystemType));
 }
 
 void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& windowArg, const String& url, EntryCallback* successCallback, ErrorCallback* errorCallback)
@@ -81,16 +81,16 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& windowArg, 
     SecurityOrigin* securityOrigin = document->getSecurityOrigin();
     KURL completedURL = document->completeURL(url);
     if (!securityOrigin->canAccessFileSystem() || !securityOrigin->canRequest(completedURL)) {
-        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
         return;
     }
 
     if (!completedURL.isValid()) {
-        DOMFileSystem::reportError(document, errorCallback, FileError::create(FileError::ENCODING_ERR));
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::ENCODING_ERR);
         return;
     }
 
-    LocalFileSystem::from(*document)->resolveURL(document, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, document));
+    LocalFileSystem::from(*document)->resolveURL(document, completedURL, ResolveURICallbacks::create(successCallback, ScriptErrorCallback::wrap(errorCallback), document));
 }
 
 static_assert(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), "DOMWindowFileSystem::TEMPORARY should match FileSystemTypeTemporary");

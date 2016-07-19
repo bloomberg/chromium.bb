@@ -288,7 +288,7 @@ void FileWriter::signalCompletion(FileError::ErrorCode code)
     m_readyState = DONE;
     m_truncateLength = -1;
     if (FileError::OK != code) {
-        m_error = FileError::create(code);
+        m_error = FileError::createDOMException(code);
         if (FileError::ABORT_ERR == code)
             fireEvent(EventTypeNames::abort);
         else
@@ -313,7 +313,7 @@ void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionState& except
 {
     ASSERT(errorCode);
     FileError::throwDOMException(exceptionState, errorCode);
-    m_error = FileError::create(errorCode);
+    m_error = FileError::createDOMException(errorCode);
 }
 
 DEFINE_TRACE(FileWriter)

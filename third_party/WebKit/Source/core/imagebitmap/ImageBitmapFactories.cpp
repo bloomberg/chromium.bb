@@ -31,6 +31,7 @@
 #include "core/imagebitmap/ImageBitmapFactories.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"

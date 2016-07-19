@@ -33,7 +33,6 @@
 #include "core/fileapi/BlobCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriter.h"
@@ -115,15 +114,15 @@ bool DOMFileSystem::hasPendingActivity() const
     return m_numberOfPendingCallbacks;
 }
 
-void DOMFileSystem::reportError(ErrorCallback* errorCallback, FileError* fileError)
+void DOMFileSystem::reportError(ErrorCallbackBase* errorCallback, FileError::ErrorCode fileError)
 {
     reportError(getExecutionContext(), errorCallback, fileError);
 }
 
-void DOMFileSystem::reportError(ExecutionContext* executionContext, ErrorCallback* errorCallback, FileError* fileError)
+void DOMFileSystem::reportError(ExecutionContext* executionContext, ErrorCallbackBase* errorCallback, FileError::ErrorCode fileError)
 {
     if (errorCallback)
-        scheduleCallback(executionContext, createSameThreadTask(&ErrorCallback::handleEvent, wrapPersistent(errorCallback), wrapPersistent(fileError)));
+        scheduleCallback(executionContext, createSameThreadTask(&ErrorCallbackBase::invoke, wrapPersistent(errorCallback), fileError));
 }
 
 namespace {
@@ -155,12 +154,12 @@ private:
 
 } // namespace
 
-void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback* successCallback, ErrorCallback* errorCallback)
+void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback* successCallback, ErrorCallbackBase* errorCallback)
 {
     ASSERT(fileEntry);
 
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::create(FileError::ABORT_ERR));
+        reportError(errorCallback, FileError::ABORT_ERR);
         return;
     }
 
@@ -170,11 +169,11 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback*
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));
 }
 
-void DOMFileSystem::createFile(const FileEntry* fileEntry, BlobCallback* successCallback, ErrorCallback* errorCallback)
+void DOMFileSystem::createFile(const FileEntry* fileEntry, BlobCallback* successCallback, ErrorCallbackBase* errorCallback)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::create(FileError::ABORT_ERR));
+        reportError(errorCallback, FileError::ABORT_ERR);
         return;
     }
 

@@ -65,9 +65,9 @@ DOMFileSystemSync::~DOMFileSystemSync()
 {
 }
 
-void DOMFileSystemSync::reportError(ErrorCallback* errorCallback, FileError* fileError)
+void DOMFileSystemSync::reportError(ErrorCallbackBase* errorCallback, FileError::ErrorCode fileError)
 {
-    errorCallback->handleEvent(fileError);
+    errorCallback->invoke(fileError);
 }
 
 DirectoryEntrySync* DOMFileSystemSync::root()
@@ -181,17 +181,17 @@ private:
     }
 };
 
-class LocalErrorCallback final : public ErrorCallback {
+class LocalErrorCallback final : public ErrorCallbackBase {
 public:
     static LocalErrorCallback* create(FileError::ErrorCode& errorCode)
     {
         return new LocalErrorCallback(errorCode);
     }
 
-    void handleEvent(FileError* error) override
+    void invoke(FileError::ErrorCode error) override
     {
-        ASSERT(error->code() != FileError::OK);
-        m_errorCode = error->code();
+        DCHECK_NE(error, FileError::OK);
+        m_errorCode = error;
     }
 
 private:

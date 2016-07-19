@@ -39,9 +39,9 @@
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/EntrySync.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/heap/Handle.h"
 
@@ -67,7 +67,7 @@ public:
     }
 
     SuccessCallback* getSuccessCallback() { return SuccessCallbackImpl::create(this); }
-    ErrorCallback* getErrorCallback() { return ErrorCallbackImpl::create(this); }
+    ErrorCallbackBase* getErrorCallback() { return ErrorCallbackImpl::create(this); }
 
     DEFINE_INLINE_TRACE()
     {
@@ -112,23 +112,22 @@ private:
         Member<HelperType> m_helper;
     };
 
-    class ErrorCallbackImpl final : public ErrorCallback {
+    class ErrorCallbackImpl final : public ErrorCallbackBase {
     public:
         static ErrorCallbackImpl* create(HelperType* helper)
         {
             return new ErrorCallbackImpl(helper);
         }
 
-        void handleEvent(FileError* error) override
+        void invoke(FileError::ErrorCode error) override
         {
-            ASSERT(error);
-            m_helper->setError(error->code());
+            m_helper->setError(error);
         }
 
         DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_helper);
-            ErrorCallback::trace(visitor);
+            ErrorCallbackBase::trace(visitor);
         }
 
     private:
@@ -139,9 +138,9 @@ private:
         Member<HelperType> m_helper;
     };
 
-    void setError(FileError::ErrorCode code)
+    void setError(FileError::ErrorCode error)
     {
-        m_errorCode = code;
+        m_errorCode = error;
         m_completed = true;
     }
 

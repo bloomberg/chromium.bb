@@ -58,8 +58,8 @@
     // File or Blob data
     readonly attribute (DOMString or ArrayBuffer)? result;
 
-    // TODO(foolip): error should be DOMError. crbug.com/496901
-    [Measure] readonly attribute FileError? error;
+    // TODO(jsbell): Spec has DOMError, which is being deprecated.
+    readonly attribute DOMException? error;
 
     // event handler attributes
     attribute EventHandler onloadstart;

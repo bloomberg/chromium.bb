@@ -31,18 +31,15 @@
 #ifndef FileError_h
 #define FileError_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/DOMError.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
+class DOMException;
 class ExceptionState;
 
-class CORE_EXPORT FileError final : public DOMError {
-    DEFINE_WRAPPERTYPEINFO();
-public:
+namespace FileError {
+
     enum ErrorCode {
         OK = 0,
         NOT_FOUND_ERR = 1,
@@ -59,32 +56,22 @@ public:
         PATH_EXISTS_ERR = 12,
     };
 
-    static const char abortErrorMessage[];
-    static const char encodingErrorMessage[];
-    static const char invalidStateErrorMessage[];
-    static const char noModificationAllowedErrorMessage[];
-    static const char notFoundErrorMessage[];
-    static const char notReadableErrorMessage[];
-    static const char pathExistsErrorMessage[];
-    static const char quotaExceededErrorMessage[];
-    static const char securityErrorMessage[];
-    static const char syntaxErrorMessage[];
-    static const char typeMismatchErrorMessage[];
+    CORE_EXPORT extern const char abortErrorMessage[];
+    CORE_EXPORT extern const char encodingErrorMessage[];
+    CORE_EXPORT extern const char invalidStateErrorMessage[];
+    CORE_EXPORT extern const char noModificationAllowedErrorMessage[];
+    CORE_EXPORT extern const char notFoundErrorMessage[];
+    CORE_EXPORT extern const char notReadableErrorMessage[];
+    CORE_EXPORT extern const char pathExistsErrorMessage[];
+    CORE_EXPORT extern const char quotaExceededErrorMessage[];
+    CORE_EXPORT extern const char securityErrorMessage[];
+    CORE_EXPORT extern const char syntaxErrorMessage[];
+    CORE_EXPORT extern const char typeMismatchErrorMessage[];
 
-    static FileError* create(ErrorCode code)
-    {
-        return new FileError(code);
-    }
+    CORE_EXPORT void throwDOMException(ExceptionState&, ErrorCode);
+    CORE_EXPORT DOMException* createDOMException(ErrorCode);
 
-    ErrorCode code() const { return m_code; }
-
-    static void throwDOMException(ExceptionState&, ErrorCode);
-
-private:
-    explicit FileError(ErrorCode);
-
-    ErrorCode m_code;
-};
+} // namespace FileError
 
 } // namespace blink
 

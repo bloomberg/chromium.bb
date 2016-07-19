@@ -66,11 +66,11 @@ private:
 
     void addEntries(const EntryHeapVector& entries);
 
-    void onError(FileError*);
+    void onError(FileError::ErrorCode);
 
     bool m_isReading;
     EntryHeapVector m_entries;
-    Member<FileError> m_error;
+    FileError::ErrorCode m_error = FileError::ErrorCode::OK;
     Member<EntriesCallback> m_entriesCallback;
     Member<ErrorCallback> m_errorCallback;
 };

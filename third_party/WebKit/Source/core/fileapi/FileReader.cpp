@@ -347,7 +347,7 @@ void FileReader::doAbort()
 
     terminate();
 
-    m_error = FileError::create(FileError::ABORT_ERR);
+    m_error = FileError::createDOMException(FileError::ABORT_ERR);
 
     // Unregister the reader.
     ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);
@@ -446,7 +446,7 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     ASSERT(m_state != DONE);
     m_state = DONE;
 
-    m_error = FileError::create(static_cast<FileError::ErrorCode>(errorCode));
+    m_error = FileError::createDOMException(static_cast<FileError::ErrorCode>(errorCode));
 
     // Unregister the reader.
     ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);

@@ -206,21 +206,6 @@ interface File : Blob
     getter name
     getter webkitRelativePath
     method constructor
-interface FileError : DOMError
-    attribute ABORT_ERR
-    attribute ENCODING_ERR
-    attribute INVALID_MODIFICATION_ERR
-    attribute INVALID_STATE_ERR
-    attribute NOT_FOUND_ERR
-    attribute NOT_READABLE_ERR
-    attribute NO_MODIFICATION_ALLOWED_ERR
-    attribute PATH_EXISTS_ERR
-    attribute QUOTA_EXCEEDED_ERR
-    attribute SECURITY_ERR
-    attribute SYNTAX_ERR
-    attribute TYPE_MISMATCH_ERR
-    getter code
-    method constructor
 interface FileList
     getter length
     method constructor

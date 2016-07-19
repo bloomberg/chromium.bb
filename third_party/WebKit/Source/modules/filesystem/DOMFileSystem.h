@@ -64,15 +64,15 @@ public:
     // DOMFileSystemBase overrides.
     void addPendingCallbacks() override;
     void removePendingCallbacks() override;
-    void reportError(ErrorCallback*, FileError*) override;
+    void reportError(ErrorCallbackBase*, FileError::ErrorCode) override;
 
-    static void reportError(ExecutionContext*, ErrorCallback*, FileError*);
+    static void reportError(ExecutionContext*, ErrorCallbackBase*, FileError::ErrorCode);
 
     // ActiveScriptWrappable overrides.
     bool hasPendingActivity() const final;
 
-    void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallback*);
-    void createFile(const FileEntry*, BlobCallback*, ErrorCallback*);
+    void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
+    void createFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
 
     // Schedule a callback. This should not cross threads (should be called on the same context thread).
     static void scheduleCallback(ExecutionContext* executionContext, std::unique_ptr<ExecutionContextTask> task)

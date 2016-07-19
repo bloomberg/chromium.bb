@@ -39,7 +39,6 @@ function constructorPropertiesOnWindow(globalObject)
             type =="Uint8ClampedArrayConstructor" ||
             type =="Uint16ArrayConstructor" ||
             type =="Uint32ArrayConstructor" ||
-            type == "FileErrorConstructor" ||
             type == "FileReaderConstructor" ||
             type == "AudioContextConstructor" ||
             type == "SpeechSynthesisUtteranceConstructor")

@@ -47,7 +47,7 @@
 
     [RaisesException] void abort();
 
-    readonly attribute FileError error;
+    readonly attribute DOMException? error;
     readonly attribute long long position;
     readonly attribute long long length;
 

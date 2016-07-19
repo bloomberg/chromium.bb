@@ -5,6 +5,7 @@
 #include "modules/presentation/PresentationConnectionCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"

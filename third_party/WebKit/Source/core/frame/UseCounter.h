@@ -139,7 +139,6 @@ public:
         NavigatorProductSub = 123,
         NavigatorVendor = 124,
         NavigatorVendorSub = 125,
-        FileError = 126,
         PrefixedAnimationEndEvent = 128,
         UnprefixedAnimationEndEvent = 129,
         PrefixedAndUnprefixedAnimationEndEvent = 130,

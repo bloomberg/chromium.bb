@@ -34,6 +34,7 @@
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
 
 namespace blink {
 
@@ -60,14 +61,14 @@ private:
     Member<DirectoryReader> m_reader;
 };
 
-class DirectoryReader::ErrorCallbackHelper final : public ErrorCallback {
+class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
 public:
     explicit ErrorCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
     {
     }
 
-    void handleEvent(FileError* error) override
+    void invoke(FileError::ErrorCode error) override
     {
         m_reader->onError(error);
     }
@@ -75,7 +76,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_reader);
-        ErrorCallback::trace(visitor);
+        ErrorCallbackBase::trace(visitor);
     }
 
 private:
@@ -100,13 +101,13 @@ void DirectoryReader::readEntries(EntriesCallback* entriesCallback, ErrorCallbac
     }
 
     if (m_error) {
-        filesystem()->reportError(errorCallback, m_error.get());
+        filesystem()->reportError(ScriptErrorCallback::wrap(errorCallback), m_error);
         return;
     }
 
     if (m_entriesCallback) {
         // Non-null m_entriesCallback means multiple readEntries() calls are made concurrently. We don't allow doing it.
-        filesystem()->reportError(errorCallback, FileError::create(FileError::INVALID_STATE_ERR));
+        filesystem()->reportError(ScriptErrorCallback::wrap(errorCallback), FileError::INVALID_STATE_ERR);
         return;
     }
 
@@ -133,20 +134,17 @@ void DirectoryReader::addEntries(const EntryHeapVector& entries)
     }
 }
 
-void DirectoryReader::onError(FileError* error)
+void DirectoryReader::onError(FileError::ErrorCode error)
 {
     m_error = error;
     m_entriesCallback = nullptr;
-    if (m_errorCallback) {
-        ErrorCallback* errorCallback = m_errorCallback.release();
-        errorCallback->handleEvent(error);
-    }
+    if (m_errorCallback)
+        m_errorCallback->handleEvent(FileError::createDOMException(error));
 }
 
 DEFINE_TRACE(DirectoryReader)
 {
     visitor->trace(m_entries);
-    visitor->trace(m_error);
     visitor->trace(m_entriesCallback);
     visitor->trace(m_errorCallback);
     DirectoryReaderBase::trace(visitor);

@@ -29,5 +29,5 @@
  */
 
 callback interface ErrorCallback {
-    void handleEvent(FileError error);
+    void handleEvent(DOMException error);
 };

@@ -73,7 +73,7 @@ public:
     void doAbort();
 
     ReadyState getReadyState() const { return m_state; }
-    FileError* error() { return m_error; }
+    DOMException* error() { return m_error; }
     void result(StringOrArrayBuffer& resultAttribute) const;
 
     // ActiveDOMObject
@@ -131,7 +131,7 @@ private:
     String m_encoding;
 
     std::unique_ptr<FileReaderLoader> m_loader;
-    Member<FileError> m_error;
+    Member<DOMException> m_error;
     double m_lastProgressNotificationTimeMS;
 };
 

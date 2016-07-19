@@ -59,35 +59,35 @@ void Entry::getMetadata(ExecutionContext* context, MetadataCallback* successCall
 {
     if (m_fileSystem->type() == FileSystemTypeIsolated)
         UseCounter::count(context, UseCounter::Entry_GetMetadata_Method_IsolatedFileSystem);
-    m_fileSystem->getMetadata(this, successCallback, errorCallback);
+    m_fileSystem->getMetadata(this, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 void Entry::moveTo(ExecutionContext* context, DirectoryEntry* parent, const String& name, EntryCallback* successCallback, ErrorCallback* errorCallback) const
 {
     if (m_fileSystem->type() == FileSystemTypeIsolated)
         UseCounter::count(context, UseCounter::Entry_MoveTo_Method_IsolatedFileSystem);
-    m_fileSystem->move(this, parent, name, successCallback, errorCallback);
+    m_fileSystem->move(this, parent, name, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 void Entry::copyTo(ExecutionContext* context, DirectoryEntry* parent, const String& name, EntryCallback* successCallback, ErrorCallback* errorCallback) const
 {
     if (m_fileSystem->type() == FileSystemTypeIsolated)
         UseCounter::count(context, UseCounter::Entry_CopyTo_Method_IsolatedFileSystem);
-    m_fileSystem->copy(this, parent, name, successCallback, errorCallback);
+    m_fileSystem->copy(this, parent, name, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 void Entry::remove(ExecutionContext* context, VoidCallback* successCallback, ErrorCallback* errorCallback) const
 {
     if (m_fileSystem->type() == FileSystemTypeIsolated)
         UseCounter::count(context, UseCounter::Entry_Remove_Method_IsolatedFileSystem);
-    m_fileSystem->remove(this, successCallback, errorCallback);
+    m_fileSystem->remove(this, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 void Entry::getParent(ExecutionContext* context, EntryCallback* successCallback, ErrorCallback* errorCallback) const
 {
     if (m_fileSystem->type() == FileSystemTypeIsolated)
         UseCounter::count(context, UseCounter::Entry_GetParent_Method_IsolatedFileSystem);
-    m_fileSystem->getParent(this, successCallback, errorCallback);
+    m_fileSystem->getParent(this, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 String Entry::toURL(ExecutionContext* context) const

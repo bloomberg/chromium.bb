@@ -34,6 +34,7 @@
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriterCallback.h"
 
 namespace blink {
@@ -45,12 +46,12 @@ FileEntry::FileEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
 
 void FileEntry::createWriter(FileWriterCallback* successCallback, ErrorCallback* errorCallback)
 {
-    filesystem()->createWriter(this, successCallback, errorCallback);
+    filesystem()->createWriter(this, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 void FileEntry::file(BlobCallback* successCallback, ErrorCallback* errorCallback)
 {
-    filesystem()->createFile(this, successCallback, errorCallback);
+    filesystem()->createFile(this, successCallback, ScriptErrorCallback::wrap(errorCallback));
 }
 
 DEFINE_TRACE(FileEntry)

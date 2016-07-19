@@ -55,7 +55,7 @@ public:
 
     ~DOMFileSystemSync() override;
 
-    void reportError(ErrorCallback*, FileError*) override;
+    void reportError(ErrorCallbackBase*, FileError::ErrorCode) override;
 
     DirectoryEntrySync* root();
 

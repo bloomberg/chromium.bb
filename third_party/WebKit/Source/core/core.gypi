@@ -155,7 +155,6 @@
             'fileapi/Blob.idl',
             'fileapi/File.idl',
             'fileapi/BlobCallback.idl',
-            'fileapi/FileError.idl',
             'fileapi/FileList.idl',
             'fileapi/FileReader.idl',
             'fileapi/FileReaderSync.idl',

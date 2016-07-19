@@ -37,6 +37,7 @@
 #include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntrySync.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
 
 namespace blink {
 
@@ -66,22 +67,22 @@ private:
     Member<DirectoryReaderSync> m_reader;
 };
 
-class DirectoryReaderSync::ErrorCallbackHelper final : public ErrorCallback {
+class DirectoryReaderSync::ErrorCallbackHelper final : public ErrorCallbackBase {
 public:
     explicit ErrorCallbackHelper(DirectoryReaderSync* reader)
         : m_reader(reader)
     {
     }
 
-    void handleEvent(FileError* error) override
+    void invoke(FileError::ErrorCode error) override
     {
-        m_reader->setError(error->code());
+        m_reader->setError(error);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_reader);
-        ErrorCallback::trace(visitor);
+        ErrorCallbackBase::trace(visitor);
     }
 
 private:

@@ -49,17 +49,17 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& wor
 {
     ExecutionContext* secureContext = worker.getExecutionContext();
     if (!secureContext->getSecurityOrigin()->canAccessFileSystem()) {
-        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
         return;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::INVALID_MODIFICATION_ERR));
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::INVALID_MODIFICATION_ERR);
         return;
     }
 
-    LocalFileSystem::from(worker)->requestFileSystem(&worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, &worker, fileSystemType));
+    LocalFileSystem::from(worker)->requestFileSystem(&worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, ScriptErrorCallback::wrap(errorCallback), &worker, fileSystemType));
 }
 
 DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope& worker, int type, long long size, ExceptionState& exceptionState)
@@ -89,16 +89,16 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     KURL completedURL = worker.completeURL(url);
     ExecutionContext* secureContext = worker.getExecutionContext();
     if (!secureContext->getSecurityOrigin()->canAccessFileSystem() || !secureContext->getSecurityOrigin()->canRequest(completedURL)) {
-        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
         return;
     }
 
     if (!completedURL.isValid()) {
-        DOMFileSystem::reportError(&worker, errorCallback, FileError::create(FileError::ENCODING_ERR));
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::ENCODING_ERR);
         return;
     }
 
-    LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, &worker));
+    LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, ResolveURICallbacks::create(successCallback, ScriptErrorCallback::wrap(errorCallback), &worker));
 }
 
 EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope& worker, const String& url, ExceptionState& exceptionState)
