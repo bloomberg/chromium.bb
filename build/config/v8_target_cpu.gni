@@ -34,12 +34,16 @@ declare_args() {
 }
 
 if (v8_target_cpu == "") {
-  if (current_toolchain == "//build/toolchain/linux:clang_x64_v8_arm64" ||
-      current_toolchain == "//build/toolchain/linux:x64_v8_arm64") {
+  if (current_toolchain == "//build/toolchain/linux:clang_x64_v8_arm64") {
     v8_target_cpu = "arm64"
-  } else if (current_toolchain == "//build/toolchain/linux:clang_x86_v8_arm" ||
-             current_toolchain == "//build/toolchain/linux:x86_v8_arm") {
+  } else if (current_toolchain == "//build/toolchain/linux:clang_x86_v8_arm") {
     v8_target_cpu = "arm"
+  } else if (current_toolchain ==
+             "//build/toolchain/linux:clang_x86_v8_mips64el") {
+    v8_target_cpu = "mips64el"
+  } else if (current_toolchain ==
+             "//build/toolchain/linux:clang_x86_v8_mipsel") {
+    v8_target_cpu = "mipsel"
   } else if (is_msan) {
     # If we're running under a sanitizer, if we configure v8 to generate
     # code that will be run under a simulator, then the generated code

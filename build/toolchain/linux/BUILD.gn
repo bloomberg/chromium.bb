@@ -44,6 +44,12 @@ clang_toolchain("clang_x86_v8_arm") {
   toolchain_os = "linux"
 }
 
+clang_toolchain("clang_x86_v8_mipsel") {
+  toolchain_cpu = "x86"
+  v8_toolchain_cpu = "mipsel"
+  toolchain_os = "linux"
+}
+
 gcc_toolchain("x86") {
   cc = "gcc"
   cxx = "g++"
@@ -66,6 +72,12 @@ clang_toolchain("clang_x64") {
 clang_toolchain("clang_x64_v8_arm64") {
   toolchain_cpu = "x64"
   v8_toolchain_cpu = "arm64"
+  toolchain_os = "linux"
+}
+
+clang_toolchain("clang_x64_v8_mips64el") {
+  toolchain_cpu = "x64"
+  v8_toolchain_cpu = "mips64el"
   toolchain_os = "linux"
 }
 
