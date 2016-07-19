@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "blimp/client/core/blimp_contents_impl.h"
+#include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "jni/BlimpClientContextImpl_jni.h"
 
 namespace blimp {

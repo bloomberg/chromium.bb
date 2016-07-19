@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "blimp/client/public/blimp_client_context.h"
-#include "blimp/client/public/blimp_contents.h"
+#include "blimp/client/public/contents/blimp_contents.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

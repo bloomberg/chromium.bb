@@ -6,7 +6,7 @@
 
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
-#include "blimp/client/public/blimp_contents.h"
+#include "blimp/client/public/contents/blimp_contents.h"
 #include "chrome/browser/android/blimp/blimp_client_context_factory.h"
 #include "chrome/browser/android/blimp/blimp_contents_profile_attachment.h"
 #include "chrome/browser/profiles/profile.h"

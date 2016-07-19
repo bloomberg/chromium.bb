@@ -29,12 +29,12 @@ source_set("public_headers") {
   sources = [
     "blimp_client_context.h",
     "blimp_client_context_delegate.h",
-    "blimp_contents.h",
-    "blimp_contents_observer.h",
-    "blimp_navigation_controller.h",
+    "contents/blimp_contents.h",
+    "contents/blimp_contents_observer.h",
+    "contents/blimp_navigation_controller.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//components/keyed_service/core",
     "//url",
@@ -67,11 +67,11 @@ if (is_android) {
     visibility = [ "//blimp/client/*" ]
 
     java_files = [
+      "android/java/src/org/chromium/blimp_public/contents/BlimpContents.java",
+      "android/java/src/org/chromium/blimp_public/contents/BlimpContentsObserver.java",
+      "android/java/src/org/chromium/blimp_public/contents/BlimpNavigationController.java",
+      "android/java/src/org/chromium/blimp_public/contents/EmptyBlimpContentsObserver.java",
       "android/java/src/org/chromium/blimp_public/BlimpClientContext.java",
-      "android/java/src/org/chromium/blimp_public/BlimpContents.java",
-      "android/java/src/org/chromium/blimp_public/BlimpContentsObserver.java",
-      "android/java/src/org/chromium/blimp_public/BlimpNavigationController.java",
-      "android/java/src/org/chromium/blimp_public/EmptyBlimpContentsObserver.java",
     ]
   }
 }

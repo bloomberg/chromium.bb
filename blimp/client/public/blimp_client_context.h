@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "blimp/client/public/blimp_client_context_delegate.h"
-#include "blimp/client/public/blimp_contents.h"
+#include "blimp/client/public/contents/blimp_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 #if defined(OS_ANDROID)

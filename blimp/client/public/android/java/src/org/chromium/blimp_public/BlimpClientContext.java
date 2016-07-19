@@ -4,6 +4,8 @@
 
 package org.chromium.blimp_public;
 
+import org.chromium.blimp_public.contents.BlimpContents;
+
 /**
  * BlimpClientContext is the Java representation of a native BlimpClientContext object.
  * It is owned by the native BrowserContext.
