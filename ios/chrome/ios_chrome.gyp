@@ -25,8 +25,6 @@
         ],
       },
       'sources': [
-        'app/UIApplication+ExitsOnSuspend.h',
-        'app/UIApplication+ExitsOnSuspend.mm',
         'app/application_delegate/memory_warning_helper.h',
         'app/application_delegate/memory_warning_helper.mm',
         'app/deferred_initialization_runner.h',
