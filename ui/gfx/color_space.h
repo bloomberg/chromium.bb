@@ -16,6 +16,11 @@
 #include <CoreGraphics/CGColorSpace.h>
 #endif
 
+namespace IPC {
+template <class P>
+struct ParamTraits;
+}  // namespace IPC
+
 namespace gfx {
 
 class GFX_EXPORT ColorSpace {
@@ -51,11 +56,10 @@ class GFX_EXPORT ColorSpace {
  private:
   struct Key;
   class GlobalData;
-  friend struct Key;
-  friend class GlobalData;
   enum class Type {
     UNDEFINED,
     ICC_PROFILE,
+    LAST = ICC_PROFILE
   };
   Type type_ = Type::UNDEFINED;
 
@@ -63,6 +67,11 @@ class GFX_EXPORT ColorSpace {
   // (e.g, ICC profile). This structure is shared by all identical ColorSpace
   // objects in the process. It is lazily initialized for named color spaces.
   mutable scoped_refptr<GlobalData> global_data_;
+
+  friend struct Key;
+  friend class GlobalData;
+  friend struct IPC::ParamTraits<gfx::ColorSpace>;
+  friend struct IPC::ParamTraits<gfx::ColorSpace::Type>;
 };
 
 }  // namespace gfx

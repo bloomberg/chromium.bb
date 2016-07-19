@@ -90,6 +90,7 @@ source_set("common") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
+    "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
     "//ui/gl",

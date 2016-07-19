@@ -17,6 +17,7 @@
         '../gfx.gyp:gfx',
         '../gfx.gyp:gfx_geometry',
         '../gfx.gyp:gfx_range',
+        'color/gfx_ipc_color.gyp:gfx_ipc_color',
         'geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
       ],
       'defines': [

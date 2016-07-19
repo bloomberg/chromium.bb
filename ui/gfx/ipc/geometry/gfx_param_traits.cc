@@ -14,10 +14,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
-#if defined(OS_MACOSX)
-#include "ipc/mach_port_mac.h"
-#endif
-
 namespace IPC {
 
 void ParamTraits<gfx::Point>::GetSize(base::PickleSizer* s,

@@ -42,6 +42,7 @@
     '../ui/events/events.gyp:events_ipc',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
+    '../ui/gfx/ipc/color/gfx_ipc_color.gyp:gfx_ipc_color',
     '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
     '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
     '../ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
