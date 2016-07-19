@@ -264,8 +264,8 @@ def main():
                       help='Run lint instead of just touching stamp.')
   parser.add_argument('--jar-path',
                       help='Jar file containing class files.')
-  parser.add_argument('--java-files',
-                      help='Paths to java files.')
+  parser.add_argument('--java-sources-file',
+                      help='File containing a list of java files.')
   parser.add_argument('--manifest-path',
                       help='Path to AndroidManifest.xml')
   parser.add_argument('--classpath', default=[], action='append',
@@ -292,8 +292,8 @@ def main():
     if args.src_dirs:
       src_dirs = build_utils.ParseGypList(args.src_dirs)
       sources = build_utils.FindInDirectories(src_dirs, '*.java')
-    elif args.java_files:
-      sources = build_utils.ParseGypList(args.java_files)
+    elif args.java_sources_file:
+      sources.extend(build_utils.ReadSourcesList(args.java_sources_file))
 
     if args.config_path and not args.processed_config_path:
       parser.error('--config-path specified without --processed-config-path')

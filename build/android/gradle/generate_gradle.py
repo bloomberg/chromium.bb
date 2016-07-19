@@ -176,8 +176,7 @@ def _CreateJavaSourceDir(entry_output_dir, java_sources_file):
   """
   java_dirs = []
   if java_sources_file:
-    with open(java_sources_file) as f:
-      java_files = _RebasePath([l.strip() for l in f])
+    java_files = _RebasePath(build_utils.ReadSourcesList(java_sources_file))
     java_dirs = _ComputeJavaSourceDirs(java_files)
 
     found_java_files = build_utils.FindInDirectories(java_dirs, '*.java')

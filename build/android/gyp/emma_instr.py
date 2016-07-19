@@ -201,8 +201,8 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
     if options.source_files:
       source_files += build_utils.ParseGypList(options.source_files)
     if options.java_sources_file:
-      with open(options.java_sources_file) as f:
-        source_files.extend(l.strip() for l in f)
+      source_files.extend(
+          build_utils.ReadSourcesList(options.java_sources_file))
     source_dirs = _GetSourceDirsFromSourceFiles(source_files)
 
   # TODO(GYP): In GN, we are passed the list of sources, detecting source

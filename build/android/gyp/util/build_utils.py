@@ -474,6 +474,15 @@ def ExpandFileArgs(args):
   return new_args
 
 
+def ReadSourcesList(sources_list_file_name):
+  """Reads a GN-written file containing list of file names and returns a list.
+
+  Note that this function should not be used to parse response files.
+  """
+  with open(sources_list_file_name) as f:
+    return [file_name.strip() for file_name in f]
+
+
 def CallAndWriteDepfileIfStale(function, options, record_path=None,
                                input_paths=None, input_strings=None,
                                output_paths=None, force=False,

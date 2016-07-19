@@ -624,14 +624,19 @@ if (enable_java_templates) {
           invoker.jar_path,
           invoker.build_config,
         ]
+        if (invoker.java_files != []) {
+          inputs += [ invoker.java_sources_file ]
+          _rebased_java_sources_file =
+              rebase_path(invoker.java_sources_file, root_build_dir)
+          args += [ "--java-sources-file=$_rebased_java_sources_file" ]
+        }
         deps += [ "//build/android:prepare_android_lint_cache" ]
-        _rebased_java_files = rebase_path(invoker.java_files, root_build_dir)
+
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
         args += [
           "--jar-path",
           rebase_path(invoker.jar_path, root_build_dir),
-          "--java-files=$_rebased_java_files",
           "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_dirs)",
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_zips)",
@@ -2257,6 +2262,9 @@ if (enable_java_templates) {
           build_config = _build_config
           jar_path = _jar_path
           java_files = _java_files
+          if (_java_files != []) {
+            java_sources_file = _java_sources_file
+          }
           deps = _accumulated_deps
         }
 

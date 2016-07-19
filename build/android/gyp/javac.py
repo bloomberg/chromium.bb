@@ -329,8 +329,7 @@ def _ParseOptions(argv):
   for arg in args:
     # Interpret a path prefixed with @ as a file containing a list of sources.
     if arg.startswith('@'):
-      with open(arg[1:]) as f:
-        java_files.extend(l.strip() for l in f)
+      java_files.extend(build_utils.ReadSourcesList(arg[1:]))
     else:
       java_files.append(arg)
 
