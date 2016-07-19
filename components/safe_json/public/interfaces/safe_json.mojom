@@ -4,8 +4,9 @@
 
 module safe_json.mojom;
 
-import "mojo/common/common_custom_types.mojom";
+[Native]
+struct ListValue;
 
 interface SafeJsonParser {
-  Parse(string json) => (mojo.common.mojom.ListValue result, string? error);
+  Parse(string json) => (ListValue result, string? error);
 };

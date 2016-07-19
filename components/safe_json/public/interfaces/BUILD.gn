@@ -8,8 +8,4 @@ mojom("interfaces") {
   sources = [
     "safe_json.mojom",
   ]
-
-  deps = [
-    "//mojo/common:common_custom_types",
-  ]
 }

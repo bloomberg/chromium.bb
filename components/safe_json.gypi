@@ -64,14 +64,13 @@
       # GN version: //components/safe_json/public/interfaces
       'target_name': 'safe_json_mojo_bindings',
       'type': 'static_library',
+      'variables': {
+        'mojom_typemaps': [
+          'safe_json/public/interfaces/safe_json.typemap',
+        ],
+      },
       'sources': [
         'safe_json/public/interfaces/safe_json.mojom',
-      ],
-      'dependencies': [
-        '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
-      ],
-      'export_dependent_settings':[
-        '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
       ],
       'includes': [ '../mojo/mojom_bindings_generator.gypi'],
     },
