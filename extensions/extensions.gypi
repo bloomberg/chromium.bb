@@ -294,6 +294,8 @@
       'browser/api/cast_channel/logger.h',
       'browser/api/cast_channel/logger_util.cc',
       'browser/api/cast_channel/logger_util.h',
+      'browser/api/clipboard/clipboard_api.cc',
+      'browser/api/clipboard/clipboard_api.h',  
       'browser/api/declarative/declarative_api.cc',
       'browser/api/declarative/declarative_api.h',
       'browser/api/declarative/declarative_rule.h',

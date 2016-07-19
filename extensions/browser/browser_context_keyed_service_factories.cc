@@ -11,6 +11,7 @@
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
+#include "extensions/browser/api/clipboard/clipboard_api.h"
 #include "extensions/browser/api/display_source/display_source_event_router_factory.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/idle/idle_manager_factory.h"
@@ -55,6 +56,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AudioAPI::GetFactoryInstance();
   BluetoothAPI::GetFactoryInstance();
   BluetoothPrivateAPI::GetFactoryInstance();
+  ClipboardAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   chromeos::VpnServiceFactory::GetInstance();
 #endif

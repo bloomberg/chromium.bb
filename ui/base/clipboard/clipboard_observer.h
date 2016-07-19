@@ -16,8 +16,8 @@ class UI_BASE_EXPORT ClipboardObserver {
   // Called when clipboard data is changed.
   virtual void OnClipboardDataChanged() = 0;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClipboardObserver);
+ protected:
+  virtual ~ClipboardObserver() {}
 };
 
 }  // namespace ui

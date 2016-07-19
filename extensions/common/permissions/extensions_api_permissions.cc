@@ -47,6 +47,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kBluetoothPrivate,
        "bluetoothPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+       {APIPermission::kClipboard, "clipboard"},
       {APIPermission::kClipboardRead,
        "clipboardRead",
        APIPermissionInfo::kFlagSupportsContentCapabilities},

@@ -17,7 +17,8 @@ ClipboardMonitor::~ClipboardMonitor() {
 
 // static
 ClipboardMonitor* ClipboardMonitor::GetInstance() {
-  return base::Singleton<ClipboardMonitor>::get();
+  return base::Singleton<ClipboardMonitor,
+                         base::LeakySingletonTraits<ClipboardMonitor>>::get();
 }
 
 void ClipboardMonitor::NotifyClipboardDataChanged() {

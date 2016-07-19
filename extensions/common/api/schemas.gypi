@@ -19,6 +19,7 @@
       'bluetooth_private.idl',
       'bluetooth_socket.idl',
       'cast_channel.idl',
+      'clipboard.idl',
       'document_scan.idl',
       'display_source.idl',
       'dns.idl',

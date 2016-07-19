@@ -73592,6 +73592,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="400" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_WRITE_REQUEST"/>
   <int value="401" label="ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE"/>
   <int value="402" label="QUICK_UNLOCK_PRIVATE_ON_ACTIVE_MODES_CHANGED"/>
+  <int value="403" label="CLIPBOARD_ON_CLIPBOARD_DATA_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -75124,13 +75125,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="114" label="kPlugin"/>
   <int value="115" label="kPower"/>
   <int value="116" label="kPreferencesPrivate"/>
-  <int value="117" label="kPrincipalsPrivate"/>
+  <int value="117" label="kDeleted_PrincipalsPrivate"/>
   <int value="118" label="kPrinterProvider"/>
   <int value="119" label="kPrivacy"/>
   <int value="120" label="kProcesses"/>
   <int value="121" label="kProxy"/>
   <int value="122" label="kImageWriterPrivate"/>
-  <int value="123" label="kReadingListPrivate"/>
+  <int value="123" label="kDeleted_ReadingListPrivate"/>
   <int value="124" label="kRtcPrivate"/>
   <int value="125" label="kSearchProvider"/>
   <int value="126" label="kSearchEnginesPrivate"/>
@@ -75206,6 +75207,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="196" label="kEnterpriseDeviceAttributes"/>
   <int value="197" label="kCertificateProvider"/>
   <int value="198" label="kResourcesPrivate"/>
+  <int value="199" label="kDisplaySource"/>
+  <int value="200" label="kClipboard"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
