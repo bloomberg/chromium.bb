@@ -23,6 +23,8 @@
  * SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "config.h"
 
 #include "compositor.h"

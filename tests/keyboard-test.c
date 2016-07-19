@@ -25,6 +25,8 @@
 
 #include "config.h"
 
+#include <stdint.h>
+
 #include "weston-test-client-helper.h"
 
 TEST(simple_keyboard_test)

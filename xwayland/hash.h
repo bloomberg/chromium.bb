@@ -35,6 +35,8 @@
 #ifndef HASH_H
 #define HASH_H
 
+#include <stdint.h>
+
 struct hash_table;
 struct hash_table *hash_table_create(void);
 typedef void (*hash_table_iterator_func_t)(void *element, void *data);

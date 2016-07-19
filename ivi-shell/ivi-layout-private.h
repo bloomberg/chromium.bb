@@ -26,6 +26,8 @@
 #ifndef _ivi_layout_PRIVATE_H_
 #define _ivi_layout_PRIVATE_H_
 
+#include <stdint.h>
+
 #include "compositor.h"
 #include "ivi-layout-export.h"
 

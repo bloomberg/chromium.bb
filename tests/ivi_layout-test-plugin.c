@@ -27,6 +27,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>

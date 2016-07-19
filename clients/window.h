@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-client.h>
 #include <cairo.h>

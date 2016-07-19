@@ -55,6 +55,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <stdint.h>
+
 #include "stdbool.h"
 #include "compositor.h"
 

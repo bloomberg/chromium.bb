@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <time.h>
 #include <pixman.h>
 #include <xkbcommon/xkbcommon.h>

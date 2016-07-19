@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #include "compositor.h"
 
 #define WESTON_X11_BACKEND_CONFIG_VERSION 1

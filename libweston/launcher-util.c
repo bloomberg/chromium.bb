@@ -31,6 +31,7 @@
 #include "launcher-util.h"
 #include "launcher-impl.h"
 
+#include <stdint.h>
 #include <unistd.h>
 #include <linux/input.h>
 

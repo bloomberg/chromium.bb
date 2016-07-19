@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #define WESTON_WAYLAND_BACKEND_CONFIG_VERSION 1
 
 struct weston_wayland_backend_output_config {

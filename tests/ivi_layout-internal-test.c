@@ -30,6 +30,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "compositor.h"
 #include "ivi-shell/ivi-layout-export.h"

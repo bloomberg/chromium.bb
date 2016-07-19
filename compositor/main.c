@@ -33,6 +33,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <dlfcn.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/utsname.h>
 #include <sys/stat.h>

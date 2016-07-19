@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "weston-test-client-helper.h"

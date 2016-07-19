@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

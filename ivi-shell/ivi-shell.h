@@ -27,6 +27,7 @@
 #define WESTON_IVI_SHELL_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "compositor.h"
 

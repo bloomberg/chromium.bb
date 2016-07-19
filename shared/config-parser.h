@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #define WESTON_CONFIG_FILE_ENV_VAR "WESTON_CONFIG_FILE"
 
 enum config_key_type {

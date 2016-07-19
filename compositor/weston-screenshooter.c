@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <linux/input.h>
 
 #include "compositor.h"

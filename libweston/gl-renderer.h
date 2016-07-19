@@ -25,6 +25,8 @@
 
 #include "config.h"
 
+#include <stdint.h>
+
 #include "compositor.h"
 
 #ifdef ENABLE_EGL

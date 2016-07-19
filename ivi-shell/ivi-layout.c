@@ -59,6 +59,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "compositor/weston.h"
 #include "compositor.h"

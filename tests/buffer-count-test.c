@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <EGL/egl.h>
 #include <wayland-egl.h>

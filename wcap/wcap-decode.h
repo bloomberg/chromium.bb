@@ -26,6 +26,8 @@
 #ifndef _WCAP_DECODE_
 #define _WCAP_DECODE_
 
+#include <stdint.h>
+
 #define WCAP_HEADER_MAGIC	0x57434150
 
 #define WCAP_FORMAT_XRGB8888	0x34325258

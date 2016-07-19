@@ -30,6 +30,7 @@
 #include <GLES2/gl2ext.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
