@@ -26,9 +26,15 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   border_rect_f.Scale(scale);
-  const float inset =
-      GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) * scale - 0.5f;
-  border_rect_f.Inset(inset, inset);
+  // Draw the border as a 1px thick line aligned with the inside edge of the
+  // LOCATION_BAR_BORDER_THICKNESS region. This line needs to be snapped to the
+  // pixel grid, so the result of the scale-up needs to be snapped to an integer
+  // value. Using floor() instead of round() ensures that, for non-integral
+  // scale factors, the border will still be drawn inside the BORDER_THICKNESS
+  // region instead of being partially inside it.
+  border_rect_f.Inset(gfx::InsetsF(
+      std::floor(GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) * scale) -
+      0.5f));
 
   SkPath path;
   const SkScalar scaled_corner_radius =
