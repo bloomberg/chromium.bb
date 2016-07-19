@@ -1,16 +1,11 @@
 <!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
 <script src="resources/get-request-header.js"></script>
+<script src="resources/cookie-test-util.js"></script>
 <script>
 description('Test receiving cookies in a WebSocket handshake which were set by another WebSocket handshake.');
 
 window.jsTestIsAsync = true;
-
-// Normalize a cookie string
-function normalizeCookie(cookie) {
-    // Split the cookie string, sort it and then put it back together.
-    return cookie.split('; ').sort().join('; ');
-}
 
 var cookie;
 var URL_SET_COOKIE = 'ws://127.0.0.1:8880/set-cookie';
