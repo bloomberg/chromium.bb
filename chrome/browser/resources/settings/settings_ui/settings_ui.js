@@ -16,7 +16,6 @@ Polymer({
   properties: {
     /**
      * Preferences state.
-     * @type {?CrSettingsPrefsElement}
      */
     prefs: Object,
 
@@ -26,10 +25,12 @@ Polymer({
       type: Object,
     },
 
+    /** @private */
     appealClosed_: {
       type: Boolean,
       value: function() {
-        return !!(sessionStorage.appealClosed_ || localStorage.appealClosed_);
+        return !!(window.sessionStorage.appealClosed_ ||
+                  window.localStorage.appealClosed_);
       },
     },
 
@@ -61,7 +62,7 @@ Polymer({
 
   /** @private */
   onCloseAppealTap_: function() {
-    sessionStorage.appealClosed_ = this.appealClosed_ = true;
+    window.sessionStorage.appealClosed_ = this.appealClosed_ = true;
   },
 
   /**
