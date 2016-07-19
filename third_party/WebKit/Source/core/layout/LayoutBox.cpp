@@ -2043,11 +2043,9 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     bool ancestorSkipped;
     bool filterOrReflectionSkipped;
     LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterOrReflectionSkipped);
-    LayoutBox* localContainingBlock = containingBlock();
     // Skip table row because cells and rows are in the same coordinate space, except when we're already at the ancestor.
     if (container->isTableRow() && container != ancestor) {
         DCHECK(isTableCell());
-        localContainingBlock = toLayoutBox(container->parent());
         container = container->parent();
     }
     if (!container)
@@ -2067,8 +2065,10 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     LayoutPoint topLeft = rect.location();
     // TODO(wkorman): Look into and document why this conditional is needed.
     // Currently present following logic in PaintLayer::updateLayerPosition.
-    if (!(isInline() && isLayoutInline()))
-        topLeft.moveBy(topLeftLocation(localContainingBlock));
+    if (container->isBox())
+        topLeft.moveBy(topLeftLocation(toLayoutBox(container)));
+    else
+        topLeft.move(locationOffset());
 
     const ComputedStyle& styleToUse = styleRef();
     EPosition position = styleToUse.position();

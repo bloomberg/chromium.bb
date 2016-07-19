@@ -1576,11 +1576,13 @@ bool LayoutObject::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     if (LayoutObject* parent = this->parent()) {
         if (parent->isBox()) {
             LayoutBox* parentBox = toLayoutBox(parent);
-            if (!parentBox->mapScrollingContentsRectToBoxSpace(rect, parent == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
-                return false;
+
             // Never flip for SVG as it handles writing modes itself.
             if (!isSVG())
                 parentBox->flipForWritingMode(rect);
+
+            if (!parentBox->mapScrollingContentsRectToBoxSpace(rect, parent == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
+                return false;
         }
         return parent->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
     }
