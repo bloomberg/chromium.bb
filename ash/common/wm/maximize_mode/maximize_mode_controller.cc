@@ -63,7 +63,7 @@ const int kLidRecentlyOpenedDurationSeconds = 2;
 const float kHingeVerticalSmoothingStart = 7.0f;
 // This is the maximum acceleration parallel to the hinge under which smoothing
 // will incorporate new acceleration values, in m/s^2.
-const float kHingeVerticalSmoothingMaximum = 9.5f;
+const float kHingeVerticalSmoothingMaximum = 8.7f;
 
 // The maximum deviation between the magnitude of the two accelerometers under
 // which to detect hinge angle in m/s^2. These accelerometers are attached to

@@ -65,6 +65,8 @@ extern const size_t kAccelerometerFullyOpenTestDataLength;
 // readings from the base and lid accelerometers in this order.
 extern const float kAccelerometerVerticalHingeTestData[];
 extern const size_t kAccelerometerVerticalHingeTestDataLength;
+extern const float kAccelerometerVerticalHingeUnstableAnglesTestData[];
+extern const size_t kAccelerometerVerticalHingeUnstableAnglesTestDataLength;
 
 class MaximizeModeControllerTest : public test::AshTestBase {
  public:
@@ -506,6 +508,36 @@ TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
   OpenLidToAngle(270.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Verify that the device won't exit touchview / maximize mode for unstable
+// angles when hinge is nearly vertical
+TEST_F(MaximizeModeControllerTest, VerticalHingeUnstableAnglesTest) {
+  // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  // Feeds in sample accelerometer data and verifies that there are no
+  // transitions out of touchview / maximize mode while shaking the device
+  // around, while the hinge is nearly vertical. The data was captured
+  // from maxmimize_mode_controller.cc and does not require conversion.
+  ASSERT_EQ(0u, kAccelerometerVerticalHingeUnstableAnglesTestDataLength % 6);
+  for (size_t i = 0;
+       i < kAccelerometerVerticalHingeUnstableAnglesTestDataLength / 6; ++i) {
+    gfx::Vector3dF base(
+        kAccelerometerVerticalHingeUnstableAnglesTestData[i * 6],
+        kAccelerometerVerticalHingeUnstableAnglesTestData[i * 6 + 1],
+        kAccelerometerVerticalHingeUnstableAnglesTestData[i * 6 + 2]);
+    gfx::Vector3dF lid(
+        kAccelerometerVerticalHingeUnstableAnglesTestData[i * 6 + 3],
+        kAccelerometerVerticalHingeUnstableAnglesTestData[i * 6 + 4],
+        kAccelerometerVerticalHingeUnstableAnglesTestData[i * 6 + 5]);
+    TriggerBaseAndLidUpdate(base, lid);
+    // There are a lot of samples, so ASSERT rather than EXPECT to only generate
+    // one failure rather than potentially hundreds.
+    ASSERT_TRUE(IsMaximizeModeStarted());
+  }
 }
 
 class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
