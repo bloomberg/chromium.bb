@@ -38,7 +38,7 @@ struct IntentFilter {
   array<string> data_schemes;
   [MinVersion=10] array<AuthorityEntry>? data_authorities;
   [MinVersion=10] array<PatternMatcher>? data_paths;
-  [MinVersion=10] array<PatternMatcher>? data_scheme_specific_parts;
+  [MinVersion=10] array<PatternMatcher>? deprecated_data_scheme_specific_parts;
 };
 
 // Describes a package that can handle a URL.

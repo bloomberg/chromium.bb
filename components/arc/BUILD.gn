@@ -197,6 +197,7 @@ source_set("unit_tests") {
     "intent_helper/activity_icon_loader_unittest.cc",
     "intent_helper/arc_intent_helper_bridge_unittest.cc",
     "intent_helper/font_size_util_unittest.cc",
+    "intent_helper/intent_filter_unittest.cc",
     "intent_helper/link_handler_model_impl_unittest.cc",
   ]
 

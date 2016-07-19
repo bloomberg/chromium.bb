@@ -54,11 +54,9 @@ class IntentFilter {
 
   bool matchDataAuthority(const GURL& url) const;
   bool hasDataPath(const GURL& url) const;
-  bool hasDataSchemeSpecificPart(const GURL& url) const;
 
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;
-  std::vector<PatternMatcher> scheme_specific_parts_;
 };
 
 }  // namespace arc

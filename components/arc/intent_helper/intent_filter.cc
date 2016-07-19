@@ -19,10 +19,6 @@ IntentFilter::IntentFilter(const mojom::IntentFilterPtr& mojo_intent_filter) {
        mojo_intent_filter->data_paths) {
     paths_.emplace_back(pattern);
   }
-  for (const mojom::PatternMatcherPtr& pattern :
-       mojo_intent_filter->data_scheme_specific_parts) {
-    scheme_specific_parts_.emplace_back(pattern);
-  }
 }
 
 IntentFilter::IntentFilter(const IntentFilter& other) = default;
@@ -40,30 +36,11 @@ bool IntentFilter::match(const GURL& url) const {
     return false;
   }
 
-  if (!scheme_specific_parts_.empty() && hasDataSchemeSpecificPart(url)) {
-    return true;
-  }
-
-  // If there isn't any matching ssp, we need to match an authority.
+  // Match the authority and the path (if any).
   if (!authorities_.empty()) {
     return matchDataAuthority(url) && (paths_.empty() || hasDataPath(url));
   }
 
-  return false;
-}
-
-// Transcribed from android's IntentFilter#hasDataSchemeSpecificPart.
-bool IntentFilter::hasDataSchemeSpecificPart(const GURL& url) const {
-  // The scheme-specific-part is the content of the URL minus the ref fragment.
-  GURL::Replacements replacements;
-  replacements.ClearRef();
-  const std::string ssp = url.ReplaceComponents(replacements).GetContent();
-
-  for (const PatternMatcher& pattern : scheme_specific_parts_) {
-    if (pattern.match(ssp)) {
-      return true;
-    }
-  }
   return false;
 }
 
@@ -104,8 +81,9 @@ IntentFilter::AuthorityEntry::AuthorityEntry(
 
 // Transcribed from android's IntentFilter.AuthorityEntry#match.
 bool IntentFilter::AuthorityEntry::match(const GURL& url) const {
-  if (!url.has_host())
+  if (!url.has_host()) {
     return false;
+  }
 
   if (port_ >= 0 && port_ != url.IntPort()) {
     return false;
@@ -145,7 +123,7 @@ bool IntentFilter::PatternMatcher::match(const std::string& str) const {
 
 // Transcribed from android's PatternMatcher#matchPattern.
 bool IntentFilter::PatternMatcher::matchGlob(const std::string& str) const {
-#define GET_CHAR(s, i) (UNLIKELY(i >= s.length())) ? '\0' : s[i]
+#define GET_CHAR(s, i) ((UNLIKELY(i >= s.length())) ? '\0' : s[i])
 
   const size_t NP = pattern_.length();
   const size_t NS = str.length();
