@@ -418,6 +418,7 @@
       'network_time/network_time_tracker_unittest.cc',
     ],
     'ntp_snippets_unittest_sources': [
+      'ntp_snippets/content_suggestions_service_unittest.cc',
       'ntp_snippets/ntp_snippet_unittest.cc',
       'ntp_snippets/ntp_snippets_database_unittest.cc',
       'ntp_snippets/ntp_snippets_fetcher_unittest.cc',

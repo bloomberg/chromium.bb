@@ -122,6 +122,8 @@ class ContentSuggestionsService : public KeyedService,
   void ClearDiscardedSuggestionsForDebugging();
 
  private:
+  friend class ContentSuggestionsServiceTest;
+
   // Implementation of ContentSuggestionsProvider::Observer.
   void OnNewSuggestions(ContentSuggestionsCategory changed_category,
                         std::vector<ContentSuggestion> suggestions) override;

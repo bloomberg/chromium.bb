@@ -78,6 +78,7 @@ if (is_android) {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "content_suggestions_service_unittest.cc",
     "ntp_snippet_unittest.cc",
     "ntp_snippets_database_unittest.cc",
     "ntp_snippets_fetcher_unittest.cc",
