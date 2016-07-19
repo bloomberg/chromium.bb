@@ -205,7 +205,8 @@ void BrowserList::MoveBrowsersInWorkspaceToFront(
   std::stable_partition(
       last_active_browsers.begin(), last_active_browsers.end(),
       [&new_workspace](Browser* browser) {
-        return browser->window()->GetWorkspace() != new_workspace;
+        return !browser->window()->IsVisibleOnAllWorkspaces() &&
+               browser->window()->GetWorkspace() != new_workspace;
       });
 
   Browser* new_last_active = instance->GetLastActive();

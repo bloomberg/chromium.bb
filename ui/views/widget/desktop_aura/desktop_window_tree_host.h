@@ -113,6 +113,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   virtual bool IsAlwaysOnTop() const = 0;
 
   virtual void SetVisibleOnAllWorkspaces(bool always_visible) = 0;
+  virtual bool IsVisibleOnAllWorkspaces() const = 0;
 
   // Returns true if the title changed.
   virtual bool SetWindowTitle(const base::string16& title) = 0;

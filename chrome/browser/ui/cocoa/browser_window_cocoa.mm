@@ -378,6 +378,10 @@ std::string BrowserWindowCocoa::GetWorkspace() const {
   return std::string();
 }
 
+bool BrowserWindowCocoa::IsVisibleOnAllWorkspaces() const {
+  return false;
+}
+
 ui::WindowShowState BrowserWindowCocoa::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;

@@ -715,6 +715,7 @@ void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
       return;
   }
 
+  workspace_ = base::IntToString(kAllDesktops);
   XEvent xevent;
   memset (&xevent, 0, sizeof (xevent));
   xevent.type = ClientMessage;
@@ -729,6 +730,14 @@ void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
   XSendEvent(xdisplay_, x_root_window_, False,
              SubstructureRedirectMask | SubstructureNotifyMask,
              &xevent);
+}
+
+bool DesktopWindowTreeHostX11::IsVisibleOnAllWorkspaces() const {
+  // We don't need a check for _NET_WM_STATE_STICKY because that would specify
+  // that the window remain in a fixed position even if the viewport scrolls.
+  // This is different from the type of workspace that's associated with
+  // _NET_WM_DESKTOP.
+  return GetWorkspace() == base::IntToString(kAllDesktops);
 }
 
 bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {

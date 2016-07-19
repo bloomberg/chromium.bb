@@ -1061,6 +1061,10 @@ void NativeWidgetMus::SetVisibleOnAllWorkspaces(bool always_visible) {
   // Not needed for chromeos.
 }
 
+bool NativeWidgetMus::IsVisibleOnAllWorkspaces() const {
+  return false;
+}
+
 void NativeWidgetMus::Maximize() {
   SetShowState(ui::mojom::ShowState::MAXIMIZED);
 }

@@ -81,6 +81,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void SetAlwaysOnTop(bool always_on_top) override;
   bool IsAlwaysOnTop() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  bool IsVisibleOnAllWorkspaces() const override;
   bool SetWindowTitle(const base::string16& title) override;
   void ClearNativeFocus() override;
   Widget::MoveLoopResult RunMoveLoop(

@@ -521,6 +521,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the widget to be visible on all work spaces.
   void SetVisibleOnAllWorkspaces(bool always_visible);
 
+  // Is this widget currently visible on all workspaces?
+  // A call to SetVisibleOnAllWorkspaces(true) won't necessarily mean
+  // IsVisbleOnAllWorkspaces() == true (for example, when the platform doesn't
+  // support workspaces).
+  bool IsVisibleOnAllWorkspaces() const;
+
   // Maximizes/minimizes/restores the window.
   void Maximize();
   void Minimize();

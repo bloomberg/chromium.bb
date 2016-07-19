@@ -562,6 +562,10 @@ void NativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {
   // Not implemented on chromeos or for child widgets.
 }
 
+bool NativeWidgetAura::IsVisibleOnAllWorkspaces() const {
+  return false;
+}
+
 void NativeWidgetAura::Maximize() {
   if (window_)
     window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);

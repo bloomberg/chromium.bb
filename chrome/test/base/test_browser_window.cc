@@ -198,6 +198,10 @@ std::string TestBrowserWindow::GetWorkspace() const {
   return std::string();
 }
 
+bool TestBrowserWindow::IsVisibleOnAllWorkspaces() const {
+  return false;
+}
+
 // TestBrowserWindowOwner -----------------------------------------------------
 
 TestBrowserWindowOwner::TestBrowserWindowOwner(TestBrowserWindow* window)

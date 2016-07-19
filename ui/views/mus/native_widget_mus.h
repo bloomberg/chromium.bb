@@ -158,6 +158,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void SetAlwaysOnTop(bool always_on_top) override;
   bool IsAlwaysOnTop() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  bool IsVisibleOnAllWorkspaces() const override;
   void Maximize() override;
   void Minimize() override;
   bool IsMaximized() const override;

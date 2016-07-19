@@ -666,6 +666,10 @@ void Widget::SetVisibleOnAllWorkspaces(bool always_visible) {
   native_widget_->SetVisibleOnAllWorkspaces(always_visible);
 }
 
+bool Widget::IsVisibleOnAllWorkspaces() const {
+  return native_widget_->IsVisibleOnAllWorkspaces();
+}
+
 void Widget::Maximize() {
   native_widget_->Maximize();
 }

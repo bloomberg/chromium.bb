@@ -385,6 +385,7 @@ class BrowserWindow : public ui::BaseWindow {
   // Returns the platform-specific ID of the workspace the browser window
   // currently resides in.
   virtual std::string GetWorkspace() const = 0;
+  virtual bool IsVisibleOnAllWorkspaces() const = 0;
 
  protected:
   friend class BrowserCloseManager;

@@ -380,7 +380,11 @@ bool DesktopWindowTreeHostWin::IsAlwaysOnTop() const {
 }
 
 void DesktopWindowTreeHostWin::SetVisibleOnAllWorkspaces(bool always_visible) {
-  // Windows does not have the concept of workspaces.
+  // Chrome does not yet support Windows 10 desktops.
+}
+
+bool DesktopWindowTreeHostWin::IsVisibleOnAllWorkspaces() const {
+  return false;
 }
 
 bool DesktopWindowTreeHostWin::SetWindowTitle(const base::string16& title) {

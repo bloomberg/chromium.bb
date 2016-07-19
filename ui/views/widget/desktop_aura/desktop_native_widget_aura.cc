@@ -788,6 +788,11 @@ void DesktopNativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {
     desktop_window_tree_host_->SetVisibleOnAllWorkspaces(always_visible);
 }
 
+bool DesktopNativeWidgetAura::IsVisibleOnAllWorkspaces() const {
+  return content_window_ &&
+         desktop_window_tree_host_->IsVisibleOnAllWorkspaces();
+}
+
 void DesktopNativeWidgetAura::Maximize() {
   if (content_window_)
     desktop_window_tree_host_->Maximize();

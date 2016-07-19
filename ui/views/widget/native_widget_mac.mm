@@ -463,6 +463,10 @@ void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {
   gfx::SetNSWindowVisibleOnAllWorkspaces(GetNativeWindow(), always_visible);
 }
 
+bool NativeWidgetMac::IsVisibleOnAllWorkspaces() const {
+  return false;
+}
+
 void NativeWidgetMac::Maximize() {
   NOTIMPLEMENTED();  // See IsMaximized().
 }

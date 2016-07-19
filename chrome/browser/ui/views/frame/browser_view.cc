@@ -2546,6 +2546,10 @@ std::string BrowserView::GetWorkspace() const {
   return frame_->GetWorkspace();
 }
 
+bool BrowserView::IsVisibleOnAllWorkspaces() const {
+  return frame_->IsVisibleOnAllWorkspaces();
+}
+
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
     void (WebContents::*method)()) {

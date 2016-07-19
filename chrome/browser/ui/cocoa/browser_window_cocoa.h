@@ -71,6 +71,7 @@ class BrowserWindowCocoa
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
   gfx::Rect GetRestoredBounds() const override;
   std::string GetWorkspace() const override;
+  bool IsVisibleOnAllWorkspaces() const override;
   ui::WindowShowState GetRestoredState() const override;
   gfx::Rect GetBounds() const override;
   gfx::Size GetContentsSize() const override;
