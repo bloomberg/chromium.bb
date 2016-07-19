@@ -968,7 +968,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     if (!m_client)
         return;
 
-    SharedBuffer* data = resource->resourceBuffer();
+    RefPtr<SharedBuffer> data = resource->resourceBuffer();
     if (data)
         handleReceivedData(data->data(), data->size());
 

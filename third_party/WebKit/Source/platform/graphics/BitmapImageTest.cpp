@@ -140,6 +140,8 @@ public:
         return m_imageObserver->m_lastDecodedSizeChangedDelta;
     }
 
+    PassRefPtr<SharedBuffer> data() { return m_image->data(); }
+
 protected:
     void SetUp() override
     {

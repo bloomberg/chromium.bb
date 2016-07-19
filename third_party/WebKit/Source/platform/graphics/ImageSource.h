@@ -69,6 +69,7 @@ public:
     // Returns the number of bytes of frame data actually cleared.
     size_t clearCacheExceptFrame(size_t);
 
+    PassRefPtr<SharedBuffer> data();
     void setData(SharedBuffer& data, bool allDataReceived);
     String filenameExtension() const;
 

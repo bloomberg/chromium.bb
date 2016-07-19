@@ -115,17 +115,9 @@ void ImageResource::markClientsAndObserversFinished()
     Resource::markClientsAndObserversFinished();
 }
 
-void ImageResource::ensureImage()
-{
-    if (m_data && !m_image && !errorOccurred()) {
-        createImage();
-        m_image->setData(m_data, true);
-    }
-}
-
 void ImageResource::didAddClient(ResourceClient* client)
 {
-    ensureImage();
+    DCHECK(!m_data || m_image);
     Resource::didAddClient(client);
 }
 
@@ -138,7 +130,7 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
     if (isCacheValidator())
         return;
 
-    ensureImage();
+    DCHECK(!m_data || m_image);
 
     if (m_image && !m_image->isNull()) {
         observer->imageChanged(this);
@@ -207,12 +199,10 @@ void ImageResource::destroyDecodedDataForFailedRevalidation()
 
 void ImageResource::destroyDecodedDataIfPossible()
 {
-    if (!hasClientsOrObservers() && !isLoading() && (!m_image || (m_image->hasOneRef() && m_image->isBitmapImage()))) {
-        clearImage();
-        setDecodedSize(0);
-    } else if (m_image && !errorOccurred()) {
+    if (!m_image)
+        return;
+    if ((!hasClientsOrObservers() && !isLoading() && m_image->hasOneRef() && m_image->isBitmapImage()) || !errorOccurred())
         m_image->destroyDecodedData();
-    }
 }
 
 void ImageResource::doResetAnimation()
@@ -235,6 +225,15 @@ void ImageResource::allClientsAndObserversRemoved()
     if (m_multipartParser)
         m_multipartParser->cancel();
     Resource::allClientsAndObserversRemoved();
+}
+
+PassRefPtr<SharedBuffer> ImageResource::resourceBuffer() const
+{
+    if (m_data)
+        return m_data.get();
+    if (m_image)
+        return m_image->data();
+    return nullptr;
 }
 
 void ImageResource::appendData(const char* data, size_t length)
@@ -381,8 +380,10 @@ void ImageResource::updateImage(bool allDataReceived)
     // Have the image update its data from its internal buffer.
     // It will not do anything now, but will delay decoding until
     // queried for info (like size or specific image frames).
-    if (m_image)
+    if (m_data) {
+        DCHECK(m_image);
         sizeAvailable = m_image->setData(m_data, allDataReceived);
+    }
 
     // Go ahead and tell our observers to try to draw if we have either
     // received all the data or the size is known. Each chunk from the
@@ -418,6 +419,12 @@ void ImageResource::finish(double loadFinishTime)
             updateImageAndClearBuffer();
     } else {
         updateImage(true);
+        // As encoded image data can be created from m_image  (see
+        // ImageResource::resourceBuffer(), we don't have to keep m_data. Let's
+        // clear this. As for the lifetimes of m_image and m_data, see this
+        // document:
+        // https://docs.google.com/document/d/1v0yTAZ6wkqX2U_M6BNIGUJpM1s0TIw1VsqpxoL7aciY/edit?usp=sharing
+        m_data.clear();
     }
     Resource::finish(loadFinishTime);
 }
@@ -531,8 +538,8 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
     if (isLoading())
         m_loader->cancel();
     clear();
-    m_data.clear();
     notifyObservers();
+
     setStatus(NotStarted);
     fetcher->startLoad(this);
 }

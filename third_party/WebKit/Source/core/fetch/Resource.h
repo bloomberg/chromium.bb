@@ -26,6 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -49,7 +50,6 @@ class ResourceClient;
 class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
-class SharedBuffer;
 
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from ResourceClient, to get the function calls in case the requested data has arrived.
@@ -176,7 +176,7 @@ public:
 
     bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
 
-    SharedBuffer* resourceBuffer() const { return m_data.get(); }
+    virtual PassRefPtr<SharedBuffer> resourceBuffer() const { return m_data; }
     void setResourceBuffer(PassRefPtr<SharedBuffer>);
 
     virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);

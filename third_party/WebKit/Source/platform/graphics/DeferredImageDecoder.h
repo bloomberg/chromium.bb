@@ -57,6 +57,7 @@ public:
 
     PassRefPtr<SkImage> createFrameAtIndex(size_t);
 
+    PassRefPtr<SharedBuffer> data();
     void setData(SharedBuffer& data, bool allDataReceived);
 
     bool isSizeAvailable();

@@ -117,7 +117,7 @@ static xmlDocPtr docLoaderFunc(
 
         // We don't specify an encoding here. Neither Gecko nor WinIE respects
         // the encoding specified in the HTTP headers.
-        SharedBuffer* data = resource->resourceBuffer();
+        RefPtr<SharedBuffer> data = resource->resourceBuffer();
         xmlDocPtr doc = data ? xmlReadMemory(data->data(), data->size(), (const char*)uri, 0, options) : nullptr;
 
         xmlSetStructuredErrorFunc(0, 0);

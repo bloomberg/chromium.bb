@@ -46,6 +46,11 @@ size_t ImageSource::clearCacheExceptFrame(size_t clearExceptFrame)
     return m_decoder ? m_decoder->clearCacheExceptFrame(clearExceptFrame) : 0;
 }
 
+PassRefPtr<SharedBuffer> ImageSource::data()
+{
+    return m_decoder ? m_decoder->data() : nullptr;
+}
+
 void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
 {
     // Create a decoder by sniffing the encoded data. If insufficient data bytes are available to

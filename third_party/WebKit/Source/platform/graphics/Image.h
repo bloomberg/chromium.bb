@@ -28,6 +28,7 @@
 #define Image_h
 
 #include "platform/PlatformExport.h"
+#include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -54,7 +55,6 @@ class FloatRect;
 class FloatSize;
 class GraphicsContext;
 class Length;
-class SharedBuffer;
 class Image;
 
 class PLATFORM_EXPORT Image : public RefCounted<Image> {
@@ -101,14 +101,14 @@ public:
     int height() const { return size().height(); }
     virtual bool getHotSpot(IntPoint&) const { return false; }
 
-    bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
+    virtual bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
     virtual bool dataChanged(bool /*allDataReceived*/) { return false; }
 
     virtual String filenameExtension() const { return String(); } // null string if unknown
 
     virtual void destroyDecodedData() = 0;
 
-    SharedBuffer* data() { return m_encodedImageData.get(); }
+    virtual PassRefPtr<SharedBuffer> data() { return m_encodedImageData; }
 
     // Animation begins whenever someone draws the image, so startAnimation() is not normally called.
     // It will automatically pause once all observers no longer want to render the image anywhere.

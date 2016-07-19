@@ -67,7 +67,7 @@ MHTMLArchive::MHTMLArchive()
 {
 }
 
-MHTMLArchive* MHTMLArchive::create(const KURL& url, SharedBuffer* data)
+MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<SharedBuffer> data)
 {
     // For security reasons we only load MHTML pages from local URLs.
     if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))

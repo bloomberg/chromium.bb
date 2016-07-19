@@ -65,6 +65,7 @@ public:
     IntSize sizeRespectingOrientation() const;
     bool getHotSpot(IntPoint&) const override;
     String filenameExtension() const override;
+    bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived) override;
     bool dataChanged(bool allDataReceived) override;
 
     bool isAllDataReceived() const { return m_allDataReceived; }
@@ -124,6 +125,8 @@ private:
     // source to destroy everything; this is used when e.g. we want to free
     // some room in the image cache.
     void destroyDecodedData() override;
+
+    PassRefPtr<SharedBuffer> data() override;
 
     // Notifies observers that the memory footprint has changed.
     void notifyMemoryChanged();

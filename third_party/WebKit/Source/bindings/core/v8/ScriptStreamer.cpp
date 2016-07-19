@@ -299,8 +299,7 @@ private:
 
         if (!m_resourceBuffer) {
             // We don't have a buffer yet. Try to get it from the resource.
-            SharedBuffer* buffer = streamer->resource()->resourceBuffer();
-            m_resourceBuffer = RefPtr<SharedBuffer>(buffer);
+            m_resourceBuffer = streamer->resource()->resourceBuffer();
         }
 
         fetchDataFromResourceBuffer(lengthOfBOM);

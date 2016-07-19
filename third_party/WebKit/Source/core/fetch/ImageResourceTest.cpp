@@ -237,7 +237,7 @@ TEST(ImageResourceTest, MultipartImage)
 
     // This part finishes. The image is created, callbacks are sent, and the data buffer is cleared.
     cachedImage->loader()->didFinishLoading(nullptr, 0.0, 0);
-    ASSERT_FALSE(cachedImage->resourceBuffer());
+    ASSERT_TRUE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
@@ -302,12 +302,14 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
 
-    // The ImageResource no longer has clients. The image should be deleted by prune.
+    // The ImageResource no longer has clients. The decoded image data should be
+    // deleted by prune.
     client->removeAsClient();
     cachedImage->prune();
     ASSERT_FALSE(cachedImage->hasClientsOrObservers());
-    ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_TRUE(cachedImage->getImage()->isNull());
+    ASSERT_TRUE(cachedImage->hasImage());
+    // TODO(hajimehoshi): Should check cachedImage doesn't have decoded image
+    // data.
 }
 
 TEST(ImageResourceTest, UpdateBitmapImages)
@@ -606,7 +608,7 @@ TEST(ImageResourceTest, AddClientAfterPrune)
 
     imageResource->prune();
 
-    EXPECT_FALSE(imageResource->hasImage());
+    EXPECT_TRUE(imageResource->hasImage());
 
     // Re-adds a ResourceClient but not ImageResourceObserver.
     Persistent<MockResourceClient> client2 = new MockResourceClient(imageResource);

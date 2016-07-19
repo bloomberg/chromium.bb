@@ -120,6 +120,19 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
     return fromSkSp(SkImage::MakeFromBitmap(frame->bitmap()));
 }
 
+PassRefPtr<SharedBuffer> DeferredImageDecoder::data()
+{
+    if (!m_rwBuffer)
+        return nullptr;
+    RefPtr<SkROBuffer> roBuffer = adoptRef(m_rwBuffer->newRBufferSnapshot());
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create();
+    SkROBuffer::Iter it(roBuffer.get());
+    do {
+        sharedBuffer->append(static_cast<const char*>(it.data()), it.size());
+    } while (it.next());
+    return sharedBuffer.release();
+}
+
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 {
     if (m_actualDecoder) {
@@ -134,8 +147,9 @@ void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 
         const char* segment = 0;
         for (size_t length = data.getSomeData(segment, m_rwBuffer->size());
-            length; length = data.getSomeData(segment, m_rwBuffer->size()))
+            length; length = data.getSomeData(segment, m_rwBuffer->size())) {
             m_rwBuffer->append(segment, length);
+        }
     }
 }
 

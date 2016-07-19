@@ -50,7 +50,7 @@ class SharedBuffer;
 class PLATFORM_EXPORT MHTMLParser final {
     STACK_ALLOCATED();
 public:
-    explicit MHTMLParser(SharedBuffer*);
+    explicit MHTMLParser(PassRefPtr<SharedBuffer>);
 
     HeapVector<Member<ArchiveResource>> parseArchive();
 

@@ -118,6 +118,11 @@ void BitmapImage::destroyDecodedData()
     notifyMemoryChanged();
 }
 
+PassRefPtr<SharedBuffer> BitmapImage::data()
+{
+    return m_source.data();
+}
+
 void BitmapImage::notifyMemoryChanged()
 {
     if (getImageObserver())
@@ -184,6 +189,20 @@ bool BitmapImage::getHotSpot(IntPoint& hotSpot) const
     return m_source.getHotSpot(hotSpot);
 }
 
+bool BitmapImage::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
+{
+    if (!data.get())
+        return true;
+
+    int length = data->size();
+    if (!length)
+        return true;
+
+    m_source.setData(*data, allDataReceived);
+
+    return dataChanged(allDataReceived);
+}
+
 bool BitmapImage::dataChanged(bool allDataReceived)
 {
     TRACE_EVENT0("blink", "BitmapImage::dataChanged");
@@ -218,8 +237,6 @@ bool BitmapImage::dataChanged(bool allDataReceived)
 
     // Feed all the data we've seen so far to the image decoder.
     m_allDataReceived = allDataReceived;
-    ASSERT(data());
-    m_source.setData(*data(), allDataReceived);
 
     m_haveFrameCount = false;
     return isSizeAvailable();

@@ -280,7 +280,7 @@ static void writeImageToDataObject(DataObject* dataObject, Element* element, con
     if (!cachedImage || !cachedImage->getImage() || !cachedImage->isLoaded())
         return;
 
-    SharedBuffer* imageBuffer = cachedImage->getImage()->data();
+    RefPtr<SharedBuffer> imageBuffer = cachedImage->getImage()->data();
     if (!imageBuffer || !imageBuffer->size())
         return;
 
