@@ -7,10 +7,13 @@
 Dumps a list of files with static initializers. Use with release builds.
 
 Usage:
-  tools/mac/dump-static-initializers.py out/Release/Chromium\ Framework.framework.dSYM/Contents/Resources/DWARF/Chromium\ Framework 
+  tools/mac/dump-static-initializers.py out/Release/Chromium\ Framework.framework.dSYM/Contents/Resources/DWARF/Chromium\ Framework
 
 Do NOT use mac_strip_release=0 or component=shared_library if you want to use
 this script.
+
+This is meant to be used on a dSYM file. If only an unstripped executable is
+present, use show_mod_init_func.py.
 """
 
 import optparse
