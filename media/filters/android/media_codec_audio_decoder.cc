@@ -365,6 +365,12 @@ void MediaCodecAudioDecoder::OnDecodedEos(
     const MediaCodecLoop::OutputBuffer& out) {
   DVLOG(2) << __FUNCTION__ << " pts:" << out.pts;
 
+  // If we've transitioned into the error state, then we don't really know what
+  // to do.  If we transitioned because of OnCodecError, then all of our
+  // buffers have been returned anyway.  Otherwise, it's unclear.  Note that
+  // MCL does not call us back after OnCodecError(), since it stops decoding.
+  // So, we shouldn't be in that state.  So, just DCHECK here.
+  DCHECK_NE(state_, STATE_ERROR);
   DCHECK(input_queue_.size());
   DCHECK(input_queue_.front().first->end_of_stream());
   input_queue_.front().second.Run(DecodeStatus::OK);

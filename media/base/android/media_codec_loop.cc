@@ -244,6 +244,9 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
   // TODO(liberato): When merging AVDA, we will also have to ask the client if
   // it can accept another output buffer.
 
+  if (state_ == STATE_ERROR)
+    return false;
+
   OutputBuffer out;
   MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
       kNoWaitTimeout, &out.index, &out.offset, &out.size, &out.pts, &out.is_eos,
