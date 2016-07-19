@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
@@ -31,6 +32,11 @@ CrasInputStream::CrasInputStream(const AudioParameters& params,
                    AudioDeviceDescription::kLoopbackInputDeviceId) {
   DCHECK(audio_manager_);
   audio_bus_ = AudioBus::Create(params_);
+  if (!IsDefault(device_id)) {
+    uint64_t cras_node_id;
+    base::StringToUint64(device_id, &cras_node_id);
+    pin_device_ = dev_index_of(cras_node_id);
+  }
 }
 
 CrasInputStream::~CrasInputStream() {
@@ -331,6 +337,14 @@ double CrasInputStream::GetVolume() {
 
 bool CrasInputStream::IsMuted() {
   return false;
+}
+
+bool CrasInputStream::IsDefault(const std::string& device_id) const {
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  DCHECK(!device_names.empty());
+  AudioDeviceName device_name = device_names.front();
+  return device_name.unique_id == device_id;
 }
 
 double CrasInputStream::GetVolumeRatioFromDecibels(double dB) const {
