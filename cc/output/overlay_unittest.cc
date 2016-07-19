@@ -1074,7 +1074,7 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
   EXPECT_EQ(1U, ca_layer_list.size());
   gfx::Transform expected_transform;
   expected_transform.RotateAboutXAxis(45.f);
-  gfx::Transform actual_transform(ca_layer_list.back().transform);
+  gfx::Transform actual_transform(ca_layer_list.back().shared_state->transform);
   EXPECT_EQ(expected_transform.ToString(), actual_transform.ToString());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
@@ -1116,8 +1116,9 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
   EXPECT_EQ(0U, pass->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
-  EXPECT_TRUE(ca_layer_list.back().is_clipped);
-  EXPECT_EQ(gfx::RectF(64, 64, 128, 128), ca_layer_list.back().clip_rect);
+  EXPECT_TRUE(ca_layer_list.back().shared_state->is_clipped);
+  EXPECT_EQ(gfx::RectF(64, 64, 128, 128),
+            ca_layer_list.back().shared_state->clip_rect);
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 

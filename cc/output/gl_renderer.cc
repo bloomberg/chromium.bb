@@ -3649,17 +3649,18 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
         ca_layer_overlay.bounds_rect.width(),
         ca_layer_overlay.bounds_rect.height(),
     };
-    GLboolean is_clipped = ca_layer_overlay.is_clipped;
-    GLfloat clip_rect[4] = {ca_layer_overlay.clip_rect.x(),
-                            ca_layer_overlay.clip_rect.y(),
-                            ca_layer_overlay.clip_rect.width(),
-                            ca_layer_overlay.clip_rect.height()};
-    GLint sorting_context_id = ca_layer_overlay.sorting_context_id;
+    GLboolean is_clipped = ca_layer_overlay.shared_state->is_clipped;
+    GLfloat clip_rect[4] = {ca_layer_overlay.shared_state->clip_rect.x(),
+                            ca_layer_overlay.shared_state->clip_rect.y(),
+                            ca_layer_overlay.shared_state->clip_rect.width(),
+                            ca_layer_overlay.shared_state->clip_rect.height()};
+    GLint sorting_context_id =
+        ca_layer_overlay.shared_state->sorting_context_id;
     GLfloat transform[16];
-    ca_layer_overlay.transform.asColMajorf(transform);
+    ca_layer_overlay.shared_state->transform.asColMajorf(transform);
     unsigned filter = ca_layer_overlay.filter;
     gl_->ScheduleCALayerCHROMIUM(
-        texture_id, contents_rect, ca_layer_overlay.opacity,
+        texture_id, contents_rect, ca_layer_overlay.shared_state->opacity,
         ca_layer_overlay.background_color, ca_layer_overlay.edge_aa_mask,
         bounds_rect, is_clipped, clip_rect, sorting_context_id, transform,
         filter);

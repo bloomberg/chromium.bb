@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_CA_LAYER_OVERLAY_H_
 #define CC_OUTPUT_CA_LAYER_OVERLAY_H_
 
+#include "base/memory/ref_counted.h"
 #include "cc/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -15,33 +16,50 @@ namespace cc {
 class DrawQuad;
 class ResourceProvider;
 
+// Holds information that is frequently shared between consecutive
+// CALayerOverlays.
+class CC_EXPORT CALayerOverlaySharedState
+    : public base::RefCounted<CALayerOverlaySharedState> {
+ public:
+  CALayerOverlaySharedState() {}
+
+  // Layers in a non-zero sorting context exist in the same 3D space and should
+  // intersect.
+  unsigned sorting_context_id = 0;
+  // If |is_clipped| is true, then clip to |clip_rect| in the target space.
+  bool is_clipped = false;
+  gfx::RectF clip_rect;
+  // The opacity property for the CAayer.
+  float opacity = 1;
+  // The transform to apply to the CALayer.
+  SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
+
+ private:
+  friend class base::RefCounted<CALayerOverlaySharedState>;
+  ~CALayerOverlaySharedState() {}
+};
+
+// Holds all information necessary to construct a CALayer from a DrawQuad.
 class CC_EXPORT CALayerOverlay {
  public:
   CALayerOverlay();
   CALayerOverlay(const CALayerOverlay& other);
   ~CALayerOverlay();
 
-  // If |is_clipped| is true, then clip to |clip_rect| in the target space.
-  bool is_clipped = false;
-  gfx::RectF clip_rect;
-  // Layers in a non-zero sorting context exist in the same 3D space and should
-  // intersect.
-  unsigned sorting_context_id = 0;
+  // State that is frequently shared between consecutive CALayerOverlays.
+  scoped_refptr<CALayerOverlaySharedState> shared_state;
+
   // Texture that corresponds to an IOSurface to set as the content of the
   // CALayer. If this is 0 then the CALayer is a solid color.
   unsigned contents_resource_id = 0;
   // The contents rect property for the CALayer.
   gfx::RectF contents_rect;
-  // The opacity property for the CAayer.
-  float opacity = 1;
+  // The bounds for the CALayer in pixels.
+  gfx::RectF bounds_rect;
   // The background color property for the CALayer.
   SkColor background_color = SK_ColorTRANSPARENT;
   // The edge anti-aliasing mask property for the CALayer.
   unsigned edge_aa_mask = 0;
-  // The bounds for the CALayer in pixels.
-  gfx::RectF bounds_rect;
-  // The transform to apply to the CALayer.
-  SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
   // The minification and magnification filters for the CALayer.
   unsigned filter;
 };
