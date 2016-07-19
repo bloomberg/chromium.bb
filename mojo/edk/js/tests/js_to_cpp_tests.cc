@@ -104,12 +104,11 @@ js_to_cpp::EchoArgsPtr BuildSampleEchoArgs() {
   args->double_val = kExpectedDoubleVal;
   args->double_inf = kExpectedDoubleInf;
   args->double_nan = kExpectedDoubleNan;
-  args->name = "coming";
-  Array<String> string_array(3);
-  string_array[0] = "one";
-  string_array[1] = "two";
-  string_array[2] = "three";
-  args->string_array = std::move(string_array);
+  args->name.emplace("coming");
+  args->string_array.emplace(3);
+  (*args->string_array)[0] = "one";
+  (*args->string_array)[1] = "two";
+  (*args->string_array)[2] = "three";
   return args;
 }
 
@@ -128,10 +127,10 @@ void CheckSampleEchoArgs(js_to_cpp::EchoArgsPtr arg) {
   EXPECT_EQ(kExpectedDoubleVal, arg->double_val);
   EXPECT_EQ(kExpectedDoubleInf, arg->double_inf);
   EXPECT_NAN(arg->double_nan);
-  EXPECT_EQ(std::string("coming"), arg->name.get());
-  EXPECT_EQ(std::string("one"), arg->string_array[0].get());
-  EXPECT_EQ(std::string("two"), arg->string_array[1].get());
-  EXPECT_EQ(std::string("three"), arg->string_array[2].get());
+  EXPECT_EQ(std::string("coming"), *arg->name);
+  EXPECT_EQ(std::string("one"), (*arg->string_array)[0]);
+  EXPECT_EQ(std::string("two"), (*arg->string_array)[1]);
+  EXPECT_EQ(std::string("three"), (*arg->string_array)[2]);
   CheckDataPipe(std::move(arg->data_handle));
   CheckMessagePipe(arg->message_handle.get());
 }
@@ -146,18 +145,23 @@ void CheckSampleEchoArgsList(const js_to_cpp::EchoArgsListPtr& list) {
 // More forgiving checks are needed in the face of potentially corrupt
 // messages. The values don't matter so long as all accesses are within
 // bounds.
-void CheckCorruptedString(const String& arg) {
-  if (arg.is_null())
-    return;
+void CheckCorruptedString(const std::string& arg) {
   for (size_t i = 0; i < arg.size(); ++i)
     g_waste_accumulator += arg[i];
 }
 
-void CheckCorruptedStringArray(const Array<String>& string_array) {
-  if (string_array.is_null())
+void CheckCorruptedString(const base::Optional<std::string>& arg) {
+  if (!arg)
     return;
-  for (size_t i = 0; i < string_array.size(); ++i)
-    CheckCorruptedString(string_array[i]);
+  CheckCorruptedString(*arg);
+}
+
+void CheckCorruptedStringArray(
+    const base::Optional<std::vector<std::string>>& string_array) {
+  if (!string_array)
+    return;
+  for (size_t i = 0; i < string_array->size(); ++i)
+    CheckCorruptedString((*string_array)[i]);
 }
 
 void CheckCorruptedDataPipe(MojoHandle data_pipe_handle) {
@@ -297,7 +301,7 @@ class EchoCppSideConnection : public CppSideConnection {
     EXPECT_EQ(-1, special_arg->si32);
     EXPECT_EQ(-1, special_arg->si16);
     EXPECT_EQ(-1, special_arg->si8);
-    EXPECT_EQ(std::string("going"), special_arg->name.To<std::string>());
+    EXPECT_EQ(std::string("going"), *special_arg->name);
     CheckSampleEchoArgsList(list->next);
   }
 

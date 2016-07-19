@@ -304,7 +304,6 @@
         'mojom_files': [
           'edk/js/tests/js_to_cpp.mojom',
         ],
-        'use_new_wrapper_types': 'false',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
