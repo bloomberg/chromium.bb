@@ -18,6 +18,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/certificate_reporting/error_reporter.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
@@ -119,6 +120,8 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("iconClass", "icon-offline");
   load_time_data->SetString("type", "CAPTIVE_PORTAL");
   load_time_data->SetBoolean("overridable", false);
+  security_interstitials::common_string_util::PopulateNewIconStrings(
+      load_time_data);
 
   // |IsWifiConnection| isn't accurate on some platforms, so always try to get
   // the Wi-Fi SSID even if |IsWifiConnection| is false.

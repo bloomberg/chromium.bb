@@ -4,6 +4,7 @@
 
 #include "components/security_interstitials/core/common_string_util.h"
 
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_util.h"
@@ -11,6 +12,11 @@
 #include "grit/components_strings.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+  const base::Feature kSecurityWarningIconUpdate{
+      "SecurityWarningIconUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace
 
 namespace security_interstitials {
 
@@ -48,6 +54,11 @@ void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
   ssl_info.cert->GetPEMEncodedChain(&encoded_chain);
   load_time_data->SetString(
       "pem", base::JoinString(encoded_chain, base::StringPiece()));
+}
+
+void PopulateNewIconStrings(base::DictionaryValue* load_time_data) {
+  load_time_data->SetBoolean(
+      "iconUpdate", base::FeatureList::IsEnabled(kSecurityWarningIconUpdate));
 }
 
 }  // namespace common_string_util

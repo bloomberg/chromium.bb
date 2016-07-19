@@ -29,6 +29,9 @@ void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
                                  const base::Time time_triggered,
                                  base::DictionaryValue* load_time_data);
 
+// For determining whether to use the old or new icon sets.
+void PopulateNewIconStrings(base::DictionaryValue* load_time_data);
+
 }  // common_string_util
 
 }  // namespace security_interstitials

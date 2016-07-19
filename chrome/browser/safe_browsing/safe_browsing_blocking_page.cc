@@ -35,6 +35,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -639,6 +640,8 @@ void SafeBrowsingBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetBoolean(
       "overridable",
       !IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
+  security_interstitials::common_string_util::PopulateNewIconStrings(
+      load_time_data);
 
   switch (interstitial_reason_) {
     case SB_REASON_MALWARE:
