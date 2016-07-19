@@ -14,21 +14,20 @@ class Profile;
 
 class NotificationPermissionContext : public PermissionContextBase {
  public:
-  NotificationPermissionContext(Profile* profile,
-                                content::PermissionType permission_type);
+  explicit NotificationPermissionContext(Profile* profile);
   ~NotificationPermissionContext() override;
 
   // PermissionContextBase implementation.
-  ContentSetting GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const override;
   void ResetPermission(const GURL& requesting_origin,
                        const GURL& embedder_origin) override;
   void CancelPermissionRequest(content::WebContents* web_contents,
                                const PermissionRequestID& id) override;
 
  private:
-  friend class NotificationPermissionContextTest;
+  FRIEND_TEST_ALL_PREFIXES(NotificationPermissionContextTest,
+                           IgnoresEmbedderOrigin);
+  FRIEND_TEST_ALL_PREFIXES(NotificationPermissionContextTest,
+                           NoSecureOriginRequirement);
 
   // PermissionContextBase implementation.
   void DecidePermission(content::WebContents* web_contents,
