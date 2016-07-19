@@ -40,16 +40,37 @@ struct BounceTestTraits<base::ListValue> {
 };
 
 template <typename T>
+struct PassTraits {
+  using Type = const T&;
+};
+
+template <>
+struct PassTraits<base::Time> {
+  using Type = base::Time;
+};
+
+template <>
+struct PassTraits<base::TimeDelta> {
+  using Type = base::TimeDelta;
+};
+
+template <>
+struct PassTraits<base::TimeTicks> {
+  using Type = base::TimeTicks;
+};
+
+template <typename T>
 void DoExpectResponse(T* expected_value,
                       const base::Closure& closure,
-                      const T& value) {
+                      typename PassTraits<T>::Type value) {
   BounceTestTraits<T>::ExpectEquality(*expected_value, value);
   closure.Run();
 }
 
 template <typename T>
-base::Callback<void(const T&)> ExpectResponse(T* expected_value,
-                                              const base::Closure& closure) {
+base::Callback<void(typename PassTraits<T>::Type)> ExpectResponse(
+    T* expected_value,
+    const base::Closure& closure) {
   return base::Bind(&DoExpectResponse<T>, expected_value, closure);
 }
 
@@ -74,18 +95,17 @@ class TestTimeImpl : public TestTime {
       : binding_(this, std::move(request)) {}
 
   // TestTime implementation:
-  void BounceTime(const base::Time& in,
-                  const BounceTimeCallback& callback) override {
+  void BounceTime(base::Time in, const BounceTimeCallback& callback) override {
     callback.Run(in);
   }
 
-  void BounceTimeDelta(const base::TimeDelta& in,
-                  const BounceTimeDeltaCallback& callback) override {
+  void BounceTimeDelta(base::TimeDelta in,
+                       const BounceTimeDeltaCallback& callback) override {
     callback.Run(in);
   }
 
-  void BounceTimeTicks(const base::TimeTicks& in,
-                  const BounceTimeTicksCallback& callback) override {
+  void BounceTimeTicks(base::TimeTicks in,
+                       const BounceTimeTicksCallback& callback) override {
     callback.Run(in);
   }
 

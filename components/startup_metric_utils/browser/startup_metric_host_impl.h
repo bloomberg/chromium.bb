@@ -23,7 +23,7 @@ class StartupMetricHostImpl : public mojom::StartupMetricHost {
   ~StartupMetricHostImpl() override;
 
   void RecordRendererMainEntryTime(
-      const base::TimeTicks& renderer_main_entry_time) override;
+      base::TimeTicks renderer_main_entry_time) override;
 
   mojo::StrongBinding<mojom::StartupMetricHost> binding_;
 

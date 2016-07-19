@@ -17,7 +17,7 @@ type_mappings = [
   "mojo.common.mojom.FilePath=base::FilePath",
   "mojo.common.mojom.DictionaryValue=base::DictionaryValue",
   "mojo.common.mojom.ListValue=base::ListValue",
-  "mojo.common.mojom.Time=base::Time",
-  "mojo.common.mojom.TimeDelta=base::TimeDelta",
-  "mojo.common.mojom.TimeTicks=base::TimeTicks",
+  "mojo.common.mojom.Time=base::Time[copyable_pass_by_value]",
+  "mojo.common.mojom.TimeDelta=base::TimeDelta[copyable_pass_by_value]",
+  "mojo.common.mojom.TimeTicks=base::TimeTicks[copyable_pass_by_value]",
 ]

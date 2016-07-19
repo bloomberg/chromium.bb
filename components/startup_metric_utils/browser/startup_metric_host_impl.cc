@@ -19,7 +19,7 @@ StartupMetricHostImpl::StartupMetricHostImpl(
 StartupMetricHostImpl::~StartupMetricHostImpl() = default;
 
 void StartupMetricHostImpl::RecordRendererMainEntryTime(
-    const base::TimeTicks& renderer_main_entry_time) {
+    base::TimeTicks renderer_main_entry_time) {
   startup_metric_utils::RecordRendererMainEntryTime(renderer_main_entry_time);
 }
 
