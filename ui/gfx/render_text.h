@@ -64,6 +64,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetTextSize(SkScalar size);
   void SetForegroundColor(SkColor foreground);
   void SetShader(sk_sp<SkShader> shader);
+  void SetHaloEffect();
   // Sets underline metrics to use if the text will be drawn with an underline.
   // If not set, default values based on the size of the text will be used. The
   // two metrics must be set together.
@@ -314,6 +315,9 @@ class GFX_EXPORT RenderText {
   void set_subpixel_rendering_suppressed(bool suppressed) {
     subpixel_rendering_suppressed_ = suppressed;
   }
+
+  bool halo_effect() const { return halo_effect_; }
+  void set_halo_effect(bool halo_effect) { halo_effect_ = halo_effect; }
 
   const SelectionModel& selection_model() const { return selection_model_; }
 
@@ -838,6 +842,9 @@ class GFX_EXPORT RenderText {
 
   // A list of valid display text line break positions.
   BreakList<size_t> line_breaks_;
+
+  // Draw text with 1px border.
+  bool halo_effect_ = false;
 
   // Lines computed by EnsureLayout. These should be invalidated upon
   // OnLayoutTextAttributeChanged and OnDisplayTextAttributeChanged calls.

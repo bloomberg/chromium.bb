@@ -8,19 +8,9 @@
 
 #include <memory>
 
-#include "base/i18n/rtl.h"
-#include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
-#include "build/build_config.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -28,34 +18,6 @@
 namespace gfx {
 
 namespace {
-
-// Checks each pixel immediately adjacent to the given pixel in the bitmap. If
-// any of them are not the halo color, returns true. This defines the halo of
-// pixels that will appear around the text. Note that we have to check each
-// pixel against both the halo color and transparent since
-// |DrawStringRectWithHalo| will modify the bitmap as it goes, and cleared
-// pixels shouldn't count as changed.
-bool PixelShouldGetHalo(const SkPixmap& pixmap,
-                        int x, int y,
-                        SkColor halo_color) {
-  if (x > 0 &&
-      *pixmap.addr32(x - 1, y) != halo_color &&
-      *pixmap.addr32(x - 1, y) != 0)
-    return true;  // Touched pixel to the left.
-  if (x < pixmap.width() - 1 &&
-      *pixmap.addr32(x + 1, y) != halo_color &&
-      *pixmap.addr32(x + 1, y) != 0)
-    return true;  // Touched pixel to the right.
-  if (y > 0 &&
-      *pixmap.addr32(x, y - 1) != halo_color &&
-      *pixmap.addr32(x, y - 1) != 0)
-    return true;  // Touched pixel above.
-  if (y < pixmap.height() - 1 &&
-      *pixmap.addr32(x, y + 1) != halo_color &&
-      *pixmap.addr32(x, y + 1) != 0)
-    return true;  // Touched pixel below.
-  return false;
-}
 
 // Strips accelerator character prefixes in |text| if needed, based on |flags|.
 // Returns a range in |text| to underline or Range::InvalidRange() if
@@ -201,6 +163,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
 
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_shadows(shadows);
+  render_text->set_halo_effect(!!(flags & HALO_EFFECT));
 
   if (flags & MULTI_LINE) {
     WordWrapBehavior wrap_behavior = IGNORE_LONG_WORDS;
@@ -284,45 +247,12 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
   // (since the resulting image can have 1-bit transparency only).
   SkColor halo_color = SkColorSetA(halo_color_in, 0xFF);
 
-  // Create a temporary buffer filled with the halo color. It must leave room
-  // for the 1-pixel border around the text.
-  Size size(display_rect.width() + 2, display_rect.height() + 2);
-  Canvas text_canvas(size, image_scale(), false);
-  SkPaint bkgnd_paint;
-  bkgnd_paint.setColor(halo_color);
-  text_canvas.DrawRect(Rect(size), bkgnd_paint);
-
-  // Draw the text into the temporary buffer. This will have correct
-  // ClearType since the background color is the same as the halo color.
-  text_canvas.DrawStringRectWithFlags(
-      text, font_list, text_color,
-      Rect(1, 1, display_rect.width(), display_rect.height()), flags);
-
-  uint32_t halo_premul = SkPreMultiplyColor(halo_color);
-  SkPixmap pixmap;
-  skia::GetWritablePixels(text_canvas.sk_canvas(), &pixmap);
-
-  for (int cur_y = 0; cur_y < pixmap.height(); cur_y++) {
-    uint32_t* text_row = pixmap.writable_addr32(0, cur_y);
-    for (int cur_x = 0; cur_x < pixmap.width(); cur_x++) {
-      if (text_row[cur_x] == halo_premul) {
-        // This pixel was not touched by the text routines. See if it borders
-        // a touched pixel in any of the 4 directions (not diagonally).
-        if (!PixelShouldGetHalo(pixmap, cur_x, cur_y, halo_premul))
-          text_row[cur_x] = 0;  // Make transparent.
-      } else {
-        text_row[cur_x] |= 0xff << SK_A32_SHIFT;  // Make opaque.
-      }
-    }
-  }
-
-  // Draw the halo bitmap with blur.
-  SkBitmap bitmap;
-  bitmap.installPixels(pixmap.info(), pixmap.writable_addr(),
-                       pixmap.rowBytes());
-  ImageSkia text_image = ImageSkia(ImageSkiaRep(bitmap,
-      text_canvas.image_scale()));
-  DrawImageInt(text_image, display_rect.x() - 1, display_rect.y() - 1);
+  // Draw the halo.
+  DrawStringRectWithFlags(text, font_list, halo_color, display_rect,
+                          flags | HALO_EFFECT | NO_SUBPIXEL_RENDERING);
+  // Draw the text.
+  DrawStringRectWithFlags(text, font_list, text_color, display_rect,
+                          flags | NO_SUBPIXEL_RENDERING);
 }
 
 void Canvas::DrawFadedString(const base::string16& text,

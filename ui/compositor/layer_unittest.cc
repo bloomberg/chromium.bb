@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
@@ -44,10 +45,12 @@
 #include "ui/compositor/test/test_layers.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/skia_util.h"
 
 using cc::MatchesPNGFile;
+using cc::WritePNGFile;
 
 namespace ui {
 
@@ -90,6 +93,72 @@ class ColoredLayer : public Layer, public LayerDelegate {
   SkColor color_;
 };
 
+// Layer delegate for painting text with effects on canvas.
+class DrawStringLayerDelegate : public LayerDelegate {
+ public:
+  enum DrawFunction {
+    STRING_WITH_HALO,
+    STRING_FADED,
+    STRING_WITH_SHADOWS
+  };
+
+  DrawStringLayerDelegate(
+      SkColor back_color, SkColor halo_color,
+      DrawFunction func, const gfx::Size& layer_size)
+      : background_color_(back_color),
+        halo_color_(halo_color),
+        func_(func),
+        layer_size_(layer_size) {
+  }
+
+  ~DrawStringLayerDelegate() override {}
+
+  // Overridden from LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context, layer_size_);
+    gfx::Rect bounds(layer_size_);
+    recorder.canvas()->DrawColor(background_color_);
+    const base::string16 text = base::ASCIIToUTF16("Tests!");
+    switch (func_) {
+      case STRING_WITH_HALO:
+        recorder.canvas()->DrawStringRectWithHalo(
+            text, font_list_, SK_ColorRED, halo_color_, bounds, 0);
+        break;
+      case STRING_FADED:
+        recorder.canvas()->DrawFadedString(
+            text, font_list_, SK_ColorRED, bounds, 0);
+        break;
+      case STRING_WITH_SHADOWS: {
+        gfx::ShadowValues shadows;
+        shadows.push_back(
+            gfx::ShadowValue(gfx::Vector2d(2, 2), 2, SK_ColorRED));
+        recorder.canvas()->DrawStringRectWithShadows(
+            text, font_list_, SK_ColorRED, bounds, 0, 0, shadows);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+
+  base::Closure PrepareForLayerBoundsChange() override {
+    return base::Closure();
+  }
+
+ private:
+  const SkColor background_color_;
+  const SkColor halo_color_;
+  const DrawFunction func_;
+  const gfx::FontList font_list_;
+  const gfx::Size layer_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrawStringLayerDelegate);
+};
+
 class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest() {
@@ -98,6 +167,7 @@ class LayerWithRealCompositorTest : public testing::Test {
     } else {
       LOG(ERROR) << "Could not open test data directory.";
     }
+    gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
   }
   ~LayerWithRealCompositorTest() override {}
 
@@ -137,6 +207,14 @@ class LayerWithRealCompositorTest : public testing::Test {
   Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
     Layer* layer = CreateLayer(LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
+    return layer;
+  }
+
+  std::unique_ptr<Layer> CreateDrawStringLayer(
+      const gfx::Rect& bounds, DrawStringLayerDelegate* delegate) {
+    std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
+    layer->SetBounds(bounds);
+    layer->set_delegate(delegate);
     return layer;
   }
 
@@ -1276,6 +1354,115 @@ TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
 }
+
+// It is really hard to write pixel test on text rendering,
+// due to different font appearance.
+// So we choose to check result only on Windows.
+// See https://codereview.chromium.org/1634103003/#msg41
+#if defined(OS_WIN)
+TEST_F(LayerWithRealCompositorTest, CanvasDrawStringRectWithHalo) {
+  gfx::Size size(50, 50);
+  GetCompositor()->SetScaleAndSize(1.0f, size);
+  DrawStringLayerDelegate delegate(SK_ColorBLUE, SK_ColorWHITE,
+                                   DrawStringLayerDelegate::STRING_WITH_HALO,
+                                   size);
+  std::unique_ptr<Layer> layer(
+      CreateDrawStringLayer(gfx::Rect(size), &delegate));
+  DrawTree(layer.get());
+
+  SkBitmap bitmap;
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+
+  base::FilePath ref_img =
+      test_data_directory().AppendASCII("string_with_halo.png");
+  // WritePNGFile(bitmap, ref_img, true);
+
+  float percentage_pixels_large_error = 1.0f;
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 1.f;
+  int large_error_allowed = 1;
+  int small_error_allowed = 0;
+
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img,
+                             cc::FuzzyPixelComparator(
+                                 true,
+                                 percentage_pixels_large_error,
+                                 percentage_pixels_small_error,
+                                 average_error_allowed_in_bad_pixels,
+                                 large_error_allowed,
+                                 small_error_allowed)));
+}
+
+TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
+  gfx::Size size(50, 50);
+  GetCompositor()->SetScaleAndSize(1.0f, size);
+  DrawStringLayerDelegate delegate(SK_ColorBLUE, SK_ColorWHITE,
+                                   DrawStringLayerDelegate::STRING_FADED,
+                                   size);
+  std::unique_ptr<Layer> layer(
+      CreateDrawStringLayer(gfx::Rect(size), &delegate));
+  DrawTree(layer.get());
+
+  SkBitmap bitmap;
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+
+  base::FilePath ref_img =
+      test_data_directory().AppendASCII("string_faded.png");
+  // WritePNGFile(bitmap, ref_img, true);
+
+  float percentage_pixels_large_error = 8.0f;  // 200px / (50*50)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 80.f;
+  int large_error_allowed = 255;
+  int small_error_allowed = 0;
+
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img,
+                             cc::FuzzyPixelComparator(
+                                 true,
+                                 percentage_pixels_large_error,
+                                 percentage_pixels_small_error,
+                                 average_error_allowed_in_bad_pixels,
+                                 large_error_allowed,
+                                 small_error_allowed)));
+}
+
+TEST_F(LayerWithRealCompositorTest, CanvasDrawStringRectWithShadows) {
+  gfx::Size size(50, 50);
+  GetCompositor()->SetScaleAndSize(1.0f, size);
+  DrawStringLayerDelegate delegate(
+      SK_ColorBLUE, SK_ColorWHITE,
+      DrawStringLayerDelegate::STRING_WITH_SHADOWS,
+      size);
+  std::unique_ptr<Layer> layer(
+      CreateDrawStringLayer(gfx::Rect(size), &delegate));
+  DrawTree(layer.get());
+
+  SkBitmap bitmap;
+  ReadPixels(&bitmap);
+  ASSERT_FALSE(bitmap.empty());
+
+  base::FilePath ref_img =
+      test_data_directory().AppendASCII("string_with_shadows.png");
+  // WritePNGFile(bitmap, ref_img, true);
+
+  float percentage_pixels_large_error = 7.4f;  // 185px / (50*50)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 60.f;
+  int large_error_allowed = 246;
+  int small_error_allowed = 0;
+
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img,
+                             cc::FuzzyPixelComparator(
+                                 true,
+                                 percentage_pixels_large_error,
+                                 percentage_pixels_small_error,
+                                 average_error_allowed_in_bad_pixels,
+                                 large_error_allowed,
+                                 small_error_allowed)));
+}
+#endif  // defined(OS_WIN)
 
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.

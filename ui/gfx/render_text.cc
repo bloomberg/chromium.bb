@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/effects/SkMorphologyImageFilter.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -254,6 +255,10 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
 
 void SkiaTextRenderer::SetShader(sk_sp<SkShader> shader) {
   paint_.setShader(std::move(shader));
+}
+
+void SkiaTextRenderer::SetHaloEffect() {
+  paint_.setImageFilter(SkDilateImageFilter::Make(1, 1, nullptr));
 }
 
 void SkiaTextRenderer::SetUnderlineMetrics(SkScalar thickness,
@@ -849,6 +854,8 @@ void RenderText::Draw(Canvas* canvas) {
 
   if (!text().empty()) {
     internal::SkiaTextRenderer renderer(canvas);
+    if (halo_effect())
+      renderer.SetHaloEffect();
     DrawVisualText(&renderer);
   }
 
