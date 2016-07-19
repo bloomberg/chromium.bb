@@ -161,9 +161,6 @@ void JingleThreadWrapper::Send(const rtc::Location& posted_from,
                                rtc::MessageHandler* handler,
                                uint32_t id,
                                rtc::MessageData* data) {
-  if (fStop_)
-    return;
-
   JingleThreadWrapper* current_thread = JingleThreadWrapper::current();
   DCHECK(current_thread != nullptr) << "Send() can be called only from a "
       "thread that has JingleThreadWrapper.";
