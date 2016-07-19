@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "content/public/browser/resource_request_info.h"

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "dbus/bus.h"
@@ -202,7 +203,7 @@ void TestService::OnExported(const std::string& interface_name,
   }
 }
 
-void TestService::Run(base::MessageLoop* message_loop) {
+void TestService::Run(base::RunLoop* run_loop) {
   Bus::Options bus_options;
   bus_options.bus_type = Bus::SESSION;
   bus_options.connection_type = Bus::PRIVATE;
@@ -302,7 +303,7 @@ void TestService::Run(base::MessageLoop* message_loop) {
   if (num_methods != kNumMethodsToExport) {
     LOG(ERROR) << "The number of methods does not match";
   }
-  message_loop->Run();
+  run_loop->Run();
 }
 
 void TestService::Echo(MethodCall* method_call,

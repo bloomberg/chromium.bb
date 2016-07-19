@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -178,56 +179,54 @@ void BrowserThreadImpl::Init() {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-NOINLINE void BrowserThreadImpl::UIThreadRun(base::MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::UIThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::DBThreadRun(base::MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::DBThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::FileThreadRun(
-    base::MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::FileThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
 NOINLINE void BrowserThreadImpl::FileUserBlockingThreadRun(
-    base::MessageLoop* message_loop) {
+    base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
 NOINLINE void BrowserThreadImpl::ProcessLauncherThreadRun(
-    base::MessageLoop* message_loop) {
+    base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::CacheThreadRun(
-    base::MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::CacheThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::IOThreadRun(base::MessageLoop* message_loop) {
+NOINLINE void BrowserThreadImpl::IOThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
+  Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
 }
 
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE();
 
-void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
+void BrowserThreadImpl::Run(base::RunLoop* run_loop) {
 #if defined(OS_ANDROID)
   // Not to reset thread name to "Thread-???" by VM, attach VM with thread name.
   // Though it may create unnecessary VM thread objects, keeping thread name
@@ -240,23 +239,22 @@ void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
   BrowserThread::ID thread_id = ID_COUNT;
   CHECK(GetCurrentThreadIdentifier(&thread_id));
   CHECK_EQ(identifier_, thread_id);
-  CHECK_EQ(Thread::message_loop(), message_loop);
 
   switch (identifier_) {
     case BrowserThread::UI:
-      return UIThreadRun(message_loop);
+      return UIThreadRun(run_loop);
     case BrowserThread::DB:
-      return DBThreadRun(message_loop);
+      return DBThreadRun(run_loop);
     case BrowserThread::FILE:
-      return FileThreadRun(message_loop);
+      return FileThreadRun(run_loop);
     case BrowserThread::FILE_USER_BLOCKING:
-      return FileUserBlockingThreadRun(message_loop);
+      return FileUserBlockingThreadRun(run_loop);
     case BrowserThread::PROCESS_LAUNCHER:
-      return ProcessLauncherThreadRun(message_loop);
+      return ProcessLauncherThreadRun(run_loop);
     case BrowserThread::CACHE:
-      return CacheThreadRun(message_loop);
+      return CacheThreadRun(run_loop);
     case BrowserThread::IO:
-      return IOThreadRun(message_loop);
+      return IOThreadRun(run_loop);
     case BrowserThread::ID_COUNT:
       CHECK(false);  // This shouldn't actually be reached!
       break;

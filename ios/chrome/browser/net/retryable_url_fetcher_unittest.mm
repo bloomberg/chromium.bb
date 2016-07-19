@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/net/retryable_url_fetcher.h"
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"

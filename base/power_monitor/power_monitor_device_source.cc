@@ -4,6 +4,7 @@
 
 #include "base/power_monitor/power_monitor_device_source.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -16,7 +17,7 @@ static int kDelayedBatteryCheckMs = 10 * 1000;
 #endif  // defined(ENABLE_BATTERY_MONITORING)
 
 PowerMonitorDeviceSource::PowerMonitorDeviceSource() {
-  DCHECK(MessageLoop::current());
+  DCHECK(ThreadTaskRunnerHandle::IsSet());
 #if defined(ENABLE_BATTERY_MONITORING)
   delayed_battery_check_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kDelayedBatteryCheckMs), this,

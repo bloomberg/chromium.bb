@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

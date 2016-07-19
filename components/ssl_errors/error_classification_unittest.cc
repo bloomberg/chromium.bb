@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"

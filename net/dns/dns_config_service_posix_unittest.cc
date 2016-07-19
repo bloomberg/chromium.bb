@@ -6,6 +6,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"

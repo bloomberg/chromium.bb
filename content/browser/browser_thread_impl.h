@@ -31,7 +31,7 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
 
  protected:
   void Init() override;
-  void Run(base::MessageLoop* message_loop) override;
+  void Run(base::RunLoop* run_loop) override;
   void CleanUp() override;
 
  private:
@@ -42,13 +42,13 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
 
   // The following are unique function names that makes it possible to tell
   // the thread id from the callstack alone in crash dumps.
-  void UIThreadRun(base::MessageLoop* message_loop);
-  void DBThreadRun(base::MessageLoop* message_loop);
-  void FileThreadRun(base::MessageLoop* message_loop);
-  void FileUserBlockingThreadRun(base::MessageLoop* message_loop);
-  void ProcessLauncherThreadRun(base::MessageLoop* message_loop);
-  void CacheThreadRun(base::MessageLoop* message_loop);
-  void IOThreadRun(base::MessageLoop* message_loop);
+  void UIThreadRun(base::RunLoop* run_loop);
+  void DBThreadRun(base::RunLoop* run_loop);
+  void FileThreadRun(base::RunLoop* run_loop);
+  void FileUserBlockingThreadRun(base::RunLoop* run_loop);
+  void ProcessLauncherThreadRun(base::RunLoop* run_loop);
+  void CacheThreadRun(base::RunLoop* run_loop);
+  void IOThreadRun(base::RunLoop* run_loop);
 
   static bool PostTaskHelper(
       BrowserThread::ID identifier,

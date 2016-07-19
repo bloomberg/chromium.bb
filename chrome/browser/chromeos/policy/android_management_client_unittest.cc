@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"

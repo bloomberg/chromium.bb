@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -290,7 +291,7 @@ TEST_P(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   consumer.Start(&request_, BoundNetLog());
 
   // Will terminate when the last consumer completes.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CheckResponse(consumer, "HTTP/1.1 200", response);
 }
@@ -307,7 +308,7 @@ TEST_P(QuicEndToEndTest, TokenBinding) {
   consumer.Start(&request_, BoundNetLog());
 
   // Will terminate when the last consumer completes.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CheckResponse(consumer, "HTTP/1.1 200", kResponseBody);
   HttpRequestHeaders headers;
@@ -330,7 +331,7 @@ TEST_P(QuicEndToEndTest, LargePostWithNoPacketLoss) {
   consumer.Start(&request_, BoundNetLog());
 
   // Will terminate when the last consumer completes.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CheckResponse(consumer, "HTTP/1.1 200", kResponseBody);
 }
@@ -352,7 +353,7 @@ TEST_P(QuicEndToEndTest, LargePostWithPacketLoss) {
   consumer.Start(&request_, BoundNetLog());
 
   // Will terminate when the last consumer completes.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   CheckResponse(consumer, "HTTP/1.1 200", kResponseBody);
 }
@@ -378,7 +379,7 @@ TEST_P(QuicEndToEndTest, UberTest) {
   }
 
   // Will terminate when the last consumer completes.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   for (size_t i = 0; i < num_requests; ++i) {
     CheckResponse(*consumers[i], "HTTP/1.1 200", kResponseBody);

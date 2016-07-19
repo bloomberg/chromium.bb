@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"

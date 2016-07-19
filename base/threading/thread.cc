@@ -5,6 +5,7 @@
 #include "base/threading/thread.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -31,12 +32,6 @@ base::LazyInstance<base::ThreadLocalBoolean> lazy_tls_bool =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-// This is used to trigger the message loop to exit.
-void ThreadQuitHelper() {
-  MessageLoop::current()->QuitWhenIdle();
-  Thread::SetThreadWasQuitProperly(true);
-}
 
 Thread::Options::Options()
     : message_loop_type(MessageLoop::TYPE_DEFAULT),
@@ -178,7 +173,8 @@ void Thread::StopSoon() {
     return;
 
   stopping_ = true;
-  task_runner()->PostTask(FROM_HERE, base::Bind(&ThreadQuitHelper));
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Thread::ThreadQuitHelper, Unretained(this)));
 }
 
 PlatformThreadId Thread::GetThreadId() const {
@@ -201,8 +197,8 @@ bool Thread::IsRunning() const {
   return running_;
 }
 
-void Thread::Run(MessageLoop* message_loop) {
-  RunLoop().Run();
+void Thread::Run(RunLoop* run_loop) {
+  run_loop->Run();
 }
 
 void Thread::SetThreadWasQuitProperly(bool flag) {
@@ -253,7 +249,9 @@ void Thread::ThreadMain() {
 
   start_event_.Signal();
 
-  Run(message_loop_);
+  RunLoop run_loop;
+  run_loop_ = &run_loop;
+  Run(run_loop_);
 
   {
     AutoLock lock(running_lock_);
@@ -268,15 +266,22 @@ void Thread::ThreadMain() {
 #endif
 
   if (message_loop->type() != MessageLoop::TYPE_CUSTOM) {
-    // Assert that MessageLoop::QuitWhenIdle was called by ThreadQuitHelper.
-    // Don't check for custom message pumps, because their shutdown might not
-    // allow this.
+    // Assert that RunLoop::QuitWhenIdle was called by ThreadQuitHelper. Don't
+    // check for custom message pumps, because their shutdown might not allow
+    // this.
     DCHECK(GetThreadWasQuitProperly());
   }
 
   // We can't receive messages anymore.
   // (The message loop is destructed at the end of this block)
   message_loop_ = nullptr;
+  run_loop_ = nullptr;
+}
+
+void Thread::ThreadQuitHelper() {
+  DCHECK(run_loop_);
+  run_loop_->QuitWhenIdle();
+  SetThreadWasQuitProperly(true);
 }
 
 }  // namespace base

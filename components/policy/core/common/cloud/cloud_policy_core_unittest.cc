@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"

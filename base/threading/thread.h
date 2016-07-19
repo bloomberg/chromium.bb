@@ -24,6 +24,7 @@
 namespace base {
 
 class MessagePump;
+class RunLoop;
 
 // A simple thread abstraction that establishes a MessageLoop on a new thread.
 // The consumer uses the MessageLoop of the thread to cause code to execute on
@@ -190,8 +191,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Called just prior to starting the message loop
   virtual void Init() {}
 
-  // Called to start the message loop
-  virtual void Run(MessageLoop* message_loop);
+  // Called to start the run loop
+  virtual void Run(RunLoop* run_loop);
 
   // Called just after the message loop ends
   virtual void CleanUp() {}
@@ -214,6 +215,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
   // PlatformThread::Delegate methods:
   void ThreadMain() override;
+
+  void ThreadQuitHelper();
 
 #if defined(OS_WIN)
   // Whether this thread needs to initialize COM, and if so, in what mode.
@@ -238,9 +241,10 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   PlatformThreadId id_;
   mutable WaitableEvent id_event_;  // Protects |id_|.
 
-  // The thread's message loop.  Valid only while the thread is alive.  Set
-  // by the created thread.
+  // The thread's MessageLoop and RunLoop. Valid only while the thread is alive.
+  // Set by the created thread.
   MessageLoop* message_loop_;
+  RunLoop* run_loop_;
 
   // Stores Options::timer_slack_ until the message loop has been bound to
   // a thread.
@@ -251,8 +255,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
   // Signaled when the created thread gets ready to use the message loop.
   mutable WaitableEvent start_event_;
-
-  friend void ThreadQuitHelper();
 
   DISALLOW_COPY_AND_ASSIGN(Thread);
 };
