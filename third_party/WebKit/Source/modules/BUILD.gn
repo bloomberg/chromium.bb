@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/split_static_library.gni")
+import("//build/config/chromecast_build.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/modules/v8/generated.gni")
 import("//third_party/WebKit/Source/bindings/modules/v8/v8.gni")
@@ -57,6 +58,13 @@ target(modules_target_type, "modules") {
   ]
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
+
+  if (is_chromecast) {
+    defines += [
+      "BLINK_MSLOG=VLOG(2)",
+      "BLINK_SBLOG=VLOG(2)",
+    ]
+  }
 
   deps = [
     ":make_modules_generated",
