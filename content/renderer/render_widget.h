@@ -85,6 +85,7 @@ class CompositorDependencies;
 class ExternalPopupMenu;
 class FrameSwapMessageQueue;
 class ImeEventGuard;
+class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderWidgetCompositor;
@@ -365,6 +366,10 @@ class CONTENT_EXPORT RenderWidget
 
   MouseLockDispatcher* mouse_lock_dispatcher() {
     return mouse_lock_dispatcher_.get();
+  }
+
+  void set_focused_pepper_plugin(PepperPluginInstanceImpl* plugin) {
+    focused_pepper_plugin_ = plugin;
   }
 
  protected:
@@ -770,6 +775,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates whether this widget has focus.
   bool has_focus_;
+
+  // This reference is set by the RenderFrame and is used to query the IME-
+  // related state from the plugin to later send to the browser.
+  PepperPluginInstanceImpl* focused_pepper_plugin_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

@@ -2296,7 +2296,7 @@ void WebViewImpl::setFocus(bool enable)
         if (!frame)
             return;
 
-        LocalFrame* focusedFrame = m_page->focusController().focusedFrame();
+        LocalFrame* focusedFrame = focusedLocalFrameInWidget();
         if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
             if (focusedFrame->inputMethodController().hasComposition()) {
@@ -2321,8 +2321,8 @@ bool WebViewImpl::setComposition(
     int selectionStart,
     int selectionEnd)
 {
-    LocalFrame* focused = toLocalFrame(focusedCoreFrame());
-    if (!focused || !m_imeAcceptEvents)
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
         return false;
 
     if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
@@ -2385,8 +2385,8 @@ bool WebViewImpl::confirmComposition(const WebString& text)
 
 bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior)
 {
-    LocalFrame* focused = toLocalFrame(focusedCoreFrame());
-    if (!focused || !m_imeAcceptEvents)
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
         return false;
 
     if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
@@ -2397,14 +2397,8 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
 
 bool WebViewImpl::compositionRange(size_t* location, size_t* length)
 {
-    // FIXME: Long term, the focused frame should be a local frame. For now,
-    // return early to avoid crashes.
-    Frame* frame = focusedCoreFrame();
-    if (!frame || frame->isRemoteFrame())
-        return false;
-
-    LocalFrame* focused = toLocalFrame(frame);
-    if (!focused || !m_imeAcceptEvents)
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
         return false;
 
     const EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
@@ -2425,11 +2419,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 {
     WebTextInputInfo info;
 
-    Frame* focusedFrame = focusedCoreFrame();
-    if (!focusedFrame->isLocalFrame())
-        return info;
-
-    LocalFrame* focused = toLocalFrame(focusedFrame);
+    LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
         return info;
 
@@ -2482,7 +2472,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
 WebTextInputType WebViewImpl::textInputType()
 {
-    LocalFrame* focusedFrame = m_page->focusController().focusedFrame();
+    LocalFrame* focusedFrame = focusedLocalFrameInWidget();
     if (!focusedFrame)
         return WebTextInputTypeNone;
 
@@ -2675,10 +2665,11 @@ WebPlugin* WebViewImpl::focusedPluginIfInputMethodSupported(LocalFrame* frame)
 
 bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const
 {
-    const Frame* frame = focusedCoreFrame();
-    if (!frame || frame->isRemoteFrame())
+    const LocalFrame* frame = focusedLocalFrameInWidget();
+    if (!frame)
         return false;
-    const FrameSelection& selection = toLocalFrame(frame)->selection();
+
+    const FrameSelection& selection = frame->selection();
     if (!selection.isAvailable()) {
         // plugins/mouse-capture-inside-shadow.html reaches here.
         return false;
@@ -2692,10 +2683,11 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
 
 bool WebViewImpl::isSelectionAnchorFirst() const
 {
-    const Frame* frame = focusedCoreFrame();
-    if (!frame || frame->isRemoteFrame())
+    const LocalFrame* frame = focusedLocalFrameInWidget();
+    if (!frame)
         return false;
-    FrameSelection& selection = toLocalFrame(frame)->selection();
+
+    FrameSelection& selection = frame->selection();
     if (!selection.isAvailable()) {
         // plugins/mouse-capture-inside-shadow.html reaches here.
         return false;
@@ -2724,7 +2716,7 @@ WebPagePopup* WebViewImpl::pagePopup() const
 
 bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
 {
-    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
+    const LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
         return false;
 
@@ -2743,7 +2735,7 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
     // the text direction of the selected node and updates its DOM "dir"
     // attribute and its CSS "direction" property.
     // So, we just call the function as Safari does.
-    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
+    const LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
         return;
 
@@ -2823,6 +2815,46 @@ void WebViewImpl::didChangeWindowResizerRect()
 {
     if (mainFrameImpl()->frameView())
         mainFrameImpl()->frameView()->windowResizerRectChanged();
+}
+
+bool WebViewImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
+{
+    size_t offset = 0;
+    size_t characterCount = 0;
+    if (!compositionRange(&offset, &characterCount))
+        return false;
+
+    if (characterCount == 0)
+        return false;
+
+    WebLocalFrame* frame = focusedFrame();
+
+    // Only consider frames whose local root is the main frame. For other
+    // local frames which have different local roots, the corresponding
+    // WebFrameWidget will handle this task.
+    if (frame->localRoot() != mainFrameImpl())
+        return false;
+
+    WebVector<WebRect> result(characterCount);
+    WebRect webrect;
+    for (size_t i = 0; i < characterCount; ++i) {
+        if (!frame->firstRectForCharacterRange(offset + i, 1, webrect)) {
+            DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
+            return false;
+        }
+        result[i] = webrect;
+    }
+    bounds.swap(result);
+    return true;
+}
+
+void WebViewImpl::applyReplacementRange(int start, int length)
+{
+    if (WebLocalFrame* frame = focusedFrame()) {
+        WebRange webrange = WebRange::fromDocumentRange(frame, start, length);
+        if (!webrange.isNull())
+            frame->selectRange(webrange);
+    }
 }
 
 // WebView --------------------------------------------------------------------
@@ -4570,6 +4602,22 @@ float WebViewImpl::deviceScaleFactor() const
         return 1;
 
     return page()->deviceScaleFactor();
+}
+
+LocalFrame* WebViewImpl::focusedLocalFrameInWidget() const
+{
+    if (!mainFrameImpl())
+        return nullptr;
+
+    LocalFrame* focusedFrame = toLocalFrame(focusedCoreFrame());
+    if (focusedFrame->localFrameRoot() != mainFrameImpl()->frame())
+        return nullptr;
+    return focusedFrame;
+}
+
+LocalFrame* WebViewImpl::focusedLocalFrameAvailableForIme() const
+{
+    return m_imeAcceptEvents ? focusedLocalFrameInWidget() : nullptr;
 }
 
 } // namespace blink

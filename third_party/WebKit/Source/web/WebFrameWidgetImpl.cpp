@@ -30,6 +30,7 @@
 
 #include "web/WebFrameWidgetImpl.h"
 
+#include "core/InputTypeNames.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -40,6 +41,8 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -51,7 +54,11 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "public/platform/WebFrameScheduler.h"
+#include "public/web/WebAutofillClient.h"
+#include "public/web/WebPlugin.h"
+#include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
+#include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
@@ -104,6 +111,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     , m_suppressNextKeypressEvent(false)
     , m_ignoreInputEvents(false)
     , m_isTransparent(false)
+    , m_imeAcceptEvents(true)
     , m_selfKeepAlive(this)
 {
     DCHECK(m_localRoot->frame()->isLocalRoot());
@@ -461,6 +469,23 @@ void WebFrameWidgetImpl::setFocus(bool enable)
                 }
             }
         }
+    } else {
+        LocalFrame* focusedFrame = focusedLocalFrameInWidget();
+        if (focusedFrame) {
+            // Finish an ongoing composition to delete the composition node.
+            if (focusedFrame->inputMethodController().hasComposition()) {
+                WebAutofillClient* autofillClient = WebLocalFrameImpl::fromFrame(focusedFrame)->autofillClient();
+
+                if (autofillClient)
+                    autofillClient->setIgnoreTextChanges(true);
+
+                focusedFrame->inputMethodController().confirmComposition();
+
+                if (autofillClient)
+                    autofillClient->setIgnoreTextChanges(false);
+            }
+            m_imeAcceptEvents = false;
+        }
     }
 }
 
@@ -470,42 +495,229 @@ bool WebFrameWidgetImpl::setComposition(
     int selectionStart,
     int selectionEnd)
 {
-    // FIXME: To be implemented.
-    return false;
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
+        return false;
+
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
+        return plugin->setComposition(text, underlines, selectionStart, selectionEnd);
+
+    // The input focus has been moved to another WebWidget object.
+    // We should use this |editor| object only to complete the ongoing
+    // composition.
+    InputMethodController& inputMethodController = focused->inputMethodController();
+    if (!focused->editor().canEdit() && !inputMethodController.hasComposition())
+        return false;
+
+    // We should verify the parent node of this IME composition node are
+    // editable because JavaScript may delete a parent node of the composition
+    // node. In this case, WebKit crashes while deleting texts from the parent
+    // node, which doesn't exist any longer.
+    const EphemeralRange range = inputMethodController.compositionEphemeralRange();
+    if (range.isNotNull()) {
+        Node* node = range.startPosition().computeContainerNode();
+        if (!node || !node->isContentEditable())
+            return false;
+    }
+
+    // A keypress event is canceled. If an ongoing composition exists, then the
+    // keydown event should have arisen from a handled key (e.g., backspace).
+    // In this case we ignore the cancellation and continue; otherwise (no
+    // ongoing composition) we exit and signal success only for attempts to
+    // clear the composition.
+    if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
+        return text.isEmpty();
+
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+
+    // When the range of composition underlines overlap with the range between
+    // selectionStart and selectionEnd, WebKit somehow won't paint the selection
+    // at all (see InlineTextBox::paint() function in InlineTextBox.cpp).
+    // But the selection range actually takes effect.
+    inputMethodController.setComposition(String(text),
+        CompositionUnderlineVectorBuilder(underlines),
+        selectionStart, selectionEnd);
+
+    return text.isEmpty() || inputMethodController.hasComposition();
 }
 
 bool WebFrameWidgetImpl::confirmComposition()
 {
-    // FIXME: To be implemented.
-    return false;
+    return confirmComposition(DoNotKeepSelection);
 }
 
 bool WebFrameWidgetImpl::confirmComposition(ConfirmCompositionBehavior selectionBehavior)
 {
-    // FIXME: To be implemented.
-    return false;
+    return confirmComposition(WebString(), selectionBehavior);
 }
 
 bool WebFrameWidgetImpl::confirmComposition(const WebString& text)
 {
-    // FIXME: To be implemented.
-    return false;
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    return confirmComposition(text, DoNotKeepSelection);
+}
+
+bool WebFrameWidgetImpl::confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior) const
+{
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
+        return false;
+
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
+        return plugin->confirmComposition(text, selectionBehavior);
+
+    return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
 
 bool WebFrameWidgetImpl::compositionRange(size_t* location, size_t* length)
 {
-    // FIXME: To be implemented.
-    return false;
+    LocalFrame* focused = focusedLocalFrameAvailableForIme();
+    if (!focused)
+        return false;
+
+    const EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
+    if (range.isNull())
+        return false;
+
+    Element* editable = focused->selection().rootEditableElementOrDocumentElement();
+    DCHECK(editable);
+    PlainTextRange plainTextRange(PlainTextRange::create(*editable, range));
+    if (plainTextRange.isNull())
+        return false;
+    *location = plainTextRange.start();
+    *length = plainTextRange.length();
+    return true;
 }
 
 WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
 {
-    return view()->textInputInfo();
+    WebTextInputInfo info;
+
+    LocalFrame* focused = focusedLocalFrameInWidget();
+    if (!focused)
+        return info;
+
+    FrameSelection& selection = focused->selection();
+    if (!selection.isAvailable()) {
+        // plugins/mouse-capture-inside-shadow.html reaches here.
+        return info;
+    }
+    Element* element = selection.selection().rootEditableElement();
+    if (!element)
+        return info;
+
+    info.inputMode = inputModeOfFocusedElement();
+
+    info.type = textInputType();
+    info.flags = textInputFlags();
+    if (info.type == WebTextInputTypeNone)
+        return info;
+
+    if (!focused->editor().canEdit())
+        return info;
+
+    // Emits an object replacement character for each replaced element so that
+    // it is exposed to IME and thus could be deleted by IME on android.
+    info.value = plainText(EphemeralRange::rangeOfContents(*element), TextIteratorEmitsObjectReplacementCharacter);
+
+    if (info.value.isEmpty())
+        return info;
+
+    EphemeralRange firstRange = firstEphemeralRangeOf(selection.selection());
+    if (firstRange.isNotNull()) {
+        PlainTextRange plainTextRange(PlainTextRange::create(*element, firstRange));
+        if (plainTextRange.isNotNull()) {
+            info.selectionStart = plainTextRange.start();
+            info.selectionEnd = plainTextRange.end();
+        }
+    }
+
+    EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
+    if (range.isNotNull()) {
+        PlainTextRange plainTextRange(PlainTextRange::create(*element, range));
+        if (plainTextRange.isNotNull()) {
+            info.compositionStart = plainTextRange.start();
+            info.compositionEnd = plainTextRange.end();
+        }
+    }
+
+    return info;
 }
 
 WebTextInputType WebFrameWidgetImpl::textInputType()
 {
-    return view()->textInputType();
+    LocalFrame* focusedFrame = focusedLocalFrameInWidget();
+    if (!focusedFrame)
+        return WebTextInputTypeNone;
+
+    if (!focusedFrame->selection().isAvailable()) {
+        // "mouse-capture-inside-shadow.html" reaches here.
+        return WebTextInputTypeNone;
+    }
+
+    // It's important to preserve the equivalence of textInputInfo().type and textInputType(),
+    // so perform the same rootEditableElement() existence check here for consistency.
+    if (!focusedFrame->selection().selection().rootEditableElement())
+        return WebTextInputTypeNone;
+
+    Document* document = focusedFrame->document();
+    if (!document)
+        return WebTextInputTypeNone;
+
+    Element* element = document->focusedElement();
+    if (!element)
+        return WebTextInputTypeNone;
+
+    if (isHTMLInputElement(*element)) {
+        HTMLInputElement& input = toHTMLInputElement(*element);
+        const AtomicString& type = input.type();
+
+        if (input.isDisabledOrReadOnly())
+            return WebTextInputTypeNone;
+
+        if (type == InputTypeNames::password)
+            return WebTextInputTypePassword;
+        if (type == InputTypeNames::search)
+            return WebTextInputTypeSearch;
+        if (type == InputTypeNames::email)
+            return WebTextInputTypeEmail;
+        if (type == InputTypeNames::number)
+            return WebTextInputTypeNumber;
+        if (type == InputTypeNames::tel)
+            return WebTextInputTypeTelephone;
+        if (type == InputTypeNames::url)
+            return WebTextInputTypeURL;
+        if (type == InputTypeNames::date)
+            return WebTextInputTypeDate;
+        if (type == InputTypeNames::datetime_local)
+            return WebTextInputTypeDateTimeLocal;
+        if (type == InputTypeNames::month)
+            return WebTextInputTypeMonth;
+        if (type == InputTypeNames::time)
+            return WebTextInputTypeTime;
+        if (type == InputTypeNames::week)
+            return WebTextInputTypeWeek;
+        if (type == InputTypeNames::text)
+            return WebTextInputTypeText;
+
+        return WebTextInputTypeNone;
+    }
+
+    if (isHTMLTextAreaElement(*element)) {
+        if (toHTMLTextAreaElement(*element).isDisabledOrReadOnly())
+            return WebTextInputTypeNone;
+        return WebTextInputTypeTextArea;
+    }
+
+    if (element->isHTMLElement()) {
+        if (toHTMLElement(element)->isDateTimeFieldElement())
+            return WebTextInputTypeDateTimeField;
+    }
+
+    if (element->isContentEditable())
+        return WebTextInputTypeContentEditable;
+
+    return WebTextInputTypeNone;
 }
 
 WebColor WebFrameWidgetImpl::backgroundColor() const
@@ -520,13 +732,10 @@ WebColor WebFrameWidgetImpl::backgroundColor() const
 
 bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 {
-    const Frame* frame = focusedCoreFrame();
-    if (!frame || !frame->isLocalFrame())
-        return false;
-
-    const LocalFrame* localFrame = toLocalFrame(frame);
+    const LocalFrame* localFrame = focusedLocalFrameInWidget();
     if (!localFrame)
         return false;
+
     FrameSelection& selection = localFrame->selection();
 
     if (selection.isCaret()) {
@@ -553,11 +762,10 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 
 bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const
 {
-    if (!focusedCoreFrame()->isLocalFrame())
-        return false;
-    const LocalFrame* frame = toLocalFrame(focusedCoreFrame());
+    const LocalFrame* frame = focusedLocalFrameInWidget();
     if (!frame)
         return false;
+
     FrameSelection& selection = frame->selection();
     if (selection.selection().toNormalizedEphemeralRange().isNull())
         return false;
@@ -568,18 +776,14 @@ bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start, WebText
 
 bool WebFrameWidgetImpl::isSelectionAnchorFirst() const
 {
-    if (!focusedCoreFrame()->isLocalFrame())
-        return false;
-    if (const LocalFrame* frame = toLocalFrame(focusedCoreFrame()))
+    if (const LocalFrame* frame = focusedLocalFrameInWidget())
         return frame->selection().selection().isBaseFirst();
     return false;
 }
 
 bool WebFrameWidgetImpl::caretOrSelectionRange(size_t* location, size_t* length)
 {
-    if (!focusedCoreFrame()->isLocalFrame())
-        return false;
-    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
+    LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
         return false;
 
@@ -598,9 +802,7 @@ void WebFrameWidgetImpl::setTextDirection(WebTextDirection direction)
     // the text direction of the selected node and updates its DOM "dir"
     // attribute and its CSS "direction" property.
     // So, we just call the function as Safari does.
-    if (!focusedCoreFrame()->isLocalFrame())
-        return;
-    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
+    const LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
         return;
 
@@ -662,6 +864,44 @@ void WebFrameWidgetImpl::didNotAcquirePointerLock()
 void WebFrameWidgetImpl::didLosePointerLock()
 {
     page()->pointerLockController().didLosePointerLock();
+}
+
+bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
+{
+    size_t offset = 0;
+    size_t characterCount = 0;
+    if (!compositionRange(&offset, &characterCount))
+        return false;
+
+    if (characterCount == 0)
+        return false;
+
+    LocalFrame* frame = focusedLocalFrameInWidget();
+    if (!frame)
+        return false;
+
+    WebLocalFrameImpl* webLocalFrame = WebLocalFrameImpl::fromFrame(frame);
+    WebVector<WebRect> result(characterCount);
+    WebRect webrect;
+    for (size_t i = 0; i < characterCount; ++i) {
+        if (!webLocalFrame->firstRectForCharacterRange(offset + i, 1, webrect)) {
+            DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
+            return false;
+        }
+        result[i] = webrect;
+    }
+    bounds.swap(result);
+    return true;
+}
+
+void WebFrameWidgetImpl::applyReplacementRange(int start, int length)
+{
+    if (LocalFrame* frame = focusedLocalFrameInWidget()) {
+        WebLocalFrameImpl* webLocalFrame = WebLocalFrameImpl::fromFrame(frame);
+        WebRange webrange = WebRange::fromDocumentRange(webLocalFrame, start, length);
+        if (!webrange.isNull())
+            webLocalFrame->selectRange(webrange);
+    }
 }
 
 void WebFrameWidgetImpl::handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent& event)
@@ -1122,6 +1362,103 @@ HitTestResult WebFrameWidgetImpl::hitTestResultForRootFramePos(const IntPoint& p
     HitTestResult result = m_localRoot->frame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
     result.setToShadowHostIfInUserAgentShadowRoot();
     return result;
+}
+
+LocalFrame* WebFrameWidgetImpl::focusedLocalFrameInWidget() const
+{
+    LocalFrame* frame = page()->focusController().focusedFrame();
+    return (frame && frame->localFrameRoot() == m_localRoot->frame()) ? frame : nullptr;
+}
+
+WebPlugin* WebFrameWidgetImpl::focusedPluginIfInputMethodSupported(LocalFrame* frame) const
+{
+    WebPluginContainerImpl* container = WebLocalFrameImpl::currentPluginContainer(frame);
+    if (container && container->supportsInputMethod())
+        return container->plugin();
+    return nullptr;
+}
+
+WebString WebFrameWidgetImpl::inputModeOfFocusedElement() const
+{
+    if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
+        return WebString();
+
+    Element* element = focusedElement();
+    if (!element)
+        return WebString();
+
+    if (isHTMLInputElement(*element)) {
+        const HTMLInputElement& input = toHTMLInputElement(*element);
+        if (input.supportsInputModeAttribute())
+            return input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+        return WebString();
+    }
+    if (isHTMLTextAreaElement(*element)) {
+        const HTMLTextAreaElement& textarea = toHTMLTextAreaElement(*element);
+        return textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+    }
+
+    return WebString();
+}
+
+int WebFrameWidgetImpl::textInputFlags() const
+{
+    Element* element = focusedElement();
+    if (!element)
+        return WebTextInputFlagNone;
+
+    DEFINE_STATIC_LOCAL(AtomicString, autocompleteString, ("autocomplete"));
+    DEFINE_STATIC_LOCAL(AtomicString, autocorrectString, ("autocorrect"));
+    int flags = 0;
+
+    const AtomicString& autocomplete = element->getAttribute(autocompleteString);
+    if (autocomplete == "on")
+        flags |= WebTextInputFlagAutocompleteOn;
+    else if (autocomplete == "off")
+        flags |= WebTextInputFlagAutocompleteOff;
+
+    const AtomicString& autocorrect = element->getAttribute(autocorrectString);
+    if (autocorrect == "on")
+        flags |= WebTextInputFlagAutocorrectOn;
+    else if (autocorrect == "off")
+        flags |= WebTextInputFlagAutocorrectOff;
+
+    SpellcheckAttributeState spellcheck = element->spellcheckAttributeState();
+    if (spellcheck == SpellcheckAttributeTrue)
+        flags |= WebTextInputFlagSpellcheckOn;
+    else if (spellcheck == SpellcheckAttributeFalse)
+        flags |= WebTextInputFlagSpellcheckOff;
+
+    if (isHTMLTextFormControlElement(element)) {
+        HTMLTextFormControlElement* formElement = static_cast<HTMLTextFormControlElement*>(element);
+        if (formElement->supportsAutocapitalize()) {
+            DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
+            DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
+            DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
+            DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
+
+            const AtomicString& autocapitalize = formElement->autocapitalize();
+            if (autocapitalize == none)
+                flags |= WebTextInputFlagAutocapitalizeNone;
+            else if (autocapitalize == characters)
+                flags |= WebTextInputFlagAutocapitalizeCharacters;
+            else if (autocapitalize == words)
+                flags |= WebTextInputFlagAutocapitalizeWords;
+            else if (autocapitalize == sentences)
+                flags |= WebTextInputFlagAutocapitalizeSentences;
+            else
+                NOTREACHED();
+        }
+    }
+
+    return flags;
+}
+
+LocalFrame* WebFrameWidgetImpl::focusedLocalFrameAvailableForIme() const
+{
+    if (!m_imeAcceptEvents)
+        return nullptr;
+    return focusedLocalFrameInWidget();
 }
 
 } // namespace blink

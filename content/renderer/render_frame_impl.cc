@@ -6304,6 +6304,8 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   else if (focused_pepper_plugin_ == instance)
     focused_pepper_plugin_ = nullptr;
 
+  GetRenderWidget()->set_focused_pepper_plugin(focused_pepper_plugin_);
+
   GetRenderWidget()->UpdateTextInputState(ShowIme::HIDE_IME,
                                           ChangeSource::FROM_NON_IME);
   GetRenderWidget()->UpdateSelectionBounds();

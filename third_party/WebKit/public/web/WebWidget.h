@@ -243,6 +243,14 @@ public:
     // control what are valid states for top controls and if it should animate.
     virtual void updateTopControlsState(WebTopControlsState constraints, WebTopControlsState current, bool animate) { }
 
+    // Populate |bounds| with the composition character bounds for the ongoing
+    // composition. Returns false if there is no focused input or any ongoing
+    // composition.
+    virtual bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) { return false; }
+
+    // Applies the range from |start| to |start + length| on the foucsed frame so that the text will later be replaced.
+    virtual void applyReplacementRange(int start, int length) {}
+
 protected:
     ~WebWidget() { }
 };

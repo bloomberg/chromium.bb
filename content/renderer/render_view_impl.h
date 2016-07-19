@@ -240,6 +240,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
+  // TODO(ekaramad): This method is only used by TextInputClientObserver.
+  // Ideally, TextInputClientObserver should use RenderFrame/RenderWidget to
+  // obtain the plugin. Come back to this later when implementing IME for Mac
+  // to see if we can remove this API (https://crbug.com/578168).
   PepperPluginInstanceImpl* GetFocusedPepperPlugin();
 #endif  // ENABLE_PLUGINS
 
@@ -443,22 +447,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnResize(const ResizeParams& params) override;
   void OnSetFocus(bool enable) override;
   GURL GetURLForGraphicsContext3D() override;
-  void OnImeSetComposition(
-      const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      const gfx::Range& replacement_range,
-      int selection_start,
-      int selection_end) override;
-  void OnImeConfirmComposition(const base::string16& text,
-                               const gfx::Range& replacement_range,
-                               bool keep_selection) override;
   void OnOrientationChange() override;
-  ui::TextInputType GetTextInputType() override;
-  void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) override;
-  void GetCompositionCharacterBounds(
-      std::vector<gfx::Rect>* character_bounds_in_window) override;
-  void GetCompositionRange(gfx::Range* range) override;
-  bool CanComposeInline() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void OnDeviceScaleFactorChanged() override;

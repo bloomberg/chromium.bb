@@ -116,6 +116,8 @@ public:
     void didAcquirePointerLock() override;
     void didNotAcquirePointerLock() override;
     void didLosePointerLock() override;
+    bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
+    void applyReplacementRange(int start, int length) override;
 
     // WebFrameWidget implementation.
     void setVisibilityState(WebPageVisibilityState) override;
@@ -197,6 +199,22 @@ private:
 
     WebViewImpl* view() const { return m_localRoot->viewImpl(); }
 
+    // This method returns the focused frame belonging to this WebWidget, that
+    // is, a focused frame with the same local root as the one corresponding
+    // to this widget. It will return nullptr if no frame is focused or, the
+    // focused frame has a different local root.
+    LocalFrame* focusedLocalFrameInWidget() const;
+
+    bool confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior) const;
+
+    WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*) const;
+
+    WebString inputModeOfFocusedElement() const;
+
+    int textInputFlags() const;
+
+    LocalFrame* focusedLocalFrameAvailableForIme() const;
+
     WebWidgetClient* m_client;
 
     // WebFrameWidget is associated with a subtree of the frame tree, corresponding to a maximal
@@ -226,6 +244,9 @@ private:
 
     // Whether the WebFrameWidget is rendering transparently.
     bool m_isTransparent;
+
+    // Represents whether or not this object should process incoming IME events.
+    bool m_imeAcceptEvents;
 
     static const WebInputEvent* m_currentInputEvent;
 

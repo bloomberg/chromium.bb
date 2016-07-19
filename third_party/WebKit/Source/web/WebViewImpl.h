@@ -157,6 +157,8 @@ public:
     void didNotAcquirePointerLock() override;
     void didLosePointerLock() override;
     void didChangeWindowResizerRect() override;
+    bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
+    void applyReplacementRange(int start, int length) override;
 
     // WebView methods:
     virtual bool isWebView() const { return true; }
@@ -619,6 +621,9 @@ private:
     void setRootGraphicsLayer(GraphicsLayer*);
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);
+
+    LocalFrame* focusedLocalFrameInWidget() const;
+    LocalFrame* focusedLocalFrameAvailableForIme() const;
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebSpellCheckClient* m_spellCheckClient;
