@@ -22,6 +22,7 @@ const int PlatformStyle::kComboboxNormalArrowPadding = 0;
 const int PlatformStyle::kMinLabelButtonWidth = 32;
 const int PlatformStyle::kMinLabelButtonHeight = 30;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
+const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = true;
 
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =

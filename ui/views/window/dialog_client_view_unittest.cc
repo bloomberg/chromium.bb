@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -148,7 +149,8 @@ TEST_F(DialogClientViewTest, UpdateButtons) {
   // Reset with just a cancel button.
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
   EXPECT_EQ(NULL, client_view()->ok_button());
-  EXPECT_TRUE(client_view()->cancel_button()->is_default());
+  EXPECT_EQ(client_view()->cancel_button()->is_default(),
+            PlatformStyle::kDialogDefaultButtonCanBeCancel);
   EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
 }
 

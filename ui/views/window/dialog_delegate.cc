@@ -16,6 +16,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -119,7 +120,12 @@ bool DialogDelegate::Close() {
 void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
   button->SetText(GetDialogButtonLabel(type));
   button->SetEnabled(IsDialogButtonEnabled(type));
-  button->SetIsDefault(type == GetDefaultDialogButton());
+  bool is_default = type == GetDefaultDialogButton();
+  if (!PlatformStyle::kDialogDefaultButtonCanBeCancel &&
+      type == ui::DIALOG_BUTTON_CANCEL) {
+    is_default = false;
+  }
+  button->SetIsDefault(is_default);
 }
 
 int DialogDelegate::GetDialogButtons() const {

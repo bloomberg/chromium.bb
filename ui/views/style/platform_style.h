@@ -39,6 +39,9 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether dialog-default buttons are given a bold font style.
   static const bool kDefaultLabelButtonHasBoldFont;
 
+  // Whether the default button for a dialog can be the Cancel button.
+  static const bool kDialogDefaultButtonCanBeCancel;
+
   // Whether dragging vertically above or below a textfield's bounds selects to
   // the left or right end of the text from the cursor, respectively.
   static const bool kTextfieldDragVerticallyDragsToEnd;
