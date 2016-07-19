@@ -128,11 +128,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   bool HasImplThread() const { return !!impl_thread_; }
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
-    DCHECK(task_runner_provider());
-    base::SingleThreadTaskRunner* impl_thread_task_runner =
-        task_runner_provider()->ImplThreadTaskRunner();
-    return impl_thread_task_runner ? impl_thread_task_runner
-                                   : main_task_runner_.get();
+    return impl_task_runner_.get();
   }
   base::SingleThreadTaskRunner* MainThreadTaskRunner() {
     return main_task_runner_.get();
@@ -208,6 +204,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   int timeout_seconds_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::unique_ptr<base::Thread> impl_thread_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;

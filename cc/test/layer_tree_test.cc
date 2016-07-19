@@ -724,6 +724,23 @@ void LayerTreeTest::DoBeginTest() {
 
   ASSERT_TRUE(layer_tree_host_);
 
+  main_task_runner_ =
+      layer_tree_host_->task_runner_provider()->MainThreadTaskRunner();
+  impl_task_runner_ =
+      layer_tree_host_->task_runner_provider()->ImplThreadTaskRunner();
+  if (!impl_task_runner_) {
+    // For tests, if there's no impl thread, make things easier by just giving
+    // the main thread task runner.
+    impl_task_runner_ = main_task_runner_;
+  }
+
+  if (timeout_seconds_) {
+    timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
+    main_task_runner_->PostDelayedTask(
+        FROM_HERE, timeout_.callback(),
+        base::TimeDelta::FromSeconds(timeout_seconds_));
+  }
+
   started_ = true;
   beginning_ = true;
   SetupTree();
@@ -786,7 +803,7 @@ void LayerTreeTest::RealEndTest() {
 void LayerTreeTest::DispatchAddAnimationToPlayer(
     AnimationPlayer* player_to_receive_animation,
     double animation_duration) {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (player_to_receive_animation) {
     AddOpacityTransitionToPlayer(player_to_receive_animation,
@@ -795,61 +812,55 @@ void LayerTreeTest::DispatchAddAnimationToPlayer(
 }
 
 void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
-
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
-
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsCommit();
 }
 
 void LayerTreeTest::DispatchSetNeedsUpdateLayers() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
-
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 void LayerTreeTest::DispatchSetNeedsRedraw() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
-
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsRedraw();
 }
 
 void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
-
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
 void LayerTreeTest::DispatchSetVisible(bool visible) {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     SetVisibleOnLayerTreeHost(visible);
 }
 
 void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
-
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetNextCommitForcesRedraw();
 }
 
 void LayerTreeTest::DispatchCompositeImmediately() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
 void LayerTreeTest::DispatchNextCommitWaitsForActivation() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetNextCommitWaitsForActivation();
 }
@@ -860,8 +871,6 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
     impl_thread_.reset(new base::Thread("Compositor"));
     ASSERT_TRUE(impl_thread_->Start());
   }
-
-  main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
@@ -877,17 +886,9 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
   settings_.verify_transform_tree_calculations = true;
   InitializeSettings(&settings_);
 
-  main_task_runner_->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DoBeginTest, base::Unretained(this)));
-
-  if (timeout_seconds_) {
-    timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
-    main_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        timeout_.callback(),
-        base::TimeDelta::FromSeconds(timeout_seconds_));
-  }
 
   base::RunLoop().Run();
   DestroyLayerTreeHost();
@@ -967,29 +968,26 @@ TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {
   // thread. In the remote mode, the impl thread of the compositor lives on
   // the client, so return the task runner provider owned by the remote client
   // LayerTreeHost.
-  if (IsRemoteTest()) {
-    return remote_client_layer_tree_host_
-               ? remote_client_layer_tree_host_->task_runner_provider()
-               : nullptr;
-  }
-  return layer_tree_host_ ? layer_tree_host_->task_runner_provider() : nullptr;
+  LayerTreeHost* host = IsRemoteTest() ? remote_client_layer_tree_host_.get()
+                                       : layer_tree_host_.get();
+
+  // If this fails, the test has ended and there is no task runners to find
+  // anymore.
+  DCHECK(host);
+
+  return host->task_runner_provider();
 }
 
 LayerTreeHost* LayerTreeTest::layer_tree_host() {
-  // We check for a null task_runner_provider here as we sometimes ask for the
-  // layer tree host when the task_runner_provider does not exist, often for
-  // checking settings after a test has completed. For example,
-  // LTHPixelResourceTest::RunPixelResourceTest. See elsewhere in this file for
-  // other examples.
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread() ||
+  DCHECK(task_runner_provider()->IsMainThread() ||
          task_runner_provider()->IsMainThreadBlocked());
   return layer_tree_host_.get();
 }
 
 LayerTreeHost* LayerTreeTest::remote_client_layer_tree_host() {
-  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread() ||
-         task_runner_provider()->IsMainThreadBlocked());
   DCHECK(IsRemoteTest());
+  DCHECK(task_runner_provider()->IsMainThread() ||
+         task_runner_provider()->IsMainThreadBlocked());
   return remote_client_layer_tree_host_.get();
 }
 
