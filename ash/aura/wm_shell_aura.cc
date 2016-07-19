@@ -17,6 +17,7 @@
 #include "ash/common/wm_display_observer.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
@@ -132,7 +133,12 @@ std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
 }
 
 void WmShellAura::RecordUserMetricsAction(UserMetricsAction action) {
-  return Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+  Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
+}
+
+void WmShellAura::RecordTaskSwitchMetric(TaskSwitchSource source) {
+  Shell::GetInstance()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
+      source);
 }
 
 std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(

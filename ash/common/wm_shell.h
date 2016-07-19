@@ -42,6 +42,8 @@ class WmActivationObserver;
 class WmDisplayObserver;
 class WmWindow;
 
+enum class TaskSwitchSource;
+
 namespace wm {
 class MaximizeModeEventHandler;
 class WindowState;
@@ -164,6 +166,7 @@ class ASH_EXPORT WmShell {
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
+  virtual void RecordTaskSwitchMetric(TaskSwitchSource source) = 0;
 
   // Returns a WindowResizer to handle dragging. |next_window_resizer| is
   // the next WindowResizer in the WindowResizer chain. This may return

@@ -238,6 +238,12 @@ std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
 }
 
 void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
+  // TODO: http://crbug.com/616581.
+  NOTIMPLEMENTED();
+}
+
+void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
+  // TODO: http://crbug.com/616581.
   NOTIMPLEMENTED();
 }
 

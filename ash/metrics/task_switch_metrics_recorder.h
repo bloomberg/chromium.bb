@@ -9,12 +9,9 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/common/metrics/task_switch_source.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 namespace ash {
 
@@ -25,28 +22,6 @@ class TaskSwitchTimeTracker;
 // deltas between task switches and record histograms of the deltas.
 class ASH_EXPORT TaskSwitchMetricsRecorder {
  public:
-  // Enumeration of the different user interfaces that could be the source of
-  // a task switch. Note this is not necessarily comprehensive of all sources.
-  enum TaskSwitchSource {
-    // Task switches caused by any two sources in this enum. NOTE: This value
-    // should NOT be used outside of this class.
-    ANY,
-    // Task switches from selecting items in the app list.
-    APP_LIST,
-    // Task switches caused by the user activating a task window by clicking or
-    // tapping on it.
-    DESKTOP,
-    // Task switches caused by selecting a window from overview mode which is
-    // different from the previously-active window.
-    OVERVIEW_MODE,
-    // All task switches caused by shelf buttons, not including sub-menus.
-    SHELF,
-    // All task switches caused by the tab strip.
-    TAB_STRIP,
-    // Task switches caused by the WindowCycleController (ie Alt+Tab).
-    WINDOW_CYCLE_CONTROLLER
-  };
-
   TaskSwitchMetricsRecorder();
   virtual ~TaskSwitchMetricsRecorder();
 

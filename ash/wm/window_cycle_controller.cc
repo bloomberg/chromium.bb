@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_cycle_controller.h"
 
+#include "ash/common/metrics/task_switch_source.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_cycle_event_filter.h"
@@ -86,10 +87,8 @@ void WindowCycleController::StopCycling() {
 
   if (active_window_after_window_cycle != nullptr &&
       active_window_before_window_cycle_ != active_window_after_window_cycle) {
-    Shell::GetInstance()
-        ->metrics()
-        ->task_switch_metrics_recorder()
-        .OnTaskSwitch(TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER);
+    WmShell::Get()->RecordTaskSwitchMetric(
+        TaskSwitchSource::WINDOW_CYCLE_CONTROLLER);
   }
   active_window_before_window_cycle_ = nullptr;
 }

@@ -31,22 +31,21 @@ const char kOverviewModeHistogramName[] =
     "Ash.WindowSelector.TimeBetweenActiveWindowChanges";
 
 // Returns the histogram name for the given |task_switch_source|.
-const char* GetHistogramName(
-    TaskSwitchMetricsRecorder::TaskSwitchSource task_switch_source) {
+const char* GetHistogramName(TaskSwitchSource task_switch_source) {
   switch (task_switch_source) {
-    case TaskSwitchMetricsRecorder::ANY:
+    case TaskSwitchSource::ANY:
       return kAshTaskSwitchHistogramName;
-    case TaskSwitchMetricsRecorder::APP_LIST:
+    case TaskSwitchSource::APP_LIST:
       return kAppListHistogramName;
-    case TaskSwitchMetricsRecorder::DESKTOP:
+    case TaskSwitchSource::DESKTOP:
       return kDesktopHistogramName;
-    case TaskSwitchMetricsRecorder::OVERVIEW_MODE:
+    case TaskSwitchSource::OVERVIEW_MODE:
       return kOverviewModeHistogramName;
-    case TaskSwitchMetricsRecorder::SHELF:
+    case TaskSwitchSource::SHELF:
       return kShelfHistogramName;
-    case TaskSwitchMetricsRecorder::TAB_STRIP:
+    case TaskSwitchSource::TAB_STRIP:
       return kTabStripHistogramName;
-    case TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER:
+    case TaskSwitchSource::WINDOW_CYCLE_CONTROLLER:
       return kAcceleratorWindowCycleHistogramName;
   }
   NOTREACHED();
@@ -61,10 +60,10 @@ TaskSwitchMetricsRecorder::~TaskSwitchMetricsRecorder() {}
 
 void TaskSwitchMetricsRecorder::OnTaskSwitch(
     TaskSwitchSource task_switch_source) {
-  DCHECK_NE(task_switch_source, ANY);
-  if (task_switch_source != ANY) {
+  DCHECK_NE(task_switch_source, TaskSwitchSource::ANY);
+  if (task_switch_source != TaskSwitchSource::ANY) {
     OnTaskSwitchInternal(task_switch_source);
-    OnTaskSwitchInternal(ANY);
+    OnTaskSwitchInternal(TaskSwitchSource::ANY);
   }
 }
 
@@ -83,18 +82,19 @@ void TaskSwitchMetricsRecorder::OnTaskSwitchInternal(
 
 TaskSwitchTimeTracker* TaskSwitchMetricsRecorder::FindTaskSwitchTimeTracker(
     TaskSwitchSource task_switch_source) {
-  return histogram_map_.get(task_switch_source);
+  return histogram_map_.get(static_cast<int>(task_switch_source));
 }
 
 void TaskSwitchMetricsRecorder::AddTaskSwitchTimeTracker(
     TaskSwitchSource task_switch_source) {
-  CHECK(histogram_map_.find(task_switch_source) == histogram_map_.end());
+  CHECK(histogram_map_.find(static_cast<int>(task_switch_source)) ==
+        histogram_map_.end());
 
   const char* histogram_name = GetHistogramName(task_switch_source);
   DCHECK(histogram_name);
 
   histogram_map_.add(
-      task_switch_source,
+      static_cast<int>(task_switch_source),
       base::WrapUnique(new TaskSwitchTimeTracker(histogram_name)));
 }
 

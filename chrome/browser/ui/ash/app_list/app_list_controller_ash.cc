@@ -111,7 +111,7 @@ void AppListControllerDelegateAsh::ActivateApp(
     ash::Shell::GetInstance()
         ->metrics()
         ->task_switch_metrics_recorder()
-        .OnTaskSwitch(ash::TaskSwitchMetricsRecorder::APP_LIST);
+        .OnTaskSwitch(ash::TaskSwitchSource::APP_LIST);
   }
 
   // Platform apps treat activations as a launch. The app can decide whether to

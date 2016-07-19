@@ -238,8 +238,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_DESKTOP_SWITCH_TASK:
       RecordAction(UserMetricsAction("Desktop_SwitchTask"));
-      task_switch_metrics_recorder_.OnTaskSwitch(
-          TaskSwitchMetricsRecorder::DESKTOP);
+      task_switch_metrics_recorder_.OnTaskSwitch(TaskSwitchSource::DESKTOP);
       break;
     case UMA_DRAG_MAXIMIZE_LEFT:
       RecordAction(UserMetricsAction("WindowDrag_MaximizeLeft"));
@@ -261,16 +260,14 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_LAUNCHER_LAUNCH_TASK:
       RecordAction(UserMetricsAction("Launcher_LaunchTask"));
-      task_switch_metrics_recorder_.OnTaskSwitch(
-          TaskSwitchMetricsRecorder::SHELF);
+      task_switch_metrics_recorder_.OnTaskSwitch(TaskSwitchSource::SHELF);
       break;
     case UMA_LAUNCHER_MINIMIZE_TASK:
       RecordAction(UserMetricsAction("Launcher_MinimizeTask"));
       break;
     case UMA_LAUNCHER_SWITCH_TASK:
       RecordAction(UserMetricsAction("Launcher_SwitchTask"));
-      task_switch_metrics_recorder_.OnTaskSwitch(
-          TaskSwitchMetricsRecorder::SHELF);
+      task_switch_metrics_recorder_.OnTaskSwitch(TaskSwitchSource::SHELF);
       break;
     case UMA_MAXIMIZE_MODE_DISABLED:
       RecordAction(UserMetricsAction("Touchview_Disabled"));
@@ -568,7 +565,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED:
       RecordAction(UserMetricsAction("WindowSelector_ActiveWindowChanged"));
       task_switch_metrics_recorder_.OnTaskSwitch(
-          TaskSwitchMetricsRecorder::OVERVIEW_MODE);
+          TaskSwitchSource::OVERVIEW_MODE);
       break;
     case UMA_WINDOW_OVERVIEW_ENTER_KEY:
       RecordAction(UserMetricsAction("WindowSelector_OverviewEnterKey"));
