@@ -46,10 +46,17 @@ SANDBOX_TEST(BrokerFilePermission, CreateGoodRecursive) {
   BrokerFilePermission perm = BrokerFilePermission::ReadOnlyRecursive(kPath);
 }
 
+#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD) && defined(NDEBUG)
+#define DEATH_BY_SIGILL(msg) DEATH_BY_SIGNAL(SIGILL)
+#else
+#define DEATH_BY_SIGILL(msg) DEATH_MESSAGE(msg)
+#endif
+
 SANDBOX_DEATH_TEST(
     BrokerFilePermission,
     CreateBad,
-    DEATH_MESSAGE(BrokerFilePermissionTester::GetErrorMessage())) {
+    DEATH_BY_SIGILL(BrokerFilePermissionTester::GetErrorMessage())
+) {
   const char kPath[] = "/tmp/bad/";
   BrokerFilePermission perm = BrokerFilePermission::ReadOnly(kPath);
 }
@@ -57,7 +64,8 @@ SANDBOX_DEATH_TEST(
 SANDBOX_DEATH_TEST(
     BrokerFilePermission,
     CreateBadRecursive,
-    DEATH_MESSAGE(BrokerFilePermissionTester::GetErrorMessage())) {
+    DEATH_BY_SIGILL(BrokerFilePermissionTester::GetErrorMessage())
+) {
   const char kPath[] = "/tmp/bad";
   BrokerFilePermission perm = BrokerFilePermission::ReadOnlyRecursive(kPath);
 }
@@ -65,7 +73,8 @@ SANDBOX_DEATH_TEST(
 SANDBOX_DEATH_TEST(
     BrokerFilePermission,
     CreateBadNotAbs,
-    DEATH_MESSAGE(BrokerFilePermissionTester::GetErrorMessage())) {
+    DEATH_BY_SIGILL(BrokerFilePermissionTester::GetErrorMessage())
+) {
   const char kPath[] = "tmp/bad";
   BrokerFilePermission perm = BrokerFilePermission::ReadOnly(kPath);
 }
@@ -73,7 +82,8 @@ SANDBOX_DEATH_TEST(
 SANDBOX_DEATH_TEST(
     BrokerFilePermission,
     CreateBadEmpty,
-    DEATH_MESSAGE(BrokerFilePermissionTester::GetErrorMessage())) {
+    DEATH_BY_SIGILL(BrokerFilePermissionTester::GetErrorMessage())
+) {
   const char kPath[] = "";
   BrokerFilePermission perm = BrokerFilePermission::ReadOnly(kPath);
 }
