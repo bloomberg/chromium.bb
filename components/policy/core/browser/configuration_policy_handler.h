@@ -36,6 +36,7 @@ struct POLICY_EXPORT PolicyToPreferenceMapEntry {
 // their corresponding preferences, and to check whether the policies are valid.
 class POLICY_EXPORT ConfigurationPolicyHandler {
  public:
+  // TODO(thestig): Replace with base::Value::GetTypeName().
   static std::string ValueTypeToString(base::Value::Type type);
 
   ConfigurationPolicyHandler();

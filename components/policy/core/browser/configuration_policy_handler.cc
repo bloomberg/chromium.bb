@@ -30,18 +30,7 @@ namespace policy {
 // static
 std::string ConfigurationPolicyHandler::ValueTypeToString(
     base::Value::Type type) {
-  static const char* strings[] = {
-    "null",
-    "boolean",
-    "integer",
-    "double",
-    "string",
-    "binary",
-    "dictionary",
-    "list"
-  };
-  CHECK(static_cast<size_t>(type) < arraysize(strings));
-  return std::string(strings[type]);
+  return std::string(base::Value::GetTypeName(type));
 }
 
 ConfigurationPolicyHandler::ConfigurationPolicyHandler() {

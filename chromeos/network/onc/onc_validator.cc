@@ -30,15 +30,6 @@ std::vector<T> toVector(T const (&array)[N]) {
   return std::vector<T>(array, array + N);
 }
 
-// Copied from policy/configuration_policy_handler.cc.
-// TODO(pneubeck): move to a common place like base/.
-std::string ValueTypeToString(base::Value::Type type) {
-  const char* const strings[] = {"null",   "boolean", "integer",    "double",
-                                 "string", "binary",  "dictionary", "list"};
-  CHECK(static_cast<size_t>(type) < arraysize(strings));
-  return strings[type];
-}
-
 }  // namespace
 
 Validator::Validator(bool error_on_unknown_field,
@@ -70,15 +61,8 @@ std::unique_ptr<base::DictionaryValue> Validator::ValidateAndRepairObject(
     *result = VALID_WITH_WARNINGS;
   }
   // The return value should be NULL if, and only if, |result| equals INVALID.
-  DCHECK_EQ(result_value.get() == NULL, *result == INVALID);
-
-  base::DictionaryValue* result_dict = NULL;
-  if (result_value) {
-    result_value.release()->GetAsDictionary(&result_dict);
-    CHECK(result_dict);
-  }
-
-  return base::WrapUnique(result_dict);
+  DCHECK_EQ(!result_value, *result == INVALID);
+  return base::DictionaryValue::From(std::move(result_value));
 }
 
 std::unique_ptr<base::Value> Validator::MapValue(
@@ -87,8 +71,9 @@ std::unique_ptr<base::Value> Validator::MapValue(
     bool* error) {
   if (onc_value.GetType() != signature.onc_type) {
     LOG(ERROR) << MessageHeader() << "Found value '" << onc_value
-               << "' of type '" << ValueTypeToString(onc_value.GetType())
-               << "', but type '" << ValueTypeToString(signature.onc_type)
+               << "' of type '" << base::Value::GetTypeName(onc_value.GetType())
+               << "', but type '"
+               << base::Value::GetTypeName(signature.onc_type)
                << "' is required.";
     error_or_warning_found_ = *error = true;
     return std::unique_ptr<base::Value>();
@@ -146,13 +131,12 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
     }
   }
 
-  if (valid) {
+  if (valid)
     return repaired;
-  } else {
-    DCHECK(error_or_warning_found_);
-    error_or_warning_found_ = *error = true;
-    return std::unique_ptr<base::DictionaryValue>();
-  }
+
+  DCHECK(error_or_warning_found_);
+  error_or_warning_found_ = *error = true;
+  return std::unique_ptr<base::DictionaryValue>();
 }
 
 std::unique_ptr<base::Value> Validator::MapField(
@@ -288,10 +272,10 @@ bool Validator::ValidateRecommendedField(
       if (error_on_wrong_recommended_) {
         LOG(ERROR) << message;
         return false;
-      } else {
-        LOG(WARNING) << message;
-        continue;
       }
+
+      LOG(WARNING) << message;
+      continue;
     }
 
     repaired_recommended->AppendString(field_name);
@@ -446,12 +430,11 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
     // If the HexSSID field is present, ignore errors in SSID because these
     // might be caused by the usage of a non-UTF-8 encoding when the SSID
     // field was automatically added (see FillInHexSSIDField).
-    if (object->HasKey(::onc::wifi::kHexSSID)) {
-      LOG(WARNING) << msg;
-    } else {
+    if (!object->HasKey(::onc::wifi::kHexSSID)) {
       LOG(ERROR) << msg;
       return false;
     }
+    LOG(WARNING) << msg;
   }
 
   // Check HexSSID validity.
