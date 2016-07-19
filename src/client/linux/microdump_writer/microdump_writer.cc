@@ -164,6 +164,7 @@ class MicrodumpWriter {
     LogLine("-----BEGIN BREAKPAD MICRODUMP-----");
     DumpProductInformation();
     DumpOSInformation();
+    DumpProcessType();
     DumpGPUInformation();
 #if !defined(__LP64__)
     DumpFreeSpace();
@@ -229,6 +230,16 @@ class MicrodumpWriter {
       LogAppend(microdump_extra_info_.product_info);
     } else {
       LogAppend("UNKNOWN:0.0.0.0");
+    }
+    LogCommitLine();
+  }
+
+  void DumpProcessType() {
+    LogAppend("P ");
+    if (microdump_extra_info_.process_type) {
+      LogAppend(microdump_extra_info_.process_type);
+    } else {
+      LogAppend("UNKNOWN");
     }
     LogCommitLine();
   }
