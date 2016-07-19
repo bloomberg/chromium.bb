@@ -141,7 +141,7 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
   CreateGamepadDataFetcherCallback create_fetcher_callback_;
 
   // Reference to task runner on polling thread.
-  base::SingleThreadTaskRunner* polling_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> polling_task_runner_;
 
   // Reference to task runner on origin thread.
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
