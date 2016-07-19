@@ -19,12 +19,15 @@ class DhcpcsvcInitSingleton {
     DWORD err = DhcpCApiInitialize(&version);
     DCHECK(err == ERROR_SUCCESS);  // DCHECK_EQ complains of unsigned mismatch.
   }
+
+  ~DhcpcsvcInitSingleton() {
+    // Worker pool threads that use the DHCP API may still be running, so skip
+    // cleanup.
+  }
 };
 
-// Worker pool threads that use the DHCP API may still be running at shutdown.
-// Leak instance and skip cleanup.
-static base::LazyInstance<DhcpcsvcInitSingleton>::Leaky
-    g_dhcpcsvc_init_singleton = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<DhcpcsvcInitSingleton> g_dhcpcsvc_init_singleton =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
