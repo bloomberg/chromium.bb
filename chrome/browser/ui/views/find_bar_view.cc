@@ -89,9 +89,9 @@ const SkColor kBackgroundColorMatch = SkColorSetARGB(0, 255, 255, 255);
 // The background color of the match count label when no results are found.
 const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 
-// The default number of average characters that the text box will be. This
-// number brings the width on a "regular fonts" system to about 300px.
+// The default number of average characters that the text box will be.
 const int kDefaultCharWidth = 43;
+const int kDefaultCharWidthMd = 26;
 
 // The match count label is like a normal label, but can process events (which
 // makes it easier to forward events to the text input --- see
@@ -103,6 +103,15 @@ class MatchCountLabel : public views::Label {
 
   // views::Label overrides:
   bool CanProcessEventsWithinSubtree() const override { return true; }
+
+  gfx::Size GetPreferredSize() const override {
+    // We need to return at least 1dip so that box layout adds padding on either
+    // side (otherwise there will be a jump when our size changes between empty
+    // and non-empty).
+    gfx::Size size = views::Label::GetPreferredSize();
+    size.set_width(std::max(1, size.width()));
+    return size;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
@@ -124,7 +133,9 @@ FindBarView::FindBarView(FindBarHost* host)
       close_button_(nullptr) {
   find_text_ = new views::Textfield;
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
-  find_text_->set_default_width_in_chars(kDefaultCharWidth);
+  find_text_->set_default_width_in_chars(
+      ui::MaterialDesignController::IsModeMaterial() ? kDefaultCharWidthMd
+                                                     : kDefaultCharWidth);
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
@@ -389,10 +400,12 @@ void FindBarView::Layout() {
 
 gfx::Size FindBarView::GetPreferredSize() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    // The entire bar is sized to a specific number of characters set on
-    // |find_text_|.
     gfx::Size size = views::View::GetPreferredSize();
-    size.set_width(find_text_->GetPreferredSize().width());
+    // Ignore the preferred size for the match count label, and just let it take
+    // up part of the space for the input textfield. This prevents the overall
+    // width from changing every time the match count text changes.
+    size.set_width(size.width() -
+                   match_count_text_->GetPreferredSize().width());
     return size;
   }
 
