@@ -911,6 +911,9 @@
                   'ui/compositor/layer_unittest|'\
                   'ui/compositor/compositor',
     },
+    'ui_display_win': {
+      'filepath': '^ui/display/win',
+    },
     'ui_resources': {
       'filepath': 'ui/resources/'\
                   '|ui/base/native_theme/resources/'\
@@ -1664,6 +1667,7 @@
     'tools_emacs': ['dhollowa+watch@chromium.org'],
     'tracing': ['tracing+reviews@chromium.org', 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
+    'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org'],
