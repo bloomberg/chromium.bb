@@ -670,7 +670,6 @@ _waterfall_config_map = {
         # strago
         'celes-cheets-release',
         'kefka-release',
-        'relm-release',
         # veyron
         'veyron_mickey-release',
         'veyron_tiger-release',
