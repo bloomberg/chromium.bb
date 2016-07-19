@@ -1810,7 +1810,12 @@ class VerifiedClient : public Worker {
     Worker::OverrideThread(listener_thread);
   }
 
-  void Run() override {
+  void OnChannelConnected(int32_t peer_pid) override {
+    ListenerThread()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&VerifiedClient::RunTestOnConnected, this));
+  }
+
+  void RunTestOnConnected() {
     std::string response;
     SyncMessage* msg = new SyncChannelNestedTestMsg_String(&response);
     bool result = Send(msg);

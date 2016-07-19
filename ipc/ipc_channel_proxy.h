@@ -347,6 +347,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // Cached copy of the peer process ID. Set on IPC but read on both IPC and
     // listener threads.
     base::ProcessId peer_pid_;
+    base::Lock peer_pid_lock_;
 
     // Whether this channel is used as an endpoint for sending and receiving
     // brokerable attachment messages to/from the broker process.

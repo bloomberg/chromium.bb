@@ -120,7 +120,10 @@ bool ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnChannelConnected(int32_t peer_pid) {
   // We cache off the peer_pid so it can be safely accessed from both threads.
-  peer_pid_ = channel_->GetPeerPID();
+  {
+    base::AutoLock l(peer_pid_lock_);
+    peer_pid_ = channel_->GetPeerPID();
+  }
 
   // Add any pending filters.  This avoids a race condition where someone
   // creates a ChannelProxy, calls AddFilter, and then right after starts the
@@ -232,6 +235,8 @@ void ChannelProxy::Context::OnAddFilter() {
   // sure that channel_ is valid yet. When OnChannelConnected *is* called,
   // it invokes OnAddFilter, so any pending filter(s) will be added at that
   // time.
+  // No lock necessary for |peer_pid_| because it is only modified on this
+  // thread.
   if (peer_pid_ == base::kNullProcessId)
     return;
 
@@ -255,6 +260,8 @@ void ChannelProxy::Context::OnAddFilter() {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
+  // No lock necessary for |peer_pid_| because it is only modified on this
+  // thread.
   if (peer_pid_ == base::kNullProcessId) {
     // The channel is not yet connected, so any filters are still pending.
     base::AutoLock auto_lock(pending_filters_lock_);
@@ -336,9 +343,14 @@ void ChannelProxy::Context::OnDispatchConnected() {
     }
   }
 
+  base::ProcessId peer_pid;
+  {
+    base::AutoLock l(peer_pid_lock_);
+    peer_pid = peer_pid_;
+  }
   channel_connected_called_ = true;
   if (listener_)
-    listener_->OnChannelConnected(peer_pid_);
+    listener_->OnChannelConnected(peer_pid);
 }
 
 // Called on the listener's thread
@@ -567,6 +579,7 @@ void ChannelProxy::ClearIPCTaskRunner() {
 }
 
 base::ProcessId ChannelProxy::GetPeerPID() const {
+  base::AutoLock l(context_->peer_pid_lock_);
   return context_->peer_pid_;
 }
 
