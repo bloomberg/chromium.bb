@@ -1538,10 +1538,10 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
 ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
 
-class OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter
+class OcclusionTrackerTestPixelsNeededForDropShadowBackgroundFilter
     : public OcclusionTrackerTest {
  protected:
-  explicit OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter(
+  explicit OcclusionTrackerTestPixelsNeededForDropShadowBackgroundFilter(
       bool opaque_layers)
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
@@ -1657,7 +1657,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter
 };
 
 ALL_OCCLUSIONTRACKER_TEST(
-    OcclusionTrackerTestDontOccludePixelsNeededForDropShadowBackgroundFilter);
+    OcclusionTrackerTestPixelsNeededForDropShadowBackgroundFilter);
 
 class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
     : public OcclusionTrackerTest {
