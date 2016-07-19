@@ -2043,10 +2043,15 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     bool ancestorSkipped;
     bool filterOrReflectionSkipped;
     LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterOrReflectionSkipped);
-    // Skip table row because cells and rows are in the same coordinate space, except when we're already at the ancestor.
-    if (container->isTableRow() && container != ancestor) {
-        DCHECK(isTableCell());
-        container = container->parent();
+    LayoutBox* tableRowContainer = nullptr;
+    // Skip table row because cells and rows are in the same coordinate space
+    // (see below, however for more comments about when |ancestor| is the table row).
+    if (container->isTableRow()) {
+        DCHECK(isTableCell() && parentBox() == container);
+        if (container != ancestor)
+            container = container->parent();
+        else
+            tableRowContainer = toLayoutBox(container);
     }
     if (!container)
         return true;
@@ -2063,12 +2068,15 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         rect = LayoutRect(layer()->transform()->mapRect(enclosingIntRect(rect)));
     }
     LayoutPoint topLeft = rect.location();
-    // TODO(wkorman): Look into and document why this conditional is needed.
-    // Currently present following logic in PaintLayer::updateLayerPosition.
-    if (container->isBox())
+    if (container->isBox()) {
         topLeft.moveBy(topLeftLocation(toLayoutBox(container)));
-    else
-        topLeft.move(locationOffset());
+        // If the row is the ancestor, however, add its offset back in. In effect, this passes from the joint <td> / <tr>
+        // coordinate space to the parent space, then back to <tr> / <td>.
+        if (tableRowContainer)
+            topLeft.moveBy(-tableRowContainer->topLeftLocation(toLayoutBox(container)));
+    } else {
+        topLeft.moveBy(location());
+    }
 
     const ComputedStyle& styleToUse = styleRef();
     EPosition position = styleToUse.position();
