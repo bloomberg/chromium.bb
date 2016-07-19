@@ -164,5 +164,43 @@ TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
   EXPECT_THAT(block1, ElementsAre(Pair("foo", "bar")));
 }
 
+// This test verifies that headers can be appended to no matter how they were
+// added originally.
+TEST(SpdyHeaderBlockTest, AppendHeaders) {
+  SpdyHeaderBlock block;
+  block["foo"] = "foo";
+  block.AppendValueOrAddHeader("foo", "bar");
+  EXPECT_EQ(Pair("foo", string("foo\0bar", 7)), *block.find("foo"));
+
+  block.insert(std::make_pair("foo", "baz"));
+  EXPECT_EQ("baz", block["foo"]);
+  EXPECT_EQ(Pair("foo", "baz"), *block.find("foo"));
+
+  // Try all four methods of adding an entry.
+  block["cookie"] = "key1=value1";
+  block.AppendValueOrAddHeader("h1", "h1v1");
+  block.insert(std::make_pair("h2", "h2v1"));
+  block.ReplaceOrAppendHeader("h3", "h3v1");
+
+  block.AppendValueOrAddHeader("h3", "h3v2");
+  block.AppendValueOrAddHeader("h2", "h2v2");
+  block.AppendValueOrAddHeader("h1", "h1v2");
+  block.AppendValueOrAddHeader("cookie", "key2=value2");
+
+  block.ReplaceOrAppendHeader("h4", "h4v1");
+
+  block.AppendValueOrAddHeader("cookie", "key3=value3");
+  block.AppendValueOrAddHeader("h1", "h1v3");
+  block.AppendValueOrAddHeader("h2", "h2v3");
+  block.AppendValueOrAddHeader("h3", "h3v3");
+
+  EXPECT_EQ("key1=value1; key2=value2; key3=value3", block["cookie"]);
+  EXPECT_EQ("baz", block["foo"]);
+  EXPECT_EQ(string("h1v1\0h1v2\0h1v3", 14), block["h1"]);
+  EXPECT_EQ(string("h2v1\0h2v2\0h2v3", 14), block["h2"]);
+  EXPECT_EQ(string("h3v1\0h3v2\0h3v3", 14), block["h3"]);
+  EXPECT_EQ("h4v1", block["h4"]);
+}
+
 }  // namespace test
 }  // namespace net

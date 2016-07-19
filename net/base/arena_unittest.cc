@@ -89,5 +89,50 @@ TEST(UnsafeArenaTest, Free) {
   EXPECT_EQ(c4, c5);
 }
 
+TEST(UnsafeArenaTest, Alloc) {
+  UnsafeArena arena(kDefaultBlockSize);
+  const size_t length = strlen(kTestString);
+  char* c1 = arena.Alloc(length);
+  char* c2 = arena.Alloc(2 * length);
+  char* c3 = arena.Alloc(3 * length);
+  char* c4 = arena.Memdup(kTestString, length);
+  EXPECT_EQ(c1 + length, c2);
+  EXPECT_EQ(c2 + 2 * length, c3);
+  EXPECT_EQ(c3 + 3 * length, c4);
+  EXPECT_EQ(StringPiece(c4, length), kTestString);
+}
+
+TEST(UnsafeArenaTest, Realloc) {
+  UnsafeArena arena(kDefaultBlockSize);
+  const size_t length = strlen(kTestString);
+  // Simple realloc that fits in the block.
+  char* c1 = arena.Memdup(kTestString, length);
+  char* c2 = arena.Realloc(c1, length, 2 * length);
+  EXPECT_TRUE(c1);
+  EXPECT_EQ(c1, c2);
+  EXPECT_EQ(StringPiece(c1, length), kTestString);
+  // Multiple reallocs.
+  char* c3 = arena.Memdup(kTestString, length);
+  EXPECT_EQ(c2 + 2 * length, c3);
+  EXPECT_EQ(StringPiece(c3, length), kTestString);
+  char* c4 = arena.Realloc(c3, length, 2 * length);
+  EXPECT_EQ(c3, c4);
+  EXPECT_EQ(StringPiece(c4, length), kTestString);
+  char* c5 = arena.Realloc(c4, 2 * length, 3 * length);
+  EXPECT_EQ(c4, c5);
+  EXPECT_EQ(StringPiece(c5, length), kTestString);
+  char* c6 = arena.Memdup(kTestString, length);
+  EXPECT_EQ(c5 + 3 * length, c6);
+  EXPECT_EQ(StringPiece(c6, length), kTestString);
+  // Realloc that does not fit in the remainder of the first block.
+  char* c7 = arena.Realloc(c6, length, kDefaultBlockSize);
+  EXPECT_EQ(StringPiece(c7, length), kTestString);
+  arena.Free(c7, kDefaultBlockSize);
+  char* c8 = arena.Memdup(kTestString, length);
+  EXPECT_NE(c6, c7);
+  EXPECT_EQ(c7, c8);
+  EXPECT_EQ(StringPiece(c8, length), kTestString);
+}
+
 }  // namespace
 }  // namespace net

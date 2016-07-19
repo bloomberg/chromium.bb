@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/spdy/spdy_flags.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -120,21 +121,25 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
       return false;
     }
 
-    auto iter = headers->find(name);
-    if (iter == headers->end()) {
-      (*headers)[name] = p.second;
+    if (FLAGS_chromium_http2_flag_use_new_spdy_header_block_header_joining) {
+      headers->AppendValueOrAddHeader(name, p.second);
     } else {
-      // This header had multiple values, so it must be reconstructed.
-      StringPiece v = iter->second;
-      string s(v.data(), v.length());
-      if (name == "cookie") {
-        // Obeys section 8.1.2.5 in RFC 7540 for cookie reconstruction.
-        s.append("; ");
+      auto iter = headers->find(name);
+      if (iter == headers->end()) {
+        (*headers)[name] = p.second;
       } else {
-        StringPiece("\0", 1).AppendToString(&s);
+        // This header had multiple values, so it must be reconstructed.
+        StringPiece v = iter->second;
+        string s(v.data(), v.length());
+        if (name == "cookie") {
+          // Obeys section 8.1.2.5 in RFC 7540 for cookie reconstruction.
+          s.append("; ");
+        } else {
+          StringPiece("\0", 1).AppendToString(&s);
+        }
+        s.append(p.second);
+        headers->ReplaceOrAppendHeader(name, s);
       }
-      s.append(p.second);
-      headers->ReplaceOrAppendHeader(name, s);
     }
   }
 
