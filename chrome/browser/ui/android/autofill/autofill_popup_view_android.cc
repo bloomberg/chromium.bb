@@ -82,7 +82,8 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
     bool deletable =
         controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
     bool is_label_multiline =
-        suggestion.frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE;
+        suggestion.frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE ||
+        suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, data_array.obj(), i, value.obj(), label.obj(), android_icon_id,
         suggestion.frontend_id, deletable, is_label_multiline);

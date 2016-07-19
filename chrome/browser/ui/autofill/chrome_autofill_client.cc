@@ -17,9 +17,10 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
@@ -59,9 +60,12 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/context_utils.h"
+#include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/android/content_view_core.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
@@ -340,20 +344,30 @@ bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
 }
 
 bool ChromeAutofillClient::ShouldShowSigninPromo() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // TODO(crbug.com/626383): Implement signin promo for Android and iOS by
-  // changing the logic of StartSigninFlow() below.
+#if defined(OS_IOS)
+  // TODO(crbug.com/626383): Implement signin promo for iOS by changing the
+  // logic of StartSigninFlow() below.
   return false;
-#else
-  return chrome::FindBrowserWithWebContents(web_contents()) &&
-         signin::ShouldShowPromo(
-             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+#elif !defined(OS_ANDROID)
+  // Determine if we are in a valid context (on desktop platforms, we could be
+  // in an app window with no Browser).
+  if (!chrome::FindBrowserWithWebContents(web_contents()))
+    return false;
 #endif
+
+  return signin::ShouldShowPromo(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
 }
 
 void ChromeAutofillClient::StartSigninFlow() {
 // See ShouldShowSigninPromo.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(OS_IOS)
+  return;
+#elif defined(OS_ANDROID)
+  chrome::android::SigninPromoUtilAndroid::StartAccountSigninActivityForPromo(
+      content::ContentViewCore::FromWebContents(web_contents()),
+      signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
+#else
   chrome::FindBrowserWithWebContents(web_contents())
       ->window()
       ->ShowAvatarBubbleFromAvatarButton(

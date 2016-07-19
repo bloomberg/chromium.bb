@@ -41,7 +41,7 @@ public class AccountSigninActivity extends AppCompatActivity
 
     @IntDef({SigninAccessPoint.SETTINGS, SigninAccessPoint.BOOKMARK_MANAGER,
             SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO,
-            SigninAccessPoint.NTP_LINK})
+            SigninAccessPoint.NTP_LINK, SigninAccessPoint.AUTOFILL_DROPDOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
     @AccessPoint private int mAccessPoint;
@@ -97,6 +97,7 @@ public class AccountSigninActivity extends AppCompatActivity
                 || mAccessPoint == SigninAccessPoint.RECENT_TABS
                 || mAccessPoint == SigninAccessPoint.SETTINGS
                 || mAccessPoint == SigninAccessPoint.SIGNIN_PROMO
+                || mAccessPoint == SigninAccessPoint.AUTOFILL_DROPDOWN
                 : "invalid access point: " + mAccessPoint;
 
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
@@ -173,6 +174,9 @@ public class AccountSigninActivity extends AppCompatActivity
 
     private void recordSigninStartedUserAction() {
         switch (getAccessPoint()) {
+            case SigninAccessPoint.AUTOFILL_DROPDOWN:
+                RecordUserAction.record("Signin_Signin_FromAutofillDropdown");
+                break;
             case SigninAccessPoint.BOOKMARK_MANAGER:
                 RecordUserAction.record("Signin_Signin_FromBookmarkManager");
                 break;

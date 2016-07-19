@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.signin;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
 * Helper functions for promoting sign in.
@@ -40,5 +42,19 @@ public class SigninPromoUtil {
         AccountSigninActivity.startAccountSigninActivity(activity, SigninAccessPoint.SIGNIN_PROMO);
         preferenceManager.setSigninPromoShown();
         return true;
+    }
+
+    /**
+     * A convenience method to create an AccountSigninActivity, passing the access point as an
+     * intent extra.
+     * @param window WindowAndroid from which to get the Activity/Context.
+     * @param accessPoint for metrics purposes.
+     */
+    @CalledByNative
+    private static void openAccountSigninActivityForPromo(WindowAndroid window, int accessPoint) {
+        Activity activity = window.getActivity().get();
+        if (activity != null) {
+            AccountSigninActivity.startIfAllowed(activity, accessPoint);
+        }
     }
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
@@ -36,7 +37,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
@@ -82,29 +82,6 @@ bool HasUserSkippedPromo(Profile* profile) {
 }  // namespace
 
 namespace signin {
-
-bool ShouldShowPromo(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  // There's no need to show the sign in promo on cros since cros users are
-  // already logged in.
-  return false;
-#else
-
-  // Don't bother if we don't have any kind of network connection.
-  if (net::NetworkChangeNotifier::IsOffline())
-    return false;
-
-  // Don't show for supervised profiles.
-  if (profile->IsSupervised())
-    return false;
-
-  // Display the signin promo if the user is not signed in.
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
-      profile->GetOriginalProfile());
-  return !signin->AuthInProgress() && signin->IsSigninAllowed() &&
-      !signin->IsAuthenticated();
-#endif
-}
 
 bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
   DCHECK(profile);

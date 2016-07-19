@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_promo_util.h"
 
 bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   // Don't show sync promo if the sign in promo should not be shown.

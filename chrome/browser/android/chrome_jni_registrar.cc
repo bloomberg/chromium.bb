@@ -91,6 +91,7 @@
 #include "chrome/browser/android/signin/account_tracker_service_android.h"
 #include "chrome/browser/android/signin/signin_investigator_android.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
+#include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
@@ -363,6 +364,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SessionTabHelper", RegisterSessionTabHelper},
     {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},
+    {"SigninPromoUtil", SigninPromoUtilAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
     {"SpellCheckerSessionBridge", SpellCheckerSessionBridge::RegisterJNI},
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
