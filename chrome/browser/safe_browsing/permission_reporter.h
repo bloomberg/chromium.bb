@@ -5,10 +5,17 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_PERMISSION_REPORTER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_PERMISSION_REPORTER_H_
 
+#include <queue>
 #include <string>
+#include <unordered_map>
 
+#include "base/time/time.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "url/gurl.h"
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace net {
 class ReportSender;
@@ -16,6 +23,18 @@ class URLRequestContext;
 }  // namespace net
 
 namespace safe_browsing {
+
+struct PermissionAndOrigin {
+  bool operator==(const PermissionAndOrigin& other) const;
+
+  content::PermissionType permission;
+  GURL origin;
+};
+
+struct PermissionAndOriginHash {
+  std::size_t operator()(
+      const PermissionAndOrigin& permission_and_origin) const;
+};
 
 // Provides functionality for building and serializing reports about permissions
 // to a report collection server.
@@ -42,8 +61,9 @@ class PermissionReporter {
   friend class PermissionReporterTest;
 
   // Used by tests. This constructor allows tests to have access to the
-  // ReportSender.
-  explicit PermissionReporter(std::unique_ptr<net::ReportSender> report_sender);
+  // ReportSender and use a test Clock.
+  PermissionReporter(std::unique_ptr<net::ReportSender> report_sender,
+                     std::unique_ptr<base::Clock> clock);
 
   // Builds and serializes a permission report with |origin| as the origin of
   // the site requesting permission, |permission| as the type of permission
@@ -55,7 +75,22 @@ class PermissionReporter {
                           PermissionAction action,
                           std::string* output);
 
+  // Returns false if the number of reports sent in the last one minute per
+  // origin per permission is under a threshold, otherwise true.
+  bool IsReportThresholdExceeded(content::PermissionType permission,
+                                 const GURL& origin);
+
   std::unique_ptr<net::ReportSender> permission_report_sender_;
+
+  // TODO(stefanocs): This might introduce a memory issue since older entries
+  // are not removed until a new report with the corresponding key is added. We
+  // should address this issue if that becomes a problem in the future.
+  std::unordered_map<PermissionAndOrigin,
+                     std::queue<base::Time>,
+                     PermissionAndOriginHash>
+      report_logs_;
+
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionReporter);
 };

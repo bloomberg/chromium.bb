@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/safe_browsing/permission_reporter.h"
+
+#include <functional>
+
+#include "base/hash.h"
+#include "base/memory/ptr_util.h"
+#include "base/time/default_clock.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/permission_type.h"
@@ -18,6 +23,8 @@ namespace {
 const char kPermissionActionReportingUploadUrl[] =
     "http://safebrowsing.googleusercontent.com/safebrowsing/clientreport/"
     "permission-action";
+
+const int kMaximumReportsPerOriginPerPermissionPerMinute = 5;
 
 PermissionReport::PermissionType PermissionTypeForReport(
     PermissionType permission) {
@@ -75,20 +82,39 @@ PermissionReport::Action PermissionActionForReport(PermissionAction action) {
 
 }  // namespace
 
+bool PermissionAndOrigin::operator==(const PermissionAndOrigin& other) const {
+  return (permission == other.permission && origin == other.origin);
+}
+
+std::size_t PermissionAndOriginHash::operator()(
+    const PermissionAndOrigin& permission_and_origin) const {
+  std::size_t permission_hash =
+      static_cast<std::size_t>(permission_and_origin.permission);
+  std::size_t origin_hash =
+      std::hash<std::string>()(permission_and_origin.origin.spec());
+  return base::HashInts(permission_hash, origin_hash);
+}
+
 PermissionReporter::PermissionReporter(net::URLRequestContext* request_context)
-    : PermissionReporter(base::WrapUnique(new net::ReportSender(
-          request_context,
-          net::ReportSender::CookiesPreference::DO_NOT_SEND_COOKIES))) {}
+    : PermissionReporter(
+          base::WrapUnique(new net::ReportSender(
+              request_context,
+              net::ReportSender::CookiesPreference::DO_NOT_SEND_COOKIES)),
+          base::WrapUnique(new base::DefaultClock)) {}
 
 PermissionReporter::PermissionReporter(
-    std::unique_ptr<net::ReportSender> report_sender)
-    : permission_report_sender_(std::move(report_sender)) {}
+    std::unique_ptr<net::ReportSender> report_sender,
+    std::unique_ptr<base::Clock> clock)
+    : permission_report_sender_(std::move(report_sender)),
+      clock_(std::move(clock)) {}
 
 PermissionReporter::~PermissionReporter() {}
 
 void PermissionReporter::SendReport(const GURL& origin,
                                     content::PermissionType permission,
                                     PermissionAction action) {
+  if (IsReportThresholdExceeded(permission, origin))
+    return;
   std::string serialized_report;
   BuildReport(origin, permission, action, &serialized_report);
   permission_report_sender_->Send(GURL(kPermissionActionReportingUploadUrl),
@@ -124,6 +150,24 @@ bool PermissionReporter::BuildReport(const GURL& origin,
     field_trial->set_group_id(active_group_id.group);
   }
   return report.SerializeToString(output);
+}
+
+bool PermissionReporter::IsReportThresholdExceeded(
+    content::PermissionType permission,
+    const GURL& origin) {
+  std::queue<base::Time>& log = report_logs_[{permission, origin}];
+  base::Time current_time = clock_->Now();
+  // Remove entries that are sent more than one minute ago.
+  while (!log.empty() &&
+         current_time - log.front() > base::TimeDelta::FromMinutes(1)) {
+    log.pop();
+  }
+  if (log.size() < kMaximumReportsPerOriginPerPermissionPerMinute) {
+    log.push(current_time);
+    return false;
+  } else {
+    return true;
+  }
 }
 
 }  // namespace safe_browsing
