@@ -638,7 +638,7 @@ class ChromeGeolocationDelegate : public content::GeolocationDelegate {
  public:
   ChromeGeolocationDelegate() = default;
 
-  AccessTokenStore* CreateAccessTokenStore() final {
+  scoped_refptr<AccessTokenStore> CreateAccessTokenStore() final {
     return new ChromeAccessTokenStore();
   }
 

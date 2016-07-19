@@ -40,7 +40,7 @@ class MessageLoopQuitListener {
  public:
   MessageLoopQuitListener()
       : client_message_loop_(base::MessageLoop::current()),
-        updated_provider_(NULL) {
+        updated_provider_(nullptr) {
     CHECK(client_message_loop_);
   }
 
@@ -99,7 +99,7 @@ class MockWifiDataProvider : public WifiDataProvider {
  private:
   ~MockWifiDataProvider() override {
     CHECK(this == instance_);
-    instance_ = NULL;
+    instance_ = nullptr;
   }
 
   static MockWifiDataProvider* instance_;
@@ -110,25 +110,19 @@ class MockWifiDataProvider : public WifiDataProvider {
   DISALLOW_COPY_AND_ASSIGN(MockWifiDataProvider);
 };
 
-MockWifiDataProvider* MockWifiDataProvider::instance_ = NULL;
+MockWifiDataProvider* MockWifiDataProvider::instance_ = nullptr;
 
 // Main test fixture
 class GeolocationNetworkProviderTest : public testing::Test {
  public:
-  void SetUp() override {
-    test_server_url_ = GURL(kTestServerUrl);
-    access_token_store_ = new FakeAccessTokenStore;
-    wifi_data_provider_ = MockWifiDataProvider::CreateInstance();
-  }
-
   void TearDown() override {
     WifiDataProviderManager::ResetFactoryForTesting();
   }
 
   LocationProvider* CreateProvider(bool set_permission_granted) {
     LocationProvider* provider = NewNetworkLocationProvider(
-        access_token_store_.get(),
-        NULL,  // No URLContextGetter needed, as using test urlfecther factory.
+        access_token_store_,
+        nullptr,  // No URLContextGetter needed, using test urlfecther factory.
         test_server_url_,
         access_token_store_->access_token_map_[test_server_url_]);
     if (set_permission_granted)
@@ -137,7 +131,10 @@ class GeolocationNetworkProviderTest : public testing::Test {
   }
 
  protected:
-  GeolocationNetworkProviderTest() {
+  GeolocationNetworkProviderTest()
+      : test_server_url_(kTestServerUrl),
+        access_token_store_(new FakeAccessTokenStore),
+        wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
     WifiDataProviderManager::SetFactoryForTesting(
@@ -268,9 +265,9 @@ class GeolocationNetworkProviderTest : public testing::Test {
     std::string json_parse_error_msg;
     std::unique_ptr<base::Value> parsed_json =
         base::JSONReader::ReadAndReturnError(upload_data, base::JSON_PARSE_RFC,
-                                             NULL, &json_parse_error_msg);
+                                             nullptr, &json_parse_error_msg);
     EXPECT_TRUE(json_parse_error_msg.empty());
-    ASSERT_TRUE(parsed_json.get() != NULL);
+    ASSERT_TRUE(parsed_json);
 
     const base::DictionaryValue* request_json;
     ASSERT_TRUE(parsed_json->GetAsDictionary(&request_json));
@@ -316,17 +313,17 @@ class GeolocationNetworkProviderTest : public testing::Test {
   }
 
   GURL test_server_url_;
-  base::MessageLoop main_message_loop_;
-  scoped_refptr<FakeAccessTokenStore> access_token_store_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
+  const base::MessageLoop main_message_loop_;
+  const scoped_refptr<FakeAccessTokenStore> access_token_store_;
+  const net::TestURLFetcherFactory url_fetcher_factory_;
+  const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
 };
 
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
   // Test fixture members were SetUp correctly.
   EXPECT_EQ(&main_message_loop_, base::MessageLoop::current());
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
-  EXPECT_TRUE(NULL != provider.get());
+  EXPECT_TRUE(provider);
   provider.reset();
   SUCCEED();
 }
@@ -335,7 +332,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   CheckRequestIsValid(*fetcher, 0, 0, 0, std::string());
 }
 
@@ -344,7 +341,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   CheckRequestIsValid(*fetcher, 0, 0, 0, std::string());
 }
 
@@ -355,7 +352,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   // The request url should have been shortened to less than 2048 characters
   // in length by not including access points with the lowest signal strength
   // in the request.
@@ -368,7 +365,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(provider->StartProvider(false));
 
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   EXPECT_TRUE(IsTestServerUrl(fetcher->GetOriginalURL()));
 
   // Complete the network request with bad position fix.
@@ -391,7 +388,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   base::RunLoop().RunUntilIdle();
   fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   // The request should have the wifi data.
   CheckRequestIsValid(*fetcher, 0, kFirstScanAps, 0, std::string());
 
@@ -506,7 +503,7 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
   provider->OnPermissionGranted();
 
   fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
 
   EXPECT_TRUE(IsTestServerUrl(fetcher->GetOriginalURL()));
 }
@@ -530,7 +527,7 @@ TEST_F(GeolocationNetworkProviderTest,
   provider->OnPermissionGranted();
 
   fetcher = get_url_fetcher_and_advance_id();
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
 
   CheckRequestIsValid(*fetcher, 0, kScanCount, 0, REFERENCE_ACCESS_TOKEN);
 }

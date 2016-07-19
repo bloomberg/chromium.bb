@@ -25,11 +25,12 @@ const char* kRefServerUrl1 = "https://test.domain.example/foo?id=bar.bar";
 const char* kRefServerUrl2 = "http://another.domain.example/foo?id=bar.bar#2";
 const char* kOldDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
 
-class GeolocationAccessTokenStoreTest
-    : public InProcessBrowserTest {
+class GeolocationAccessTokenStoreTest : public InProcessBrowserTest {
  public:
   GeolocationAccessTokenStoreTest()
-      : token_to_expect_(NULL), token_to_set_(NULL) {}
+      : token_store_(new ChromeAccessTokenStore),
+        token_to_expect_(nullptr),
+        token_to_set_(nullptr) {}
 
   void DoTestStepAndWaitForResults(
       const char* ref_url, const base::string16* token_to_expect,
@@ -37,28 +38,12 @@ class GeolocationAccessTokenStoreTest
 
   void OnAccessTokenStoresLoaded(
       AccessTokenStore::AccessTokenMap access_token_map,
-      net::URLRequestContextGetter* context_getter);
+      const scoped_refptr<net::URLRequestContextGetter>& context_getter);
 
   scoped_refptr<AccessTokenStore> token_store_;
   GURL ref_url_;
   const base::string16* token_to_expect_;
   const base::string16* token_to_set_;
-};
-
-void StartTestStepFromClientThread(
-    scoped_refptr<AccessTokenStore>* store,
-    const AccessTokenStore::LoadAccessTokensCallback& callback) {
-  ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
-  if (store->get() == NULL)
-    (*store) = new ChromeAccessTokenStore();
-  (*store)->LoadAccessTokens(callback);
-}
-
-struct TokenLoadClientForTest {
-  void NotReachedCallback(AccessTokenStore::AccessTokenMap /*tokens*/,
-                          net::URLRequestContextGetter* /*context_getter*/) {
-    NOTREACHED() << "This request should have been canceled before callback";
-  }
 };
 
 void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
@@ -71,8 +56,8 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
   BrowserThread::PostTask(
       kExpectedClientThreadId, FROM_HERE,
       base::Bind(
-          &StartTestStepFromClientThread,
-          &token_store_,
+          &AccessTokenStore::LoadAccessTokens,
+          token_store_,
           base::Bind(
               &GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded,
               base::Unretained(this))));
@@ -81,7 +66,7 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
 
 void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
     AccessTokenStore::AccessTokenMap access_token_map,
-    net::URLRequestContextGetter* context_getter) {
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId))
       << "Callback from token factory should be from the same thread as the "
          "LoadAccessTokenStores request was made on";
@@ -109,17 +94,17 @@ IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
       base::ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DoTestStepAndWaitForResults(kRefServerUrl1, NULL, &ref_token1);
+  DoTestStepAndWaitForResults(kRefServerUrl1, nullptr, &ref_token1);
   // Check it was set, and change to new value.
   DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, &ref_token2);
   // And change back.
   DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token2, &ref_token1);
-  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
+  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, nullptr);
 
   // Set a second server URL
-  DoTestStepAndWaitForResults(kRefServerUrl2, NULL, &ref_token2);
-  DoTestStepAndWaitForResults(kRefServerUrl2, &ref_token2, NULL);
-  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
+  DoTestStepAndWaitForResults(kRefServerUrl2, nullptr, &ref_token2);
+  DoTestStepAndWaitForResults(kRefServerUrl2, &ref_token2, nullptr);
+  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, OldUrlRemoval) {
@@ -128,11 +113,11 @@ IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, OldUrlRemoval) {
 
   // Set a token for the old default network provider url.
   DoTestStepAndWaitForResults(kOldDefaultNetworkProviderUrl,
-                              NULL, &ref_token1);
+                              nullptr, &ref_token1);
   // Check that the token related to the old default network provider url
   // was deleted.
   DoTestStepAndWaitForResults(kOldDefaultNetworkProviderUrl,
-                              NULL, NULL);
+                              nullptr, nullptr);
 }
 
 }  // namespace

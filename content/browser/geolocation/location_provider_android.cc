@@ -4,6 +4,7 @@
 
 #include "content/browser/geolocation/location_provider_android.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/public/common/geoposition.h"
@@ -44,8 +45,9 @@ void LocationProviderAndroid::OnPermissionGranted() {
   // Nothing to do here.
 }
 
-LocationProvider* NewSystemLocationProvider() {
-  return new LocationProviderAndroid;
+// static
+std::unique_ptr<LocationProvider> NewSystemLocationProvider() {
+  return base::WrapUnique(new LocationProviderAndroid);
 }
 
 }  // namespace content

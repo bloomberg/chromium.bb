@@ -19,13 +19,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 class GURL;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace content {
 
@@ -34,7 +31,8 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
  public:
   // Map of server URLs to associated access token.
   typedef std::map<GURL, base::string16> AccessTokenMap;
-  typedef base::Callback<void(AccessTokenMap, net::URLRequestContextGetter*)>
+  typedef base::Callback<
+      void(AccessTokenMap, const scoped_refptr<net::URLRequestContextGetter>&)>
       LoadAccessTokensCallback;
 
   // |callback| will be invoked once per LoadAccessTokens call, after existing

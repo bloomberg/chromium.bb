@@ -41,9 +41,10 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
       LocationResponseCallback;
 
   // |url| is the server address to which the request wil be sent.
-  NetworkLocationRequest(net::URLRequestContextGetter* context,
-                         const GURL& url,
-                         LocationResponseCallback callback);
+  NetworkLocationRequest(
+      const scoped_refptr<net::URLRequestContextGetter>& context,
+      const GURL& url,
+      LocationResponseCallback callback);
   ~NetworkLocationRequest() override;
 
   // Makes a new request. Returns true if the new request was successfully
@@ -59,8 +60,8 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   // net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  scoped_refptr<net::URLRequestContextGetter> url_context_;
-  LocationResponseCallback location_response_callback_;
+  const scoped_refptr<net::URLRequestContextGetter> url_context_;
+  const LocationResponseCallback location_response_callback_;
   const GURL url_;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
 

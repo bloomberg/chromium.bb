@@ -166,7 +166,7 @@ class AwGeolocationDelegate : public content::GeolocationDelegate {
  public:
   AwGeolocationDelegate() = default;
 
-  content::AccessTokenStore* CreateAccessTokenStore() final {
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
     return new AwAccessTokenStore();
   }
 

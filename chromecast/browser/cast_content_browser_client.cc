@@ -93,7 +93,8 @@ class CastGeolocationDelegate : public content::GeolocationDelegate {
  public:
   explicit CastGeolocationDelegate(CastBrowserContext* context)
       : context_(context) {}
-  content::AccessTokenStore* CreateAccessTokenStore() override {
+
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() override {
     return new CastAccessTokenStore(context_);
   }
 

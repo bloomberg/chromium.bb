@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/public/browser/geolocation_delegate.h"
+
+#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/location_provider.h"
 
 namespace content {
@@ -11,7 +13,7 @@ bool GeolocationDelegate::UseNetworkLocationProviders() {
   return true;
 }
 
-AccessTokenStore* GeolocationDelegate::CreateAccessTokenStore() {
+scoped_refptr<AccessTokenStore> GeolocationDelegate::CreateAccessTokenStore() {
   return nullptr;
 }
 

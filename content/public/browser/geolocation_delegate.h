@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -24,9 +25,7 @@ class CONTENT_EXPORT GeolocationDelegate {
   virtual bool UseNetworkLocationProviders();
 
   // Creates a new AccessTokenStore for geolocation. May return nullptr.
-  // TODO(mcasas): consider changing it return type to std::unique_ptr<> to
-  // clarify ownership, https://crbug.com/623114.
-  virtual AccessTokenStore* CreateAccessTokenStore();
+  virtual scoped_refptr<AccessTokenStore> CreateAccessTokenStore();
 
   // Allows an embedder to return its own LocationProvider implementation.
   // Return nullptr to use the default one for the platform to be created.

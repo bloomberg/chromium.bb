@@ -26,10 +26,8 @@
 namespace content {
 class AccessTokenStore;
 
-
-class NetworkLocationProvider
-    : public base::NonThreadSafe,
-      public LocationProviderBase {
+class NetworkLocationProvider : public base::NonThreadSafe,
+                                public LocationProviderBase {
  public:
   // Cache of recently resolved locations. Public for tests.
   class CONTENT_EXPORT PositionCache {
@@ -67,10 +65,11 @@ class NetworkLocationProvider
     CacheAgeList cache_age_list_;  // Oldest first.
   };
 
-  NetworkLocationProvider(AccessTokenStore* access_token_store,
-                          net::URLRequestContextGetter* context,
-                          const GURL& url,
-                          const base::string16& access_token);
+  NetworkLocationProvider(
+      const scoped_refptr<AccessTokenStore>& access_token_store,
+      const scoped_refptr<net::URLRequestContextGetter>& context,
+      const GURL& url,
+      const base::string16& access_token);
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
@@ -97,7 +96,7 @@ class NetworkLocationProvider
                           const base::string16& access_token,
                           const WifiData& wifi_data);
 
-  scoped_refptr<AccessTokenStore> access_token_store_;
+  const scoped_refptr<AccessTokenStore> access_token_store_;
 
   // The wifi data provider, acquired via global factories.
   WifiDataProviderManager* wifi_data_provider_manager_;
@@ -127,7 +126,7 @@ class NetworkLocationProvider
   std::unique_ptr<NetworkLocationRequest> request_;
 
   // The cache of positions.
-  std::unique_ptr<PositionCache> position_cache_;
+  const std::unique_ptr<PositionCache> position_cache_;
 
   base::WeakPtrFactory<NetworkLocationProvider> weak_factory_;
 
@@ -137,8 +136,8 @@ class NetworkLocationProvider
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
 CONTENT_EXPORT LocationProviderBase* NewNetworkLocationProvider(
-    AccessTokenStore* access_token_store,
-    net::URLRequestContextGetter* context,
+    const scoped_refptr<AccessTokenStore>& access_token_store,
+    const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
     const base::string16& access_token);
 

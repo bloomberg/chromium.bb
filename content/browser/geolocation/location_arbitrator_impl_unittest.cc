@@ -97,7 +97,7 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
  public:
   TestingLocationArbitrator(
       const LocationArbitratorImpl::LocationUpdateCallback& callback,
-      AccessTokenStore* access_token_store,
+      const scoped_refptr<AccessTokenStore>& access_token_store,
       GeolocationDelegate* delegate)
       : LocationArbitratorImpl(callback, delegate),
         cell_(nullptr),
@@ -106,13 +106,13 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
 
   base::Time GetTimeNow() const override { return GetTimeNowForTest(); }
 
-  AccessTokenStore* NewAccessTokenStore() override {
-    return access_token_store_.get();
+  scoped_refptr<AccessTokenStore> NewAccessTokenStore() override {
+    return access_token_store_;
   }
 
   std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
-      net::URLRequestContextGetter* context,
+      const scoped_refptr<AccessTokenStore>& access_token_store,
+      const scoped_refptr<net::URLRequestContextGetter>& context,
       const GURL& url,
       const base::string16& access_token) override {
     cell_ = new MockLocationProvider;
@@ -132,18 +132,15 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
   // |gps_| to |gps_location_provider_|
   MockLocationProvider* cell_;
   MockLocationProvider* gps_;
-  std::unique_ptr<LocationProvider> system_location_provider_;
-  scoped_refptr<AccessTokenStore> access_token_store_;
+  const scoped_refptr<AccessTokenStore> access_token_store_;
 };
 
 class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
-  // testing::Test
-  void SetUp() override {
-    access_token_store_ = new NiceMock<FakeAccessTokenStore>;
-    observer_.reset(new MockLocationObserver);
-    delegate_.reset(new GeolocationDelegate);
-  }
+  GeolocationLocationArbitratorTest()
+      : access_token_store_(new NiceMock<FakeAccessTokenStore>),
+        observer_(new MockLocationObserver),
+        delegate_(new GeolocationDelegate) {}
 
   // Initializes |arbitrator_|, with the possibility of injecting a specific
   // |delegate|, otherwise a default, no-op GeolocationDelegate is used.
@@ -154,7 +151,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
         base::Bind(&MockLocationObserver::OnLocationUpdate,
                    base::Unretained(observer_.get()));
     arbitrator_.reset(new TestingLocationArbitrator(
-        callback, access_token_store_.get(), delegate_.get()));
+        callback, access_token_store_, delegate_.get()));
   }
 
   // testing::Test
@@ -184,11 +181,11 @@ class GeolocationLocationArbitratorTest : public testing::Test {
     return arbitrator_->gps_;
   }
 
-  scoped_refptr<FakeAccessTokenStore> access_token_store_;
-  std::unique_ptr<MockLocationObserver> observer_;
+  const scoped_refptr<FakeAccessTokenStore> access_token_store_;
+  const std::unique_ptr<MockLocationObserver> observer_;
   std::unique_ptr<TestingLocationArbitrator> arbitrator_;
   std::unique_ptr<GeolocationDelegate> delegate_;
-  base::MessageLoop loop_;
+  const base::MessageLoop loop_;
 };
 
 TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {

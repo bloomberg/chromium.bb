@@ -125,7 +125,7 @@ class ShellGeolocationDelegate : public content::GeolocationDelegate {
   explicit ShellGeolocationDelegate(ShellBrowserContext* context)
       : context_(context) {}
 
-  AccessTokenStore* CreateAccessTokenStore() final {
+  scoped_refptr<AccessTokenStore> CreateAccessTokenStore() final {
     return new ShellAccessTokenStore(context_);
   }
 

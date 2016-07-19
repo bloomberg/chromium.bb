@@ -32,7 +32,7 @@ void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
     return;
   }
 
-  net::URLRequestContextGetter* context_getter = NULL;
+  scoped_refptr<net::URLRequestContextGetter> context_getter;
   callback_.Run(access_token_map_, context_getter);
 }
 

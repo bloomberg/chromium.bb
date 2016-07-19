@@ -36,7 +36,7 @@ LocationArbitratorImpl::LocationArbitratorImpl(
       provider_update_callback_(
           base::Bind(&LocationArbitratorImpl::OnLocationUpdate,
                      base::Unretained(this))),
-      position_provider_(NULL),
+      position_provider_(nullptr),
       is_permission_granted_(false),
       is_running_(false) {}
 
@@ -61,7 +61,8 @@ void LocationArbitratorImpl::StartProviders(bool enable_high_accuracy) {
   if (providers_.empty()) {
     RegisterSystemProvider();
 
-    AccessTokenStore* access_token_store = GetAccessTokenStore();
+    const scoped_refptr<AccessTokenStore> access_token_store =
+        GetAccessTokenStore();
     if (access_token_store && delegate_->UseNetworkLocationProviders()) {
       DCHECK(DefaultNetworkProviderURL().is_valid());
       token_store_callback_.Reset(
@@ -91,7 +92,7 @@ void LocationArbitratorImpl::StopProviders() {
   // Reset the reference location state (provider+position)
   // so that future starts use fresh locations from
   // the newly constructed providers.
-  position_provider_ = NULL;
+  position_provider_ = nullptr;
   position_ = Geoposition();
 
   providers_.clear();
@@ -100,7 +101,7 @@ void LocationArbitratorImpl::StopProviders() {
 
 void LocationArbitratorImpl::OnAccessTokenStoresLoaded(
     AccessTokenStore::AccessTokenMap access_token_map,
-    net::URLRequestContextGetter* context_getter) {
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter) {
   // If there are no access tokens, boot strap it with the default server URL.
   if (access_token_map.empty())
     access_token_map[DefaultNetworkProviderURL()];
@@ -141,25 +142,25 @@ void LocationArbitratorImpl::OnLocationUpdate(const LocationProvider* provider,
   arbitrator_update_callback_.Run(position_);
 }
 
-AccessTokenStore* LocationArbitratorImpl::NewAccessTokenStore() {
+scoped_refptr<AccessTokenStore> LocationArbitratorImpl::NewAccessTokenStore() {
   return delegate_->CreateAccessTokenStore();
 }
 
-AccessTokenStore* LocationArbitratorImpl::GetAccessTokenStore() {
-  if (!access_token_store_.get())
+scoped_refptr<AccessTokenStore> LocationArbitratorImpl::GetAccessTokenStore() {
+  if (!access_token_store_)
     access_token_store_ = NewAccessTokenStore();
-  return access_token_store_.get();
+  return access_token_store_;
 }
 
 std::unique_ptr<LocationProvider>
 LocationArbitratorImpl::NewNetworkLocationProvider(
-    AccessTokenStore* access_token_store,
-    net::URLRequestContextGetter* context,
+    const scoped_refptr<AccessTokenStore>& access_token_store,
+    const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
     const base::string16& access_token) {
 #if defined(OS_ANDROID)
   // Android uses its own SystemLocationProvider.
-  return NULL;
+  return nullptr;
 #else
   return base::WrapUnique(new NetworkLocationProvider(
       access_token_store, context, url, access_token));
@@ -169,9 +170,9 @@ LocationArbitratorImpl::NewNetworkLocationProvider(
 std::unique_ptr<LocationProvider>
 LocationArbitratorImpl::NewSystemLocationProvider() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  return NULL;
+  return nullptr;
 #else
-  return base::WrapUnique(content::NewSystemLocationProvider());
+  return content::NewSystemLocationProvider();
 #endif
 }
 

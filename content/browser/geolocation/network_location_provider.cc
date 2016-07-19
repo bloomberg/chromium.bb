@@ -57,15 +57,15 @@ bool NetworkLocationProvider::PositionCache::CachePosition(
 }
 
 // Searches for a cached position response for the current WiFi data. Returns
-// the cached position if available, NULL otherwise.
+// the cached position if available, nullptr otherwise.
 const Geoposition* NetworkLocationProvider::PositionCache::FindPosition(
     const WifiData& wifi_data) {
   base::string16 key;
   if (!MakeKey(wifi_data, &key)) {
-    return NULL;
+    return nullptr;
   }
   CacheMap::const_iterator iter = cache_.find(key);
-  return iter == cache_.end() ? NULL : &iter->second;
+  return iter == cache_.end() ? nullptr : &iter->second;
 }
 
 // Makes the key for the map of cached positions, using the available data.
@@ -93,8 +93,8 @@ bool NetworkLocationProvider::PositionCache::MakeKey(
 
 // NetworkLocationProvider factory function
 LocationProviderBase* NewNetworkLocationProvider(
-    AccessTokenStore* access_token_store,
-    net::URLRequestContextGetter* context,
+    const scoped_refptr<AccessTokenStore>& access_token_store,
+    const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
     const base::string16& access_token) {
   return new NetworkLocationProvider(
@@ -103,12 +103,12 @@ LocationProviderBase* NewNetworkLocationProvider(
 
 // NetworkLocationProvider
 NetworkLocationProvider::NetworkLocationProvider(
-    AccessTokenStore* access_token_store,
-    net::URLRequestContextGetter* url_context_getter,
+    const scoped_refptr<AccessTokenStore>& access_token_store,
+    const scoped_refptr<net::URLRequestContextGetter>& url_context_getter,
     const GURL& url,
     const base::string16& access_token)
     : access_token_store_(access_token_store),
-      wifi_data_provider_manager_(NULL),
+      wifi_data_provider_manager_(nullptr),
       wifi_data_update_callback_(
           base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
                      base::Unretained(this))),
@@ -116,10 +116,8 @@ NetworkLocationProvider::NetworkLocationProvider(
       access_token_(access_token),
       is_permission_granted_(false),
       is_new_data_available_(false),
+      position_cache_(new PositionCache),
       weak_factory_(this) {
-  // Create the position cache.
-  position_cache_.reset(new PositionCache());
-
   request_.reset(new NetworkLocationRequest(
       url_context_getter,
       url,
@@ -141,6 +139,7 @@ void NetworkLocationProvider::RequestRefresh() {
   // TODO(joth): When called via the public (base class) interface, this should
   // poke each data provider to get them to expedite their next scan.
   // Whilst in the delayed start, only send request if all data is ready.
+  // TODO(mcasas): consider not using HasWeakPtrs() https://crbug.com/629158.
   if (!weak_factory_.HasWeakPtrs() || is_wifi_data_complete_) {
     RequestPosition();
   }
@@ -186,7 +185,7 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
   DCHECK(CalledOnValidThread());
   if (IsStarted())
     return true;
-  DCHECK(wifi_data_provider_manager_ == NULL);
+  DCHECK(!wifi_data_provider_manager_);
   if (!request_->url().is_valid()) {
     LOG(WARNING) << "StartProvider() : Failed, Bad URL: "
                  << request_->url().possibly_invalid_spec();
@@ -223,7 +222,7 @@ void NetworkLocationProvider::StopProvider() {
   if (IsStarted()) {
     wifi_data_provider_manager_->Unregister(&wifi_data_update_callback_);
   }
-  wifi_data_provider_manager_ = NULL;
+  wifi_data_provider_manager_ = nullptr;
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -268,7 +267,7 @@ void NetworkLocationProvider::RequestPosition() {
 }
 
 bool NetworkLocationProvider::IsStarted() const {
-  return wifi_data_provider_manager_ != NULL;
+  return wifi_data_provider_manager_ != nullptr;
 }
 
 }  // namespace content

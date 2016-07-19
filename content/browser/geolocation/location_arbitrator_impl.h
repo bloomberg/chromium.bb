@@ -56,14 +56,12 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   bool HasPermissionBeenGranted() const override;
 
  protected:
-  AccessTokenStore* GetAccessTokenStore();
-
   // These functions are useful for injection of dependencies in derived
   // testing classes.
-  virtual AccessTokenStore* NewAccessTokenStore();
+  virtual scoped_refptr<AccessTokenStore> NewAccessTokenStore();
   virtual std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
-      net::URLRequestContextGetter* context,
+      const scoped_refptr<AccessTokenStore>& access_token_store,
+      const scoped_refptr<net::URLRequestContextGetter>& context,
       const GURL& url,
       const base::string16& access_token);
   virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
@@ -72,6 +70,8 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
  private:
   friend class TestingLocationArbitrator;
 
+  scoped_refptr<AccessTokenStore> GetAccessTokenStore();
+
   // Provider will either be added to |providers_| or
   // deleted on error (e.g. it fails to start).
   void RegisterProvider(std::unique_ptr<LocationProvider> provider);
@@ -79,7 +79,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   void RegisterSystemProvider();
   void OnAccessTokenStoresLoaded(
       AccessTokenStore::AccessTokenMap access_token_map,
-      net::URLRequestContextGetter* context_getter);
+      const scoped_refptr<net::URLRequestContextGetter>& context_getter);
   void DoStartProviders();
 
   // Gets called when a provider has a new position.
@@ -101,8 +101,9 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
 
   // The CancelableCallback will prevent OnAccessTokenStoresLoaded from being
   // called multiple times by calling Reset() at the time of binding.
-  base::CancelableCallback<void(AccessTokenStore::AccessTokenMap,
-                                net::URLRequestContextGetter*)>
+  base::CancelableCallback<void(
+      AccessTokenStore::AccessTokenMap,
+      const scoped_refptr<net::URLRequestContextGetter>&)>
       token_store_callback_;
   std::vector<std::unique_ptr<LocationProvider>> providers_;
   bool enable_high_accuracy_;
@@ -120,7 +121,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
 
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
-LocationProvider* NewSystemLocationProvider();
+std::unique_ptr<LocationProvider> NewSystemLocationProvider();
 
 }  // namespace content
 
