@@ -1,0 +1,38 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Fuzzers for content/ components.
+
+import("//testing/libfuzzer/fuzzer_test.gni")
+
+# Empty group for package discovery.
+group("fuzzer") {
+}
+
+# gn complains of private dependencies in component build.
+if (!is_component_build) {
+  fuzzer_test("renderer_fuzzer") {
+    sources = [
+      "renderer_fuzzer.cc",
+    ]
+    deps = [
+      "//content/renderer:for_content_tests",
+      "//content/shell:content_shell_lib",
+      "//content/test:test_support",
+      "//gin",
+    ]
+  }
+
+  fuzzer_test("renderer_tree_fuzzer") {
+    sources = [
+      "renderer_tree_fuzzer.cc",
+    ]
+    deps = [
+      "//content/renderer:for_content_tests",
+      "//content/shell:content_shell_lib",
+      "//content/test:test_support",
+      "//gin",
+    ]
+  }
+}

@@ -9,7 +9,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 content_tests_gypi_values =
@@ -907,21 +906,8 @@ test("content_perftests") {
   }
 }
 
-fuzzer_test("renderer_fuzzer") {
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [
-    "renderer_fuzzer.cc",
-  ]
+group("fuzzers") {
   deps = [
-    ":test_support",
-    "//content/renderer:for_content_tests",
-    "//content/shell:content_shell_lib",
-    "//gin",
+    "//content/test/fuzzer",
   ]
-  dict = "data/fuzzer_dictionaries/renderer_fuzzer.dict"
 }

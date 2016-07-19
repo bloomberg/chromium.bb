@@ -19,12 +19,18 @@ extern "C" {
   int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
   // Initialization function.
   __attribute__((weak)) int LLVMFuzzerInitialize(int *argc, char ***argv);
+  // Mutation function provided by libFuzzer.
+  size_t LLVMFuzzerMutate(uint8_t *Data, size_t Size, size_t MaxSize);
 }
 
 std::vector<uint8_t> readFile(std::string path) {
   std::ifstream in(path);
   return std::vector<uint8_t>((std::istreambuf_iterator<char>(in)),
       std::istreambuf_iterator<char>());
+}
+
+size_t LLVMFuzzerMutate(uint8_t *Data, size_t Size, size_t MaxSize) {
+  return 0;
 }
 
 int main(int argc, char **argv) {
