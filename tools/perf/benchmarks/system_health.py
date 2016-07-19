@@ -79,7 +79,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return options
 
   def CreateStorySet(self, options):
-    return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='load',
+    return page_sets.SystemHealthStorySet(platform=self.PLATFORM,
                                           take_memory_measurement=True)
 
   @classmethod
