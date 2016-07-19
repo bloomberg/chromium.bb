@@ -2012,10 +2012,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     active_tree_->ProcessUIResourceRequestQueue();
   }
 
-  // bounds_delta isn't a pushed property, so the newly-pushed property tree
-  // won't already account for current bounds_delta values. This needs to
-  // happen before calling UpdateViewportContainerSizes().
-  active_tree_->UpdatePropertyTreesForBoundsDelta();
   UpdateViewportContainerSizes();
 
   active_tree_->DidBecomeActive();

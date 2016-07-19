@@ -4745,68 +4745,101 @@ TEST_F(LayerTreeHostImplTopControlsTest,
 // occurring because the UpdateViewportContainerSizes was being called before
 // the property trees were updated with the bounds_delta. crbug.com/597266.
 TEST_F(LayerTreeHostImplTopControlsTest, ViewportBoundsDeltaOnTreeActivation) {
-  const gfx::Size inner_viewport_size(500, 500);
+  const gfx::Size inner_viewport_size(1000, 1000);
   const gfx::Size outer_viewport_size(1000, 1000);
   const gfx::Size content_size(2000, 2000);
 
-  SetupTopControlsAndScrollLayerWithVirtualViewport(
-      inner_viewport_size, outer_viewport_size, content_size);
-  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 4.f);
+  // Initialization
+  {
+    SetupTopControlsAndScrollLayerWithVirtualViewport(
+        inner_viewport_size, outer_viewport_size, content_size);
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
 
-  host_impl_->CreatePendingTree();
-  SetupTopControlsAndScrollLayerWithVirtualViewport(
-      host_impl_->pending_tree(), inner_viewport_size, outer_viewport_size,
-      content_size);
+    // Start off with the top controls hidden on both main and impl.
+    host_impl_->active_tree()->set_top_controls_shrink_blink_size(false);
+    host_impl_->active_tree()->PushTopControlsFromMainThread(0);
 
-  // Zoom in to 2X.
-  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                          InputHandler::TOUCHSCREEN);
-  host_impl_->PinchGestureBegin();
-  host_impl_->PinchGestureUpdate(2.f, gfx::Point());
-  host_impl_->PinchGestureEnd();
-  host_impl_->ScrollEnd(EndState().get());
+    host_impl_->CreatePendingTree();
+    SetupTopControlsAndScrollLayerWithVirtualViewport(
+        host_impl_->pending_tree(), inner_viewport_size, outer_viewport_size,
+        content_size);
+    host_impl_->pending_tree()->set_top_controls_shrink_blink_size(false);
 
-  ASSERT_EQ(2.0f, host_impl_->active_tree()->current_page_scale_factor());
+    // Fully scroll the viewport.
+    host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(), gfx::Vector2d(0, 2000)).get());
+    host_impl_->ScrollEnd(EndState().get());
+  }
 
-  // All scroll types outside this region should succeed.
-  host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
-                          InputHandler::TOUCHSCREEN);
-  // Fully scroll the viewports.
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 2000)).get());
-  host_impl_->ScrollEnd(EndState().get());
-
-  LayerImpl* inner_scroll =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
   LayerImpl* outer_scroll =
       host_impl_->active_tree()->OuterViewportScrollLayer();
 
-  EXPECT_FLOAT_EQ(0, host_impl_->top_controls_manager()->ContentTopOffset());
+  ASSERT_FLOAT_EQ(0, host_impl_->top_controls_manager()->ContentTopOffset());
+  ASSERT_EQ(1000, outer_scroll->MaxScrollOffset().y());
+  ASSERT_EQ(1000, outer_scroll->CurrentScrollOffset().y());
 
-  EXPECT_EQ(925, inner_scroll->MaxScrollOffset().y());
-  EXPECT_EQ(800, outer_scroll->MaxScrollOffset().y());
+  // Kick off an animation to show the top controls.
+  host_impl_->top_controls_manager()->UpdateTopControlsState(BOTH, SHOWN, true);
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
 
-  // Activate the pending tree which should have all the same values as the
+  // Pump an animation frame to put some delta in the top controls.
+  {
+    begin_frame_args.frame_time =
+        start_time + base::TimeDelta::FromMilliseconds(50);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+    host_impl_->DidFinishImplFrame();
+  }
+
+  // Pull the top controls delta and get it back to the pending tree so that
+  // when we go to activate the pending tree we cause a change to top controls.
+  {
+    float delta =
+        host_impl_->active_tree()->top_controls_shown_ratio()->Delta();
+    ASSERT_GT(delta, 0);
+    ASSERT_LT(delta, 1);
+    host_impl_->active_tree()
+        ->top_controls_shown_ratio()
+        ->PullDeltaForMainThread();
+    host_impl_->active_tree()->top_controls_shown_ratio()->PushFromMainThread(
+        delta);
+  }
+
+  // 200 is the kShowHideMaxDurationMs value from top_controls_manager.cc so the
+  // top controls should be fully animated in this frame.
+  {
+    begin_frame_args.frame_time =
+        start_time + base::TimeDelta::FromMilliseconds(200);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+    host_impl_->DidFinishImplFrame();
+
+    ASSERT_EQ(50, host_impl_->top_controls_manager()->ContentTopOffset());
+    ASSERT_EQ(1050, outer_scroll->MaxScrollOffset().y());
+    // NEAR because clip layer bounds are truncated in MaxScrollOffset so we
+    // lose some precision in the intermediate animation steps.
+    ASSERT_NEAR(1050, outer_scroll->CurrentScrollOffset().y(), 1.f);
+  }
+
+  // Activate the pending tree which should have the same scroll value as the
   // active tree.
-  host_impl_->pending_tree()->SetCurrentTopControlsShownRatio(0);
-  host_impl_->pending_tree()->PushPageScaleFromMainThread(2.f, 0.25f, 4.f);
-  host_impl_->pending_tree()
-      ->property_trees()
-      ->scroll_tree.SetScrollOffsetDeltaForTesting(inner_scroll->id(),
-                                                   gfx::Vector2dF(0, 925));
-  host_impl_->pending_tree()
-      ->property_trees()
-      ->scroll_tree.SetScrollOffsetDeltaForTesting(outer_scroll->id(),
-                                                   gfx::Vector2dF(0, 800));
-  host_impl_->ActivateSyncTree();
+  {
+    host_impl_->pending_tree()
+        ->property_trees()
+        ->scroll_tree.SetScrollOffsetDeltaForTesting(outer_scroll->id(),
+                                                     gfx::Vector2dF(0, 1050));
+    host_impl_->ActivateSyncTree();
 
-  inner_scroll = host_impl_->active_tree()->InnerViewportScrollLayer();
-  outer_scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
-
-  // The test should pass if the scroll offets remain as they are. We fail if
-  // the offets get clamped due to MaxScrollOffset not having the proper
-  // bounds_delta set when UpdateViewportContainerSizes is called.
-  EXPECT_EQ(925, inner_scroll->CurrentScrollOffset().y());
-  EXPECT_EQ(800, outer_scroll->CurrentScrollOffset().y());
+    // Make sure we don't accidentally clamp the outer offset based on a bounds
+    // delta that hasn't yet been updated.
+    EXPECT_NEAR(1050, outer_scroll->CurrentScrollOffset().y(), 1.f);
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {

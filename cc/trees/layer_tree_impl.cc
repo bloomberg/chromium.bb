@@ -414,6 +414,11 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->SetCurrentlyScrollingLayer(layer);
   target_tree->UpdatePropertyTreeScrollOffset(&property_trees_);
 
+  // This needs to be called early so that we don't clamp with incorrect max
+  // offsets when UpdateViewportContainerSizes is called from e.g.
+  // PushTopControls
+  target_tree->UpdatePropertyTreesForBoundsDelta();
+
   if (next_activation_forces_redraw_) {
     target_tree->ForceRedrawNextActivation();
     next_activation_forces_redraw_ = false;
