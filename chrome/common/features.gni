@@ -8,7 +8,9 @@
 import("//build/config/chromecast_build.gni")
 
 declare_args() {
-  enable_google_now = !is_ios && !is_android && !is_chromecast
+  # Google Now is disabled to prepare for its removal.
+  # http://crbug.com/539674
+  enable_google_now = false
 
   # Whether the Java UI is being used (Java infobars and popups, Java native
   # settings and first run experience, sign-in etc.).

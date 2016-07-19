@@ -17,12 +17,14 @@
         }],
         ['OS=="android" or OS=="ios"', {
           'enable_background%': 0,
-          'enable_google_now%': 0,
         }, {
           'enable_background%': 1,
-          'enable_google_now%': 1,
         }]
       ],
+
+      # Google Now is disabled to prepare for its removal.
+      # http://crbug.com/539674
+      'enable_google_now%': 0,
 
       # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
       # pages. https://github.com/polymer/vulcanize
