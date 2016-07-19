@@ -326,6 +326,8 @@
 #define glDiscardBackbufferCHROMIUM GLES2_GET_FUN(DiscardBackbufferCHROMIUM)
 #define glScheduleOverlayPlaneCHROMIUM \
   GLES2_GET_FUN(ScheduleOverlayPlaneCHROMIUM)
+#define glScheduleCALayerSharedStateCHROMIUM \
+  GLES2_GET_FUN(ScheduleCALayerSharedStateCHROMIUM)
 #define glScheduleCALayerCHROMIUM GLES2_GET_FUN(ScheduleCALayerCHROMIUM)
 #define glScheduleCALayerInUseQueryCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerInUseQueryCHROMIUM)

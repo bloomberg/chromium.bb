@@ -2283,6 +2283,16 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   SamplerState default_sampler_state_;
 
+  struct CALayerSharedState{
+    float opacity;
+    bool is_clipped;
+    gfx::Rect clip_rect;
+    int sorting_context_id;
+    gfx::Transform transform;
+  };
+
+  std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -10676,6 +10686,10 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
 
+  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
+  // equivalent functions reset shared state.
+  ca_layer_shared_state_.reset();
+
   if (supports_async_swap_) {
     TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
     surface_->PostSubBufferAsync(
@@ -10730,6 +10744,32 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleScheduleCALayerSharedStateCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::ScheduleCALayerSharedStateCHROMIUM& c =
+      *static_cast<const gles2::cmds::ScheduleCALayerSharedStateCHROMIUM*>(
+          cmd_data);
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+                                                         20 * sizeof(GLfloat));
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  gfx::RectF clip_rect(mem[0], mem[1], mem[2], mem[3]);
+  gfx::Transform transform(mem[4], mem[8], mem[12], mem[16],
+                           mem[5], mem[9], mem[13], mem[17],
+                           mem[6], mem[10], mem[14], mem[18],
+                           mem[7], mem[11], mem[15], mem[19]);
+  ca_layer_shared_state_.reset(new CALayerSharedState);
+  ca_layer_shared_state_->opacity = c.opacity;
+  ca_layer_shared_state_->is_clipped = c.is_clipped ? true : false;
+  ca_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(clip_rect);
+  ca_layer_shared_state_->sorting_context_id = c.sorting_context_id;
+  ca_layer_shared_state_->transform = transform;
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
@@ -10739,6 +10779,13 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   if (filter != GL_NEAREST && filter != GL_LINEAR) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleCALayerCHROMIUM",
                        "invalid filter");
+    return error::kNoError;
+  }
+
+  if (!ca_layer_shared_state_) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
+        "glScheduleCALayerSharedStateCHROMIUM has not been called");
     return error::kNoError;
   }
 
@@ -10762,23 +10809,19 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   }
 
   const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
-                                                         28 * sizeof(GLfloat));
+                                                         8 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
   gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
   gfx::RectF bounds_rect(mem[4], mem[5], mem[6], mem[7]);
-  gfx::RectF clip_rect(mem[8], mem[9], mem[10], mem[11]);
-  gfx::Transform transform(mem[12], mem[16], mem[20], mem[24],
-                           mem[13], mem[17], mem[21], mem[25],
-                           mem[14], mem[18], mem[22], mem[26],
-                           mem[15], mem[19], mem[23], mem[27]);
 
   ui::CARendererLayerParams params = ui::CARendererLayerParams(
-      c.is_clipped ? true : false, gfx::ToEnclosingRect(clip_rect),
-      c.sorting_context_id, transform, image, contents_rect,
+      ca_layer_shared_state_->is_clipped, ca_layer_shared_state_->clip_rect,
+      ca_layer_shared_state_->sorting_context_id,
+      ca_layer_shared_state_->transform, image, contents_rect,
       gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,
-      c.opacity, filter);
+      ca_layer_shared_state_->opacity, filter);
   if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
@@ -13708,6 +13751,10 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
 
+  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
+  // equivalent functions reset shared state.
+  ca_layer_shared_state_.reset();
+
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (is_offscreen) {
@@ -13826,6 +13873,9 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes() {
                        "command not supported by surface");
     return;
   }
+  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
+  // equivalent functions reset shared state.
+  ca_layer_shared_state_.reset();
   if (supports_async_swap_) {
     surface_->CommitOverlayPlanesAsync(base::Bind(
         &GLES2DecoderImpl::FinishSwapBuffers, base::AsWeakPtr(this)));

@@ -1858,17 +1858,21 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleOverlayPlaneCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
-    GLuint contents_texture_id,
-    const GLfloat* contents_rect,
+error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    const GLfloat* bounds_rect,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
     GLint sorting_context_id,
     const GLfloat* transform) {
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
+    GLuint contents_texture_id,
+    const GLfloat* contents_rect,
+    GLuint background_color,
+    GLuint edge_aa_mask,
+    const GLfloat* bounds_rect) {
   return error::kNoError;
 }
 

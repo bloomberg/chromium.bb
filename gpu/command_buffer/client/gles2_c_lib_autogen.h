@@ -1467,21 +1467,24 @@ void GL_APIENTRY GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
       plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
       bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
 }
+void GL_APIENTRY
+GLES2ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
+                                        GLboolean is_clipped,
+                                        const GLfloat* clip_rect,
+                                        GLint sorting_context_id,
+                                        const GLfloat* transform) {
+  gles2::GetGLContext()->ScheduleCALayerSharedStateCHROMIUM(
+      opacity, is_clipped, clip_rect, sorting_context_id, transform);
+}
 void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                               const GLfloat* contents_rect,
-                                              GLfloat opacity,
                                               GLuint background_color,
                                               GLuint edge_aa_mask,
                                               const GLfloat* bounds_rect,
-                                              GLboolean is_clipped,
-                                              const GLfloat* clip_rect,
-                                              GLint sorting_context_id,
-                                              const GLfloat* transform,
                                               GLuint filter) {
   gles2::GetGLContext()->ScheduleCALayerCHROMIUM(
-      contents_texture_id, contents_rect, opacity, background_color,
-      edge_aa_mask, bounds_rect, is_clipped, clip_rect, sorting_context_id,
-      transform, filter);
+      contents_texture_id, contents_rect, background_color, edge_aa_mask,
+      bounds_rect, filter);
 }
 void GL_APIENTRY
 GLES2ScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures) {
@@ -2818,6 +2821,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glScheduleOverlayPlaneCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glScheduleOverlayPlaneCHROMIUM),
+    },
+    {
+        "glScheduleCALayerSharedStateCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glScheduleCALayerSharedStateCHROMIUM),
     },
     {
         "glScheduleCALayerCHROMIUM",

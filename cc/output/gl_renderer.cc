@@ -3631,6 +3631,7 @@ bool GLRenderer::IsContextLost() {
 }
 
 void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
+  scoped_refptr<CALayerOverlaySharedState> shared_state;
   for (const CALayerOverlay& ca_layer_overlay : frame->ca_layer_overlay_list) {
     unsigned texture_id = 0;
     if (ca_layer_overlay.contents_resource_id) {
@@ -3659,11 +3660,16 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     GLfloat transform[16];
     ca_layer_overlay.shared_state->transform.asColMajorf(transform);
     unsigned filter = ca_layer_overlay.filter;
+
+    if (ca_layer_overlay.shared_state != shared_state) {
+      shared_state = ca_layer_overlay.shared_state;
+      gl_->ScheduleCALayerSharedStateCHROMIUM(
+          ca_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
+          sorting_context_id, transform);
+    }
     gl_->ScheduleCALayerCHROMIUM(
-        texture_id, contents_rect, ca_layer_overlay.shared_state->opacity,
-        ca_layer_overlay.background_color, ca_layer_overlay.edge_aa_mask,
-        bounds_rect, is_clipped, clip_rect, sorting_context_id, transform,
-        filter);
+        texture_id, contents_rect, ca_layer_overlay.background_color,
+        ca_layer_overlay.edge_aa_mask, bounds_rect, filter);
   }
 }
 

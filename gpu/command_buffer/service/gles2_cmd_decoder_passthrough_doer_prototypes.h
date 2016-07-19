@@ -759,16 +759,16 @@ error::Error DoScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                             GLfloat uv_y,
                                             GLfloat uv_width,
                                             GLfloat uv_height);
+error::Error DoScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
+                                                  GLboolean is_clipped,
+                                                  const GLfloat* clip_rect,
+                                                  GLint sorting_context_id,
+                                                  const GLfloat* transform);
 error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                        const GLfloat* contents_rect,
-                                       GLfloat opacity,
                                        GLuint background_color,
                                        GLuint edge_aa_mask,
-                                       const GLfloat* bounds_rect,
-                                       GLboolean is_clipped,
-                                       const GLfloat* clip_rect,
-                                       GLint sorting_context_id,
-                                       const GLfloat* transform);
+                                       const GLfloat* bounds_rect);
 error::Error DoScheduleCALayerInUseQueryCHROMIUM(GLuint n,
                                                  const GLuint* textures);
 error::Error DoCommitOverlayPlanesCHROMIUM();

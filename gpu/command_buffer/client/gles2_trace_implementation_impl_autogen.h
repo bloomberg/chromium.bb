@@ -2142,23 +2142,29 @@ void GLES2TraceImplementation::ScheduleOverlayPlaneCHROMIUM(
       bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
 }
 
-void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
-    GLuint contents_texture_id,
-    const GLfloat* contents_rect,
+void GLES2TraceImplementation::ScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    const GLfloat* bounds_rect,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
     GLint sorting_context_id,
-    const GLfloat* transform,
+    const GLfloat* transform) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::ScheduleCALayerSharedStateCHROMIUM");
+  gl_->ScheduleCALayerSharedStateCHROMIUM(opacity, is_clipped, clip_rect,
+                                          sorting_context_id, transform);
+}
+
+void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
+    GLuint contents_texture_id,
+    const GLfloat* contents_rect,
+    GLuint background_color,
+    GLuint edge_aa_mask,
+    const GLfloat* bounds_rect,
     GLuint filter) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleCALayerCHROMIUM");
-  gl_->ScheduleCALayerCHROMIUM(contents_texture_id, contents_rect, opacity,
+  gl_->ScheduleCALayerCHROMIUM(contents_texture_id, contents_rect,
                                background_color, edge_aa_mask, bounds_rect,
-                               is_clipped, clip_rect, sorting_context_id,
-                               transform, filter);
+                               filter);
 }
 
 void GLES2TraceImplementation::ScheduleCALayerInUseQueryCHROMIUM(

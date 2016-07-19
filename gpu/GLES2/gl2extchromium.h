@@ -769,31 +769,33 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
 
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY
+glScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
+                                     GLboolean is_clipped,
+                                     const GLfloat* clip_rect,
+                                     GLint sorting_context_id,
+                                     const GLfloat* transform);
+GL_APICALL void GL_APIENTRY
 glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                           const GLfloat* contents_rect,
-                          GLfloat opacity,
                           GLuint background_color,
                           GLuint edge_aa_mask,
                           const GLfloat* bounds_rect,
-                          GLboolean is_clipped,
-                          const GLfloat* clip_rect,
-                          GLint sorting_context_id,
-                          const GLfloat* transform,
                           GLuint filter);
 GL_APICALL void GL_APIENTRY
 glScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures);
 #endif
-typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
-    GLuint contents_texture_id,
-    const GLfloat* contents_rect,
+typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERSHAREDSTATECHROMIUMPROC)(
     GLfloat opacity,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    const GLfloat* bounds_rect,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
     GLint sorting_context_id,
-    const GLfloat* transform,
+    const GLfloat* transform);
+typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
+    GLuint contents_texture_id,
+    const GLfloat* contents_rect,
+    GLuint background_color,
+    GLuint edge_aa_mask,
+    const GLfloat* bounds_rect,
     GLuint filter);
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERINUSEQUERYCHROMIUMPROC)(
     GLsizei count,
