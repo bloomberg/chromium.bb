@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,6 +49,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     private static final String EXTERNAL_APP_1_ID = "app1";
     private static final String EXTERNAL_APP_2_ID = "app2";
     private static final String ANDROID_APP_REFERRER = "android-app://com.my.great.great.app";
+    private static final String HTTP_REFERRER = "http://chromium.org/";
+    private static final String HTTPS_REFERRER = "https://chromium.org/";
 
     static class ElementFocusedCriteria extends Criteria {
         private final Tab mTab;
@@ -182,7 +185,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * @throws InterruptedException
      */
     private void launchUrlFromExternalApp(String url, String expectedUrl, String appId,
-            boolean createNewTab, Bundle extras) throws InterruptedException {
+            boolean createNewTab, Bundle extras, boolean firstParty) throws InterruptedException {
         final Intent intent = new Intent(Intent.ACTION_VIEW);
         if (appId != null) {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, appId);
@@ -192,6 +195,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         }
         intent.setData(Uri.parse(url));
         if (extras != null) intent.putExtras(extras);
+
+        if (firstParty) {
+            Context context = getInstrumentation().getTargetContext();
+            intent.setPackage(context.getPackageName());
+            IntentHandler.addTrustedIntentExtras(intent, context);
+        }
 
         final Tab originalTab = getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -211,9 +220,14 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), expectedUrl);
     }
 
+    private void launchUrlFromExternalApp(String url, String expectedUrl, String appId,
+            boolean createNewTab, Bundle extras) throws InterruptedException {
+        launchUrlFromExternalApp(url, expectedUrl, appId, createNewTab, extras, false);
+    }
+
     private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab)
             throws InterruptedException {
-        launchUrlFromExternalApp(url, url, appId, createNewTab, null);
+        launchUrlFromExternalApp(url, url, appId, createNewTab, null, false);
     }
 
     /**
@@ -246,6 +260,57 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
+        CriteriaHelper.pollInstrumentationThread(
+                new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
+    }
+
+    /**
+     * Tests that URLs opened from external applications cannot set an http:// referrer.
+     * @throws InterruptedException
+     */
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testNoHttpReferrer() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        startMainActivityFromLauncher();
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
+
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, false);
+        CriteriaHelper.pollInstrumentationThread(
+                new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
+    }
+
+    /**
+     * Tests that URLs opened from First party apps can set an http:// referrrer.
+     * @throws InterruptedException
+     */
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testHttpReferrerFromFirstParty() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        startMainActivityFromLauncher();
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
+
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, true);
+        CriteriaHelper.pollInstrumentationThread(
+                new ReferrerCriteria(getActivity().getActivityTab(), HTTP_REFERRER), 2000, 200);
+    }
+
+    /**
+     * Tests that an https:// referrer is stripped in case of downgrade.
+     * @throws InterruptedException
+     */
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testHttpsReferrerFromFirstPartyNoDowngrade() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        startMainActivityFromLauncher();
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTPS_REFERRER));
+
+        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, true);
         CriteriaHelper.pollInstrumentationThread(
                 new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
     }
