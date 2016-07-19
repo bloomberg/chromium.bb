@@ -27,7 +27,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/PaintLayer.h"
 
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ void LayoutSVGResourceContainer::layout()
     if (m_isInLayout)
         return;
 
-    TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
+    AutoReset<bool> inLayoutChange(&m_isInLayout, true);
 
     LayoutSVGHiddenContainer::layout();
 

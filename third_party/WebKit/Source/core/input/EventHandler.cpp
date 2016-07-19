@@ -102,7 +102,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/TemporaryChange.h"
 #include <memory>
 
 namespace blink {

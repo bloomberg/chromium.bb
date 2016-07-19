@@ -56,8 +56,8 @@
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
+#include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/TemporaryChange.h"
 #include <memory>
 
 namespace blink {
@@ -416,7 +416,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<Parsed
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(std::unique_ptr<ParsedChunk> popChunk)
 {
     TRACE_EVENT_WITH_FLOW0("blink,loading", "HTMLDocumentParser::processParsedChunkFromBackgroundParser", popChunk.get(), TRACE_EVENT_FLAG_FLOW_IN);
-    TemporaryChange<bool> hasLineNumber(m_isParsingAtLineNumber, true);
+    AutoReset<bool> hasLineNumber(&m_isParsingAtLineNumber, true);
 
     ASSERT_WITH_SECURITY_IMPLICATION(m_pumpSpeculationsSessionNestingLevel == 1);
     ASSERT_WITH_SECURITY_IMPLICATION(!inPumpSession());

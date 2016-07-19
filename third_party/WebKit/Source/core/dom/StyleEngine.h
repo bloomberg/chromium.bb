@@ -39,8 +39,8 @@
 #include "core/dom/StyleEngineContext.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -60,13 +60,15 @@ class CORE_EXPORT StyleEngine final : public GarbageCollectedFinalized<StyleEngi
     USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 public:
 
-    class IgnoringPendingStylesheet : public TemporaryChange<bool> {
+    class IgnoringPendingStylesheet {
         DISALLOW_NEW();
     public:
         IgnoringPendingStylesheet(StyleEngine& engine)
-            : TemporaryChange<bool>(engine.m_ignorePendingStylesheets, true)
+            : m_scope(&engine.m_ignorePendingStylesheets, true)
         {
         }
+    private:
+        AutoReset<bool> m_scope;
     };
 
     friend class IgnoringPendingStylesheet;

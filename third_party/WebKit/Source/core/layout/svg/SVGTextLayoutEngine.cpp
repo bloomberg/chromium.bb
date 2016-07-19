@@ -30,6 +30,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGTextContentElement.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -239,7 +240,7 @@ static bool definesTextLengthWithSpacing(const InlineFlowBox* start)
 void SVGTextLayoutEngine::layoutCharactersInTextBoxes(InlineFlowBox* start)
 {
     bool textLengthSpacingInEffect = m_textLengthSpacingInEffect || definesTextLengthWithSpacing(start);
-    TemporaryChange<bool> textLengthSpacingScope(m_textLengthSpacingInEffect, textLengthSpacingInEffect);
+    AutoReset<bool> textLengthSpacingScope(&m_textLengthSpacingInEffect, textLengthSpacingInEffect);
 
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
         if (child->isSVGInlineTextBox()) {

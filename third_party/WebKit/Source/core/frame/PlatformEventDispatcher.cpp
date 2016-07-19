@@ -5,7 +5,7 @@
 #include "core/frame/PlatformEventDispatcher.h"
 
 #include "core/frame/PlatformEventController.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -48,7 +48,7 @@ void PlatformEventDispatcher::notifyControllers()
         return;
 
     {
-        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
+        AutoReset<bool> changeIsDispatching(&m_isDispatching, true);
         // HashSet m_controllers can be updated during an iteration, and it stops the iteration.
         // Thus we store it into a Vector to access all elements.
         HeapVector<Member<PlatformEventController>> snapshotVector;

@@ -47,10 +47,10 @@
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebRect.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -652,10 +652,10 @@ protected:
         STACK_ALLOCATED();
     public:
         explicit InUpdateScrollbarsScope(FrameView* view)
-            : m_scope(view->m_inUpdateScrollbars, true)
+            : m_scope(&view->m_inUpdateScrollbars, true)
         { }
     private:
-        TemporaryChange<bool> m_scope;
+        AutoReset<bool> m_scope;
     };
 
     // Only for LayoutPart to traverse into sub frames during paint invalidation.

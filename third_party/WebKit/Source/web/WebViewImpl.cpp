@@ -180,10 +180,10 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
+#include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
-#include "wtf/TemporaryChange.h"
 #include <memory>
 
 #if USE(DEFAULT_RENDER_THEME)
@@ -2171,7 +2171,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
     if (m_ignoreInputEvents)
         return WebInputEventResult::NotHandled;
 
-    TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
+    AutoReset<const WebInputEvent*> currentEventChange(&m_currentInputEvent, &inputEvent);
     UIEventWithKeyState::clearNewTabModifierSetFromIsolatedWorld();
 
     bool isPointerLocked = false;

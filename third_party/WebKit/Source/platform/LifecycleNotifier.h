@@ -28,8 +28,8 @@
 #define LifecycleNotifier_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/AutoReset.h"
 #include "wtf/HashSet.h"
-#include "wtf/TemporaryChange.h"
 
 namespace blink {
 
@@ -94,7 +94,7 @@ template<typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
 {
     // Observer unregistration is allowed, but effectively a no-op.
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingRemoval);
+    AutoReset<IterationState> scope(&m_iterationState, AllowingRemoval);
     ObserverSet observers;
     m_observers.swap(observers);
     for (Observer* observer : observers) {

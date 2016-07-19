@@ -73,7 +73,7 @@
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebMimeRegistry.h"
 #include "wtf/Assertions.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -507,7 +507,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, size_t l
         return;
     }
 
-    TemporaryChange<bool> reentrancyProtector(m_inDataReceived, true);
+    AutoReset<bool> reentrancyProtector(&m_inDataReceived, true);
     processData(data, length);
 
     // Process data received in reentrant invocations. Note that the

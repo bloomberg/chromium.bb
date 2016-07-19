@@ -44,6 +44,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 SelectionController* SelectionController::create(LocalFrame& frame)
@@ -608,7 +609,7 @@ void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResult
         return;
 
     // Context menu events are always allowed to perform a selection.
-    TemporaryChange<bool> mouseDownMayStartSelectChange(m_mouseDownMayStartSelect, true);
+    AutoReset<bool> mouseDownMayStartSelectChange(&m_mouseDownMayStartSelect, true);
 
     if (mev.hitTestResult().isMisspelled())
         return selectClosestMisspellingFromMouseEvent(mev);

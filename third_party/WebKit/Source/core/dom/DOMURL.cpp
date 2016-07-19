@@ -36,7 +36,7 @@
 #include "core/html/PublicURLManager.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -120,7 +120,7 @@ void DOMURL::updateSearchParams(const String& queryString)
     if (!m_searchParams)
         return;
 
-    TemporaryChange<bool> scope(m_isInUpdate, true);
+    AutoReset<bool> scope(&m_isInUpdate, true);
     ASSERT(m_searchParams->urlObject() == this);
     m_searchParams->setInput(queryString);
 }

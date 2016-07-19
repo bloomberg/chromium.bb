@@ -3471,7 +3471,7 @@ bool LayoutObject::isAllowedToModifyLayoutTreeStructure(Document& document)
 }
 
 DeprecatedDisableModifyLayoutTreeStructureAsserts::DeprecatedDisableModifyLayoutTreeStructureAsserts()
-    : m_disabler(gModifyLayoutTreeStructureAnyState, true)
+    : m_disabler(&gModifyLayoutTreeStructureAnyState, true)
 {
 }
 
@@ -3481,7 +3481,7 @@ bool DeprecatedDisableModifyLayoutTreeStructureAsserts::canModifyLayoutTreeState
 }
 
 DisablePaintInvalidationStateAsserts::DisablePaintInvalidationStateAsserts()
-    : m_disabler(gDisablePaintInvalidationStateAsserts, true)
+    : m_disabler(&gDisablePaintInvalidationStateAsserts, true)
 {
 }
 

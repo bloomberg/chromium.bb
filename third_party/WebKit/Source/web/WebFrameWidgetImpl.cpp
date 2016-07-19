@@ -68,6 +68,7 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewFrameWidget.h"
+#include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -343,7 +344,7 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& in
 
     // FIXME: pass event to m_localRoot's WebDevToolsAgentImpl once available.
 
-    TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
+    AutoReset<const WebInputEvent*> currentEventChange(&m_currentInputEvent, &inputEvent);
 
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
         TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);

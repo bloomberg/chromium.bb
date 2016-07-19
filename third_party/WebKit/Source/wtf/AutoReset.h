@@ -23,46 +23,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TemporaryChange_h
-#define TemporaryChange_h
+#ifndef AutoReset_h
+#define AutoReset_h
 
-#include "wtf/Noncopyable.h"
+#include "base/auto_reset.h"
 
 namespace WTF {
 
-// TemporaryChange<> is useful for setting a variable to a new value only within a
-// particular scope. An TemporaryChange<> object changes a variable to its original
-// value upon destruction, making it an alternative to writing "var = false;"
-// or "var = oldVal;" at all of a block's exit points.
-//
-// This should be obvious, but note that an TemporaryChange<> instance should have a
-// shorter lifetime than its scopedVariable, to prevent invalid memory writes
-// when the TemporaryChange<> object is destroyed.
+// WTF::AutoReset is base::AutoReset. See base/auto_reset.h for documentation.
 
-template<typename T>
-class TemporaryChange {
-    WTF_MAKE_NONCOPYABLE(TemporaryChange);
-public:
-    TemporaryChange(T& scopedVariable, T newValue)
-        : m_scopedVariable(scopedVariable)
-        , m_originalValue(scopedVariable)
-    {
-        m_scopedVariable = newValue;
-    }
-
-    ~TemporaryChange()
-    {
-        m_scopedVariable = m_originalValue;
-    }
-
-
-private:
-    T& m_scopedVariable;
-    T m_originalValue;
-};
+template <typename T>
+using AutoReset = base::AutoReset<T>;
 
 } // namespace WTF
 
-using WTF::TemporaryChange;
+using WTF::AutoReset;
 
 #endif

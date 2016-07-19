@@ -2927,7 +2927,7 @@ void PaintLayer::endShouldKeepAliveAllClientsRecursive()
 #endif
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
-    : m_disabler(gCompositingQueryMode, CompositingQueriesAreAllowed) { }
+    : m_disabler(&gCompositingQueryMode, CompositingQueriesAreAllowed) { }
 
 } // namespace blink
 

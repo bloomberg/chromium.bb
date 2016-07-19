@@ -43,7 +43,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/RetainPtr.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/TemporaryChange.h"
 
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual overflow.
 

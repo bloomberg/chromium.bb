@@ -11,6 +11,7 @@
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/Logging.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -33,7 +34,7 @@ DEFINE_TRACE(PageAnimator)
 
 void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
-    TemporaryChange<bool> servicing(m_servicingAnimations, true);
+    AutoReset<bool> servicing(&m_servicingAnimations, true);
     clock().updateTime(monotonicAnimationStartTime);
 
     HeapVector<Member<Document>, 32> documents;
@@ -81,7 +82,7 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
 void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame)
 {
     FrameView* view = rootFrame.view();
-    TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
+    AutoReset<bool> servicing(&m_updatingLayoutAndStyleForPainting, true);
     view->updateAllLifecyclePhases();
 }
 

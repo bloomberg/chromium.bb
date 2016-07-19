@@ -58,6 +58,7 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/AutoReset.h"
 #include <memory>
 #include <v8.h>
 
@@ -229,7 +230,7 @@ void InspectorOverlay::updateAllLifecyclePhases()
     if (isEmpty())
         return;
 
-    TemporaryChange<bool> scoped(m_inLayout, true);
+    AutoReset<bool> scoped(&m_inLayout, true);
     if (m_needsUpdate) {
         m_needsUpdate = false;
         rebuildOverlayPage();

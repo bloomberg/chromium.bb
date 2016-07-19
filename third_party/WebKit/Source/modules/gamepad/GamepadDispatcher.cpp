@@ -6,7 +6,6 @@
 
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "public/platform/Platform.h"
-#include "wtf/TemporaryChange.h"
 
 namespace blink {
 

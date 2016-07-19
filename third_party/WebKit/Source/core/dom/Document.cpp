@@ -234,13 +234,13 @@
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScheduler.h"
+#include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include <memory>
@@ -4485,7 +4485,7 @@ bool Document::execCommand(const String& commandName, bool, const String& value,
         addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
         return false;
     }
-    TemporaryChange<bool> executeScope(m_isRunningExecCommand, true);
+    AutoReset<bool> executeScope(&m_isRunningExecCommand, true);
 
     // Postpone DOM mutation events, which can execute scripts and change
     // DOM tree against implementation assumption.

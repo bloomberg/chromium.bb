@@ -28,7 +28,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/editing/commands/UndoStep.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -91,7 +91,7 @@ void UndoStack::redo()
         m_redoStack.remove(back);
 
         DCHECK(!m_inRedo);
-        TemporaryChange<bool> redoScope(m_inRedo, true);
+        AutoReset<bool> redoScope(&m_inRedo, true);
         step->reapply();
         // reapply will call us back to push this command onto the undo stack.
     }

@@ -8,6 +8,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -43,7 +44,7 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
     if (m_inAutoSize)
         return;
 
-    TemporaryChange<bool> changeInAutoSize(m_inAutoSize, true);
+    AutoReset<bool> changeInAutoSize(&m_inAutoSize, true);
 
     Document* document = m_frameView->frame().document();
     if (!document || !document->isActive())

@@ -28,7 +28,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/geometry/TransformState.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 #define LAYOUT_GEOMETRY_MAP_LOGGING 0
 
@@ -160,7 +160,7 @@ FloatQuad LayoutGeometryMap::mapToAncestor(const FloatRect& rect, const LayoutBo
 void LayoutGeometryMap::pushMappingsToAncestor(const LayoutObject* layoutObject, const LayoutBoxModelObject* ancestorLayoutObject)
 {
     // We need to push mappings in reverse order here, so do insertions rather than appends.
-    TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
+    AutoReset<size_t> positionChange(&m_insertionPosition, m_mapping.size());
     do {
         layoutObject = layoutObject->pushMappingToContainer(ancestorLayoutObject, *this);
     } while (layoutObject && layoutObject != ancestorLayoutObject);
@@ -208,7 +208,7 @@ void LayoutGeometryMap::pushMappingsToAncestor(const PaintLayer* layer, const Pa
             pushMappingsToAncestor(ancestorLayer->layoutObject(), 0);
         }
 
-        TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
+        AutoReset<size_t> positionChange(&m_insertionPosition, m_mapping.size());
         bool accumulatingTransform = layer->layoutObject()->style()->preserves3D() || ancestorLayer->layoutObject()->style()->preserves3D();
         push(layoutObject, toLayoutSize(layerOffset), accumulatingTransform ? AccumulatingTransform : 0);
         return;

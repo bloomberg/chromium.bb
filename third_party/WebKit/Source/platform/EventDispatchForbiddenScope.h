@@ -8,7 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ public:
         STACK_ALLOCATED();
     public:
         AllowUserAgentEvents()
-            : m_change(s_count, 0)
+            : m_change(&s_count, 0)
         {
             ASSERT(isMainThread());
         }
@@ -52,7 +52,7 @@ public:
             ASSERT(!s_count);
         }
 
-        TemporaryChange<unsigned> m_change;
+        AutoReset<unsigned> m_change;
     };
 
 private:

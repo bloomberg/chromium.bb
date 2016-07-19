@@ -28,9 +28,9 @@
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
+#include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
@@ -711,7 +711,7 @@ void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy)
         Platform::current()->currentThread()->removeTaskObserver(this);
     }
 
-    TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);
+    AutoReset<bool> reentrancyProtector(&m_inPruneResources, true);
     pruneDeadResources(strategy); // Prune dead first, in case it was "borrowing" capacity from live.
     pruneLiveResources(strategy);
     m_pruneFrameTimeStamp = m_lastFramePaintTimeStamp;

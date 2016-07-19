@@ -42,10 +42,10 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/Logging.h"
 #include "platform/Supplementable.h"
+#include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
@@ -343,7 +343,7 @@ void FileReader::abort()
 void FileReader::doAbort()
 {
     ASSERT(m_state != DONE);
-    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
+    AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
 
     terminate();
 
@@ -383,7 +383,7 @@ void FileReader::terminate()
 
 void FileReader::didStartLoading()
 {
-    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
+    AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
     fireEvent(EventTypeNames::loadstart);
 }
 
@@ -394,7 +394,7 @@ void FileReader::didReceiveData()
     if (!m_lastProgressNotificationTimeMS) {
         m_lastProgressNotificationTimeMS = now;
     } else if (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS) {
-        TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
+        AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
         fireEvent(EventTypeNames::progress);
         m_lastProgressNotificationTimeMS = now;
     }
@@ -411,7 +411,7 @@ void FileReader::didFinishLoading()
     // use this separate variable to keep the wrapper of this FileReader alive.
     // An alternative would be to keep any active DOM object alive that is on
     // the stack.
-    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
+    AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
 
     // It's important that we change m_loadingState before firing any events
     // since any of the events could call abort(), which internally checks
@@ -438,7 +438,7 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     if (m_loadingState == LoadingStateAborted)
         return;
 
-    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
+    AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
 
     ASSERT(m_loadingState == LoadingStateLoading);
     m_loadingState = LoadingStateNone;

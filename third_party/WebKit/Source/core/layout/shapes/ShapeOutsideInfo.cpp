@@ -36,6 +36,7 @@
 #include "core/layout/LayoutImage.h"
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
+#include "wtf/AutoReset.h"
 #include <memory>
 
 namespace blink {
@@ -145,7 +146,7 @@ const Shape& ShapeOutsideInfo::computedShape() const
     if (Shape* shape = m_shape.get())
         return *shape;
 
-    TemporaryChange<bool> isInComputingShape(m_isComputingShape, true);
+    AutoReset<bool> isInComputingShape(&m_isComputingShape, true);
 
     const ComputedStyle& style = *m_layoutBox.style();
     ASSERT(m_layoutBox.containingBlock());

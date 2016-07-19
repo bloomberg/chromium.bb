@@ -29,6 +29,7 @@
 #include "core/dom/Text.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
+#include "wtf/AutoReset.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -83,7 +84,7 @@ void HTMLTitleElement::setText(const String &value)
 
     {
         // Avoid calling Document::setTitleElement() during intermediate steps.
-        TemporaryChange<bool> inhibitTitleUpdateScope(m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
+        AutoReset<bool> inhibitTitleUpdateScope(&m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
         removeChildren(OmitSubtreeModifiedEvent);
     }
 

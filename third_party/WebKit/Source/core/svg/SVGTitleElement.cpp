@@ -24,6 +24,7 @@
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -65,7 +66,7 @@ void SVGTitleElement::setText(const String& value)
 
     {
         // Avoid calling Document::setTitleElement() during intermediate steps.
-        TemporaryChange<bool> inhibitTitleUpdateScope(m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
+        AutoReset<bool> inhibitTitleUpdateScope(&m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
         removeChildren(OmitSubtreeModifiedEvent);
     }
 

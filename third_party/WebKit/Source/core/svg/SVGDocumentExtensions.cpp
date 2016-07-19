@@ -26,7 +26,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -319,7 +319,7 @@ void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(Subt
 {
     ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
 #if ENABLE(ASSERT)
-    TemporaryChange<bool> inRelativeLengthSVGRootsChange(m_inRelativeLengthSVGRootsInvalidation, true);
+    AutoReset<bool> inRelativeLengthSVGRootsChange(&m_inRelativeLengthSVGRootsInvalidation, true);
 #endif
 
     for (SVGSVGElement* element : m_relativeLengthSVGRoots)

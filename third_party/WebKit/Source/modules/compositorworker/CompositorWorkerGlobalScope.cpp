@@ -9,6 +9,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
+#include "wtf/AutoReset.h"
 #include <memory>
 
 namespace blink {
@@ -72,7 +73,7 @@ void CompositorWorkerGlobalScope::cancelAnimationFrame(int id)
 
 bool CompositorWorkerGlobalScope::executeAnimationFrameCallbacks(double highResTimeMs)
 {
-    TemporaryChange<bool> temporaryChange(m_executingAnimationFrameCallbacks, true);
+    AutoReset<bool> temporaryChange(&m_executingAnimationFrameCallbacks, true);
     m_callbackCollection.executeCallbacks(highResTimeMs, highResTimeMs);
     return !m_callbackCollection.isEmpty();
 }

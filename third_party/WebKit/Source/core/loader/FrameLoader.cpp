@@ -96,7 +96,7 @@
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -744,7 +744,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     detachDocumentLoader(m_provisionalDocumentLoader);
     if (!m_frame->host())
         return;
-    TemporaryChange<FrameLoadType> loadTypeChange(m_loadType, frameLoadType);
+    AutoReset<FrameLoadType> loadTypeChange(&m_loadType, frameLoadType);
     saveScrollState();
 
     KURL oldURL = m_frame->document()->url();
@@ -1119,7 +1119,7 @@ bool FrameLoader::prepareForCommit()
     // At this point, the provisional document loader should not detach, because
     // then the FrameLoader would not have any attached DocumentLoaders.
     if (m_documentLoader) {
-        TemporaryChange<bool> inDetachDocumentLoader(m_protectProvisionalLoader, true);
+        AutoReset<bool> inDetachDocumentLoader(&m_protectProvisionalLoader, true);
         detachDocumentLoader(m_documentLoader);
     }
     // 'abort' listeners can also detach the frame.
@@ -1549,8 +1549,8 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject()
 
     if (m_dispatchingDidClearWindowObjectInMainWorld)
         return;
-    TemporaryChange<bool>
-        inDidClearWindowObject(m_dispatchingDidClearWindowObjectInMainWorld, true);
+    AutoReset<bool>
+        inDidClearWindowObject(&m_dispatchingDidClearWindowObjectInMainWorld, true);
     // We just cleared the document, not the entire window object, but for the
     // embedder that's close enough.
     client()->dispatchDidClearWindowObjectInMainWorld();
@@ -1563,8 +1563,8 @@ void FrameLoader::dispatchDidClearWindowObjectInMainWorld()
 
     if (m_dispatchingDidClearWindowObjectInMainWorld)
         return;
-    TemporaryChange<bool>
-        inDidClearWindowObject(m_dispatchingDidClearWindowObjectInMainWorld, true);
+    AutoReset<bool>
+        inDidClearWindowObject(&m_dispatchingDidClearWindowObjectInMainWorld, true);
     client()->dispatchDidClearWindowObjectInMainWorld();
 }
 

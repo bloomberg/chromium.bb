@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 #include <queue>
 
 namespace blink {
@@ -108,7 +108,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy)
                 // Serve the first byte to the real WebURLLoaderCLient, which
                 // should trigger frameDetach() due to committing a provisional
                 // load.
-                TemporaryChange<bool> dispatching(m_dispatchingDidReceiveData, true);
+                AutoReset<bool> dispatching(&m_dispatchingDidReceiveData, true);
                 dispatchOneByte();
             }
             // Serve the remaining bytes to complete the load.

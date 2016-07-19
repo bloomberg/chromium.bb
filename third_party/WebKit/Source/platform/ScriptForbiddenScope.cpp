@@ -41,7 +41,7 @@ bool ScriptForbiddenScope::isScriptForbidden()
 ScriptForbiddenScope::AllowUserAgentScript::AllowUserAgentScript()
 {
     if (isMainThread())
-        m_change.emplace(s_scriptForbiddenCount, 0);
+        m_change.emplace(&s_scriptForbiddenCount, 0);
 }
 
 ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()

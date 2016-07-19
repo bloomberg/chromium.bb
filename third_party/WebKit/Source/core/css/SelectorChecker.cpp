@@ -58,6 +58,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -219,7 +220,7 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
         if (context.pseudoId != PseudoIdNone && context.pseudoId != result.dynamicPseudo)
             return SelectorFailsCompletely;
 
-        TemporaryChange<PseudoId> dynamicPseudoScope(result.dynamicPseudo, PseudoIdNone);
+        AutoReset<PseudoId> dynamicPseudoScope(&result.dynamicPseudo, PseudoIdNone);
         match = matchForRelation(context, result);
     } else {
         match = matchForSubSelector(context, result);

@@ -27,12 +27,13 @@
 #include "core/page/PageVisibilityNotifier.h"
 
 #include "core/page/PageVisibilityObserver.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
 void PageVisibilityNotifier::notifyPageVisibilityChanged()
 {
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
+    AutoReset<IterationState> scope(&m_iterationState, AllowingNone);
     for (PageVisibilityObserver* observer : m_observers)
         observer->pageVisibilityChanged();
 }

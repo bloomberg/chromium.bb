@@ -7,8 +7,8 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/Optional.h"
-#include "wtf/TemporaryChange.h"
 
 namespace blink {
 
@@ -28,7 +28,7 @@ public:
         AllowUserAgentScript();
         ~AllowUserAgentScript();
     private:
-        Optional<TemporaryChange<unsigned>> m_change;
+        Optional<AutoReset<unsigned>> m_change;
     };
 
     static void enter();

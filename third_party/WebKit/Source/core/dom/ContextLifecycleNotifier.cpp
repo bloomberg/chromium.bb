@@ -28,13 +28,13 @@
 #include "core/dom/ContextLifecycleNotifier.h"
 
 #include "core/dom/ActiveDOMObject.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
+    AutoReset<IterationState> scope(&m_iterationState, AllowingNone);
     for (ContextLifecycleObserver* observer : m_observers) {
         if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
             continue;
@@ -49,7 +49,7 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 
 void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
+    AutoReset<IterationState> scope(&m_iterationState, AllowingNone);
     for (ContextLifecycleObserver* observer : m_observers) {
         if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
             continue;
@@ -65,7 +65,7 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
     // Observers may be removed, but handled after iteration has completed.
-    TemporaryChange<IterationState> scope(m_iterationState, AllowPendingRemoval);
+    AutoReset<IterationState> scope(&m_iterationState, AllowPendingRemoval);
     ObserverSet observers;
     m_observers.swap(observers);
     for (ContextLifecycleObserver* observer : observers) {

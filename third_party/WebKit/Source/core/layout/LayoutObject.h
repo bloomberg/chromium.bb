@@ -46,6 +46,7 @@
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -1963,7 +1964,7 @@ public:
     static bool canModifyLayoutTreeStateInAnyState();
 
 private:
-    TemporaryChange<bool> m_disabler;
+    AutoReset<bool> m_disabler;
 };
 
 // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
@@ -1974,7 +1975,7 @@ class DisablePaintInvalidationStateAsserts {
 public:
     DisablePaintInvalidationStateAsserts();
 private:
-    TemporaryChange<bool> m_disabler;
+    AutoReset<bool> m_disabler;
 };
 
 // Allow equality comparisons of LayoutObjects by reference or pointer, interchangeably.

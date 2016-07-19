@@ -60,6 +60,7 @@
 #include "platform/graphics/SquashingDisallowedReasons.h"
 #include "public/platform/WebBlendMode.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -90,7 +91,7 @@ class CORE_EXPORT DisableCompositingQueryAsserts {
 public:
     DisableCompositingQueryAsserts();
 private:
-    TemporaryChange<CompositingQueryMode> m_disabler;
+    AutoReset<CompositingQueryMode> m_disabler;
 };
 
 struct PaintLayerRareData {

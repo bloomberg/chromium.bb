@@ -17,6 +17,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/heap/HeapPage.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -96,7 +97,7 @@ void ScriptWrappableVisitor::RegisterV8References(const std::vector<std::pair<vo
 bool ScriptWrappableVisitor::AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions actions)
 {
     DCHECK(m_tracingInProgress);
-    WTF::TemporaryChange<bool>(m_advancingTracing, true);
+    WTF::AutoReset<bool>(&m_advancingTracing, true);
     while (actions.force_completion == v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION
         || WTF::monotonicallyIncreasingTimeMS() < deadlineInMs) {
         if (m_markingDeque.isEmpty()) {

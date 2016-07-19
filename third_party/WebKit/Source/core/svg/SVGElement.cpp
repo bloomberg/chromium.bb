@@ -51,7 +51,7 @@
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/svg/properties/SVGProperty.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 #include "wtf/Threading.h"
 
 namespace blink {
@@ -448,7 +448,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
 
     ASSERT(!m_inRelativeLengthClientsInvalidation);
 #if ENABLE(ASSERT)
-    TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
+    AutoReset<bool> inRelativeLengthClientsInvalidationChange(&m_inRelativeLengthClientsInvalidation, true);
 #endif
 
     if (LayoutObject* layoutObject = this->layoutObject()) {

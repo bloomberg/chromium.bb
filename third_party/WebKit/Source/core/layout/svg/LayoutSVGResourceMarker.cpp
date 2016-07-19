@@ -22,7 +22,7 @@
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "wtf/TemporaryChange.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ void LayoutSVGResourceMarker::layout()
     if (m_isInLayout)
         return;
 
-    TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
+    AutoReset<bool> inLayoutChange(&m_isInLayout, true);
 
     // LayoutSVGHiddenContainer overwrites layout(). We need the
     // layouting of LayoutSVGContainer for calculating  local

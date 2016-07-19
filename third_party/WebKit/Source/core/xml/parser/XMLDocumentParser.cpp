@@ -66,9 +66,9 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/text/UTF8.h"
@@ -870,7 +870,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
     // string.
     if (parseString.length()) {
         XMLDocumentParserScope scope(document());
-        TemporaryChange<bool> encodingScope(m_isCurrentlyParsing8BitChunk, parseString.is8Bit());
+        AutoReset<bool> encodingScope(&m_isCurrentlyParsing8BitChunk, parseString.is8Bit());
         parseChunk(context->context(), parseString);
 
         // JavaScript (which may be run under the parseChunk callstack) may

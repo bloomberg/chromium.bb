@@ -45,10 +45,10 @@
 #include "platform/web_process_memory_dump.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
+#include "wtf/AutoReset.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/allocator/PageAllocator.h"
 #include "wtf/allocator/Partitions.h"
 
@@ -692,7 +692,7 @@ bool NormalPageArena::shrinkObject(HeapObjectHeader* header, size_t newSize)
 Address NormalPageArena::lazySweepPages(size_t allocationSize, size_t gcInfoIndex)
 {
     ASSERT(!hasCurrentAllocationArea());
-    TemporaryChange<bool> isLazySweeping(m_isLazySweeping, true);
+    AutoReset<bool> isLazySweeping(&m_isLazySweeping, true);
     Address result = nullptr;
     while (m_firstUnsweptPage) {
         BasePage* page = m_firstUnsweptPage;
