@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -261,7 +262,9 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
-    @SmallTest
+    @FlakyTest
+//    @SmallTest
+//    crbug.com/629579
     public void testAddItemWithSameNameToListAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
