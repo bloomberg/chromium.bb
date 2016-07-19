@@ -55,6 +55,10 @@ class PluginsPageHandler : public MojoWebUIHandler,
                                    const base::string16& group_name,
                                    bool plugin_enabled) const;
 
+  // Returns whether the policy for the current profile is "Click To Play" i.e.
+  // DefaultPluginsSetting is 3 (ASK).
+  bool GetClickToPlayPolicyEnabled() const;
+
   // Detect a plugin group's enabled mode (one of enabledByUser, disabledByUser,
   // enabledByPolicy, disabledByPolicy, managedByPolicy).
   std::string GetPluginGroupEnabledMode(

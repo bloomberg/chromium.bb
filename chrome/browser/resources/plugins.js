@@ -251,6 +251,17 @@ function isPluginTrusted(plugin) {
 }
 
 /**
+ * @param {Object} plugin An object containing the information about a plugin.
+ *     See returnPluginsData() for the format of this object.
+ * @return {boolean} Whether the plugin is marked click to play by policy.
+ *
+ * This would normally be set by setting the policy DefaultPluginsSetting to 3.
+ */
+function isPluginPolicyClickToPlay(plugin) {
+    return plugin.policy_click_to_play == true;
+}
+
+/**
  * Helper to convert callback-based define() API to a promise-based API.
  * @param {!Array<string>} moduleNames
  * @return {!Promise}

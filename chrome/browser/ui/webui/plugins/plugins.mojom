@@ -23,6 +23,7 @@ struct PluginFile {
 struct PluginData {
   bool always_allowed;
   bool trusted;
+  bool policy_click_to_play;
   string description;
   bool critical;
   string enabled_mode;
