@@ -123,7 +123,14 @@ config("ffmpegsumo_warnings") {
   }
 }
 
-source_set("ffmpeg_internal") {
+if (is_component_ffmpeg) {
+  link_target_type = "source_set"
+} else {
+  # This must be a static_library in non-component builds to avoid pulling
+  # in many large global arrays (and associated code) into chrome.dll.
+  link_target_type = "static_library"
+}
+target(link_target_type, "ffmpeg_internal") {
   sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
     "$platform_config_root/config.h",
     "$platform_config_root/libavutil/avconfig.h",
