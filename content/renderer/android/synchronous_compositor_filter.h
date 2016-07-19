@@ -67,9 +67,15 @@ class SynchronousCompositorFilter
   void SendOnIOThread(IPC::Message* message);
 
   // Compositor thread methods.
-  void FilterReadyyOnCompositorThread();
+  void FilterReadyOnCompositorThread();
   void OnMessageReceivedOnCompositorThread(const IPC::Message& message);
   void CheckIsReady(int routing_id);
+  void CreateSynchronousCompositorProxy(
+      int routing_id,
+      ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
+  void SetProxyOutputSurface(
+      int routing_id,
+      SynchronousCompositorOutputSurface* output_surface);
   void UnregisterObjects(int routing_id);
   void RemoveEntryIfNeeded(int routing_id);
   SynchronousCompositorProxy* FindProxy(int routing_id);
@@ -87,15 +93,16 @@ class SynchronousCompositorFilter
   SyncCompositorMap sync_compositor_map_;
 
   bool filter_ready_;
-  struct Entry {
-    SynchronousCompositorOutputSurface* output_surface;
-    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
+  using SynchronousInputHandlerProxyMap =
+      base::hash_map<int, ui::SynchronousInputHandlerProxy*>;
+  using OutputSurfaceMap =
+      base::hash_map<int, SynchronousCompositorOutputSurface*>;
 
-    Entry();
-    bool IsReady();
-  };
-  using EntryMap = base::hash_map<int, Entry>;
-  EntryMap entry_map_;
+  // This is only used before FilterReadyOnCompositorThread.
+  SynchronousInputHandlerProxyMap synchronous_input_handler_proxy_map_;
+
+  // This is only used if input_handler_proxy has not been registered.
+  OutputSurfaceMap output_surface_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorFilter);
 };
