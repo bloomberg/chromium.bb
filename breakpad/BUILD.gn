@@ -40,6 +40,9 @@ config("client_config") {
     defines = [ "ANDROID_NDK_MAJOR_VERSION=${android_ndk_major_version}" ]
     include_dirs += [ "src/common/android/include" ]
   }
+  if (is_chromeos) {
+    defines = [ "__CHROMEOS__" ]
+  }
 }
 
 config("handler_config") {
