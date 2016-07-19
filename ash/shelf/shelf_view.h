@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
-#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"

@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/overflow_bubble.h"
+#include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_menu_model.h"
@@ -16,8 +18,6 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
-#include "ash/shelf/overflow_bubble.h"
-#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"

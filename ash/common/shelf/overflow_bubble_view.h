@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_
-#define ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_
+#ifndef ASH_COMMON_SHELF_OVERFLOW_BUBBLE_VIEW_H_
+#define ASH_COMMON_SHELF_OVERFLOW_BUBBLE_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
+namespace views {
+class View;
+}
+
 namespace ash {
-class ShelfView;
+class WmShelf;
 
 namespace test {
 class OverflowBubbleViewTestAPI;
@@ -21,13 +24,17 @@ class OverflowBubbleViewTestAPI;
 // Exports to access this class from OverflowBubbleViewTestAPI.
 class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView {
  public:
-  OverflowBubbleView();
+  explicit OverflowBubbleView(WmShelf* wm_shelf);
   ~OverflowBubbleView() override;
 
-  void InitOverflowBubble(views::View* anchor, ShelfView* shelf_view);
+  // |anchor| is the overflow button on the main shelf. |shelf_view| is the
+  // ShelfView containing the overflow items.
+  void InitOverflowBubble(views::View* anchor, views::View* shelf_view);
 
   // views::BubbleDialogDelegateView overrides:
   int GetDialogButtons() const override;
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* bubble_widget) const override;
   gfx::Rect GetBubbleBounds() override;
 
  private:
@@ -52,7 +59,8 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView {
   // ui::EventHandler overrides:
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-  ShelfView* shelf_view_;  // Owned by views hierarchy.
+  WmShelf* wm_shelf_;
+  views::View* shelf_view_;  // Owned by views hierarchy.
   gfx::Vector2d scroll_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleView);
@@ -60,4 +68,4 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_
+#endif  // ASH_COMMON_SHELF_OVERFLOW_BUBBLE_VIEW_H_

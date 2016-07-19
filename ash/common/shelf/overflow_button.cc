@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/overflow_button.h"
+#include "ash/common/shelf/overflow_button.h"
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/shelf/ink_drop_button_listener.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -26,15 +23,15 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
-OverflowButton::OverflowButton(InkDropButtonListener* listener, Shelf* shelf)
+OverflowButton::OverflowButton(InkDropButtonListener* listener,
+                               WmShelf* wm_shelf)
     : CustomButton(nullptr),
       bottom_image_(nullptr),
       listener_(listener),
-      shelf_(shelf) {
+      wm_shelf_(wm_shelf) {
   if (MaterialDesignController::IsShelfMaterial()) {
     bottom_image_md_ =
         CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
@@ -70,10 +67,8 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   if (MaterialDesignController::IsShelfMaterial()) {
     SkColor background_color = SK_ColorTRANSPARENT;
-    ShelfWidget* shelf_widget = shelf_->shelf_widget();
-    if (shelf_widget &&
-        shelf_widget->GetBackgroundType() ==
-            ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+    if (wm_shelf_->GetBackgroundType() ==
+        ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
       background_color = SkColorSetA(kShelfBaseColor,
                                      GetShelfConstant(SHELF_BACKGROUND_ALPHA));
     }
@@ -86,7 +81,7 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
     canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
                           background_paint);
 
-    if (shelf_->IsShowingOverflowBubble()) {
+    if (wm_shelf_->IsShowingOverflowBubble()) {
       SkPaint highlight_paint;
       highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
       highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
@@ -105,7 +100,7 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   const gfx::ImageSkia* image = nullptr;
 
-  switch (shelf_->alignment()) {
+  switch (wm_shelf_->GetAlignment()) {
     case SHELF_ALIGNMENT_LEFT:
       if (left_image_.isNull()) {
         left_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
@@ -131,21 +126,21 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
 }
 
 int OverflowButton::NonMaterialBackgroundImageId() {
-  if (shelf_->IsShowingOverflowBubble())
+  if (wm_shelf_->IsShowingOverflowBubble())
     return IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
-  else if (shelf_->shelf_widget()->GetDimsShelf())
+  else if (wm_shelf_->IsDimmed())
     return IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
   return IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
 }
 
 gfx::Rect OverflowButton::CalculateButtonBounds() {
-  ShelfAlignment alignment = shelf_->alignment();
+  ShelfAlignment alignment = wm_shelf_->GetAlignment();
   gfx::Rect bounds(GetContentsBounds());
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (MaterialDesignController::IsShelfMaterial()) {
     const int width_offset = (bounds.width() - kOverflowButtonSize) / 2;
     const int height_offset = (bounds.height() - kOverflowButtonSize) / 2;
-    if (shelf_->IsHorizontalAlignment()) {
+    if (IsHorizontalAlignment(alignment)) {
       bounds = gfx::Rect(bounds.x() + width_offset, bounds.y() + height_offset,
                          kOverflowButtonSize, kOverflowButtonSize);
     } else {

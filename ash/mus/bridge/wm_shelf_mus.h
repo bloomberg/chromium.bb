@@ -34,6 +34,8 @@ class WmShelfMus : public WmShelf {
   void UpdateAutoHideState() override;
   ShelfBackgroundType GetBackgroundType() const override;
   bool IsDimmed() const override;
+  bool IsShowingOverflowBubble() const override;
+  void SchedulePaint() override;
   bool IsVisible() const override;
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;

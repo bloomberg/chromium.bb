@@ -92,6 +92,16 @@ bool WmShelfAura::IsDimmed() const {
   return shelf_layout_manager_->shelf_widget()->GetDimsShelf();
 }
 
+bool WmShelfAura::IsShowingOverflowBubble() const {
+  return shelf_->IsShowingOverflowBubble();
+}
+
+void WmShelfAura::SchedulePaint() {
+  // Can be called during shutdown if the overflow bubble is visible.
+  if (shelf_)
+    shelf_->SchedulePaint();
+}
+
 bool WmShelfAura::IsVisible() const {
   return shelf_->IsVisible();
 }

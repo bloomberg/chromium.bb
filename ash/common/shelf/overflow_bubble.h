@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_OVERFLOW_BUBBLE_H_
-#define ASH_SHELF_OVERFLOW_BUBBLE_H_
+#ifndef ASH_COMMON_SHELF_OVERFLOW_BUBBLE_H_
+#define ASH_COMMON_SHELF_OVERFLOW_BUBBLE_H_
 
 #include "base/macros.h"
 #include "ui/views/pointer_watcher.h"
@@ -19,23 +19,26 @@ class View;
 
 namespace ash {
 class OverflowBubbleView;
-class ShelfLayoutManager;
 class ShelfView;
+class WmShelf;
 
-// OverflowBubble displays the overflown launcher items in a bubble.
+// OverflowBubble shows shelf items that won't fit on the main shelf in a
+// separate bubble.
 class OverflowBubble : public views::PointerWatcher,
                        public views::WidgetObserver {
  public:
-  OverflowBubble();
+  // |wm_shelf| is the shelf that spawns the bubble.
+  explicit OverflowBubble(WmShelf* wm_shelf);
   ~OverflowBubble() override;
 
   // Shows an bubble pointing to |anchor| with |shelf_view| as its content.
+  // This |shelf_view| is different than the main shelf's view and only contains
+  // the overflow items.
   void Show(views::View* anchor, ShelfView* shelf_view);
 
   void Hide();
 
-  // This method as name indicates will hide bubble and schedule paint
-  // for overflow button.
+  // Hides the bubble and schedules paint for overflow button.
   void HideBubbleAndRefreshButton();
 
   bool IsShowing() const { return !!bubble_; }
@@ -56,6 +59,7 @@ class OverflowBubble : public views::PointerWatcher,
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  WmShelf* wm_shelf_;
   OverflowBubbleView* bubble_;  // Owned by views hierarchy.
   views::View* anchor_;         // Owned by ShelfView.
   ShelfView* shelf_view_;       // Owned by |bubble_|.
@@ -65,4 +69,4 @@ class OverflowBubble : public views::PointerWatcher,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_OVERFLOW_BUBBLE_H_
+#endif  // ASH_COMMON_SHELF_OVERFLOW_BUBBLE_H_

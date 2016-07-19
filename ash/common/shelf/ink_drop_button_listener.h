@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_INK_DROP_BUTTON_LISTENER_H_
-#define ASH_SHELF_INK_DROP_BUTTON_LISTENER_H_
+#ifndef ASH_COMMON_SHELF_INK_DROP_BUTTON_LISTENER_H_
+#define ASH_COMMON_SHELF_INK_DROP_BUTTON_LISTENER_H_
 
 #include "ash/ash_export.h"
+
+namespace ui {
+class Event;
+}
 
 namespace views {
 class Button;
@@ -34,4 +38,4 @@ class ASH_EXPORT InkDropButtonListener {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_INK_DROP_BUTTON_LISTENER_H_
+#endif  // ASH_COMMON_SHELF_INK_DROP_BUTTON_LISTENER_H_

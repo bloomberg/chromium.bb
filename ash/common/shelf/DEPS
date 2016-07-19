@@ -1,0 +1,7 @@
+# Shelf code is being moved into //ash/common. Please ask jamescook@ or msw@
+# before adding items here. http://crbug.com/615155
+specific_include_rules = {
+  "overflow_bubble.cc": [
+    "+ash/shelf/shelf_view.h"
+  ],
+}

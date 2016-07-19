@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_OVERFLOW_BUTTON_H_
-#define ASH_SHELF_OVERFLOW_BUTTON_H_
+#ifndef ASH_COMMON_SHELF_OVERFLOW_BUTTON_H_
+#define ASH_COMMON_SHELF_OVERFLOW_BUTTON_H_
 
-#include "ash/common/shelf/shelf_types.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace ash {
 class InkDropButtonListener;
-class Shelf;
+class WmShelf;
 
 // Shelf overflow chevron button.
 class OverflowButton : public views::CustomButton {
  public:
-  OverflowButton(InkDropButtonListener* listener, Shelf* shelf);
+  OverflowButton(InkDropButtonListener* listener, WmShelf* wm_shelf);
   ~OverflowButton() override;
 
   void OnShelfAlignmentChanged();
@@ -58,11 +56,11 @@ class OverflowButton : public views::CustomButton {
   gfx::ImageSkia right_image_;
 
   InkDropButtonListener* listener_;
-  Shelf* shelf_;
+  WmShelf* wm_shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_OVERFLOW_BUTTON_H_
+#endif  // ASH_COMMON_SHELF_OVERFLOW_BUTTON_H_

@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/overflow_bubble_view.h"
+#include "ash/common/shelf/overflow_bubble_view.h"
 
 #include <algorithm>
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_view.h"
-#include "ash/shell.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -34,12 +36,13 @@ const int kShelfViewLeadingInset = 8;
 
 }  // namespace
 
-OverflowBubbleView::OverflowBubbleView() : shelf_view_(NULL) {}
+OverflowBubbleView::OverflowBubbleView(WmShelf* wm_shelf)
+    : wm_shelf_(wm_shelf), shelf_view_(nullptr) {}
 
 OverflowBubbleView::~OverflowBubbleView() {}
 
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
-                                            ShelfView* shelf_view) {
+                                            views::View* shelf_view) {
   shelf_view_ = shelf_view;
 
   SetAnchorView(anchor);
@@ -61,28 +64,32 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  set_parent_window(Shell::GetContainer(
-      anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
-      kShellWindowId_ShelfBubbleContainer));
+  // Calls into OnBeforeBubbleWidgetInit to set the window parent container.
   views::BubbleDialogDelegateView::CreateBubble(this);
   AddChildView(shelf_view_);
 }
 
 bool OverflowBubbleView::IsHorizontalAlignment() const {
-  return shelf_view_ ? shelf_view_->shelf()->IsHorizontalAlignment() : false;
+  return ::ash::IsHorizontalAlignment(wm_shelf_->GetAlignment());
 }
 
 const gfx::Size OverflowBubbleView::GetContentsSize() const {
-  return static_cast<views::View*>(shelf_view_)->GetPreferredSize();
+  return shelf_view_->GetPreferredSize();
 }
 
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow OverflowBubbleView::GetBubbleArrow() const {
-  if (!shelf_view_)
-    return views::BubbleBorder::NONE;
-  return shelf_view_->shelf()->SelectValueForShelfAlignment(
-      views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
-      views::BubbleBorder::RIGHT_TOP);
+  switch (wm_shelf_->GetAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return views::BubbleBorder::BOTTOM_LEFT;
+    case SHELF_ALIGNMENT_LEFT:
+      return views::BubbleBorder::LEFT_TOP;
+    case SHELF_ALIGNMENT_RIGHT:
+      return views::BubbleBorder::RIGHT_TOP;
+  }
+  NOTREACHED();
+  return views::BubbleBorder::NONE;
 }
 
 void OverflowBubbleView::ScrollByXOffset(int x_offset) {
@@ -170,6 +177,17 @@ void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
 
 int OverflowBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+void OverflowBubbleView::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* bubble_widget) const {
+  // Place the bubble in the same root window as the anchor.
+  WmLookup::Get()
+      ->GetWindowForWidget(anchor_widget())
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          bubble_widget, kShellWindowId_ShelfBubbleContainer, params);
 }
 
 gfx::Rect OverflowBubbleView::GetBubbleBounds() {

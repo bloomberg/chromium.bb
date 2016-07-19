@@ -2,33 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/overflow_bubble.h"
+#include "ash/common/shelf/overflow_bubble.h"
 
+#include "ash/common/shelf/overflow_bubble_view.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/tray_background_view.h"
-#include "ash/shelf/overflow_bubble_view.h"
-#include "ash/shelf/shelf.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
-#include "ui/events/event.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
-OverflowBubble::OverflowBubble()
-    : bubble_(NULL), anchor_(NULL), shelf_view_(NULL) {
-  Shell::GetInstance()->AddPointerWatcher(this);
+OverflowBubble::OverflowBubble(WmShelf* wm_shelf)
+    : wm_shelf_(wm_shelf),
+      bubble_(nullptr),
+      anchor_(nullptr),
+      shelf_view_(nullptr) {
+  WmShell::Get()->AddPointerWatcher(this);
 }
 
 OverflowBubble::~OverflowBubble() {
   Hide();
-  Shell::GetInstance()->RemovePointerWatcher(this);
+  WmShell::Get()->RemovePointerWatcher(this);
 }
 
 void OverflowBubble::Show(views::View* anchor, ShelfView* shelf_view) {
   Hide();
 
-  bubble_ = new OverflowBubbleView();
+  bubble_ = new OverflowBubbleView(wm_shelf_);
   bubble_->InitOverflowBubble(anchor, shelf_view);
   shelf_view_ = shelf_view;
   anchor_ = anchor;
@@ -85,7 +87,7 @@ void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
   bubble_ = NULL;
   anchor_ = NULL;
-  shelf_view_->shelf()->SchedulePaint();
+  wm_shelf_->SchedulePaint();
   shelf_view_ = NULL;
 }
 

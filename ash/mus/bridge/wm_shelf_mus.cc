@@ -69,6 +69,15 @@ bool WmShelfMus::IsDimmed() const {
   return false;
 }
 
+bool WmShelfMus::IsShowingOverflowBubble() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WmShelfMus::SchedulePaint() {
+  NOTIMPLEMENTED();
+}
+
 bool WmShelfMus::IsVisible() const {
   NOTIMPLEMENTED();
   return true;

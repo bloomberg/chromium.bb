@@ -10,6 +10,9 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/shelf/overflow_bubble.h"
+#include "ash/common/shelf/overflow_bubble_view.h"
+#include "ash/common/shelf/overflow_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_menu_model.h"
@@ -20,9 +23,6 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/app_list_button.h"
-#include "ash/shelf/overflow_bubble.h"
-#include "ash/shelf/overflow_bubble_view.h"
-#include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_delegate.h"
@@ -414,7 +414,7 @@ void ShelfView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-  overflow_button_ = new OverflowButton(this, shelf_);
+  overflow_button_ = new OverflowButton(this, wm_shelf_);
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
@@ -1369,7 +1369,7 @@ void ShelfView::ToggleOverflowBubble() {
   }
 
   if (!overflow_bubble_)
-    overflow_bubble_.reset(new OverflowBubble());
+    overflow_bubble_.reset(new OverflowBubble(wm_shelf_));
 
   ShelfView* overflow_view =
       new ShelfView(model_, delegate_, wm_shelf_, shelf_);
