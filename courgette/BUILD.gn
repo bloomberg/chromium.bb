@@ -108,6 +108,23 @@ if (!is_ios) {
       "//build/win:default_exe_manifest",
     ]
   }
+
+  # The official build scripts expect courgette.exe to be in the official build
+  # archives but it's not clear if they really need it, copy courgette64.exe to
+  # courgette.exe to work around this. https://crbug.com/629243
+  if (is_win && current_cpu == "x64") {
+    copy("copy_courgette64_to_courgette") {
+      sources = [
+        "$root_out_dir/courgette64.exe",
+      ]
+      outputs = [
+        "$root_out_dir/courgette.exe",
+      ]
+      deps = [
+        ":courgette",
+      ]
+    }
+  }
 }
 
 test("courgette_unittests") {

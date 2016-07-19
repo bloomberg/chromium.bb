@@ -152,6 +152,7 @@ if (!is_android && !is_mac) {
       deps += [
         ":chrome_dll",
         ":chrome_exe_version",
+        ":copy_first_run",
         ":file_pre_reader",
         ":visual_elements_resources",
         "//base",
@@ -444,6 +445,14 @@ if (is_win) {
         deps += [ "//pdf" ]
       }
     }
+  }
+  copy("copy_first_run") {
+    sources = [
+      "app/firstRun",
+    ]
+    outputs = [
+      "$root_out_dir/First Run",
+    ]
   }
 } else if (is_mac) {
   chrome_helper_name = chrome_product_full_name + " Helper"
