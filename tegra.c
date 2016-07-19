@@ -56,7 +56,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 				       uint32_t *block_height_log2,
 				       uint32_t *stride, uint32_t *size)
 {
-	int pitch = drv_stride_from_format(format, width);
+	int pitch = drv_stride_from_format(format, width, 0);
 
 	/* Align to blocklinear blocks. */
 	pitch = ALIGN(pitch, NV_BLOCKLINEAR_GOB_WIDTH);
@@ -83,7 +83,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 static void compute_layout_linear(int width, int height, int format,
 				  uint32_t *stride, uint32_t *size)
 {
-	*stride = drv_stride_from_format(format, width);
+	*stride = drv_stride_from_format(format, width, 0);
 	*size = *stride * height;
 }
 

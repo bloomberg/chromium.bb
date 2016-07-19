@@ -34,7 +34,7 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		bo->sizes[1] = bo->strides[1] * chroma_height + 64;
 		bo->offsets[0] = bo->offsets[1] = 0;
 	} else if (format == DRV_FORMAT_XRGB8888 || format == DRV_FORMAT_ARGB8888) {
-		bo->strides[0] = drv_stride_from_format(format, width);
+		bo->strides[0] = drv_stride_from_format(format, width, 0);
 		bo->sizes[0] = height * bo->strides[0];
 		bo->offsets[0] = 0;
 	} else {

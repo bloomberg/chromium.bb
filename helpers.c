@@ -70,15 +70,19 @@ size_t drv_num_planes_from_format(uint32_t format)
 			return 1;
 		case DRV_FORMAT_NV12:
 			return 2;
+		case DRV_FORMAT_YVU420:
+			return 3;
 	}
 
 	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
 	return 0;
 }
 
-int drv_bpp_from_format(uint32_t format)
+int drv_bpp_from_format(uint32_t format, size_t plane)
 {
-	switch(format)
+	assert(plane < drv_num_planes_from_format(format));
+
+	switch (format)
 	{
 		case DRV_FORMAT_C8:
 		case DRV_FORMAT_R8:
@@ -87,7 +91,9 @@ int drv_bpp_from_format(uint32_t format)
 			return 8;
 
 		case DRV_FORMAT_NV12:
-			return 12;
+			return (plane == 0) ? 8 : 4;
+		case DRV_FORMAT_YVU420:
+			return (plane == 0) ? 8 : 2;
 
 		case DRV_FORMAT_RG88:
 		case DRV_FORMAT_GR88:
@@ -143,11 +149,27 @@ int drv_bpp_from_format(uint32_t format)
 	return 0;
 }
 
-int drv_stride_from_format(uint32_t format, uint32_t width)
+/*
+ * This function returns the stride for a given format, width and plane.
+ */
+int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 {
-	/* Only single-plane formats are supported */
-	assert(drv_num_planes_from_format(format) == 1);
-	return DIV_ROUND_UP(width * drv_bpp_from_format(format), 8);
+	/* Get stride of the first plane */
+	int stride = width * DIV_ROUND_UP(drv_bpp_from_format(format, 0), 8);
+
+	/*
+	 * Only downsample for certain multiplanar formats which are not
+	 * interleaved and have horizontal subsampling.  Only formats supported
+	 * by our drivers are listed here -- add more as needed.
+	 */
+	if (plane != 0) {
+		switch (format) {
+			case DRV_FORMAT_YVU420:
+				stride = stride / 2;
+		}
+	}
+
+	return stride;
 }
 
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
@@ -162,7 +184,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	memset(&create_dumb, 0, sizeof(create_dumb));
 	create_dumb.height = height;
 	create_dumb.width = width;
-	create_dumb.bpp = drv_bpp_from_format(format);
+	create_dumb.bpp = drv_bpp_from_format(format, 0);
 	create_dumb.flags = 0;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);

@@ -36,7 +36,7 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		case DRV_FORMAT_XRGB8888:
 		case DRV_FORMAT_ARGB8888:
 		case DRV_FORMAT_ABGR8888:
-			bo->strides[0] = drv_stride_from_format(format, width);
+			bo->strides[0] = drv_stride_from_format(format, width, 0);
 			bo->sizes[0] = height * bo->strides[0];
 			bo->offsets[0] = 0;
 			break;

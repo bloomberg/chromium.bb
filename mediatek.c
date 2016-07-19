@@ -22,7 +22,7 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	struct drm_mtk_gem_create gem_create;
 	int ret;
 
-	bo->strides[0] = drv_stride_from_format(format, width);
+	bo->strides[0] = drv_stride_from_format(format, width, 0);
 	size = height * bo->strides[0];
 
 	memset(&gem_create, 0, sizeof(gem_create));

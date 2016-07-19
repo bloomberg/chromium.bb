@@ -123,11 +123,11 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 			  uint32_t format, uint32_t flags)
 {
 	struct driver *drv = bo->drv;
-	int bpp = drv_stride_from_format(format, 1);
+	int bpp = drv_stride_from_format(format, 1, 0);
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
 	uint32_t tiling_mode = I915_TILING_NONE;
-	size_t size;
+	size_t size, plane;
 	int ret;
 
 	if (flags & (DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR |
@@ -142,13 +142,28 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 
 	i915_align_dimensions(drv, tiling_mode, &width, &height, bpp);
 
-	bo->strides[0] = width * bpp;
+	switch (format) {
+		case DRV_FORMAT_YVU420:
+			bo->strides[0] = drv_stride_from_format(format, width, 0);
+			bo->strides[1] = bo->strides[2] = drv_stride_from_format(format, width, 1);
+			bo->sizes[0] = height * bo->strides[0];
+			bo->sizes[1] = bo->sizes[2] = (height / 2) * bo->strides[1];
+			bo->offsets[0] = 0;
+			bo->offsets[1] = bo->sizes[0];
+			bo->offsets[2] = bo->offsets[1] + bo->sizes[1];
+			break;
+		default:
+			bo->strides[0] = drv_stride_from_format(format, width, 0);
+			bo->sizes[0] = height * bo->strides[0];
+			bo->offsets[0] = 0;
+	}
 
 	if (!i915_verify_dimensions(drv, bo->strides[0], height))
 		return EINVAL;
 
+	size = bo->offsets[bo->num_planes - 1] + bo->sizes[bo->num_planes - 1];
+
 	memset(&gem_create, 0, sizeof(gem_create));
-	size = width * height * bpp;
 	gem_create.size = size;
 
 	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
@@ -157,9 +172,9 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 				"(size=%zu)\n", size);
 		return ret;
 	}
-	bo->handles[0].u32 = gem_create.handle;
-	bo->sizes[0] = size;
-	bo->offsets[0] = 0;
+
+	for (plane = 0; plane < bo->num_planes; plane++)
+		bo->handles[plane].u32 = gem_create.handle;
 
 	memset(&gem_set_tiling, 0, sizeof(gem_set_tiling));
 	do {
@@ -211,10 +226,6 @@ drv_format_t i915_resolve_format(drv_format_t format)
 			/*HACK: See b/28671744 */
 			return DRV_FORMAT_XBGR8888;
 		case DRV_FORMAT_FLEX_YCbCr_420_888:
-			/*
-			 * TODO(gurchetansingh) Implement YV12 with no tiling
-			 * on Intel. See b/29335168
-			 */
 			return DRV_FORMAT_YVU420;
 		default:
 			return format;
@@ -283,6 +294,8 @@ const struct backend backend_i915 =
 				      DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
 		{DRV_FORMAT_GR88,     DRV_BO_USE_SCANOUT | DRV_BO_USE_LINEAR |
 				      DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+		{DRV_FORMAT_YVU420,   DRV_BO_USE_LINEAR | DRV_BO_USE_SW_READ_OFTEN |
+				      DRV_BO_USE_SW_WRITE_OFTEN},
 	}
 };
 
