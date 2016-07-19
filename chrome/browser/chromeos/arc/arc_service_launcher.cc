@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_boot_error_notification.h"
 #include "chrome/browser/chromeos/arc/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
@@ -29,15 +30,17 @@ void ArcServiceLauncher::Initialize() {
   // Create ARC service manager.
   arc_service_manager_ = base::MakeUnique<ArcServiceManager>(
       content::BrowserThread::GetBlockingPool());
+  arc_service_manager_->AddService(base::MakeUnique<ArcAuthService>(
+      arc_service_manager_->arc_bridge_service()));
+  arc_service_manager_->AddService(base::MakeUnique<ArcBootErrorNotification>(
+      arc_service_manager_->arc_bridge_service()));
+  arc_service_manager_->AddService(base::MakeUnique<ArcDownloadsWatcherService>(
+      arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcIntentHelperBridge>(
       arc_service_manager_->arc_bridge_service(),
       arc_service_manager_->icon_loader(),
       base::MakeUnique<ArcWallpaperHandler>(),
       arc_service_manager_->activity_resolver()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcAuthService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcDownloadsWatcherService>(
-      arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcPolicyBridge>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcProcessService>(

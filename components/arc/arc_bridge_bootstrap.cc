@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -42,6 +43,10 @@ const base::FilePath::CharType kArcBridgeSocketPath[] =
 
 const char kArcBridgeSocketGroup[] = "arc-bridge";
 
+const base::FilePath::CharType kDiskCheckPath[] = "/home";
+
+const int64_t kCriticalDiskFreeBytes = 64 << 20;  // 64MB
+
 // This is called when StopArcInstance D-Bus method completes. Since we have the
 // ArcInstanceStopped() callback and are notified if StartArcInstance fails, we
 // don't need to do anything when StopArcInstance completes.
@@ -65,6 +70,8 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   //
   // STOPPED
   //   Start() ->
+  // DISK_SPACE_CHECKING
+  //   CheckDiskSpace() -> OnDiskSpaceChecked() ->
   // SOCKET_CREATING
   //   CreateSocket() -> OnSocketCreated() ->
   // STARTING
@@ -85,13 +92,16 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   // When the instance crashes while it was ready, it will be stopped:
   //   READY -> STOPPING -> STOPPED
   // and then restarted:
-  //   STOPPED -> SOCKET_CREATING -> ... -> READY).
+  //   STOPPED -> DISK_SPACE_CHECKING -> ... -> READY).
   //
   // Note: Order of constants below matters. Please make sure to sort them
   // in chronological order.
   enum class State {
     // ARC is not currently running.
     STOPPED,
+
+    // Checking the disk space.
+    DISK_SPACE_CHECKING,
 
     // An UNIX socket is being created.
     SOCKET_CREATING,
@@ -120,6 +130,9 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   // Aborts ARC instance boot. This is called from various state-machine
   // functions when they encounter an error during boot.
   void AbortBoot(ArcBridgeService::StopReason reason);
+
+  // Called after getting the device free disk space.
+  void OnDiskSpaceChecked(int64_t disk_free_bytes);
 
   // Creates the UNIX socket on the bootstrap thread and then processes its
   // file descriptor.
@@ -180,6 +193,32 @@ void ArcBridgeBootstrapImpl::Start() {
     return;
   }
   stop_reason_ = ArcBridgeService::StopReason::SHUTDOWN;
+  // TODO(crbug.com/628124): Move disk space checking logic to session_manager.
+  SetState(State::DISK_SPACE_CHECKING);
+  base::PostTaskAndReplyWithResult(
+      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
+      base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
+                 base::FilePath(kDiskCheckPath)),
+      base::Bind(&ArcBridgeBootstrapImpl::OnDiskSpaceChecked,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeBootstrapImpl::OnDiskSpaceChecked(int64_t disk_free_bytes) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (state_ != State::DISK_SPACE_CHECKING) {
+    VLOG(1) << "Stop() called while checking disk space";
+    return;
+  }
+  if (disk_free_bytes < 0) {
+    LOG(ERROR) << "ARC: Failed to get free disk space";
+    AbortBoot(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
+    return;
+  }
+  if (disk_free_bytes < kCriticalDiskFreeBytes) {
+    LOG(ERROR) << "ARC: The device is too low on disk space to start ARC";
+    AbortBoot(ArcBridgeService::StopReason::LOW_DISK_SPACE);
+    return;
+  }
   SetState(State::SOCKET_CREATING);
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,

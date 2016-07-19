@@ -39,6 +39,9 @@ class ArcBridgeService {
     // failures on bootstrapping IPC channels with Android.
     GENERIC_BOOT_FAILURE,
 
+    // The device is critically low on disk space.
+    LOW_DISK_SPACE,
+
     // ARC instance has crashed.
     CRASH,
   };
