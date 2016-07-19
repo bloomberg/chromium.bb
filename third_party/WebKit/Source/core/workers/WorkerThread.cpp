@@ -336,80 +336,88 @@ void WorkerThread::terminateInternal(TerminationMode mode)
 {
     DCHECK(isMainThread());
     DCHECK(m_started);
+    bool hasBeenInitialized = true;
 
-    // Prevent the deadlock between GC and an attempt to terminate a thread.
-    SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
+    {
+        // Prevent the deadlock between GC and an attempt to terminate a thread.
+        SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
 
-    // Protect against this method, initializeOnWorkerThread() or termination
-    // via the global scope racing each other.
-    MutexLocker lock(m_threadStateMutex);
+        // Protect against this method, initializeOnWorkerThread() or
+        // termination via the global scope racing each other.
+        MutexLocker lock(m_threadStateMutex);
 
-    // If terminate has already been called.
-    if (m_terminated) {
-        if (m_runningDebuggerTask) {
-            // Any debugger task is guaranteed to finish, so we can wait for the
-            // completion even if the synchronous forcible termination is
-            // requested. Shutdown sequence will start after the task.
-            DCHECK(!m_scheduledForceTerminationTask);
+        hasBeenInitialized = m_workerGlobalScope;
+
+        // If terminate has already been called.
+        if (m_terminated) {
+            if (m_runningDebuggerTask) {
+                // Any debugger task is guaranteed to finish, so we can wait
+                // for the completion even if the synchronous forcible
+                // termination is requested. Shutdown sequence will start
+                // after the task.
+                DCHECK(!m_scheduledForceTerminationTask);
+                return;
+            }
+
+            // The synchronous forcible termination request should overtake the
+            // scheduled termination task because the request will block the
+            // main thread and the scheduled termination task never runs.
+            if (mode == TerminationMode::Forcible && m_exitCode == ExitCode::NotTerminated) {
+                DCHECK(m_scheduledForceTerminationTask);
+                m_scheduledForceTerminationTask.reset();
+                forciblyTerminateExecution();
+                DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
+                m_exitCode = ExitCode::SyncForciblyTerminated;
+            }
             return;
         }
+        m_terminated = true;
 
-        // The synchronous forcible termination request should overtake the
-        // scheduled termination task because the request will block the main
-        // thread and the scheduled termination task never runs.
-        if (mode == TerminationMode::Forcible && m_exitCode == ExitCode::NotTerminated) {
-            DCHECK(m_scheduledForceTerminationTask);
-            m_scheduledForceTerminationTask.reset();
-            forciblyTerminateExecution();
+        // Signal the thread to notify that the thread's stopping.
+        if (m_terminationEvent)
+            m_terminationEvent->signal();
+
+        if (!hasBeenInitialized) {
+            // If the worker thread was never initialized, don't start another
+            // shutdown, but still wait for the thread to signal when shutdown
+            // has completed on initializeOnWorkerThread().
             DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
-            m_exitCode = ExitCode::SyncForciblyTerminated;
-        }
-        return;
-    }
-    m_terminated = true;
+            m_exitCode = ExitCode::GracefullyTerminated;
+        } else {
+            // Determine if we should synchronously terminate or schedule to
+            // terminate the worker execution so that the task can be handled
+            // by thread event loop. If script execution weren't forbidden,
+            // a while(1) loop in JS could keep the thread alive forever.
+            //
+            // (1) |m_readyToShutdown|: If this is set, the worker thread has
+            // already noticed that the thread is about to be terminated and
+            // the worker global scope is already disposed, so we don't have to
+            // explicitly terminate the worker execution.
+            //
+            // (2) |m_runningDebuggerTask|: Terminating during debugger task
+            // may lead to crash due to heavy use of v8 api in debugger. Any
+            // debugger task is guaranteed to finish, so we can wait for the
+            // completion.
+            bool shouldScheduleToTerminateExecution = !m_readyToShutdown && !m_runningDebuggerTask;
 
-    // Signal the thread to notify that the thread's stopping.
-    if (m_terminationEvent)
-        m_terminationEvent->signal();
+            if (shouldScheduleToTerminateExecution) {
+                if (mode == TerminationMode::Forcible) {
+                    forciblyTerminateExecution();
+                    DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
+                    m_exitCode = ExitCode::SyncForciblyTerminated;
+                } else {
+                    DCHECK_EQ(TerminationMode::Graceful, mode);
+                    DCHECK(!m_scheduledForceTerminationTask);
+                    m_scheduledForceTerminationTask = ForceTerminationTask::create(this);
+                    m_scheduledForceTerminationTask->schedule();
+                }
+            }
+        }
+    }
 
     m_workerThreadLifecycleContext->notifyContextDestroyed();
-
-    // If the worker thread was never initialized, don't start another
-    // shutdown, but still wait for the thread to signal when shutdown has
-    // completed on initializeOnWorkerThread().
-    if (!m_workerGlobalScope) {
-        DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
-        m_exitCode = ExitCode::GracefullyTerminated;
+    if (!hasBeenInitialized)
         return;
-    }
-
-    // Determine if we should synchronously terminate or schedule to terminate
-    // the worker execution so that the task can be handled by thread event
-    // loop. If script execution weren't forbidden, a while(1) loop in JS could
-    // keep the thread alive forever.
-    //
-    // (1) |m_readyToShutdown|: If this is set, the worker thread has already
-    // noticed that the thread is about to be terminated and the worker global
-    // scope is already disposed, so we don't have to explicitly terminate the
-    // worker execution.
-    //
-    // (2) |m_runningDebuggerTask|: Terminating during debugger task may lead to
-    // crash due to heavy use of v8 api in debugger. Any debugger task is
-    // guaranteed to finish, so we can wait for the completion.
-    bool shouldScheduleToTerminateExecution = !m_readyToShutdown && !m_runningDebuggerTask;
-
-    if (shouldScheduleToTerminateExecution) {
-        if (mode == TerminationMode::Forcible) {
-            forciblyTerminateExecution();
-            DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
-            m_exitCode = ExitCode::SyncForciblyTerminated;
-        } else {
-            DCHECK_EQ(TerminationMode::Graceful, mode);
-            DCHECK(!m_scheduledForceTerminationTask);
-            m_scheduledForceTerminationTask = ForceTerminationTask::create(this);
-            m_scheduledForceTerminationTask->schedule();
-        }
-    }
 
     m_inspectorTaskRunner->kill();
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::prepareForShutdownOnWorkerThread, crossThreadUnretained(this)));
