@@ -12,7 +12,7 @@
 namespace base {
 class CommandLine;
 }
-class PermissionBubbleRequest;
+class PermissionRequest;
 class Browser;
 
 class TestPermissionBubbleViewDelegate : public PermissionBubbleView::Delegate {
@@ -41,13 +41,13 @@ class PermissionBubbleBrowserTest : public ExtensionBrowserTest {
   // Opens an app window, and returns the associated browser.
   Browser* OpenExtensionAppWindow();
 
-  std::vector<PermissionBubbleRequest*> requests() { return requests_.get(); }
+  std::vector<PermissionRequest*> requests() { return requests_.get(); }
   std::vector<bool> accept_states() { return accept_states_; }
   PermissionBubbleView::Delegate* test_delegate() { return &test_delegate_; }
 
  private:
   TestPermissionBubbleViewDelegate test_delegate_;
-  ScopedVector<PermissionBubbleRequest> requests_;
+  ScopedVector<PermissionRequest> requests_;
   std::vector<bool> accept_states_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleBrowserTest);

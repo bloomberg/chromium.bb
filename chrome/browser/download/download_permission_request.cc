@@ -56,7 +56,7 @@ void DownloadPermissionRequest::RequestFinished() {
   delete this;
 }
 
-PermissionBubbleType DownloadPermissionRequest::GetPermissionBubbleType()
+PermissionRequestType DownloadPermissionRequest::GetPermissionRequestType()
     const {
-  return PermissionBubbleType::DOWNLOAD;
+  return PermissionRequestType::DOWNLOAD;
 }

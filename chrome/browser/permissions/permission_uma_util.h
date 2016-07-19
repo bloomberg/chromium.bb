@@ -17,7 +17,7 @@ namespace content {
 enum class PermissionType;
 }  // namespace content
 
-class PermissionBubbleRequest;
+class PermissionRequest;
 
 // Enum for UMA purposes, make sure you update histograms.xml if you add new
 // permission actions. Never delete or reorder an entry; only add new entries
@@ -76,7 +76,7 @@ class PermissionUmaUtil {
   //   granted+denied+dismissed+ignored is not equal to requested), so it is
   //   unclear from those metrics alone how many prompts are seen by users.
   static void PermissionPromptShown(
-      const std::vector<PermissionBubbleRequest*>& requests);
+      const std::vector<PermissionRequest*>& requests);
 
   // The following two functions can be combined with the PermissionPromptShown
   // metrics to calculate accept, deny and ignore rates.
@@ -84,11 +84,11 @@ class PermissionUmaUtil {
   // always be called, with |accept_states| containing whether each request was
   // accepted or denied.
   static void PermissionPromptAccepted(
-      const std::vector<PermissionBubbleRequest*>& requests,
+      const std::vector<PermissionRequest*>& requests,
       const std::vector<bool>& accept_states);
 
   static void PermissionPromptDenied(
-      const std::vector<PermissionBubbleRequest*>& requests);
+      const std::vector<PermissionRequest*>& requests);
 
  private:
   friend class PermissionUmaUtilTest;

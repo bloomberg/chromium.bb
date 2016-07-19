@@ -674,8 +674,6 @@ static_library("test_support") {
       "passwords/manage_passwords_ui_controller_mock.h",
       "passwords/password_dialog_controller_mock.cc",
       "passwords/password_dialog_controller_mock.h",
-      "website_settings/mock_permission_bubble_request.cc",
-      "website_settings/mock_permission_bubble_request.h",
     ]
   }
 

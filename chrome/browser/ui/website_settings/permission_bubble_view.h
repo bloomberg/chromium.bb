@@ -13,7 +13,7 @@
 
 class Browser;
 class PermissionRequestManager;
-class PermissionBubbleRequest;
+class PermissionRequest;
 
 // This class is the platform-independent interface through which the permission
 // bubble managers (which are one per tab) communicate to the UI surface.
@@ -50,7 +50,7 @@ class PermissionBubbleView {
   // Important: the view must not store any of the request objects it receives
   // in this call.
   virtual void Show(
-      const std::vector<PermissionBubbleRequest*>& requests,
+      const std::vector<PermissionRequest*>& requests,
       const std::vector<bool>& accept_state) = 0;
 
   // Returns true if the view can accept a new Show() command to coalesce

@@ -6,13 +6,13 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,7 +31,7 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
 
   // Add a single permission request.
-  MockPermissionBubbleRequest* request = new MockPermissionBubbleRequest(
+  MockPermissionRequest* request = new MockPermissionRequest(
       "Request 1", l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
       l10n_util::GetStringUTF8(IDS_PERMISSION_DENY));
   requests_.push_back(request);

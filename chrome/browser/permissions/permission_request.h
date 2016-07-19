@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
+#ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_
+#define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_
 
 #include "base/strings/string16.h"
 #include "content/public/browser/permission_type.h"
@@ -14,13 +14,13 @@ enum class VectorIconId;
 }
 
 // Used for UMA to record the types of permission prompts shown.
-// This corresponds to the PermissionBubbleType enum in
+// This corresponds to the PermissionRequestType enum in
 // src/tools/metrics/histograms.xml. The usual rules of updating UMA values
 // applies to this enum:
 // - don't remove values
 // - only ever add values at the end
-// - keep the PermissionBubbleType enum in sync with this definition.
-enum class PermissionBubbleType {
+// - keep the PermissionRequestType enum in sync with this definition.
+enum class PermissionRequestType {
   UNKNOWN,
   MULTIPLE,
   UNUSED_PERMISSION,
@@ -37,17 +37,17 @@ enum class PermissionBubbleType {
   NUM
 };
 
-// Describes the interface a feature utilizing permission bubbles should
-// implement. A class of this type is registered with the permission bubble
+// Describes the interface a feature making permission requests should
+// implement. A class of this type is registered with the permission request
 // manager to receive updates about the result of the permissions request
-// from the bubble. It should live until it is unregistered or until
+// from the bubble or infobar. It should live until it is unregistered or until
 // RequestFinished is called.
 // Note that no particular guarantees are made about what exact UI surface
 // is presented to the user. The delegate may be coalesced with other bubble
 // requests, or depending on the situation, not shown at all.
-class PermissionBubbleRequest {
+class PermissionRequest {
  public:
-  virtual ~PermissionBubbleRequest() {}
+  virtual ~PermissionRequest() {}
 
   // Returns a vector icon id if the icon should be drawn as a vector
   // resource. Otherwise, returns VECTOR_ICON_NONE.
@@ -77,14 +77,14 @@ class PermissionBubbleRequest {
   // be able to distinguish between an active refusal or an implicit refusal.
   virtual void Cancelled() = 0;
 
-  // The bubble this request was associated with was answered by the user.
+  // The UI this request was associated with was answered by the user.
   // It is safe for the request to be deleted at this point -- it will receive
-  // no further message from the permission bubble system. This method will
+  // no further message from the permission request system. This method will
   // eventually be called on every request which is not unregistered.
   virtual void RequestFinished() = 0;
 
-  // Used to record UMA metrics for bubbles.
-  virtual PermissionBubbleType GetPermissionBubbleType() const;
+  // Used to record UMA metrics for permission requests.
+  virtual PermissionRequestType GetPermissionRequestType() const;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
+#endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_

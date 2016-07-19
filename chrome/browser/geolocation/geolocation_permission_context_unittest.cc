@@ -27,8 +27,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -393,7 +393,7 @@ base::string16 GeolocationPermissionContextTests::GetPromptText() {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents());
-  PermissionBubbleRequest* request = manager->requests_.front();
+  PermissionRequest* request = manager->requests_.front();
   return base::ASCIIToUTF16(request->GetOrigin().spec()) +
          request->GetMessageTextFragment();
 #else

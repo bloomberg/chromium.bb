@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,7 +33,7 @@ using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 
 // This base class contains common operations for granting permissions.
 // It offers the following functionality:
-//   - Creates a bubble or infobar when a permission is needed
+//   - Creates a permission request when needed.
 //   - If accepted/denied the permission is saved in content settings for
 //     future uses (for the domain that requested it).
 //   - If dismissed the permission is not saved but it's considered denied for
@@ -46,8 +46,7 @@ using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 //     new permission.
 //   - Inherit from PermissionInfobarDelegate and implement
 //     |GetMessageText|
-//   - Edit the PermissionBubbleRequestImpl methods to add the new text for
-//     the bubble.
+//   - Edit the PermissionRequestImpl methods to add the new text.
 //   - Hit several asserts for the missing plumbing and fix them :)
 // After this you can override several other methods to customize behavior,
 // in particular it is advised to override UpdateTabContext in order to manage
@@ -157,8 +156,8 @@ class PermissionContextBase : public KeyedService {
   }
 
  private:
-  // Called when a bubble is no longer used so it can be cleaned up.
-  void CleanUpBubble(const PermissionRequestID& id);
+  // Called when a request is no longer used so it can be cleaned up.
+  void CleanUpRequest(const PermissionRequestID& id);
 
   Profile* profile_;
   const content::PermissionType permission_type_;
@@ -166,8 +165,8 @@ class PermissionContextBase : public KeyedService {
 #if defined(OS_ANDROID)
   std::unique_ptr<PermissionQueueController> permission_queue_controller_;
 #endif
-  base::ScopedPtrHashMap<std::string, std::unique_ptr<PermissionBubbleRequest>>
-      pending_bubbles_;
+  base::ScopedPtrHashMap<std::string, std::unique_ptr<PermissionRequest>>
+      pending_requests_;
 
   // Must be the last member, to ensure that it will be
   // destroyed first, which will invalidate weak pointers

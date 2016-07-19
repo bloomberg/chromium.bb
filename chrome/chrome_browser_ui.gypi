@@ -172,8 +172,6 @@
       'browser/ui/views/platform_keys_certificate_selector_chromeos.cc',
       'browser/ui/views/platform_keys_certificate_selector_chromeos.h',
       'browser/ui/web_contents_sizer.h',
-      'browser/ui/website_settings/permission_bubble_request.cc',
-      'browser/ui/website_settings/permission_bubble_request.h',
       'browser/ui/website_settings/website_settings.cc',
       'browser/ui/website_settings/website_settings.h',
       'browser/ui/website_settings/website_settings_ui.cc',

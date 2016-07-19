@@ -28,7 +28,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #else
-#include "chrome/browser/permissions/permission_bubble_request_impl.h"
+#include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
@@ -151,7 +151,7 @@ void PermissionContextBase::CancelPermissionRequest(
 #if defined(OS_ANDROID)
   GetQueueController()->CancelInfoBarRequest(id);
 #else
-  PermissionBubbleRequest* cancelling = pending_bubbles_.get(id.ToString());
+  PermissionRequest* cancelling = pending_requests_.get(id.ToString());
   if (cancelling != NULL && web_contents != NULL &&
       PermissionRequestManager::FromWebContents(web_contents) != NULL) {
     PermissionRequestManager::FromWebContents(web_contents)
@@ -176,18 +176,17 @@ void PermissionContextBase::DecidePermission(
   // meant to prevent crashes. See crbug.com/457091.
   if (!permission_request_manager)
     return;
-  std::unique_ptr<PermissionBubbleRequest> request_ptr(
-      new PermissionBubbleRequestImpl(
+  std::unique_ptr<PermissionRequest> request_ptr(new PermissionRequestImpl(
           requesting_origin, permission_type_,
           base::Bind(&PermissionContextBase::PermissionDecided,
                      weak_factory_.GetWeakPtr(), id, requesting_origin,
                      embedding_origin, callback),
-          base::Bind(&PermissionContextBase::CleanUpBubble,
+          base::Bind(&PermissionContextBase::CleanUpRequest,
                      weak_factory_.GetWeakPtr(), id)));
-  PermissionBubbleRequest* request = request_ptr.get();
+  PermissionRequest* request = request_ptr.get();
 
   bool inserted =
-      pending_bubbles_.add(id.ToString(), std::move(request_ptr)).second;
+      pending_requests_.add(id.ToString(), std::move(request_ptr)).second;
   DCHECK(inserted) << "Duplicate id " << id.ToString();
   permission_request_manager->AddRequest(request);
 #else
@@ -267,8 +266,8 @@ void PermissionContextBase::NotifyPermissionSet(
   callback.Run(content_setting);
 }
 
-void PermissionContextBase::CleanUpBubble(const PermissionRequestID& id) {
-  size_t success = pending_bubbles_.erase(id.ToString());
+void PermissionContextBase::CleanUpRequest(const PermissionRequestID& id) {
+  size_t success = pending_requests_.erase(id.ToString());
   DCHECK(success == 1) << "Missing request " << id.ToString();
 }
 

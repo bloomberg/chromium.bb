@@ -98,7 +98,7 @@ void RegisterProtocolHandlerPermissionRequest::RequestFinished() {
   delete this;
 }
 
-PermissionBubbleType
-RegisterProtocolHandlerPermissionRequest::GetPermissionBubbleType() const {
-  return PermissionBubbleType::REGISTER_PROTOCOL_HANDLER;
+PermissionRequestType
+RegisterProtocolHandlerPermissionRequest::GetPermissionRequestType() const {
+  return PermissionRequestType::REGISTER_PROTOCOL_HANDLER;
 }

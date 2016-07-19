@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
@@ -147,7 +147,7 @@ class PermissionsBubbleDialogDelegateView
  public:
   PermissionsBubbleDialogDelegateView(
       PermissionBubbleViewViews* owner,
-      const std::vector<PermissionBubbleRequest*>& requests,
+      const std::vector<PermissionRequest*>& requests,
       const std::vector<bool>& accept_state);
   ~PermissionsBubbleDialogDelegateView() override;
 
@@ -188,7 +188,7 @@ class PermissionsBubbleDialogDelegateView
 
 PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     PermissionBubbleViewViews* owner,
-    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_state)
     : owner_(owner),
       multiple_requests_(requests.size() > 1) {
@@ -385,7 +385,7 @@ void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
 }
 
 void PermissionBubbleViewViews::Show(
-    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& values) {
   if (bubble_delegate_)
     bubble_delegate_->CloseBubble();

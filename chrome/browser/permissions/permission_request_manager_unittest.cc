@@ -9,11 +9,11 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +22,8 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   PermissionRequestManagerTest()
       : ChromeRenderViewHostTestHarness(),
-        request1_("test1", PermissionBubbleType::QUOTA),
-        request2_("test2", PermissionBubbleType::DOWNLOAD),
+        request1_("test1", PermissionRequestType::QUOTA),
+        request2_("test2", PermissionRequestType::DOWNLOAD),
         iframe_request_same_domain_("iframe",
                                     GURL("http://www.google.com/some/url")),
         iframe_request_other_domain_("iframe",
@@ -82,10 +82,10 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  MockPermissionBubbleRequest request1_;
-  MockPermissionBubbleRequest request2_;
-  MockPermissionBubbleRequest iframe_request_same_domain_;
-  MockPermissionBubbleRequest iframe_request_other_domain_;
+  MockPermissionRequest request1_;
+  MockPermissionRequest request2_;
+  MockPermissionRequest iframe_request_same_domain_;
+  MockPermissionRequest iframe_request_other_domain_;
   std::unique_ptr<PermissionRequestManager> manager_;
   std::unique_ptr<MockPermissionBubbleFactory> view_factory_;
 };
@@ -252,7 +252,7 @@ TEST_F(PermissionRequestManagerTest, SameRequestRejected) {
 TEST_F(PermissionRequestManagerTest, DuplicateRequestCancelled) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
-  MockPermissionBubbleRequest dupe_request("test1");
+  MockPermissionRequest dupe_request("test1");
   manager_->AddRequest(&dupe_request);
   EXPECT_FALSE(dupe_request.finished());
   EXPECT_FALSE(request1_.finished());
@@ -267,12 +267,12 @@ TEST_F(PermissionRequestManagerTest, DuplicateQueuedRequest) {
   WaitForCoalescing();
   manager_->AddRequest(&request2_);
 
-  MockPermissionBubbleRequest dupe_request("test1");
+  MockPermissionRequest dupe_request("test1");
   manager_->AddRequest(&dupe_request);
   EXPECT_FALSE(dupe_request.finished());
   EXPECT_FALSE(request1_.finished());
 
-  MockPermissionBubbleRequest dupe_request2("test2");
+  MockPermissionRequest dupe_request2("test2");
   manager_->AddRequest(&dupe_request2);
   EXPECT_FALSE(dupe_request2.finished());
   EXPECT_FALSE(request2_.finished());
@@ -462,7 +462,7 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedBubble) {
   WaitForCoalescing();
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 1, 1);
@@ -471,7 +471,8 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedBubble) {
   Accept();
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA), 1);
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      1);
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubble) {
@@ -486,7 +487,8 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubble) {
   Deny();
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA), 1);
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      1);
 }
 
 // This code path (calling Accept on a non-merged bubble, with no accepted
@@ -505,7 +507,8 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
   Accept();
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA), 1);
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      1);
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
@@ -518,15 +521,15 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
       1);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 2, 1);
@@ -537,15 +540,15 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
       1);
 }
 
@@ -565,15 +568,15 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedMixedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
       1);
 }
 
@@ -593,14 +596,14 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
   histograms.ExpectBucketCount(
       PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
       1);
 }

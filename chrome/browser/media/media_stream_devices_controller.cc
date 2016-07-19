@@ -334,9 +334,9 @@ void MediaStreamDevicesController::RequestFinished() {
   delete this;
 }
 
-PermissionBubbleType MediaStreamDevicesController::GetPermissionBubbleType()
+PermissionRequestType MediaStreamDevicesController::GetPermissionRequestType()
     const {
-  return PermissionBubbleType::MEDIA_STREAM;
+  return PermissionRequestType::MEDIA_STREAM;
 }
 
 content::MediaStreamDevices MediaStreamDevicesController::GetDevices(

@@ -14,7 +14,7 @@ MockPermissionBubbleView::~MockPermissionBubbleView() {
 }
 
 void MockPermissionBubbleView::Show(
-    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_state) {
   factory_->ShowView(this);
   factory_->show_count_++;

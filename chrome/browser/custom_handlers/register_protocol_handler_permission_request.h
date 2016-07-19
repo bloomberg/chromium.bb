@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_CUSTOM_HANDLERS_REGISTER_PROTOCOL_HANDLER_PERMISSION_REQUEST_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
 class ProtocolHandlerRegistry;
 
-// This class provides display data for a permission bubble request, shown when
-// a page wants to register a protocol handler and was triggered by a user
-// action.
-class RegisterProtocolHandlerPermissionRequest
-    : public PermissionBubbleRequest {
+// This class provides display data for a permission request, shown when a page
+// wants to register a protocol handler and was triggered by a user action.
+class RegisterProtocolHandlerPermissionRequest : public PermissionRequest {
  public:
   RegisterProtocolHandlerPermissionRequest(
       ProtocolHandlerRegistry* registry,
@@ -25,7 +23,7 @@ class RegisterProtocolHandlerPermissionRequest
   ~RegisterProtocolHandlerPermissionRequest() override;
 
  private:
-  // PermissionBubbleRequest:
+  // PermissionRequest:
   gfx::VectorIconId GetVectorIconId() const override;
   int GetIconId() const override;
   base::string16 GetMessageTextFragment() const override;
@@ -34,7 +32,7 @@ class RegisterProtocolHandlerPermissionRequest
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  PermissionBubbleType GetPermissionBubbleType() const override;
+  PermissionRequestType GetPermissionRequestType() const override;
 
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler handler_;

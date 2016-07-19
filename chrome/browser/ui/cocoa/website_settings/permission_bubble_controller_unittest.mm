@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,7 +92,7 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
   }
 
   void AddRequest(const std::string& title) {
-    MockPermissionBubbleRequest* request = new MockPermissionBubbleRequest(
+    MockPermissionRequest* request = new MockPermissionRequest(
         title,
         l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
         l10n_util::GetStringUTF8(IDS_PERMISSION_DENY));
@@ -157,7 +157,7 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
  protected:
   PermissionBubbleController* controller_;  // Weak;  it deletes itself.
   std::unique_ptr<PermissionBubbleCocoa> bridge_;
-  std::vector<PermissionBubbleRequest*> requests_;
+  std::vector<PermissionRequest*> requests_;
   std::vector<bool> accept_states_;
 };
 

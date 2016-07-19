@@ -11,7 +11,7 @@
 
 @class MenuController;
 class PermissionBubbleCocoa;
-class PermissionBubbleRequest;
+class PermissionRequest;
 
 @interface PermissionBubbleController :
     BaseBubbleController<NSTextViewDelegate> {
@@ -45,7 +45,7 @@ class PermissionBubbleRequest;
 // Makes the bubble visible. The bubble will be popuplated with text retrieved
 // from |requests|. |delegate| will receive callbacks for user actions.
 - (void)showWithDelegate:(PermissionBubbleView::Delegate*)delegate
-             forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
+             forRequests:(const std::vector<PermissionRequest*>&)requests
             acceptStates:(const std::vector<bool>&)acceptStates;
 
 // Will reposition the bubble based in case the anchor or parent should change.

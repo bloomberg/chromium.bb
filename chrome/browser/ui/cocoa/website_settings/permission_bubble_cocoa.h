@@ -24,7 +24,7 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
   ~PermissionBubbleCocoa() override;
 
   // PermissionBubbleView interface.
-  void Show(const std::vector<PermissionBubbleRequest*>& requests,
+  void Show(const std::vector<PermissionRequest*>& requests,
             const std::vector<bool>& accept_state) override;
   void Hide() override;
   bool IsVisible() override;

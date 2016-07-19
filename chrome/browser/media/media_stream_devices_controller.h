@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -24,7 +24,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class MediaStreamDevicesController : public PermissionBubbleRequest {
+class MediaStreamDevicesController : public PermissionRequest {
  public:
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
@@ -54,10 +54,10 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   // |audio_accepted| and |video_accepted|. Intended for use from
   // MediaStreamInfobarDelegateAndroid.
   // TODO(tsergeant): Remove this by refactoring Android to use
-  // PermissionBubbleRequest instead of a custom infobar delegate.
+  // PermissionRequest instead of a custom infobar delegate.
   void GroupedRequestFinished(bool audio_accepted, bool video_accepted);
 
-  // PermissionBubbleRequest:
+  // PermissionRequest:
   int GetIconId() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
@@ -65,7 +65,7 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  PermissionBubbleType GetPermissionBubbleType() const override;
+  PermissionRequestType GetPermissionRequestType() const override;
 
  private:
   // Returns a list of devices available for the request for the given

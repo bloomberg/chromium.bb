@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/permissions/permission_bubble_request_impl.h"
+#include "chrome/browser/permissions/permission_request_impl.h"
 
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_context_base.h"
@@ -14,7 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
-PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
+PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
     content::PermissionType permission_type,
     const PermissionDecidedCallback& permission_decided_callback,
@@ -26,7 +26,7 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
       is_finished_(false),
       action_taken_(false) {}
 
-PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
+PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
     // TODO(stefanocs): Pass in a non null profile.
@@ -34,8 +34,8 @@ PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
                                          nullptr);
 }
 
-gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
-#if !defined(OS_MACOSX)
+gfx::VectorIconId PermissionRequestImpl::GetVectorIconId() const {
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
@@ -54,14 +54,14 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
       NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
   }
-#else  // !defined(OS_MACOSX)
+#else  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 #endif
 }
 
-int PermissionBubbleRequestImpl::GetIconId() const {
+int PermissionRequestImpl::GetIconId() const {
   int icon_id = IDR_INFOBAR_WARNING;
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
       icon_id = IDR_INFOBAR_GEOLOCATION;
@@ -81,7 +81,7 @@ int PermissionBubbleRequestImpl::GetIconId() const {
   return icon_id;
 }
 
-base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
+base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   int message_id;
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
@@ -110,49 +110,49 @@ base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-GURL PermissionBubbleRequestImpl::GetOrigin() const {
+GURL PermissionRequestImpl::GetOrigin() const {
   return request_origin_;
 }
 
-void PermissionBubbleRequestImpl::PermissionGranted() {
+void PermissionRequestImpl::PermissionGranted() {
   RegisterActionTaken();
   permission_decided_callback_.Run(true, CONTENT_SETTING_ALLOW);
 }
 
-void PermissionBubbleRequestImpl::PermissionDenied() {
+void PermissionRequestImpl::PermissionDenied() {
   RegisterActionTaken();
   permission_decided_callback_.Run(true, CONTENT_SETTING_BLOCK);
 }
 
-void PermissionBubbleRequestImpl::Cancelled() {
+void PermissionRequestImpl::Cancelled() {
   RegisterActionTaken();
   permission_decided_callback_.Run(false, CONTENT_SETTING_DEFAULT);
 }
 
-void PermissionBubbleRequestImpl::RequestFinished() {
+void PermissionRequestImpl::RequestFinished() {
   is_finished_ = true;
   delete_callback_.Run();
 }
 
-PermissionBubbleType PermissionBubbleRequestImpl::GetPermissionBubbleType()
+PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()
     const {
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
-      return PermissionBubbleType::PERMISSION_GEOLOCATION;
+      return PermissionRequestType::PERMISSION_GEOLOCATION;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
-      return PermissionBubbleType::PERMISSION_NOTIFICATIONS;
+      return PermissionRequestType::PERMISSION_NOTIFICATIONS;
 #endif
     case content::PermissionType::MIDI_SYSEX:
-      return PermissionBubbleType::PERMISSION_MIDI_SYSEX;
+      return PermissionRequestType::PERMISSION_MIDI_SYSEX;
     case content::PermissionType::PUSH_MESSAGING:
-      return PermissionBubbleType::PERMISSION_PUSH_MESSAGING;
+      return PermissionRequestType::PERMISSION_PUSH_MESSAGING;
 #if defined(OS_CHROMEOS)
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return PermissionBubbleType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
+      return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
 #endif
     default:
       NOTREACHED();
-      return PermissionBubbleType::UNKNOWN;
+      return PermissionRequestType::UNKNOWN;
   }
 }

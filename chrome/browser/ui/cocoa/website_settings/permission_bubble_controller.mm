@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/common/pref_names.h"
@@ -174,7 +174,7 @@ const NSSize kPermissionIconSize = {18, 18};
 - (NSWindow*)getExpectedParentWindow;
 
 // Returns an autoreleased NSView displaying the icon and label for |request|.
-- (NSView*)labelForRequest:(PermissionBubbleRequest*)request;
+- (NSView*)labelForRequest:(PermissionRequest*)request;
 
 // Returns an autoreleased NSView displaying the title for the bubble
 // requesting settings for |host|.
@@ -182,7 +182,7 @@ const NSSize kPermissionIconSize = {18, 18};
 
 // Returns an autoreleased NSView displaying a menu for |request|.  The
 // menu will be initialized as 'allow' if |allow| is YES.
-- (NSView*)menuForRequest:(PermissionBubbleRequest*)request
+- (NSView*)menuForRequest:(PermissionRequest*)request
                   atIndex:(int)index
                     allow:(BOOL)allow;
 
@@ -310,7 +310,7 @@ const NSSize kPermissionIconSize = {18, 18};
 }
 
 - (void)showWithDelegate:(PermissionBubbleView::Delegate*)delegate
-             forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
+             forRequests:(const std::vector<PermissionRequest*>&)requests
             acceptStates:(const std::vector<bool>&)acceptStates {
   DCHECK(!requests.empty());
   DCHECK(delegate);
@@ -492,7 +492,7 @@ const NSSize kPermissionIconSize = {18, 18};
   return browser_->window()->GetNativeWindow();
 }
 
-- (NSView*)labelForRequest:(PermissionBubbleRequest*)request {
+- (NSView*)labelForRequest:(PermissionRequest*)request {
   DCHECK(request);
   base::scoped_nsobject<NSView> permissionView(
       [[NSView alloc] initWithFrame:NSZeroRect]);
@@ -558,7 +558,7 @@ const NSSize kPermissionIconSize = {18, 18};
   return titleView.autorelease();
 }
 
-- (NSView*)menuForRequest:(PermissionBubbleRequest*)request
+- (NSView*)menuForRequest:(PermissionRequest*)request
                   atIndex:(int)index
                     allow:(BOOL)allow {
   DCHECK(request);

@@ -2,113 +2,113 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/theme_resources.h"
 
-MockPermissionBubbleRequest::MockPermissionBubbleRequest()
-    : MockPermissionBubbleRequest("test",
+MockPermissionRequest::MockPermissionRequest()
+    : MockPermissionRequest("test",
                                   "button",
                                   "button",
                                   GURL("http://www.google.com"),
-                                  PermissionBubbleType::UNKNOWN) {}
+                                  PermissionRequestType::UNKNOWN) {}
 
-MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+MockPermissionRequest::MockPermissionRequest(
     const std::string& text)
-    : MockPermissionBubbleRequest(text,
+    : MockPermissionRequest(text,
                                   "button",
                                   "button",
                                   GURL("http://www.google.com"),
-                                  PermissionBubbleType::UNKNOWN) {}
+                                  PermissionRequestType::UNKNOWN) {}
 
-MockPermissionBubbleRequest::MockPermissionBubbleRequest(
-    const std::string& text, PermissionBubbleType bubble_type)
-    : MockPermissionBubbleRequest(text,
+MockPermissionRequest::MockPermissionRequest(
+    const std::string& text, PermissionRequestType request_type)
+    : MockPermissionRequest(text,
                                   "button",
                                   "button",
                                   GURL("http://www.google.com"),
-                                  bubble_type) {}
+                                  request_type) {}
 
-MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+MockPermissionRequest::MockPermissionRequest(
     const std::string& text,
     const GURL& url)
-    : MockPermissionBubbleRequest(text,
+    : MockPermissionRequest(text,
                                   "button",
                                   "button",
                                   url,
-                                  PermissionBubbleType::UNKNOWN) {}
+                                  PermissionRequestType::UNKNOWN) {}
 
-MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+MockPermissionRequest::MockPermissionRequest(
     const std::string& text,
     const std::string& accept_label,
     const std::string& deny_label)
-    : MockPermissionBubbleRequest(text,
+    : MockPermissionRequest(text,
                                   accept_label,
                                   deny_label,
                                   GURL("http://www.google.com"),
-                                  PermissionBubbleType::UNKNOWN) {}
+                                  PermissionRequestType::UNKNOWN) {}
 
-MockPermissionBubbleRequest::~MockPermissionBubbleRequest() {}
+MockPermissionRequest::~MockPermissionRequest() {}
 
-int MockPermissionBubbleRequest::GetIconId() const {
+int MockPermissionRequest::GetIconId() const {
   // Use a valid icon ID to support UI tests.
   return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 }
 
-base::string16 MockPermissionBubbleRequest::GetMessageTextFragment() const {
+base::string16 MockPermissionRequest::GetMessageTextFragment() const {
   return text_;
 }
 
-GURL MockPermissionBubbleRequest::GetOrigin() const {
+GURL MockPermissionRequest::GetOrigin() const {
   return origin_;
 }
 
-void MockPermissionBubbleRequest::PermissionGranted() {
+void MockPermissionRequest::PermissionGranted() {
   granted_ = true;
 }
 
-void MockPermissionBubbleRequest::PermissionDenied() {
+void MockPermissionRequest::PermissionDenied() {
   granted_ = false;
 }
 
-void MockPermissionBubbleRequest::Cancelled() {
+void MockPermissionRequest::Cancelled() {
   granted_ = false;
   cancelled_ = true;
 }
 
-void MockPermissionBubbleRequest::RequestFinished() {
+void MockPermissionRequest::RequestFinished() {
   finished_ = true;
 }
 
-PermissionBubbleType MockPermissionBubbleRequest::GetPermissionBubbleType()
+PermissionRequestType MockPermissionRequest::GetPermissionRequestType()
     const {
-  return bubble_type_;
+  return request_type_;
 }
 
-bool MockPermissionBubbleRequest::granted() {
+bool MockPermissionRequest::granted() {
   return granted_;
 }
 
-bool MockPermissionBubbleRequest::cancelled() {
+bool MockPermissionRequest::cancelled() {
   return cancelled_;
 }
 
-bool MockPermissionBubbleRequest::finished() {
+bool MockPermissionRequest::finished() {
   return finished_;
 }
 
-MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+MockPermissionRequest::MockPermissionRequest(
     const std::string& text,
     const std::string& accept_label,
     const std::string& deny_label,
     const GURL& origin,
-    PermissionBubbleType bubble_type)
+    PermissionRequestType request_type)
     : granted_(false),
       cancelled_(false),
       finished_(false),
-      bubble_type_(bubble_type) {
+      request_type_(request_type) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::UTF8ToUTF16(accept_label);
   deny_label_ = base::UTF8ToUTF16(deny_label);

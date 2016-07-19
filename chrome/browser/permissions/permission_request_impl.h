@@ -2,39 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_BUBBLE_REQUEST_IMPL_H_
-#define CHROME_BROWSER_PERMISSIONS_PERMISSION_BUBBLE_REQUEST_IMPL_H_
+#ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_IMPL_H_
+#define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_IMPL_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/permission_type.h"
 
 class GURL;
 class PermissionContextBase;
 
-// Default implementation of PermissionBubbleRequest, it is assumed that the
+// Default implementation of PermissionRequest, it is assumed that the
 // caller owns it and that it can be deleted once the |delete_callback|
 // is executed.
-class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
+class PermissionRequestImpl : public PermissionRequest {
  public:
   using PermissionDecidedCallback = base::Callback<void(bool, ContentSetting)>;
 
-  PermissionBubbleRequestImpl(
+  PermissionRequestImpl(
       const GURL& request_origin,
       content::PermissionType permission_type,
       const PermissionDecidedCallback& permission_decided_callback,
       const base::Closure delete_callback);
 
-  ~PermissionBubbleRequestImpl() override;
+  ~PermissionRequestImpl() override;
 
  protected:
   void RegisterActionTaken() { action_taken_ = true; }
 
  private:
-  // PermissionBubbleRequest:
+  // PermissionRequest:
   gfx::VectorIconId GetVectorIconId() const override;
   int GetIconId() const override;
   base::string16 GetMessageTextFragment() const override;
@@ -45,7 +45,7 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  PermissionBubbleType GetPermissionBubbleType() const override;
+  PermissionRequestType GetPermissionRequestType() const override;
 
   GURL request_origin_;
   content::PermissionType permission_type_;
@@ -53,13 +53,13 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   // Called once a decision is made about the permission.
   const PermissionDecidedCallback permission_decided_callback_;
 
-  // Called when the bubble is no longer in use so it can be deleted by
-  // the caller.
+  // Called when the request is no longer in use so it can be deleted by the
+  // caller.
   const base::Closure delete_callback_;
   bool is_finished_;
   bool action_taken_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionBubbleRequestImpl);
+  DISALLOW_COPY_AND_ASSIGN(PermissionRequestImpl);
 };
 
-#endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_BUBBLE_REQUEST_IMPL_H_
+#endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_IMPL_H_

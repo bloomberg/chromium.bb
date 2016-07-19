@@ -11,12 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -44,7 +44,7 @@
     UMA_HISTOGRAM_ENUMERATION(                                               \
         metric_name,                                                         \
         static_cast<base::HistogramBase::Sample>(permission_bubble_type),    \
-        static_cast<base::HistogramBase::Sample>(PermissionBubbleType::NUM))
+        static_cast<base::HistogramBase::Sample>(PermissionRequestType::NUM))
 
 using content::PermissionType;
 
@@ -232,12 +232,13 @@ void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
 }
 
 void PermissionUmaUtil::PermissionPromptShown(
-    const std::vector<PermissionBubbleRequest*>& requests) {
+    const std::vector<PermissionRequest*>& requests) {
   DCHECK(!requests.empty());
 
-  PermissionBubbleType permission_prompt_type = PermissionBubbleType::MULTIPLE;
+  PermissionRequestType permission_prompt_type =
+      PermissionRequestType::MULTIPLE;
   if (requests.size() == 1)
-    permission_prompt_type = requests[0]->GetPermissionBubbleType();
+    permission_prompt_type = requests[0]->GetPermissionRequestType();
   PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptShown, permission_prompt_type);
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -248,31 +249,31 @@ void PermissionUmaUtil::PermissionPromptShown(
   if (requests.size() > 1) {
     for (const auto* request : requests) {
       PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleTypes,
-                                 request->GetPermissionBubbleType());
+                                 request->GetPermissionRequestType());
     }
   }
 }
 
 void PermissionUmaUtil::PermissionPromptAccepted(
-    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_states) {
   DCHECK(!requests.empty());
   DCHECK(requests.size() == accept_states.size());
 
   bool all_accepted = accept_states[0];
-  PermissionBubbleType permission_prompt_type =
-      requests[0]->GetPermissionBubbleType();
+  PermissionRequestType permission_prompt_type =
+      requests[0]->GetPermissionRequestType();
   if (requests.size() > 1) {
-    permission_prompt_type = PermissionBubbleType::MULTIPLE;
+    permission_prompt_type = PermissionRequestType::MULTIPLE;
     for (size_t i = 0; i < requests.size(); ++i) {
       const auto* request = requests[i];
       if (accept_states[i]) {
         PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleAccepted,
-                                   request->GetPermissionBubbleType());
+                                   request->GetPermissionRequestType());
       } else {
         all_accepted = false;
         PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleDenied,
-                                   request->GetPermissionBubbleType());
+                                   request->GetPermissionRequestType());
       }
     }
   }
@@ -287,12 +288,12 @@ void PermissionUmaUtil::PermissionPromptAccepted(
 }
 
 void PermissionUmaUtil::PermissionPromptDenied(
-    const std::vector<PermissionBubbleRequest*>& requests) {
+    const std::vector<PermissionRequest*>& requests) {
   DCHECK(!requests.empty());
   DCHECK(requests.size() == 1);
 
   PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
-                             requests[0]->GetPermissionBubbleType());
+                             requests[0]->GetPermissionRequestType());
 }
 
 bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {

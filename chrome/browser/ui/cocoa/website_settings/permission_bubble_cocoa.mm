@@ -20,7 +20,7 @@ PermissionBubbleCocoa::~PermissionBubbleCocoa() {
 }
 
 void PermissionBubbleCocoa::Show(
-    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_state) {
   if (!bubbleController_) {
     bubbleController_ =

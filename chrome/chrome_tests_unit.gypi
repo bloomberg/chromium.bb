@@ -1777,6 +1777,8 @@
         'browser/notifications/notification_test_util.h',
         'browser/notifications/stub_notification_platform_bridge.cc',
         'browser/notifications/stub_notification_platform_bridge.h',
+        'browser/permissions/mock_permission_request.cc',
+        'browser/permissions/mock_permission_request.h',
         'browser/policy/test/local_policy_test_server.cc',
         'browser/policy/test/local_policy_test_server.h',
         'browser/profile_resetter/profile_resetter_test_base.cc',
@@ -1826,8 +1828,6 @@
         'browser/ui/toolbar/test_toolbar_action_view_controller.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
         'browser/ui/views/toolbar/browser_action_test_util_views.cc',
-        'browser/ui/website_settings/mock_permission_bubble_request.cc',
-        'browser/ui/website_settings/mock_permission_bubble_request.h',
         'renderer/chrome_mock_render_thread.cc',
         'renderer/chrome_mock_render_thread.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.cc',
@@ -1930,12 +1930,12 @@
           'sources!': [
             'browser/chooser_controller/mock_chooser_controller.cc',
             'browser/chooser_controller/mock_chooser_controller.h',
+            'browser/permissions/mock_permission_request.cc',
+            'browser/permissions/mock_permission_request.h',
             'browser/ui/passwords/manage_passwords_ui_controller_mock.cc',
             'browser/ui/passwords/manage_passwords_ui_controller_mock.h',
             'browser/ui/passwords/password_dialog_controller_mock.cc',
             'browser/ui/passwords/password_dialog_controller_mock.h',
-            'browser/ui/website_settings/mock_permission_bubble_request.cc',
-            'browser/ui/website_settings/mock_permission_bubble_request.h',
           ]
         }],
         ['OS=="android"', {
