@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -35,7 +36,7 @@ const int kCaptionButtonSpacing = 0;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameView, public:
+// OpaqueBrowserFrameViewLayout, public:
 
 // statics
 
@@ -225,7 +226,7 @@ bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameView, private:
+// OpaqueBrowserFrameViewLayout, private:
 
 bool OpaqueBrowserFrameViewLayout::ShouldIncognitoIconBeOnRight() const {
   // The incognito should be shown either on the end of the left or the
@@ -248,27 +249,25 @@ void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
   buttons_not_shown.push_back(views::FRAME_BUTTON_CLOSE);
 
   if (delegate_->ShouldShowCaptionButtons()) {
-    for (std::vector<views::FrameButton>::const_iterator it =
-             leading_buttons_.begin(); it != leading_buttons_.end(); ++it) {
-      ConfigureButton(host, *it, ALIGN_LEADING, caption_y);
+    for (const auto& button : leading_buttons_) {
+      ConfigureButton(host, button, ALIGN_LEADING, caption_y);
       buttons_not_shown.erase(
-          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
+          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(),
+                      button),
           buttons_not_shown.end());
     }
 
-    for (std::vector<views::FrameButton>::const_reverse_iterator it =
-             trailing_buttons_.rbegin(); it != trailing_buttons_.rend(); ++it) {
-      ConfigureButton(host, *it, ALIGN_TRAILING, caption_y);
+    for (const auto& button : base::Reversed(trailing_buttons_)) {
+      ConfigureButton(host, button, ALIGN_TRAILING, caption_y);
       buttons_not_shown.erase(
-          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
+          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(),
+                      button),
           buttons_not_shown.end());
     }
   }
 
-  for (std::vector<views::FrameButton>::const_iterator it =
-           buttons_not_shown.begin(); it != buttons_not_shown.end(); ++it) {
-    HideButton(*it);
-  }
+  for (const auto& button : buttons_not_shown)
+    HideButton(button);
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
@@ -458,7 +457,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
   gfx::Size button_size = button->GetPreferredSize();
 
   button->SetImageAlignment(
-      (alignment == ALIGN_LEADING)  ?
+      (alignment == ALIGN_LEADING) ?
           views::ImageButton::ALIGN_RIGHT : views::ImageButton::ALIGN_LEFT,
       views::ImageButton::ALIGN_BOTTOM);
 
@@ -581,7 +580,7 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameView, views::LayoutManager:
+// OpaqueBrowserFrameViewLayout, views::LayoutManager:
 
 void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   // Reset all our data so that everything is invisible.
