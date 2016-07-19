@@ -42,12 +42,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
 
-    # Mark this test Flaky on all platforms but Intel Linux that is failing
-    # reliably.
-    self.Flaky('conformance2/query/occlusion-query.html',
-        ['win', 'mac'], bug=603168)
-    self.Flaky('conformance2/query/occlusion-query.html',
-        ['linux', 'nvidia', 'amd'], bug=603168)
+    self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
 
@@ -554,9 +549,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
 
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'random_teximage2d_cube.html',
-        ['linux'], bug=483282)
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['linux'], bug=624506)
 
@@ -575,8 +567,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux with ANGLE only
     self.Fail('conformance/misc/uninitialized-test.html',
         ['linux', 'opengl'], bug=483282)
-    self.Fail('conformance/state/state-uneffected-after-compositing.html',
-        ['linux', 'opengl'], bug=483282)
     self.Fail('conformance/textures/webgl_canvas/' +
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['linux', 'opengl'], bug=483282)
@@ -592,7 +582,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'opengl'], bug=483282)
 
     # Linux NVIDIA only.
-    # La la la la la la la la la la ...
+    # La la la la la la la la la la ... (well, not right now, soon)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'random_teximage2d_cube.html',
+        ['linux', 'nvidia'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
@@ -615,8 +608,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'opengl'], bug=483282)
 
     # Linux Intel
-    self.Fail('deqp/functional/gles3/pixelbufferobject.html',
-        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/shaderderivate_dfdx.html',
         ['linux', 'intel'], bug=618408)
 
@@ -676,27 +667,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel', 'opengl'], bug=598902)
 
     # Linux Intel without ANGLE only
-    self.Fail('conformance2/query/occlusion-query.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('conformance2/query/query.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'intel', 'no_angle'], bug=598902)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['linux', 'intel', 'no_angle'], bug=598902)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/instancedrendering.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/lifetime.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/negativefragmentapi.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/negativestateapi.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/occlusionquery_conservative.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/occlusionquery_strict.html',
         ['linux', 'intel', 'no_angle'], bug=598902)
 
     # Linux AMD only.
