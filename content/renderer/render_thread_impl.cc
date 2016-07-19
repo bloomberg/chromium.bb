@@ -72,6 +72,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/dom_storage/dom_storage_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/render_process_messages.h"
@@ -1737,7 +1738,7 @@ void RenderThreadImpl::OnCreateNewFrame(FrameMsg_NewFrame_Params params) {
       params.routing_id, params.proxy_routing_id, params.opener_routing_id,
       params.parent_routing_id, params.previous_sibling_routing_id,
       params.replication_state, compositor_deps, params.widget_params,
-      params.frame_owner_properties);
+      params.frame_owner_properties.ToWebFrameOwnerProperties());
 }
 
 void RenderThreadImpl::OnCreateNewFrameProxy(

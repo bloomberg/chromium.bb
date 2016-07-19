@@ -326,6 +326,8 @@
       'common/font_list_win.cc',
       'common/frame_message_enums.h',
       'common/frame_messages.h',
+      'common/frame_owner_properties.cc',
+      'common/frame_owner_properties.h',
       'common/frame_replication_state.cc',
       'common/frame_replication_state.h',
       'common/gamepad_hardware_buffer.h',

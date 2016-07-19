@@ -19,6 +19,7 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -301,7 +302,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
       base::Bind(&CreateChildFrameOnUI, render_process_id_,
                  params.parent_routing_id, params.scope, params.frame_name,
                  params.frame_unique_name, params.sandbox_flags,
-                 params.frame_owner_properties, *new_routing_id));
+                 params.frame_owner_properties.ToWebFrameOwnerProperties(),
+                 *new_routing_id));
 }
 
 void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,

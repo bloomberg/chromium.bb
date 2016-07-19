@@ -39,7 +39,6 @@
 #include "net/http/http_response_headers.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -63,6 +62,10 @@ struct FrameHostMsg_ShowPopup_Params;
 namespace base {
 class FilePath;
 class ListValue;
+}
+
+namespace blink {
+struct WebFrameOwnerProperties;
 }
 
 namespace blink {
@@ -95,6 +98,7 @@ class WebBluetoothServiceImpl;
 struct ContentSecurityPolicyHeader;
 struct ContextMenuParams;
 struct FileChooserParams;
+struct FrameOwnerProperties;
 struct GlobalRequestID;
 struct FileChooserParams;
 struct Referrer;
@@ -680,9 +684,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidAssignPageId(int32_t page_id);
   void OnDidChangeSandboxFlags(int32_t frame_routing_id,
                                blink::WebSandboxFlags flags);
-  void OnDidChangeFrameOwnerProperties(
-      int32_t frame_routing_id,
-      const blink::WebFrameOwnerProperties& properties);
+  void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
+                                       const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);

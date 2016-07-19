@@ -20,6 +20,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
@@ -93,6 +94,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::WebFocusTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameOwnerProperties::ScrollingMode,
                           blink::WebFrameOwnerProperties::ScrollingMode::Last)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPermissionType,
+                          blink::WebPermissionTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
@@ -162,11 +165,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(link_followed)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebFrameOwnerProperties)
-  IPC_STRUCT_TRAITS_MEMBER(scrollingMode)
-  IPC_STRUCT_TRAITS_MEMBER(marginWidth)
-  IPC_STRUCT_TRAITS_MEMBER(marginHeight)
-  IPC_STRUCT_TRAITS_MEMBER(allowFullscreen)
+IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
+  IPC_STRUCT_TRAITS_MEMBER(scrolling_mode)
+  IPC_STRUCT_TRAITS_MEMBER(margin_width)
+  IPC_STRUCT_TRAITS_MEMBER(margin_height)
+  IPC_STRUCT_TRAITS_MEMBER(allow_fullscreen)
+  IPC_STRUCT_TRAITS_MEMBER(delegated_permissions)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)
@@ -439,7 +443,7 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_Params)
   // properties of the HTMLFrameOwnerElement from the parent process.
   // Note that unlike FrameReplicationState, this is not replicated for remote
   // frames.
-  IPC_STRUCT_MEMBER(blink::WebFrameOwnerProperties, frame_owner_properties)
+  IPC_STRUCT_MEMBER(content::FrameOwnerProperties, frame_owner_properties)
 
   // Specifies properties for a new RenderWidget that will be attached to the
   // new RenderFrame (if one is needed).
@@ -550,7 +554,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(std::string, frame_name)
   IPC_STRUCT_MEMBER(std::string, frame_unique_name)
   IPC_STRUCT_MEMBER(blink::WebSandboxFlags, sandbox_flags)
-  IPC_STRUCT_MEMBER(blink::WebFrameOwnerProperties, frame_owner_properties)
+  IPC_STRUCT_MEMBER(content::FrameOwnerProperties, frame_owner_properties)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
@@ -920,7 +924,7 @@ IPC_MESSAGE_ROUTED2(FrameMsg_GetSerializedHtmlWithLocalLinks,
 IPC_MESSAGE_ROUTED1(FrameMsg_SerializeAsMHTML, FrameMsg_SerializeAsMHTML_Params)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
-                    blink::WebFrameOwnerProperties /* frame_owner_properties */)
+                    content::FrameOwnerProperties /* frame_owner_properties */)
 
 // Request to continue running the sequential focus navigation algorithm in
 // this frame.  |source_routing_id| identifies the frame that issued this
@@ -1135,7 +1139,7 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeSandboxFlags,
 // of this frame.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeFrameOwnerProperties,
                     int32_t /* subframe_routing_id */,
-                    blink::WebFrameOwnerProperties /* frame_owner_properties */)
+                    content::FrameOwnerProperties /* frame_owner_properties */)
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.

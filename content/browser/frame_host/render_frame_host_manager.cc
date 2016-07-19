@@ -36,6 +36,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -989,7 +990,7 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
   // Notify the RenderFrame if it lives in a different process from its parent.
   if (render_frame_host_->GetSiteInstance() != parent_instance) {
     render_frame_host_->Send(new FrameMsg_SetFrameOwnerProperties(
-        render_frame_host_->GetRoutingID(), properties));
+        render_frame_host_->GetRoutingID(), FrameOwnerProperties(properties)));
   }
 
   // Notify this frame's proxies if they live in a different process from its
@@ -1001,7 +1002,7 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_instance) {
       pair.second->Send(new FrameMsg_SetFrameOwnerProperties(
-          pair.second->GetRoutingID(), properties));
+          pair.second->GetRoutingID(), FrameOwnerProperties(properties)));
     }
   }
 }

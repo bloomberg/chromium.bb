@@ -50,7 +50,6 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebFrameLoadType.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
@@ -81,8 +80,8 @@ class SyncMessage;
 }
 
 namespace blink {
-class WebMouseEvent;
 class WebContentDecryptionModule;
+class WebMouseEvent;
 class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
@@ -91,6 +90,7 @@ struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
+struct WebFrameOwnerProperties;
 struct WebScreenInfo;
 }
 
@@ -158,6 +158,7 @@ struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FileChooserFileInfo;
 struct FileChooserParams;
+struct FrameOwnerProperties;
 struct FrameReplicationState;
 struct NavigationParams;
 struct RequestNavigationParams;
@@ -820,7 +821,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnSetFrameOwnerProperties(
-      const blink::WebFrameOwnerProperties& frame_owner_properties);
+      const FrameOwnerProperties& frame_owner_properties);
   void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
   void OnSetFocusedFrame();
   void OnTextTrackSettingsChanged(

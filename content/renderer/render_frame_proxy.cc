@@ -14,6 +14,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
@@ -357,8 +358,8 @@ void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
 }
 
 void RenderFrameProxy::OnSetFrameOwnerProperties(
-    const blink::WebFrameOwnerProperties& properties) {
-  web_frame_->setFrameOwnerProperties(properties);
+    const FrameOwnerProperties& properties) {
+  web_frame_->setFrameOwnerProperties(properties.ToWebFrameOwnerProperties());
 }
 
 void RenderFrameProxy::OnDidUpdateOrigin(

@@ -54,6 +54,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
@@ -82,6 +83,7 @@
 #include "content/public/common/url_utils.h"
 #include "device/vibration/vibration_manager_impl.h"
 #include "services/shell/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -808,7 +810,8 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   params.replication_state.sandbox_flags =
       frame_tree_node()->pending_sandbox_flags();
 
-  params.frame_owner_properties = frame_tree_node()->frame_owner_properties();
+  params.frame_owner_properties =
+      FrameOwnerProperties(frame_tree_node()->frame_owner_properties());
 
   if (render_widget_host_) {
     params.widget_params.routing_id = render_widget_host_->GetRoutingID();
@@ -1658,15 +1661,18 @@ void RenderFrameHostImpl::OnDidChangeSandboxFlags(
 
 void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
     int32_t frame_routing_id,
-    const blink::WebFrameOwnerProperties& properties) {
+    const FrameOwnerProperties& properties) {
   FrameTreeNode* child = FindAndVerifyChild(
       frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
   if (!child)
     return;
 
-  child->set_frame_owner_properties(properties);
+  blink::WebFrameOwnerProperties web_properties =
+      properties.ToWebFrameOwnerProperties();
 
-  child->render_manager()->OnDidUpdateFrameOwnerProperties(properties);
+  child->set_frame_owner_properties(web_properties);
+
+  child->render_manager()->OnDidUpdateFrameOwnerProperties(web_properties);
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(

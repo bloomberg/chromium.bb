@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 
@@ -200,7 +201,8 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
                                 blink::WebFrameOwnerProperties();
   if (frame_tree_node_->parent() && should_send_properties) {
     Send(new FrameMsg_SetFrameOwnerProperties(
-        routing_id_, frame_tree_node_->frame_owner_properties()));
+        routing_id_,
+        FrameOwnerProperties(frame_tree_node_->frame_owner_properties())));
   }
 
   return true;
