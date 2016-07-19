@@ -54,14 +54,14 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final CallbackHelper mReadyToEdit;
     protected final CallbackHelper mEditorValidationError;
     protected final CallbackHelper mEditorTextUpdate;
-    protected final CallbackHelper mEditorDismissed;
     protected final CallbackHelper mDismissed;
     protected final CallbackHelper mUnableToAbort;
     protected final CallbackHelper mBillingAddressChangeProcessed;
+    protected PaymentRequestUI mUI;
+
     private final AtomicReference<ContentViewCore> mViewCoreRef;
     private final AtomicReference<WebContents> mWebContentsRef;
     private final String mTestFilePath;
-    private PaymentRequestUI mUI;
     private CardUnmaskPrompt mCardUnmaskPrompt;
 
     protected PaymentRequestTestBase(String testFileName) {
@@ -75,7 +75,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mReadyToEdit = new CallbackHelper();
         mEditorValidationError = new CallbackHelper();
         mEditorTextUpdate = new CallbackHelper();
-        mEditorDismissed = new CallbackHelper();
         mDismissed = new CallbackHelper();
         mUnableToAbort = new CallbackHelper();
         mBillingAddressChangeProcessed = new CallbackHelper();
@@ -442,12 +441,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     public void onPaymentRequestEditorTextUpdate() {
         ThreadUtils.assertOnUiThread();
         mEditorTextUpdate.notifyCalled();
-    }
-
-    @Override
-    public void onPaymentRequestEditorDismissed() {
-        ThreadUtils.assertOnUiThread();
-        mEditorDismissed.notifyCalled();
     }
 
     @Override

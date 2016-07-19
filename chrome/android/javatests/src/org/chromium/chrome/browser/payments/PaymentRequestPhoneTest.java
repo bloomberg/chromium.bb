@@ -56,7 +56,7 @@ public class PaymentRequestPhoneTest extends PaymentRequestTestBase {
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"+++"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }

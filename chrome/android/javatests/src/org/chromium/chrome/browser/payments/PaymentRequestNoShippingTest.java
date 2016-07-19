@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -99,7 +100,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -120,7 +121,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -180,5 +181,166 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"5454545454545454", "12", "Bob", "Google",
                 "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "999-999-9999"});
+    }
+
+    /** Quickly pressing on "add card" and then [X] should not crash. */
+    @MediumTest
+    public void testQuickAddCardAndCloseShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "add card" and then [X].
+        int callCount = mReadyToEdit.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getPaymentMethodSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+            }
+        });
+        mReadyToEdit.waitForCallback(callCount);
+
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on [X] and then "add card" should not crash. */
+    @MediumTest
+    public void testQuickCloseAndAddCardShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on [X] and then "add card."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                mUI.getPaymentMethodSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on "add card" and then "cancel" should not crash. */
+    @MediumTest
+    public void testQuickAddCardAndCancelShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "add card" and then "cancel."
+        int callCount = mReadyToEdit.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getPaymentMethodSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+            }
+        });
+        mReadyToEdit.waitForCallback(callCount);
+
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on "cancel" and then "add card" should not crash. */
+    @MediumTest
+    public void testQuickCancelAndAddCardShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "cancel" and then "add card."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+                mUI.getPaymentMethodSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /**
+     * Quickly dismissing the dialog (via Android's back button, for example) and then pressing on
+     * "pay" should not crash.
+     */
+    @MediumTest
+    public void testQuickDismissAndPayShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+
+        // Quickly dismiss and then press on "pay."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().onBackPressed();
+                mUI.getDialogForTest().findViewById(R.id.button_primary).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /**
+     * Quickly dismissing the dialog (via Android's back button, for example) and then pressing on
+     * [X] should not crash.
+     */
+    @MediumTest
+    public void testQuickDismissAndCloseShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+
+        // Quickly dismiss and then press on [X].
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().onBackPressed();
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /**
+     * Quickly pressing on [X] and then dismissing the dialog (via Android's back button, for
+     * example) should not crash.
+     */
+    @MediumTest
+    public void testQuickCloseAndDismissShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+
+        // Quickly press on [X] and then dismiss.
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                mUI.getDialogForTest().onBackPressed();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
     }
 }

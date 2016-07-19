@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -56,7 +57,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"+++", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -75,5 +76,97 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"999-999-9999", "jane.jones@google.com"});
+    }
+
+    /** Quickly pressing on "add contact info" and then [X] should not crash. */
+    @MediumTest
+    public void testQuickAddContactAndCloseShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "add contact info" and then [X].
+        int callCount = mReadyToEdit.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getContactDetailsSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+            }
+        });
+        mReadyToEdit.waitForCallback(callCount);
+
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on [X] and then "add contact info" should not crash. */
+    @MediumTest
+    public void testQuickCloseAndAddContactShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on [X] and then "add contact info."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                mUI.getContactDetailsSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on "add contact info" and then "cancel" should not crash. */
+    @MediumTest
+    public void testQuickAddContactAndCancelShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "add contact info" and then "cancel."
+        int callCount = mReadyToEdit.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getContactDetailsSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+            }
+        });
+        mReadyToEdit.waitForCallback(callCount);
+
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on "cancel" and then "add contact info" should not crash. */
+    @MediumTest
+    public void testQuickCancelAndAddContactShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "cancel" and then "add contact info."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+                mUI.getContactDetailsSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
     }
 }

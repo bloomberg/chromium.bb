@@ -631,11 +631,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    public boolean onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
-            PaymentOption option, Callback<PaymentInformation> callback) {
+    @PaymentRequestUI.SelectionResult public int onSectionOptionSelected(
+            @PaymentRequestUI.DataType int optionType, PaymentOption option,
+            Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
             AutofillAddress address = (AutofillAddress) option;
+            @PaymentRequestUI.SelectionResult int result = PaymentRequestUI.SELECTION_RESULT_NONE;
 
             if (address.isComplete()) {
                 mShippingAddressesSection.setSelectedItem(option);
@@ -646,12 +648,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 }
             } else {
                 editAddress(address);
+                result = PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
             }
 
             if (mMerchantNeedsShippingAddress) {
                 mPaymentInformationCallback = callback;
-                return true;
+                result = PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
             }
+
+            return result;
         } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
             // This may update the line items.
             mUiShippingOptions.setSelectedItem(option);
@@ -664,6 +669,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mContactSection.setSelectedItem(option);
             } else {
                 editContact(contact);
+                return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
             }
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             assert option instanceof PaymentInstrument;
@@ -672,33 +678,37 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
                 if (!card.isComplete()) {
                     editCard(card);
-                    return false;
+                    return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
                 }
             }
 
             mPaymentMethodsSection.setSelectedItem(option);
         }
 
-        return false;
+        return PaymentRequestUI.SELECTION_RESULT_NONE;
     }
 
     @Override
-    public boolean onSectionAddOption(
+    @PaymentRequestUI.SelectionResult public int onSectionAddOption(
             @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             editAddress(null);
 
             if (mMerchantNeedsShippingAddress) {
                 mPaymentInformationCallback = callback;
-                return true;
+                return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
+            } else {
+                return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
             }
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
+            return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             editCard(null);
+            return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         }
 
-        return false;
+        return PaymentRequestUI.SELECTION_RESULT_NONE;
     }
 
     private void editAddress(final AutofillAddress toEdit) {

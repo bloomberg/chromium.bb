@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -57,7 +58,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -71,7 +72,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
                 "Mountain View", "CA", "94043", "999-999-9999"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorDismissed);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
@@ -89,11 +90,103 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         setSpinnerSelectionInEditorAndWait(0 /* Afghanistan */, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
                 "999-999-9999"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorDismissed);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul",
                 "999-999-9999"});
+    }
+
+    /** Quickly pressing on "add address" and then [X] should not crash. */
+    @MediumTest
+    public void testQuickAddAddressAndCloseShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "add address" and then [X].
+        int callCount = mReadyToEdit.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getShippingAddressSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+            }
+        });
+        mReadyToEdit.waitForCallback(callCount);
+
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on [X] and then "add address" should not crash. */
+    @MediumTest
+    public void testQuickCloseAndAddAddressShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on [X] and then "add address."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.close_button).performClick();
+                mUI.getShippingAddressSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on "add address" and then "cancel" should not crash. */
+    @MediumTest
+    public void testQuickAddAddressAndCancelShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "add address" and then "cancel."
+        int callCount = mReadyToEdit.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getShippingAddressSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+            }
+        });
+        mReadyToEdit.waitForCallback(callCount);
+
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Quickly pressing on "cancel" and then "add address" should not crash. */
+    @MediumTest
+    public void testQuickCancelAndAddAddressShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+
+        // Quickly press on "cancel" and then "add address."
+        int callCount = mDismissed.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getDialogForTest().findViewById(R.id.button_secondary).performClick();
+                mUI.getShippingAddressSectionForTest().findViewById(
+                        R.id.payments_add_option_button).performClick();
+            }
+        });
+        mDismissed.waitForCallback(callCount);
+
+        expectResultContains(new String[] {"Request cancelled"});
     }
 }

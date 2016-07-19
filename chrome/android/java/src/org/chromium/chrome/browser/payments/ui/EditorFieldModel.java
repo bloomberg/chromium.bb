@@ -289,7 +289,6 @@ public class EditorFieldModel {
         mDropdownKeyValues = dropdownKeyValues;
     }
 
-
     /** @return The human-readable label for this field. */
     public CharSequence getLabel() {
         return mLabel;

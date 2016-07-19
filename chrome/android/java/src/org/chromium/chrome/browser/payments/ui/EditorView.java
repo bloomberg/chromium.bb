@@ -434,7 +434,6 @@ public class EditorView extends AlwaysDismissedDialog
     public void onDismiss(DialogInterface dialog) {
         removeTextChangedListenersAndInputFilters();
         mEditorModel.cancel();
-        if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorDismissed();
     }
 
     private void removeTextChangedListenersAndInputFilters() {
