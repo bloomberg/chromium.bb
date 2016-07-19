@@ -102,10 +102,6 @@ function runPbkdf2SuccessTestCase(testCase)
         return crypto.subtle.deriveBits(params, key, testCase.dkLen*8);
     }).then(function(result) {
         bytesShouldMatchHexString("deriveBits", testCase.derived_key, result);
-        return crypto.subtle.deriveBits(params, key, 0);
-    }).then(function(result) {
-        derivedBits = result;
-        shouldBe("derivedBits.byteLength", "0");
     });
 }
 

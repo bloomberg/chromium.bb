@@ -64,6 +64,12 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     if (optional_length_bits % 8)
       return Status::ErrorPbkdf2InvalidLength();
 
+    // According to RFC 2898 "dkLength" (derived key length) is
+    // described as being a "positive integer", so it is an error for
+    // it to be 0.
+    if (optional_length_bits == 0)
+      return Status::ErrorPbkdf2DeriveBitsLengthZero();
+
     const blink::WebCryptoPbkdf2Params* params = algorithm.pbkdf2Params();
 
     if (params->iterations() == 0)

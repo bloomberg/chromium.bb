@@ -67,16 +67,6 @@ var kPbkdf2SuccessVectors = [
     hash: "SHA-384",
     derived_key: "750261780a187897a9978371599db5d1"
   },
-
-  // Derive zero bytes.
-  {
-    password: "password",
-    salt: "salt",
-    c: 4096,
-    dkLen: 0,
-    hash: "SHA-512",
-    derived_key: ""
-  },
 ];
 
 function runPbkdf2SuccessTestCase(testCase)
@@ -113,10 +103,6 @@ function runPbkdf2SuccessTestCase(testCase)
         return crypto.subtle.deriveBits(params, key, testCase.dkLen*8);
     }).then(function(result) {
         bytesShouldMatchHexString("deriveBits", testCase.derived_key, result);
-        return crypto.subtle.deriveBits(params, key, 0);
-    }).then(function(result) {
-        derivedBits = result;
-        shouldBe("derivedBits.byteLength", "0");
     });
 }
 
