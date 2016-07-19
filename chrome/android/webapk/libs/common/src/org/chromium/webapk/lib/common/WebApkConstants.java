@@ -26,6 +26,7 @@ public final class WebApkConstants {
     public static final String EXTRA_SHORT_NAME = "org.chromium.chrome.browser.webapp_short_name";
     public static final String EXTRA_NAME = "org.chromium.chrome.browser.webapp_name";
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
+    public static final String EXTRA_SCOPE = "org.chromium.chrome.browser.webapp_scope";
     public static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
     public static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
     public static final String EXTRA_BACKGROUND_COLOR =

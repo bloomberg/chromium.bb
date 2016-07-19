@@ -27,7 +27,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String shortName = "name";
         String url = "about:blank";
 
-        WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
+        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
@@ -42,7 +42,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String shortName = "name";
         String url = "http://google.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
+        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
@@ -131,7 +131,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String shortName = "name";
         String url = "http://money.cnn.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
+        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Fullscreen, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
@@ -150,7 +150,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         long themeColor = 0xFF00FF00L;
         long backgroundColor = 0xFF0000FFL;
 
-        WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
+        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT,
                 ShortcutSource.UNKNOWN, themeColor, backgroundColor, false, null, null);
         assertEquals(themeColor, info.themeColor());
@@ -165,7 +165,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String shortName = "name";
         String url = "http://money.cnn.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
+        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
@@ -186,6 +186,26 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(themeColor, info.themeColor());
         assertEquals(backgroundColor, info.backgroundColor());
+    }
+
+    @SmallTest
+    @Feature({"Webapps", "WebApk"})
+    public void testScopeIntentCreation() {
+        String scope = "https://www.foo.com";
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
+        WebappInfo info = WebappInfo.create(intent);
+        assertEquals(scope, info.scopeUri().toString());
+    }
+
+    @SmallTest
+    @Feature({"Webapps", "WebApk"})
+    public void testIntentScopeFallback() {
+        String url = "https://www.foo.com/homepage.html";
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+        WebappInfo info = WebappInfo.create(intent);
+        assertEquals(ShortcutHelper.getScopeFromUrl(url), info.scopeUri().toString());
     }
 
     @SmallTest

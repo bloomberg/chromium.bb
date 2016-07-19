@@ -29,6 +29,7 @@ public class HostBrowserLauncher {
     private static final String META_DATA_RUNTIME_HOST = "runtimeHost";
     private static final String META_DATA_START_URL = "startUrl";
     private static final String META_DATA_NAME = "name";
+    private static final String META_DATA_SCOPE = "scope";
     private static final String META_DATA_DISPLAY_MODE = "displayMode";
     private static final String META_DATA_ORIENTATION = "orientation";
     private static final String META_DATA_THEME_COLOR = "themeColor";
@@ -69,6 +70,7 @@ public class HostBrowserLauncher {
         if (overrideUrl != null && overrideUrl.startsWith("https:")) {
             url = overrideUrl;
         }
+        String scope = metaBundle.getString(META_DATA_SCOPE);
         int source = intent.getIntExtra(WebApkConstants.EXTRA_SOURCE, 0);
 
         String webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
@@ -101,6 +103,7 @@ public class HostBrowserLauncher {
                 .putExtra(WebApkConstants.EXTRA_SHORT_NAME, shortName)
                 .putExtra(WebApkConstants.EXTRA_NAME, name)
                 .putExtra(WebApkConstants.EXTRA_URL, url)
+                .putExtra(WebApkConstants.EXTRA_SCOPE, scope)
                 .putExtra(WebApkConstants.EXTRA_ICON, encodedIcon)
                 .putExtra(WebApkConstants.EXTRA_SOURCE, source)
                 .putExtra(WebApkConstants.EXTRA_THEME_COLOR, themeColor)
