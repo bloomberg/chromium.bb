@@ -110,6 +110,10 @@ public:
     // Called when PageImportanceSignals for the WebView is updated.
     virtual void pageImportanceSignalsChanged() { }
 
+    // Called to get the position of the root window containing the widget
+    // in screen coordinates.
+    virtual WebRect rootWindowRect() { return WebRect(); }
+
     // Editing -------------------------------------------------------------
 
     // These methods allow the client to intercept and overrule editing
@@ -267,7 +271,6 @@ public:
     WebLayerTreeView* layerTreeView() override { return 0; }
     void onMouseDown(const WebNode& mouseDownNode) override {}
     void resetInputMethod() override {}
-    WebRect rootWindowRect() override { return WebRect(); }
     void scheduleAnimation() override {}
     WebScreenInfo screenInfo() override { return WebScreenInfo(); }
     void setToolTipText(const WebString&, WebTextDirection hint) override {}

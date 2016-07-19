@@ -310,7 +310,6 @@ class CONTENT_EXPORT RenderViewImpl
   void hasTouchEventHandlers(bool has_handlers) override;
   blink::WebLayerTreeView* layerTreeView() override;
   void resetInputMethod() override;
-  blink::WebRect rootWindowRect() override;
   void scheduleAnimation() override;
   blink::WebScreenInfo screenInfo() override;
   void setToolTipText(const blink::WebString&,
@@ -385,6 +384,7 @@ class CONTENT_EXPORT RenderViewImpl
   void draggableRegionsChanged() override;
   void pageImportanceSignalsChanged() override;
   void didAutoResize(const blink::WebSize& newSize) override;
+  blink::WebRect rootWindowRect() override;
 
 #if defined(OS_ANDROID)
   void scheduleContentIntent(const blink::WebURL& intent,

@@ -101,10 +101,6 @@ public:
     // Called to get the position of the resizer rect in window coordinates.
     virtual WebRect windowResizerRect() { return WebRect(); }
 
-    // Called to get the position of the root window containing the widget
-    // in screen coordinates.
-    virtual WebRect rootWindowRect() { return WebRect(); }
-
     // Called to query information about the screen where this widget is
     // displayed.
     virtual WebScreenInfo screenInfo() { return WebScreenInfo(); }

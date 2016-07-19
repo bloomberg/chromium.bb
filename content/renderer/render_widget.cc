@@ -1316,7 +1316,7 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
   pending_window_rect_count_++;
 }
 
-WebRect RenderWidget::rootWindowRect() {
+gfx::Rect RenderWidget::RootWindowRect() {
   if (pending_window_rect_count_) {
     // NOTE(mbelshe): If there is a pending_window_rect_, then getting
     // the RootWindowRect is probably going to return wrong results since the
@@ -1759,8 +1759,8 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     size_ = gfx::Size(new_size_in_window.width, new_size_in_window.height);
 
     if (resizing_mode_selector_->is_synchronous_mode()) {
-      gfx::Rect new_pos(rootWindowRect().x, rootWindowRect().y, size_.width(),
-                        size_.height());
+      gfx::Rect new_pos(RootWindowRect().x(), RootWindowRect().y(),
+                        size_.width(), size_.height());
       view_screen_rect_ = new_pos;
       window_screen_rect_ = new_pos;
     }
