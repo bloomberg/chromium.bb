@@ -23,6 +23,7 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
 import licenses
 
+# TODO(mef): Remove hard-coded list once GYP support is deprecated.
 third_party_dirs = [
   'base/third_party/libevent',
   'third_party/ashmem',
@@ -51,7 +52,7 @@ def GenerateLicense():
   content = [_ReadFile('LICENSE')]
 
   # Add necessary third_party.
-  for directory in sorted(third_party_dirs):
+  for directory in sorted(third_party_dirs, key=os.path.basename):
     metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
                                  require_license_file=True)
     content.append('-' * 20)
@@ -69,8 +70,8 @@ def FindThirdPartyDeps(gn_out_dir):
   # Current gn directory cannot ba used because gn doesn't allow recursive
   # invocations due to potential side effects.
   try:
-    tmp_dir = tempfile.mkdtemp(dir = gn_out_dir)
-    shutil.copy(gn_out_dir + "/args.gn", tmp_dir)
+    tmp_dir = tempfile.mkdtemp(dir = os.path.join(gn_out_dir, ".."))
+    shutil.copy(os.path.join(gn_out_dir, "args.gn"), tmp_dir)
     subprocess.check_output(["gn", "gen", tmp_dir])
     gn_deps = subprocess.check_output(["gn", "desc", tmp_dir, \
                                     "//net", "deps", "--as=buildfile", "--all"])
@@ -80,9 +81,10 @@ def FindThirdPartyDeps(gn_out_dir):
 
   third_party_deps = []
   for build_dep in gn_deps.split():
-    if ("third_party" in build_dep and build_dep.endswith("/BUILD.gn")):
-      third_party_deps.append(build_dep.replace("/BUILD.gn", ""))
-  third_party_deps.sort()
+    # Look for third party deps that have separate license.
+    if ("third_party" in build_dep and not "android_tools" in build_dep and
+        os.path.basename(build_dep) == "BUILD.gn"):
+      third_party_deps.append(os.path.dirname(build_dep))
   return third_party_deps
 
 

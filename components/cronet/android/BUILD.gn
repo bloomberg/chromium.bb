@@ -817,6 +817,7 @@ action("generate_licenses") {
   args = [
     "license",
     rebase_path(_license_path, root_build_dir),
+    "--gn",
   ]
 }
 
