@@ -741,7 +741,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         Duration
       </message>
       <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDS_ERROR_HOST_OVERLOAD" formatter_data="android_java">
-        Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.
+        Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with an invalid PIN. Please try again later.
       </message>
       <message desc="Error that is shown on the client side after the host has terminated connection that lasted more than maximum allowed duration." name="IDS_ERROR_MAX_SESSION_LENGTH" formatter_data="android_java">
         The remote session has expired.
