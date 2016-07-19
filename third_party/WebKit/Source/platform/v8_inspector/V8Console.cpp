@@ -98,7 +98,7 @@ public:
 
     void reportCallWithArgument(ConsoleAPIType type, const String16& message)
     {
-        std::vector<v8::Local<v8::Value>> arguments = { toV8String(m_isolate, message) };
+        std::vector<v8::Local<v8::Value>> arguments(1, toV8String(m_isolate, message));
         reportCall(type, arguments);
     }
 
@@ -116,7 +116,7 @@ public:
     {
         if (checkAndSetPrivateFlagOnConsole(id, false))
             return;
-        std::vector<v8::Local<v8::Value>> arguments = { toV8String(m_isolate, message) };
+        std::vector<v8::Local<v8::Value>> arguments(1, toV8String(m_isolate, message));
         reportCall(ConsoleAPIType::kWarning, arguments);
     }
 
