@@ -42,7 +42,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     ~OverviewLabelButton() override;
 
     // Makes sure that text is readable with |background_color|.
-    void SetBackgroundColor(SkColor background_color);
+    void SetBackgroundColorHint(SkColor background_color);
 
     void set_padding(const gfx::Insets& padding) { padding_ = padding; }
 

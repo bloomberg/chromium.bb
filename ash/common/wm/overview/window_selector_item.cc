@@ -222,8 +222,11 @@ WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
 
 WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {}
 
-void WindowSelectorItem::OverviewLabelButton::SetBackgroundColor(
+void WindowSelectorItem::OverviewLabelButton::SetBackgroundColorHint(
     SkColor color) {
+  // Tell the label what color it will be drawn onto. It will use whether the
+  // background color is opaque or transparent to decide whether to use subpixel
+  // rendering. Does not actually set the label's background color.
   label()->SetBackgroundColor(color);
 }
 
@@ -552,6 +555,9 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   window_label_button_view_->SetFontList(bundle.GetFontList(
       material ? ui::ResourceBundle::BaseFont : ui::ResourceBundle::BoldFont));
   if (material) {
+    // Hint at the background color that the label will be drawn onto (for
+    // subpixel antialiasing). Does not actually set the background color.
+    window_label_button_view_->SetBackgroundColorHint(kLabelBackgroundColor);
     caption_container_view_ =
         new CaptionContainerView(window_label_button_view_, close_button_);
     window_label_->SetContentsView(caption_container_view_);
@@ -574,6 +580,9 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     window_label_selector_->SetContentsView(background_view);
     window_label_selector_->Show();
   } else {
+    // Indicate that the label will be drawn onto a transparent background
+    // (disables subpixel antialiasing).
+    window_label_button_view_->SetBackgroundColorHint(SK_ColorTRANSPARENT);
     window_label_->SetContentsView(window_label_button_view_);
   }
 }
