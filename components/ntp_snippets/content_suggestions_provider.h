@@ -110,6 +110,11 @@ class ContentSuggestionsProvider {
   // suggestions for that category.
   static std::string MakeUniqueID(ContentSuggestionsCategory category,
                                   const std::string& within_category_id);
+  // Reverse functions for MakeUniqueID()
+  static ContentSuggestionsCategory GetCategoryFromUniqueID(
+      const std::string& unique_id);
+  static std::string GetWithinCategoryIDFromUniqueID(
+      const std::string& unique_id);
 
  private:
   const std::vector<ContentSuggestionsCategory> provided_categories_;
