@@ -132,8 +132,6 @@ void SystemTrayDelegate::ShowUserLogin() {}
 
 void SystemTrayDelegate::SignOut() {}
 
-void SystemTrayDelegate::RequestLockScreen() {}
-
 void SystemTrayDelegate::RequestRestartForUpdate() {}
 
 void SystemTrayDelegate::RequestShutdown() {}

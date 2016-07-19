@@ -21,6 +21,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
+#endif
+
 namespace {
 
 // The ISO-639 code for the Hebrew locale. The help icon asset is a '?' which is
@@ -136,7 +141,11 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
     tray_delegate->RequestShutdown();
   } else if (sender == lock_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
-    tray_delegate->RequestLockScreen();
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->RequestLockScreen();
+#endif
   } else {
     NOTREACHED();
   }

@@ -225,9 +225,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Attempts to sign out the user.
   virtual void SignOut();
 
-  // Attempts to lock the screen.
-  virtual void RequestLockScreen();
-
   // Attempts to restart the system for update.
   virtual void RequestRestartForUpdate();
 

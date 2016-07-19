@@ -111,7 +111,6 @@ class SystemTrayDelegateChromeOS
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void SignOut() override;
-  void RequestLockScreen() override;
   void RequestRestartForUpdate() override;
   void RequestShutdown() override;
   void GetAvailableBluetoothDevices(ash::BluetoothDeviceList* list) override;

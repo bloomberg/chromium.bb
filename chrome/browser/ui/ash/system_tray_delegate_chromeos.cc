@@ -598,12 +598,6 @@ void SystemTrayDelegateChromeOS::SignOut() {
   chrome::AttemptUserExit();
 }
 
-void SystemTrayDelegateChromeOS::RequestLockScreen() {
-  // TODO(antrim) : additional logging for crbug/173178
-  LOG(WARNING) << "Requesting screen lock from AshSystemTrayDelegate";
-  DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
-}
-
 void SystemTrayDelegateChromeOS::RequestRestartForUpdate() {
   // We expect that UpdateEngine is in "Reboot for update" state now.
   chrome::NotifyAndTerminate(true /* fast path */);
