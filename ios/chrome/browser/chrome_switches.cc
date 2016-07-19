@@ -86,6 +86,9 @@ const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
 
+// Enables the QR Code scanner.
+const char kEnableQRScanner[] = "enable-qr-scanner";
+
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
 

@@ -14,10 +14,12 @@
   base::scoped_nsobject<XCallbackParameters> _xCallbackParameters;
   BOOL _launchVoiceSearch;
   BOOL _launchInIncognito;
+  BOOL _launchQRScanner;
 }
 
 @synthesize launchVoiceSearch = _launchVoiceSearch;
 @synthesize launchInIncognito = _launchInIncognito;
+@synthesize launchQRScanner = _launchQRScanner;
 
 - (const GURL&)externalURL {
   return _externalURL;

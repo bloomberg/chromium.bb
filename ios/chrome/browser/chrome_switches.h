@@ -34,6 +34,7 @@ extern const char kEnableIOSWKWebView[];
 extern const char kEnableLRUSnapshotCache[];
 extern const char kEnableNTPFavicons[];
 extern const char kEnableOfflineAutoReload[];
+extern const char kEnableQRScanner[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableTabEviction[];
 extern const char kEnableTabSwitcher[];

@@ -206,6 +206,11 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
                                     web::BuildUserAgentFromProduct(product));
   }
 
+  // Populate command line flags from QRScanner.
+  if ([defaults boolForKey:@"EnableQRCodeReader"]) {
+    command_line->AppendSwitch(switches::kEnableQRScanner);
+  }
+
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {

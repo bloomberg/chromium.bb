@@ -144,6 +144,11 @@ bool IsUpdatePasswordUIEnabled() {
 }
 
 bool IsQRCodeReaderEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableQRScanner))
+    return true;
+
+  // Check if the finch experiment is turned on.
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:kEnableQRCodeReader];
 }

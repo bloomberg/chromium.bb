@@ -25,6 +25,8 @@ class GURL;
 @property(nonatomic, readwrite, assign) BOOL launchVoiceSearch;
 // Boolean to track if the app should launch in incognito mode.
 @property(nonatomic, readwrite, assign) BOOL launchInIncognito;
+// Boolean to track if a QR scanner is requested at startup.
+@property(nonatomic, readwrite, assign) BOOL launchQRScanner;
 
 - (instancetype)init NS_UNAVAILABLE;
 
