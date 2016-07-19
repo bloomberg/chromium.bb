@@ -32,7 +32,7 @@ interface HTMLIFrameElement : HTMLElement {
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
-    [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
+    [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     // https://noncombatant.github.io/permission-delegation-api/#delegation-via-the-declarative-api
     [RuntimeEnabled=PermissionDelegation, PutForwards=value] readonly attribute DOMTokenList permissions;
 

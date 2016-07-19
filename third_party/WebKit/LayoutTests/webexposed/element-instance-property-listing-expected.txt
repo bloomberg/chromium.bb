@@ -261,7 +261,7 @@ html element a
     property ping
     property port
     property protocol
-    property referrerpolicy
+    property referrerPolicy
     property rel
     property rev
     property search
@@ -288,7 +288,7 @@ html element area
     property ping
     property port
     property protocol
-    property referrerpolicy
+    property referrerPolicy
     property search
     property shape
     property target
@@ -560,7 +560,7 @@ html element iframe
     property marginWidth
     property name
     property permissions
-    property referrerpolicy
+    property referrerPolicy
     property sandbox
     property scrolling
     property src
@@ -582,7 +582,7 @@ html element img
     property name
     property naturalHeight
     property naturalWidth
-    property referrerpolicy
+    property referrerPolicy
     property sizes
     property src
     property srcset
@@ -1366,7 +1366,7 @@ svg element a
     property ping
     property port
     property protocol
-    property referrerpolicy
+    property referrerPolicy
     property rel
     property rev
     property search
