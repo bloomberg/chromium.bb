@@ -12,7 +12,9 @@ function dumpObject(object, nondeterministicProps, prefix, firstLinePrefix)
     prefix = prefix || "";
     firstLinePrefix = firstLinePrefix || prefix;
     output(firstLinePrefix + "{");
-    var propertyNames = Object.keys(object);
+    var propertyNames = [];
+    for (var property in object)
+        propertyNames.push(property);
     propertyNames.sort();
     
     for (var i = 0; i < propertyNames.length; ++i) {

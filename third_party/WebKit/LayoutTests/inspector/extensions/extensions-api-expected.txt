@@ -5,8 +5,11 @@ Running tests...
 RUNNING TEST: extension_testAPI
 {
     audits : {
+        addCategory : <function>
     }
     inspectedWindow : {
+        eval : <function>
+        getResources : <function>
         onResourceAdded : {
             addListener : <function>
             removeListener : <function>
@@ -15,8 +18,11 @@ RUNNING TEST: extension_testAPI
             addListener : <function>
             removeListener : <function>
         }
+        reload : <function>
     }
     network : {
+        addRequestHeaders : <function>
+        getHAR : <function>
         onFinished : {
             addListener : <function>
             removeListener : <function>
@@ -31,7 +37,14 @@ RUNNING TEST: extension_testAPI
         }
     }
     panels : {
+        SearchAction : {
+            CancelSearch : "cancelSearch"
+            NextSearchResult : "nextSearchResult"
+            PerformSearch : "performSearch"
+            PreviousSearchResult : "previousSearchResult"
+        }
         applyStyleSheet : <function>
+        create : <function>
         elements : {
             createSidebarPane : <function>
             onSelectionChanged : {
@@ -39,6 +52,8 @@ RUNNING TEST: extension_testAPI
                 removeListener : <function>
             }
         }
+        openResource : <function>
+        setOpenResourceHandler : <function>
         sources : {
             createSidebarPane : <function>
             onSelectionChanged : {
@@ -49,6 +64,8 @@ RUNNING TEST: extension_testAPI
         themeName : "themeNameForTest"
     }
     resources : {
+        addRequestHeaders : <function>
+        getHAR : <function>
         onFinished : {
             addListener : <function>
             removeListener : <function>

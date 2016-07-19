@@ -29,6 +29,7 @@ category.onAuditStarted fired, results dump follows:
     updateProgress : <function>
 }
 {
+    addChild : <function>
     children : {
     }
     contents : {
