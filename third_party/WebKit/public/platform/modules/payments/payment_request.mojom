@@ -63,11 +63,17 @@ struct PaymentResponse {
   string? payer_phone;
 };
 
+enum PaymentErrorReason {
+  UNKNOWN,
+  USER_CANCEL,
+  NOT_SUPPORTED
+};
+
 interface PaymentRequestClient {
   OnShippingAddressChange(PaymentAddress address);
   OnShippingOptionChange(string shipping_option_id);
   OnPaymentResponse(PaymentResponse response);
-  OnError();
+  OnError(PaymentErrorReason error);
   OnComplete();
   OnAbort(bool aborted_successfully);
 };

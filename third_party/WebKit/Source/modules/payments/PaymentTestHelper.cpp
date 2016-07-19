@@ -154,6 +154,12 @@ PaymentRequestMockFunctionScope::~PaymentRequestMockFunctionScope()
     }
 }
 
+v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectCall(String* captor)
+{
+    m_mockFunctions.append(new MockFunction(m_scriptState, captor));
+    return m_mockFunctions.last()->bind();
+}
+
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectCall()
 {
     m_mockFunctions.append(new MockFunction(m_scriptState));
@@ -168,10 +174,23 @@ v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectNoCall()
     return m_mockFunctions.last()->bind();
 }
 
+ACTION_P(SaveValueIn, captor)
+{
+    *captor = toCoreString(arg0.v8Value()->ToString(arg0.getScriptState()->context()).ToLocalChecked());
+}
+
 PaymentRequestMockFunctionScope::MockFunction::MockFunction(ScriptState* scriptState)
     : ScriptFunction(scriptState)
 {
     ON_CALL(*this, call(testing::_)).WillByDefault(testing::ReturnArg<0>());
+}
+
+PaymentRequestMockFunctionScope::MockFunction::MockFunction(ScriptState* scriptState, String* captor)
+    : ScriptFunction(scriptState)
+    , m_value(captor)
+{
+    ON_CALL(*this, call(testing::_)).WillByDefault(
+        testing::DoAll(SaveValueIn(m_value), testing::ReturnArg<0>()));
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::MockFunction::bind()

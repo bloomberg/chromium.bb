@@ -85,7 +85,7 @@ private:
     void OnShippingAddressChange(mojom::blink::PaymentAddressPtr) override;
     void OnShippingOptionChange(const String& shippingOptionId) override;
     void OnPaymentResponse(mojom::blink::PaymentResponsePtr) override;
-    void OnError() override;
+    void OnError(mojom::blink::PaymentErrorReason) override;
     void OnComplete() override;
     void OnAbort(bool abortedSuccessfully) override;
 

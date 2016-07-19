@@ -36,6 +36,7 @@ using blink::mojom::blink::PaymentDetails;
 using blink::mojom::blink::PaymentDetailsModifier;
 using blink::mojom::blink::PaymentDetailsModifierPtr;
 using blink::mojom::blink::PaymentDetailsPtr;
+using blink::mojom::blink::PaymentErrorReason;
 using blink::mojom::blink::PaymentItem;
 using blink::mojom::blink::PaymentItemPtr;
 using blink::mojom::blink::PaymentMethodData;
@@ -381,7 +382,7 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
 
     DCHECK(!m_paymentProvider.is_bound());
     scriptState->domWindow()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
-    m_paymentProvider.set_connection_error_handler(convertToBaseCallback(WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this))));
+    m_paymentProvider.set_connection_error_handler(convertToBaseCallback(WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this), mojom::blink::PaymentErrorReason::UNKNOWN)));
     m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
     m_paymentProvider->Show(mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(m_methodData), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options));
 
@@ -595,14 +596,50 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
     m_showResolver.clear();
 }
 
-void PaymentRequest::OnError()
+void PaymentRequest::OnError(mojo::PaymentErrorReason error)
 {
-    if (m_completeResolver)
-        m_completeResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
-    if (m_showResolver)
-        m_showResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
-    if (m_abortResolver)
-        m_abortResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
+    bool isError = false;
+    ExceptionCode ec = UnknownError;
+    String message;
+
+    switch (error) {
+    case mojom::blink::PaymentErrorReason::USER_CANCEL:
+        message = "Request cancelled";
+        break;
+    case mojom::blink::PaymentErrorReason::NOT_SUPPORTED:
+        isError = true;
+        ec = NotSupportedError;
+        message = "The payment method is not supported";
+        break;
+    case mojom::blink::PaymentErrorReason::UNKNOWN:
+        isError = true;
+        ec = UnknownError;
+        message = "Request failed";
+        break;
+    }
+
+    DCHECK(!message.isEmpty());
+
+    if (isError) {
+        if (m_completeResolver)
+            m_completeResolver->reject(DOMException::create(ec, message));
+
+        if (m_showResolver)
+            m_showResolver->reject(DOMException::create(ec, message));
+
+        if (m_abortResolver)
+            m_abortResolver->reject(DOMException::create(ec, message));
+    } else {
+        if (m_completeResolver)
+            m_completeResolver->reject(message);
+
+        if (m_showResolver)
+            m_showResolver->reject(message);
+
+        if (m_abortResolver)
+            m_abortResolver->reject(message);
+    }
+
     clearResolversAndCloseMojoConnection();
 }
 

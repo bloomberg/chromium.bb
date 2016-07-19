@@ -6,6 +6,7 @@
 #define PaymentTestHelper_h
 
 #include "bindings/core/v8/ScriptFunction.h"
+#include "bindings/core/v8/V8DOMException.h"
 #include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentShippingOption.h"
@@ -68,14 +69,17 @@ public:
     ~PaymentRequestMockFunctionScope();
 
     v8::Local<v8::Function> expectCall();
+    v8::Local<v8::Function> expectCall(String* captor);
     v8::Local<v8::Function> expectNoCall();
 
 private:
     class MockFunction : public ScriptFunction {
     public:
         explicit MockFunction(ScriptState*);
+        MockFunction(ScriptState*, String* captor);
         v8::Local<v8::Function> bind();
         MOCK_METHOD1(call, ScriptValue(ScriptValue));
+        String* m_value;
     };
 
     ScriptState* m_scriptState;

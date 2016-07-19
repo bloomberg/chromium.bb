@@ -31,6 +31,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojom.payments.PaymentComplete;
 import org.chromium.mojom.payments.PaymentDetails;
+import org.chromium.mojom.payments.PaymentErrorReason;
 import org.chromium.mojom.payments.PaymentItem;
 import org.chromium.mojom.payments.PaymentMethodData;
 import org.chromium.mojom.payments.PaymentOptions;
@@ -910,7 +911,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private void disconnectFromClientWithDebugMessage(String debugMessage) {
         Log.d(TAG, debugMessage);
-        mClient.onError();
+        mClient.onError(PaymentErrorReason.USER_CANCEL);
         closeClient();
     }
 
