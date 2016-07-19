@@ -107,14 +107,18 @@
     <div>
       <span i18n-content="deviceGroupDescription"></span>
       <div id="touchpad-settings" class="settings-row" hidden>
-        <span class="option-name" i18n-content="touchpadSpeed"></span>
+        <span id="touchpad-speed-label" class="option-name"
+            i18n-content="touchpadSpeed"></span>
         <input id="touchpad-sensitivity-range" type="range" min="1" max="5"
-            pref="settings.touchpad.sensitivity2" class="touch-slider">
+            pref="settings.touchpad.sensitivity2" class="touch-slider"
+            aria-labelledby="touchpad-speed-label">
       </div>
       <div id="mouse-settings" class="settings-row" hidden>
-        <span class="option-name" i18n-content="mouseSpeed"></span>
+        <span id="mouse-speed-label" class="option-name"
+            i18n-content="mouseSpeed"></span>
         <input id="mouse-sensitivity-range" type="range" min="1" max="5"
-            pref="settings.mouse.sensitivity2" class="touch-slider">
+            pref="settings.mouse.sensitivity2" class="touch-slider"
+            aria-labelledby="mouse-speed-label">
       </div>
       <div id="no-pointing-devices" i18n-content="noPointingDevices"
           class="settings-row" hidden>
