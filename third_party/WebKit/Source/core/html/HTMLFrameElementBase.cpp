@@ -93,6 +93,8 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem)
         return;
     if (!contentFrame() || scriptURL.isEmpty() || !contentFrame()->isLocalFrame())
         return;
+    if (contentFrame()->owner()->getSandboxFlags() & SandboxOrigin)
+        return;
     toLocalFrame(contentFrame())->script().executeScriptIfJavaScriptURL(scriptURL);
 }
 
