@@ -242,7 +242,15 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // We check the domains and urls as well due to crbug.com/622879.
-        if (savedInstanceState != null || mImportantDomains == null || mFaviconURLs == null) {
+        if (savedInstanceState != null) {
+            // The important domains and favicon URLs aren't currently saved, so if this dialog
+            // is recreated from a saved instance they will be null. This method must return a
+            // valid dialog, so these two array's are initialized, then the dialog is dismissed.
+            // TODO(dmurph): save mImportantDomains and mFaviconURLs so that they can be restored
+            // from a savedInstanceState and the dialog can be properly recreated rather than
+            // dismissed.
+            mImportantDomains = new String[0];
+            mFaviconURLs = new String[0];
             dismiss();
         }
         mProfile = Profile.getLastUsedProfile().getOriginalProfile();

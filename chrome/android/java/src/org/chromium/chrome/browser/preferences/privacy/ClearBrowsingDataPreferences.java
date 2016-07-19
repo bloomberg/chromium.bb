@@ -579,9 +579,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public void onImportantRegisterableDomainsReady(String[] domains, String[] exampleOrigins) {
         if (domains == null) return;
-        // mMaxImportantSites is a constant on the C++ side.
-        RecordHistogram.recordCustomCountHistogram("History.ClearBrowsingData.NumImportant",
-                domains.length, 0, mMaxImportantSites + 1, mMaxImportantSites + 1);
+        // mMaxImportantSites is a constant on the C++ side. While 0 is valid, use 1 as the minimum
+        // because histogram code assumes a min >= 1; the underflow bucket will record the 0s.
+        RecordHistogram.recordLinearCountHistogram("History.ClearBrowsingData.NumImportant",
+                domains.length, 1, mMaxImportantSites + 1, mMaxImportantSites + 1);
         mSortedImportantDomains = Arrays.copyOf(domains, domains.length);
         mSortedExampleOrigins = Arrays.copyOf(exampleOrigins, exampleOrigins.length);
     }
