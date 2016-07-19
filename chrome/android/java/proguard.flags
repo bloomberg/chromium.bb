@@ -1,9 +1,3 @@
-# Keep line number information, useful for stack traces.
--keepattributes SourceFile,LineNumberTable
-
-# Keep the annotations.
--keep @interface ***
-
 # Disable obfuscation for the following two packages.
 -keepnames,allowoptimization class com.google.android.apps.chrome.**,org.chromium.** {
   *;
@@ -13,74 +7,6 @@
 # This can be improved upon - see crbug.com/622023.
 -keep public class com.google.android.apps.chrome** extends android.app.Fragment
 -keep public class org.chromium** extends android.app.Fragment
-
-# Keeps for class level annotations.
--keep @**.UsedByReflection class *
--keep @**.VisibleForTesting class *
-
-# Keeps for method level annotations.
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.AccessedByNative <fields>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.CalledByNative <methods>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.CalledByNativeUnchecked <methods>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.JavascriptInterface <methods>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.NativeCall <methods>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.UsedByReflection <methods>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  @**.VisibleForTesting <methods>;
-}
--keepclasseswithmembers class com.google.android.apps.chrome.** {
-  native <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.AccessedByNative <fields>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.CalledByNative <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.CalledByNativeUnchecked <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.JavascriptInterface <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.NativeCall <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.UsedByReflection <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  @**.VisibleForTesting <methods>;
-}
--keepclasseswithmembers class org.chromium.** {
-  native <methods>;
-}
-
-# Class merging provides negligible .dex size reduction and method count
-# reduction (about 0.3% improvement on method count, and 0.1% savings on size),
-# and it messes up stack traces if the classes are optimized. Thus, it is in our
-# best interests to turn it off. See crbug.com/620323
--optimizations !class/merging/*
-
-# Keep all runtime visible annotations
--keepattributes RuntimeVisibleAnnotations
-
-# Remove methods annotated with this if their return value is unused
--assumenosideeffects class ** {
-  @org.chromium.base.annotations.RemovableInRelease <methods>;
-}
 
 # TODO(aurimas): figure out why we need to keep these classes.
 -keep class org.chromium.base.test.** {
@@ -101,14 +27,6 @@
 # otherwise.
 -keep class com.google.ipc.invalidation.external.client.** {
   *;
-}
-
-# Keep all enum values and valueOf methods. See
-# http://proguard.sourceforge.net/index.html#manual/examples.html
-# for the reason for this. Also, see http://crbug.com/248037.
--keepclassmembers enum * {
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
 }
 
 # Keep all Parcelables as they might be marshalled outside Chrome.
@@ -135,19 +53,6 @@
 # See https://sourceforge.net/p/proguard/bugs/531/#fdc9/41e2
 -keepclassmembers,allowshrinking,allowobfuscation class android.support.v7.widget.AppCompatButton {
   !static final <fields>;
-}
-
-# Allowing Proguard to change modifiers. This change shrinks the .dex size by
-# ~1.1%, and reduces the method count by ~4.3%.
--allowaccessmodification
-
-# Allows Proguard freedom in removing these log related calls. We ask for debug
-# and verbose logs to be stripped out in base.Log, so we are just ensuring we
-# get rid of all other debug/verbose logs.
--assumenosideeffects class android.util.Log {
-  static *** d(...);
-  static *** v(...);
-  static *** isLoggable(...);
 }
 
 # Everything below this is kept because they are referenced by the test APK.
@@ -189,6 +94,13 @@
 
 -keepnames class jp.tomorrowkey.android.gifplayer.** {
   public *;
+}
+
+# Keeping @VisibleForTesting and its annotated classes + methods
+-keep @interface org.chromium.base.VisibleForTesting
+-keep @org.chromium.base.VisibleForTesting class **
+-keepclasseswithmembers class * {
+  @org.chromium.base.VisibleForTesting <methods>;
 }
 
 # Used in tests.

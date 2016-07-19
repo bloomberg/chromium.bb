@@ -28,7 +28,10 @@ template("system_webview_apk_tmpl") {
 
     if (!is_java_debug) {
       proguard_enabled = true
-      proguard_configs = [ "//android_webview/apk/java/proguard.flags" ]
+      proguard_configs = [
+        "//android_webview/apk/java/proguard.flags",
+        "//base/android/base_proguard_config.flags",
+      ]
     }
   }
 }

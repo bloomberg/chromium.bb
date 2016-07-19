@@ -3,19 +3,6 @@
 # tables.
 -keepnames class *** { *; }
 
-# Keep source file and line number information for stack traces.
--keepattributes SourceFile,LineNumberTable
-
-# Keep all runtime visible annotations.
--keepattributes RuntimeVisibleAnnotations
-# Keeping annotations - if we remove these keeps, ProGuard will eliminate the
-# annotations themselves, which will prevent them from affecting ProGuard's
-# optimization run.
--keep @interface **.AccessedByNative
--keep @interface **.CalledByNative
--keep @interface **.CalledByNativeUnchecked
--keep @interface **.RemovableInRelease
--keep @interface **.UsedByReflection
 
 # Keep the factory and its public members; it's the main entry point used by the
 # framework.
@@ -27,42 +14,6 @@
 # unreleased Android easier.
 -keep class com.android.webview.chromium.WebViewChromium {
   public *;
-}
-
-# Keep JNI interfaces.
--keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
-  @**.AccessedByNative <fields>;
-}
--keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
-  @**.CalledByNative <methods>;
-}
--keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
-  @**.CalledByNativeUnchecked <methods>;
-}
--keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
-  native <methods>;
-}
-
-# Keep classes marked as used by reflection
--keep @**.UsedByReflection class com.android.webview.chromium.**,org.chromium.**
-
-# Keep members explicitly marked as used by reflection
--keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
-  @**.UsedByReflection *;
-}
-
-# Remove methods annotated with this if their return value is unused
--assumenosideeffects class ** {
-  @org.chromium.base.annotations.RemovableInRelease <methods>;
-}
-
-# Allows Proguard freedom in removing these log related calls. We ask for debug
-# and verbose logs to be stripped out in base.Log, so we are just ensuring we
-# get rid of all other debug/verbose logs.
--assumenosideeffects class android.util.Log {
-  static *** d(...);
-  static *** v(...);
-  static *** isLoggable(...);
 }
 
 # Linker dynamically casts to $TestRunner when running tests. We don't run these
@@ -112,11 +63,3 @@
 # may reference classes no longer in the SDK.
 -dontnote android.support.**
 -dontwarn android.support.**
-
-# Keep all enum values and valueOf methods. See
-# http://proguard.sourceforge.net/index.html#manual/examples.html
-# for the reason for this. Also, see http://crbug.com/248037.
--keepclassmembers enum * {
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
-}

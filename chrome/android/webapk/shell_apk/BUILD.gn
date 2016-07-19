@@ -91,7 +91,10 @@ android_apk("webapk") {
   ]
   if (!is_java_debug) {
     proguard_enabled = true
-    proguard_configs = [ "//chrome/android/java/proguard.flags" ]
+    proguard_configs = [
+      "//chrome/android/java/proguard.flags",
+      "//base/android/base_proguard_config.flags",
+    ]
   }
 }
 

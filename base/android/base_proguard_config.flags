@@ -1,0 +1,69 @@
+# Keep line number information, useful for stack traces.
+-keepattributes SourceFile,LineNumberTable
+
+# Keep all runtime visible annotations
+-keepattributes RuntimeVisibleAnnotations
+
+# Keep the annotations, because if we don't, the ProGuard rules that use them
+# will not be respected. These classes then show up in our final dex, which we
+# do not want - see crbug.com/628226.
+-keep @interface org.chromium.base.annotations.AccessedByNative
+-keep @interface org.chromium.base.annotations.CalledByNative
+-keep @interface org.chromium.base.annotations.CalledByNativeUnchecked
+-keep @interface org.chromium.base.annotations.RemovableInRelease
+-keep @interface org.chromium.base.annotations.UsedByReflection
+
+# Keeps for class level annotations.
+-keep @org.chromium.base.annotations.UsedByReflection class *
+
+# Keeps for method level annotations.
+-keepclasseswithmembers class * {
+  @android.webkit.JavascriptInterface <methods>;
+}
+-keepclasseswithmembers class * {
+  @org.chromium.base.annotations.AccessedByNative <fields>;
+}
+-keepclasseswithmembers,includedescriptorclasses class * {
+  @org.chromium.base.annotations.CalledByNative <methods>;
+}
+-keepclasseswithmembers,includedescriptorclasses class * {
+  @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
+}
+-keepclasseswithmembers class * {
+  @org.chromium.base.annotations.UsedByReflection <methods>;
+}
+-keepclasseswithmembers,includedescriptorclasses class * {
+  native <methods>;
+}
+
+# Remove methods annotated with this if their return value is unused
+-assumenosideeffects class ** {
+  @org.chromium.base.annotations.RemovableInRelease <methods>;
+}
+
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
+-assumenosideeffects class android.util.Log {
+  static *** d(...);
+  static *** v(...);
+  static *** isLoggable(...);
+}
+
+# Class merging provides negligible .dex size reduction and method count
+# reduction (about 0.3% improvement on method count, and 0.1% savings on size),
+# and it messes up stack traces if the classes are optimized. Thus, it is in our
+# best interests to turn it off. See crbug.com/620323
+-optimizations !class/merging/*
+
+# Allowing Proguard to change modifiers. This change shrinks the .dex size by
+# ~1.1%, and reduces the method count by ~4.3%.
+-allowaccessmodification
+
+# Keep all enum values and valueOf methods. See
+# http://proguard.sourceforge.net/index.html#manual/examples.html
+# for the reason for this. Also, see http://crbug.com/248037.
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
