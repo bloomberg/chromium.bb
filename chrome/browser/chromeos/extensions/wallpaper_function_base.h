@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/gfx/image/image_skia.h"

@@ -18,15 +18,12 @@ class TestLockStateControllerDelegate : public LockStateControllerDelegate {
   TestLockStateControllerDelegate();
   ~TestLockStateControllerDelegate() override;
 
-  int num_lock_requests() const { return num_lock_requests_; }
   int num_shutdown_requests() const { return num_shutdown_requests_; }
 
   // LockStateControllerDelegate implementation.
-  void RequestLockScreen() override;
   void RequestShutdown() override;
 
  private:
-  int num_lock_requests_;
   int num_shutdown_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLockStateControllerDelegate);

@@ -15,6 +15,7 @@ namespace chromeos {
 
 FakeSessionManagerClient::FakeSessionManagerClient()
     : start_device_wipe_call_count_(0),
+      request_lock_screen_call_count_(0),
       notify_lock_screen_shown_call_count_(0),
       notify_lock_screen_dismissed_call_count_(0),
       arc_available_(false) {}
@@ -72,6 +73,7 @@ void FakeSessionManagerClient::StartDeviceWipe() {
 }
 
 void FakeSessionManagerClient::RequestLockScreen() {
+  request_lock_screen_call_count_++;
 }
 
 void FakeSessionManagerClient::NotifyLockScreenShown() {

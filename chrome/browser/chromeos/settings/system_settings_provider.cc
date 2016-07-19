@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "content/public/browser/render_process_host.h"
 
 namespace chromeos {
 

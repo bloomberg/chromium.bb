@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"

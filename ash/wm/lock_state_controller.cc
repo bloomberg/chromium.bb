@@ -31,6 +31,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #endif
 
 #define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                     \
@@ -503,7 +505,11 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
     WmShell::Get()->RecordUserMetricsAction(
         shutdown_after_lock_ ? UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON
                              : UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
-    delegate_->RequestLockScreen();
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->RequestLockScreen();
+#endif
   }
 
   base::TimeDelta timeout =

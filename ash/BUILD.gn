@@ -406,6 +406,9 @@ test("ash_unittests") {
       # All tests for multiple displays: not supported on Windows Ash.
       "wm/drag_window_resizer_unittest.cc",
 
+      # Talks to ChromeOS system services.
+      "wm/lock_state_controller_unittest.cc",
+
       # Accelerometer is only available on Chrome OS.
       "wm/maximize_mode/maximize_mode_controller_unittest.cc",
 

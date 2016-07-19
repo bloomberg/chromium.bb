@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 
-#include "ash/shell.h"
-#include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "dbus/bus.h"

@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/power_button_observer.h"
+#include "chrome/browser/chromeos/power/login_lock_state_notifier.h"
 
 #include "ash/common/login_status.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/wm/power_button_controller.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_service.h"
 
 namespace ash {
@@ -33,26 +31,17 @@ ash::LoginStatus GetCurrentLoginStatus() {
 
 }  // namespace
 
-PowerButtonObserver::PowerButtonObserver() {
+LoginLockStateNotifier::LoginLockStateNotifier() {
   ash::Shell::GetInstance()->lock_state_controller()->SetDelegate(
       std::unique_ptr<ash::LockStateControllerDelegate>(
           new SessionStateControllerDelegateChromeos));
 
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_APP_TERMINATING,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources());
-
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+                 content::NotificationService::AllSources());
 
   // Tell the controller about the initial state.
   ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
@@ -62,14 +51,12 @@ PowerButtonObserver::PowerButtonObserver() {
   ash::Shell::GetInstance()->OnLockStateChanged(locked);
 }
 
-PowerButtonObserver::~PowerButtonObserver() {
-  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-}
+LoginLockStateNotifier::~LoginLockStateNotifier() {}
 
-void PowerButtonObserver::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
+void LoginLockStateNotifier::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
@@ -86,12 +73,6 @@ void PowerButtonObserver::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
-}
-
-void PowerButtonObserver::PowerButtonEventReceived(
-    bool down, const base::TimeTicks& timestamp) {
-  ash::Shell::GetInstance()->power_button_controller()->
-      OnPowerButtonEvent(down, timestamp);
 }
 
 }  // namespace chromeos

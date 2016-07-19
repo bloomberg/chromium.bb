@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"

@@ -4,6 +4,7 @@
 
 #include "ash/wm/power_button_controller.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -17,6 +18,10 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#endif
 
 namespace ash {
 
@@ -37,16 +42,20 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
 #endif
       controller_(controller) {
 #if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
   Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif
   Shell::GetInstance()->PrependPreTargetHandler(this);
 }
 
 PowerButtonController::~PowerButtonController() {
+  Shell::GetInstance()->RemovePreTargetHandler(this);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
 #endif
-  Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void PowerButtonController::OnScreenBrightnessChanged(double percent) {
@@ -162,6 +171,12 @@ void PowerButtonController::OnDisplayModeChanged(
   internal_display_off_and_external_display_on_ =
       internal_display_off && external_display_on;
 }
-#endif
+
+void PowerButtonController::PowerButtonEventReceived(
+    bool down,
+    const base::TimeTicks& timestamp) {
+  OnPowerButtonEvent(down, timestamp);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

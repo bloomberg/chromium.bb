@@ -21,12 +21,6 @@ SessionStateControllerDelegateChromeos::
     ~SessionStateControllerDelegateChromeos() {
 }
 
-void SessionStateControllerDelegateChromeos::RequestLockScreen() {
-  // TODO(antrim) : additional logging for crbug/173178
-  LOG(WARNING) << "Requesting screen lock from SessionStateControllerDelegate";
-  DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
-}
-
 void SessionStateControllerDelegateChromeos::RequestShutdown() {
   CrosSettings* cros_settings = CrosSettings::Get();
   CrosSettingsProvider::TrustedStatus status =

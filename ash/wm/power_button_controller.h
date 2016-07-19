@@ -5,15 +5,13 @@
 #ifndef ASH_WM_POWER_BUTTON_CONTROLLER_H_
 #define ASH_WM_POWER_BUTTON_CONTROLLER_H_
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_export.h"
-#include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
-#include "ui/base/accelerators/accelerator.h"
+#include "base/time/time.h"
 #include "ui/events/event_handler.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
@@ -38,12 +36,13 @@ class LockStateController;
 // shutting down of the system as well as taking screen shots while in maximize
 // mode.
 class ASH_EXPORT PowerButtonController
-    : ui::EventHandler
+    : public ui::EventHandler
 // TODO(derat): Remove these ifdefs after DisplayConfigurator becomes
 // cross-platform.
 #if defined(OS_CHROMEOS)
       ,
-      public ui::DisplayConfigurator::Observer
+      public ui::DisplayConfigurator::Observer,
+      public chromeos::PowerManagerClient::Observer
 #endif
 {
  public:
@@ -72,6 +71,10 @@ class ASH_EXPORT PowerButtonController
   // Overriden from ui::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+
+  // Overridden from chromeos::PowerManagerClient::Observer:
+  void PowerButtonEventReceived(bool down,
+                                const base::TimeTicks& timestamp) override;
 #endif
 
  private:

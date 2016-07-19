@@ -96,6 +96,9 @@ class FakeSessionManagerClient : public SessionManagerClient {
   int start_device_wipe_call_count() const {
     return start_device_wipe_call_count_;
   }
+  int request_lock_screen_call_count() const {
+    return request_lock_screen_call_count_;
+  }
 
   // Returns how many times LockScreenShown() was called.
   int notify_lock_screen_shown_call_count() const {
@@ -118,6 +121,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   std::vector<std::string> server_backed_state_keys_;
 
   int start_device_wipe_call_count_;
+  int request_lock_screen_call_count_;
   int notify_lock_screen_shown_call_count_;
   int notify_lock_screen_dismissed_call_count_;
 

@@ -41,7 +41,6 @@ class ASH_EXPORT LockStateControllerDelegate {
   LockStateControllerDelegate() {}
   virtual ~LockStateControllerDelegate() {}
 
-  virtual void RequestLockScreen() = 0;
   virtual void RequestShutdown() = 0;
 
  private:

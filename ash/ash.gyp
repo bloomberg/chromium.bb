@@ -1307,6 +1307,9 @@
             # All tests for multiple displays: not supported on Windows Ash.
             'wm/drag_window_resizer_unittest.cc',
 
+            # Talks to ChromeOS system services.
+            'wm/lock_state_controller_unittest.cc',
+
             # Can't resize on Windows Ash. http://crbug.com/165962
             'autoclick/autoclick_unittest.cc',
             'magnifier/magnification_controller_unittest.cc',

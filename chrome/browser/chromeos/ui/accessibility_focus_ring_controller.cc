@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 
