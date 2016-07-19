@@ -1818,6 +1818,7 @@ def GetConfig():
 
   _paladin_hwtest_boards = frozenset([
       'daisy_skate',
+      'elm',
       'link',
       'lumpy',
       'peach_pit',
