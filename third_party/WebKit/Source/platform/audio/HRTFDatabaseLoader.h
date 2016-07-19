@@ -53,13 +53,16 @@ public:
     // Both constructor and destructor must be called from the main thread.
     ~HRTFDatabaseLoader();
 
-    // Returns true once the default database has been completely loaded.
-    bool isLoaded();
+    // Returns true once the default database has been completely loaded.  This
+    // must be called from the audio thread.
+    bool isLoaded() { return database(); }
 
     // waitForLoaderThreadCompletion() may be called more than once and is thread-safe.
     void waitForLoaderThreadCompletion();
 
-    HRTFDatabase* database() { return m_hrtfDatabase.get(); }
+    // Returns the database or nullptr if the database doesn't yet exist.  Must
+    // be called from the audio thread.
+    HRTFDatabase* database();
 
     float databaseSampleRate() const { return m_databaseSampleRate; }
 

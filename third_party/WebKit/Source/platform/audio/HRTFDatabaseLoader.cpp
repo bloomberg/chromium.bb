@@ -39,6 +39,8 @@ namespace blink {
 
 using LoaderMap = HashMap<double, HRTFDatabaseLoader*>;
 
+// loaderMap() returns the static hash map that contains the mapping between the
+// sample rate and the corresponding HRTF database.
 static LoaderMap& loaderMap()
 {
     DEFINE_STATIC_LOCAL(LoaderMap*, map, (new LoaderMap));
@@ -76,33 +78,44 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
 
 void HRTFDatabaseLoader::loadTask()
 {
-    ASSERT(!isMainThread());
+    DCHECK(!isMainThread());
+    DCHECK(!m_hrtfDatabase);
 
-    {
-        MutexLocker locker(m_lock);
-        if (!m_hrtfDatabase) {
-            // Load the default HRTF database.
-            m_hrtfDatabase = HRTFDatabase::create(m_databaseSampleRate);
-        }
-    }
+    // Protect access to m_hrtfDatabase, which can be accessed from the audio
+    // thread.
+    MutexLocker locker(m_lock);
+    // Load the default HRTF database.
+    m_hrtfDatabase = HRTFDatabase::create(m_databaseSampleRate);
 }
 
 void HRTFDatabaseLoader::loadAsynchronously()
 {
     ASSERT(isMainThread());
 
-    MutexLocker locker(m_lock);
-    if (!m_hrtfDatabase && !m_thread) {
-        // Start the asynchronous database loading process.
-        m_thread = wrapUnique(Platform::current()->createThread("HRTF database loader"));
-        // TODO(alexclarke): Should this be posted as a loading task?
-        m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::loadTask, crossThreadUnretained(this)));
-    }
+    // m_hrtfDatabase and m_thread should both be unset because this should be a
+    // new HRTFDatabaseLoader object that was just created by
+    // createAndLoadAsynchronouslyIfNecessary and because we haven't started
+    // loadTask yet for this object.
+    DCHECK(!m_hrtfDatabase);
+    DCHECK(!m_thread);
+
+    // Start the asynchronous database loading process.
+    m_thread = wrapUnique(Platform::current()->createThread("HRTF database loader"));
+    // TODO(alexclarke): Should this be posted as a loading task?
+    m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::loadTask, crossThreadUnretained(this)));
 }
 
-bool HRTFDatabaseLoader::isLoaded()
+HRTFDatabase* HRTFDatabaseLoader::database()
 {
-    MutexLocker locker(m_lock);
+    DCHECK(!isMainThread());
+
+    // Seeing that this is only called from the audio thread, we can't block.
+    // It's ok to return nullptr if we can't get the lock.
+    MutexTryLocker tryLocker(m_lock);
+
+    if (!tryLocker.locked())
+        return nullptr;
+
     return m_hrtfDatabase.get();
 }
 
