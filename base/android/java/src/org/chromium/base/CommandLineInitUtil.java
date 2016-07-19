@@ -51,7 +51,9 @@ public final class CommandLineInitUtil {
     public static void initCommandLine(Context context, String fileName) {
         if (!CommandLine.isInitialized()) {
             File commandLineFile = getAlternativeCommandLinePath(context, fileName);
-            if (commandLineFile == null) {
+            if (commandLineFile != null) {
+                Log.i(TAG, "Using alternative command line file in " + commandLineFile.getPath());
+            } else {
                 commandLineFile = new File(COMMAND_LINE_FILE_PATH, fileName);
             }
             CommandLine.initFromFile(commandLineFile.getPath());
@@ -59,7 +61,9 @@ public final class CommandLineInitUtil {
     }
 
     /**
-     * Use an alternative path if adb is enabled and this is the debug app.
+     * Use an alternative path if:
+     * - The current build is "eng" or "userdebug", OR
+     * - adb is enabled and this is the debug app.
      */
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private static File getAlternativeCommandLinePath(Context context, String fileName) {
@@ -67,13 +71,15 @@ public final class CommandLineInitUtil {
                 new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, fileName);
         if (!alternativeCommandLineFile.exists()) return null;
         try {
+            if ("eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE)) {
+                return alternativeCommandLineFile;
+            }
+
             String debugApp = Build.VERSION.SDK_INT < 17
                     ? getDebugAppPreJBMR1(context) : getDebugAppJBMR1(context);
 
             if (debugApp != null
                     && debugApp.equals(context.getApplicationContext().getPackageName())) {
-                Log.i(TAG, "Using alternative command line file in "
-                        + alternativeCommandLineFile.getPath());
                 return alternativeCommandLineFile;
             }
         } catch (RuntimeException e) {
