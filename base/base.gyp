@@ -1423,6 +1423,7 @@
             'android/java/src/org/chromium/base/ContentUriUtils.java',
             'android/java/src/org/chromium/base/ContextUtils.java',
             'android/java/src/org/chromium/base/CpuFeatures.java',
+            'android/java/src/org/chromium/base/EarlyTraceEvent.java',
             'android/java/src/org/chromium/base/EventLog.java',
             'android/java/src/org/chromium/base/FieldTrialList.java',
             'android/java/src/org/chromium/base/ImportantFileWriterAndroid.java',

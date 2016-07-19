@@ -42,6 +42,8 @@
           'android/context_utils.h',
           'android/cpu_features.cc',
           'android/cxa_demangle_stub.cc',
+          'android/early_trace_event_binding.cc',
+          'android/early_trace_event_binding.h',
           'android/event_log.cc',
           'android/event_log.h',
           'android/field_trial_list.cc',
