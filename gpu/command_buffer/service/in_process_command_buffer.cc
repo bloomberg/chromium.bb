@@ -769,7 +769,8 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
       scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
-              handle, size, format, internalformat, kClientId);
+              handle, size, format, internalformat, kClientId,
+              kNullSurfaceHandle);
       if (!image.get()) {
         LOG(ERROR) << "Failed to create image for buffer.";
         return;

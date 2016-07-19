@@ -48,7 +48,8 @@ class GPU_EXPORT GpuMemoryBufferFactorySurfaceTexture
       const gfx::Size& size,
       gfx::BufferFormat format,
       unsigned internalformat,
-      int client_id) override;
+      int client_id,
+      SurfaceHandle surface_handle) override;
 
  private:
   typedef std::pair<int, int> SurfaceTextureMapKey;

@@ -123,7 +123,8 @@ bool VaapiDrmPicture::ImportGpuMemoryBufferHandle(
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   // CreateNativePixmapFromHandle() will take ownership of the handle.
   pixmap_ = factory->CreateNativePixmapFromHandle(
-      size_, format, gpu_memory_buffer_handle.native_pixmap_handle);
+      gfx::kNullAcceleratedWidget, size_, format,
+      gpu_memory_buffer_handle.native_pixmap_handle);
   if (!pixmap_) {
     DVLOG(1) << "Failed creating a pixmap from a native handle";
     return false;

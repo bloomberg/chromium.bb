@@ -54,6 +54,7 @@ scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
 
 scoped_refptr<ui::NativePixmap>
 SurfaceFactoryOzone::CreateNativePixmapFromHandle(
+    gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {

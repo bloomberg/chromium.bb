@@ -148,7 +148,8 @@ class GPU_EXPORT GpuChannel
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
-      uint32_t internalformat);
+      uint32_t internalformat,
+      SurfaceHandle surface_handle);
 
   GpuChannelMessageFilter* filter() const { return filter_.get(); }
 

@@ -111,6 +111,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // Create a single native buffer from an existing handle. Takes ownership of
   // |handle| and can be called on any thread.
   virtual scoped_refptr<NativePixmap> CreateNativePixmapFromHandle(
+      gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,
       const gfx::NativePixmapHandle& handle);

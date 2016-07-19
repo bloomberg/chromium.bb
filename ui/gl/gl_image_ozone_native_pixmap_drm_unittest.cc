@@ -94,7 +94,8 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
   ui::SurfaceFactoryOzone* surface_factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   return surface_factory->CreateNativePixmapFromHandle(
-      size, gfx::BufferFormat::YVU_420, pixmap_handle);
+      gfx::kNullAcceleratedWidget, size, gfx::BufferFormat::YVU_420,
+      pixmap_handle);
 }
 
 // Delegate to test EGL images created directly using drm.

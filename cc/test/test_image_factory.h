@@ -21,7 +21,8 @@ class TestImageFactory : public gpu::ImageFactory {
       const gfx::Size& size,
       gfx::BufferFormat format,
       unsigned internalformat,
-      int client_id) override;
+      int client_id,
+      gpu::SurfaceHandle surface_handle) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestImageFactory);

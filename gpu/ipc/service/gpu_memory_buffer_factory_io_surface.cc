@@ -71,7 +71,8 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,
-    int client_id) {
+    int client_id,
+    SurfaceHandle surface_handle) {
   base::AutoLock lock(io_surfaces_lock_);
 
   DCHECK_EQ(handle.type, gfx::IO_SURFACE_BUFFER);

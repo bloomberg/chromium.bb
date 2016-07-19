@@ -55,12 +55,13 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat,
-    int client_id) {
+    int client_id,
+    SurfaceHandle surface_handle) {
   DCHECK_EQ(handle.type, gfx::OZONE_NATIVE_PIXMAP);
   scoped_refptr<ui::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmapFromHandle(size, format,
+          ->CreateNativePixmapFromHandle(surface_handle, size, format,
                                          handle.native_pixmap_handle);
   if (!pixmap.get()) {
     DLOG(ERROR) << "Failed to create pixmap from handle";
