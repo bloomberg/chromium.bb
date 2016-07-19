@@ -24,9 +24,10 @@ base::string16 GetPopulateError(const base::Value& value) {
 
 testing::AssertionResult EqualsUtf16(const std::string& expected,
                                      const base::string16& actual) {
-  if (base::ASCIIToUTF16(expected) != actual)
-    return testing::AssertionFailure() << expected << " != " << actual;
-  return testing::AssertionSuccess();
+  if (base::ASCIIToUTF16(expected) == actual)
+    return testing::AssertionSuccess();
+  return testing::AssertionFailure() << "\n    actual:     " << actual
+                                     << "\n    expected:   " << expected;
 }
 
 // GenerateTypePopulate errors
@@ -119,7 +120,7 @@ TEST(JsonSchemaCompilerErrorTest, WrongPropertyValueType) {
   {
     std::unique_ptr<base::DictionaryValue> value =
         Dictionary("string", new FundamentalValue(1.1));
-    EXPECT_TRUE(EqualsUtf16("'string': expected string, got number",
+    EXPECT_TRUE(EqualsUtf16("'string': expected string, got double",
         GetPopulateError<TestType>(*value)));
   }
 }
@@ -152,7 +153,7 @@ TEST(JsonSchemaCompilerErrorTest, WrongTypeValueType) {
     ObjectType out;
     base::string16 error;
     EXPECT_TRUE(ObjectType::Populate(*value, &out, &error));
-    EXPECT_TRUE(EqualsUtf16("'otherType': expected dictionary, got number",
+    EXPECT_TRUE(EqualsUtf16("'otherType': expected dictionary, got double",
         error));
     EXPECT_EQ(NULL, out.other_type.get());
   }
@@ -183,7 +184,7 @@ TEST(JsonSchemaCompilerErrorTest, BinaryTypeExpected) {
   {
     std::unique_ptr<base::DictionaryValue> value =
         Dictionary("data", new FundamentalValue(1.1));
-    EXPECT_TRUE(EqualsUtf16("'data': expected binary, got number",
+    EXPECT_TRUE(EqualsUtf16("'data': expected binary, got double",
         GetPopulateError<BinaryData>(*value)));
   }
 }

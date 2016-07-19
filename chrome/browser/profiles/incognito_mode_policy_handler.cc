@@ -23,36 +23,33 @@ IncognitoModePolicyHandler::~IncognitoModePolicyHandler() {}
 
 bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                      PolicyErrorMap* errors) {
-  int int_value = IncognitoModePrefs::ENABLED;
   const base::Value* availability =
       policies.GetValue(key::kIncognitoModeAvailability);
-
   if (availability) {
-    if (availability->GetAsInteger(&int_value)) {
-      IncognitoModePrefs::Availability availability_enum_value;
-      if (!IncognitoModePrefs::IntToAvailability(int_value,
-                                                 &availability_enum_value)) {
-        errors->AddError(key::kIncognitoModeAvailability,
-                         IDS_POLICY_OUT_OF_RANGE_ERROR,
-                         base::IntToString(int_value));
-        return false;
-      }
-    } else {
+    int int_value = IncognitoModePrefs::ENABLED;
+    if (!availability->GetAsInteger(&int_value)) {
+      errors->AddError(key::kIncognitoModeAvailability, IDS_POLICY_TYPE_ERROR,
+                       base::Value::GetTypeName(base::Value::TYPE_INTEGER));
+      return false;
+    }
+    IncognitoModePrefs::Availability availability_enum_value;
+    if (!IncognitoModePrefs::IntToAvailability(int_value,
+                                               &availability_enum_value)) {
       errors->AddError(key::kIncognitoModeAvailability,
-                       IDS_POLICY_TYPE_ERROR,
-                       ValueTypeToString(base::Value::TYPE_INTEGER));
+                       IDS_POLICY_OUT_OF_RANGE_ERROR,
+                       base::IntToString(int_value));
       return false;
     }
-  } else {
-    const base::Value* deprecated_enabled =
-        policies.GetValue(key::kIncognitoEnabled);
-    if (deprecated_enabled &&
-        !deprecated_enabled->IsType(base::Value::TYPE_BOOLEAN)) {
-      errors->AddError(key::kIncognitoEnabled,
-                       IDS_POLICY_TYPE_ERROR,
-                       ValueTypeToString(base::Value::TYPE_BOOLEAN));
-      return false;
-    }
+    return true;
+  }
+
+  const base::Value* deprecated_enabled =
+      policies.GetValue(key::kIncognitoEnabled);
+  if (deprecated_enabled &&
+      !deprecated_enabled->IsType(base::Value::TYPE_BOOLEAN)) {
+    errors->AddError(key::kIncognitoEnabled, IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::TYPE_BOOLEAN));
+    return false;
   }
   return true;
 }

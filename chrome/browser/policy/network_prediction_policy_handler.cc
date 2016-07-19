@@ -33,16 +33,14 @@ bool NetworkPredictionPolicyHandler::CheckPolicySettings(
 
   if (network_prediction_enabled &&
       !network_prediction_enabled->IsType(base::Value::TYPE_BOOLEAN)) {
-    errors->AddError(key::kDnsPrefetchingEnabled,
-                     IDS_POLICY_TYPE_ERROR,
-                     ValueTypeToString(base::Value::TYPE_BOOLEAN));
+    errors->AddError(key::kDnsPrefetchingEnabled, IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::TYPE_BOOLEAN));
   }
 
   if (network_prediction_options &&
       !network_prediction_options->IsType(base::Value::TYPE_INTEGER)) {
-    errors->AddError(key::kNetworkPredictionOptions,
-                     IDS_POLICY_TYPE_ERROR,
-                     ValueTypeToString(base::Value::TYPE_INTEGER));
+    errors->AddError(key::kNetworkPredictionOptions, IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::TYPE_INTEGER));
   }
 
   if (network_prediction_enabled && network_prediction_options) {

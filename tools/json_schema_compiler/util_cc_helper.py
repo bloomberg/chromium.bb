@@ -39,4 +39,4 @@ class UtilCCHelper(object):
     call = '.GetType()'
     if is_ptr:
       call = '->GetType()'
-    return 'json_schema_compiler::util::ValueTypeToString(%s%s)' % (value, call)
+    return 'std::string(base::Value::GetTypeName(%s%s))' % (value, call)

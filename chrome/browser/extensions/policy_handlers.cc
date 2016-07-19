@@ -79,10 +79,9 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
        entry != list_value->end(); ++entry) {
     std::string id;
     if (!(*entry)->GetAsString(&id)) {
-      errors->AddError(policy_name(),
-                       entry - list_value->begin(),
+      errors->AddError(policy_name(), entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
-                       ValueTypeToString(base::Value::TYPE_STRING));
+                       base::Value::GetTypeName(base::Value::TYPE_STRING));
       continue;
     }
     if (!(allow_wildcards_ && id == "*") && !crx_file::id_util::IdIsValid(id)) {
@@ -148,10 +147,9 @@ bool ExtensionInstallForcelistPolicyHandler::ParseList(
     std::string entry_string;
     if (!(*entry)->GetAsString(&entry_string)) {
       if (errors) {
-        errors->AddError(policy_name(),
-                         entry - policy_list_value->begin(),
+        errors->AddError(policy_name(), entry - policy_list_value->begin(),
                          IDS_POLICY_TYPE_ERROR,
-                         ValueTypeToString(base::Value::TYPE_STRING));
+                         base::Value::GetTypeName(base::Value::TYPE_STRING));
       }
       continue;
     }
@@ -221,10 +219,9 @@ bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
        entry != list_value->end(); ++entry) {
     std::string url_pattern_string;
     if (!(*entry)->GetAsString(&url_pattern_string)) {
-      errors->AddError(policy_name(),
-                       entry - list_value->begin(),
+      errors->AddError(policy_name(), entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
-                       ValueTypeToString(base::Value::TYPE_STRING));
+                       base::Value::GetTypeName(base::Value::TYPE_STRING));
       return false;
     }
 

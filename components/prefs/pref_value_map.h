@@ -51,6 +51,7 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
+  bool empty() const;
 
   // Gets a boolean value for |key| and stores it in |value|. Returns true if
   // the value was found and of the proper type.

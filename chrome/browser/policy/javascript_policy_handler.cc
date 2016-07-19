@@ -28,15 +28,13 @@ bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 
   if (javascript_enabled &&
       !javascript_enabled->IsType(base::Value::TYPE_BOOLEAN)) {
-    errors->AddError(key::kJavascriptEnabled,
-                     IDS_POLICY_TYPE_ERROR,
-                     ValueTypeToString(base::Value::TYPE_BOOLEAN));
+    errors->AddError(key::kJavascriptEnabled, IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::TYPE_BOOLEAN));
   }
 
   if (default_setting && !default_setting->IsType(base::Value::TYPE_INTEGER)) {
-    errors->AddError(key::kDefaultJavaScriptSetting,
-                     IDS_POLICY_TYPE_ERROR,
-                     ValueTypeToString(base::Value::TYPE_INTEGER));
+    errors->AddError(key::kDefaultJavaScriptSetting, IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::TYPE_INTEGER));
   }
 
   if (javascript_enabled && default_setting) {

@@ -53,23 +53,22 @@ class RestoreOnStartupPolicyHandlerTest : public testing::Test {
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_FailsTypeCheck) {
   // Handler expects an int; pass it a bool.
   SetPolicyValue(key::kRestoreOnStartup,
-                 base::WrapUnique(new base::FundamentalValue(false)));
+                 base::MakeUnique<base::FundamentalValue>(false));
   // Checking should fail and add an error to the error map.
   EXPECT_FALSE(CheckPolicySettings());
-  EXPECT_EQ(1U, errors().size());
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_POLICY_TYPE_ERROR,
-                base::ASCIIToUTF16(
-                    ConfigurationPolicyHandler::ValueTypeToString(
-                        base::Value::TYPE_INTEGER))),
-            errors().begin()->second);
+  ASSERT_EQ(1U, errors().size());
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_POLICY_TYPE_ERROR,
+                                 base::ASCIIToUTF16(base::Value::GetTypeName(
+                                     base::Value::TYPE_INTEGER))),
+      errors().begin()->second);
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_Unspecified) {
   // Don't specify a value for the policy.
   // Checking should succeed with no errors.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(0U, errors().size());
+  EXPECT_TRUE(errors().empty());
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_UnknownValue) {
@@ -77,12 +76,11 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_UnknownValue) {
   int impossible_value = SessionStartupPref::kPrefValueLast +
                          SessionStartupPref::kPrefValueURLs +
                          SessionStartupPref::kPrefValueNewTab;
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      base::WrapUnique(new base::FundamentalValue(impossible_value)));
+  SetPolicyValue(key::kRestoreOnStartup,
+                 base::MakeUnique<base::FundamentalValue>(impossible_value));
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(1U, errors().size());
+  ASSERT_EQ(1U, errors().size());
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_OUT_OF_RANGE_ERROR,
                 base::ASCIIToUTF16(base::IntToString(impossible_value))),
@@ -93,10 +91,10 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_HomePage) {
   // Specify the HomePage value.
   SetPolicyValue(key::kRestoreOnStartup,
                  // kPrefValueHomePage, deprecated.
-                 base::WrapUnique(new base::FundamentalValue(0)));
+                 base::MakeUnique<base::FundamentalValue>(0));
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(1U, errors().size());
+  ASSERT_EQ(1U, errors().size());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_POLICY_VALUE_DEPRECATED),
             errors().begin()->second);
 }
@@ -112,8 +110,8 @@ TEST_F(RestoreOnStartupPolicyHandlerTest,
   SetPolicyValue(key::kCookiesSessionOnlyForUrls, std::move(urls));
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(1U, errors().size());
-  EXPECT_TRUE(key::kCookiesSessionOnlyForUrls == errors().begin()->first);
+  ASSERT_EQ(1U, errors().size());
+  EXPECT_EQ(key::kCookiesSessionOnlyForUrls, errors().begin()->first);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_OVERRIDDEN,
                 base::ASCIIToUTF16(key::kRestoreOnStartup)),
@@ -124,7 +122,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NotHomePage) {
   // Specify anything except the HomePage value.
   int not_home_page = 1;  // kPrefValueHomePage + 1, deprecated.
   SetPolicyValue(key::kRestoreOnStartup,
-                 base::WrapUnique(new base::FundamentalValue(not_home_page)));
+                 base::MakeUnique<base::FundamentalValue>(not_home_page));
   ApplyPolicySettings();
   // The resulting prefs should have the value we specified.
   int result;
@@ -139,11 +137,11 @@ TEST_F(RestoreOnStartupPolicyHandlerTest,
                  base::WrapUnique(new base::FundamentalValue(
                      SessionStartupPref::kPrefValueLast)));
   SetPolicyValue(key::kClearSiteDataOnExit,
-                 base::WrapUnique(new base::FundamentalValue(true)));
+                 base::MakeUnique<base::FundamentalValue>(true));
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(1U, errors().size());
-  EXPECT_TRUE(key::kClearSiteDataOnExit == errors().begin()->first);
+  ASSERT_EQ(1U, errors().size());
+  EXPECT_EQ(key::kClearSiteDataOnExit, errors().begin()->first);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_OVERRIDDEN,
                 base::ASCIIToUTF16(key::kRestoreOnStartup)),
@@ -158,7 +156,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest,
                      SessionStartupPref::kPrefValueLast)));
   // Checking should succeed with no errors.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(0U, errors().size());
+  EXPECT_TRUE(errors().empty());
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_URLs) {
@@ -168,7 +166,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_URLs) {
                      SessionStartupPref::kPrefValueURLs)));
   // Checking should succeed with no errors.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(0U, errors().size());
+  EXPECT_TRUE(errors().empty());
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_NewTab) {
@@ -178,22 +176,22 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_NewTab) {
                      SessionStartupPref::kPrefValueNewTab)));
   // Checking should succeed with no errors.
   EXPECT_TRUE(CheckPolicySettings());
-  EXPECT_EQ(0U, errors().size());
+  EXPECT_TRUE(errors().empty());
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NoValue) {
   // Don't specify a value for the policy.
   ApplyPolicySettings();
   // The resulting prefs should be empty.
-  EXPECT_TRUE(prefs().begin() == prefs().end());
+  EXPECT_TRUE(prefs().empty());
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_WrongType) {
   // Handler expects an int; pass it a bool.
   SetPolicyValue(key::kRestoreOnStartup,
-                 base::WrapUnique(new base::FundamentalValue(false)));
+                 base::MakeUnique<base::FundamentalValue>(false));
   // The resulting prefs should be empty.
-  EXPECT_TRUE(prefs().begin() == prefs().end());
+  EXPECT_TRUE(prefs().empty());
 }
 
 }  // namespace policy

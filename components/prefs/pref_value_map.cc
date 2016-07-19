@@ -74,6 +74,10 @@ PrefValueMap::const_iterator PrefValueMap::end() const {
   return prefs_.end();
 }
 
+bool PrefValueMap::empty() const {
+  return prefs_.empty();
+}
+
 bool PrefValueMap::GetBoolean(const std::string& key,
                               bool* value) const {
   const base::Value* stored_value = nullptr;
@@ -81,7 +85,7 @@ bool PrefValueMap::GetBoolean(const std::string& key,
 }
 
 void PrefValueMap::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)));
+  SetValue(key, base::MakeUnique<base::FundamentalValue>(value));
 }
 
 bool PrefValueMap::GetString(const std::string& key,
@@ -92,7 +96,7 @@ bool PrefValueMap::GetString(const std::string& key,
 
 void PrefValueMap::SetString(const std::string& key,
                              const std::string& value) {
-  SetValue(key, base::WrapUnique(new base::StringValue(value)));
+  SetValue(key, base::MakeUnique<base::StringValue>(value));
 }
 
 bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
@@ -101,11 +105,11 @@ bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
 }
 
 void PrefValueMap::SetInteger(const std::string& key, const int value) {
-  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)));
+  SetValue(key, base::MakeUnique<base::FundamentalValue>(value));
 }
 
 void PrefValueMap::SetDouble(const std::string& key, const double value) {
-  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)));
+  SetValue(key, base::MakeUnique<base::FundamentalValue>(value));
 }
 
 void PrefValueMap::GetDifferingKeys(

@@ -207,12 +207,8 @@ std::unique_ptr<base::Value> CreateValueFromArray(const std::vector<T>& from) {
 template <class T>
 std::unique_ptr<base::Value> CreateValueFromOptionalArray(
     const std::unique_ptr<std::vector<T>>& from) {
-  if (from)
-    return CreateValueFromArray(*from);
-  return nullptr;
+  return from ? CreateValueFromArray(*from) : nullptr;
 }
-
-std::string ValueTypeToString(base::Value::Type type);
 
 }  // namespace util
 }  // namespace json_schema_compiler
