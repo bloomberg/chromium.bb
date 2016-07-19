@@ -180,8 +180,15 @@ class WashingtonPostMobileStory(_NewsBrowsingStory):
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR = '.hed > a'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  _CLOSE_BUTTON_SELECTOR = '.close'
 
   def _DidLoadDocument(self, action_runner):
-    # Close the popup window.
-    action_runner.ClickElement(selector='.close')
+    # Close the popup window. On Nexus 9 (and probably other tables) the popup
+    # window does not have a "Close" button, instead it has only a "Send link
+    # to phone" button. So on tablets we run with the popup window open. The
+    # popup is transparent, so this is mostly an aesthetical issue.
+    has_button = action_runner.EvaluateJavaScript(
+        '!!document.querySelector("%s")' % self._CLOSE_BUTTON_SELECTOR)
+    if has_button:
+      action_runner.ClickElement(selector=self._CLOSE_BUTTON_SELECTOR)
     super(WashingtonPostMobileStory, self)._DidLoadDocument(action_runner)

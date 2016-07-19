@@ -115,10 +115,6 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
       return True
 
-    # http://crbug.com/629163
-    if possible_browser.platform.GetDeviceTypeName() == 'Nexus 9':
-      return True
-
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop'
 
 
