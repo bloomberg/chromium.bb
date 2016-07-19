@@ -28,6 +28,7 @@ import test_utils
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from utils import file_path
+from utils import fs
 from utils import logging_utils
 from utils import threading_utils
 
@@ -995,6 +996,10 @@ class TestArchive(TestCase):
 class DiskCacheTest(TestCase):
   def setUp(self):
     super(DiskCacheTest, self).setUp()
+    # If this fails on Windows, please rerun this tests as an elevated user with
+    # administrator access right.
+    self.assertEqual(True, file_path.enable_symlink())
+
     self._algo = isolated_format.get_hash_algo('default-gzip')
     self._free_disk = 1000
     # Max: 100 bytes, 2 items
@@ -1006,15 +1011,39 @@ class DiskCacheTest(TestCase):
     self.mock(file_path, 'get_free_space', get_free_space)
     # TODO(maruel): Test the following.
     #cache.touch()
-    #cache.evict()
-    #cache.read()
-    #cache.hardlink()
 
   def get_cache(self):
     return isolateserver.DiskCache(self.tempdir, self._policies, self._algo)
 
   def to_hash(self, content):
     return self._algo(content).hexdigest(), content
+
+  def test_read_evict(self):
+    self._free_disk = 1100
+    h_a = self.to_hash('a')[0]
+    with self.get_cache() as cache:
+      cache.write(h_a, 'a')
+      self.assertEqual('a', cache.read(h_a))
+
+    with self.get_cache() as cache:
+      cache.evict(h_a)
+      with self.assertRaises(isolateserver.CacheMiss):
+        cache.read(h_a)
+
+  def test_link(self):
+    self._free_disk = 1100
+    cache = self.get_cache()
+    h_a = self.to_hash('a')[0]
+    cache.write(h_a, 'a')
+    mapped = tempfile.mkdtemp(prefix='isolateserver_test')
+    try:
+      cache.link(h_a, os.path.join(mapped, u'hl'), False, False)
+      cache.link(h_a, os.path.join(mapped, u'sl'), False, True)
+      self.assertEqual(sorted(['hl', 'sl']), sorted(os.listdir(mapped)))
+      self.assertEqual(False, fs.islink(os.path.join(mapped, u'hl')))
+      self.assertEqual(True, fs.islink(os.path.join(mapped, u'sl')))
+    finally:
+      file_path.rmtree(mapped)
 
   def test_policies_free_disk(self):
     with self.assertRaises(isolateserver.Error):

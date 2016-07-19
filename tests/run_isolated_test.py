@@ -167,6 +167,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock(isolateserver, 'get_storage', get_storage)
 
     cmd = [
+        '--use-symlinks',
         '--no-log',
         '--isolated', isolated_hash,
         '--cache', self.tempdir,
@@ -205,7 +206,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
         None,
         None,
         None,
-        lambda run_dir: None)
+        lambda run_dir: None,
+        False)
     self.assertEqual(0, ret)
     return make_tree_call
 
@@ -348,7 +350,6 @@ class RunIsolatedTest(RunIsolatedTestBase):
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
 
-    print self.popen_calls
     self.assertEqual(3, len(self.popen_calls))
 
     # Test cipd-ensure command for installing packages.
@@ -376,7 +377,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # Test echo call.
     echo_cmd, _ = self.popen_calls[2]
     self.assertTrue(echo_cmd[0].endswith(
-        '/bin/echo' + cipd.EXECUTABLE_SUFFIX))
+        os.path.sep + 'bin' + os.path.sep + 'echo' + cipd.EXECUTABLE_SUFFIX),
+        echo_cmd[0])
     self.assertEqual(echo_cmd[1:], ['hello', 'world'])
 
   def test_modified_cwd(self):
@@ -459,7 +461,8 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           None,
           None,
           None,
-          lambda run_dir: None)
+          lambda run_dir: None,
+          False)
       self.assertEqual(0, ret)
 
       # It uploaded back. Assert the store has a new item containing foo.

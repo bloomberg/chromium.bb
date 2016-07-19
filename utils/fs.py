@@ -14,6 +14,16 @@ import sys
 if sys.platform == 'win32':
 
 
+  import ctypes
+  GetFileAttributesW = ctypes.windll.kernel32.GetFileAttributesW
+  GetFileAttributesW.argtypes = (ctypes.c_wchar_p,)
+  GetFileAttributesW.restype = ctypes.c_uint
+  CreateSymbolicLinkW = ctypes.windll.kernel32.CreateSymbolicLinkW
+  CreateSymbolicLinkW.argtypes = (
+      ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
+  CreateSymbolicLinkW.restype = ctypes.c_ubyte
+
+
   def extend(path):
     """Adds '\\\\?\\' when given an absolute path so the MAX_PATH (260) limit is
     not enforced.
@@ -32,6 +42,37 @@ if sys.platform == 'win32':
       path = path[len(prefix):]
     assert os.path.isabs(path), path
     return path
+
+
+  def islink(path):
+    """Proper implementation of islink() for Windows.
+
+    The stdlib is broken.
+    https://msdn.microsoft.com/library/windows/desktop/aa365682.aspx
+    """
+    FILE_ATTRIBUTE_REPARSE_POINT = 1024
+    return bool(GetFileAttributesW(extend(path)) & FILE_ATTRIBUTE_REPARSE_POINT)
+
+
+  def symlink(source, link_name):
+    """Creates a symlink on Windows 7 and later.
+
+    This function will only work once SeCreateSymbolicLinkPrivilege has been
+    enabled. See file_path.enable_symlink().
+
+    Useful material:
+    CreateSymbolicLinkW:
+      https://msdn.microsoft.com/library/windows/desktop/aa363866.aspx
+    UAC and privilege stripping:
+      https://msdn.microsoft.com/library/bb530410.aspx
+    Privilege constants:
+      https://msdn.microsoft.com/library/windows/desktop/bb530716.aspx
+    """
+    # TODO(maruel): This forces always creating absolute path symlinks.
+    source = extend(source)
+    flags = 1 if os.path.isdir(source) else 0
+    if not CreateSymbolicLinkW(extend(link_name), source, flags):
+      raise WindowsError()  # pylint: disable=undefined-variable
 
 
   def walk(top, *args, **kwargs):
@@ -59,6 +100,14 @@ else:
     return path.decode('utf-8')
 
 
+  def islink(path):
+    return os.path.islink(extend(path))
+
+
+  def symlink(source, link_name):
+    return os.symlink(source, extend(link_name))
+
+
   def walk(top, *args, **kwargs):
     for root, dirs, files in os.walk(extend(top), *args, **kwargs):
       yield trim(root), dirs, files
@@ -84,12 +133,6 @@ def rename(old, new):
 
 def renames(old, new):
   return os.renames(extend(old), extend(new))
-
-
-def symlink(source, link_name):
-  return os.symlink(source, extend(link_name))
-
-
 
 
 ## shutil
@@ -121,7 +164,7 @@ _os_fns = (
 
 _os_path_fns = (
   'exists', 'lexists', 'getatime', 'getmtime', 'getctime', 'getsize', 'isfile',
-  'isdir', 'islink', 'ismount')
+  'isdir', 'ismount')
 
 
 for _fn in _os_fns:

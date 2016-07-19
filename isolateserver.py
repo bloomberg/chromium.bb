@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 import base64
 import functools
@@ -1291,11 +1291,44 @@ class LocalCache(object):
     """
     raise NotImplementedError()
 
-  def hardlink(self, digest, dest, file_mode):
+  def link(self, digest, dest, file_mode, use_symlink):
     """Ensures file at |dest| has same content as cached |digest|.
 
     If file_mode is provided, it is used to set the executable bit if
     applicable.
+
+    The function may copy the content, create a hardlink and if use_symlink is
+    True, create a symlink if possible.
+
+    Creating a tree of hardlinks has a few drawbacks:
+    - tmpfs cannot be used for the scratch space. The tree has to be on the same
+      partition as the cache.
+    - involves a write to the inode, which advances ctime, cause a metadata
+      writeback (causing disk seeking).
+    - cache ctime cannot be used to detect modifications / corruption.
+    - Some file systems (NTFS) have a 64k limit on the number of hardlink per
+      partition. This is why the function automatically fallbacks to copying the
+      file content.
+    - /proc/sys/fs/protected_hardlinks causes an additional check to ensure the
+      same owner is for all hardlinks.
+    - Anecdotal report that ext2 is known to be potentially faulty on high rate
+      of hardlink creation.
+
+    Creating a tree of symlinks has a few drawbacks:
+    - Tasks running the equivalent of os.path.realpath() will get the naked path
+      and may fail.
+    - Windows:
+      - Symlinks are reparse points:
+        https://msdn.microsoft.com/library/windows/desktop/aa365460.aspx
+        https://msdn.microsoft.com/library/windows/desktop/aa363940.aspx
+      - Symbolic links are Win32 paths, not NT paths.
+        https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
+      - Symbolic links are supported on Windows 7 and later only.
+      - SeCreateSymbolicLinkPrivilege is needed, which is not present by
+        default.
+      - SeCreateSymbolicLinkPrivilege is *stripped off* by UAC when a restricted
+        RID is present in the token;
+        https://msdn.microsoft.com/en-us/library/bb530410.aspx
     """
     raise NotImplementedError()
 
@@ -1348,8 +1381,9 @@ class MemoryCache(LocalCache):
       self._added.append(len(data))
     return digest
 
-  def hardlink(self, digest, dest, file_mode):
-    """Since data is kept in memory, there is no filenode to hardlink."""
+  def link(self, digest, dest, file_mode, use_symlink):
+    """Since data is kept in memory, there is no filenode to hardlink/symlink.
+    """
     data = self.read(digest)
     file_write(dest, [data])
     if file_mode is not None:
@@ -1557,18 +1591,21 @@ class DiskCache(LocalCache):
       self._add(digest, size)
     return digest
 
-  def hardlink(self, digest, dest, file_mode):
-    """Hardlinks the file to |dest|.
+  def link(self, digest, dest, file_mode, use_symlink):
+    """Links the file to |dest|.
 
     Note that the file permission bits are on the file node, not the directory
     entry, so changing the access bit on any of the directory entries for the
     file node will affect them all.
     """
     path = self._path(digest)
-    if not file_path.link_file(dest, path, file_path.HARDLINK_WITH_FALLBACK):
+    mode = (
+        file_path.SYMLINK_WITH_FALLBACK if use_symlink
+        else file_path.HARDLINK_WITH_FALLBACK)
+    if not file_path.link_file(dest, path, mode):
       # Report to the server that it failed with more details. We'll want to
       # squash them all.
-      on_error.report('Failed to hardlink\n%s -> %s' % (path, dest))
+      on_error.report('Failed to link\n%s -> %s' % (path, dest))
 
     if file_mode is not None:
       # Ignores all other bits.
@@ -1906,7 +1943,7 @@ def upload_tree(base_url, infiles, namespace):
     return storage.upload_items(items)
 
 
-def fetch_isolated(isolated_hash, storage, cache, outdir):
+def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
   """Aggressively downloads the .isolated file(s), then download all the files.
 
   Arguments:
@@ -1914,12 +1951,14 @@ def fetch_isolated(isolated_hash, storage, cache, outdir):
     storage: Storage class that communicates with isolate storage.
     cache: LocalCache class that knows how to store and map files locally.
     outdir: Output directory to map file tree to.
+    use_symlinks: Use symlinks instead of hardlinks when True.
 
   Returns:
     IsolatedBundle object that holds details about loaded *.isolated file.
   """
   logging.debug(
-      'fetch_isolated(%s, %s, %s, %s)', isolated_hash, storage, cache, outdir)
+      'fetch_isolated(%s, %s, %s, %s, %s)',
+      isolated_hash, storage, cache, outdir, use_symlinks)
   # Hash algorithm to use, defined by namespace |storage| is using.
   algo = storage.hash_algo
   with cache:
@@ -1973,7 +2012,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir):
             dest = os.path.join(outdir, filepath)
             if os.path.exists(dest):
               raise AlreadyExists('File %s already exists' % dest)
-            cache.hardlink(digest, dest, props.get('m'))
+            cache.link(digest, dest, props.get('m'), use_symlinks)
 
           # Report progress.
           duration = time.time() - last_update
@@ -2144,6 +2183,9 @@ def CMDdownload(parser, args):
   parser.add_option(
       '-t', '--target', metavar='DIR', default='download',
       help='destination directory')
+  parser.add_option(
+      '--use-symlinks', action='store_true',
+      help='Use symlinks instead of hardlinks')
   add_cache_options(parser)
   options, args = parser.parse_args(args)
   if args:
@@ -2152,6 +2194,8 @@ def CMDdownload(parser, args):
   process_isolate_server_options(parser, options, True, True)
   if bool(options.isolated) == bool(options.file):
     parser.error('Use one of --isolated or --file, and only one.')
+  if not options.cache and options.use_symlinks:
+    parser.error('--use-symlinks require the use of a cache with --cache')
 
   cache = process_cache_options(options)
   cache.cleanup()
@@ -2187,7 +2231,8 @@ def CMDdownload(parser, args):
             isolated_hash=options.isolated,
             storage=storage,
             cache=cache,
-            outdir=options.target)
+            outdir=options.target,
+            use_symlinks=options.use_symlinks)
       if bundle.command:
         rel = os.path.join(options.target, bundle.relative_cwd)
         print('To run this test please run from the directory %s:' %
@@ -2310,4 +2355,5 @@ if __name__ == '__main__':
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()
+  file_path.enable_symlink()
   sys.exit(main(sys.argv[1:]))

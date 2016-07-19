@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 import base64
 import logging
@@ -266,14 +266,15 @@ def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
   return exit_code, had_hard_timeout
 
 
-def fetch_and_measure(isolated_hash, storage, cache, outdir):
-  """Fetches an isolated and returns (bundle, stats)."""
+def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
+  """Fetches an isolated tree, create the tree and returns (bundle, stats)."""
   start = time.time()
   bundle = isolateserver.fetch_isolated(
       isolated_hash=isolated_hash,
       storage=storage,
       cache=cache,
-      outdir=outdir)
+      outdir=outdir,
+      use_symlinks=use_symlinks)
   return bundle, {
     'duration': time.time() - start,
     'initial_number_items': cache.initial_number_items,
@@ -347,7 +348,8 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 def map_and_run(
     command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
-    hard_timeout, grace_period, bot_file, extra_args, install_packages_fn):
+    hard_timeout, grace_period, bot_file, extra_args, install_packages_fn,
+    use_symlinks):
   """Runs a command with optional isolated input/output.
 
   See run_tha_test for argument documentation.
@@ -403,11 +405,12 @@ def map_and_run(
 
     if isolated_hash:
       isolated_stats = result['stats'].setdefault('isolated', {})
-      bundle, isolated_stats['download'] = fetch_and_measure(
+      bundle, isolated_stats['download'] = fetch_and_map(
           isolated_hash=isolated_hash,
           storage=storage,
           cache=cache,
-          outdir=run_dir)
+          outdir=run_dir,
+          use_symlinks=use_symlinks)
       if not bundle.command:
         # Handle this as a task failure, not an internal failure.
         sys.stderr.write(
@@ -498,7 +501,7 @@ def map_and_run(
 def run_tha_test(
     command, isolated_hash, storage, cache, leak_temp_dir, result_json,
     root_dir, hard_timeout, grace_period, bot_file, extra_args,
-    install_packages_fn):
+    install_packages_fn, use_symlinks):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -536,6 +539,7 @@ def run_tha_test(
     extra_args: optional arguments to add to the command stated in the .isolate
                 file. Ignored if isolate_hash is empty.
     install_packages_fn: function (dir) => cipd_stats. Installs packages.
+    use_symlinks: create tree with symlinks instead of hardlinks.
 
   Returns:
     Process exit code that should be used.
@@ -560,7 +564,8 @@ def run_tha_test(
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
       command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
-      hard_timeout, grace_period, bot_file, extra_args, install_packages_fn)
+      hard_timeout, grace_period, bot_file, extra_args, install_packages_fn,
+      use_symlinks)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -657,6 +662,9 @@ def create_option_parser():
            'bots where a separate execution with --clean was done earlier so '
            'doing it again is redundant')
   parser.add_option(
+      '--use-symlinks', action='store_true',
+      help='Use symlinks instead of hardlinks')
+  parser.add_option(
       '--json',
       help='dump output metadata to json file. When used, run_isolated returns '
            'non-zero only on internal failure')
@@ -750,12 +758,13 @@ def main(args):
         return run_tha_test(
             command, options.isolated, storage, cache, options.leak_temp_dir,
             options.json, options.root_dir, options.hard_timeout,
-            options.grace_period, options.bot_file, args, install_packages_fn)
-    else:
-      return run_tha_test(
-          command, options.isolated, None, cache, options.leak_temp_dir,
-          options.json, options.root_dir, options.hard_timeout,
-          options.grace_period, options.bot_file, args, install_packages_fn)
+            options.grace_period, options.bot_file, args, install_packages_fn,
+            options.use_symlinks)
+    return run_tha_test(
+        command, options.isolated, None, cache, options.leak_temp_dir,
+        options.json, options.root_dir, options.hard_timeout,
+        options.grace_period, options.bot_file, args, install_packages_fn,
+        options.use_symlinks)
   except cipd.Error as ex:
     print >> sys.stderr, ex.message
     return 1
@@ -765,4 +774,5 @@ if __name__ == '__main__':
   subprocess42.inhibit_os_error_reporting()
   # Ensure that we are always running with the correct encoding.
   fix_encoding.fix_encoding()
+  file_path.enable_symlink()
   sys.exit(main(sys.argv[1:]))
