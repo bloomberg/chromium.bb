@@ -145,6 +145,9 @@ bool TargetContainsFile(const Target* target, const SourceFile& file) {
       return true;
   }
 
+  if (target->action_values().script().value() == file.value())
+    return true;
+
   std::vector<SourceFile> outputs;
   target->action_values().GetOutputsAsSourceFiles(target, &outputs);
   for (const auto& cur_file : outputs) {
