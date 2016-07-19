@@ -295,19 +295,6 @@ void CollectEnterpriseUMAs() {
 
   bool in_domain = base::win::IsEnrolledToDomain();
   UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.InDomain", in_domain);
-  if (in_domain) {
-    // This check will tell us how often are domain computers actually
-    // connected to the enterprise network while Chrome is running.
-    HANDLE server_bind;
-    if (ERROR_SUCCESS == ::DsBind(NULL, NULL, &server_bind)) {
-      UMA_HISTOGRAM_COUNTS("EnterpriseCheck.DomainBindSucceeded", 1);
-      ::DsUnBind(&server_bind);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
-                                DOMAIN_CHECK_ERROR_DS_BIND,
-                                DOMAIN_CHECK_ERROR_SIZE);
-    }
-  }
 }
 
 }  // namespace

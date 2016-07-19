@@ -12226,7 +12226,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="EnterpriseCheck.DomainBindSucceeded" enum="BooleanSuccess">
+<histogram name="EnterpriseCheck.DeprecatedDomainBindSucceeded"
+    enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 07/2016 in Issue 621270.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -12235,7 +12239,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="EnterpriseCheck.DomainCheckFailed" enum="EnterpriseCheckError">
+<histogram name="EnterpriseCheck.DeprecatedDomainCheckFailed"
+    enum="EnterpriseCheckError">
+  <obsolete>
+    Deprecated 07/2016 in Issue 621270.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -12277,7 +12285,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
-    The rough Windows suite we are runnnig on. This check is performed once at
+    The rough Windows suite we are running on. This check is performed once at
     start-up on Windows.
   </summary>
 </histogram>
