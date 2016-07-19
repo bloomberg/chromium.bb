@@ -210,7 +210,8 @@ def main():
     args.append('-Gconfig_path=' + args.pop(0))
     args.append('-Ganalyzer_output_path=' + args.pop(0))
 
-  if int(os.environ.get('GYP_CHROMIUM_NO_ACTION', 0)):
+  gyp_chromium_no_action = os.environ.get('GYP_CHROMIUM_NO_ACTION')
+  if gyp_chromium_no_action == '1':
     print 'Skipping gyp_chromium due to GYP_CHROMIUM_NO_ACTION env var.'
     sys.exit(0)
 
@@ -328,15 +329,9 @@ def main():
     args.append('-Gmac_toolchain_dir=' + mac_toolchain_dir)
     mac_toolchain.SetToolchainEnvironment()
 
-  # TODO(crbug.com/432967) - We are eventually going to switch GYP off
-  # by default for all Chromium builds, so this list of configurations
-  # will get broader and broader.
   running_as_hook = '--running-as-hook'
-  if (running_as_hook in args and
-      os.environ.get('GYP_CHROMIUM_NO_ACTION', None) != '0' and
-      ((sys.platform.startswith('linux') and not gyp_vars_dict) or
-       (gyp_vars_dict.get('OS') == 'android'))):
-    print 'GYP is now disabled in this configuration by default in runhooks.\n'
+  if running_as_hook in args and gyp_chromium_no_action != '0':
+    print 'GYP is now disabled by default in runhooks.\n'
     print 'If you really want to run this, either run '
     print '`python build/gyp_chromium.py` explicitly by hand'
     print 'or set the environment variable GYP_CHROMIUM_NO_ACTION=0.'
