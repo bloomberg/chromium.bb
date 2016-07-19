@@ -1671,12 +1671,14 @@ def GetConfig():
   )
 
   site_config.Add(
-      'lumpy-pre-flight-branch', internal_pfq_branch,
+      'cyan-pre-flight-branch', internal_pfq_branch,
       master=True,
       push_overlays=constants.BOTH_OVERLAYS,
-      boards=['lumpy'],
+      boards=['cyan'],
+      android_rev=constants.ANDROID_REV_LATEST,
       afdo_generate=True,
       afdo_update_ebuild=True,
+      vm_tests=[],
       hw_tests=[HWTestList.AFDORecordTest()],
   )
 
