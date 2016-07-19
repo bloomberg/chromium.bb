@@ -100,6 +100,10 @@ static ScopedJavaLocalRef<jobject> GetNonPODDatatype(
   return ScopedJavaLocalRef<jobject>();
 }
 
+static jint GetInnerIntFunction(JNIEnv*, const JavaParamRef<jclass>&) {
+  return 0;
+}
+
 } // namespace android
 } // namespace base
 

@@ -1155,7 +1155,7 @@ ${FUNCTION_HEADER}
 const char k${JAVA_CLASS}ClassPath[] = "${JNI_CLASS_PATH}";""")
     native_classes = self.GetUniqueClasses(self.natives)
     called_by_native_classes = self.GetUniqueClasses(self.called_by_natives)
-    if self.options.native_exports:
+    if self.options.native_exports and not self.options.native_exports_optional:
       all_classes = called_by_native_classes
     else:
       all_classes = native_classes
@@ -1169,7 +1169,6 @@ const char k${JAVA_CLASS}ClassPath[] = "${JNI_CLASS_PATH}";""")
       ret += [template.substitute(values)]
     ret += ''
 
-    class_getter_methods = []
     if self.options.native_exports:
       template = Template("""\
 // Leaking this jclass as we cannot use LazyInstance from some threads.
@@ -1183,7 +1182,7 @@ base::android::LazyGetClass(env, k${JAVA_CLASS}ClassPath, \
 jclass g_${JAVA_CLASS}_clazz = NULL;
 #define ${JAVA_CLASS}_clazz(env) g_${JAVA_CLASS}_clazz""")
 
-    for clazz in called_by_native_classes:
+    for clazz in all_classes:
       values = {
           'JAVA_CLASS': clazz,
       }
@@ -1199,7 +1198,9 @@ jclass g_${JAVA_CLASS}_clazz = NULL;
   g_${JAVA_CLASS}_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, k${JAVA_CLASS}ClassPath).obj()));""")
     ret = []
-    for clazz in self.GetUniqueClasses(self.called_by_natives):
+    all_classes = self.GetUniqueClasses(self.natives)
+    all_classes.update(self.GetUniqueClasses(self.called_by_natives))
+    for clazz in all_classes:
       values = {'JAVA_CLASS': clazz}
       ret += [template.substitute(values)]
     return '\n'.join(ret)

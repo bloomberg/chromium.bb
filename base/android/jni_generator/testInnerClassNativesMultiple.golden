@@ -23,8 +23,14 @@ const char kMyOtherInnerClassClassPath[] =
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 const char kMyInnerClassClassPath[] = "org/chromium/TestJni$MyInnerClass";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
+jclass g_MyOtherInnerClass_clazz = NULL;
+#define MyOtherInnerClass_clazz(env) g_MyOtherInnerClass_clazz
+// Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_TestJni_clazz = NULL;
 #define TestJni_clazz(env) g_TestJni_clazz
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+jclass g_MyInnerClass_clazz = NULL;
+#define MyInnerClass_clazz(env) g_MyInnerClass_clazz
 
 }  // namespace
 
@@ -66,8 +72,12 @@ static const JNINativeMethod kMethodsMyInnerClass[] = {
 
 static bool RegisterNativesImpl(JNIEnv* env) {
 
+  g_MyOtherInnerClass_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kMyOtherInnerClassClassPath).obj()));
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kTestJniClassPath).obj()));
+  g_MyInnerClass_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kMyInnerClassClassPath).obj()));
 
   const int kMethodsMyOtherInnerClassSize =
       arraysize(kMethodsMyOtherInnerClass);

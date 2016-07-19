@@ -18,8 +18,18 @@
 
 // Step 1: forward declarations.
 namespace {
+const char kMyOtherInnerClassClassPath[] =
+    "org/chromium/example/jni_generator/SampleForTests$MyOtherInnerClass";
+const char kMyInnerClassClassPath[] =
+    "org/chromium/example/jni_generator/SampleForTests$MyInnerClass";
 const char kSampleForTestsClassPath[] =
     "org/chromium/example/jni_generator/SampleForTests";
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+base::subtle::AtomicWord g_MyOtherInnerClass_clazz __attribute__((unused)) = 0;
+#define MyOtherInnerClass_clazz(env) base::android::LazyGetClass(env, kMyOtherInnerClassClassPath, &g_MyOtherInnerClass_clazz)
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+base::subtle::AtomicWord g_MyInnerClass_clazz __attribute__((unused)) = 0;
+#define MyInnerClass_clazz(env) base::android::LazyGetClass(env, kMyInnerClassClassPath, &g_MyInnerClass_clazz)
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 base::subtle::AtomicWord g_SampleForTests_clazz __attribute__((unused)) = 0;
 #define SampleForTests_clazz(env) base::android::LazyGetClass(env, kSampleForTestsClassPath, &g_SampleForTests_clazz)

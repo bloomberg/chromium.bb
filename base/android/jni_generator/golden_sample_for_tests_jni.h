@@ -20,6 +20,8 @@
 namespace {
 const char kInnerStructAClassPath[] =
     "org/chromium/example/jni_generator/SampleForTests$InnerStructA";
+const char kInnerClassClassPath[] =
+    "org/chromium/example/jni_generator/SampleForTests$InnerClass";
 const char kSampleForTestsClassPath[] =
     "org/chromium/example/jni_generator/SampleForTests";
 const char kInnerStructBClassPath[] =
@@ -27,6 +29,9 @@ const char kInnerStructBClassPath[] =
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_InnerStructA_clazz = NULL;
 #define InnerStructA_clazz(env) g_InnerStructA_clazz
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+jclass g_InnerClass_clazz = NULL;
+#define InnerClass_clazz(env) g_InnerClass_clazz
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_SampleForTests_clazz = NULL;
 #define SampleForTests_clazz(env) g_SampleForTests_clazz
@@ -153,6 +158,15 @@ static jstring
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
   return native->ReturnAString(env, JavaParamRef<jobject>(env,
       jcaller)).Release();
+}
+
+static jint GetInnerIntFunction(JNIEnv* env, const JavaParamRef<jclass>&
+    jcaller);
+
+static jint
+    Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction(JNIEnv*
+    env, jclass jcaller) {
+  return GetInnerIntFunction(env, JavaParamRef<jclass>(env, jcaller));
 }
 
 static base::subtle::AtomicWord g_SampleForTests_javaMethod = 0;
@@ -375,6 +389,15 @@ static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
 
 // Step 3: RegisterNatives.
 
+static const JNINativeMethod kMethodsInnerClass[] = {
+    { "nativeGetInnerIntFunction",
+"("
+")"
+"I",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction)
+    },
+};
+
 static const JNINativeMethod kMethodsSampleForTests[] = {
     { "nativeInit",
 "("
@@ -457,10 +480,22 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 
   g_InnerStructA_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kInnerStructAClassPath).obj()));
+  g_InnerClass_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kInnerClassClassPath).obj()));
   g_SampleForTests_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kSampleForTestsClassPath).obj()));
   g_InnerStructB_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kInnerStructBClassPath).obj()));
+
+  const int kMethodsInnerClassSize = arraysize(kMethodsInnerClass);
+
+  if (env->RegisterNatives(InnerClass_clazz(env),
+                           kMethodsInnerClass,
+                           kMethodsInnerClassSize) < 0) {
+    jni_generator::HandleRegistrationError(
+        env, InnerClass_clazz(env), __FILE__);
+    return false;
+  }
 
   const int kMethodsSampleForTestsSize = arraysize(kMethodsSampleForTests);
 
