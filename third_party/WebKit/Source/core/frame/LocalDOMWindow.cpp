@@ -979,41 +979,37 @@ int LocalDOMWindow::screenY() const
 
 double LocalDOMWindow::scrollX() const
 {
-    if (!frame())
+    if (!frame() || !frame()->host())
         return 0;
+
+    if (!frame()->host()->settings().inertVisualViewport())
+        return m_visualViewport->pageX();
 
     FrameView* view = frame()->view();
     if (!view)
         return 0;
 
-    FrameHost* host = frame()->host();
-    if (!host)
-        return 0;
-
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
-    double viewportX = viewport->scrollPositionDouble().x();
+    double viewportX = view->layoutViewportScrollableArea()->scrollPositionDouble().x();
     return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
 }
 
 double LocalDOMWindow::scrollY() const
 {
-    if (!frame())
+    if (!frame() || !frame()->host())
         return 0;
+
+    if (!frame()->host()->settings().inertVisualViewport())
+        return m_visualViewport->pageY();
 
     FrameView* view = frame()->view();
     if (!view)
         return 0;
 
-    FrameHost* host = frame()->host();
-    if (!host)
-        return 0;
-
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
-    double viewportY = viewport->scrollPositionDouble().y();
+    double viewportY = view->layoutViewportScrollableArea()->scrollPositionDouble().y();
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 

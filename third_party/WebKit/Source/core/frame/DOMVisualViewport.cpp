@@ -28,6 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
@@ -83,6 +84,36 @@ double DOMVisualViewport::scrollTop()
         return host->visualViewport().scrollTop();
 
     return 0;
+}
+
+double DOMVisualViewport::pageX()
+{
+    LocalFrame* frame = m_window->frame();
+    if (!frame)
+        return 0;
+
+    FrameView* view = frame->view();
+    if (!view)
+        return 0;
+
+    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    double viewportX = view->getScrollableArea()->scrollPositionDouble().x();
+    return adjustScrollForAbsoluteZoom(viewportX, frame->pageZoomFactor());
+}
+
+double DOMVisualViewport::pageY()
+{
+    LocalFrame* frame = m_window->frame();
+    if (!frame)
+        return 0;
+
+    FrameView* view = frame->view();
+    if (!view)
+        return 0;
+
+    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    double viewportY = view->getScrollableArea()->scrollPositionDouble().y();
+    return adjustScrollForAbsoluteZoom(viewportY, frame->pageZoomFactor());
 }
 
 double DOMVisualViewport::clientWidth()

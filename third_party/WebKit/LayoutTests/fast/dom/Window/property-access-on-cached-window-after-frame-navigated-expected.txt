@@ -227,6 +227,8 @@ PASS oldChildWindow.visualViewport.clientHeight is newChildWindow.visualViewport
 PASS oldChildWindow.visualViewport.clientWidth is newChildWindow.visualViewport.clientWidth
 PASS oldChildWindow.visualViewport.onresize is newChildWindow.visualViewport.onresize
 PASS oldChildWindow.visualViewport.onscroll is newChildWindow.visualViewport.onscroll
+PASS oldChildWindow.visualViewport.pageX is newChildWindow.visualViewport.pageX
+PASS oldChildWindow.visualViewport.pageY is newChildWindow.visualViewport.pageY
 PASS oldChildWindow.visualViewport.scale is newChildWindow.visualViewport.scale
 PASS oldChildWindow.visualViewport.scrollLeft is newChildWindow.visualViewport.scrollLeft
 PASS oldChildWindow.visualViewport.scrollTop is newChildWindow.visualViewport.scrollTop

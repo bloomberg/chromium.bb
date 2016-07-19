@@ -23,15 +23,15 @@
       // Turn off smooth scrolling.
       internals.settings.setScrollAnimatorEnabled(false);
 
-      // Scroll both viewports.
-      eventSender.mouseMoveTo(100, 100);
-      eventSender.continuousMouseScrollBy(100, 100);
+      window.scrollTo(100, 100);
 
       // Initial viewport dimensions.
       assert_equals(viewport().clientWidth, 800, "initial clientWidth");
       assert_equals(viewport().clientHeight, 600, "initial clientHeight");
       assert_equals(viewport().scrollLeft, 0, "initial scrollLeft");
       assert_equals(viewport().scrollTop, 0, "initial scrollTop");
+      assert_equals(viewport().pageX, 100, "initial pageX");
+      assert_equals(viewport().pageY, 100, "initial pageY");
       assert_equals(viewport().scale, 1, "initial scale");
 
       // Scale and scroll visual viewport.
@@ -41,6 +41,8 @@
       assert_equals(viewport().clientHeight, 300, "scaled height");
       assert_equals(viewport().scrollLeft, 10, "scrolled left viewport");
       assert_equals(viewport().scrollTop, 10, "scrolled top viewport");
+      assert_equals(viewport().pageX, 110, "initial pageX");
+      assert_equals(viewport().pageY, 110, "initial pageY");
       assert_equals(viewport().scale, 2, "scale");
 
       // Set scrollTop/Left.

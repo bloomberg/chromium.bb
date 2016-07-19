@@ -6551,6 +6551,8 @@ interface VisualViewport : EventTarget
     getter clientWidth
     getter onresize
     getter onscroll
+    getter pageX
+    getter pageY
     getter scale
     getter scrollLeft
     getter scrollTop

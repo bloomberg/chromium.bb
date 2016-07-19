@@ -30,8 +30,11 @@
     RuntimeEnabled=VisualViewportAPI,
     ImplementedAs=DOMVisualViewport,
 ] interface VisualViewport : EventTarget {
-    readonly attribute double scrollTop;
     readonly attribute double scrollLeft;
+    readonly attribute double scrollTop;
+
+    readonly attribute double pageX;
+    readonly attribute double pageY;
 
     readonly attribute double clientWidth;
     readonly attribute double clientHeight;

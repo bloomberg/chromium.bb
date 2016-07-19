@@ -226,6 +226,8 @@ FAIL childWindow.visualViewport.clientHeight should be 0. Threw exception TypeEr
 FAIL childWindow.visualViewport.clientWidth should be 0. Threw exception TypeError: Cannot read property 'clientWidth' of null
 FAIL childWindow.visualViewport.onresize should be null. Threw exception TypeError: Cannot read property 'onresize' of null
 FAIL childWindow.visualViewport.onscroll should be null. Threw exception TypeError: Cannot read property 'onscroll' of null
+FAIL childWindow.visualViewport.pageX should be 0. Threw exception TypeError: Cannot read property 'pageX' of null
+FAIL childWindow.visualViewport.pageY should be 0. Threw exception TypeError: Cannot read property 'pageY' of null
 FAIL childWindow.visualViewport.scale should be 0. Threw exception TypeError: Cannot read property 'scale' of null
 FAIL childWindow.visualViewport.scrollLeft should be 0. Threw exception TypeError: Cannot read property 'scrollLeft' of null
 FAIL childWindow.visualViewport.scrollTop should be 0. Threw exception TypeError: Cannot read property 'scrollTop' of null

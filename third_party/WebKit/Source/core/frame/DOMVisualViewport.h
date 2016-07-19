@@ -59,6 +59,8 @@ public:
 
     double scrollLeft();
     double scrollTop();
+    double pageX();
+    double pageY();
     double clientWidth();
     double clientHeight();
     double scale();
