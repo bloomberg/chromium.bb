@@ -25,7 +25,7 @@
       <paper-icon-button id="dots" icon="cr:more-vert" toggles
           active="{{menuOpened}}"></paper-icon-button>
       <template is="dom-if" if="[[menuOpened]]">
-        <iron-dropdown vertical-align="top" horizontal-align="right"
+        <iron-dropdown vertical-align="auto" horizontal-align="right"
             opened="{{menuOpened}}">
           <div class="dropdown-content">
             <paper-item on-tap="onEditTap_">$i18n{onStartupEdit}</paper-item>

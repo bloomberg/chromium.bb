@@ -45,7 +45,7 @@
           active="{{menuOpened}}"></paper-icon-button>
       <!-- TODO(dpapad): Figure out RTL for this menu -->
       <template is="dom-if" if="[[menuOpened]]">
-        <iron-dropdown vertical-align="top" horizontal-align="right"
+        <iron-dropdown vertical-align="auto" horizontal-align="right"
             opened="{{menuOpened}}">
           <div class="dropdown-content">
             <paper-item id="view" on-tap="onViewTap_">

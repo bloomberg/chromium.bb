@@ -37,7 +37,8 @@
         <paper-icon-button icon="cr:more-vert" toggles
             active="{{dropdownOpened}}">
         </paper-icon-button>
-        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_">
+        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_"
+            vertical-align="auto" horizontal-align="right">
           <div class="dropdown-content">
             <paper-item id="connect" hidden$="[[device.connected]]">
               $i18n{bluetoothConnect}

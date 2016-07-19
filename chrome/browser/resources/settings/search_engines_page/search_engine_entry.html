@@ -46,7 +46,7 @@
           active="{{editMenuOpened}}">
       </paper-icon-button>
       <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
-          vertical-align="top">
+          vertical-align="auto">
         <div class="dropdown-content">
           <paper-item on-tap="onMakeDefaultTap_"
               hidden$="[[!engine.canBeDefault]]" id="makeDefault">

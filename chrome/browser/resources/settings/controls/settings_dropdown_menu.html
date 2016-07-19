@@ -11,6 +11,7 @@
     <style include="settings-shared">
     </style>
     <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
+        vertical-align="auto"
         on-iron-select="onSelect_" no-label-float$="[[noLabelFloat]]"
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
       <paper-listbox class="dropdown-content" selected="{{selected_}}"
