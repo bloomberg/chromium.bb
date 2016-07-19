@@ -45,13 +45,12 @@ FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
     // computation in SVGInlineTextBox::calculateBoundaries, and the fact that vertical (etc)
     // layouts are handled by SVGTextLayoutEngine.
     LayoutRect bounds(
-        m_svgInlineTextBox.topLeft(),
+        LayoutPoint(m_svgInlineTextBox.topLeft() + paintOffset),
         LayoutSize(m_svgInlineTextBox.logicalWidth(), m_svgInlineTextBox.logicalHeight()));
     if (includeSelectionRect) {
         bounds.unite(m_svgInlineTextBox.localSelectionRect(
             m_svgInlineTextBox.start(), m_svgInlineTextBox.start() + m_svgInlineTextBox.len()));
     }
-    bounds.moveBy(paintOffset);
     return FloatRect(bounds);
 }
 
