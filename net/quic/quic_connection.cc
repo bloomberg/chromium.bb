@@ -1642,7 +1642,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
            << QuicUtils::EncryptionLevelToString(packet->encryption_level)
            << ", encrypted length:" << encrypted_length;
   DVLOG(2) << ENDPOINT << "packet(" << packet_number << "): " << std::endl
-           << QuicUtils::StringToHexASCIIDump(
+           << QuicUtils::HexDump(
                   StringPiece(packet->encrypted_buffer, encrypted_length));
 
   // Measure the RTT from before the write begins to avoid underestimating the

@@ -378,39 +378,6 @@ QuicTagVector QuicUtils::ParseQuicConnectionOptions(
   return options;
 }
 
-// static
-string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
-  int offset = 0;
-  const int kBytesPerLine = 16;  // Max bytes dumped per line
-  const char* buf = in_buffer.data();
-  int bytes_remaining = in_buffer.size();
-  string s;  // our output
-  const char* p = buf;
-  while (bytes_remaining > 0) {
-    const int line_bytes = std::min(bytes_remaining, kBytesPerLine);
-    base::StringAppendF(&s, "0x%04x:  ", offset);  // Do the line header
-    for (int i = 0; i < kBytesPerLine; ++i) {
-      if (i < line_bytes) {
-        base::StringAppendF(&s, "%02x", static_cast<unsigned char>(p[i]));
-      } else {
-        s += "  ";  // two-space filler instead of two-space hex digits
-      }
-      if (i % 2)
-        s += ' ';
-    }
-    s += ' ';
-    for (int i = 0; i < line_bytes; ++i) {  // Do the ASCII dump
-      s += (p[i] > 32 && p[i] < 127) ? p[i] : '.';
-    }
-
-    bytes_remaining -= line_bytes;
-    offset += line_bytes;
-    p += line_bytes;
-    s += '\n';
-  }
-  return s;
-}
-
 string QuicUtils::PeerAddressChangeTypeToString(PeerAddressChangeType type) {
   switch (type) {
     RETURN_STRING_LITERAL(NO_CHANGE);
@@ -570,40 +537,35 @@ string QuicUtils::HexDecode(StringPiece data) {
 }
 
 string QuicUtils::HexDump(StringPiece binary_input) {
-  string out = "";
-  const int kBytesPerRow = 16;
-  const int size = binary_input.size();
-  for (int i = 0; i < size;) {
-    // Print one row of hex.
-    for (int j = i; j < i + kBytesPerRow; ++j) {
-      if (j < size) {
-        out += HexEncode(string(1, binary_input[j]));
+  int offset = 0;
+  const int kBytesPerLine = 16;  // Max bytes dumped per line
+  const char* buf = binary_input.data();
+  int bytes_remaining = binary_input.size();
+  string s;  // our output
+  const char* p = buf;
+  while (bytes_remaining > 0) {
+    const int line_bytes = std::min(bytes_remaining, kBytesPerLine);
+    base::StringAppendF(&s, "0x%04x:  ", offset);  // Do the line header
+    for (int i = 0; i < kBytesPerLine; ++i) {
+      if (i < line_bytes) {
+        base::StringAppendF(&s, "%02x", static_cast<unsigned char>(p[i]));
       } else {
-        out += "  ";
+        s += "  ";  // two-space filler instead of two-space hex digits
       }
-      out += " ";
+      if (i % 2)
+        s += ' ';
     }
-    out += " |";
-
-    // Print one row of ascii.
-    for (int j = i; j < i + kBytesPerRow; ++j) {
-      if (j < size) {
-        char c = binary_input[j];
-        bool is_printable = (c >= 32 && c < 127);
-        if (!is_printable) {
-          // Non-printable characters are replaced with '.'.
-          c = '.';
-        }
-        out += string(1, c);
-      } else {
-        out += " ";
-      }
+    s += ' ';
+    for (int i = 0; i < line_bytes; ++i) {  // Do the ASCII dump
+      s += (p[i] > 32 && p[i] < 127) ? p[i] : '.';
     }
 
-    out += "|\n";
-    i += kBytesPerRow;
+    bytes_remaining -= line_bytes;
+    offset += line_bytes;
+    p += line_bytes;
+    s += '\n';
   }
-  return out;
+  return s;
 }
 
 }  // namespace net

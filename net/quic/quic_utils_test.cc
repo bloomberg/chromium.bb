@@ -15,18 +15,6 @@ namespace net {
 namespace test {
 namespace {
 
-// A test string and a hex+ASCII dump of the same string.
-const unsigned char kString[] = {
-    0x00, 0x90, 0x69, 0xbd, 0x54, 0x00, 0x00, 0x0d, 0x61, 0x0f, 0x01,
-    0x89, 0x08, 0x00, 0x45, 0x00, 0x00, 0x1c, 0xfb, 0x98, 0x40, 0x00,
-    0x40, 0x01, 0x7e, 0x18, 0xd8, 0xef, 0x23, 0x01, 0x45, 0x5d, 0x7f,
-    0xe2, 0x08, 0x00, 0x6b, 0xcb, 0x0b, 0xc6, 0x80, 0x6e};
-
-const unsigned char kHexDump[] =
-    "0x0000:  0090 69bd 5400 000d 610f 0189 0800 4500  ..i.T...a.....E.\n"
-    "0x0010:  001c fb98 4000 4001 7e18 d8ef 2301 455d  ....@.@.~...#.E]\n"
-    "0x0020:  7fe2 0800 6bcb 0bc6 806e                 ....k....n\n";
-
 TEST(QuicUtilsTest, StreamErrorToString) {
   EXPECT_STREQ("QUIC_BAD_APPLICATION_PAYLOAD",
                QuicUtils::StreamErrorToString(QUIC_BAD_APPLICATION_PAYLOAD));
@@ -34,46 +22,6 @@ TEST(QuicUtilsTest, StreamErrorToString) {
 
 TEST(QuicUtilsTest, ErrorToString) {
   EXPECT_STREQ("QUIC_NO_ERROR", QuicUtils::ErrorToString(QUIC_NO_ERROR));
-}
-
-TEST(QuicUtilsTest, StringToHexASCIIDumpArgTypes) {
-  // Verify that char*, string and StringPiece are all valid argument types.
-  struct {
-    const string input;
-    const string expected;
-  } tests[] = {
-      {
-          "", "",
-      },
-      {
-          "A", "0x0000:  41                                       A\n",
-      },
-      {
-          "AB", "0x0000:  4142                                     AB\n",
-      },
-      {
-          "ABC", "0x0000:  4142 43                                  ABC\n",
-      },
-      {
-          "original",
-          "0x0000:  6f72 6967 696e 616c                      original\n",
-      },
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    EXPECT_EQ(tests[i].expected,
-              QuicUtils::StringToHexASCIIDump(tests[i].input.c_str()));
-    EXPECT_EQ(tests[i].expected,
-              QuicUtils::StringToHexASCIIDump(tests[i].input));
-    EXPECT_EQ(tests[i].expected,
-              QuicUtils::StringToHexASCIIDump(StringPiece(tests[i].input)));
-  }
-}
-
-TEST(QuicUtilsTest, StringToHexASCIIDumpSuccess) {
-  EXPECT_EQ(string(reinterpret_cast<const char*>(kHexDump)),
-            QuicUtils::StringToHexASCIIDump(string(
-                reinterpret_cast<const char*>(kString), sizeof(kString))));
 }
 
 TEST(QuicUtilsTest, TagToString) {
@@ -198,12 +146,12 @@ TEST(QuicUtilsTest, HexDump) {
   };
   EXPECT_EQ(
       QuicUtils::HexDump(packet),
-      "48 65 6C 6C 6F 2C 20 51 55 49 43 21 20 54 68 69  |Hello, QUIC! Thi|\n"
-      "73 20 73 74 72 69 6E 67 20 73 68 6F 75 6C 64 20  |s string should |\n"
-      "62 65 20 6C 6F 6E 67 20 65 6E 6F 75 67 68 20 74  |be long enough t|\n"
-      "6F 20 73 70 61 6E 20 6D 75 6C 74 69 70 6C 65 20  |o span multiple |\n"
-      "6C 69 6E 65 73 20 6F 66 20 6F 75 74 70 75 74 2E  |lines of output.|\n"
-      "01 02 03                                         |...             |\n");
+      "0x0000:  4865 6c6c 6f2c 2051 5549 4321 2054 6869  Hello,.QUIC!.Thi\n"
+      "0x0010:  7320 7374 7269 6e67 2073 686f 756c 6420  s.string.should.\n"
+      "0x0020:  6265 206c 6f6e 6720 656e 6f75 6768 2074  be.long.enough.t\n"
+      "0x0030:  6f20 7370 616e 206d 756c 7469 706c 6520  o.span.multiple.\n"
+      "0x0040:  6c69 6e65 7320 6f66 206f 7574 7075 742e  lines.of.output.\n"
+      "0x0050:  0102 03                                  ...\n");
 }
 
 }  // namespace

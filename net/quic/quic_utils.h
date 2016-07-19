@@ -94,13 +94,6 @@ class NET_EXPORT_PRIVATE QuicUtils {
   static QuicTagVector ParseQuicConnectionOptions(
       const std::string& connection_options);
 
-  // Given a binary buffer, return a hex+ASCII dump in the style of
-  // tcpdump's -X and -XX options:
-  // "0x0000:  0090 69bd 5400 000d 610f 0189 0800 4500  ..i.T...a.....E.\n"
-  // "0x0010:  001c fb98 4000 4001 7e18 d8ef 2301 455d  ....@.@.~...#.E]\n"
-  // "0x0020:  7fe2 0800 6bcb 0bc6 806e                 ....k....n\n"
-  static std::string StringToHexASCIIDump(base::StringPiece in_buffer);
-
   // Returns PeerAddressChangeType as a std::string.
   static std::string PeerAddressChangeTypeToString(PeerAddressChangeType type);
 
@@ -146,8 +139,7 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // Returns a std::string containing hex and ASCII representations of |binary|,
   // side-by-side in the style of hexdump. Non-printable characters will be
   // printed as '.' in the ASCII output.
-  // For example:
-  // "48 65 6c 6c 6f 2c 20 51 55 49 43 21 01 02 03 04  |Hello, QUIC!....|"
+  // "0x0000:  4865 6c6c 6f2c 2051 5549 4321 0102 0304  Hello,.QUIC!...."
   static std::string HexDump(base::StringPiece binary_data);
 
  private:
