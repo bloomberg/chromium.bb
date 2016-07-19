@@ -11,9 +11,11 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ShortcutHelper_jni.h"
@@ -59,7 +61,70 @@ void GetHomescreenIconAndSplashImageSizes() {
 } // anonymous namespace
 
 // static
-void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
+void ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap(
+    const ShortcutInfo& info,
+    const std::string& webapp_id,
+    const SkBitmap& icon_bitmap,
+    const base::Closure& splash_image_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (info.display == blink::WebDisplayModeStandalone ||
+      info.display == blink::WebDisplayModeFullscreen) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableWebApk)) {
+      InstallWebApkInBackgroundWithSkBitmap(info, webapp_id, icon_bitmap);
+      return;
+    }
+    AddWebappInBackgroundWithSkBitmap(info, webapp_id, icon_bitmap,
+                                      splash_image_callback);
+    return;
+  }
+  AddShortcutInBackgroundWithSkBitmap(info, icon_bitmap);
+}
+
+// static
+void ShortcutHelper::InstallWebApkInBackgroundWithSkBitmap(
+    const ShortcutInfo& info,
+    const std::string& webapp_id,
+    const SkBitmap& icon_bitmap) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // TODO(pkotwicz): Send request to WebAPK server to generate WebAPK.
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, info.url.spec());
+  ScopedJavaLocalRef<jstring> java_scope_url =
+      base::android::ConvertUTF8ToJavaString(env, info.scope.spec());
+  ScopedJavaLocalRef<jstring> java_name =
+      base::android::ConvertUTF16ToJavaString(env, info.name);
+  ScopedJavaLocalRef<jstring> java_short_name =
+      base::android::ConvertUTF16ToJavaString(env, info.short_name);
+  ScopedJavaLocalRef<jstring> java_icon_url =
+      base::android::ConvertUTF8ToJavaString(env, info.icon_url.spec());
+  ScopedJavaLocalRef<jobject> java_bitmap;
+  if (icon_bitmap.getSize())
+    java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
+  ScopedJavaLocalRef<jstring> java_manifest_url =
+      base::android::ConvertUTF8ToJavaString(env, info.manifest_url.spec());
+
+  Java_ShortcutHelper_installWebApk(
+      env,
+      java_url.obj(),
+      java_scope_url.obj(),
+      java_name.obj(),
+      java_short_name.obj(),
+      java_icon_url.obj(),
+      java_bitmap.obj(),
+      info.display,
+      info.orientation,
+      info.theme_color,
+      info.background_color,
+      java_manifest_url.obj());
+}
+
+// static
+void ShortcutHelper::AddWebappInBackgroundWithSkBitmap(
     const ShortcutInfo& info,
     const std::string& webapp_id,
     const SkBitmap& icon_bitmap,
@@ -85,22 +150,15 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
-  ScopedJavaLocalRef<jstring> java_manifest_url =
-      base::android::ConvertUTF8ToJavaString(env, info.manifest_url.spec());
 
-  uintptr_t callback_pointer = 0;
-  if (info.display == blink::WebDisplayModeStandalone ||
-      info.display == blink::WebDisplayModeFullscreen) {
-    // The callback will need to be run after shortcut creation completes in
-    // order to download the splash image and save it to the WebappDataStorage.
-    // Create a copy of the callback here and send the pointer to Java, which
-    // will send it back once the asynchronous shortcut creation process
-    // finishes.
-    callback_pointer =
-        reinterpret_cast<uintptr_t>(new base::Closure(splash_image_callback));
-  }
+  // The callback will need to be run after shortcut creation completes in order
+  // to download the splash image and save it to the WebappDataStorage. Create a
+  // copy of the callback here and send the pointer to Java, which will send it
+  // back once the asynchronous shortcut creation process finishes.
+  uintptr_t callback_pointer =
+      reinterpret_cast<uintptr_t>(new base::Closure(splash_image_callback));
 
-  Java_ShortcutHelper_addShortcut(
+  Java_ShortcutHelper_addWebapp(
       env,
       java_webapp_id.obj(),
       java_url.obj(),
@@ -115,8 +173,23 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       info.source,
       info.theme_color,
       info.background_color,
-      java_manifest_url.obj(),
       callback_pointer);
+}
+
+void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
+    const ShortcutInfo& info,
+    const SkBitmap& icon_bitmap) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, info.url.spec());
+  ScopedJavaLocalRef<jstring> java_user_title =
+      base::android::ConvertUTF16ToJavaString(env, info.user_title);
+  ScopedJavaLocalRef<jobject> java_bitmap;
+  if (icon_bitmap.getSize())
+    java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
+
+  Java_ShortcutHelper_addShortcut(env, java_url.obj(), java_user_title.obj(),
+                                  java_bitmap.obj(), info.source);
 }
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInDp() {

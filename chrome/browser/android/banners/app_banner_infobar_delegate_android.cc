@@ -260,7 +260,7 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     const std::string& uid = base::GenerateGUID();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap, info,
+        base::Bind(&ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap, info,
                    uid, *app_icon_.get(),
                    data_fetcher_->FetchWebappSplashScreenImageCallback(uid)));
 

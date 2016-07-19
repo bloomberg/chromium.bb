@@ -22,8 +22,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -34,7 +32,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.webapps.WebApkBuilder;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
@@ -134,78 +131,99 @@ public class ShortcutHelper {
     }
 
     /**
-     * Called when we have to fire an Intent to add a shortcut to the home screen.
-     * If the webpage indicated that it was capable of functioning as a webapp, it is added as a
-     * shortcut to a webapp Activity rather than as a general bookmark. User is sent to the
-     * home screen as soon as the shortcut is created.
-     *
+     * Installs a WebAPK.
      * This method must not be called on the UI thread.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(String id, String url, String scopeUrl,
-            final String userTitle, String name, String shortName, String iconUrl, Bitmap icon,
-            int displayMode, int orientation, int source, long themeColor, long backgroundColor,
-            String manifestUrl, final long callbackPointer) {
+    private static void installWebApk(String url, String scopeUrl, final String name,
+            String shortName, String iconUrl, Bitmap icon, int displayMode, int orientation,
+            long themeColor, long backgroundColor, String manifestUrl) {
         assert !ThreadUtils.runningOnUiThread();
 
         Context context = ContextUtils.getApplicationContext();
-        final Intent shortcutIntent;
-        boolean isWebappCapable = (displayMode == WebDisplayMode.Standalone
-                                || displayMode == WebDisplayMode.Fullscreen);
-        if (isWebappCapable) {
-            if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
-                WebApkBuilder apkBuilder = ((ChromeApplication) context).createWebApkBuilder();
-                if (apkBuilder != null) {
-                    if (TextUtils.isEmpty(scopeUrl)) {
-                        scopeUrl = GURLUtils.getOrigin(url);
-                    }
-                    apkBuilder.buildWebApkAsync(url, scopeUrl, name, shortName, iconUrl, icon,
-                            displayMode, orientation, themeColor, backgroundColor, manifestUrl);
-                    return;
-                }
-            }
-            if (TextUtils.isEmpty(scopeUrl)) {
-                scopeUrl = getScopeFromUrl(url);
-            }
-            shortcutIntent = createWebappShortcutIntent(id, sDelegate.getFullscreenAction(), url,
-                    scopeUrl, name, shortName, icon, WEBAPP_SHORTCUT_VERSION, displayMode,
-                    orientation, themeColor, backgroundColor, iconUrl.isEmpty());
-            shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
-        } else {
-            // Add the shortcut as a launcher icon to open in the browser Activity.
-            shortcutIntent = createShortcutIntent(url);
+        WebApkBuilder apkBuilder = ((ChromeApplication) context).createWebApkBuilder();
+        if (apkBuilder == null) {
+            // TODO(pkotwicz): Figure out what to do when building WebAPK fails. (crbug.com/626950)
+            return;
         }
 
-        // Always attach a source (one of add to home screen menu item, app banner, or unknown) to
-        // the intent. This allows us to distinguish where a shortcut was added from in metrics.
+        if (TextUtils.isEmpty(scopeUrl)) {
+            scopeUrl = GURLUtils.getOrigin(url);
+        }
+        apkBuilder.buildWebApkAsync(url, scopeUrl, name, shortName, iconUrl, icon, displayMode,
+                orientation, themeColor, backgroundColor, manifestUrl);
+    }
+
+    /**
+     * Adds home screen shortcut which opens in a {@link WebappActivity}.
+     * This method must not be called on the UI thread.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private static void addWebapp(String id, String url, String scopeUrl, final String userTitle,
+            String name, String shortName, String iconUrl, Bitmap icon, int displayMode,
+            int orientation, int source, long themeColor, long backgroundColor,
+            final long callbackPointer) {
+        assert !ThreadUtils.runningOnUiThread();
+
+        Context context = ContextUtils.getApplicationContext();
+        if (TextUtils.isEmpty(scopeUrl)) {
+            scopeUrl = getScopeFromUrl(url);
+        }
+
+        final Intent shortcutIntent =
+                createWebappShortcutIntent(id, sDelegate.getFullscreenAction(), url, scopeUrl, name,
+                        shortName, icon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation,
+                        themeColor, backgroundColor, iconUrl.isEmpty());
+        shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
         shortcutIntent.setPackage(context.getPackageName());
         sDelegate.sendBroadcast(
                 context, createAddToHomeIntent(url, userTitle, icon, shortcutIntent));
 
-        if (isWebappCapable) {
-            // Store the webapp data so that it is accessible without the intent. Once this process
-            // is complete, call back to native code to start the splash image download.
-            WebappRegistry.registerWebapp(context, id,
-                    new WebappRegistry.FetchWebappDataStorageCallback() {
-                        @Override
-                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            storage.updateFromShortcutIntent(shortcutIntent);
-                            nativeOnWebappDataStored(callbackPointer);
-                        }
+        // Store the webapp data so that it is accessible without the intent. Once this process
+        // is complete, call back to native code to start the splash image download.
+        WebappRegistry.registerWebapp(context, id,
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        storage.updateFromShortcutIntent(shortcutIntent);
+                        nativeOnWebappDataStored(callbackPointer);
                     }
-            );
-        }
+                });
 
-        // Alert the user about adding the shortcut.
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
+        showAddedToHomescreenToast(userTitle);
+    }
+
+    /**
+     * Adds home screen shortcut which opens in the browser Activity.
+     * This method must not be called on the UI thread.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private static void addShortcut(String url, String userTitle, Bitmap icon, int source) {
+        assert !ThreadUtils.runningOnUiThread();
+
+        Context context = ContextUtils.getApplicationContext();
+        final Intent shortcutIntent = createShortcutIntent(url);
+        shortcutIntent.putExtra(EXTRA_SOURCE, source);
+        shortcutIntent.setPackage(context.getPackageName());
+        sDelegate.sendBroadcast(
+                context, createAddToHomeIntent(url, userTitle, icon, shortcutIntent));
+        showAddedToHomescreenToast(userTitle);
+    }
+
+    /**
+     * Show toast to alert user that the shortcut was added to the home screen.
+     */
+    private static void showAddedToHomescreenToast(final String title) {
+        ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Context applicationContext = ContextUtils.getApplicationContext();
                 String toastText =
-                        applicationContext.getString(R.string.added_to_homescreen, userTitle);
+                        applicationContext.getString(R.string.added_to_homescreen, title);
                 Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
                 toast.show();
             }
