@@ -128,5 +128,5 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       base::WrapUnique(
           new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)),
       base::WrapUnique(new ntp_snippets::NTPSnippetsStatusService(
-          signin_manager, sync_service))));
+          signin_manager, sync_service, chrome_browser_state->GetPrefs()))));
 }

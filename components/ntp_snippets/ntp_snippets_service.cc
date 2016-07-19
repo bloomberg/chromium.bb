@@ -237,6 +237,8 @@ NTPSnippetsService::~NTPSnippetsService() {
 // static
 void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kSnippetHosts);
+
+  NTPSnippetsStatusService::RegisterProfilePrefs(registry);
 }
 
 // Inherited from KeyedService.
@@ -693,12 +695,13 @@ void NTPSnippetsService::FinishInitialization() {
   // Note: Initializing the status service will run the callback right away with
   // the current state.
   snippets_status_service_->Init(base::Bind(
-      &NTPSnippetsService::UpdateStateForStatus, base::Unretained(this)));
+      &NTPSnippetsService::OnDisabledReasonChanged, base::Unretained(this)));
 
   NotifyNewSuggestions();
 }
 
-void NTPSnippetsService::UpdateStateForStatus(DisabledReason disabled_reason) {
+void NTPSnippetsService::OnDisabledReasonChanged(
+    DisabledReason disabled_reason) {
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceDisabledReasonChanged(disabled_reason));
 

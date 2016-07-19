@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
+
+#include "components/ntp_snippets/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/sync_service.h"
 
@@ -10,13 +14,21 @@ namespace ntp_snippets {
 
 NTPSnippetsStatusService::NTPSnippetsStatusService(
     SigninManagerBase* signin_manager,
-    sync_driver::SyncService* sync_service)
+    sync_driver::SyncService* sync_service,
+    PrefService* pref_service)
     : disabled_reason_(DisabledReason::EXPLICITLY_DISABLED),
       signin_manager_(signin_manager),
       sync_service_(sync_service),
+      pref_service_(pref_service),
       sync_service_observer_(this) {}
 
 NTPSnippetsStatusService::~NTPSnippetsStatusService() {}
+
+// static
+void NTPSnippetsStatusService::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDisableSnippets, false);
+}
 
 void NTPSnippetsStatusService::Init(
     const DisabledReasonChangeCallback& callback) {
@@ -30,6 +42,12 @@ void NTPSnippetsStatusService::Init(
   disabled_reason_change_callback_.Run(disabled_reason_);
 
   sync_service_observer_.Add(sync_service_);
+
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      prefs::kDisableSnippets,
+      base::Bind(&NTPSnippetsStatusService::OnStateChanged,
+                 base::Unretained(this)));
 }
 
 void NTPSnippetsStatusService::OnStateChanged() {
@@ -43,6 +61,11 @@ void NTPSnippetsStatusService::OnStateChanged() {
 }
 
 DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {
+  if (pref_service_->GetBoolean(prefs::kDisableSnippets)) {
+    DVLOG(1) << "[GetNewDisabledReason] Disabled via pref";
+    return DisabledReason::EXPLICITLY_DISABLED;
+  }
+
   if (!signin_manager_ || !signin_manager_->IsAuthenticated()) {
     DVLOG(1) << "[GetNewDisabledReason] Signed out";
     return DisabledReason::SIGNED_OUT;

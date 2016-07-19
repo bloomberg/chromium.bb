@@ -327,8 +327,8 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
         std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
         /*image_fetcher=*/nullptr, base::MakeUnique<NTPSnippetsDatabase>(
                                        database_dir_.path(), task_runner),
-        base::MakeUnique<NTPSnippetsStatusService>(fake_signin_manager(),
-                                                   mock_sync_service())));
+        base::MakeUnique<NTPSnippetsStatusService>(
+            fake_signin_manager(), mock_sync_service(), pref_service())));
 
     if (enabled)
       WaitForDBLoad(service_.get());
@@ -868,7 +868,7 @@ TEST_F(NTPSnippetsServiceTest, HistorySyncStateChanges) {
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
   EXPECT_CALL(mock_observer, NTPSnippetsServiceDisabledReasonChanged(
                                  DisabledReason::SIGNED_OUT));
-  service()->UpdateStateForStatus(DisabledReason::SIGNED_OUT);
+  service()->OnDisabledReasonChanged(DisabledReason::SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::DISABLED, service()->state_);
   EXPECT_THAT(service()->snippets(), IsEmpty()); // No fetch should be made.
@@ -878,7 +878,7 @@ TEST_F(NTPSnippetsServiceTest, HistorySyncStateChanges) {
   EXPECT_CALL(mock_observer,
               NTPSnippetsServiceDisabledReasonChanged(DisabledReason::NONE));
   EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
-  service()->UpdateStateForStatus(DisabledReason::NONE);
+  service()->OnDisabledReasonChanged(DisabledReason::NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::READY, service()->state_);
   EXPECT_FALSE(service()->snippets().empty());

@@ -222,8 +222,6 @@ class NTPSnippetsService : public KeyedService,
   // observers. This is done after construction, once the database is loaded.
   void FinishInitialization();
 
-  void LoadingSnippetsFinished();
-
   void OnSnippetImageFetchedFromDatabase(const std::string& snippet_id,
                                          const ImageFetchedCallback& callback,
                                          std::string data);
@@ -238,7 +236,7 @@ class NTPSnippetsService : public KeyedService,
   // Triggers a state transition depending on the provided reason to be
   // disabled (or lack thereof). This method is called when a change is detected
   // by |snippets_status_service_|.
-  void UpdateStateForStatus(DisabledReason disabled_reason);
+  void OnDisabledReasonChanged(DisabledReason disabled_reason);
 
   // Verifies state transitions (see |State|'s documentation) and applies them.
   // Also updates the provider status. Does nothing except updating the provider

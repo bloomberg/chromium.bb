@@ -8,6 +8,8 @@
 namespace ntp_snippets {
 namespace prefs {
 
+extern const char kDisableSnippets[];
+
 extern const char kSnippetHosts[];
 
 }  // namespace prefs

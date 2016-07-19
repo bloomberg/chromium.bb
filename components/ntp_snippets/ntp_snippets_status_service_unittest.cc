@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "components/ntp_snippets/ntp_snippets_test_utils.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -23,11 +24,15 @@ namespace ntp_snippets {
 
 class NTPSnippetsStatusServiceTest : public test::NTPSnippetsTestBase {
  public:
+  NTPSnippetsStatusServiceTest() {
+    NTPSnippetsStatusService::RegisterProfilePrefs(pref_service()->registry());
+  }
+
   void SetUp() override {
     test::NTPSnippetsTestBase::SetUp();
 
-    service_.reset(new NTPSnippetsStatusService(fake_signin_manager(),
-                                                mock_sync_service()));
+    service_.reset(new NTPSnippetsStatusService(
+        fake_signin_manager(), mock_sync_service(), pref_service()));
   }
 
  protected:
@@ -64,6 +69,37 @@ TEST_F(NTPSnippetsStatusServiceTest, SyncStateCompatibility) {
   // Sync disabled.
   mock_sync_service()->can_sync_start_ = false;
   EXPECT_EQ(DisabledReason::SYNC_DISABLED,
+            service()->GetDisabledReasonFromDeps());
+}
+
+TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
+  // The default test setup is signed out.
+  ASSERT_EQ(DisabledReason::SIGNED_OUT, service()->GetDisabledReasonFromDeps());
+
+  // Once the disabled pref is set, we should be disabled.
+  pref_service()->SetBoolean(prefs::kDisableSnippets, true);
+  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
+            service()->GetDisabledReasonFromDeps());
+
+  // The other dependencies shouldn't matter anymore.
+  fake_signin_manager()->SignIn("foo@bar.com");
+  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
+            service()->GetDisabledReasonFromDeps());
+
+  mock_sync_service()->active_data_types_ = syncer::ModelTypeSet();
+  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
+            service()->GetDisabledReasonFromDeps());
+
+  mock_sync_service()->is_encrypt_everything_enabled_ = true;
+  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
+            service()->GetDisabledReasonFromDeps());
+
+  mock_sync_service()->configuration_done_ = false;
+  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
+            service()->GetDisabledReasonFromDeps());
+
+  mock_sync_service()->can_sync_start_ = false;
+  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
             service()->GetDisabledReasonFromDeps());
 }
 

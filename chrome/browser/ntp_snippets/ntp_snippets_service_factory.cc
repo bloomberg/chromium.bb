@@ -17,7 +17,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
@@ -89,12 +88,9 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
   // need to be created if content_suggestions_service->state() == DISABLED,
   // just return nullptr then and remove the other "if" below.
 
-  // TODO(mvanouwerkerk): Move the enable logic into the service once we start
-  // observing pref changes.
   bool enabled = false;
 #if defined(OS_ANDROID)
-  enabled = profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled) &&
-            base::FeatureList::IsEnabled(chrome::android::kNTPSnippetsFeature);
+  enabled = base::FeatureList::IsEnabled(chrome::android::kNTPSnippetsFeature);
 #endif  // OS_ANDROID
 
   SigninManagerBase* signin_manager =
@@ -136,7 +132,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
           base::MakeUnique<ntp_snippets::NTPSnippetsDatabase>(database_dir,
                                                               task_runner),
           base::MakeUnique<ntp_snippets::NTPSnippetsStatusService>(
-              signin_manager, sync_service));
+              signin_manager, sync_service, profile->GetPrefs()));
 
   if (content_suggestions_service->state() ==
       ContentSuggestionsService::State::ENABLED) {

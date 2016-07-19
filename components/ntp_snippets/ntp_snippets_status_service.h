@@ -8,8 +8,11 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync_driver/sync_service_observer.h"
 
+class PrefRegistrySimple;
+class PrefService;
 class SigninManagerBase;
 
 namespace sync_driver {
@@ -44,9 +47,12 @@ class NTPSnippetsStatusService : public sync_driver::SyncServiceObserver {
   typedef base::Callback<void(DisabledReason)> DisabledReasonChangeCallback;
 
   NTPSnippetsStatusService(SigninManagerBase* signin_manager,
-                           sync_driver::SyncService* sync_service);
+                           sync_driver::SyncService* sync_service,
+                           PrefService* pref_service);
 
   ~NTPSnippetsStatusService() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Starts listening for changes from the dependencies. |callback| will be
   // called when a significant change in state is detected.
@@ -57,8 +63,10 @@ class NTPSnippetsStatusService : public sync_driver::SyncServiceObserver {
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest,
                            SyncStateCompatibility);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest, DisabledViaPref);
 
-  // sync_driver::SyncServiceObserver implementation
+  // sync_driver::SyncServiceObserver implementation. Also used as a callback
+  // for the PrefChangeRegistrar.
   void OnStateChanged() override;
 
   DisabledReason GetDisabledReasonFromDeps() const;
@@ -68,6 +76,9 @@ class NTPSnippetsStatusService : public sync_driver::SyncServiceObserver {
 
   SigninManagerBase* signin_manager_;
   sync_driver::SyncService* sync_service_;
+  PrefService* pref_service_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   // The observer for the SyncService. When the sync state changes,
   // SyncService will call |OnStateChanged|.
