@@ -57,6 +57,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    toolbarSpinnerActive: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
   },
 
   /** @override */
@@ -66,6 +72,14 @@ Polymer({
     settings.main.rendered = this.resolver_.promise;
   },
 
+  /** @override */
+  ready: function() {
+    settings.getSearchManager().setCallback(function(isRunning) {
+      this.toolbarSpinnerActive = isRunning;
+    }.bind(this));
+  },
+
+  /** @override */
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
       this.showAdvancedPage_ = e.detail;
@@ -154,12 +168,14 @@ Polymer({
     // initiating searching.
     this.showBasicPage_ = true;
     setTimeout(function() {
-      settings.search(query, assert(this.$$('settings-basic-page')));
+      settings.getSearchManager().search(
+          query, assert(this.$$('settings-basic-page')));
     }.bind(this), 0);
 
     this.showAdvancedPage_ = true;
     setTimeout(function() {
-      settings.search(query, assert(this.$$('settings-advanced-page')));
+      settings.getSearchManager().search(
+          query, assert(this.$$('settings-advanced-page')));
     }.bind(this), 0);
   },
 });

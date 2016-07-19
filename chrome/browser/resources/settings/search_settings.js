@@ -127,7 +127,7 @@ cr.define('settings', function() {
   function findAndHighlightMatches_(context, root) {
     function doSearch(node) {
       if (forceRenderNeeded_(context, node)) {
-        SearchManager.getInstance().queue_.addRenderTask(
+        getSearchManager().queue_.addRenderTask(
             new RenderTask(context, node));
         return;
       }
@@ -231,7 +231,7 @@ cr.define('settings', function() {
           var renderedNode = parent.querySelector('#' + subpageTemplate.id);
           // Register a SearchAndHighlightTask for the part of the DOM that was
           // just rendered.
-          SearchManager.getInstance().queue_.addSearchAndHighlightTask(
+          getSearchManager().queue_.addSearchAndHighlightTask(
               new SearchAndHighlightTask(this.context, assert(renderedNode)));
           resolve();
         }.bind(this));
@@ -358,16 +358,18 @@ cr.define('settings', function() {
         var task = this.popNextTask_();
         if (!task) {
           this.running_ = false;
+          getSearchManager().notifyCallback(false);
           return;
         }
 
+        this.running_ = true;
         window.requestIdleCallback(function() {
           function startNextTask() {
             this.running_ = false;
             this.consumePending_();
           }
           if (task.context.id ==
-              SearchManager.getInstance().activeContext_.id) {
+              getSearchManager().activeContext_.id) {
             task.exec().then(startNextTask.bind(this));
           } else {
             // Dropping this task without ever executing it, since a new search
@@ -389,6 +391,9 @@ cr.define('settings', function() {
 
     /** @private {!SearchContext} */
     this.activeContext_ = {id: 0, rawQuery: null, regExp: null};
+
+    /** @private {?function(boolean):void} */
+    this.callbackFn_ = null;
   };
   cr.addSingletonGetter(SearchManager);
 
@@ -396,6 +401,21 @@ cr.define('settings', function() {
   SearchManager.SANITIZE_REGEX_ = /[-[\]{}()*+?.,\\^$|#\s]/g;
 
   SearchManager.prototype = {
+    /**
+     * Registers a callback function that will be called every time search
+     * starts/finishes.
+     * @param {?function(boolean):void} callbackFn
+     */
+    setCallback: function(callbackFn) {
+      this.callbackFn_ = callbackFn;
+    },
+
+    /** @param {boolean} isRunning */
+    notifyCallback: function(isRunning) {
+      if (this.callbackFn_)
+        this.callbackFn_(isRunning);
+    },
+
     /**
      * @param {string} text The text to search for.
      * @param {!Node} page
@@ -417,6 +437,7 @@ cr.define('settings', function() {
         // Drop all previously scheduled tasks, since a new search was just
         // issued.
         this.queue_.reset();
+        this.notifyCallback(true);
       }
 
       this.queue_.addTopLevelSearchTask(
@@ -424,15 +445,12 @@ cr.define('settings', function() {
     },
   };
 
-  /**
-   * @param {string} text
-   * @param {!Node} page
-   */
-  function search(text, page) {
-    SearchManager.getInstance().search(text, page);
+  /** @return {!SearchManager} */
+  function getSearchManager() {
+    return SearchManager.getInstance();
   }
 
   return {
-    search: search,
+    getSearchManager: getSearchManager,
   };
 });

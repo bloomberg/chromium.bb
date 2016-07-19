@@ -54,6 +54,12 @@ Polymer({
         return url;
       },
     },
+
+    /** @private {boolean} */
+    toolbarSpinnerActive_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
