@@ -24,6 +24,7 @@ extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebIgnoreOtherClientsFeature;
 extern const base::Feature kReadItLaterInMenu;
 extern const base::Feature kSystemDownloadManager;
+extern const base::Feature kTabReparenting;
 
 bool RegisterChromeFeatureListJni(JNIEnv* env);
 

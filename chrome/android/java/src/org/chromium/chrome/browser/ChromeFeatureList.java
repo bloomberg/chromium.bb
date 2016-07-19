@@ -37,6 +37,7 @@ public abstract class ChromeFeatureList {
     public static final String NTP_SNIPPETS = "NTPSnippets";
     public static final String NTP_TOOLBAR = "NTPToolbar";
     public static final String SYSTEM_DOWNLOAD_MANAGER = "SystemDownloadManager";
+    public static final String TAB_REPARENTING = "TabReparenting";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

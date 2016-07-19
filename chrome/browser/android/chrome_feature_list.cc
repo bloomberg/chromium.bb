@@ -42,6 +42,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPhysicalWebIgnoreOtherClientsFeature,
     &kReadItLaterInMenu,
     &kSystemDownloadManager,
+    &kTabReparenting,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
 };
@@ -83,6 +84,10 @@ const base::Feature kReadItLaterInMenu{"ReadItLaterInMenu",
 
 const base::Feature kSystemDownloadManager{"SystemDownloadManager",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTabReparenting {
+  "TabReparenting", base::FEATURE_ENABLED_BY_DEFAULT
+};
 
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
