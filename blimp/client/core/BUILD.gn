@@ -105,6 +105,7 @@ source_set("unit_tests") {
   deps = [
     ":core",
     "//base",
+    "//blimp/client/core/session:unit_tests",
     "//blimp/client/public:public_headers",
     "//blimp/client/test",
     "//testing/gtest",

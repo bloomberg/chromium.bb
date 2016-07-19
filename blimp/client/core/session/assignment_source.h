@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_SESSION_ASSIGNMENT_SOURCE_H_
-#define BLIMP_CLIENT_SESSION_ASSIGNMENT_SOURCE_H_
+#ifndef BLIMP_CLIENT_CORE_SESSION_ASSIGNMENT_SOURCE_H_
+#define BLIMP_CLIENT_CORE_SESSION_ASSIGNMENT_SOURCE_H_
 
 #include <string>
 
@@ -63,7 +63,7 @@ struct Assignment {
 class AssignmentSource : public net::URLFetcherDelegate {
  public:
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blimp.assignment
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blimp.core.session.assignment
   enum Result {
     RESULT_UNKNOWN = 0,
     RESULT_OK = 1,
@@ -129,4 +129,4 @@ class AssignmentSource : public net::URLFetcherDelegate {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_SESSION_ASSIGNMENT_SOURCE_H_
+#endif  // BLIMP_CLIENT_CORE_SESSION_ASSIGNMENT_SOURCE_H_

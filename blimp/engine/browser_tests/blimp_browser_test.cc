@@ -14,7 +14,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "blimp/client/core/blimp_client_switches.h"
-#include "blimp/client/session/assignment_source.h"
+#include "blimp/client/core/session/assignment_source.h"
 #include "blimp/common/switches.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"

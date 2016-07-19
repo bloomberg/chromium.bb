@@ -7,7 +7,7 @@ package org.chromium.blimp.session;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.R;
-import org.chromium.blimp.assignment.Result;
+import org.chromium.blimp.core.session.assignment.Result;
 
 import java.util.ArrayList;
 import java.util.List;

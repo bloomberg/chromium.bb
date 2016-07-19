@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/session/assignment_source.h"
+#include "blimp/client/core/session/assignment_source.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"

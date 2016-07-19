@@ -1,0 +1,78 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+source_set("session") {
+  visibility = [
+    "//blimp/client/*",
+    "//blimp/engine:browser_tests",
+  ]
+
+  sources = [
+    "assignment_source.cc",
+    "assignment_source.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/safe_json",
+    "//net",
+    "//url",
+  ]
+
+  deps = [
+    "//blimp/client/core:switches",
+    "//blimp/common",
+  ]
+}
+
+source_set("unit_tests") {
+  visibility = [ "//blimp/client/core:unit_tests" ]
+
+  testonly = true
+
+  sources = []
+
+  deps = []
+
+  data = []
+
+  # TODO(dtrainor): Fix the test harness to allow this to run on Android.
+  # See crbug.com/588240.
+  if (is_linux) {
+    sources += [ "assignment_source_unittest.cc" ]
+
+    deps += [
+      ":session",
+      "//base",
+      "//blimp/client/core:switches",
+      "//blimp/common",
+      "//blimp/common:test_support",
+      "//components/safe_json:test_support",
+      "//net:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//url",
+    ]
+
+    data += [
+      "test_selfsigned_cert.pem",
+      "//blimp/test/data/test_client_token",
+    ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("java_enums_srcjar") {
+    visibility = [ "//blimp/client/*" ]
+
+    sources = [
+      "assignment_source.h",
+    ]
+  }
+}

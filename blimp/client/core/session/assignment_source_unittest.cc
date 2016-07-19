@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/session/assignment_source.h"
+#include "blimp/client/core/session/assignment_source.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -44,7 +44,7 @@ const char kTestIpAddressString[] = "127.0.0.1";
 const char kTcpTransportName[] = "tcp";
 const char kSslTransportName[] = "ssl";
 const char kCertRelativePath[] =
-    "blimp/client/session/test_selfsigned_cert.pem";
+    "blimp/client/core/session/test_selfsigned_cert.pem";
 const char kTestClientToken[] = "secrett0ken";
 const char kTestAuthToken[] = "UserAuthT0kenz";
 const char kAssignerUrl[] = "http://www.assigner.test/";

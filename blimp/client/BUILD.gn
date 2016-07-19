@@ -11,8 +11,6 @@ if (is_android) {
 
 source_set("session") {
   sources = [
-    "session/assignment_source.cc",
-    "session/assignment_source.h",
     "session/blimp_client_session.cc",
     "session/blimp_client_session.h",
   ]
@@ -20,13 +18,13 @@ source_set("session") {
   public_deps = [
     ":feature",
     "//blimp/client/core:switches",
-    "//components/safe_json",
     "//ui/events",
   ]
 
   deps = [
     ":compositor",
     "//base",
+    "//blimp/client/core/session",
     "//blimp/common",
     "//blimp/common/proto",
     "//blimp/net",
@@ -70,41 +68,6 @@ source_set("client") {
     "//ui/gl/init",
     "//url:url",
   ]
-}
-
-source_set("blimp_client_unit_tests") {
-  testonly = true
-
-  sources = []
-
-  deps = [
-    ":client",
-    ":session",
-    "//base",
-    "//base/test:test_support",
-    "//blimp/client/core:switches",
-    "//blimp/common",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-
-  data = []
-
-  # TODO(dtrainor): Fix the test harness to allow this to run on Android.
-  # See crbug.com/588240.
-  if (is_linux) {
-    sources += [ "session/assignment_source_unittest.cc" ]
-    deps += [
-      "//blimp/common",
-      "//blimp/common:test_support",
-      "//components/safe_json:test_support",
-      "//net:test_support",
-    ]
-    data += [
-      "session/test_selfsigned_cert.pem",
-      "//blimp/test/data/test_client_token",
-    ]
-  }
 }
 
 source_set("app_unit_tests") {
@@ -285,6 +248,7 @@ if (is_linux && !is_chromeos && use_x11) {
       ":client",
       "//base",
       "//blimp/client:compositor",
+      "//blimp/client/core/session",
       "//blimp/net",
       "//net",
       "//services/shell/public/cpp",
@@ -400,15 +364,7 @@ if (is_android) {
     ]
   }
 
-  java_cpp_enum("blimp_java_enums_srcjar") {
-    sources = [
-      "session/assignment_source.h",
-    ]
-  }
-
   android_library("blimp_java") {
-    srcjar_deps = [ ":blimp_java_enums_srcjar" ]
-
     deps = [
       ":blimp_java_resources",
       "//base:base_java",
@@ -441,6 +397,8 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/toolbar/ToolbarMenu.java",
       "app/android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
     ]
+
+    srcjar_deps = [ "//blimp/client/core/session:java_enums_srcjar" ]
   }
 
   android_library("blimp_test_java") {
@@ -470,6 +428,7 @@ if (is_android) {
       "//base",
       "//blimp/client:compositor",
       "//blimp/client/core",
+      "//blimp/client/core/session:session",
       "//blimp/client/public:public_headers",
       "//blimp/common",
       "//blimp/common/proto",
