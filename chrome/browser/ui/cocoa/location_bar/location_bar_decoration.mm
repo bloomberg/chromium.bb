@@ -55,7 +55,11 @@ const CGFloat kMaterialDividerIncognitoGrayScale = 1.0;
 - (BOOL)acceptsFirstResponder {
   // This NSView is only focusable if the owning LocationBarDecoration can
   // accept mouse presses.
-  return owner_->AcceptsMousePress() ? YES : NO;
+  // TODO(ellyjones): Once the key view loop order in ToolbarController is fixed
+  // up properly (which will require some redesign of
+  // LocationBarViewMac::GetDecorationAccessibilityViews()), this method should
+  // honor |owner_->AcceptsMousePress()|. See https://crbug.com/623883.
+  return NO;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
