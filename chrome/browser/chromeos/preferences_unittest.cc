@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -178,8 +177,6 @@ class PreferencesTest : public testing::Test {
     mock_manager_ = new input_method::MyMockInputMethodManager(
         &previous_input_method_, &current_input_method_);
     input_method::InitializeForTesting(mock_manager_);
-    system::InputDeviceSettings::SetSettingsForTesting(
-        new system::FakeInputDeviceSettings());
 
     prefs_.reset(new Preferences(mock_manager_));
   }
@@ -250,17 +247,11 @@ class InputMethodPreferencesTest : public PreferencesTest {
     InitComponentExtensionIMEManager();
     input_method::InputMethodDescriptors descriptors;
     mock_manager_->GetActiveIMEState()->AddInputMethodExtension(
-        kIdentityIMEID,
-        descriptors,
-        NULL);
+        kIdentityIMEID, descriptors, nullptr);
     mock_manager_->GetActiveIMEState()->AddInputMethodExtension(
-        kToUpperIMEID,
-        descriptors,
-        NULL);
+        kToUpperIMEID, descriptors, nullptr);
     mock_manager_->GetActiveIMEState()->AddInputMethodExtension(
-        kAPIArgumentIMEID,
-        descriptors,
-        NULL);
+        kAPIArgumentIMEID, descriptors, nullptr);
   }
 
   void InitComponentExtensionIMEManager() {

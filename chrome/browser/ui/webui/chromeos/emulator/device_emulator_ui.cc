@@ -35,6 +35,10 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
   html->AddResourcePath("bluetooth_settings.js",
                         IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_JS);
   html->AddResourcePath("icons.html", IDR_DEVICE_EMULATOR_ICONS_HTML);
+  html->AddResourcePath("input_device_settings.html",
+                        IDR_DEVICE_EMULATOR_INPUT_DEVICE_SETTINGS_HTML);
+  html->AddResourcePath("input_device_settings.js",
+                        IDR_DEVICE_EMULATOR_INPUT_DEVICE_SETTINGS_JS);
   html->AddResourcePath("device_emulator_pages.html",
                         IDR_DEVICE_EMULATOR_PAGES_HTML);
   html->AddResourcePath("device_emulator_pages.js",

@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/system/fake_input_device_settings.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
@@ -44,6 +46,8 @@ const char kUpdateTimeToEmpty[] = "updateTimeToEmpty";
 const char kUpdateTimeToFull[] = "updateTimeToFull";
 const char kUpdatePowerSources[] = "updatePowerSources";
 const char kUpdatePowerSourceId[] = "updatePowerSourceId";
+const char kSetHasTouchpad[] = "setHasTouchpad";
+const char kSetHasMouse[] = "setHasMouse";
 
 // Define callback functions that will update the JavaScript variable
 // and the web UI.
@@ -61,6 +65,10 @@ const char kUpdateBluetoothInfoJSCallback[] =
     "device_emulator.bluetoothSettings.updateBluetoothInfo";
 const char kUpdatePowerPropertiesJSCallback[] =
     "device_emulator.batterySettings.updatePowerProperties";
+const char kTouchpadExistsCallback[] =
+    "device_emulator.inputDeviceSettings.setTouchpadExists";
+const char kMouseExistsCallback[] =
+    "device_emulator.inputDeviceSettings.setMouseExists";
 
 const char kPairedPropertyName[] = "Paired";
 
@@ -200,7 +208,8 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
               ->GetCrasAudioClient())),
       fake_power_manager_client_(static_cast<chromeos::FakePowerManagerClient*>(
           chromeos::DBusThreadManager::Get()
-              ->GetPowerManagerClient())) {}
+              ->GetPowerManagerClient())),
+      weak_ptr_factory_(this) {}
 
 DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {
 }
@@ -335,6 +344,24 @@ void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
   CHECK(base::StringToUint64(tmp_id, &id));
 
   fake_cras_audio_client_->RemoveAudioNodeFromList(id);
+}
+
+void DeviceEmulatorMessageHandler::HandleSetHasTouchpad(
+    const base::ListValue* args) {
+  bool has_touchpad;
+  CHECK(args->GetBoolean(0, &has_touchpad));
+
+  system::InputDeviceSettings::Get()->GetFakeInterface()->set_touchpad_exists(
+      has_touchpad);
+}
+
+void DeviceEmulatorMessageHandler::HandleSetHasMouse(
+    const base::ListValue* args) {
+  bool has_mouse;
+  CHECK(args->GetBoolean(0, &has_mouse));
+
+  system::InputDeviceSettings::Get()->GetFakeInterface()->set_mouse_exists(
+      has_mouse);
 }
 
 void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
@@ -508,12 +535,27 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
       kRemoveBluetoothDevice,
       base::Bind(&DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kSetHasTouchpad,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleSetHasTouchpad,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kSetHasMouse,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleSetHasMouse,
+                 base::Unretained(this)));
 }
 
 void DeviceEmulatorMessageHandler::OnJavascriptAllowed() {
   bluetooth_observer_.reset(new BluetoothObserver(this));
   cras_audio_observer_.reset(new CrasAudioObserver(this));
   power_observer_.reset(new PowerObserver(this));
+
+  system::InputDeviceSettings::Get()->TouchpadExists(
+      base::Bind(&DeviceEmulatorMessageHandler::TouchpadExists,
+          weak_ptr_factory_.GetWeakPtr()));
+  system::InputDeviceSettings::Get()->MouseExists(
+      base::Bind(&DeviceEmulatorMessageHandler::MouseExists,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceEmulatorMessageHandler::OnJavascriptDisallowed() {
@@ -582,6 +624,20 @@ DeviceEmulatorMessageHandler::GetDeviceInfo(
   device->Set("uuids", std::move(uuids));
 
   return device;
+}
+
+void DeviceEmulatorMessageHandler::TouchpadExists(bool exists) {
+  if (!IsJavascriptAllowed())
+    return;
+  web_ui()->CallJavascriptFunctionUnsafe(kTouchpadExistsCallback,
+      base::FundamentalValue(exists));
+}
+
+void DeviceEmulatorMessageHandler::MouseExists(bool exists) {
+  if (!IsJavascriptAllowed())
+    return;
+  web_ui()->CallJavascriptFunctionUnsafe(kMouseExistsCallback,
+      base::FundamentalValue(exists));
 }
 
 }  // namespace chromeos

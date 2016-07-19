@@ -1241,8 +1241,6 @@ static_library("test_support") {
       "chromeos/policy/stub_enterprise_install_attributes.h",
       "chromeos/settings/device_settings_test_helper.cc",
       "chromeos/settings/device_settings_test_helper.h",
-      "chromeos/system/fake_input_device_settings.cc",
-      "chromeos/system/fake_input_device_settings.h",
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]

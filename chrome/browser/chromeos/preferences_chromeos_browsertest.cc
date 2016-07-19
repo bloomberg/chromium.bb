@@ -42,7 +42,7 @@ const char* const kTestUsers[] = {"test-user1@gmail.com",
 class PreferencesTest : public LoginManagerTest {
  public:
   PreferencesTest()
-      : LoginManagerTest(true), input_settings_(NULL), keyboard_(NULL) {
+      : LoginManagerTest(true), input_settings_(nullptr), keyboard_(nullptr) {
     for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
       test_users_.push_back(AccountId::FromUserEmail(kTestUsers[i]));
     }
@@ -55,8 +55,8 @@ class PreferencesTest : public LoginManagerTest {
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    input_settings_ = new system::FakeInputDeviceSettings();
-    system::InputDeviceSettings::SetSettingsForTesting(input_settings_);
+    input_settings_ = system::InputDeviceSettings::Get()->GetFakeInterface();
+    EXPECT_NE(nullptr, input_settings_);
     keyboard_ = new input_method::FakeImeKeyboard();
     static_cast<input_method::InputMethodManagerImpl*>(
         input_method::InputMethodManager::Get())
@@ -135,7 +135,7 @@ class PreferencesTest : public LoginManagerTest {
   std::vector<AccountId> test_users_;
 
  private:
-  system::FakeInputDeviceSettings* input_settings_;
+  system::InputDeviceSettings::FakeInterface* input_settings_;
   input_method::FakeImeKeyboard* keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferencesTest);

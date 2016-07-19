@@ -19,10 +19,8 @@ Polymer({
   },
 
   ready: function() {
-    for (var page of Polymer.dom(this.$$('neon-animated-pages')).children) {
-      page.initialize();
+    for (var page of Polymer.dom(this.$$('neon-animated-pages')).children)
       device_emulator[page.id] = page;
-    }
 
     chrome.send('initializeDeviceEmulator');
   },

@@ -2021,8 +2021,6 @@
             'browser/chromeos/policy/stub_enterprise_install_attributes.h',
             'browser/chromeos/settings/device_settings_test_helper.cc',
             'browser/chromeos/settings/device_settings_test_helper.h',
-            'browser/chromeos/system/fake_input_device_settings.cc',
-            'browser/chromeos/system/fake_input_device_settings.h',
           ],
         }],
         ['use_aura==1', {

@@ -1026,6 +1026,8 @@
         'browser/chromeos/system/device_disabling_manager.h',
         'browser/chromeos/system/device_disabling_manager_default_delegate.cc',
         'browser/chromeos/system/device_disabling_manager_default_delegate.h',
+        'browser/chromeos/system/fake_input_device_settings.cc',
+        'browser/chromeos/system/fake_input_device_settings.h',
         'browser/chromeos/system/input_device_settings.cc',
         'browser/chromeos/system/input_device_settings.h',
         'browser/chromeos/system/input_device_settings_impl_ozone.cc',

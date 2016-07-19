@@ -22,6 +22,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
@@ -35,7 +36,6 @@ namespace system {
 namespace {
 
 InputDeviceSettings* g_instance = nullptr;
-InputDeviceSettings* g_test_instance = nullptr;
 
 const char kDeviceTypeTouchpad[] = "touchpad";
 const char kDeviceTypeMouse[] = "mouse";
@@ -169,6 +169,7 @@ class InputDeviceSettingsImplX11 : public InputDeviceSettings {
   void SetPrimaryButtonRight(bool right) override;
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
+  InputDeviceSettings::FakeInterface* GetFakeInterface() override;
   void SetInternalTouchpadEnabled(bool enabled) override;
   void SetTouchscreensEnabled(bool enabled) override;
 
@@ -295,6 +296,11 @@ void InputDeviceSettingsImplX11::SetInternalTouchpadEnabled(bool enabled) {
   }
 }
 
+InputDeviceSettings::FakeInterface*
+InputDeviceSettingsImplX11::GetFakeInterface() {
+  return nullptr;
+}
+
 void InputDeviceSettingsImplX11::SetTouchscreensEnabled(bool enabled) {
   ui::TouchFactory::GetInstance()->SetTouchscreensEnabled(enabled);
 }
@@ -342,20 +348,13 @@ void InputDeviceSettingsImplX11::GenerateMouseArguments(
 
 // static
 InputDeviceSettings* InputDeviceSettings::Get() {
-  if (g_test_instance)
-    return g_test_instance;
-  if (!g_instance)
-    g_instance = new InputDeviceSettingsImplX11;
+  if (!g_instance) {
+    if (base::SysInfo::IsRunningOnChromeOS())
+      g_instance = new InputDeviceSettingsImplX11;
+    else
+      g_instance = new FakeInputDeviceSettings;
+  }
   return g_instance;
-}
-
-// static
-void InputDeviceSettings::SetSettingsForTesting(
-    InputDeviceSettings* test_settings) {
-  if (g_test_instance == test_settings)
-    return;
-  delete g_test_instance;
-  g_test_instance = test_settings;
 }
 
 }  // namespace system

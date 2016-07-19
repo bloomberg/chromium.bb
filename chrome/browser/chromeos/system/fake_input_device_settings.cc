@@ -14,7 +14,7 @@ FakeInputDeviceSettings::~FakeInputDeviceSettings() {}
 // Overriden from InputDeviceSettings.
 void FakeInputDeviceSettings::TouchpadExists(
     const DeviceExistsCallback& callback) {
-  callback.Run(true);
+  callback.Run(touchpad_exists_);
 }
 
 void FakeInputDeviceSettings::UpdateTouchpadSettings(
@@ -54,7 +54,7 @@ void FakeInputDeviceSettings::SetNaturalScroll(bool enabled) {
 
 void FakeInputDeviceSettings::MouseExists(
     const DeviceExistsCallback& callback) {
-  callback.Run(false);
+  callback.Run(mouse_exists_);
 }
 
 void FakeInputDeviceSettings::UpdateMouseSettings(
@@ -78,6 +78,28 @@ void FakeInputDeviceSettings::ReapplyTouchpadSettings() {
 }
 
 void FakeInputDeviceSettings::ReapplyMouseSettings() {
+}
+
+InputDeviceSettings::FakeInterface*
+FakeInputDeviceSettings::GetFakeInterface() {
+  return this;
+}
+
+void FakeInputDeviceSettings::set_touchpad_exists(bool exists) {
+  touchpad_exists_ = exists;
+}
+
+void FakeInputDeviceSettings::set_mouse_exists(bool exists) {
+  mouse_exists_ = exists;
+}
+
+const TouchpadSettings& FakeInputDeviceSettings::current_touchpad_settings()
+    const {
+  return current_touchpad_settings_;
+}
+
+const MouseSettings& FakeInputDeviceSettings::current_mouse_settings() const {
+  return current_mouse_settings_;
 }
 
 }  // namespace system

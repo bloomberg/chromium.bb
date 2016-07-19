@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
 #include "base/macros.h"
+#include "base/sys_info.h"
+#include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -19,7 +21,6 @@ namespace system {
 namespace {
 
 InputDeviceSettings* g_instance = nullptr;
-InputDeviceSettings* g_test_instance = nullptr;
 
 std::unique_ptr<ui::InputController> CreateStubInputControllerIfNecessary() {
 #if defined(MOJO_SHELL_CLIENT)
@@ -52,6 +53,7 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void SetPrimaryButtonRight(bool right) override;
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
+  InputDeviceSettings::FakeInterface* GetFakeInterface() override;
   void SetInternalTouchpadEnabled(bool enabled) override;
   void SetTouchscreensEnabled(bool enabled) override;
 
@@ -150,6 +152,11 @@ void InputDeviceSettingsImplOzone::ReapplyMouseSettings() {
   MouseSettings::Apply(current_mouse_settings_, this);
 }
 
+InputDeviceSettings::FakeInterface*
+InputDeviceSettingsImplOzone::GetFakeInterface() {
+  return nullptr;
+}
+
 void InputDeviceSettingsImplOzone::SetInternalTouchpadEnabled(bool enabled) {
   input_controller_->SetInternalTouchpadEnabled(enabled);
 }
@@ -162,20 +169,13 @@ void InputDeviceSettingsImplOzone::SetTouchscreensEnabled(bool enabled) {
 
 // static
 InputDeviceSettings* InputDeviceSettings::Get() {
-  if (g_test_instance)
-    return g_test_instance;
-  if (!g_instance)
-    g_instance = new InputDeviceSettingsImplOzone;
+  if (!g_instance) {
+    if (base::SysInfo::IsRunningOnChromeOS())
+      g_instance = new InputDeviceSettingsImplOzone;
+    else
+      g_instance = new FakeInputDeviceSettings();
+  }
   return g_instance;
-}
-
-// static
-void InputDeviceSettings::SetSettingsForTesting(
-    InputDeviceSettings* test_settings) {
-  if (g_test_instance == test_settings)
-    return;
-  delete g_test_instance;
-  g_test_instance = test_settings;
 }
 
 }  // namespace system

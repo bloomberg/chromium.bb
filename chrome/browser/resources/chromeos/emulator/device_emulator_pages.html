@@ -16,6 +16,7 @@
 <link rel="import" href="battery_settings.html">
 <link rel="import" href="bluetooth_settings.html">
 <link rel="import" href="icons.html">
+<link rel="import" href="input_device_settings.html">
 <link rel="import" href="shared_styles.html">
 
 <dom-module id="device-emulator-pages">
@@ -43,8 +44,8 @@
       }
 
       paper-drawer-panel paper-listbox paper-icon-item {
-        padding: 10px 5px;
         -webkit-margin-start: 20px;
+        padding: 10px 5px;
       }
 
       neon-animated-pages > * {
@@ -52,8 +53,8 @@
         background-color: white;
         display: block;
         margin: 20px;
-        position: relative !important;
         padding: 0 20px 20px 20px;
+        position: relative !important;
       }
     </style>
     <paper-drawer-panel>
@@ -75,6 +76,10 @@
             <iron-icon icon="device-emulator:bluetooth" item-icon></iron-icon>
             Bluetooth
           </paper-icon-item>
+          <paper-icon-item>
+            <iron-icon icon="device-emulator:mouse" item-icon></iron-icon>
+            Input Devices
+          </paper-icon-item>
         </paper-listbox>
       </paper-header-panel>
       <paper-header-panel main class="flex layout vertical">
@@ -89,6 +94,8 @@
           <audio-settings id="audioSettings"></audio-settings>
           <battery-settings id="batterySettings"></battery-settings>
           <bluetooth-settings id="bluetoothSettings"></bluetooth-settings>
+          <input-device-settings id="inputDeviceSettings">
+          </input-device-settings>
         </neon-animated-pages>
       </paper-header-panel>
     </paper-drawer-panel>

@@ -13,7 +13,8 @@ namespace chromeos {
 namespace system {
 
 // This fake just memorizes current values of input devices settings.
-class FakeInputDeviceSettings : public InputDeviceSettings {
+class FakeInputDeviceSettings : public InputDeviceSettings,
+                                public InputDeviceSettings::FakeInterface {
  public:
   FakeInputDeviceSettings();
   ~FakeInputDeviceSettings() override;
@@ -32,18 +33,20 @@ class FakeInputDeviceSettings : public InputDeviceSettings {
   void SetNaturalScroll(bool enabled) override;
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
+  InputDeviceSettings::FakeInterface* GetFakeInterface() override;
 
-  const TouchpadSettings& current_touchpad_settings() const {
-    return current_touchpad_settings_;
-  }
-
-  const MouseSettings& current_mouse_settings() const {
-    return current_mouse_settings_;
-  }
+  // Overridden from InputDeviceSettings::FakeInterface.
+  void set_touchpad_exists(bool exists) override;
+  void set_mouse_exists(bool exists) override;
+  const TouchpadSettings& current_touchpad_settings() const override;
+  const MouseSettings& current_mouse_settings() const override;
 
  private:
   TouchpadSettings current_touchpad_settings_;
   MouseSettings current_mouse_settings_;
+
+  bool touchpad_exists_ = true;
+  bool mouse_exists_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInputDeviceSettings);
 };

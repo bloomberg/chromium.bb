@@ -77,11 +77,8 @@ var BatterySettings = Polymer({
     'powerSourcesChanged(powerSourceOptions.*)',
   ],
 
-  initialize: function() {
-    if (!this.initialized) {
-      chrome.send('requestPowerInfo');
-      this.initialized = true;
-    }
+  ready: function() {
+    chrome.send('requestPowerInfo');
   },
 
   onBatteryPercentChange: function(e) {

@@ -133,13 +133,8 @@ Polymer({
    */
   devicePaths: {},
 
-  ready: function() { this.title = 'Bluetooth'; },
-
-  initialize: function() {
-    if (!this.initialized) {
-      this.initialized = true;
-      chrome.send('requestBluetoothInfo');
-    }
+  ready: function() {
+    chrome.send('requestBluetoothInfo');
   },
 
   observers: ['currentEditableObjectChanged(currentEditableObject.*)'],

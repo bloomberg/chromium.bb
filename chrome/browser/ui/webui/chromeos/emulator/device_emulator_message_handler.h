@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -29,8 +31,9 @@ class FakeCrasAudioClient;
 class FakePowerManagerClient;
 
 // Handler class for the Device Emulator page operations.
-class DeviceEmulatorMessageHandler
-    : public content::WebUIMessageHandler {
+class DeviceEmulatorMessageHandler :
+    public system::PointerDeviceObserver::Observer,
+    public content::WebUIMessageHandler {
  public:
   DeviceEmulatorMessageHandler();
   ~DeviceEmulatorMessageHandler() override;
@@ -72,6 +75,12 @@ class DeviceEmulatorMessageHandler
   // based on the node id.
   void HandleRemoveAudioNode(const base::ListValue* args);
 
+  // Connects or disconnects a fake touchpad.
+  void HandleSetHasTouchpad(const base::ListValue* args);
+
+  // Connects or disconnects a fake mouse.
+  void HandleSetHasMouse(const base::ListValue* args);
+
   // Callbacks for JS update methods. All these methods work
   // asynchronously.
   void UpdateBatteryPercent(const base::ListValue* args);
@@ -108,6 +117,10 @@ class DeviceEmulatorMessageHandler
   std::unique_ptr<base::DictionaryValue> GetDeviceInfo(
       const dbus::ObjectPath& object_path);
 
+  // system::PointerDeviceObserver::Observer:
+  void TouchpadExists(bool exists) override;
+  void MouseExists(bool exists) override;
+
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   std::unique_ptr<BluetoothObserver> bluetooth_observer_;
 
@@ -116,6 +129,8 @@ class DeviceEmulatorMessageHandler
 
   FakePowerManagerClient* fake_power_manager_client_;
   std::unique_ptr<PowerObserver> power_observer_;
+
+  base::WeakPtrFactory<DeviceEmulatorMessageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEmulatorMessageHandler);
 };

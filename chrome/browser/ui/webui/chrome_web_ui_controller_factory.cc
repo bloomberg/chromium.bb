@@ -145,7 +145,7 @@
 #include "components/proximity_auth/webui/url_constants.h"
 #endif
 
-#if !defined(OFFICIAL_BUILD) && defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 #endif
 
@@ -498,12 +498,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SlowTraceController>;
   if (url.host() == chrome::kChromeUIVoiceSearchHost)
     return &NewWebUI<VoiceSearchUI>;
-#if !defined(GOOGLE_CHROME_BUILD) && !defined(NDEBUG)
+#if !defined(NDEBUG)
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     if (url.host() == chrome::kChromeUIDeviceEmulatorHost)
       return &NewWebUI<DeviceEmulatorUI>;
   }
-#endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(NDEBUG)
+#endif  // !defined(NDEBUG)
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUIOfflineInternalsHost)
