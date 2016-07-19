@@ -40,6 +40,8 @@ import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.io.File;
+
 /**
  * Displays and manages the UI for the download manager.
  */
@@ -65,19 +67,42 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
             mSpaceUsedTextView = (TextView) parent.findViewById(R.id.space_used_display);
             mSpaceTotalTextView = (TextView) parent.findViewById(R.id.space_total_display);
             mSpaceBar = (ProgressBar) parent.findViewById(R.id.space_bar);
+            mFileSystemBytesTask = createStorageSizeTask().execute();
+        }
 
-            mFileSystemBytesTask = new AsyncTask<Void, Void, Long>() {
+        private static AsyncTask<Void, Void, Long> createStorageSizeTask() {
+            return new AsyncTask<Void, Void, Long>() {
                 @Override
                 protected Long doInBackground(Void... params) {
-                    StatFs statFs = new StatFs(Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS).getPath());
-                    long totalBlocks = ApiCompatibilityUtils.getBlockCount(statFs);
-                    long blockSize = ApiCompatibilityUtils.getBlockSize(statFs);
-                    long fileSystemBytes = totalBlocks * blockSize;
+                    File downloadDirectory = Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_DOWNLOADS);
+
+                    // Create the downloads directory, if necessary.
+                    if (!downloadDirectory.exists()) {
+                        try {
+                            // mkdirs() can fail, so we still need to check if the directory exists
+                            // later.
+                            downloadDirectory.mkdirs();
+                        } catch (SecurityException e) {
+                            Log.e(TAG, "SecurityException when creating download directory.", e);
+                        }
+                    }
+
+                    // Determine how much space is available on the storage device where downloads
+                    // reside.  If the downloads directory doesn't exist, it is likely that the user
+                    // doesn't have an SD card installed.
+                    long fileSystemBytes = 0;
+                    if (downloadDirectory.exists()) {
+                        StatFs statFs = new StatFs(downloadDirectory.getPath());
+                        long totalBlocks = ApiCompatibilityUtils.getBlockCount(statFs);
+                        long blockSize = ApiCompatibilityUtils.getBlockSize(statFs);
+                        fileSystemBytes = totalBlocks * blockSize;
+                    } else {
+                        Log.e(TAG, "Download directory doesn't exist.");
+                    }
                     return fileSystemBytes;
                 }
             };
-            mFileSystemBytesTask.execute();
         }
 
         private void update(long usedBytes) {
