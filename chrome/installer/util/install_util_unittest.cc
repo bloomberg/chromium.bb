@@ -507,6 +507,8 @@ TEST_F(InstallUtilTest, ProgramCompareWithDirectories) {
 // DIR_PROGRAM_FILESX86 as a suffix but not DIR_PROGRAM_FILES when the two are
 // unrelated.
 TEST_F(InstallUtilTest, IsPerUserInstall) {
+  InstallUtil::ResetIsPerUserInstallForTest();
+
 #if defined(_WIN64)
   const int kChromeProgramFilesKey = base::DIR_PROGRAM_FILESX86;
 #else
@@ -519,6 +521,7 @@ TEST_F(InstallUtilTest, IsPerUserInstall) {
       .AppendASCII("Product")
       .AppendASCII("product.exe");
   EXPECT_FALSE(InstallUtil::IsPerUserInstall(some_exe));
+  InstallUtil::ResetIsPerUserInstallForTest();
 
 #if defined(_WIN64)
   const int kOtherProgramFilesKey = base::DIR_PROGRAM_FILES;
@@ -528,6 +531,7 @@ TEST_F(InstallUtilTest, IsPerUserInstall) {
       .AppendASCII("Product")
       .AppendASCII("product.exe");
   EXPECT_TRUE(InstallUtil::IsPerUserInstall(some_exe));
+  InstallUtil::ResetIsPerUserInstallForTest();
 #endif  // defined(_WIN64)
 }
 

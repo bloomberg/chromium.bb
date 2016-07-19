@@ -7,12 +7,16 @@
 #include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/installer/util/install_util.h"
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
   // Register Chrome Path provider so that we can get test data dir.
   chrome::RegisterPathProvider();
+
+  // Drop CHROME_PROBED_PROGRAM_FILES_PATH if it leaked into the environment.
+  InstallUtil::ResetIsPerUserInstallForTest();
 
   base::win::ScopedCOMInitializer com_initializer;
   if (!com_initializer.succeeded())

@@ -44,6 +44,7 @@ using installer::ProductState;
 
 namespace {
 
+const char kEnvProgramFilesPath[] = "CHROME_PROBED_PROGRAM_FILES_PATH";
 const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
 const wchar_t kStageBinaryPatching[] = L"binary_patching";
 const wchar_t kStageBuilding[] = L"building";
@@ -366,8 +367,6 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
 
 bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-
-  static const char kEnvProgramFilesPath[] = "CHROME_PROBED_PROGRAM_FILES_PATH";
   std::string env_program_files_path;
   // Check environment variable to find program files path.
   base::FilePath program_files_path;
@@ -402,6 +401,11 @@ bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
                          exe_path.value().data(), prefix_len,
                          program_files_path.value().data(), prefix_len) !=
       CSTR_EQUAL;
+}
+
+void InstallUtil::ResetIsPerUserInstallForTest() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  env->UnSetVar(kEnvProgramFilesPath);
 }
 
 bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,

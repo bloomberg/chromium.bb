@@ -96,6 +96,10 @@ class InstallUtil {
   // Files).
   static bool IsPerUserInstall(const base::FilePath& exe_path);
 
+  // Resets internal state for IsPerUserInstall so that the next call recomputes
+  // with fresh data.
+  static void ResetIsPerUserInstallForTest();
+
   // Returns true if the installation represented by the pair of |dist| and
   // |system_level| is a multi install.
   static bool IsMultiInstall(BrowserDistribution* dist, bool system_install);

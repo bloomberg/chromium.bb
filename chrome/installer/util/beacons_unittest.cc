@@ -14,6 +14,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/test_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,6 +179,9 @@ class DefaultBrowserBeaconTest
     // Override the registry so that tests can freely push state to it.
     registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
     registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+    // Ensure that IsPerUserInstall returns the proper value.
+    ASSERT_EQ(!system_install_, InstallUtil::IsPerUserInstall(chrome_exe_));
 
     distribution_ = BrowserDistribution::GetDistribution();
   }
