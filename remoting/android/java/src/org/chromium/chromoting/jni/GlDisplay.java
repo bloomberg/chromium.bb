@@ -12,6 +12,7 @@ import org.chromium.chromoting.AbstractDesktopView;
 import org.chromium.chromoting.Desktop;
 import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.Event;
+import org.chromium.chromoting.GlDesktopView;
 import org.chromium.chromoting.SizeChangedEventParameter;
 
 /**
@@ -163,8 +164,7 @@ public class GlDisplay {
         client.setDesktopViewFactory(new DesktopViewFactory() {
             @Override
             public AbstractDesktopView createDesktopView(Desktop desktop, Client client) {
-                // UNIMPLEMENTED.
-                return null;
+                return new GlDesktopView(GlDisplay.this, desktop, client);
             }
         });
     }

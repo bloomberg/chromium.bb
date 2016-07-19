@@ -6,25 +6,113 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
+
+import org.chromium.chromoting.jni.Client;
 
 /**
- * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
+ * The abstract class for viewing and interacting with a specific remote host. Handles logic
+ * for touch input and render data.
  */
 public abstract class AbstractDesktopView extends SurfaceView {
-    public AbstractDesktopView(Context context) {
-        super(context);
-    }
+    /** Used to define the animation feedback shown when a user touches the screen. */
+    public enum InputFeedbackType { NONE, SMALL_ANIMATION, LARGE_ANIMATION }
 
-    /** Triggers a brief animation to indicate the existence and location of an input event. */
-    public abstract void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow, Point pos);
+    protected final RenderData mRenderData;
+    protected final TouchInputHandler mInputHandler;
+
+    /**
+     * Subclass should trigger this event when the client view size is changed.
+     */
+    protected final Event.Raisable<SizeChangedEventParameter> mOnClientSizeChanged =
+            new Event.Raisable<>();
+
+    /**
+     * Subclass should trigger this event when the host (desktop frame) size is changed.
+     */
+    protected final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
+            new Event.Raisable<>();
+
+    /** The parent Desktop activity. */
+    private final Desktop mDesktop;
+
+    private final Event.Raisable<TouchEventParameter> mOnTouch = new Event.Raisable<>();
+
+    public AbstractDesktopView(Desktop desktop, Client client) {
+        super(desktop);
+        Preconditions.notNull(desktop);
+        Preconditions.notNull(client);
+        mDesktop = desktop;
+        mRenderData = new RenderData();
+        mInputHandler = new TouchInputHandler(this, desktop, mRenderData);
+        mInputHandler.init(desktop, new InputEventSender(client));
+
+        // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
+        setFocusableInTouchMode(true);
+    }
 
     // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
     /** Shows the action bar. */
-    public abstract void showActionBar();
+    public final void showActionBar() {
+        mDesktop.showSystemUi();
+    }
 
     /** Shows the software keyboard. */
-    public abstract void showKeyboard();
+    public final void showKeyboard() {
+        InputMethodManager inputManager =
+                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.showSoftInput(this, 0);
+    }
+
+    /** An {@link Event} which is triggered when user touches the screen. */
+    public final Event<TouchEventParameter> onTouch() {
+        return mOnTouch;
+    }
+
+    /** An {@link Event} which is triggered when the client size is changed. */
+    public final Event<SizeChangedEventParameter> onClientSizeChanged() {
+        return mOnClientSizeChanged;
+    }
+
+    /** An {@link Event} which is triggered when the host size is changed. */
+    public final Event<SizeChangedEventParameter> onHostSizeChanged() {
+        return mOnHostSizeChanged;
+    }
+
+    // View overrides.
+    /** Called when a software keyboard is requested, and specifies its options. */
+    @Override
+    public final InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Disables rich input support and instead requests simple key events.
+        outAttrs.inputType = InputType.TYPE_NULL;
+
+        // Prevents most third-party IMEs from ignoring our Activity's adjustResize preference.
+        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
+
+        // Ensures that keyboards will not decide to hide the remote desktop on small displays.
+        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+
+        // Stops software keyboards from closing as soon as the enter key is pressed.
+        outAttrs.imeOptions |= EditorInfo.IME_MASK_ACTION | EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+
+        return null;
+    }
+
+    /** Called whenever the user attempts to touch the canvas. */
+    @Override
+    public final boolean onTouchEvent(MotionEvent event) {
+        TouchEventParameter parameter = new TouchEventParameter(event);
+        mOnTouch.raise(parameter);
+        return parameter.handled;
+    }
+
+    /** Triggers a brief animation to indicate the existence and location of an input event. */
+    public abstract void showInputFeedback(InputFeedbackType feedbackToShow, Point pos);
 
     /**
      * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)
@@ -49,19 +137,4 @@ public abstract class AbstractDesktopView extends SurfaceView {
      * periodically call TouchInputHandler.processAnimation() and repaint itself.
      */
     public abstract void setAnimationEnabled(boolean enabled);
-
-    /**
-     * An {@link Event} which is triggered when the view is being painted. Adding handlers to this
-     * event causes painting to be triggered continuously until they are all removed.
-     */
-    public abstract Event<PaintEventParameter> onPaint();
-
-    /** An {@link Event} which is triggered when the client size is changed. */
-    public abstract Event<SizeChangedEventParameter> onClientSizeChanged();
-
-    /** An {@link Event} which is triggered when the host size is changed. */
-    public abstract Event<SizeChangedEventParameter> onHostSizeChanged();
-
-    /** An {@link Event} which is triggered when user touches the screen. */
-    public abstract Event<TouchEventParameter> onTouch();
 }

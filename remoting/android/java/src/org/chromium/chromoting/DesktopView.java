@@ -4,7 +4,6 @@
 
 package org.chromium.chromoting;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,12 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.text.InputType;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.Log;
 import org.chromium.chromoting.jni.Client;
@@ -30,16 +24,7 @@ import org.chromium.chromoting.jni.Display;
  */
 /** GUI element that holds the drawing canvas. */
 public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Callback {
-    /** Used to define the animation feedback shown when a user touches the screen. */
-    public enum InputFeedbackType { NONE, SMALL_ANIMATION, LARGE_ANIMATION }
-
     private static final String TAG = "Chromoting";
-
-    private final RenderData mRenderData;
-    private final TouchInputHandler mInputHandler;
-
-    /** The parent Desktop activity. */
-    private final Desktop mDesktop;
 
     private final Display mDisplay;
 
@@ -55,11 +40,6 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
     private boolean mSurfaceCreated = false;
 
     private final Event.Raisable<PaintEventParameter> mOnPaint = new Event.Raisable<>();
-    private final Event.Raisable<SizeChangedEventParameter> mOnClientSizeChanged =
-            new Event.Raisable<>();
-    private final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
-            new Event.Raisable<>();
-    private final Event.Raisable<TouchEventParameter> mOnTouch = new Event.Raisable<>();
 
     // Variables to control animation by the TouchInputHandler.
 
@@ -70,19 +50,9 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
     private boolean mInputAnimationRunning = false;
 
     public DesktopView(Display display, Desktop desktop, Client client) {
-        super(desktop);
+        super(desktop, client);
         Preconditions.notNull(display);
-        Preconditions.notNull(desktop);
-        Preconditions.notNull(client);
         mDisplay = display;
-        mDesktop = desktop;
-
-        // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
-        setFocusableInTouchMode(true);
-
-        mRenderData = new RenderData();
-        mInputHandler = new TouchInputHandler(this, desktop, mRenderData);
-        mInputHandler.init(desktop, new InputEventSender(client));
 
         mRepaintPending = false;
 
@@ -93,18 +63,6 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
 
     public Event<PaintEventParameter> onPaint() {
         return mOnPaint;
-    }
-
-    public Event<SizeChangedEventParameter> onClientSizeChanged() {
-        return mOnClientSizeChanged;
-    }
-
-    public Event<SizeChangedEventParameter> onHostSizeChanged() {
-        return mOnHostSizeChanged;
-    }
-
-    public Event<TouchEventParameter> onTouch() {
-        return mOnTouch;
     }
 
     /** Request repainting of the desktop view. */
@@ -265,50 +223,12 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
         }
     }
 
-    /** Called when a software keyboard is requested, and specifies its options. */
-    @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Disables rich input support and instead requests simple key events.
-        outAttrs.inputType = InputType.TYPE_NULL;
-
-        // Prevents most third-party IMEs from ignoring our Activity's adjustResize preference.
-        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
-
-        // Ensures that keyboards will not decide to hide the remote desktop on small displays.
-        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
-
-        // Stops software keyboards from closing as soon as the enter key is pressed.
-        outAttrs.imeOptions |= EditorInfo.IME_MASK_ACTION | EditorInfo.IME_FLAG_NO_ENTER_ACTION;
-
-        return null;
-    }
-
-    /** Called whenever the user attempts to touch the canvas. */
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        TouchEventParameter parameter = new TouchEventParameter(event);
-        mOnTouch.raise(parameter);
-        return parameter.handled;
-    }
-
     @Override
     public void showInputFeedback(InputFeedbackType feedbackToShow, Point pos) {
         if (feedbackToShow != InputFeedbackType.NONE) {
             FeedbackAnimator.startAnimation(this, pos, feedbackToShow);
             requestRepaint();
         }
-    }
-
-    @Override
-    public void showActionBar() {
-        mDesktop.showSystemUi();
-    }
-
-    @Override
-    public void showKeyboard() {
-        InputMethodManager inputManager =
-                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.showSoftInput(this, 0);
     }
 
     @Override

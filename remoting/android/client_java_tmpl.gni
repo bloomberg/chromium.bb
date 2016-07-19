@@ -28,6 +28,7 @@ template("remoting_android_client_java_tmpl") {
       "Event.java",
       "FeedbackAnimator.java",
       "FlingAnimationJob.java",
+      "GlDesktopView.java",
       "HostInfo.java",
       "HostListAdapter.java",
       "HostListManager.java",
