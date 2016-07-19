@@ -102,8 +102,7 @@ class BlinkMemoryMobilePageSet(story.StorySet):
         page_set=self,
         name='Pinterest'))
     self.AddStory(FacebookPage(self))
-    # TODO(bashi): Enable TheVergePage. http://crbug.com/522381
-    # self.AddStory(TheVergePage(self))
+    self.AddStory(TheVergePage(self))
 
     # Why: High rate of Blink's memory comsumption rate on low-RAM devices.
     self.AddStory(BlinkMemoryMobilePage(
