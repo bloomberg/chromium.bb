@@ -70,6 +70,11 @@ function handleUsedCheck(event) {
   }
 }
 
+function handleHeaders(event) {
+  const headers = Array.from(event.request.headers);
+  event.respondWith(new Response(JSON.stringify(headers)));
+}
+
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
@@ -82,7 +87,8 @@ self.addEventListener('fetch', function(event) {
       { pattern: '?fetch', fn: handleFetch },
       { pattern: '?form-post', fn: handleFormPost },
       { pattern: '?multiple-respond-with', fn: handleMultipleRespondWith },
-      { pattern: '?used-check', fn: handleUsedCheck }
+      { pattern: '?used-check', fn: handleUsedCheck },
+      { pattern: '?headers', fn: handleHeaders }
     ];
 
     var handler = null;

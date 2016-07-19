@@ -55,6 +55,59 @@ function xhr_send(url_base, method, data, with_credentials) {
     });
 }
 
+function get_sorted_header_name_list(headers) {
+  const header_names = [];
+  for (const [name, value] of headers) {
+    header_names.push(name);
+  }
+  header_names.sort();
+  return header_names;
+}
+
+function get_header_test() {
+  return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', false)
+    .then(function(response) {
+        assert_array_equals(
+          get_sorted_header_name_list(response.headers),
+          ["accept", "user-agent"],
+          'event.request has the expected headers for same-origin GET.');
+      });
+}
+
+// TODO(tyoshino): Fix the stack not to include the Origin header as specified
+// in the spec.
+function post_header_test() {
+  return xhr_send(host_info['HTTP_ORIGIN'], 'POST', '', false)
+    .then(function(response) {
+        assert_array_equals(
+          get_sorted_header_name_list(response.headers),
+          ["accept", "content-type", "origin", "user-agent"],
+          'event.request has the expected headers for same-origin POST.');
+      });
+}
+
+function cross_origin_get_header_test() {
+  return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'GET', '', false)
+    .then(function(response) {
+        assert_array_equals(
+          get_sorted_header_name_list(response.headers),
+          ["accept", "user-agent"],
+          'event.request has the expected headers for cross-origin GET.');
+      });
+}
+
+// TODO(tyoshino): Fix the stack not to include the Origin header as specified
+// in the spec.
+function cross_origin_post_header_test() {
+  return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'POST', '', false)
+    .then(function(response) {
+        assert_array_equals(
+          get_sorted_header_name_list(response.headers),
+          ["accept", "content-type", "origin", "user-agent"],
+          'event.request has the expected headers for cross-origin POST.');
+      });
+}
+
 function string_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'POST', 'test string', false)
     .then(function(response) {
@@ -172,7 +225,11 @@ function data_url_test() {
 
 window.addEventListener('message', function(evt) {
     var port = evt.ports[0];
-    string_test()
+    get_header_test()
+      .then(post_header_test)
+      .then(cross_origin_get_header_test)
+      .then(cross_origin_post_header_test)
+      .then(string_test)
       .then(blob_test)
       .then(custom_method_test)
       .then(options_method_test)
