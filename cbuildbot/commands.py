@@ -1693,8 +1693,7 @@ def UploadArchivedFile(archive_dir, upload_urls, filename, debug,
 
 
 def UploadSymbols(buildroot, board=None, official=False, cnt=None,
-                  failed_list=None, breakpad_root=None, product_name=None,
-                  error_code_ok=True):
+                  failed_list=None, breakpad_root=None, product_name=None):
   """Upload debug symbols for this build."""
   cmd = ['upload_symbols', '--yes', '--dedupe']
 
@@ -1717,12 +1716,7 @@ def UploadSymbols(buildroot, board=None, official=False, cnt=None,
   # We don't want to import upload_symbols directly because it uses the
   # swarming module which itself imports a _lot_ of stuff.  It has also
   # been known to hang.  We want to keep cbuildbot isolated & robust.
-  ret = RunBuildScript(buildroot, cmd, chromite_cmd=True,
-                       error_code_ok=error_code_ok)
-  if ret.returncode:
-    # TODO(davidjames): Convert this to a fatal error.
-    # See http://crbug.com/212437
-    logging.PrintBuildbotStepWarnings()
+  RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
 def PushImages(board, archive_url, dryrun, profile, sign_types=()):

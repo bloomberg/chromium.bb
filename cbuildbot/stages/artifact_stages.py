@@ -31,6 +31,10 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 
 
+class DebugSymbolsUploadException(Exception):
+  """Thrown if DebugSymbols fails during upload."""
+
+
 class NothingToArchiveException(Exception):
   """Thrown if ArchiveStage found nothing to archive."""
   def __init__(self, message='No images found to archive.'):
@@ -408,7 +412,9 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   config_name = 'debug_symbols'
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  @failures_lib.SetFailureType(
+      failures_lib.InfrastructureFailure,
+      exclude_exceptions=(DebugSymbolsUploadException,))
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
@@ -444,7 +450,10 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
       cnt = None
       official = self._run.config.chromeos_official
 
-    commands.UploadSymbols(buildroot, board, official, cnt, failed_list)
+    try:
+      commands.UploadSymbols(buildroot, board, official, cnt, failed_list)
+    except failures_lib.BuildScriptFailure:
+      raise DebugSymbolsUploadException('Failed to upload all symbols.')
 
     if os.path.exists(failed_list):
       self.UploadArtifact(os.path.basename(failed_list), archive=False)
@@ -462,6 +471,13 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
     self._SymbolsNotGenerated()
+
+    # TODO(dgarrett): Convert this to a fatal error.
+    # See http://crbug.com/212437
+    exc_type = exc_info[0]
+    if issubclass(exc_type, DebugSymbolsUploadException):
+      return self._HandleExceptionAsWarning(exc_info)
+
     return super(DebugSymbolsStage, self)._HandleStageException(exc_info)
 
 
