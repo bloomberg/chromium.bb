@@ -34,4 +34,6 @@ public final class WebApkConstants {
             "org.chromium.chrome.browser.is_icon_generated";
     public static final String EXTRA_WEBAPK_PACKAGE_NAME =
             "org.chromium.chrome.browser.webapk_package_name";
+    public static final String EXTRA_WEB_MANIFEST_URL =
+            "org.chromium.chrome.browser.web_manifest_url";
 }

@@ -80,6 +80,8 @@ public class ShortcutHelper {
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
     public static final String EXTRA_WEBAPK_PACKAGE_NAME =
             "org.chromium.chrome.browser.webapk_package_name";
+    public static final String EXTRA_WEB_MANIFEST_URL =
+            "org.chromium.chrome.browser.web_manifest_url";
 
     // When a new field is added to the intent, this version should be incremented so that it will
     // be correctly populated into the WebappRegistry/WebappDataStorage.

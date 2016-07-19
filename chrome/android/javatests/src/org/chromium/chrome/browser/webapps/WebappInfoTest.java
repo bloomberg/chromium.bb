@@ -30,7 +30,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
         assertNotNull(info);
     }
 
@@ -45,7 +45,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
         assertNotNull(info);
     }
 
@@ -134,7 +134,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 WebDisplayMode.Fullscreen, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
         assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
         assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -152,7 +152,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT,
-                ShortcutSource.UNKNOWN, themeColor, backgroundColor, false, null);
+                ShortcutSource.UNKNOWN, themeColor, backgroundColor, false, null, null);
         assertEquals(themeColor, info.themeColor());
         assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -168,7 +168,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false, null, null);
         assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
         assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
     }
@@ -316,6 +316,19 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(packageName, info.webApkPackageName());
+    }
+
+
+    @SmallTest
+    @Feature({"WebApk"})
+    public void testIntentWebManifestUrl() {
+        String webManifestUrl = "https://foo.com/manifest.json";
+
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_WEB_MANIFEST_URL, webManifestUrl);
+
+        WebappInfo info = WebappInfo.create(intent);
+        assertEquals(webManifestUrl, info.webManifestUri().toString());
     }
 
     @SmallTest

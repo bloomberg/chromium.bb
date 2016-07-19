@@ -39,6 +39,7 @@
         <meta-data android:name="themeColor" android:value="{{ theme_color }}" />
         <meta-data android:name="backgroundColor" android:value="{{ background_color }}" />
         <meta-data android:name="iconUrl" android:value="{{ icon_url }}" />
+        <meta-data android:name="webManifestUrl" android:value="{{ web_manifest_url }}" />
         <service
             android:name="org.chromium.webapk.shell_apk.WebApkServiceFactory"
             android:exported="true"

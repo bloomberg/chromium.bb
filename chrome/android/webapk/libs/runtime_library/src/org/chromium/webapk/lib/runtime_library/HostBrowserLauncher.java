@@ -34,6 +34,7 @@ public class HostBrowserLauncher {
     private static final String META_DATA_THEME_COLOR = "themeColor";
     private static final String META_DATA_BACKGROUND_COLOR = "backgroundColor";
     private static final String META_DATA_ICON_URL = "iconUrl";
+    private static final String META_DATA_WEB_MANIFEST_URL = "webManifestUrl";
 
     /**
      * Key for passing app icon id in Bundle to {@link #launch()}.
@@ -83,6 +84,7 @@ public class HostBrowserLauncher {
         long themeColor = getLongFromBundle(metaBundle, META_DATA_THEME_COLOR);
         long backgroundColor = getLongFromBundle(metaBundle, META_DATA_BACKGROUND_COLOR);
         boolean isIconGenerated = TextUtils.isEmpty(metaBundle.getString(META_DATA_ICON_URL));
+        String webManifestUrl = metaBundle.getString(META_DATA_WEB_MANIFEST_URL);
         Log.v(TAG, "Url of the WebAPK: " + url);
         Log.v(TAG, "WebappId of the WebAPK: " + webappId);
         Log.v(TAG, "Name of the WebAPK:" + name);
@@ -106,7 +108,8 @@ public class HostBrowserLauncher {
                 .putExtra(WebApkConstants.EXTRA_IS_ICON_GENERATED, isIconGenerated)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, displayMode)
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, orientation);
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, orientation)
+                .putExtra(WebApkConstants.EXTRA_WEB_MANIFEST_URL, webManifestUrl);
 
         try {
             context.startActivity(newIntent);
