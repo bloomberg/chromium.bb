@@ -752,11 +752,14 @@ void PaintLayerScrollableArea::clampScrollPositionsAfterLayout()
         return;
     }
 
-    DoublePoint clampedScrollPosition = clampScrollPosition(scrollPositionDouble());
-    if (clampedScrollPosition != scrollPositionDouble())
-        ScrollableArea::setScrollPosition(clampedScrollPosition, ProgrammaticScroll);
-    else if (scrollOriginChanged())
-        scrollPositionChanged(clampedScrollPosition, ProgrammaticScroll);
+    DoublePoint clamped = clampScrollPosition(scrollPositionDouble());
+    // Restore before clamping because clamping clears the scroll anchor.
+    if (clamped != scrollPositionDouble() && shouldPerformScrollAnchoring() && m_scrollAnchor.hasScroller()) {
+        m_scrollAnchor.restore();
+        clamped = clampScrollPosition(scrollPositionDouble());
+    }
+    if (clamped != scrollPositionDouble() || scrollOriginChanged())
+        ScrollableArea::setScrollPosition(clamped, ProgrammaticScroll);
 
     setNeedsScrollPositionClamp(false);
     resetScrollOriginChanged();

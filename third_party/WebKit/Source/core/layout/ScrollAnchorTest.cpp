@@ -194,6 +194,59 @@ TEST_F(ScrollAnchorTest, ClippedScrollersSkipped)
         scrollAnchor(viewport).anchorObject());
 }
 
+// Test that scroll anchoring causes no visible jump when a layout change
+// (such as removal of a DOM element) changes the scroll bounds.
+TEST_F(ScrollAnchorTest, AnchoringWhenContentRemoved)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    #changer { height: 1500px; }"
+        "    #anchor {"
+        "        width: 150px; height: 1000px; background-color: pink;"
+        "    }"
+        "</style>"
+        "<div id='changer'></div>"
+        "<div id='anchor'></div>");
+
+    ScrollableArea* viewport = layoutViewport();
+    scrollLayoutViewport(DoubleSize(0, 1600));
+
+    setHeight(document().getElementById("changer"), 0);
+
+    EXPECT_EQ(100, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("anchor")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
+// Test that scroll anchoring causes no visible jump when a layout change
+// (such as removal of a DOM element) changes the scroll bounds of a scrolling
+// div.
+TEST_F(ScrollAnchorTest, AnchoringWhenContentRemovedFromScrollingDiv)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    #scroller { height: 500px; width: 200px; overflow: scroll; }"
+        "    #changer { height: 1500px; }"
+        "    #anchor {"
+        "        width: 150px; height: 1000px; overflow: scroll;"
+        "    }"
+        "</style>"
+        "<div id='scroller'>"
+        "    <div id='changer'></div>"
+        "    <div id='anchor'></div>"
+        "</div>");
+
+    ScrollableArea* scroller = scrollerForElement(document().getElementById("scroller"));
+
+    document().getElementById("scroller")->setScrollTop(1600);
+
+    setHeight(document().getElementById("changer"), 0);
+
+    EXPECT_EQ(100, scroller->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("anchor")->layoutObject(),
+        scrollAnchor(scroller).anchorObject());
+}
+
 TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing)
 {
     setBodyInnerHTML(

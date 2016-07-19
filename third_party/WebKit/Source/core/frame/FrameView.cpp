@@ -3652,10 +3652,16 @@ void FrameView::updateScrollbars()
 
 void FrameView::adjustScrollPositionFromUpdateScrollbars()
 {
-    DoublePoint adjustedScrollPosition = clampScrollPosition(scrollPositionDouble());
-
-    if (adjustedScrollPosition != scrollPositionDouble() || scrollOriginChanged()) {
-        ScrollableArea::setScrollPosition(adjustedScrollPosition, ProgrammaticScroll);
+    DoublePoint clamped = clampScrollPosition(scrollPositionDouble());
+    // Restore before clamping because clamping clears the scroll anchor.
+    // TODO(ymalik): This same logic exists in PaintLayerScrollableArea.
+    // Remove when root-layer-scrolls is enabled.
+    if (clamped != scrollPositionDouble() && shouldPerformScrollAnchoring() && m_scrollAnchor.hasScroller()) {
+        m_scrollAnchor.restore();
+        clamped = clampScrollPosition(scrollPositionDouble());
+    }
+    if (clamped != scrollPositionDouble() || scrollOriginChanged()) {
+        ScrollableArea::setScrollPosition(clamped, ProgrammaticScroll);
         resetScrollOriginChanged();
     }
 }
