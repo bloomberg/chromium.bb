@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "content/browser/device_sensors/data_fetcher_shared_memory.h"
 #include "content/browser/device_sensors/device_inertial_sensor_service.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
@@ -234,7 +235,14 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
   base::WaitableEvent io_loop_finished_event_;
 };
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationTest) {
+// Flaky test. See http://crbug.com/628527.
+#if defined(ADDRESS_SANITIZER) && defined(OS_LINUX)
+#define MAYBE_OrientationTest DISABLED_OrientationTest
+#else
+#define MAYBE_OrientationTest OrientationTest
+#endif
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+                       MAYBE_OrientationTest) {
   // The test page will register an event handler for orientation events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
