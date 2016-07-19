@@ -2680,8 +2680,8 @@ TEST_F(GLES3ImplementationTest, SubImage3DUnpack) {
   static const GLint kSrcHeight = 7;
   static const GLint kSrcSubImageX0 = 11;
   static const GLint kSrcSubImageX1 = 16;
-  static const GLint kSrcSubImageY0 = 20;
-  static const GLint kSrcSubImageY1 = 23;
+  static const GLint kSrcSubImageY0 = 1;
+  static const GLint kSrcSubImageY1 = 4;
   static const GLint kSrcSubImageZ0 = 2;
   static const GLint kSrcSubImageZ1 = 5;
   static const GLint kSrcSubImageWidth = kSrcSubImageX1 - kSrcSubImageX0;
@@ -2712,7 +2712,7 @@ TEST_F(GLES3ImplementationTest, SubImage3DUnpack) {
   // Makes sure the pixels size is large enough for all tests.
   pixel_params.alignment = 8;
   ASSERT_TRUE(GLES2Util::ComputeImageDataSizesES3(
-      kSrcWidth, kSrcSubImageY1, kSrcSubImageZ1, kFormat, kType,
+      kSrcWidth, kSrcHeight, kSrcSubImageZ1, kFormat, kType,
       pixel_params, &pixel_size, nullptr, nullptr, nullptr, nullptr));
   std::unique_ptr<uint8_t[]> src_pixels;
   src_pixels.reset(new uint8_t[pixel_size]);

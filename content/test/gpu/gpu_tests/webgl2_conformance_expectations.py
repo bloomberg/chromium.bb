@@ -51,10 +51,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
 
-    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
-        bug=628866)
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        bug=628866)
     self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
         bug=628863)
 
@@ -536,6 +532,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_06.html',
+        ['mac', 'intel'], bug=483282)
+
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
