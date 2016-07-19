@@ -164,6 +164,9 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   malloc_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                          heap_statistics.malloced_memory());
+  malloc_dump->AddScalar("peak_size",
+                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                         heap_statistics.peak_malloced_memory());
   const char* system_allocator_name =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->system_allocator_pool_name();
