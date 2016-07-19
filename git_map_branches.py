@@ -140,7 +140,8 @@ class BranchMapper(object):
       # retrieved.
       for cl, status in status_info:
         self.__status_info[cl.GetBranch()] = (cl.GetIssueURL(),
-                                              color_for_status(status))
+                                              color_for_status(status),
+                                              status)
 
     roots = set()
 
@@ -260,9 +261,12 @@ class BranchMapper(object):
 
     # The Rietveld issue associated with the branch.
     if self.verbosity >= 2:
-      (url, color) = ('', '') if self.__is_invalid_parent(branch) \
-                              else self.__status_info[branch]
-      line.append(url or '', color=color)
+      (url, color, status) = ('', '', '') if self.__is_invalid_parent(branch) \
+          else self.__status_info[branch]
+      if self.verbosity > 2:
+        line.append('{} ({})'.format(url, status) if url else '', color=color)
+      else:
+        line.append(url or '', color=color)
 
     # The subject of the most recent commit on the branch.
     if self.show_subject:
