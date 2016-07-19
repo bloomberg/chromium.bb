@@ -10,6 +10,7 @@
 #include "base/win/registry.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/chrome_elf_constants.h"
+#include "chrome_elf/chrome_elf_security.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -28,6 +29,62 @@ const wchar_t kChromeUserExePath[] =
 const wchar_t kChromiumExePath[] =
     L"C:\\Users\\user\\AppData\\Local\\Chromium\\Application\\chrome.exe";
 
+bool SetSecurityFinchFlag(bool creation) {
+  bool success = true;
+  base::win::RegKey security_key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
+
+  if (creation) {
+    if (ERROR_SUCCESS !=
+        security_key.CreateKey(elf_sec::kRegSecurityFinchPath, KEY_QUERY_VALUE))
+      success = false;
+  } else {
+    if (ERROR_SUCCESS != security_key.DeleteKey(elf_sec::kRegSecurityFinchPath))
+      success = false;
+  }
+
+  security_key.Close();
+  return success;
+}
+
+bool IsSecuritySet() {
+  typedef decltype(GetProcessMitigationPolicy)* GetProcessMitigationPolicyFunc;
+
+  // Check the settings from EarlyBrowserSecurity().
+  if (::IsWindows8OrGreater()) {
+    GetProcessMitigationPolicyFunc get_process_mitigation_policy =
+        reinterpret_cast<GetProcessMitigationPolicyFunc>(::GetProcAddress(
+            ::GetModuleHandleW(L"kernel32.dll"), "GetProcessMitigationPolicy"));
+    if (!get_process_mitigation_policy)
+      return false;
+
+    // Check that extension points are disabled.
+    // (Legacy hooking.)
+    PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = {};
+    if (!get_process_mitigation_policy(::GetCurrentProcess(),
+                                       ProcessExtensionPointDisablePolicy,
+                                       &policy, sizeof(policy)))
+      return false;
+
+    return policy.DisableExtensionPoints;
+  }
+
+  return true;
+}
+
+void RegRedirect(nt::ROOT_KEY key,
+                 registry_util::RegistryOverrideManager& rom) {
+  base::string16 temp;
+
+  if (key == nt::HKCU) {
+    rom.OverrideRegistry(HKEY_CURRENT_USER, &temp);
+    ::wcsncpy(nt::HKCU_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
+  } else if (key == nt::HKLM) {
+    rom.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
+    ::wcsncpy(nt::HKLM_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
+  }
+  // nt::AUTO should not be passed into this function.
+}
+
 TEST(ChromeElfUtilTest, CanaryTest) {
   EXPECT_TRUE(IsSxSChrome(kCanaryExePath));
   EXPECT_FALSE(IsSxSChrome(kChromeUserExePath));
@@ -43,6 +100,25 @@ TEST(ChromeElfUtilTest, BrowserProcessTest) {
   EXPECT_EQ(ProcessType::UNINITIALIZED, g_process_type);
   InitializeProcessType();
   EXPECT_FALSE(IsNonBrowserProcess());
+}
+
+TEST(ChromeElfUtilTest, BrowserProcessSecurityTest) {
+  if (!::IsWindows8OrGreater())
+    return;
+
+  // Set up registry override for this test.
+  registry_util::RegistryOverrideManager override_manager;
+  RegRedirect(nt::HKCU, override_manager);
+
+  // First, ensure that the emergency-off finch signal works.
+  EXPECT_TRUE(SetSecurityFinchFlag(true));
+  EarlyBrowserSecurity();
+  EXPECT_FALSE(IsSecuritySet());
+  EXPECT_TRUE(SetSecurityFinchFlag(false));
+
+  // Second, test that the process mitigation is set when no finch signal.
+  EarlyBrowserSecurity();
+  EXPECT_TRUE(IsSecuritySet());
 }
 
 //------------------------------------------------------------------------------
@@ -69,10 +145,8 @@ TEST(ChromeElfUtilTest, NTRegistry) {
   const wchar_t* sz_new_key_3 = L"\\test\\new\\subkey\\\\blah2";
 
   // Set up registry override for this test.
-  base::string16 temp;
   registry_util::RegistryOverrideManager override_manager;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER, &temp);
-  ::wcsncpy(nt::HKCU_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
+  RegRedirect(nt::HKCU, override_manager);
 
   // Create a temp key to play under.
   ASSERT_TRUE(nt::CreateRegKey(nt::HKCU, elf_sec::kRegSecurityPath,
@@ -162,12 +236,9 @@ class ChromeElfUtilTest
           std::tuple<const char*, const char*, const char*>> {
  protected:
   void SetUp() override {
-    base::string16 temp;
-    override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
-    ::wcsncpy(nt::HKLM_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
-    temp.clear();
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp);
-    ::wcsncpy(nt::HKCU_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
+    // Set up registry override for these tests.
+    RegRedirect(nt::HKLM, override_manager_);
+    RegRedirect(nt::HKCU, override_manager_);
 
     const char* app;
     const char* level;

@@ -50,6 +50,7 @@
         'chrome_elf_breakpad',
         'chrome_elf_hook_util',
         'chrome_elf_resources',
+        'chrome_elf_security',
         'nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
         '../chrome/chrome.gyp:install_static_util',
         '../components/components.gyp:crash_component',
@@ -117,6 +118,21 @@
         'hook_util/thunk_getter.h',
       ],
     },
+    {
+      'target_name': 'chrome_elf_security',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'chrome_elf_security.cc',
+        'chrome_elf_security.h',
+      ],
+      'dependencies': [
+        'chrome_elf_constants',
+        'nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
+      ]
+    },
     ##--------------------------------------------------------------------------
     ## tests
     ##--------------------------------------------------------------------------
@@ -147,6 +163,7 @@
         'blacklist_test_dll_3',
         'blacklist_test_main_dll',
         'chrome_elf_hook_util',
+        'chrome_elf_security',
         'nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
       ],
       'msvs_settings': {

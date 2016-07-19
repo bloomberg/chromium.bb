@@ -45,6 +45,7 @@ shared_library("chrome_elf") {
     ":breakpad",
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
+    ":chrome_elf_security",
     ":hook_util",
     "//base",
     "//build/config/sanitizers:deps",
@@ -77,6 +78,17 @@ shared_library("chrome_elf") {
 ##------------------------------------------------------------------------------
 ## source sets
 ##------------------------------------------------------------------------------
+
+source_set("chrome_elf_security") {
+  sources = [
+    "chrome_elf_security.cc",
+    "chrome_elf_security.h",
+  ]
+  deps = [
+    ":constants",
+    "//chrome_elf/nt_registry:nt_registry",
+  ]
+}
 
 source_set("constants") {
   sources = [
@@ -172,6 +184,7 @@ test("chrome_elf_unittests") {
   deps = [
     ":blacklist",
     ":blacklist_test_main_dll",
+    ":chrome_elf_security",
     ":constants",
     ":hook_util",
     "//base",
