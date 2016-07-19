@@ -287,8 +287,8 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     protected void onViewportChanged(RectF viewportDp) {
         if (getActiveLayout() != null) {
-            getActiveLayout().sizeChanged(viewportDp, mLastVisibleViewportDp,
-                    mLastFullscreenViewportDp, mLastHeightMinusTopControlsDp, getOrientation());
+            getActiveLayout().sizeChanged(mLastVisibleViewportDp, mLastFullscreenViewportDp,
+                    mLastHeightMinusTopControlsDp, getOrientation());
         }
     }
 

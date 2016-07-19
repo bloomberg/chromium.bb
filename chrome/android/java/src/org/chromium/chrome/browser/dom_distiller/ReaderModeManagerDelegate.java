@@ -65,7 +65,7 @@ public interface ReaderModeManagerDelegate {
     void recordTimeSpentInReader(long timeInMs);
 
     /**
-     * Notification that the size of the view has changed.
+     * Notification that the layout has changed.
      */
-    void onSizeChanged();
+    void onLayoutChanged();
 }

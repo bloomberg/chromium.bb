@@ -311,10 +311,10 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
-    public void onSizeChanged(float width, float height) {
-        super.onSizeChanged(width, height);
+    public void onLayoutChanged(float width, float height, float visibleViewportOffsetY) {
+        super.onLayoutChanged(width, height, visibleViewportOffsetY);
         if (mManagerDelegate != null) {
-            mManagerDelegate.onSizeChanged();
+            mManagerDelegate.onLayoutChanged();
         }
     }
 

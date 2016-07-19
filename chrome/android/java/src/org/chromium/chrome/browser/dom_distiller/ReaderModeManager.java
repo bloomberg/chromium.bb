@@ -403,7 +403,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     }
 
     @Override
-    public void onSizeChanged() {
+    public void onLayoutChanged() {
         if (isKeyboardShowing()) {
             mIsKeyboardShowing = true;
             closeReaderPanel(StateChangeReason.KEYBOARD_SHOWN, false);

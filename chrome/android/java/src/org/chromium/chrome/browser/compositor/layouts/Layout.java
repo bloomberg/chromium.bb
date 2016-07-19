@@ -362,7 +362,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
 
     /**
      * Called when the size of the viewport has changed.
-     * @param availableViewport      The actual viewport this {@link Layout} should be rendering to.
      * @param visibleViewport        The visible viewport that represents the area on the screen
      *                               this {@link Layout} gets to draw to (potentially takes into
      *                               account top controls).
@@ -372,12 +371,11 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param orientation            The new orientation.  Valid values are defined by
      *                               {@link Orientation}.
      */
-    public final void sizeChanged(RectF availableViewport, RectF visibleViewport,
-            RectF screenViewport, float heightMinusTopControls, int orientation) {
-        // 1. Pull out this Layout's specific width and height properties based on the available
-        // viewport.
-        float width = availableViewport.width();
-        float height = availableViewport.height();
+    public final void sizeChanged(RectF visibleViewport, RectF screenViewport,
+            float heightMinusTopControls, int orientation) {
+        // 1. Pull out this Layout's width and height properties based on the viewport.
+        float width = screenViewport.width();
+        float height = screenViewport.height();
 
         // 2. Check if any Layout-specific properties have changed.
         boolean layoutPropertiesChanged = mWidth != width
