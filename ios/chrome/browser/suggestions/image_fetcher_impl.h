@@ -43,6 +43,8 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   void SetImageFetcherDelegate(
       image_fetcher::ImageFetcherDelegate* delegate) override;
 
+  void SetDataUseServiceName(DataUseServiceName data_use_service_name) override;
+
   void StartOrQueueNetworkRequest(
       const std::string& id,
       const GURL& image_url,

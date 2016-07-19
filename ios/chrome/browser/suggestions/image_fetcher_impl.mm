@@ -31,6 +31,13 @@ void ImageFetcherImpl::SetImageFetcherDelegate(
   delegate_ = delegate;
 }
 
+void ImageFetcherImpl::SetDataUseServiceName(
+    DataUseServiceName data_use_service_name) {
+  // Not implemented - will be obsolete once iOS also uses
+  // image_fetcher::ImageDataFetcher.
+  NOTREACHED();
+}
+
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const std::string& id,
     const GURL& image_url,

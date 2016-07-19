@@ -34,6 +34,11 @@ void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {
   delegate_ = delegate;
 }
 
+void ImageFetcherImpl::SetDataUseServiceName(
+    DataUseServiceName data_use_service_name) {
+  image_data_fetcher_->SetDataUseServiceName(data_use_service_name);
+}
+
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const std::string& id,
     const GURL& image_url,

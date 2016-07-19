@@ -11,6 +11,8 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
+using data_use_measurement::DataUseUserData;
+
 namespace image_fetcher {
 
 // An active image URL fetcher request. The struct contains the related requests
@@ -33,15 +35,25 @@ struct ImageDataFetcher::ImageDataFetcherRequest {
 ImageDataFetcher::ImageDataFetcher(
     net::URLRequestContextGetter* url_request_context_getter)
     : url_request_context_getter_(url_request_context_getter),
+      data_use_service_name_(DataUseUserData::NOT_TAGGED),
       next_url_fetcher_id_(0) {}
 
 ImageDataFetcher::~ImageDataFetcher() {}
+
+void ImageDataFetcher::SetDataUseServiceName(
+    DataUseServiceName data_use_service_name) {
+  data_use_service_name_ = data_use_service_name;
+}
 
 void ImageDataFetcher::FetchImageData(
     const GURL& url, const ImageDataFetcherCallback& callback) {
   std::unique_ptr<net::URLFetcher> url_fetcher =
       net::URLFetcher::Create(
           next_url_fetcher_id_++, url, net::URLFetcher::GET, this);
+
+  if (data_use_service_name_ != DataUseUserData::NOT_TAGGED) {
+    DataUseUserData::AttachToFetcher(url_fetcher.get(), data_use_service_name_);
+  }
 
   std::unique_ptr<ImageDataFetcherRequest> request(
       new ImageDataFetcherRequest(callback, std::move(url_fetcher)));

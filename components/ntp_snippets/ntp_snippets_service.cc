@@ -19,6 +19,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -689,8 +690,11 @@ void NTPSnippetsService::FinishInitialization() {
       base::Bind(&NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
 
   // |image_fetcher_| can be null in tests.
-  if (image_fetcher_)
+  if (image_fetcher_) {
     image_fetcher_->SetImageFetcherDelegate(this);
+    image_fetcher_->SetDataUseServiceName(
+        data_use_measurement::DataUseUserData::NTP_SNIPPETS);
+  }
 
   // Note: Initializing the status service will run the callback right away with
   // the current state.

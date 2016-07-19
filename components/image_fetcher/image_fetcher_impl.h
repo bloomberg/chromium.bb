@@ -42,6 +42,9 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   // responsibility to ensure this.
   void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) override;
 
+  // Sets a service name against which to track data usage.
+  void SetDataUseServiceName(DataUseServiceName data_use_service_name) override;
+
   void StartOrQueueNetworkRequest(
       const std::string& id,
       const GURL& image_url,

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -25,7 +26,13 @@ class ImageFetcher {
   ImageFetcher() {}
   virtual ~ImageFetcher() {}
 
+  using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
+
   virtual void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) = 0;
+
+  // Sets a service name against which to track data usage.
+  virtual void SetDataUseServiceName(
+      DataUseServiceName data_use_service_name) = 0;
 
   // An empty gfx::Image will be returned to the callback in case the image
   // could not be fetched.

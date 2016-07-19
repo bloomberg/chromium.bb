@@ -15,6 +15,7 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'data_use_measurement_core',
       ],
       'sources': [
         'image_fetcher/image_data_fetcher.cc',

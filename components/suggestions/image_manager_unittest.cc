@@ -52,6 +52,7 @@ class MockImageFetcher : public ImageFetcher {
                     base::Callback<void(const std::string&,
                                         const gfx::Image&)>));
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
+  MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
 };
 
 class ImageManagerTest : public testing::Test {

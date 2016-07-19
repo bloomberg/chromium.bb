@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -27,9 +28,14 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
   using ImageDataFetcherCallback =
       base::Callback<void(const std::string& image_data)>;
 
+  using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
+
   explicit ImageDataFetcher(
       net::URLRequestContextGetter* url_request_context_getter);
   ~ImageDataFetcher() override;
+
+  // Sets a service name against which to track data usage.
+  void SetDataUseServiceName(DataUseServiceName data_use_service_name);
 
   // Fetches the raw image bytes from the given |image_url| and calls the given
   // |callback|. The callback is run even if fetching the URL fails. In case
@@ -48,6 +54,8 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
       pending_requests_;
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  DataUseServiceName data_use_service_name_;
 
   // The next ID to use for a newly created URLFetcher. Each URLFetcher gets an
   // id when it is created. The |url_fetcher_id_| is incremented by one for each
