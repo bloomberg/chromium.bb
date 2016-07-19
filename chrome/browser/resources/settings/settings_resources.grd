@@ -400,11 +400,11 @@
         <structure name="IDR_SETTINGS_DEVICE_PAGE_JS"
                    file="device_page/device_page.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_DEVICE_TOUCHPAD_HTML"
-                   file="device_page/touchpad.html"
+        <structure name="IDR_SETTINGS_DEVICE_POINTERS_HTML"
+                   file="device_page/pointers.html"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_DEVICE_TOUCHPAD_JS"
-                   file="device_page/touchpad.js"
+        <structure name="IDR_SETTINGS_DEVICE_POINTERS_JS"
+                   file="device_page/pointers.js"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_DRAG_BEHAVIOR_HTML"
                    file="device_page/drag_behavior.html"

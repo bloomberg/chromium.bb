@@ -9,11 +9,17 @@
 Polymer({
   is: 'settings-device-page',
 
+  behaviors: [
+    I18nBehavior,
+    WebUIListenerBehavior,
+  ],
+
   properties: {
     /** The current active route. */
     currentRoute: {
       type: Object,
       notify: true,
+      observers: 'currentRouteChanged_',
     },
 
     /** Preferences state. */
@@ -21,14 +27,63 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @private */
+    hasMouse_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    hasTouchpad_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  observers: [
+    'pointersChanged_(hasMouse_, hasTouchpad_)',
+  ],
+
+  ready: function() {
+    cr.addWebUIListener('has-mouse-changed', this.set.bind(this, 'hasMouse_'));
+    cr.addWebUIListener(
+        'has-touchpad-changed', this.set.bind(this, 'hasTouchpad_'));
+    settings.DevicePageBrowserProxyImpl.getInstance().initializePointers();
   },
 
   /**
-   * Handler for tapping the Touchpad settings menu item.
+   * @return {string}
    * @private
    */
-  onTouchpadTap_: function() {
-    this.$.pages.setSubpageChain(['touchpad']);
+  getPointersTitle_: function() {
+    if (this.hasMouse_ && this.hasTouchpad_)
+      return this.i18n('mouseAndTouchpadTitle');
+    if (this.hasMouse_)
+      return this.i18n('mouseTitle');
+    if (this.hasTouchpad_)
+      return this.i18n('touchpadTitle');
+    return '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getPointersIcon_: function() {
+    if (this.hasMouse_)
+      return 'settings:mouse';
+    if (this.hasTouchpad_)
+      return 'settings:touch-app';
+    return '';
+  },
+
+  /**
+   * Handler for tapping the mouse and touchpad settings menu item.
+   * @private
+   */
+  onPointersTap_: function() {
+    this.$.pages.setSubpageChain(['pointers']);
   },
 
   /**
@@ -45,5 +100,44 @@ Polymer({
    */
   onDisplayTap_: function() {
     this.$.pages.setSubpageChain(['display']);
+  },
+
+  /** @private */
+  currentRouteChanged_: function() {
+    this.checkPointerSubpage_();
+  },
+
+  /**
+   * @param {boolean} hasMouse
+   * @param {boolean} hasTouchpad
+   * @private
+   */
+  pointersChanged_: function(hasMouse, hasTouchpad) {
+    this.$.pointersRow.hidden = !hasMouse && !hasTouchpad;
+    this.checkPointerSubpage_();
+  },
+
+  /**
+   * Leaves the pointer subpage if all pointing devices are detached.
+   * @private
+   */
+  checkPointerSubpage_: function() {
+    if (!this.hasMouse_ && !this.hasTouchpad_ &&
+        this.isCurrentRouteOnPointersPage_()) {
+      this.$.pages.fire('subpage-back');
+    }
+  },
+
+  /**
+   * TODO(michaelpg): create generic fn for this and isCurrentRouteOnSyncPage_.
+   * @return {boolean} Whether the current route shows the pointers page.
+   * @private
+   */
+  isCurrentRouteOnPointersPage_: function() {
+    return this.currentRoute &&
+        this.currentRoute.page == 'basic' &&
+        this.currentRoute.section == 'device' &&
+        this.currentRoute.subpage.length == 1 &&
+        this.currentRoute.subpage[0] == 'pointers';
   },
 });

@@ -447,13 +447,20 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, device_strings,
                           arraysize(device_strings));
 
-  LocalizedString touchpad_strings[] = {
+  LocalizedString pointers_strings[] = {
+      {"mouseTitle", IDS_SETTINGS_MOUSE_TITLE},
       {"touchpadTitle", IDS_SETTINGS_TOUCHPAD_TITLE},
+      {"mouseAndTouchpadTitle", IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE},
       {"touchpadTapToClickEnabledLabel",
        IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL},
+      {"touchpadSpeed", IDS_SETTINGS_TOUCHPAD_SPEED_LABEL},
+      {"pointerSlow", IDS_SETTINGS_POINTER_SPEED_SLOW_LABEL},
+      {"pointerFast", IDS_SETTINGS_POINTER_SPEED_FAST_LABEL},
+      {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
+      {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
   };
-  AddLocalizedStringsBulk(html_source, touchpad_strings,
-                          arraysize(touchpad_strings));
+  AddLocalizedStringsBulk(html_source, pointers_strings,
+                          arraysize(pointers_strings));
 
   LocalizedString keyboard_strings[] = {
       {"keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE},

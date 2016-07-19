@@ -7,6 +7,9 @@
       'target_name': 'device_page',
       'dependencies': [
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        'device_page_browser_proxy'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -18,7 +21,7 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'touchpad',
+      'target_name': 'pointers',
       'dependencies': [
         'device_page_browser_proxy'
       ],

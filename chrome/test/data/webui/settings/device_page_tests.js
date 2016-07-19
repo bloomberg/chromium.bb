@@ -5,9 +5,10 @@
 cr.define('device_page_tests', function() {
   /** @enum {string} */
   var TestNames = {
+    DevicePage: 'device page',
     Display: 'display',
     Keyboard: 'keyboard',
-    Touchpad: 'touchpad',
+    Pointers: 'pointers',
   };
 
   /**
@@ -19,6 +20,13 @@ cr.define('device_page_tests', function() {
   }
 
   TestDevicePageBrowserProxy.prototype = {
+    /** override */
+    initializePointers: function() {
+      // Enable mouse and touchpad.
+      cr.webUIListenerCallback('has-mouse-changed', true);
+      cr.webUIListenerCallback('has-touchpad-changed', true);
+    },
+
     /** @override */
     handleLinkEvent: function(e) {
       settings.DevicePageBrowserProxyImpl.prototype.handleLinkEvent.call(
@@ -36,8 +44,8 @@ cr.define('device_page_tests', function() {
     },
   };
 
-  suite('SettingsDevicePage', function() {
-    var fakePrefs = {
+  function getFakePrefs() {
+    return {
       settings: {
         touchpad: {
           enable_tap_to_click: {
@@ -48,12 +56,29 @@ cr.define('device_page_tests', function() {
           enable_tap_dragging: {
             key: 'settings.touchpad.enable_tap_dragging',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: true,
+            value: false,
           },
           natural_scroll: {
             key: 'settings.touchpad.natural_scroll',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
+          },
+          sensitivity2: {
+            key: 'settings.touchpad.sensitivity2',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 3,
+          },
+        },
+        mouse: {
+          primary_right: {
+            key: 'settings.mouse.primary_right',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          sensitivity2: {
+            key: 'settings.mouse.sensitivity2',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 4,
           },
         },
         language: {
@@ -105,7 +130,9 @@ cr.define('device_page_tests', function() {
         }
       }
     };
+  }
 
+  suite('SettingsDevicePage', function() {
     /** @type {!SettingsDevicePage|undefined} */
     var devicePage;
 
@@ -124,43 +151,43 @@ cr.define('device_page_tests', function() {
       PolymerTest.clearBody();
       devicePage = document.createElement('settings-device-page');
       devicePage.currentRoute = {page: 'basic', section: '', subpage: []};
-      devicePage.prefs = fakePrefs;
+      devicePage.prefs = getFakePrefs();
       settings.DevicePageBrowserProxyImpl.instance_ =
           new TestDevicePageBrowserProxy();
-      document.body.appendChild(devicePage);
+
+      // settings-animated-pages expects a parent with data-page set.
+      var basicPage = document.createElement('div');
+      basicPage.dataset.page = 'basic';
+      basicPage.appendChild(devicePage);
+      document.body.appendChild(basicPage);
 
       // Allow the light DOM to be distributed to settings-animated-pages.
       setTimeout(done);
     });
 
-    /** @return {!Promise<!Element>} */
+    /** @return {!Promise<!HTMLElement>} */
     function showAndGetDeviceSubpage(subpage) {
-      Polymer.dom.flush();
-      var row = devicePage.$$('#main #' + subpage + 'Row');
-      assertTrue(!!row);
-      MockInteractions.tap(row);
-
-      // The 0-duration animation still requires flushing the task queue.
       return new Promise(function(resolve, reject) {
-        expectEquals('device', devicePage.currentRoute.section);
-        expectEquals(subpage, devicePage.currentRoute.subpage[0]);
+        var row = assert(devicePage.$$('#main #' + subpage + 'Row'));
+        devicePage.$.pages.addEventListener('neon-animation-finish', resolve);
+        MockInteractions.tap(row);
+      }).then(function() {
+        assertEquals('device', devicePage.currentRoute.section);
+        assertEquals(subpage, devicePage.currentRoute.subpage[0]);
         var page = devicePage.$$('#' + subpage + ' settings-' + subpage);
-        assertTrue(!!page);
-        setTimeout(function() {
-          resolve(page);
-        });
+        return assert(page);
       });
     };
 
     /**
-     * @param {!HTMLElement} touchpadPage
+     * @param {!HTMLElement} pointersPage
      * @param {Boolean} expected
      */
-    function expectNaturalScrollValue(touchpadPage, expected) {
+    function expectNaturalScrollValue(pointersPage, expected) {
       var naturalScrollOff =
-          touchpadPage.$$('paper-radio-button[name="false"]');
+          pointersPage.$$('paper-radio-button[name="false"]');
       var naturalScrollOn =
-          touchpadPage.$$('paper-radio-button[name="true"]');
+          pointersPage.$$('paper-radio-button[name="true"]');
       assertTrue(!!naturalScrollOff);
       assertTrue(!!naturalScrollOn);
 
@@ -170,36 +197,128 @@ cr.define('device_page_tests', function() {
                    devicePage.prefs.settings.touchpad.natural_scroll.value);
     }
 
-    test(assert(TestNames.Touchpad), function(done) {
-      showAndGetDeviceSubpage('touchpad').then(function(touchpadPage) {
-        expectNaturalScrollValue(touchpadPage, false);
+    test(assert(TestNames.DevicePage), function() {
+      expectLT(0, devicePage.$.pointersRow.offsetHeight);
+      expectLT(0, devicePage.$.keyboardRow.offsetHeight);
+      expectLT(0, devicePage.$.displayRow.offsetHeight);
+
+      cr.webUIListenerCallback('has-mouse-changed', false);
+      expectLT(0, devicePage.$.pointersRow.offsetHeight);
+      cr.webUIListenerCallback('has-touchpad-changed', false);
+      expectEquals(0, devicePage.$.pointersRow.offsetHeight);
+      cr.webUIListenerCallback('has-mouse-changed', true);
+      expectLT(0, devicePage.$.pointersRow.offsetHeight);
+    });
+
+    suite(assert(TestNames.Pointers), function() {
+      var pointersPage;
+
+      setup(function() {
+        return showAndGetDeviceSubpage('pointers').then(function(page) {
+          pointersPage = page;
+        });
+      });
+
+      test('subpage responds to pointer attach/detach', function() {
+        assertEquals('pointers', devicePage.currentRoute.subpage[0]);
+        assertTrue(devicePage.isCurrentRouteOnPointersPage_());
+        assertLT(0, pointersPage.$.mouse.offsetHeight);
+        assertLT(0, pointersPage.$.touchpad.offsetHeight);
+        assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
+        assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
+
+        cr.webUIListenerCallback('has-touchpad-changed', false);
+        assertEquals('pointers', devicePage.currentRoute.subpage[0]);
+        assertLT(0, pointersPage.$.mouse.offsetHeight);
+        assertEquals(0, pointersPage.$.touchpad.offsetHeight);
+        assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
+        assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
+
+        // Wait for the transition back to the main page.
+        return new Promise(function(resolve, reject) {
+          devicePage.$.pages.addEventListener('neon-animation-finish', resolve);
+
+          cr.webUIListenerCallback('has-mouse-changed', false);
+        }).then(function() {
+          assertEquals(0, devicePage.currentRoute.subpage.length);
+          assertEquals(0, devicePage.$$('#main #pointersRow').offsetHeight);
+
+          cr.webUIListenerCallback('has-touchpad-changed', true);
+          assertLT(0, devicePage.$$('#main #pointersRow').offsetHeight);
+          return showAndGetDeviceSubpage('pointers');
+        }).then(function(page) {
+          assertEquals(0, pointersPage.$.mouse.offsetHeight);
+          assertLT(0, pointersPage.$.touchpad.offsetHeight);
+          assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
+          assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
+
+          cr.webUIListenerCallback('has-mouse-changed', true);
+          assertEquals('pointers', devicePage.currentRoute.subpage[0]);
+          assertLT(0, pointersPage.$.mouse.offsetHeight);
+          assertLT(0, pointersPage.$.touchpad.offsetHeight);
+          assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
+          assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
+        });
+      });
+
+      test('mouse', function() {
+        expectLT(0, pointersPage.$.mouse.offsetHeight);
+
+        expectFalse(pointersPage.$$('#mouse settings-checkbox').checked);
+
+        var slider = assert(pointersPage.$$('#mouse cr-slider'));
+        expectEquals(4, slider.value);
+        MockInteractions.pressAndReleaseKeyOn(slider.$.slider, 37 /* left */);
+        expectEquals(3, devicePage.prefs.settings.mouse.sensitivity2.value);
+
+        pointersPage.set('prefs.settings.mouse.sensitivity2.value', 5);
+        expectEquals(5, slider.value);
+      });
+
+      test('touchpad', function() {
+        expectLT(0, pointersPage.$.touchpad.offsetHeight);
+
+        expectTrue(pointersPage.$$('#touchpad #enableTapToClick').checked);
+        expectFalse(pointersPage.$$('#touchpad #enableTapDragging').checked);
+
+        var slider = assert(pointersPage.$$('#touchpad cr-slider'));
+        expectEquals(3, slider.value);
+        MockInteractions.pressAndReleaseKeyOn(
+            slider.$.slider, 39 /* right */);
+        expectEquals(4, devicePage.prefs.settings.touchpad.sensitivity2.value);
+
+        pointersPage.set('prefs.settings.touchpad.sensitivity2.value', 2);
+        expectEquals(2, slider.value);
+      });
+
+      test('link doesn\'t activate control', function(done) {
+        expectNaturalScrollValue(pointersPage, false);
 
         // Tapping the link shouldn't enable the radio button.
         var naturalScrollOn =
-            touchpadPage.$$('paper-radio-button[name="true"]');
+            pointersPage.$$('paper-radio-button[name="true"]');
         var a = naturalScrollOn.querySelector('a');
 
         MockInteractions.tap(a);
-        expectNaturalScrollValue(touchpadPage, false);
+        expectNaturalScrollValue(pointersPage, false);
 
         MockInteractions.tap(naturalScrollOn);
-        expectNaturalScrollValue(touchpadPage, true);
-
+        expectNaturalScrollValue(pointersPage, true);
         devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
-        expectNaturalScrollValue(touchpadPage, false);
+        expectNaturalScrollValue(pointersPage, false);
 
         // Enter on the link shouldn't enable the radio button either.
         MockInteractions.pressEnter(a);
 
-        // Annoyingly, we have to schedule an async event with a timeout greater
-        // than or equal to the timeout used by IronButtonState (1).
+        // Annoyingly, we have to schedule an async event with a timeout
+        // greater than or equal to the timeout used by IronButtonState (1).
         // https://github.com/PolymerElements/iron-behaviors/issues/54
         Polymer.Base.async(function() {
-          expectNaturalScrollValue(touchpadPage, false);
+          expectNaturalScrollValue(pointersPage, false);
 
           MockInteractions.pressEnter(naturalScrollOn);
           Polymer.Base.async(function() {
-            expectNaturalScrollValue(touchpadPage, true);
+            expectNaturalScrollValue(pointersPage, true);
             done();
           }, 1);
         }, 1);
@@ -242,11 +361,12 @@ cr.define('device_page_tests', function() {
             keyboardPage.$.delaySlider.$.slider, 37 /* left */);
         MockInteractions.pressAndReleaseKeyOn(
             keyboardPage.$.repeatRateSlider.$.slider, 39 /* right */);
-        expectEquals(
-            1000, fakePrefs.settings.language.xkb_auto_repeat_delay_r2.value);
+        expectEquals(1000,
+            devicePage.prefs.settings.language.xkb_auto_repeat_delay_r2.value);
         expectEquals(
             300,
-            fakePrefs.settings.language.xkb_auto_repeat_interval_r2.value);
+            devicePage.prefs.settings.language.xkb_auto_repeat_interval_r2.value
+        );
 
         // Test sliders change when prefs change.
         devicePage.set(
@@ -280,10 +400,6 @@ cr.define('device_page_tests', function() {
     });
 
     test(assert(TestNames.Display), function() {
-      // Open the display subpage.
-      var displayPage = showAndGetDeviceSubpage('display');
-      assertTrue(!!displayPage);
-
       var addDisplay = function(n) {
         var display = {
           id: 'fakeDisplayId' + n,

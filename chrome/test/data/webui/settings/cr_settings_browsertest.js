@@ -504,6 +504,10 @@ CrSettingsDevicePageTest.prototype = {
   ]),
 };
 
+TEST_F('CrSettingsDevicePageTest', 'DevicePageTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.DevicePage)).run();
+});
+
 TEST_F('CrSettingsDevicePageTest', 'DisplayTest', function() {
   mocha.grep(assert(device_page_tests.TestNames.Display)).run();
 });
@@ -512,8 +516,8 @@ TEST_F('CrSettingsDevicePageTest', 'KeyboardTest', function() {
   mocha.grep(assert(device_page_tests.TestNames.Keyboard)).run();
 });
 
-TEST_F('CrSettingsDevicePageTest', 'TouchpadTest', function() {
-  mocha.grep(assert(device_page_tests.TestNames.Touchpad)).run();
+TEST_F('CrSettingsDevicePageTest', 'PointersTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Pointers)).run();
 });
 GEN('#endif');
 

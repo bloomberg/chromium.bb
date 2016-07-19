@@ -1,11 +1,13 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="/controls/settings_dropdown_menu.html">
 <link rel="import" href="/device_page/device_page_browser_proxy.html">
 <link rel="import" href="/device_page/display.html">
 <link rel="import" href="/device_page/keyboard.html">
-<link rel="import" href="/device_page/touchpad.html">
+<link rel="import" href="/device_page/pointers.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/prefs/prefs.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
@@ -18,11 +20,13 @@
     <settings-animated-pages id="pages" section="device"
         current-route="{{currentRoute}}">
       <neon-animatable id="main">
-        <div id="touchpadRow" class="settings-box first"
-            on-tap="onTouchpadTap_" actionable>
-          <!-- TODO(michaelpg): Get a touchpad icon. -->
-          <iron-icon icon="settings:brightness-1"></iron-icon>
-          <div class="middle">$i18n{touchpadTitle}</div>
+        <div id="pointersRow" class="settings-box first"
+            on-tap="onPointersTap_" actionable>
+          <iron-icon icon="[[getPointersIcon_(hasMouse_, hasTouchpad_)]]">
+          </iron-icon>
+          <div class="middle">
+            [[getPointersTitle_(hasMouse_, hasTouchpad_)]]
+          </div>
         </div>
         <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_"
             actionable>
@@ -35,9 +39,12 @@
           <div class="middle">$i18n{displayTitle}</div>
         </div>
       </neon-animatable>
-      <template is="dom-if" name="touchpad">
-        <settings-subpage page-title="$i18n{touchpadTitle}">
-          <settings-touchpad prefs="{{prefs}}"></settings-touchpad>
+      <template is="dom-if" name="pointers">
+        <settings-subpage
+            page-title="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]">
+          <settings-pointers prefs="{{prefs}}"
+              has-mouse="[[hasMouse_]]" has-touchpad="[[hasTouchpad_]]">
+          </settings-pointers>
         </settings-subpage>
       </template>
       <template is="dom-if" name="keyboard">

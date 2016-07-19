@@ -1633,12 +1633,30 @@
     <message name="IDS_SETTINGS_DEVICE_TITLE" desc="Name of the settings page which displays device and peripheral settings.">
       Device
     </message>
-    <!-- Touchpad -->
-    <message name="IDS_SETTINGS_TOUCHPAD_TITLE" desc="In Device Settings, the title of the Touchpad Settings section.">
-      Touchpad settings
+    <message name="IDS_SETTINGS_MOUSE_TITLE" desc="In Device Settings, the title of the mouse settings subpage.">
+      Mouse
     </message>
+    <message name="IDS_SETTINGS_TOUCHPAD_TITLE" desc="In Device Settings, the title of the touchpad settings subpage.">
+      Touchpad
+    </message>
+    <message name="IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE" desc="In Device Settings, the title of the mouse and touchpad settings subpage (when the user has both types of devices).">
+      Mouse and touchpad
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title of the keyboard settings subpage.">
+      Keyboard
+    </message>
+    <!-- Touchpad -->
     <message name="IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL" desc="In Device Settings, the text next to the checkbox that allows tapping the touchpad to work as a click.">
       Enable tap-to-click
+    </message>
+    <message name="IDS_SETTINGS_TOUCHPAD_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the touchpad.">
+      Touchpad speed
+    </message>
+    <message name="IDS_SETTINGS_POINTER_SPEED_SLOW_LABEL" desc="In Device Settings, the text under the left (less sensitive) side of the slider for the pointer (mouse/touch) speed (sensitivity).">
+      Slow
+    </message>
+    <message name="IDS_SETTINGS_POINTER_SPEED_FAST_LABEL" desc="In Device Settings, the text under the right (more sensitive) side of the slider for the pointer (mouse/touchpad) speed (sensitivity).">
+      Fast
     </message>
     <message name="IDS_SETTINGS_SCROLL_LABEL" desc="In Device Settings, the title above the radio buttons to choose the scrolling behavior.">
       Scrolling
@@ -1652,10 +1670,14 @@
     <message name="IDS_SETTINGS_NATURAL_SCROLL_LEARN_MORE" desc="In Device Settings, the text for the link next to the Australian (natural) scrolling option; opens a page to learn more about natural scrolling.">
       Learn more
     </message>
-    <!-- Keyboard -->
-    <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title for keyboard settings.">
-      Keyboard settings
+    <!-- Mouse -->
+    <message name="IDS_SETTINGS_MOUSE_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the mouse.">
+      Mouse speed
     </message>
+    <message name="IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL" desc="In Device Settings, the text next to the checkbox to set the primary mouse button to the right button instead of the left button.">
+      Swap primary mouse button
+    </message>
+    <!-- Keyboard -->
     <message name="IDS_SETTINGS_KEYBOARD_KEY_SEARCH" desc="In Device Settings, the label and dropdown list item for the Search key.">
       Search
     </message>

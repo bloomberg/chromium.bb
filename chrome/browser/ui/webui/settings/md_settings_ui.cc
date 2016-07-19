@@ -38,6 +38,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
@@ -82,6 +83,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 #if defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
   AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
+  AddSettingsPageUIHandler(new chromeos::settings::PointerHandler());
 #else
   AddSettingsPageUIHandler(new DefaultBrowserHandler(web_ui));
   AddSettingsPageUIHandler(new ManageProfileHandler(profile));

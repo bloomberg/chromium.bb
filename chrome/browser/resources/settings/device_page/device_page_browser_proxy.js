@@ -8,6 +8,9 @@ cr.define('settings', function() {
   function DevicePageBrowserProxy() {}
 
   DevicePageBrowserProxy.prototype = {
+    /** Initializes the mouse and touchpad handler. */
+    initializePointers: function() {},
+
     /**
      * Override to interact with the on-tap/on-keydown event on the Learn More
      * link.
@@ -30,6 +33,11 @@ cr.define('settings', function() {
   cr.addSingletonGetter(DevicePageBrowserProxyImpl);
 
   DevicePageBrowserProxyImpl.prototype = {
+    /** @override */
+    initializePointers: function() {
+      chrome.send('initializePointerSettings');
+    },
+
     /** override */
     handleLinkEvent: function(e) {
       // Prevent the link from activating its parent element when tapped or

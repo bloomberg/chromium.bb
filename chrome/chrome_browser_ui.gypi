@@ -2042,6 +2042,8 @@
       'browser/ui/webui/settings/chromeos/change_picture_handler.h',
       'browser/ui/webui/settings/chromeos/device_keyboard_handler.cc',
       'browser/ui/webui/settings/chromeos/device_keyboard_handler.h',
+      'browser/ui/webui/settings/chromeos/device_pointer_handler.cc',
+      'browser/ui/webui/settings/chromeos/device_pointer_handler.h',
       'browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.cc',
       'browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h',
       'browser/ui/webui/settings/settings_cookies_view_handler.cc',

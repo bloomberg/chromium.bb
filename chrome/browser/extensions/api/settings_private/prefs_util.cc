@@ -261,6 +261,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.touchpad.natural_scroll"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.touchpad.sensitivity2"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["settings.mouse.primary_right"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.mouse.sensitivity2"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["settings.language.xkb_remap_search_key_to"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["settings.language.xkb_remap_control_key_to"] =

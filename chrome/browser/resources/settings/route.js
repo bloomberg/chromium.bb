@@ -139,7 +139,7 @@ cr.define('settings', function() {
   r.ACCOUNTS = r.PEOPLE.createChild('/accounts', 'users');
 
   r.DEVICE = r.BASIC.createSection('/device', 'device');
-  r.TOUCHPAD = r.DEVICE.createChild('/pointer-overlay', 'touchpad');
+  r.POINTERS = r.DEVICE.createChild('/pointer-overlay', 'pointers');
   r.KEYBARD = r.DEVICE.createChild('/keyboard-overlay', 'keyboard');
   r.DISPLAY = r.DEVICE.createChild('/display', 'display');
 </if>
