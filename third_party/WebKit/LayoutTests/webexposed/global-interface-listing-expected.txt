@@ -4666,6 +4666,17 @@ interface Request
     method constructor
     method json
     method text
+interface ResizeObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
+    method unobserve
+interface ResizeObserverEntry
+    attribute @@toStringTag
+    getter contentRect
+    getter target
+    method constructor
 interface Response
     static method error
     static method redirect

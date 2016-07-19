@@ -177,6 +177,7 @@ RenderUnicodeControlCharacters status=experimental
 RequestIdleCallback status=stable
 ResponseConstructedWithReadableStream status=stable
 ResponseBodyWithV8ExtraStream status=stable
+ResizeObserver status=experimental
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable
