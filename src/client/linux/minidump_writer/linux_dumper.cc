@@ -84,6 +84,173 @@ inline static bool IsMappedFileOpenUnsafe(
 
 namespace google_breakpad {
 
+#if defined(__CHROMEOS__)
+
+namespace {
+
+// Recover memory mappings before writing dump on ChromeOS
+//
+// On Linux, breakpad relies on /proc/[pid]/maps to associate symbols from
+// addresses. ChromeOS' hugepage implementation replaces some segments with
+// anonymous private pages, which is a restriction of current implementation
+// in Linux kernel at the time of writing. Thus, breakpad can no longer
+// symbolize addresses from those text segments replaced with hugepages.
+//
+// This postprocess tries to recover the mappings. Because hugepages are always
+// inserted in between some .text sections, it tries to infer the names and
+// offsets of the segments, by looking at segments immediately precede and
+// succeed them.
+//
+// For example, a text segment before hugepage optimization
+//   02001000-03002000 r-xp /opt/google/chrome/chrome
+//
+// can be broken into
+//   02001000-02200000 r-xp /opt/google/chrome/chrome
+//   02200000-03000000 r-xp
+//   03000000-03002000 r-xp /opt/google/chrome/chrome
+//
+// For more details, see:
+// crbug.com/628040 ChromeOS' use of hugepages confuses crash symbolization
+
+// Copied from CrOS' hugepage implementation, which is unlikely to change.
+// The hugepage size is 2M.
+const unsigned int kHpageShift = 21;
+const size_t kHpageSize = (1 << kHpageShift);
+const size_t kHpageMask = (~(kHpageSize - 1));
+
+// Find and merge anonymous r-xp segments with surrounding named segments.
+// There are two cases:
+
+// Case 1: curr, next
+//   curr is anonymous
+//   curr is r-xp
+//   curr.size >= 2M
+//   curr.size is a multiple of 2M.
+//   next is backed by some file.
+//   curr and next are contiguous.
+//   offset(next) == sizeof(curr)
+void TryRecoverMappings(MappingInfo *curr, MappingInfo *next) {
+  // Merged segments are marked with size = 0.
+  if (curr->size == 0 || next->size == 0)
+    return;
+
+  if (curr->size >= kHpageSize &&
+      curr->exec &&
+      (curr->size & kHpageMask) == curr->size &&
+      (curr->start_addr & kHpageMask) == curr->start_addr &&
+      curr->name[0] == '\0' &&
+      next->name[0] != '\0' &&
+      curr->start_addr + curr->size == next->start_addr &&
+      curr->size == next->offset) {
+
+    // matched
+    my_strlcpy(curr->name, next->name, NAME_MAX);
+    if (next->exec) {
+      // (curr, next)
+      curr->size += next->size;
+      next->size = 0;
+    }
+  }
+}
+
+// Case 2: prev, curr, next
+//   curr is anonymous
+//   curr is r-xp
+//   curr.size >= 2M
+//   curr.size is a multiple of 2M.
+//   next and prev are backed by the same file.
+//   prev, curr and next are contiguous.
+//   offset(next) == offset(prev) + sizeof(prev) + sizeof(curr)
+void TryRecoverMappings(MappingInfo *prev, MappingInfo *curr,
+    MappingInfo *next) {
+  // Merged segments are marked with size = 0.
+  if (prev->size == 0 || curr->size == 0 || next->size == 0)
+    return;
+
+  if (curr->size >= kHpageSize &&
+      curr->exec &&
+      (curr->size & kHpageMask) == curr->size &&
+      (curr->start_addr & kHpageMask) == curr->start_addr &&
+      curr->name[0] == '\0' &&
+      next->name[0] != '\0' &&
+      curr->start_addr + curr->size == next->start_addr &&
+      prev->start_addr + prev->size == curr->start_addr &&
+      my_strncmp(prev->name, next->name, NAME_MAX) == 0 &&
+      next->offset == prev->offset + prev->size + curr->size) {
+
+    // matched
+    my_strlcpy(curr->name, prev->name, NAME_MAX);
+    if (prev->exec) {
+      curr->offset = prev->offset;
+      curr->start_addr = prev->start_addr;
+      if (next->exec) {
+        // (prev, curr, next)
+        curr->size += prev->size + next->size;
+        prev->size = 0;
+        next->size = 0;
+      } else {
+        // (prev, curr), next
+        curr->size += prev->size;
+        prev->size = 0;
+      }
+    } else {
+      curr->offset = prev->offset + prev->size;
+      if (next->exec) {
+        // prev, (curr, next)
+        curr->size += next->size;
+        next->size = 0;
+      } else {
+        // prev, curr, next
+      }
+    }
+  }
+}
+
+// mappings_ is sorted excepted for the first entry.
+// This function tries to merge segemnts into the first entry,
+// then check for other sorted entries.
+// See LinuxDumper::EnumerateMappings().
+void CrOSPostProcessMappings(wasteful_vector<MappingInfo*>& mappings) {
+  // Find the candidate "next" to first segment, which is the only one that
+  // could be out-of-order.
+  size_t l = 1;
+  size_t r = mappings.size();
+  size_t next = mappings.size();
+  while (l < r) {
+    int m = (l + r) / 2;
+    if (mappings[m]->start_addr > mappings[0]->start_addr)
+      r = next = m;
+    else
+      l = m + 1;
+  }
+
+  // Try to merge segments into the first.
+  if (next < mappings.size()) {
+    TryRecoverMappings(mappings[0], mappings[next]);
+    if (next - 1 > 0)
+      TryRecoverMappings(mappings[next - 1], mappings[0], mappings[next]);
+  }
+
+  // Iterate through normal, sorted cases.
+  // Normal case 1.
+  for (size_t i = 1; i < mappings.size() - 1; i++)
+    TryRecoverMappings(mappings[i], mappings[i + 1]);
+
+  // Normal case 2.
+  for (size_t i = 1; i < mappings.size() - 2; i++)
+    TryRecoverMappings(mappings[i], mappings[i + 1], mappings[i + 2]);
+
+  // Collect merged (size == 0) segments.
+  size_t f, e;
+  for (f = e = 0; e < mappings.size(); e++)
+    if (mappings[e]->size > 0)
+      mappings[f++] = mappings[e];
+  mappings.resize(f);
+}
+
+}  // namespace
+#endif  // __CHROMEOS__
+
 // All interesting auvx entry types are below AT_SYSINFO_EHDR
 #define AT_MAX AT_SYSINFO_EHDR
 
@@ -113,6 +280,11 @@ bool LinuxDumper::LateInit() {
 #if defined(__ANDROID__)
   LatePostprocessMappings();
 #endif
+
+#if defined(__CHROMEOS__)
+  CrOSPostProcessMappings(mappings_);
+#endif
+
   return true;
 }
 
