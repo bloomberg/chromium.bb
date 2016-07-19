@@ -1186,6 +1186,9 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
         case MD_EXCEPTION_CODE_WIN_HEAP_CORRUPTION:
           reason = "EXCEPTION_HEAP_CORRUPTION";
           break;
+        case MD_EXCEPTION_OUT_OF_MEMORY:
+          reason = "Out of Memory";
+          break;
         case MD_EXCEPTION_CODE_WIN_UNHANDLED_CPP_EXCEPTION:
           reason = "Unhandled C++ Exception";
           break;
