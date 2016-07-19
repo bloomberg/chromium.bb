@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -123,19 +124,11 @@ class TestJobFactory : public URLRequestJobFactory {
   mutable std::string* observed_content_;
 };
 
-// Helper function to create a file in |directory| filled with
-// |content|. Returns true on succes and fills in |path| with the full path to
-// the file.
-bool CreateTempFileWithContent(const std::string& content,
-                               const base::ScopedTempDir& directory,
-                               base::FilePath* path) {
-  if (!directory.IsValid())
-    return false;
-
-  if (!base::CreateTemporaryFileInDir(directory.path(), path))
-    return false;
-
-  return base::WriteFile(*path, content.c_str(), content.length());
+// Helper function to create a file at |path| filled with |content|.
+// Returns true on success.
+bool CreateFileWithContent(const std::string& content,
+                           const base::FilePath& path) {
+  return base::WriteFile(path, content.c_str(), content.length());
 }
 
 // A simple holder for start/end used in http range requests.
@@ -169,6 +162,14 @@ class URLRequestFileJobEventsTest : public testing::Test {
   // observed.
   void RunRequest(const std::string& content, const Range* range);
 
+  // This is the same as the method above it, except that it will make sure
+  // the content matches |expected_content| and allow caller to specify the
+  // extension of the filename in |file_extension|.
+  void RunRequest(const std::string& content,
+                  const std::string& expected_content,
+                  const base::FilePath::StringPieceType& file_extension,
+                  const Range* range);
+
   TestURLRequestContext context_;
   TestDelegate delegate_;
 };
@@ -177,10 +178,20 @@ URLRequestFileJobEventsTest::URLRequestFileJobEventsTest() {}
 
 void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
                                              const Range* range) {
+  RunRequest(content, content, FILE_PATH_LITERAL(""), range);
+}
+
+void URLRequestFileJobEventsTest::RunRequest(
+    const std::string& raw_content,
+    const std::string& expected_content,
+    const base::FilePath::StringPieceType& file_extension,
+    const Range* range) {
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
-  base::FilePath path;
-  ASSERT_TRUE(CreateTempFileWithContent(content, directory, &path));
+  base::FilePath path = directory.path().Append(FILE_PATH_LITERAL("test"));
+  if (!file_extension.empty())
+    path = path.AddExtension(file_extension);
+  ASSERT_TRUE(CreateFileWithContent(raw_content, path));
 
   {
     int64_t seek_position;
@@ -194,7 +205,8 @@ void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
       ASSERT_GE(range->start, 0);
       ASSERT_GE(range->end, 0);
       ASSERT_LE(range->start, range->end);
-      ASSERT_LT(static_cast<unsigned int>(range->end), content.length());
+      ASSERT_LT(static_cast<unsigned int>(range->end),
+                expected_content.length());
       std::string range_value =
           base::StringPrintf("bytes=%d-%d", range->start, range->end);
       request->SetExtraRequestHeaderByName(HttpRequestHeaders::kRange,
@@ -206,19 +218,21 @@ void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
 
     EXPECT_FALSE(delegate_.request_failed());
     int expected_length =
-        range ? (range->end - range->start + 1) : content.length();
+        range ? (range->end - range->start + 1) : expected_content.length();
     EXPECT_EQ(delegate_.bytes_received(), expected_length);
 
-    std::string expected_content;
+    std::string expected_data_received;
     if (range) {
-      expected_content.insert(0, content, range->start, expected_length);
+      expected_data_received.insert(0, expected_content, range->start,
+                                    expected_length);
+      EXPECT_EQ(expected_data_received, observed_content);
     } else {
-      expected_content = content;
+      expected_data_received = expected_content;
+      EXPECT_EQ(raw_content, observed_content);
     }
-    EXPECT_TRUE(delegate_.data_received() == expected_content);
 
+    EXPECT_EQ(expected_data_received, delegate_.data_received());
     EXPECT_EQ(seek_position, range ? range->start : 0);
-    EXPECT_EQ(expected_content, observed_content);
   }
 
   base::RunLoop().RunUntilIdle();
@@ -254,6 +268,18 @@ TEST_F(URLRequestFileJobEventsTest, Range) {
   int size = 15 * 1024;
   Range range(1701, (6 * 1024) + 3);
   RunRequest(MakeContentOfSize(size), &range);
+}
+
+TEST_F(URLRequestFileJobEventsTest, DecodeSvgzFile) {
+  std::string expected_content("Hello, World!");
+  unsigned char gzip_data[] = {
+      // From:
+      //   echo -n 'Hello, World!' | gzip | xxd -i | sed -e 's/^/  /'
+      0x1f, 0x8b, 0x08, 0x00, 0x2b, 0x02, 0x84, 0x55, 0x00, 0x03, 0xf3,
+      0x48, 0xcd, 0xc9, 0xc9, 0xd7, 0x51, 0x08, 0xcf, 0x2f, 0xca, 0x49,
+      0x51, 0x04, 0x00, 0xd0, 0xc3, 0x4a, 0xec, 0x0d, 0x00, 0x00, 0x00};
+  RunRequest(std::string(reinterpret_cast<char*>(gzip_data), sizeof(gzip_data)),
+             expected_content, FILE_PATH_LITERAL("svgz"), nullptr);
 }
 
 }  // namespace
