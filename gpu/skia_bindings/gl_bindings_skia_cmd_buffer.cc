@@ -58,6 +58,8 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
   functions->fCompileShader = gles_bind(&GLES2Interface::CompileShader, impl);
   functions->fCompressedTexImage2D =
       gles_bind(&GLES2Interface::CompressedTexImage2D, impl);
+  functions->fCompressedTexSubImage2D =
+      gles_bind(&GLES2Interface::CompressedTexSubImage2D, impl);
   functions->fCopyTexSubImage2D =
       gles_bind(&GLES2Interface::CopyTexSubImage2D, impl);
   functions->fCreateProgram = gles_bind(&GLES2Interface::CreateProgram, impl);
@@ -104,6 +106,7 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
       gles_bind(&GLES2Interface::GetUniformLocation, impl);
   functions->fInsertEventMarker =
       gles_bind(&GLES2Interface::InsertEventMarkerEXT, impl);
+  functions->fIsTexture = gles_bind(&GLES2Interface::IsTexture, impl);
   functions->fLineWidth = gles_bind(&GLES2Interface::LineWidth, impl);
   functions->fLinkProgram = gles_bind(&GLES2Interface::LinkProgram, impl);
   functions->fMapBufferSubData =
