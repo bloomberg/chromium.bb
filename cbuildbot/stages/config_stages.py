@@ -29,6 +29,10 @@ class UpdateConfigException(Exception):
 class BranchNotFoundException(Exception):
   """Didn't find the corresponding branch."""
 
+def GetWorkDir(project):
+  """Return temporary work directory."""
+  return os.path.join('tmp', 'tmp_%s' % project)
+
 def CreateTmpGitRepo(project, project_url):
   """Create a temporary git repo locally.
 
@@ -40,12 +44,12 @@ def CreateTmpGitRepo(project, project_url):
     project_dir: local project directory.
   """
 
-  work_dir = os.path.join('tmp', 'tmp_%s' % project)
+  work_dir = GetWorkDir(project)
 
   if not cros_build_lib.IsInsideChroot():
     work_dir = os.path.join(constants.SOURCE_ROOT,
                             constants.DEFAULT_CHROOT_DIR,
-                            'tmp', 'tmp_%s' % project)
+                            work_dir)
 
   # Delete the work_dir built by previous runs.
   osutils.RmDir(work_dir, ignore_missing=True, sudo=True)
@@ -239,8 +243,9 @@ class UpdateConfigStage(generic_stages.BuilderStage):
   def _RunUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
     logging.debug("Running chromeos_config_unittest")
-    unit_test_paths = [os.path.join(
-        '..', '..', 'chromite', 'cbuildbot', 'chromeos_config_unittest')]
+    rel_path = os.path.join('..', '..', 'chroot', GetWorkDir('chromite'))
+    unit_test_paths = [os.path.join(rel_path, 'chromite', 'cbuildbot',
+                                    'chromeos_config_unittest')]
     cmd = ['cros_sdk', '--'] + unit_test_paths
     cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
 
