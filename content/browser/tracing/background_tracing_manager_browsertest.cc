@@ -170,9 +170,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingManager::
             GetInstance()->RegisterTriggerType("preemptive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -202,9 +202,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
             "preemptive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -408,9 +408,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManager::TriggerHandle handle2 =
         BackgroundTracingManager::GetInstance()->RegisterTriggerType("test2");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -550,9 +550,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -626,9 +626,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
             "does_not_exist");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -662,9 +662,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     content::BackgroundTracingManager::GetInstance()
         ->InvalidateTriggerHandlesForTesting();
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -714,9 +714,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
             "preemptive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -768,9 +768,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
             "preemptive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -817,9 +817,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
 
     // Our reference value is "1", so a value of "2" should trigger a trace.
     LOCAL_HISTOGRAM_COUNTS("fake", 2);
@@ -862,9 +865,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
 
     // Our reference value is "1", so a value of "2" should trigger a trace.
     LOCAL_HISTOGRAM_COUNTS("fake", 2);
@@ -907,9 +913,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
 
     // This should fail to trigger a trace since the sample value < the
     // the reference value above.
@@ -954,9 +963,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingConfigImpl::FromDict(&dict));
     EXPECT_TRUE(config);
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
 
     // This should fail to trigger a trace since the sample value > the
     // the upper reference value above.
@@ -1014,9 +1026,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingManager::
             GetInstance()->RegisterTriggerType("reactive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -1048,9 +1060,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingManager::
             GetInstance()->RegisterTriggerType("reactive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -1111,9 +1123,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingManager::GetInstance()->RegisterTriggerType(
             "reactive_test2");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
@@ -1152,9 +1164,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingManager::
             GetInstance()->RegisterTriggerType("reactive_test");
 
-    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+        BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
