@@ -1404,6 +1404,7 @@
     'battery_status': ['timvolodine@chromium.org'],
     'blimp' : ['anandc+watch-blimp@chromium.org',
                'dtrainor+watch-blimp@chromium.org',
+               'gcasto+watch-blimp@chromium.org',
                'jessicag+watch-blimp@chromium.org',
                'kmarshall+watch-blimp@chromium.org',
                'khushalsagar+watch-blimp@chromium.org',
