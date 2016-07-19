@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
@@ -335,6 +336,11 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
   if (!auth_header.empty())
     headers.SetHeader("Authorization", auth_header);
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
+  // Add X-Client-Data header with experiment IDs from field trials.
+  variations::AppendVariationHeaders(url,
+                                     false,  // incognito
+                                     false,  // uma_enabled
+                                     &headers);
   url_fetcher_->SetExtraRequestHeaders(headers.ToString());
   url_fetcher_->SetUploadData("application/json", request);
   // Log the request for debugging network issues.

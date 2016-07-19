@@ -27,6 +27,7 @@
         'suggestions',
         'sync_driver',
         'variations',
+        'variations_net',
       ],
       'sources': [
         'ntp_snippets/content_suggestion.cc',

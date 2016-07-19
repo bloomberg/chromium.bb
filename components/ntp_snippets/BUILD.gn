@@ -62,6 +62,7 @@ source_set("ntp_snippets") {
     "//components/ntp_snippets/proto",
     "//components/offline_pages",
     "//components/variations",
+    "//components/variations/net",
     "//third_party/icu/",
     "//ui/gfx",
   ]
