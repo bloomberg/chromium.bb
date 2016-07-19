@@ -130,7 +130,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
 }
 
-IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
+// Disabled due to flakes; see https://crbug.com/629459.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       DISABLED_SaveViaAPIAndAutofill) {
   NavigateToFile("/password/password_form.html");
   std::string fill_password =
   "document.getElementById('username_field').value = 'user';"
@@ -155,7 +157,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
 }
 
-IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
+// Disabled due to flakes; see https://crbug.com/629459.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       DISABLED_UpdateViaAPIAndAutofill) {
   // Save credentials with 'skip_zero_click' false.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
