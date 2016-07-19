@@ -253,11 +253,15 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   tab1.id = 24;
   entries.push_back(&tab1);
 
+  // TODO(sdy): The tab ids below *must* be set after all of them have been
+  // pushed onto window.tabs. Otherwise, the ids will change when push_back
+  // reallocates the vector's storage and calls each tabs' copy ctor. Ugh.
+
   MockTRS::Window win1;
   win1.id = 30;
   win1.tabs.push_back(CreateSessionTab("http://foo.com", "foo"));
-  win1.tabs[0].id = 31;
   win1.tabs.push_back(CreateSessionTab("http://bar.com", "bar"));
+  win1.tabs[0].id = 31;
   win1.tabs[1].id = 32;
   entries.push_back(&win1);
 
@@ -268,11 +272,11 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   MockTRS::Window win2;
   win2.id = 50;
   win2.tabs.push_back(CreateSessionTab("http://magic.com", "magic"));
-  win2.tabs[0].id = 51;
   win2.tabs.push_back(CreateSessionTab("http://goats.com", "goats"));
-  win2.tabs[1].id = 52;
   win2.tabs.push_back(CreateSessionTab("http://teleporter.com", "teleporter"));
-  win2.tabs[1].id = 53;
+  win2.tabs[0].id = 51;
+  win2.tabs[1].id = 52;
+  win2.tabs[2].id = 53;
   entries.push_back(&win2);
 
   using ::testing::ReturnRef;
@@ -301,6 +305,8 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   EXPECT_TRUE([[submenu1 itemAtIndex:1] isSeparatorItem]);
   EXPECT_NSEQ(@"foo", [[submenu1 itemAtIndex:2] title]);
   EXPECT_NSEQ(@"bar", [[submenu1 itemAtIndex:3] title]);
+  EXPECT_EQ(31, hist2->tabs[0]->session_id);
+  EXPECT_EQ(32, hist2->tabs[1]->session_id);
 
   NSMenuItem* item3 = [menu itemAtIndex:2];
   MockBridge::HistoryItem* hist3 = bridge_->HistoryItemForMenuItem(item3);
@@ -321,6 +327,9 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   EXPECT_NSEQ(@"magic", [[submenu2 itemAtIndex:2] title]);
   EXPECT_NSEQ(@"goats", [[submenu2 itemAtIndex:3] title]);
   EXPECT_NSEQ(@"teleporter", [[submenu2 itemAtIndex:4] title]);
+  EXPECT_EQ(51, hist4->tabs[0]->session_id);
+  EXPECT_EQ(52, hist4->tabs[1]->session_id);
+  EXPECT_EQ(53, hist4->tabs[2]->session_id);
 }
 
 // Tests that we properly request an icon from the FaviconService.

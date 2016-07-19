@@ -180,8 +180,7 @@ void HistoryMenuBridge::TabRestoreServiceChanged(
       NSInteger subindex = [[submenu itemArray] count];
       std::vector<sessions::TabRestoreService::Tab>::const_iterator it;
       for (it = tabs.begin(); it != tabs.end(); ++it) {
-        sessions::TabRestoreService::Tab tab = *it;
-        HistoryItem* tab_item = HistoryItemForTab(tab);
+        HistoryItem* tab_item = HistoryItemForTab(*it);
         if (tab_item) {
           item->tabs.push_back(tab_item);
           AddItemToMenu(tab_item, submenu.get(), kRecentlyClosed + 1,
