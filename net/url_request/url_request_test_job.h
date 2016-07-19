@@ -119,6 +119,7 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   void GetResponseInfo(HttpResponseInfo* info) override;
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   int GetResponseCode() const override;
+  int64_t GetTotalReceivedBytes() const override;
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
 
  protected:
@@ -142,15 +143,14 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   // Called via InvokeLater to cause callbacks to occur after Start() returns.
   virtual void StartAsync();
 
+  // Assigns |response_headers_| and |response_headers_length_|.
+  void SetResponseHeaders(const std::string& response_headers);
+
   bool auto_advance_;
 
   Stage stage_;
 
   RequestPriority priority_;
-
-  // The headers the job should return, will be set in Start() if not provided
-  // in the explicit ctor.
-  scoped_refptr<HttpResponseHeaders> response_headers_;
 
   // The data to send, will be set in Start() if not provided in the explicit
   // ctor.
@@ -164,6 +164,14 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   int async_buf_size_;
 
   LoadTimingInfo load_timing_info_;
+
+ private:
+  // The headers the job should return, will be set in Start() if not provided
+  // in the explicit ctor.
+  scoped_refptr<HttpResponseHeaders> response_headers_;
+
+  // Original size in bytes of the response headers before decoding.
+  int response_headers_length_;
 
   base::WeakPtrFactory<URLRequestTestJob> weak_factory_;
 };

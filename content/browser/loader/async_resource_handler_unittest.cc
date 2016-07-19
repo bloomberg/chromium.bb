@@ -44,6 +44,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -67,47 +68,17 @@ std::string GenerateData(size_t response_data_size) {
   return std::string(response_data_size, 'a');
 }
 
-// This test job adds a Content-Length header and implements
-// GetTotalReceivedBytes().
-class TestJob : public net::URLRequestTestJob {
+class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  TestJob(net::URLRequest* request,
-          net::NetworkDelegate* network_delegate,
-          size_t response_data_size)
-      : net::URLRequestTestJob(request,
-                               network_delegate,
-                               GenerateHeader(response_data_size),
-                               GenerateData(response_data_size),
-                               true) {}
-
-  static TestJob* CreateJob(net::URLRequest* request,
-                            net::NetworkDelegate* network_delegate,
-                            size_t response_data_size) {
-    return new TestJob(request, network_delegate, response_data_size);
-  }
-
-  // URLRequestJob implementation:
-  // TODO(ricea): Move this to URLRequestTestJob.
-  int64_t GetTotalReceivedBytes() const override {
-    std::string http_headers = net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-        response_headers_->raw_headers());
-    return http_headers.size() + offset_;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestJob);
-};
-
-class TestJobProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  TestJobProtocolHandler(size_t response_data_size)
+  TestProtocolHandler(size_t response_data_size)
       : response_data_size_(response_data_size) {}
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return TestJob::CreateJob(request, network_delegate, response_data_size_);
+    return new net::URLRequestTestJob(request, network_delegate,
+                                      GenerateHeader(response_data_size_),
+                                      GenerateData(response_data_size_), true);
   }
 
  private:
@@ -179,7 +150,7 @@ class AsyncResourceHandlerTest : public ::testing::Test,
 
   void CreateRequestWithResponseDataSize(size_t response_data_size) {
     test_job_factory_.SetProtocolHandler(
-        "test", base::MakeUnique<TestJobProtocolHandler>(response_data_size));
+        "test", base::MakeUnique<TestProtocolHandler>(response_data_size));
     context_.set_job_factory(&test_job_factory_);
     context_.Init();
     std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
@@ -282,7 +253,7 @@ TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
-  EXPECT_EQ(4162, encoded_data_length);
+  EXPECT_EQ(4157, encoded_data_length);
   int encoded_body_length = std::get<4>(params);
   EXPECT_EQ(4096, encoded_body_length);
 }
@@ -305,7 +276,7 @@ TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
   ResourceMsg_InlinedDataChunkReceived::Read(messages[1].get(), &params);
 
   int encoded_data_length = std::get<2>(params);
-  EXPECT_EQ(71, encoded_data_length);
+  EXPECT_EQ(66, encoded_data_length);
   int encoded_body_length = std::get<3>(params);
   EXPECT_EQ(8, encoded_body_length);
 }
@@ -320,7 +291,7 @@ TEST_F(AsyncResourceHandlerTest, TwoChunksLengths) {
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
-  EXPECT_EQ(32835, encoded_data_length);
+  EXPECT_EQ(32830, encoded_data_length);
   int encoded_body_length = std::get<4>(params);
   EXPECT_EQ(32768, encoded_body_length);
 

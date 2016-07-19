@@ -126,8 +126,8 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
-      weak_factory_(this) {
-}
+      response_headers_length_(0),
+      weak_factory_(this) {}
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
                                      NetworkDelegate* network_delegate,
@@ -139,8 +139,8 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
-      weak_factory_(this) {
-}
+      response_headers_length_(0),
+      weak_factory_(this) {}
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
                                      NetworkDelegate* network_delegate,
@@ -151,13 +151,14 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       auto_advance_(auto_advance),
       stage_(WAITING),
       priority_(DEFAULT_PRIORITY),
-      response_headers_(new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(response_headers.c_str(),
-                                            response_headers.size()))),
       response_data_(response_data),
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
+      response_headers_(new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(response_headers.c_str(),
+                                            response_headers.size()))),
+      response_headers_length_(response_headers.size()),
       weak_factory_(this) {}
 
 URLRequestTestJob::~URLRequestTestJob() {
@@ -188,9 +189,7 @@ void URLRequestTestJob::Start() {
 
 void URLRequestTestJob::StartAsync() {
   if (!response_headers_.get()) {
-    std::string headers = test_headers();
-    response_headers_ = new HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    SetResponseHeaders(test_headers());
     if (request_->url().spec() == test_url_1().spec()) {
       response_data_ = test_data_1();
       stage_ = DATA_AVAILABLE;  // Simulate a synchronous response for this one.
@@ -201,10 +200,7 @@ void URLRequestTestJob::StartAsync() {
     } else if (request_->url().spec() == test_url_4().spec()) {
       response_data_ = test_data_4();
     } else if (request_->url().spec() == test_url_redirect_to_url_2().spec()) {
-      std::string redirect_headers = test_redirect_to_url_2_headers();
-      response_headers_ =
-          new HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-              redirect_headers.c_str(), redirect_headers.size()));
+      SetResponseHeaders(test_redirect_to_url_2_headers());
     } else {
       AdvanceJob();
 
@@ -222,6 +218,13 @@ void URLRequestTestJob::StartAsync() {
   AdvanceJob();
 
   this->NotifyHeadersComplete();
+}
+
+void URLRequestTestJob::SetResponseHeaders(
+    const std::string& response_headers) {
+  response_headers_ = new HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+      response_headers.c_str(), response_headers.size()));
+  response_headers_length_ = response_headers.size();
 }
 
 int URLRequestTestJob::ReadRawData(IOBuffer* buf, int buf_size) {
@@ -264,6 +267,10 @@ int URLRequestTestJob::GetResponseCode() const {
   if (response_headers_.get())
     return response_headers_->response_code();
   return -1;
+}
+
+int64_t URLRequestTestJob::GetTotalReceivedBytes() const {
+  return response_headers_length_ + offset_;
 }
 
 bool URLRequestTestJob::IsRedirectResponse(GURL* location,
