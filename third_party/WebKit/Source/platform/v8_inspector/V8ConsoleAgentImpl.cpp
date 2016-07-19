@@ -48,7 +48,6 @@ void V8ConsoleAgentImpl::disable(ErrorString* errorString)
 
 void V8ConsoleAgentImpl::clearMessages(ErrorString* errorString)
 {
-    m_session->debugger()->ensureConsoleMessageStorage(m_session->contextGroupId())->clear();
 }
 
 void V8ConsoleAgentImpl::restore()
@@ -73,30 +72,16 @@ bool V8ConsoleAgentImpl::enabled()
 void V8ConsoleAgentImpl::reportAllMessages()
 {
     V8ConsoleMessageStorage* storage = m_session->debugger()->ensureConsoleMessageStorage(m_session->contextGroupId());
-    if (storage->expiredCount()) {
-        std::unique_ptr<protocol::Console::ConsoleMessage> expired = protocol::Console::ConsoleMessage::create()
-            .setSource(protocol::Console::ConsoleMessage::SourceEnum::Other)
-            .setLevel(protocol::Console::ConsoleMessage::LevelEnum::Warning)
-            .setText(String16::fromInteger(storage->expiredCount()) + String16("console messages are not shown."))
-            .setTimestamp(0)
-            .build();
-        expired->setType(protocol::Console::ConsoleMessage::TypeEnum::Log);
-        expired->setLine(0);
-        expired->setColumn(0);
-        expired->setUrl("");
-        m_frontend.messageAdded(std::move(expired));
-        m_frontend.flush();
-    }
     for (const auto& message : storage->messages()) {
-        if (message->origin() == V8MessageOrigin::kExternalConsole || message->origin() == V8MessageOrigin::kConsole)
+        if (message->origin() == V8MessageOrigin::kConsole)
             reportMessage(message.get(), false);
     }
 }
 
 void V8ConsoleAgentImpl::reportMessage(V8ConsoleMessage* message, bool generatePreview)
 {
-    DCHECK(message->origin() == V8MessageOrigin::kExternalConsole || message->origin() == V8MessageOrigin::kConsole);
-    message->reportToFrontend(&m_frontend, m_session, generatePreview);
+    DCHECK(message->origin() == V8MessageOrigin::kConsole);
+    message->reportToFrontend(&m_frontend);
     m_frontend.flush();
 }
 

@@ -2,7 +2,6 @@ Test that each agent could be enabled/disabled separately.
 
 Animation.disable finished successfully
 CSS.disable finished successfully
-Console.disable finished successfully
 DOM.disable finished successfully
 DOMStorage.disable finished successfully
 Database.disable finished successfully
@@ -10,6 +9,7 @@ Debugger.disable finished successfully
 HeapProfiler.disable finished successfully
 IndexedDB.disable finished successfully
 LayerTree.disable finished successfully
+Log.disable finished successfully
 Network.disable finished successfully
 Page.disable finished successfully
 Profiler.disable finished successfully
@@ -21,9 +21,6 @@ Animation.disable finished successfully
 
 CSS.enable finished with error DOM agent needs to be enabled first.
 CSS.disable finished successfully
-
-Console.enable finished successfully
-Console.disable finished successfully
 
 DOM.enable finished successfully
 DOM.disable finished successfully
@@ -45,6 +42,9 @@ IndexedDB.disable finished successfully
 
 LayerTree.enable finished successfully
 LayerTree.disable finished successfully
+
+Log.enable finished successfully
+Log.disable finished successfully
 
 Network.enable finished successfully
 Network.disable finished successfully

@@ -47,6 +47,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ConsoleMessageStorage;
 class ExceptionState;
 class V8AbstractEventListener;
 class WorkerClients;
@@ -131,6 +132,7 @@ public:
     WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
     WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
     WorkerClients* clients() { return m_workerClients.get(); }
+    ConsoleMessageStorage* consoleMessageStorage() { return m_consoleMessageStorage.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -179,6 +181,8 @@ private:
     DOMTimerCoordinator m_timers;
 
     const double m_timeOrigin;
+
+    Member<ConsoleMessageStorage> m_consoleMessageStorage;
 
     HeapListHashSet<Member<V8AbstractEventListener>> m_eventListeners;
 };

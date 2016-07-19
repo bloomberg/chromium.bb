@@ -267,6 +267,12 @@ void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enab
     m_session->setCustomObjectFormatterEnabled(enabled);
 }
 
+void V8RuntimeAgentImpl::discardConsoleEntries(ErrorString*)
+{
+    V8ConsoleMessageStorage* storage = m_session->debugger()->ensureConsoleMessageStorage(m_session->contextGroupId());
+    storage->clear();
+}
+
 void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     const String16& expression,
     const String16& sourceURL,
@@ -369,10 +375,8 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
     m_session->debugger()->enableStackCapturingIfNeeded();
     m_session->reportAllContexts(this);
     V8ConsoleMessageStorage* storage = m_session->debugger()->ensureConsoleMessageStorage(m_session->contextGroupId());
-    for (const auto& message : storage->messages()) {
-        if (message->origin() != V8MessageOrigin::kExternalConsole)
-            reportMessage(message.get(), false);
-    }
+    for (const auto& message : storage->messages())
+        reportMessage(message.get(), false);
 }
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
@@ -435,7 +439,6 @@ void V8RuntimeAgentImpl::messageAdded(V8ConsoleMessage* message)
 
 void V8RuntimeAgentImpl::reportMessage(V8ConsoleMessage* message, bool generatePreview)
 {
-    DCHECK(message->origin() != V8MessageOrigin::kExternalConsole);
     message->reportToFrontend(&m_frontend, m_session, generatePreview);
     m_frontend.flush();
 }

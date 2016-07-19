@@ -38,8 +38,8 @@ private:
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
-    void muteWarningsAndDeprecations() override { }
-    void unmuteWarningsAndDeprecations() override { }
+    void muteWarningsAndDeprecations(int) override { }
+    void unmuteWarningsAndDeprecations(int) override { }
     double currentTimeMS() override { return 0; };
 
     bool isExecutionAllowed() override;

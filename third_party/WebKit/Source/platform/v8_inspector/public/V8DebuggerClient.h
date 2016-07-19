@@ -20,8 +20,8 @@ public:
     virtual ~V8DebuggerClient() { }
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;
     virtual void quitMessageLoopOnPause() = 0;
-    virtual void muteWarningsAndDeprecations() = 0;
-    virtual void unmuteWarningsAndDeprecations() = 0;
+    virtual void muteWarningsAndDeprecations(int contextGroupId) = 0;
+    virtual void unmuteWarningsAndDeprecations(int contextGroupId) = 0;
     virtual void beginUserGesture() = 0;
     virtual void endUserGesture() = 0;
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;

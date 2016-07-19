@@ -90,13 +90,13 @@ function test()
     function logInWorker(message, next)
     {
         InspectorTest.log("Logging in worker: " + message);
-        InspectorTest.eventHandler["Console.messageAdded"] = onConsoleMessage;
+        InspectorTest.eventHandler["Log.entryAdded"] = onLogEntry;
         InspectorTest.evaluateInPage("logInWorkerFromPage(\"" + message + "\")");
 
-        function onConsoleMessage(payload)
+        function onLogEntry(payload)
         {
-            InspectorTest.log("Got console message from page: " + payload.params.message.text);
-            delete InspectorTest.eventHandler["Console.messageAdded"];
+            InspectorTest.log("Got log message from page: " + payload.params.entry.text);
+            delete InspectorTest.eventHandler["Log.entryAdded"];
             next();
         }
     }
@@ -127,7 +127,7 @@ function test()
     var steps = [
         function listenToConsole(next)
         {
-            InspectorTest.sendCommandOrDie("Console.enable", {}, next);
+            InspectorTest.sendCommandOrDie("Log.enable", {}, next);
         },
 
         function start0(next)

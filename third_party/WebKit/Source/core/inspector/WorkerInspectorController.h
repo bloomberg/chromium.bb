@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class InspectorLogAgent;
 class InstrumentingAgents;
 class V8Debugger;
 class WorkerGlobalScope;
@@ -71,11 +72,13 @@ private:
     // InspectorSession::Client implementation.
     void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
     void resumeStartup() override;
+    void consoleCleared() override;
 
     WorkerThreadDebugger* m_debugger;
     Member<WorkerGlobalScope> m_workerGlobalScope;
     Member<InstrumentingAgents> m_instrumentingAgents;
     Member<InspectorSession> m_session;
+    Member<InspectorLogAgent> m_logAgent;
 };
 
 } // namespace blink

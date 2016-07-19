@@ -60,6 +60,7 @@ public:
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
     virtual void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) = 0;
+    virtual int contextGroupId(ExecutionContext*) = 0;
 
 protected:
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);

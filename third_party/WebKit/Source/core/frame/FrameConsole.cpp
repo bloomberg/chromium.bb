@@ -31,6 +31,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -54,10 +55,9 @@ void FrameConsole::addMessage(ConsoleMessage* consoleMessage)
 
 bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage)
 {
-    // TODO(dgozman): drop this check, it's left here to preserve tests output.
-    if (!m_frame->document())
+    if (!m_frame->document() || !m_frame->host())
         return false;
-    return MainThreadDebugger::instance()->addConsoleMessage(m_frame, consoleMessage);
+    return m_frame->host()->consoleMessageStorage().addConsoleMessage(m_frame->document(), consoleMessage);
 }
 
 void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
@@ -68,19 +68,19 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
     String url = consoleMessage->location()->url();
     String stackTrace;
     if (consoleMessage->source() == ConsoleAPIMessageSource) {
-        if (!frame().host())
+        if (!m_frame->host())
             return;
-        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), url)) {
+        if (m_frame->chromeClient().shouldReportDetailedMessageForSource(*m_frame, url)) {
             std::unique_ptr<SourceLocation> location = SourceLocation::captureWithFullStackTrace();
             if (!location->isUnknown())
                 stackTrace = location->toString();
         }
     } else {
-        if (!consoleMessage->location()->isUnknown() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), url))
+        if (!consoleMessage->location()->isUnknown() && m_frame->chromeClient().shouldReportDetailedMessageForSource(*m_frame, url))
             stackTrace = consoleMessage->location()->toString();
     }
 
-    frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location()->lineNumber(), url, stackTrace);
+    m_frame->chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location()->lineNumber(), url, stackTrace);
 }
 
 void FrameConsole::addMessageFromWorker(ConsoleMessage* consoleMessage, const String& workerId)

@@ -946,7 +946,6 @@ WebInspector.targetManager.observeTargets({
         if (InspectorTest.CSSAgent)
             return;
         InspectorTest.CSSAgent = target.cssAgent();
-        InspectorTest.ConsoleAgent = target.consoleAgent();
         InspectorTest.DeviceOrientationAgent = target.deviceOrientationAgent();
         InspectorTest.DOMAgent = target.domAgent();
         InspectorTest.DOMDebuggerAgent = target.domdebuggerAgent();

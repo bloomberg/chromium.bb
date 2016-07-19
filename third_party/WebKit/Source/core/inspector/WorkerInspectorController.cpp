@@ -32,6 +32,7 @@
 
 #include "core/InstrumentingAgents.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -52,6 +53,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     : m_debugger(debugger)
     , m_workerGlobalScope(workerGlobalScope)
     , m_instrumentingAgents(new InstrumentingAgents())
+    , m_logAgent(nullptr)
 {
 }
 
@@ -66,6 +68,8 @@ void WorkerInspectorController::connectFrontend()
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
     m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
+    m_logAgent = new InspectorLogAgent(m_workerGlobalScope->consoleMessageStorage());
+    m_session->append(m_logAgent.get());
 }
 
 void WorkerInspectorController::disconnectFrontend()
@@ -102,11 +106,18 @@ void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, c
     m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(response);
 }
 
+void WorkerInspectorController::consoleCleared()
+{
+    if (m_logAgent)
+        m_logAgent->clear(nullptr);
+}
+
 DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_session);
+    visitor->trace(m_logAgent);
 }
 
 } // namespace blink

@@ -41,6 +41,7 @@
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
@@ -298,6 +299,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
     , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone())
     , m_timeOrigin(timeOrigin)
+    , m_consoleMessageStorage(new ConsoleMessageStorage())
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
@@ -321,8 +323,7 @@ void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHea
 void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());
-    if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
-        debugger->addConsoleMessage(consoleMessage);
+    m_consoleMessageStorage->addConsoleMessage(this, consoleMessage);
 }
 
 void WorkerGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
@@ -364,6 +365,7 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     visitor->trace(m_timers);
+    visitor->trace(m_consoleMessageStorage);
     visitor->trace(m_eventListeners);
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);

@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InstrumentingAgents.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -45,6 +46,7 @@
 #include "core/inspector/InspectorInputAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
+#include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -310,6 +312,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_networkAgent(nullptr)
     , m_layerTreeAgent(nullptr)
     , m_tracingAgent(nullptr)
+    , m_logAgent(nullptr)
     , m_includeViewAgents(includeViewAgents)
     , m_layerTreeId(0)
 {
@@ -347,6 +350,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_networkAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
+    visitor->trace(m_logAgent);
     visitor->trace(m_session);
 }
 
@@ -406,6 +410,9 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_pageAgent = pageAgent;
     m_session->append(pageAgent);
 
+    m_logAgent = new InspectorLogAgent(&m_inspectedFrames->root()->host()->consoleMessageStorage());
+    m_session->append(m_logAgent.get());
+
     m_tracingAgent->setLayerTreeId(m_layerTreeId);
     m_networkAgent->setHostId(hostId);
 
@@ -440,6 +447,7 @@ void WebDevToolsAgentImpl::destroySession()
     m_networkAgent.clear();
     m_pageAgent.clear();
     m_domAgent.clear();
+    m_logAgent.clear();
 
     m_session->dispose();
     m_session.clear();
@@ -606,6 +614,8 @@ void WebDevToolsAgentImpl::consoleCleared()
 {
     if (m_domAgent)
         m_domAgent->releaseDanglingNodes();
+    if (m_logAgent)
+        m_logAgent->clear(nullptr);
 }
 
 void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)

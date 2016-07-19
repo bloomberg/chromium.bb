@@ -94,6 +94,8 @@
             '<(blink_core_output_dir)/inspector/protocol/IO.h',
             '<(blink_core_output_dir)/inspector/protocol/LayerTree.cpp',
             '<(blink_core_output_dir)/inspector/protocol/LayerTree.h',
+            '<(blink_core_output_dir)/inspector/protocol/Log.cpp',
+            '<(blink_core_output_dir)/inspector/protocol/Log.h',
             '<(blink_core_output_dir)/inspector/protocol/Memory.cpp',
             '<(blink_core_output_dir)/inspector/protocol/Memory.h',
             '<(blink_core_output_dir)/inspector/protocol/Network.cpp',

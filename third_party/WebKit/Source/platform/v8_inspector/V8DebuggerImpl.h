@@ -64,6 +64,7 @@ public:
     ~V8DebuggerImpl() override;
 
     static int contextId(v8::Local<v8::Context>);
+    static int getGroupId(v8::Local<v8::Context>);
 
     bool enabled() const;
 
@@ -129,7 +130,6 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
-    void addConsoleMessage(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, const String16& requestIdentifier, const String16& workerId) override;
     void logToConsole(v8::Local<v8::Context>, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) override;
     void exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;

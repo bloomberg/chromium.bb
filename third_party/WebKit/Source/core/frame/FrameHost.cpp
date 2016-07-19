@@ -37,6 +37,7 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/TopControls.h"
 #include "core/frame/VisualViewport.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "public/platform/Platform.h"
@@ -58,6 +59,7 @@ FrameHost::FrameHost(Page& page)
         *m_visualViewport,
         m_page->chromeClient()))
     , m_eventHandlerRegistry(new EventHandlerRegistry(*this))
+    , m_consoleMessageStorage(new ConsoleMessageStorage())
     , m_customElementReactionStack(new CustomElementReactionStack())
     , m_subframeCount(0)
 {
@@ -173,6 +175,16 @@ const EventHandlerRegistry& FrameHost::eventHandlerRegistry() const
     return *m_eventHandlerRegistry;
 }
 
+ConsoleMessageStorage& FrameHost::consoleMessageStorage()
+{
+    return *m_consoleMessageStorage;
+}
+
+const ConsoleMessageStorage& FrameHost::consoleMessageStorage() const
+{
+    return *m_consoleMessageStorage;
+}
+
 CustomElementReactionStack& FrameHost::customElementReactionStack()
 {
     return *m_customElementReactionStack;
@@ -190,6 +202,7 @@ DEFINE_TRACE(FrameHost)
     visitor->trace(m_visualViewport);
     visitor->trace(m_overscrollController);
     visitor->trace(m_eventHandlerRegistry);
+    visitor->trace(m_consoleMessageStorage);
     visitor->trace(m_customElementReactionStack);
 }
 

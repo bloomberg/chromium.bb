@@ -67,12 +67,6 @@ public:
 private:
     explicit FrameConsole(LocalFrame&);
 
-    LocalFrame& frame() const
-    {
-        ASSERT(m_frame);
-        return *m_frame;
-    }
-
     Member<LocalFrame> m_frame;
 };
 

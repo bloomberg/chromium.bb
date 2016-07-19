@@ -309,12 +309,15 @@ void ThreadDebugger::getEventListenersCallback(const v8::FunctionCallbackInfo<v8
     ThreadDebugger* debugger = static_cast<ThreadDebugger*>(v8::Local<v8::External>::Cast(info.Data())->Value());
     DCHECK(debugger);
     v8::Isolate* isolate = info.GetIsolate();
+    int groupId = debugger->contextGroupId(toExecutionContext(isolate->GetCurrentContext()));
 
     V8EventListenerInfoList listenerInfo;
     // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
-    debugger->muteWarningsAndDeprecations();
+    if (groupId)
+        debugger->muteWarningsAndDeprecations(groupId);
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0], listenerInfo);
-    debugger->unmuteWarningsAndDeprecations();
+    if (groupId)
+        debugger->unmuteWarningsAndDeprecations(groupId);
 
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     AtomicString currentEventType;

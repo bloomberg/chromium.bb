@@ -42,10 +42,12 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/FrameConsole.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
@@ -75,6 +77,17 @@ Mutex& creationMutex()
     return mutex;
 }
 
+LocalFrame* toFrame(ExecutionContext* context)
+{
+    if (!context)
+        return nullptr;
+    if (context->isDocument())
+        return toDocument(context)->frame();
+    if (context->isMainThreadWorkletGlobalScope())
+        return toMainThreadWorkletGlobalScope(context)->frame();
+    return nullptr;
+}
+
 }
 
 MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
@@ -83,7 +96,6 @@ MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate)
     , m_taskRunner(wrapUnique(new InspectorTaskRunner()))
     , m_paused(false)
-    , m_muteConsoleCount(0)
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -99,15 +111,14 @@ MainThreadDebugger::~MainThreadDebugger()
 
 void MainThreadDebugger::reportConsoleMessage(ExecutionContext* context, ConsoleMessage* message)
 {
-    if (!context)
-        return;
-    LocalFrame* frame = nullptr;
-    if (context->isDocument())
-        frame = toDocument(context)->frame();
-    if (context->isMainThreadWorkletGlobalScope())
-        frame = toMainThreadWorkletGlobalScope(context)->frame();
-    if (frame)
+    if (LocalFrame* frame = toFrame(context))
         frame->console().reportMessageToClient(message);
+}
+
+int MainThreadDebugger::contextGroupId(ExecutionContext* context)
+{
+    LocalFrame* frame = toFrame(context);
+    return frame ? contextGroupId(frame) : 0;
 }
 
 void MainThreadDebugger::setClientMessageLoop(std::unique_ptr<ClientMessageLoop> clientMessageLoop)
@@ -140,29 +151,10 @@ void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
 
 void MainThreadDebugger::exceptionThrown(LocalFrame* frame, const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
-    if (m_muteConsoleCount)
+    if (frame->host() && frame->host()->consoleMessageStorage().isMuted())
         return;
     debugger()->exceptionThrown(contextGroupId(frame), errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
     frame->console().reportMessageToClient(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location)));
-}
-
-bool MainThreadDebugger::addConsoleMessage(LocalFrame* frame, ConsoleMessage* consoleMessage)
-{
-    if (m_muteConsoleCount)
-        return false;
-    debugger()->addConsoleMessage(
-        contextGroupId(frame),
-        consoleMessage->source(),
-        consoleMessage->level(),
-        consoleMessage->message(),
-        consoleMessage->location()->url(),
-        consoleMessage->location()->lineNumber(),
-        consoleMessage->location()->columnNumber(),
-        consoleMessage->location()->cloneStackTrace(),
-        consoleMessage->location()->scriptId(),
-        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
-        consoleMessage->workerId());
-    return true;
 }
 
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
@@ -211,16 +203,20 @@ void MainThreadDebugger::quitMessageLoopOnPause()
         m_clientMessageLoop->quitNow();
 }
 
-void MainThreadDebugger::muteWarningsAndDeprecations()
+void MainThreadDebugger::muteWarningsAndDeprecations(int contextGroupId)
 {
     UseCounter::muteForInspector();
-    m_muteConsoleCount++;
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    if (frame && frame->host())
+        frame->host()->consoleMessageStorage().mute();
 }
 
-void MainThreadDebugger::unmuteWarningsAndDeprecations()
+void MainThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
 {
     UseCounter::unmuteForInspector();
-    m_muteConsoleCount--;
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    if (frame && frame->host())
+        frame->host()->consoleMessageStorage().unmute();
 }
 
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)

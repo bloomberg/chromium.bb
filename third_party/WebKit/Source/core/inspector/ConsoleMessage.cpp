@@ -47,7 +47,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_message(message)
     , m_location(std::move(location))
     , m_requestIdentifier(0)
-    , m_timestamp(WTF::currentTime())
+    , m_timestamp(WTF::currentTimeMS())
 {
 }
 

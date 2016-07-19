@@ -37,6 +37,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/AutoscrollController.h"
@@ -452,6 +453,7 @@ void Page::updateAcceleratedCompositingSettings()
 void Page::didCommitLoad(LocalFrame* frame)
 {
     if (m_mainFrame == frame) {
+        frameHost().consoleMessageStorage().clear();
         useCounter().didCommitLoad();
         deprecation().clearSuppression();
         frameHost().visualViewport().sendUMAMetrics();

@@ -63,6 +63,7 @@ interface InspectorInstrumentation {
 #include "core/dom/CharacterData.h"
 #include "core/dom/PseudoElement.h"
 
+class ConsoleMessage;
 class ThreadableLoaderClient;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
@@ -290,6 +291,9 @@ class XMLHttpRequest;
 
     [Page]
     void windowCreated(LocalFrame* opener, LocalFrame* created);
+
+    [Log]
+    void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
 }
 
 interface InspectorOverrides {

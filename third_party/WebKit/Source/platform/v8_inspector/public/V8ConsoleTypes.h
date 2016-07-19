@@ -7,20 +7,6 @@
 
 namespace blink {
 
-enum MessageSource {
-    XMLMessageSource,
-    JSMessageSource,
-    NetworkMessageSource,
-    ConsoleAPIMessageSource,
-    StorageMessageSource,
-    AppCacheMessageSource,
-    RenderingMessageSource,
-    SecurityMessageSource,
-    OtherMessageSource,
-    DeprecationMessageSource,
-    WorkerMessageSource
-};
-
 enum MessageLevel {
     DebugMessageLevel = 4,
     LogMessageLevel = 1,

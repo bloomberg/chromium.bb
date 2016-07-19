@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../../http/tests/inspector/network-test.js"></script>
 <script src="../../../http/tests/inspector/resources-test.js"></script>
@@ -56,7 +57,7 @@ function test()
                 if (this !== shownSourceFrame)
                     return;
                 InspectorTest.addResult("Message added to source frame: " + message.text());
-                setImmediate(function() { InspectorTest.consoleModel.requestClearMessages(); });
+                setImmediate(function() { WebInspector.ConsoleView.clearConsole(); });
             }
 
             function didRemoveMessage(message)

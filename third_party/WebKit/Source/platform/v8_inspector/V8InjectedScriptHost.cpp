@@ -180,14 +180,17 @@ void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::Fun
     }
 
     V8DebuggerImpl* debugger = unwrapDebugger(info);
-    debugger->client()->muteWarningsAndDeprecations();
+    int contextGroupId = V8DebuggerImpl::getGroupId(context);
+    if (contextGroupId)
+        debugger->client()->muteWarningsAndDeprecations(contextGroupId);
 
     v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Value> result;
     if (function->Call(context, receiver, argc, argv.get()).ToLocal(&result))
         info.GetReturnValue().Set(result);
 
-    debugger->client()->unmuteWarningsAndDeprecations();
+    if (contextGroupId)
+        debugger->client()->unmuteWarningsAndDeprecations(contextGroupId);
 }
 
 void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

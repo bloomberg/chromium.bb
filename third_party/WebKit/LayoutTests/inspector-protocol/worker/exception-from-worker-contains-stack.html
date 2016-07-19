@@ -18,7 +18,6 @@ function startWorkers()
 
 function test()
 {
-    InspectorTest.sendCommandOrDie("Console.enable", {});
     InspectorTest.sendCommandOrDie("Worker.enable", {}, didEnableWorkerDebugging);
 
     function didEnableWorkerDebugging(event)

@@ -23,7 +23,7 @@ function test()
 
             function step1()
             {
-                InspectorTest.consoleModel.requestClearMessages();
+                WebInspector.ConsoleView.clearConsole();
                 InspectorTest.deprecatedRunAfterPendingDispatches(step2);
             }
 

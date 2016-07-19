@@ -121,6 +121,7 @@ bool V8DebuggerImpl::enabled() const
     return !m_debuggerScript.IsEmpty();
 }
 
+// static
 int V8DebuggerImpl::contextId(v8::Local<v8::Context> context)
 {
     v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
@@ -138,7 +139,8 @@ int V8DebuggerImpl::contextId(v8::Local<v8::Context> context)
     return dataString.substring(commaPos + 1, commaPos2 - commaPos - 1).toInt();
 }
 
-static int getGroupId(v8::Local<v8::Context> context)
+// static
+int V8DebuggerImpl::getGroupId(v8::Local<v8::Context> context)
 {
     v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
     if (data.IsEmpty() || !data->IsString())
@@ -1056,11 +1058,6 @@ void V8DebuggerImpl::idleFinished()
     m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
-void V8DebuggerImpl::addConsoleMessage(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, const String16& requestIdentifier, const String16& workerId)
-{
-    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createExternal(m_client->currentTimeMS(), source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, requestIdentifier, workerId));
-}
-
 void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2)
 {
     int contextGroupId = getGroupId(context);
@@ -1115,7 +1112,7 @@ std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(bool fullStack)
 
     size_t stackSize = fullStack ? V8StackTraceImpl::maxCallStackSizeToCapture : 1;
     SessionMap::iterator sessionIt = m_sessions.find(contextGroupId);
-    if (sessionIt != m_sessions.end() && sessionIt->second->consoleAgent()->enabled())
+    if (sessionIt != m_sessions.end() && sessionIt->second->runtimeAgent()->enabled())
         stackSize = V8StackTraceImpl::maxCallStackSizeToCapture;
 
     return V8StackTraceImpl::capture(this, contextGroupId, stackSize);

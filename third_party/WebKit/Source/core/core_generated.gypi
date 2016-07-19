@@ -123,6 +123,7 @@
       '<(blink_core_output_dir)/inspector/protocol/Inspector.cpp',
       '<(blink_core_output_dir)/inspector/protocol/IO.cpp',
       '<(blink_core_output_dir)/inspector/protocol/LayerTree.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Log.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Memory.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Network.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Page.cpp',

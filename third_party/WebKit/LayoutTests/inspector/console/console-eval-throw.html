@@ -10,7 +10,7 @@ function test()
         InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
 
         InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
-        InspectorTest.consoleModel.requestClearMessages();
+        WebInspector.ConsoleView.clearConsole();
 
         function afterCleared()
         {

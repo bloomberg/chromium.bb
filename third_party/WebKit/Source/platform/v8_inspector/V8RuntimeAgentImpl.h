@@ -96,6 +96,7 @@ public:
     void releaseObjectGroup(ErrorString*, const String16& objectGroup) override;
     void run(ErrorString*) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
+    void discardConsoleEntries(ErrorString*) override;
     void compileScript(ErrorString*,
         const String16& expression,
         const String16& sourceURL,
@@ -117,6 +118,7 @@ public:
     void reportExecutionContextDestroyed(InspectedContext*);
     void inspect(std::unique_ptr<protocol::Runtime::RemoteObject> objectToInspect, std::unique_ptr<protocol::DictionaryValue> hints);
     void messageAdded(V8ConsoleMessage*);
+    bool enabled() const { return m_enabled; }
 
 private:
     void reportMessage(V8ConsoleMessage*, bool generatePreview);
