@@ -255,11 +255,6 @@ class ChromeServiceWorkerManifestFetchTest
   ChromeServiceWorkerManifestFetchTest() {}
   ~ChromeServiceWorkerManifestFetchTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeServiceWorkerFetchTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableAddToShelf);
-  }
-
   std::string ExecuteManifestFetchTest(const std::string& url,
                                        const std::string& cross_origin) {
     std::string js(
@@ -274,7 +269,7 @@ class ChromeServiceWorkerManifestFetchTest
     }
     js += "document.head.appendChild(link);";
     ExecuteJavaScriptForTests(js);
-    return RequestAppBannerAndGetIssuedRequests();
+    return GetManifestAndIssuedRequests();
   }
 
  private:
@@ -286,13 +281,22 @@ class ChromeServiceWorkerManifestFetchTest
         ->ExecuteJavaScriptForTests(base::ASCIIToUTF16(js));
   }
 
-  std::string RequestAppBannerAndGetIssuedRequests() {
-    browser()->RequestAppBannerFromDevTools(
-        browser()->tab_strip_model()->GetActiveWebContents());
+  std::string GetManifestAndIssuedRequests() {
+    base::RunLoop run_loop;
+    browser()->tab_strip_model()->GetActiveWebContents()->GetManifest(
+        base::Bind(&ManifestCallbackAndRun, run_loop.QuitClosure()));
+    run_loop.Run();
     return ExecuteScriptAndExtractString(
         "if (issuedRequests.length != 0) reportRequests();"
         "else reportOnFetch = true;");
   }
+
+  static void ManifestCallbackAndRun(const base::Closure& continuation,
+                                     const GURL&,
+                                     const content::Manifest&) {
+    continuation.Run();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerManifestFetchTest);
 };
 
