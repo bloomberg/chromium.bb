@@ -52,6 +52,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
@@ -151,6 +152,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_requestStartedSeconds(0.0)
     , m_corsRedirectLimit(kMaxCORSRedirects)
     , m_redirectMode(WebURLRequest::FetchRedirectModeFollow)
+    , m_didRedirect(false)
     , m_weakFactory(this)
 {
     ASSERT(client);
@@ -301,24 +303,25 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         return;
     }
 
+    ResourceRequest crossOriginRequest(request);
+    ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
+
     // We use isSimpleOrForbiddenRequest() here since |request| may have been
     // modified in the process of loading (not from the user's input). For
     // example, referrer. We need to accept them. For security, we must reject
     // forbidden headers/methods at the point we accept user's input. Not here.
     if (!request.isExternalRequest() && ((m_options.preflightPolicy == ConsiderPreflight && FetchUtils::isSimpleOrForbiddenRequest(request.httpMethod(), request.httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight)) {
-        ResourceRequest crossOriginRequest(request);
-        ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
         updateRequestForAccessControl(crossOriginRequest, getSecurityOrigin(), effectiveAllowCredentials());
         // We update the credentials mode according to effectiveAllowCredentials() here for backward compatibility. But this is not correct.
         // FIXME: We should set it in the caller of DocumentThreadableLoader.
         crossOriginRequest.setFetchCredentialsMode(effectiveAllowCredentials() == AllowStoredCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeOmit);
+        if (m_didRedirect) {
+            crossOriginRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrerAfterRedirect.referrerPolicy, crossOriginRequest.url(), m_referrerAfterRedirect.referrer));
+        }
         loadRequest(crossOriginRequest, crossOriginOptions);
         // |this| may be dead here in async mode.
     } else {
         m_crossOriginNonSimpleRequest = true;
-
-        ResourceRequest crossOriginRequest(request);
-        ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
         // Do not set the Origin header for preflight requests.
         updateRequestForAccessControl(crossOriginRequest, 0, effectiveAllowCredentials());
         // We update the credentials mode according to effectiveAllowCredentials() here for backward compatibility. But this is not correct.
@@ -326,6 +329,10 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         crossOriginRequest.setFetchCredentialsMode(effectiveAllowCredentials() == AllowStoredCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeOmit);
         m_actualRequest = crossOriginRequest;
         m_actualOptions = crossOriginOptions;
+
+        if (m_didRedirect) {
+            m_actualRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrerAfterRedirect.referrerPolicy, m_actualRequest.url(), m_referrerAfterRedirect.referrer));
+        }
 
         bool shouldForcePreflight = request.isExternalRequest() || InspectorInstrumentation::shouldForceCORSPreflight(m_document);
         bool canSkipPreflight = CrossOriginPreflightResultCache::shared().canSkipPreflight(getSecurityOrigin()->toString(), m_actualRequest.url(), effectiveAllowCredentials(), m_actualRequest.httpMethod(), m_actualRequest.httpHeaderFields());
@@ -538,6 +545,10 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
             // the first place, update our state so we neither request them nor expect they must be allowed.
             if (m_resourceLoaderOptions.credentialsRequested == ClientDidNotRequestCredentials)
                 m_forceDoNotAllowStoredCredentials = true;
+
+            // Save the referrer to use when following the redirect.
+            m_didRedirect = true;
+            m_referrerAfterRedirect = Referrer(request.httpReferrer(), request.getReferrerPolicy());
 
             // Remove any headers that may have been added by the network layer that cause access control to fail.
             request.clearHTTPReferrer();

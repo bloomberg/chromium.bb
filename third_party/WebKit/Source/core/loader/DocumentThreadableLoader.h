@@ -40,6 +40,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
@@ -223,6 +224,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         int m_corsRedirectLimit;
 
         WebURLRequest::FetchRedirectMode m_redirectMode;
+
+        // Holds the referrer after a redirect response was
+        // received. This referrer is used to populate the HTTP Referer
+        // header when following the redirect.
+        bool m_didRedirect;
+        Referrer m_referrerAfterRedirect;
 
         WeakPtrFactory<DocumentThreadableLoader> m_weakFactory;
     };
