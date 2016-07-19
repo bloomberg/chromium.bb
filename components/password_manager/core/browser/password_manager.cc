@@ -229,11 +229,11 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  PasswordFormManager* manager = new PasswordFormManager(
+  auto manager = base::WrapUnique(new PasswordFormManager(
       this, client_, driver->AsWeakPtr(), form,
-      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
-  pending_login_managers_.push_back(manager);
+      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore()))));
   manager->FetchDataFromPasswordStore();
+  pending_login_managers_.push_back(std::move(manager));
 }
 
 void PasswordManager::SaveGenerationFieldDetectedByClassifier(
@@ -270,16 +270,13 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
   }
 
-  std::unique_ptr<PasswordFormManager> manager;
-  ScopedVector<PasswordFormManager>::iterator matched_manager_it =
-      pending_login_managers_.end();
+  auto matched_manager_it = pending_login_managers_.end();
   PasswordFormManager::MatchResultMask current_match_result =
       PasswordFormManager::RESULT_NO_MATCH;
   // Below, "matching" is in DoesManage-sense and "not ready" in
   // !HasCompletedMatching sense. We keep track of such PasswordFormManager
   // instances for UMA.
-  for (ScopedVector<PasswordFormManager>::iterator iter =
-           pending_login_managers_.begin();
+  for (auto iter = pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
     PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
 
@@ -330,15 +327,16 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // If we didn't find a manager, this means a form was submitted without
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
-  if (matched_manager_it != pending_login_managers_.end()) {
-    // Transfer ownership of the manager from |pending_login_managers_| to
-    // |manager|.
-    manager.reset(*matched_manager_it);
-    pending_login_managers_.weak_erase(matched_manager_it);
-  } else {
+  if (matched_manager_it == pending_login_managers_.end()) {
     RecordFailure(NO_MATCHING_FORM, form.origin, logger.get());
     return;
   }
+
+  std::unique_ptr<PasswordFormManager> manager;
+  // Transfer ownership of the manager from |pending_login_managers_| to
+  // |manager|.
+  manager.swap(*matched_manager_it);
+  pending_login_managers_.erase(matched_manager_it);
 
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.preferred = true;
@@ -365,7 +363,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 }
 
 void PasswordManager::UpdateFormManagers() {
-  for (PasswordFormManager* form_manager : pending_login_managers_) {
+  for (const auto& form_manager : pending_login_managers_) {
     form_manager->FetchDataFromPasswordStore();
   }
 }
@@ -495,7 +493,7 @@ void PasswordManager::CreatePendingLoginManagers(
                        base::CompareCase::SENSITIVE))
       continue;
     bool old_manager_found = false;
-    for (const auto& old_manager : pending_login_managers_.get()) {
+    for (const auto& old_manager : pending_login_managers_) {
       if (old_manager->DoesManage(*iter) !=
           PasswordFormManager::RESULT_COMPLETE_MATCH) {
         continue;
@@ -522,14 +520,13 @@ void PasswordManager::CreatePendingLoginManagers(
 
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
-    PasswordFormManager* manager = new PasswordFormManager(
+    auto manager = base::WrapUnique(new PasswordFormManager(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
         *iter,
-        base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
-    pending_login_managers_.push_back(manager);
-
+        base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore()))));
     manager->FetchDataFromPasswordStore();
+    pending_login_managers_.push_back(std::move(manager));
   }
 
   if (logger) {
@@ -847,13 +844,13 @@ void PasswordManager::ProcessAutofillPredictions(
 
 PasswordFormManager* PasswordManager::GetMatchingPendingManager(
     const PasswordForm& form) {
-  auto matched_manager_it = pending_login_managers_.end();
+  PasswordFormManager* matched_manager = nullptr;
   PasswordFormManager::MatchResultMask current_match_result =
       PasswordFormManager::RESULT_NO_MATCH;
 
-  for (auto iter = pending_login_managers_.begin();
-       iter != pending_login_managers_.end(); ++iter) {
-    PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
+  for (auto& login_manager : pending_login_managers_) {
+    PasswordFormManager::MatchResultMask result =
+        login_manager->DoesManage(form);
 
     if (result == PasswordFormManager::RESULT_NO_MATCH)
       continue;
@@ -861,7 +858,7 @@ PasswordFormManager* PasswordManager::GetMatchingPendingManager(
     if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
       // If we find a manager that exactly matches the submitted form including
       // the action URL, exit the loop.
-      matched_manager_it = iter;
+      matched_manager = login_manager.get();
       break;
     } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
                           ~PasswordFormManager::RESULT_ACTION_MATCH) &&
@@ -870,16 +867,14 @@ PasswordFormManager* PasswordManager::GetMatchingPendingManager(
       // URL, remember it as a candidate and continue searching for an exact
       // match. See http://crbug.com/27246 for an example where actions can
       // change.
-      matched_manager_it = iter;
+      matched_manager = login_manager.get();
       current_match_result = result;
     } else if (result > current_match_result) {
-      matched_manager_it = iter;
+      matched_manager = login_manager.get();
       current_match_result = result;
     }
   }
-  if (matched_manager_it != pending_login_managers_.end())
-    return *matched_manager_it;
-  return nullptr;
+  return matched_manager;
 }
 
 }  // namespace password_manager

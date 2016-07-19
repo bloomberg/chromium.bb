@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -236,7 +235,7 @@ class PasswordManager : public LoginModel {
   // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
 
-  ScopedVector<PasswordFormManager> pending_login_managers_;
+  std::vector<std::unique_ptr<PasswordFormManager>> pending_login_managers_;
 
   // When the user submits a password/credential, this contains the
   // PasswordFormManager for the form in question until we deem the login
