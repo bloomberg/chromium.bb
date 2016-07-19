@@ -44,4 +44,6 @@ mojom("interfaces") {
     "//ui/gfx/mojo",
     "//ui/platform_window/mojo:interfaces",
   ]
+
+  use_new_wrapper_types = false
 }

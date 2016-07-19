@@ -180,6 +180,8 @@ mojom("mojo_bindings") {
     "//cc/ipc:interfaces_surfaceid_only",
     "//device/bluetooth/public/interfaces:bluetooth_mojom_bluetooth_uuid",
   ]
+
+  use_new_wrapper_types = false
 }
 
 # GYP version: WebKit/public/blink.gyp:android_mojo_bindings_java
@@ -187,6 +189,8 @@ mojom("android_mojo_bindings") {
   sources = [
     "platform/modules/payments/payment_request.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 group("generate_mojo_bindings") {

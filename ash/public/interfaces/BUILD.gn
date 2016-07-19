@@ -15,4 +15,6 @@ mojom("interfaces") {
   public_deps = [
     "//mash/shelf/public/interfaces",
   ]
+
+  use_new_wrapper_types = false
 }

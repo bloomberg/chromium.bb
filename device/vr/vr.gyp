@@ -17,6 +17,9 @@
       'sources': [
         'vr_service.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
     },
     {
       # GN version: //device/vr:mojo_bindings_blink
@@ -24,6 +27,7 @@
       'type': 'static_library',
       'variables': {
         'for_blink': 'true',
+        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../../mojo/mojom_bindings_generator.gypi',

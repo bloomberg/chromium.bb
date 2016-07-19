@@ -266,12 +266,16 @@ mojom("content_test_mojo_bindings") {
   sources = [
     "../public/test/test_mojo_service.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("web_ui_test_mojo_bindings") {
   sources = [
     "data/web_ui_test_mojo_bindings.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 # GYP version //content/content_tests.gypi:layouttest_support_content

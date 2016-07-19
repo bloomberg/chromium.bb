@@ -13,4 +13,6 @@ mojom("interfaces") {
   public_deps = [
     "//skia/public/interfaces",
   ]
+
+  use_new_wrapper_types = false
 }

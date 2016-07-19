@@ -8,4 +8,6 @@ mojom("mojo_bindings") {
   sources = [
     "plugins.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

@@ -8,4 +8,6 @@ mojom("interfaces") {
   sources = [
     "font_service.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

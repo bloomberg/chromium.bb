@@ -157,6 +157,7 @@
           'arc/common/app.typemap',
           'arc/common/bluetooth.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'sources': [
         'arc/common/app.mojom',

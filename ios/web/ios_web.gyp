@@ -542,6 +542,7 @@
         'mojom_files': [
           'test/mojo_test.mojom',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'include_dirs': [
         '..',

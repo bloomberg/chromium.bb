@@ -10,6 +10,8 @@ mojom("mojo") {
   sources = [
     "geometry.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("test_interfaces") {
@@ -20,6 +22,8 @@ mojom("test_interfaces") {
   public_deps = [
     ":mojo",
   ]
+
+  use_new_wrapper_types = false
 }
 
 source_set("unit_test") {

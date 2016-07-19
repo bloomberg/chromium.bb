@@ -10,7 +10,7 @@
     'variables': {
       'variables': {
         'for_blink%': 'false',
-        'use_new_wrapper_types%': 'false',
+        'use_new_wrapper_types%': 'true',
       },
       'for_blink%': '<(for_blink)',
       'use_new_wrapper_types%': '<(use_new_wrapper_types)',

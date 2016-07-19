@@ -51,6 +51,9 @@
         'contextual_search/common/contextual_search_js_api_service.mojom',
         'contextual_search/common/overlay_page_notifier_service.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
       'includes': [
         '../mojo/mojom_bindings_generator.gypi',
       ],

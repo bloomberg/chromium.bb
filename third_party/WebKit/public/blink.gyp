@@ -122,6 +122,7 @@
 
                 ],
                 'for_blink': 'true',
+                'use_new_wrapper_types': 'false',
             },
             'dependencies' : [
                 '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces_blink',
@@ -144,6 +145,7 @@
                     '<(DEPTH)/cc/ipc/surface_id.typemap',
                     '<(DEPTH)/cc/ipc/surface_sequence.typemap',
                 ],
+                'use_new_wrapper_types': 'false',
             },
             'dependencies' : [
                 '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces',
@@ -176,6 +178,7 @@
                     'type': 'none',
                     'variables': {
                         'mojom_files': ['<@(blink_android_mojo_sources)'],
+                        'use_new_wrapper_types': 'false',
                     },
                     'includes': [
                         '../../../mojo/mojom_bindings_generator_explicit.gypi',

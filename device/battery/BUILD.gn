@@ -75,4 +75,6 @@ mojom("mojo_bindings") {
     "battery_monitor.mojom",
     "battery_status.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

@@ -10,10 +10,10 @@
     'variables': {
       'variables': {
         'for_blink%': 'false',
-        'use_new_wrapper_types%': 'false',
+        'use_new_wrapper_types%': 'true',
       },
       'for_blink%': 'false',
-      'use_new_wrapper_types%': 'false',
+      'use_new_wrapper_types%': 'true',
       'conditions': [
         ['for_blink=="true"', {
           'mojom_output_languages%': 'c++',

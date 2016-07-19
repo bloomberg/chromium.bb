@@ -12,6 +12,7 @@
           'public/interfaces/tracing.mojom',
         ],
         'mojom_include_path': '<(DEPTH)/mojo/services',
+        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../../mojo/mojom_bindings_generator_explicit.gypi',

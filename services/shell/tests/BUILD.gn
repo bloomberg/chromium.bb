@@ -40,6 +40,8 @@ mojom("interfaces") {
   sources = [
     "test.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 source_set("util") {

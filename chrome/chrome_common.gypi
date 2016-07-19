@@ -650,6 +650,7 @@
         'mojom_typemaps': [
           '../skia/public/interfaces/skbitmap.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',

@@ -262,4 +262,6 @@ mojom("mojo_bindings") {
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]
+
+  use_new_wrapper_types = false
 }

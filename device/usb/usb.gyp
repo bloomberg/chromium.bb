@@ -138,6 +138,9 @@
       'includes': [
         '../../mojo/mojom_bindings_generator.gypi',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
     },
     {
       'target_name': 'device_usb_mojo_bindings_for_blink',
@@ -145,6 +148,7 @@
       'sources': [ '<@(mojom_files)' ],
       'variables': {
         'for_blink': 'true',
+        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../../mojo/mojom_bindings_generator.gypi',

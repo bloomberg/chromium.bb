@@ -11,6 +11,9 @@
       'sources': [
         'memory_coordinator/public/interfaces/child_memory_coordinator.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
     {

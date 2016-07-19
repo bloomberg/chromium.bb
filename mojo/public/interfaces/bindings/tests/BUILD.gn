@@ -27,8 +27,6 @@ mojom("test_interfaces") {
     ":test_mojom_import",
     ":test_mojom_import2",
   ]
-
-  use_new_wrapper_types = true
 }
 
 mojom("test_mojom_import") {
@@ -36,7 +34,6 @@ mojom("test_mojom_import") {
   sources = [
     "sample_import.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("test_mojom_import_wrapper") {
@@ -62,7 +59,6 @@ mojom("test_mojom_import2") {
     ":test_mojom_import",
     ":test_mojom_import_wrapper_wrapper",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("test_struct_traits_interfaces") {
@@ -70,7 +66,6 @@ mojom("test_struct_traits_interfaces") {
   sources = [
     "struct_with_traits.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("test_interfaces_experimental") {
@@ -78,7 +73,6 @@ mojom("test_interfaces_experimental") {
   sources = [
     "test_unions.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("test_associated_interfaces") {
@@ -89,7 +83,6 @@ mojom("test_associated_interfaces") {
     "test_associated_interfaces.mojom",
     "validation_test_associated_interfaces.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("versioning_test_service_interfaces") {
@@ -97,7 +90,6 @@ mojom("versioning_test_service_interfaces") {
   sources = [
     "versioning_test_service.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("versioning_test_client_interfaces") {
@@ -105,7 +97,6 @@ mojom("versioning_test_client_interfaces") {
   sources = [
     "versioning_test_client.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("test_wtf_types") {
@@ -114,7 +105,6 @@ mojom("test_wtf_types") {
   sources = [
     "test_wtf_types.mojom",
   ]
-  use_new_wrapper_types = true
 }
 
 mojom("test_no_sources") {

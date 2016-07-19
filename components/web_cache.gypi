@@ -12,6 +12,9 @@
         # NOTE: Sources duplicated in //components/web_cache/public/interfaces/BUILD.gn
         'web_cache/public/interfaces/web_cache.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
       'includes': [ '../mojo/mojom_bindings_generator.gypi'],
     },
     {

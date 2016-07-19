@@ -39,6 +39,8 @@ mojom("interfaces") {
   deps = [
     "//services/shell/public/interfaces",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojo_application_manifest("manifest") {

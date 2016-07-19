@@ -65,6 +65,7 @@
         'mojom_typemaps': [
           'common/common_custom_types.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'dependencies': [
         '../ipc/ipc.gyp:ipc',
@@ -79,6 +80,7 @@
         'mojom_typemaps': [
           'common/common_custom_types.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'sources': [
         'common/test_common_custom_types.mojom',

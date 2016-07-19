@@ -35,6 +35,8 @@ mojom("interfaces") {
   sources = [
     "shutdown_unittest.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojo_application_manifest("shutdown_unittest_manifest") {

@@ -39,6 +39,7 @@
           '../url/mojo/gurl.typemap',
           '../url/mojo/origin.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../mojo/mojom_bindings_generator.gypi',
@@ -60,6 +61,7 @@
           '../third_party/WebKit/Source/platform/mojo/KURL.typemap',
           '../third_party/WebKit/Source/platform/mojo/SecurityOrigin.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../mojo/mojom_bindings_generator.gypi',

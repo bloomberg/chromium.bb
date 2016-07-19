@@ -144,6 +144,9 @@
         'dom_distiller/content/common/distiller_javascript_service.mojom',
         'dom_distiller/content/common/distiller_page_notifier_service.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
       'includes': [
         '../mojo/mojom_bindings_generator.gypi',
       ],

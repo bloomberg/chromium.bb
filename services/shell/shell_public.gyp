@@ -21,6 +21,7 @@
       'mojom_typemaps': [
         '<(DEPTH)/mojo/common/common_custom_types.typemap',
       ],
+      'use_new_wrapper_types': 'false',
     },
     'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
     'dependencies': [

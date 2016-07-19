@@ -78,6 +78,7 @@
       'mojom_files': [
         'tests/test.mojom',
       ],
+      'use_new_wrapper_types': 'false',
     },
     'includes': [
       '../../mojo/mojom_bindings_generator_explicit.gypi',

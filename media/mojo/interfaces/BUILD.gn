@@ -31,10 +31,14 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("image_capture") {
   sources = [
     "image_capture.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

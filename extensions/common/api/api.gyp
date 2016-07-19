@@ -17,6 +17,9 @@
       'sources': [
         'mime_handler.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
     },
     {
       # GN version: //extensions/common/api

@@ -109,4 +109,6 @@ mojom("serial_mojo") {
     "serial.mojom",
     "serial_serialization.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

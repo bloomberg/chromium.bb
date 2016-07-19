@@ -364,6 +364,8 @@ mojom("blob_channel_mojo") {
   sources = [
     "mojo/blob_channel.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 source_set("test_support") {

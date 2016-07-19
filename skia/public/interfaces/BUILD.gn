@@ -9,6 +9,8 @@ mojom("interfaces") {
     "bitmap.mojom",
     "image_filter.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("mojo") {
@@ -18,6 +20,8 @@ mojom("mojo") {
   public_deps = [
     ":interfaces",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("test_interfaces") {
@@ -30,4 +34,6 @@ mojom("test_interfaces") {
     ":interfaces",
     ":mojo",
   ]
+
+  use_new_wrapper_types = false
 }

@@ -32,4 +32,6 @@ mojom("mojo_bindings") {
   sources = [
     "vibration_manager.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

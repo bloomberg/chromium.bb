@@ -21,6 +21,7 @@
         'mojom_typemaps': [
           '<(DEPTH)/url/mojo/gurl.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },

@@ -23,6 +23,9 @@
         'serial.mojom',
         'serial_serialization.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
     },
     {
       # GN version: //device/serial

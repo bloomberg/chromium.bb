@@ -8,4 +8,6 @@ mojom("bluetooth_mojom_bluetooth_uuid") {
   sources = [
     "bluetooth_uuid.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

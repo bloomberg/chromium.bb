@@ -8,4 +8,6 @@ mojom("interfaces") {
   sources = [
     "safe_json.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

@@ -10,6 +10,8 @@ mojom("mojo_bindings") {
     "common/contextual_search_js_api_service.mojom",
     "common/overlay_page_notifier_service.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 # GYP version: components/contextual_search.gypi:contextual_search_browser

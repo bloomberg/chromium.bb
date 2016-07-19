@@ -159,6 +159,8 @@ mojom("arc_bindings") {
   deps = [
     "//ui/gfx/geometry/mojo",
   ]
+
+  use_new_wrapper_types = false
 }
 
 static_library("arc_test_support") {

@@ -44,6 +44,8 @@ mojom("mojom") {
   deps = [
     "//services/ui/public/interfaces",
   ]
+
+  use_new_wrapper_types = false
 }
 
 static_library("test_support") {

@@ -68,6 +68,7 @@
         'mojom_files': [
           'public/interfaces/leveldb.mojom',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'dependencies': [
         '../../components/filesystem/filesystem.gyp:filesystem_bindings_mojom',

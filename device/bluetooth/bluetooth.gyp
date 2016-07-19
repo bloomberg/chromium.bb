@@ -490,6 +490,7 @@
             'mojom_typemaps': [
               'public/interfaces/bluetooth_uuid.typemap',
             ],
+            'use_new_wrapper_types': 'false',
           },
           'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
         },
@@ -501,6 +502,7 @@
               'public/interfaces/bluetooth_uuid.mojom',
             ],
             'for_blink': 'true',
+            'use_new_wrapper_types': 'false',
           },
           'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
         },

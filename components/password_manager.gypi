@@ -276,6 +276,7 @@
               '<(DEPTH)/url/mojo/gurl.typemap',
               '<(DEPTH)/url/mojo/origin.typemap',
             ],
+            'use_new_wrapper_types': 'false',
           },
           'include_dirs': [
             '..',

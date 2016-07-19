@@ -45,6 +45,8 @@ mojom("test_app_bindings") {
   sources = [
     "test.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojo_native_application("test_app") {

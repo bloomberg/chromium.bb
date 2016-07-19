@@ -74,9 +74,8 @@ foreach(configuration, _bindings_configurations) {
 #       If set to true, mojom array/map/string will be mapped to STL (for
 #       chromium variant) or WTF (for blink) types. Otherwise, they will be
 #       mapped to mojo::Array/Map/String/etc.
-#       Default value is false.
+#       Default value is true.
 #       TODO(yzshen):
-#         - flip the flag and make use_new_wrapper_types=true the default;
 #         - convert all users to use the new mode;
 #         - remove support for the old mode.
 template("mojom") {
@@ -230,7 +229,7 @@ template("mojom") {
           args += [ "--for_blink" ]
         }
 
-        if (defined(invoker.use_new_wrapper_types) &&
+        if (!defined(invoker.use_new_wrapper_types) ||
             invoker.use_new_wrapper_types) {
           args += [ "--use_new_wrapper_types" ]
         }

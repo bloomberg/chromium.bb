@@ -17,6 +17,8 @@ mojom("common_custom_types") {
   sources = [
     "common_custom_types.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 # GYP version: mojo/mojo_base.gyp:mojo_common_lib
@@ -52,6 +54,8 @@ mojom("test_common_custom_types") {
   public_deps = [
     ":common_custom_types",
   ]
+
+  use_new_wrapper_types = false
 }
 
 # GYP version: mojo/mojo_base.gyp:mojo_common_unittests

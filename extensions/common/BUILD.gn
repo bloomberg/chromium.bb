@@ -29,6 +29,8 @@ if (enable_extensions) {
               "//extensions")
       sources += wifi_display_sources
     }
+
+    use_new_wrapper_types = false
   }
 
   # GYP version: extensions/extensions.gyp:extensions_common

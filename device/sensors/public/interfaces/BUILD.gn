@@ -10,4 +10,6 @@ mojom("interfaces") {
     "motion.mojom",
     "orientation.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

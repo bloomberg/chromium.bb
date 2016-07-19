@@ -62,6 +62,7 @@
           'public/interfaces/file_system.mojom',
           'public/interfaces/types.mojom',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../../mojo/mojom_bindings_generator_explicit.gypi',

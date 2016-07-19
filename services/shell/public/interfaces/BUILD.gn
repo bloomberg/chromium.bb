@@ -19,4 +19,6 @@ mojom("interfaces") {
   public_deps = [
     "//mojo/common:common_custom_types",
   ]
+
+  use_new_wrapper_types = false
 }

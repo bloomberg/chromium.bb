@@ -68,6 +68,7 @@
         'mojom_typemaps': [
           'safe_json/public/interfaces/safe_json.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'sources': [
         'safe_json/public/interfaces/safe_json.mojom',

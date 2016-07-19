@@ -10,6 +10,8 @@ mojom("mojo_bindings") {
   sources = [
     "mojo_test.mojom",
   ]
+
+  use_new_wrapper_types = false
 }
 
 repack_and_bundle("packed_resources") {

@@ -739,4 +739,6 @@ mojom("mojo_bindings") {
   sources = [
     "common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom",
   ]
+
+  use_new_wrapper_types = false
 }

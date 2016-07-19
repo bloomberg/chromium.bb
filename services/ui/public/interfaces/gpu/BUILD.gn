@@ -14,4 +14,6 @@ mojom("interfaces") {
     "//gpu/ipc/common:interfaces",
     "//services/ui/public/interfaces",
   ]
+
+  use_new_wrapper_types = false
 }

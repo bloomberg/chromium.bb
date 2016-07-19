@@ -107,6 +107,7 @@
           'public/interfaces/bindings/interface_control_messages.mojom',
           'public/interfaces/bindings/pipe_control_messages.mojom',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },

@@ -45,6 +45,7 @@
         'mojom_files': [
           'ipc.mojom',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
@@ -67,6 +68,9 @@
         'ipc_test.mojom',
       ],
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
+      'variables': {
+        'use_new_wrapper_types': 'false',
+      },
     },
     {
       'target_name': 'ipc_run_all_unittests',

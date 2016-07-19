@@ -29,6 +29,7 @@
         'mojom_typemaps': [
           'geometry/mojo/geometry.typemap',
         ],
+        'use_new_wrapper_types': 'false',
       },
       'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
     },

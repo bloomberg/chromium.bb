@@ -11,4 +11,6 @@ mojom("interfaces") {
   deps = [
     "//url/mojo:url_mojom_origin",
   ]
+
+  use_new_wrapper_types = false
 }

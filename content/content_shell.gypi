@@ -561,6 +561,7 @@
          'mojom_files': [
            'shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom'
          ],
+         'use_new_wrapper_types': 'false',
        },
        'includes': [
          '../mojo/mojom_bindings_generator_explicit.gypi',

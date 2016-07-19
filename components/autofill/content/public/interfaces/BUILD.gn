@@ -13,6 +13,8 @@ mojom("interfaces") {
   public_deps = [
     ":types",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("types") {
@@ -25,6 +27,8 @@ mojom("types") {
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]
+
+  use_new_wrapper_types = false
 }
 
 mojom("test_types") {
@@ -35,4 +39,6 @@ mojom("test_types") {
   public_deps = [
     ":types",
   ]
+
+  use_new_wrapper_types = false
 }
