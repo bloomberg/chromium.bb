@@ -63,6 +63,9 @@ cr.define('options', function() {
       $('storage-manager-label-arc').onclick = function() {
         chrome.send('openArcStorage');
       };
+      $('storage-manager-label-other-users').onclick = function() {
+        PageManager.showPageByName('accounts');
+      };
 
       $('storage-confirm').onclick = function() {
         PageManager.closeOverlay();
