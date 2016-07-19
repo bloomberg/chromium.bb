@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/test.gni")
 
 mojom("interfaces") {
   sources = [
@@ -46,4 +47,20 @@ mojom("interfaces") {
   ]
 
   use_new_wrapper_types = false
+}
+
+test("ui_struct_traits_unittests") {
+  sources = [
+    "display/display_struct_traits_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
+    "//services/ui/public/interfaces/display:test_interfaces",
+    "//testing/gtest",
+    "//ui/display/types",
+    "//ui/gfx:test_support",
+  ]
 }

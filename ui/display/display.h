@@ -11,7 +11,17 @@
 #include "ui/display/display_export.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if !defined(OS_IOS)
+#include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
+#endif
+
 namespace display {
+
+#if !defined(OS_IOS)
+namespace mojom {
+class Display;
+}
+#endif
 
 // This class typically, but does not always, correspond to a physical display
 // connected to the system. A fake Display may exist on a headless system, or a
@@ -162,6 +172,10 @@ class DISPLAY_EXPORT Display final {
   Rotation rotation_;
   TouchSupport touch_support_;
   gfx::Size maximum_cursor_size_;
+
+#if !defined(OS_IOS)
+  friend struct mojo::StructTraits<display::mojom::Display, display::Display>;
+#endif
 };
 
 }  // namespace display
