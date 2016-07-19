@@ -27,6 +27,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -87,6 +88,7 @@
 #include "components/user_manager/user_type.h"
 #include "components/zoom/page_zoom.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -140,11 +142,6 @@
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-#include "chrome/browser/extensions/settings_api_helpers.h"
-#include "content/public/browser/browser_url_handler.h"
-#endif  // defined(OS_WIN)
-
 #if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/printing/cloud_print/privet_notifications.h"
 #endif
@@ -164,7 +161,6 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-#if defined(OS_WIN)
 void AppendExtensionData(const std::string& key,
                          const Extension* extension,
                          base::DictionaryValue* dict) {
@@ -173,7 +169,6 @@ void AppendExtensionData(const std::string& key,
   details->SetString("name", extension ? extension->name() : std::string());
   dict->Set(key, details.release());
 }
-#endif  // defined(OS_WIN)
 
 #if !defined(OS_CHROMEOS)
 bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
@@ -2091,7 +2086,6 @@ void BrowserOptionsHandler::SetupEasyUnlock() {
 }
 
 void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
-#if defined(OS_WIN)
   base::DictionaryValue extension_controlled;
 
   // Check if an extension is overriding the Search Engine.
@@ -2134,7 +2128,6 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.toggleExtensionIndicators", extension_controlled);
-#endif  // defined(OS_WIN)
 }
 
 void BrowserOptionsHandler::SetupMetricsReportingCheckbox() {

@@ -159,8 +159,7 @@ input[type='range'] {
 .extension-controlled-warning {
   -webkit-padding-start: 35px;
   background-repeat: no-repeat;
-  margin-bottom: 14px;
-  padding-bottom: 6px;
+  padding-bottom: 20px;
   padding-top: 3px;
 }
 
