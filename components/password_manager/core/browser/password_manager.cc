@@ -487,10 +487,6 @@ void PasswordManager::CreatePendingLoginManagers(
                       pending_login_managers_.size());
   }
 
-  // Copy the weak pointers to the currently known login managers for comparison
-  // against the newly added.
-  std::vector<PasswordFormManager*> old_login_managers(
-      pending_login_managers_.get());
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     // Don't involve the password manager if this form corresponds to
@@ -499,7 +495,7 @@ void PasswordManager::CreatePendingLoginManagers(
                        base::CompareCase::SENSITIVE))
       continue;
     bool old_manager_found = false;
-    for (const auto& old_manager : old_login_managers) {
+    for (const auto& old_manager : pending_login_managers_.get()) {
       if (old_manager->DoesManage(*iter) !=
           PasswordFormManager::RESULT_COMPLETE_MATCH) {
         continue;
