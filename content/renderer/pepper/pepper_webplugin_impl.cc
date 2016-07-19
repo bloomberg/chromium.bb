@@ -67,8 +67,7 @@ PepperWebPluginImpl::PepperWebPluginImpl(
       full_frame_(params.loadManually),
       throttler_(std::move(throttler)),
       instance_object_(PP_MakeUndefined()),
-      container_(nullptr),
-      destroyed_(false) {
+      container_(nullptr) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->render_frame = render_frame;
@@ -111,8 +110,6 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
     if (!container_)
       return false;
 
-    DCHECK(!destroyed_);
-
     DCHECK(instance_);
     ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
     instance_object_ = PP_MakeUndefined();
@@ -144,10 +141,6 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
 }
 
 void PepperWebPluginImpl::destroy() {
-  // TODO(tommycli): Remove once we fix https://crbug.com/588624.
-  CHECK(!destroyed_);
-  destroyed_ = true;
-
   container_ = nullptr;
 
   if (instance_) {

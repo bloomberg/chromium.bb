@@ -100,9 +100,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   PP_Var instance_object_;
   blink::WebPluginContainer* container_;
 
-  // TODO(tommycli): Remove once we fix https://crbug.com/588624.
-  bool destroyed_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperWebPluginImpl);
 };
 
