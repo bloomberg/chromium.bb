@@ -6322,10 +6322,21 @@ cr.define('downloads', function() {
         value: false,
       },
 
+      isMalware_: {
+        computed: 'computeIsMalware_(isDangerous_, data.danger_type)',
+        type: Boolean,
+        value: false,
+      },
+
       isInProgress_: {
         computed: 'computeIsInProgress_(data.state)',
         type: Boolean,
         value: false,
+      },
+
+      pauseOrResumeText_: {
+        computed: 'computePauseOrResumeText_(isInProgress_, data.resume)',
+        type: String,
       },
 
       showCancel_: {
@@ -6336,12 +6347,6 @@ cr.define('downloads', function() {
 
       showProgress_: {
         computed: 'computeShowProgress_(showCancel_, data.percent)',
-        type: Boolean,
-        value: false,
-      },
-
-      isMalware_: {
-        computed: 'computeIsMalware_(isDangerous_, data.danger_type)',
         type: Boolean,
         value: false,
       },
@@ -6472,6 +6477,15 @@ cr.define('downloads', function() {
     },
 
     /** @private */
+    computePauseOrResumeText_: function() {
+      if (this.isInProgress_)
+        return loadTimeData.getString('controlPause');
+      if (this.data.resume)
+        return loadTimeData.getString('controlResume');
+      return '';
+    },
+
+    /** @private */
     computeRemoveStyle_: function() {
       var canDelete = loadTimeData.getBoolean('allowDeletingHistory');
       var hideRemove = this.isDangerous_ || this.showCancel_ || !canDelete;
@@ -6560,18 +6574,16 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onPauseTap_: function() {
-      downloads.ActionService.getInstance().pause(this.data.id);
+    onPauseOrResumeTap_: function() {
+      if (this.isInProgress_)
+        downloads.ActionService.getInstance().pause(this.data.id);
+      else
+        downloads.ActionService.getInstance().resume(this.data.id);
     },
 
     /** @private */
     onRemoveTap_: function() {
       downloads.ActionService.getInstance().remove(this.data.id);
-    },
-
-    /** @private */
-    onResumeTap_: function() {
-      downloads.ActionService.getInstance().resume(this.data.id);
     },
 
     /** @private */
@@ -11377,7 +11389,7 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    closeMoreActions_: function(e) {
+    closeMoreActions_: function() {
       this.$.more.close();
     },
 
@@ -11402,7 +11414,8 @@ cr.define('downloads', function() {
      * @private
      */
     onItemBlur_: function(e) {
-      if (this.$$('paper-menu').items.indexOf(e.relatedTarget) >= 0)
+      var menu = /** @type {PaperMenuElement} */(this.$$('paper-menu'));
+      if (menu.items.indexOf(e.relatedTarget) >= 0)
         return;
 
       // This can be this.$.more.restoreFocusOnClose = false when this lands:

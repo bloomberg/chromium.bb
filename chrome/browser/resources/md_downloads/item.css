@@ -113,8 +113,8 @@
   -webkit-margin-end: 12px;  /* Only really affects #tag. */
 }
 
-#resume,
-.is-active :-webkit-any(#name, #file-link, #pause, #show) {
+#pause-or-resume,
+.is-active :-webkit-any(#name, #file-link, #show) {
   color: rgb(51, 103, 214);
 }
 

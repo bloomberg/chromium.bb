@@ -1357,8 +1357,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   -webkit-margin-end: 12px;  /* Only really affects #tag. */
 }
 
-#resume,
-.is-active :-webkit-any(#name, #file-link, #pause, #show) {
+#pause-or-resume,
+.is-active :-webkit-any(#name, #file-link, #show) {
   color: rgb(51, 103, 214);
 }
 
@@ -1534,14 +1534,9 @@ paper-button {
               $i18n{controlRetry}
             </paper-button>
           </template>
-          <template is="dom-if" if="[[isInProgress_]]">
-            <paper-button id="pause" on-tap="onPauseTap_">
-              $i18n{controlPause}
-            </paper-button>
-          </template>
-          <template is="dom-if" if="[[data.resume]]">
-            <paper-button id="resume" on-tap="onResumeTap_">
-              $i18n{controlResume}
+          <template is="dom-if" if="[[pauseOrResumeText_]]">
+            <paper-button id="pause-or-resume" on-tap="onPauseOrResumeTap_">
+              [[pauseOrResumeText_]]
             </paper-button>
           </template>
           <template is="dom-if" if="[[showCancel_]]">
