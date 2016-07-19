@@ -534,30 +534,36 @@ void Node::normalize()
     }
 }
 
+// TODO(yoichio): Move to core/editing
+enum EditableLevel { Editable, RichlyEditable };
+static bool hasEditableStyle(const Node&, EditableLevel);
+static bool isEditableToAccessibility(const Node&, EditableLevel);
+
 bool Node::isContentEditable() const
 {
     document().updateStyleAndLayoutTree();
-    return hasEditableStyle(Editable);
+    return blink::hasEditableStyle(*this, Editable);
 }
 
 bool Node::isContentRichlyEditable() const
 {
     document().updateStyleAndLayoutTree();
-    return hasEditableStyle(RichlyEditable);
+    return blink::hasEditableStyle(*this, RichlyEditable);
 }
 
-bool Node::hasEditableStyle(EditableLevel editableLevel) const
+// TODO(yoichio): Move to core/editing
+static bool hasEditableStyle(const Node& node, EditableLevel editableLevel)
 {
-    if (isPseudoElement())
+    if (node.isPseudoElement())
         return false;
 
     // Ideally we'd call DCHECK(!needsStyleRecalc()) here, but
     // ContainerNode::setFocus() calls setNeedsStyleRecalc(), so the assertion
     // would fire in the middle of Document::setFocusedNode().
 
-    for (const Node& node : NodeTraversal::inclusiveAncestorsOf(*this)) {
-        if ((node.isHTMLElement() || node.isDocumentNode()) && node.layoutObject()) {
-            switch (node.layoutObject()->style()->userModify()) {
+    for (const Node& ancestor : NodeTraversal::inclusiveAncestorsOf(node)) {
+        if ((ancestor.isHTMLElement() || ancestor.isDocumentNode()) && ancestor.layoutObject()) {
+            switch (ancestor.layoutObject()->style()->userModify()) {
             case READ_ONLY:
                 return false;
             case READ_WRITE:
@@ -573,9 +579,10 @@ bool Node::hasEditableStyle(EditableLevel editableLevel) const
     return false;
 }
 
-bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
+// TODO(yoichio): Move to core/editing
+static bool isEditableToAccessibility(const Node& node, EditableLevel editableLevel)
 {
-    if (hasEditableStyle(editableLevel))
+    if (blink::hasEditableStyle(node, editableLevel))
         return true;
 
     // FIXME: Respect editableLevel for ARIA editable elements.
@@ -583,9 +590,35 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
         return false;
 
     // FIXME(dmazzoni): support ScopedAXObjectCache (crbug/489851).
-    if (AXObjectCache* cache = document().existingAXObjectCache())
-        return cache->rootAXEditableElement(this);
+    if (AXObjectCache* cache = node.document().existingAXObjectCache())
+        return cache->rootAXEditableElement(&node);
 
+    return false;
+}
+
+// TODO(yoichio): Move to core/editing
+bool Node::hasEditableStyle(EditableType editableType) const
+{
+    switch (editableType) {
+    case ContentIsEditable:
+        return blink::hasEditableStyle(*this, Editable);
+    case HasEditableAXRole:
+        return isEditableToAccessibility(*this, Editable);
+    }
+    NOTREACHED();
+    return false;
+}
+
+// TODO(yoichio): Move to core/editing
+bool Node::layoutObjectIsRichlyEditable(EditableType editableType) const
+{
+    switch (editableType) {
+    case ContentIsEditable:
+        return blink::hasEditableStyle(*this, RichlyEditable);
+    case HasEditableAXRole:
+        return isEditableToAccessibility(*this, RichlyEditable);
+    }
+    NOTREACHED();
     return false;
 }
 

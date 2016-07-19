@@ -419,29 +419,8 @@ public:
     bool isContentEditable() const;
     bool isContentRichlyEditable() const;
 
-    bool hasEditableStyle(EditableType editableType = ContentIsEditable) const
-    {
-        switch (editableType) {
-        case ContentIsEditable:
-            return hasEditableStyle(Editable);
-        case HasEditableAXRole:
-            return isEditableToAccessibility(Editable);
-        }
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
-    bool layoutObjectIsRichlyEditable(EditableType editableType = ContentIsEditable) const
-    {
-        switch (editableType) {
-        case ContentIsEditable:
-            return hasEditableStyle(RichlyEditable);
-        case HasEditableAXRole:
-            return isEditableToAccessibility(RichlyEditable);
-        }
-        ASSERT_NOT_REACHED();
-        return false;
-    }
+    bool hasEditableStyle(EditableType = ContentIsEditable) const;
+    bool layoutObjectIsRichlyEditable(EditableType = ContentIsEditable) const;
 
     virtual LayoutRect boundingBox() const;
     IntRect pixelSnappedBoundingBox() const { return pixelSnappedIntRect(boundingBox()); }
@@ -794,10 +773,6 @@ private:
     virtual String debugNodeName() const;
 
     void checkSlotChange();
-
-    enum EditableLevel { Editable, RichlyEditable };
-    bool hasEditableStyle(EditableLevel) const;
-    bool isEditableToAccessibility(EditableLevel) const;
 
     bool isUserActionElementActive() const;
     bool isUserActionElementInActiveChain() const;
