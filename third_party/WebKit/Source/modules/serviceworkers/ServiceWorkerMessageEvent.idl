@@ -16,5 +16,5 @@
     readonly attribute DOMString origin;
     readonly attribute DOMString lastEventId;
     readonly attribute (ServiceWorker or MessagePort)? source;
-    readonly attribute MessagePort[]? ports;
+    readonly attribute FrozenArray<MessagePort>? ports;
 };
