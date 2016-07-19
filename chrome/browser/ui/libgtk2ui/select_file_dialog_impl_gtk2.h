@@ -78,9 +78,6 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   // |params_map_|.
   void* PopParamsForDialog(GtkWidget* dialog);
 
-  // Take care of internal data structures when a file dialog is destroyed.
-  void FileDialogDestroyed(GtkWidget* dialog);
-
   // Check whether response_id corresponds to the user cancelling/closing the
   // dialog. Used as a helper for the below callbacks.
   bool IsCancelResponse(gint response_id);
