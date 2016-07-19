@@ -751,7 +751,7 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor, LocalFrame* localF
 #endif
 
     LocalFrame* localRoot = localFrame->localFrameRoot();
-    if (WebFrameWidget* widget = WebLocalFrameImpl::fromFrame(localRoot)->frameWidget())
+    if (WebFrameWidgetBase* widget = WebLocalFrameImpl::fromFrame(localRoot)->frameWidget())
         widget->client()->didChangeCursor(cursor);
 }
 

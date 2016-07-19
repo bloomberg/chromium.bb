@@ -37,9 +37,6 @@
 
 namespace blink {
 
-class CompositorAnimationTimeline;
-class CompositorProxyClient;
-class GraphicsLayer;
 class WebLocalFrame;
 class WebView;
 class WebWidgetClient;
@@ -72,25 +69,6 @@ public:
     // persists across subsequent navigations. Defaults to white prior to the
     // first call to this method.
     virtual void setBaseBackgroundColor(WebColor) = 0;
-
-
-    // Blink internal methods --------------------------------------------------
-    // TODO(dcheng): Temporary: there should only be one WebFrameWidget
-    // implementation but the Blink API is currently in a transition state.
-    // See https://goo.gl/7yVrnb. These methods should only be used inside
-    // blink.
-    virtual bool forSubframe() const { return true; }
-    virtual void scheduleAnimation() = 0;
-    virtual CompositorProxyClient* createCompositorProxyClient() = 0;
-    virtual WebWidgetClient* client() const = 0;
-
-    // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
-    // the root layer.
-    virtual void setRootGraphicsLayer(GraphicsLayer*) = 0;
-
-    // Attaches/detaches a CompositorAnimationTimeline to the layer tree.
-    virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;
-    virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;
 };
 
 } // namespace blink

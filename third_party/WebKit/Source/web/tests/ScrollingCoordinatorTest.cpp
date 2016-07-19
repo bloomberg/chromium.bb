@@ -62,7 +62,7 @@ public:
         // OSX attaches main frame scrollbars to the VisualViewport so the VisualViewport layers need
         // to be initialized.
         webViewImpl()->updateAllLifecyclePhases();
-        WebFrameWidget* mainFrameWidget = static_cast<WebFrameWidget*>(webViewImpl()->mainFrame()->toWebLocalFrame()->frameWidget());
+        WebFrameWidgetBase* mainFrameWidget = webViewImpl()->mainFrameImpl()->frameWidget();
         mainFrameWidget->setRootGraphicsLayer(
             webViewImpl()->mainFrameImpl()->frame()->view()->layoutViewItem().compositor()->rootGraphicsLayer());
     }

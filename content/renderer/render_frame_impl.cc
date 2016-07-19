@@ -4532,8 +4532,7 @@ void RenderFrameImpl::WasHidden() {
 #endif  // ENABLE_PLUGINS
 
   if (GetWebFrame()->frameWidget()) {
-    static_cast<blink::WebFrameWidget*>(GetWebFrame()->frameWidget())
-        ->setVisibilityState(visibilityState());
+    GetWebFrame()->frameWidget()->setVisibilityState(visibilityState());
   }
 }
 
@@ -4546,8 +4545,7 @@ void RenderFrameImpl::WasShown() {
 #endif  // ENABLE_PLUGINS
 
   if (GetWebFrame()->frameWidget()) {
-    static_cast<blink::WebFrameWidget*>(GetWebFrame()->frameWidget())
-        ->setVisibilityState(visibilityState());
+    GetWebFrame()->frameWidget()->setVisibilityState(visibilityState());
   }
 }
 

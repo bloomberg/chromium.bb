@@ -18,7 +18,7 @@ class WebFrameClient;
 class WebNode;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
-class WebWidget;
+class WebFrameWidget;
 enum class WebAppBannerPromptReply;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
@@ -411,7 +411,7 @@ public:
 
     // Returns the WebFrameWidget associated with this frame if there is one or
     // nullptr otherwise.
-    virtual WebWidget* frameWidget() const = 0;
+    virtual WebFrameWidget* frameWidget() const = 0;
 
     // Copy to the clipboard the image located at a particular point in visual
     // viewport coordinates.

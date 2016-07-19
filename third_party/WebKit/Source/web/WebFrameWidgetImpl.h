@@ -36,9 +36,9 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
-#include "public/web/WebFrameWidget.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageWidgetDelegate.h"
+#include "web/WebFrameWidgetBase.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/Assertions.h"
@@ -61,7 +61,7 @@ class WebFrameWidgetImpl;
 using WebFrameWidgetsSet = PersistentHeapHashSet<WeakMember<WebFrameWidgetImpl>>;
 
 class WebFrameWidgetImpl final : public GarbageCollectedFinalized<WebFrameWidgetImpl>
-    , public WebFrameWidget
+    , public WebFrameWidgetBase
     , public PageWidgetEventHandler {
 public:
     static WebFrameWidgetImpl* create(WebWidgetClient*, WebLocalFrame*);
@@ -122,10 +122,6 @@ public:
     bool isTransparent() const override;
     void setIsTransparent(bool) override;
     void setBaseBackgroundColor(WebColor) override;
-    void scheduleAnimation() override;
-    CompositorProxyClient* createCompositorProxyClient() override;
-
-    WebWidgetClient* client() const override { return m_client; }
 
     Frame* focusedCoreFrame() const;
 
@@ -133,6 +129,12 @@ public:
     Element* focusedElement() const;
 
     PaintLayerCompositor* compositor() const;
+
+    // WebFrameWidgetBase overrides:
+    bool forSubframe() const override { return true; }
+    void scheduleAnimation() override;
+    CompositorProxyClient* createCompositorProxyClient() override;
+    WebWidgetClient* client() const override { return m_client; }
     void setRootGraphicsLayer(GraphicsLayer*) override;
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
@@ -232,7 +234,7 @@ private:
     SelfKeepAlive<WebFrameWidgetImpl> m_selfKeepAlive;
 };
 
-DEFINE_TYPE_CASTS(WebFrameWidgetImpl, WebFrameWidget, widget, widget->forSubframe(), widget.forSubframe());
+DEFINE_TYPE_CASTS(WebFrameWidgetImpl, WebFrameWidgetBase, widget, widget->forSubframe(), widget.forSubframe());
 
 } // namespace blink
 

@@ -2096,12 +2096,12 @@ TextFinder& WebLocalFrameImpl::ensureTextFinder()
     return *m_textFinder;
 }
 
-void WebLocalFrameImpl::setFrameWidget(WebFrameWidget* frameWidget)
+void WebLocalFrameImpl::setFrameWidget(WebFrameWidgetBase* frameWidget)
 {
     m_frameWidget = frameWidget;
 }
 
-WebFrameWidget* WebLocalFrameImpl::frameWidget() const
+WebFrameWidgetBase* WebLocalFrameImpl::frameWidget() const
 {
     return m_frameWidget;
 }

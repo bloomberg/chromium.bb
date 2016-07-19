@@ -148,6 +148,7 @@
       'WebFrameSerializer.cpp',
       'WebFrameSerializerImpl.cpp',
       'WebFrameSerializerImpl.h',
+      'WebFrameWidgetBase.h',
       'WebFrameWidgetImpl.cpp',
       'WebFrameWidgetImpl.h',
       'WebHeap.cpp',

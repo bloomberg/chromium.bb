@@ -36,12 +36,12 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "public/platform/WebFileSystemType.h"
-#include "public/web/WebFrameWidget.h"
 #include "public/web/WebLocalFrame.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/UserMediaClientImpl.h"
 #include "web/WebExport.h"
 #include "web/WebFrameImplBase.h"
+#include "web/WebFrameWidgetBase.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -240,7 +240,7 @@ public:
     int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) override;
     float distanceToNearestFindMatch(const WebFloatPoint&) override;
     void setTickmarks(const WebVector<WebRect>&) override;
-    WebFrameWidget* frameWidget() const override;
+    WebFrameWidgetBase* frameWidget() const override;
     void copyImageAt(const WebPoint&) override;
     void saveImageAt(const WebPoint&) override;
     void clearActiveFindMatch() override;
@@ -320,7 +320,7 @@ public:
     // Returns a hit-tested VisiblePosition for the given point
     VisiblePosition visiblePositionForViewportPoint(const WebPoint&);
 
-    void setFrameWidget(WebFrameWidget*);
+    void setFrameWidget(WebFrameWidgetBase*);
 
     // DevTools front-end bindings.
     void setDevToolsFrontend(WebDevToolsFrontendImpl* frontend) { m_webDevToolsFrontend = frontend; }
@@ -368,7 +368,7 @@ private:
     Member<WebDevToolsAgentImpl> m_devToolsAgent;
 
     // This is set if the frame is the root of a local frame tree, and requires a widget for layout.
-    WebFrameWidget* m_frameWidget;
+    WebFrameWidgetBase* m_frameWidget;
 
     WebFrameClient* m_client;
     WebAutofillClient* m_autofillClient;

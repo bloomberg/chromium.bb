@@ -2175,7 +2175,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
     UIEventWithKeyState::clearNewTabModifierSetFromIsolatedWorld();
 
     bool isPointerLocked = false;
-    if (WebFrameWidget* widget = mainFrameImpl()->frameWidget()) {
+    if (WebFrameWidgetBase* widget = mainFrameImpl()->frameWidget()) {
         if (WebWidgetClient* client = widget->client())
             isPointerLocked = client->isPointerLocked();
     }
