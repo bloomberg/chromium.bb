@@ -26,7 +26,7 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
   DCHECK_NE(time, -std::numeric_limits<double>::infinity());
 
   if (time == std::numeric_limits<double>::infinity())
-    return kInfiniteDuration();
+    return kInfiniteDuration;
 
   // Don't use base::TimeDelta::Max() here, as we want the largest finite time
   // delta.
@@ -41,12 +41,12 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
       time * base::Time::kMicrosecondsPerSecond);
 }
 
-WebSourceBufferImpl::WebSourceBufferImpl(
-    const std::string& id, ChunkDemuxer* demuxer)
+WebSourceBufferImpl::WebSourceBufferImpl(const std::string& id,
+                                         ChunkDemuxer* demuxer)
     : id_(id),
       demuxer_(demuxer),
       client_(NULL),
-      append_window_end_(kInfiniteDuration()) {
+      append_window_end_(kInfiniteDuration) {
   DCHECK(demuxer_);
   demuxer_->SetTracksWatcher(
       id, base::Bind(&WebSourceBufferImpl::InitSegmentReceived,

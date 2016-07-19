@@ -412,7 +412,7 @@ ChunkDemuxer::ChunkDemuxer(
       enable_text_(false),
       media_log_(media_log),
       pending_source_init_done_count_(0),
-      duration_(kNoTimestamp()),
+      duration_(kNoTimestamp),
       user_specified_duration_(-1),
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
       splice_frames_enabled_(splice_frames_enabled),
@@ -802,7 +802,7 @@ void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
   DCHECK(start >= base::TimeDelta()) << start.InSecondsF();
   DCHECK(start < end) << "start " << start.InSecondsF()
                       << " end " << end.InSecondsF();
-  DCHECK(duration_ != kNoTimestamp());
+  DCHECK(duration_ != kNoTimestamp);
   DCHECK(start <= duration_) << "start " << start.InSecondsF()
                              << " duration " << duration_.InSecondsF();
 
@@ -820,12 +820,12 @@ double ChunkDemuxer::GetDuration() {
 
 double ChunkDemuxer::GetDuration_Locked() {
   lock_.AssertAcquired();
-  if (duration_ == kNoTimestamp())
+  if (duration_ == kNoTimestamp)
     return std::numeric_limits<double>::quiet_NaN();
 
   // Return positive infinity if the resource is unbounded.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
-  if (duration_ == kInfiniteDuration())
+  if (duration_ == kInfiniteDuration)
     return std::numeric_limits<double>::infinity();
 
   if (user_specified_duration_ >= 0)
@@ -854,7 +854,7 @@ void ChunkDemuxer::SetDuration(double duration) {
 
   TimeDelta duration_td;
   if (duration == std::numeric_limits<double>::infinity()) {
-    duration_td = media::kInfiniteDuration();
+    duration_td = media::kInfiniteDuration;
   } else if (duration < min_duration_in_seconds) {
     duration_td = min_duration;
   } else if (duration > max_duration_in_seconds) {
@@ -1044,7 +1044,7 @@ void ChunkDemuxer::OnSourceInitDone(
     return;
   }
 
-  if (!params.duration.is_zero() && duration_ == kNoTimestamp())
+  if (!params.duration.is_zero() && duration_ == kNoTimestamp)
     UpdateDuration(params.duration);
 
   if (!params.timeline_offset.is_null()) {
@@ -1098,8 +1098,8 @@ void ChunkDemuxer::OnSourceInitDone(
   SeekAllSources(GetStartTime());
   StartReturningData();
 
-  if (duration_ == kNoTimestamp())
-    duration_ = kInfiniteDuration();
+  if (duration_ == kNoTimestamp)
+    duration_ = kInfiniteDuration;
 
   // The demuxer is now initialized after the |start_timestamp_| was set.
   ChangeState_Locked(INITIALIZED);
@@ -1176,8 +1176,8 @@ void ChunkDemuxer::UpdateDuration(TimeDelta new_duration) {
 }
 
 void ChunkDemuxer::IncreaseDurationIfNecessary(TimeDelta new_duration) {
-  DCHECK(new_duration != kNoTimestamp());
-  DCHECK(new_duration != kInfiniteDuration());
+  DCHECK(new_duration != kNoTimestamp);
+  DCHECK(new_duration != kInfiniteDuration);
 
   // Per April 1, 2014 MSE spec editor's draft:
   // https://dvcs.w3.org/hg/html-media/raw-file/d471a4412040/media-source/

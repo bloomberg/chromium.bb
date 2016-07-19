@@ -83,15 +83,15 @@ class MseTrackBuffer {
 
  private:
   // The decode timestamp of the last coded frame appended in the current coded
-  // frame group. Initially kNoTimestamp(), meaning "unset".
+  // frame group. Initially kNoTimestamp, meaning "unset".
   DecodeTimestamp last_decode_timestamp_;
 
   // The coded frame duration of the last coded frame appended in the current
-  // coded frame group. Initially kNoTimestamp(), meaning "unset".
+  // coded frame group. Initially kNoTimestamp, meaning "unset".
   base::TimeDelta last_frame_duration_;
 
   // The highest presentation timestamp encountered in a coded frame appended
-  // in the current coded frame group. Initially kNoTimestamp(), meaning
+  // in the current coded frame group. Initially kNoTimestamp, meaning
   // "unset".
   base::TimeDelta highest_presentation_timestamp_;
 
@@ -115,8 +115,8 @@ class MseTrackBuffer {
 
 MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream)
     : last_decode_timestamp_(kNoDecodeTimestamp()),
-      last_frame_duration_(kNoTimestamp()),
-      highest_presentation_timestamp_(kNoTimestamp()),
+      last_frame_duration_(kNoTimestamp),
+      highest_presentation_timestamp_(kNoTimestamp),
       needs_random_access_point_(true),
       stream_(stream) {
   DCHECK(stream_);
@@ -130,14 +130,14 @@ void MseTrackBuffer::Reset() {
   DVLOG(2) << __FUNCTION__ << "()";
 
   last_decode_timestamp_ = kNoDecodeTimestamp();
-  last_frame_duration_ = kNoTimestamp();
-  highest_presentation_timestamp_ = kNoTimestamp();
+  last_frame_duration_ = kNoTimestamp;
+  highest_presentation_timestamp_ = kNoTimestamp;
   needs_random_access_point_ = true;
 }
 
 void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
     base::TimeDelta timestamp) {
-  if (highest_presentation_timestamp_ == kNoTimestamp() ||
+  if (highest_presentation_timestamp_ == kNoTimestamp ||
       timestamp > highest_presentation_timestamp_) {
     highest_presentation_timestamp_ = timestamp;
   }
@@ -163,7 +163,7 @@ bool MseTrackBuffer::FlushProcessedFrames() {
 
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
                                const scoped_refptr<MediaLog>& media_log)
-    : group_start_timestamp_(kNoTimestamp()),
+    : group_start_timestamp_(kNoTimestamp),
       update_duration_cb_(update_duration_cb),
       media_log_(media_log) {
   DVLOG(2) << __FUNCTION__ << "()";
@@ -183,7 +183,7 @@ void FrameProcessor::SetSequenceMode(bool sequence_mode) {
   // Step 7: If the new mode equals "sequence", then set the group start
   // timestamp to the group end timestamp.
   if (sequence_mode) {
-    DCHECK(kNoTimestamp() != group_end_timestamp_);
+    DCHECK(kNoTimestamp != group_end_timestamp_);
     group_start_timestamp_ = group_end_timestamp_;
   } else if (sequence_mode_) {
     // We're switching from 'sequence' to 'segments' mode. Be safe and signal a
@@ -242,7 +242,7 @@ bool FrameProcessor::ProcessFrames(
 void FrameProcessor::SetGroupStartTimestampIfInSequenceMode(
     base::TimeDelta timestamp_offset) {
   DVLOG(2) << __FUNCTION__ << "(" << timestamp_offset.InSecondsF() << ")";
-  DCHECK(kNoTimestamp() != timestamp_offset);
+  DCHECK(kNoTimestamp != timestamp_offset);
   if (sequence_mode_)
     group_start_timestamp_ = timestamp_offset;
 
@@ -307,7 +307,7 @@ void FrameProcessor::Reset() {
   }
 
   // Sequence mode
-  DCHECK(kNoTimestamp() != group_end_timestamp_);
+  DCHECK(kNoTimestamp != group_end_timestamp_);
   group_start_timestamp_ = group_end_timestamp_;
 }
 
@@ -492,7 +492,7 @@ bool FrameProcessor::ProcessFrame(
              << ", RAP=" << frame->is_key_frame();
 
     // Sanity check the timestamps.
-    if (presentation_timestamp == kNoTimestamp()) {
+    if (presentation_timestamp == kNoTimestamp) {
       MEDIA_LOG(ERROR, media_log_) << "Unknown PTS for " << frame->GetTypeName()
                                    << " frame";
       return false;
@@ -519,7 +519,7 @@ bool FrameProcessor::ProcessFrame(
 
     // All stream parsers must emit valid (non-negative) frame durations.
     // Note that duration of 0 can occur for at least WebM alt-ref frames.
-    if (frame_duration == kNoTimestamp()) {
+    if (frame_duration == kNoTimestamp) {
       MEDIA_LOG(ERROR, media_log_)
           << "Unknown duration for " << frame->GetTypeName() << " frame at PTS "
           << presentation_timestamp.InMicroseconds() << "us";
@@ -535,7 +535,7 @@ bool FrameProcessor::ProcessFrame(
 
     // 3. If mode equals "sequence" and group start timestamp is set, then run
     //    the following steps:
-    if (sequence_mode_ && group_start_timestamp_ != kNoTimestamp()) {
+    if (sequence_mode_ && group_start_timestamp_ != kNoTimestamp) {
       // 3.1. Set timestampOffset equal to group start timestamp -
       //      presentation timestamp.
       *timestamp_offset = group_start_timestamp_ - presentation_timestamp;
@@ -551,7 +551,7 @@ bool FrameProcessor::ProcessFrame(
       SetAllTrackBuffersNeedRandomAccessPoint();
 
       // 3.4. Unset group start timestamp.
-      group_start_timestamp_ = kNoTimestamp();
+      group_start_timestamp_ = kNoTimestamp;
     }
 
     // 4. If timestampOffset is not 0, then run the following steps:

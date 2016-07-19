@@ -97,7 +97,7 @@ void DemuxerStreamAdapter::Flush(const base::Closure& flush_cb) {
 void DemuxerStreamAdapter::ResetMediaTaskRunner() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  max_pts_ = ::media::kNoTimestamp();
+  max_pts_ = ::media::kNoTimestamp;
   if (media_task_runner_factory_.get()) {
     media_task_runner_ =
         media_task_runner_factory_->CreateMediaTaskRunner(task_runner_);
@@ -153,9 +153,8 @@ void DemuxerStreamAdapter::OnNewBuffer(
   }
 
   // Updates the timestamp used for task scheduling.
-  if (!input->end_of_stream() &&
-      input->timestamp() != ::media::kNoTimestamp() &&
-      (max_pts_ == ::media::kNoTimestamp() || input->timestamp() > max_pts_)) {
+  if (!input->end_of_stream() && input->timestamp() != ::media::kNoTimestamp &&
+      (max_pts_ == ::media::kNoTimestamp || input->timestamp() > max_pts_)) {
     max_pts_ = input->timestamp();
   }
 

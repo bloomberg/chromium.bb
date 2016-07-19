@@ -174,9 +174,9 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   DCHECK_EQ(state_, kFlushed);
 
   start_timestamp_ = time;
-  ended_timestamp_ = kInfiniteDuration();
+  ended_timestamp_ = kInfiniteDuration;
   last_render_time_ = stop_rendering_time_ = base::TimeTicks();
-  first_packet_timestamp_ = kNoTimestamp();
+  first_packet_timestamp_ = kNoTimestamp;
   last_media_timestamp_ = base::TimeDelta();
   audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
 }
@@ -299,7 +299,7 @@ void AudioRendererImpl::DoFlush_Locked() {
   DCHECK(!pending_read_);
   DCHECK_EQ(state_, kFlushed);
 
-  ended_timestamp_ = kInfiniteDuration();
+  ended_timestamp_ = kInfiniteDuration;
   audio_buffer_stream_->Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone,
                                          weak_factory_.GetWeakPtr()));
 }
@@ -665,7 +665,7 @@ bool AudioRendererImpl::HandleSplicerBuffer_Locked(
 
   // Store the timestamp of the first packet so we know when to start actual
   // audio playback.
-  if (first_packet_timestamp_ == kNoTimestamp())
+  if (first_packet_timestamp_ == kNoTimestamp)
     first_packet_timestamp_ = buffer->timestamp();
 
   const size_t memory_usage = algorithm_->GetMemoryUsage();
@@ -810,7 +810,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     // Delay playback by writing silence if we haven't reached the first
     // timestamp yet; this can occur if the video starts before the audio.
     if (algorithm_->frames_buffered() > 0) {
-      CHECK_NE(first_packet_timestamp_, kNoTimestamp());
+      CHECK_NE(first_packet_timestamp_, kNoTimestamp);
       CHECK_GE(first_packet_timestamp_, base::TimeDelta());
       const base::TimeDelta play_delay =
           first_packet_timestamp_ - audio_clock_->back_timestamp();
@@ -864,7 +864,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     int frames_after_end_of_stream = 0;
     if (frames_written == 0) {
       if (received_end_of_stream_) {
-        if (ended_timestamp_ == kInfiniteDuration())
+        if (ended_timestamp_ == kInfiniteDuration)
           ended_timestamp_ = audio_clock_->back_timestamp();
         frames_after_end_of_stream = frames_requested;
       } else if (state_ == kPlaying &&

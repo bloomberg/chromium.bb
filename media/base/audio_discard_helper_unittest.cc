@@ -30,14 +30,8 @@ static scoped_refptr<DecoderBuffer> CreateEncodedBuffer(
 }
 
 static scoped_refptr<AudioBuffer> CreateDecodedBuffer(int frames) {
-  return MakeAudioBuffer(kSampleFormatPlanarF32,
-                         CHANNEL_LAYOUT_MONO,
-                         1,
-                         kSampleRate,
-                         0.0f,
-                         kDataStep,
-                         frames,
-                         kNoTimestamp());
+  return MakeAudioBuffer(kSampleFormatPlanarF32, CHANNEL_LAYOUT_MONO, 1,
+                         kSampleRate, 0.0f, kDataStep, frames, kNoTimestamp);
 }
 
 static float ExtractDecodedData(const scoped_refptr<AudioBuffer>& buffer,
@@ -468,7 +462,7 @@ TEST(AudioDiscardHelperTest, CompleteDiscard) {
   scoped_refptr<DecoderBuffer> encoded_buffer =
       CreateEncodedBuffer(kTimestamp, kDuration);
   encoded_buffer->set_discard_padding(
-      std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+      std::make_pair(kInfiniteDuration, base::TimeDelta()));
   scoped_refptr<AudioBuffer> decoded_buffer = CreateDecodedBuffer(kTestFrames);
 
   // Verify all of the first buffer is discarded.
@@ -498,7 +492,7 @@ TEST(AudioDiscardHelperTest, CompleteDiscardWithDelayedDiscard) {
   scoped_refptr<DecoderBuffer> encoded_buffer =
       CreateEncodedBuffer(kTimestamp, kDuration);
   encoded_buffer->set_discard_padding(
-      std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+      std::make_pair(kInfiniteDuration, base::TimeDelta()));
   scoped_refptr<AudioBuffer> decoded_buffer = CreateDecodedBuffer(kTestFrames);
 
   // Setup a delayed discard.
@@ -534,7 +528,7 @@ TEST(AudioDiscardHelperTest, CompleteDiscardWithInitialDiscardDecoderDelay) {
   scoped_refptr<DecoderBuffer> encoded_buffer =
       CreateEncodedBuffer(kTimestamp, kDuration);
   encoded_buffer->set_discard_padding(
-      std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+      std::make_pair(kInfiniteDuration, base::TimeDelta()));
   scoped_refptr<AudioBuffer> decoded_buffer = CreateDecodedBuffer(kTestFrames);
 
   // Verify all of the first buffer is discarded.

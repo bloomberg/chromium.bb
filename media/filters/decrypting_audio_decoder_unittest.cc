@@ -90,11 +90,9 @@ class DecryptingAudioDecoderTest : public testing::Test {
     int channels = ChannelLayoutToChannelCount(config.channel_layout());
     if (channels < 0)
       channels = 0;
-    decoded_frame_ = AudioBuffer::CreateEmptyBuffer(config.channel_layout(),
-                                                    channels,
-                                                    kSampleRate,
-                                                    kFakeAudioFrameSize,
-                                                    kNoTimestamp());
+    decoded_frame_ = AudioBuffer::CreateEmptyBuffer(
+        config.channel_layout(), channels, kSampleRate, kFakeAudioFrameSize,
+        kNoTimestamp);
     decoded_frame_list_.push_back(decoded_frame_);
 
     decoder_->Initialize(config, cdm_context_.get(), NewExpectedBoolCB(success),
@@ -345,16 +343,12 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_MultipleFrames) {
 
   scoped_refptr<AudioBuffer> frame_a = AudioBuffer::CreateEmptyBuffer(
       config_.channel_layout(),
-      ChannelLayoutToChannelCount(config_.channel_layout()),
-      kSampleRate,
-      kFakeAudioFrameSize,
-      kNoTimestamp());
+      ChannelLayoutToChannelCount(config_.channel_layout()), kSampleRate,
+      kFakeAudioFrameSize, kNoTimestamp);
   scoped_refptr<AudioBuffer> frame_b = AudioBuffer::CreateEmptyBuffer(
       config_.channel_layout(),
-      ChannelLayoutToChannelCount(config_.channel_layout()),
-      kSampleRate,
-      kFakeAudioFrameSize,
-      kNoTimestamp());
+      ChannelLayoutToChannelCount(config_.channel_layout()), kSampleRate,
+      kFakeAudioFrameSize, kNoTimestamp);
   decoded_frame_list_.push_back(frame_a);
   decoded_frame_list_.push_back(frame_b);
 

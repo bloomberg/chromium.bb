@@ -99,7 +99,7 @@ class DecodeTimestamp {
 };
 
 MEDIA_EXPORT extern inline DecodeTimestamp kNoDecodeTimestamp() {
-  return DecodeTimestamp::FromPresentationTime(kNoTimestamp());
+  return DecodeTimestamp::FromPresentationTime(kNoTimestamp);
 }
 
 class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
@@ -125,7 +125,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
                                                     Type type,
                                                     TrackId track_id);
 
-  // Decode timestamp. If not explicitly set, or set to kNoTimestamp(), the
+  // Decode timestamp. If not explicitly set, or set to kNoTimestamp, the
   // value will be taken from the normal timestamp.
   DecodeTimestamp GetDecodeTimestamp() const;
   void SetDecodeTimestamp(DecodeTimestamp timestamp);
@@ -154,7 +154,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   //
   // |pre_splice_buffers| will be deep copied and each copy's splice_timestamp()
   // will be set to this buffer's splice_timestamp().  A copy of |this|, with a
-  // splice_timestamp() of kNoTimestamp(), will be added to the end of
+  // splice_timestamp() of kNoTimestamp, will be added to the end of
   // |splice_buffers_|.
   //
   // See the Audio Splice Frame Algorithm in the MSE specification for details.

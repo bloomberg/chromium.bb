@@ -145,11 +145,11 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
                                        const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
     : media_log_(media_log),
-      seek_buffer_timestamp_(kNoTimestamp()),
+      seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
-      max_interbuffer_distance_(kNoTimestamp()),
+      max_interbuffer_distance_(kNoTimestamp),
       memory_limit_(kSourceBufferAudioMemoryLimit),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(audio_config.IsValidConfig());
@@ -160,11 +160,11 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
                                        const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
     : media_log_(media_log),
-      seek_buffer_timestamp_(kNoTimestamp()),
+      seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
-      max_interbuffer_distance_(kNoTimestamp()),
+      max_interbuffer_distance_(kNoTimestamp),
       memory_limit_(kSourceBufferVideoMemoryLimit),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(video_config.IsValidConfig());
@@ -176,11 +176,11 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
                                        bool splice_frames_enabled)
     : media_log_(media_log),
       text_track_config_(text_config),
-      seek_buffer_timestamp_(kNoTimestamp()),
+      seek_buffer_timestamp_(kNoTimestamp),
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
-      max_interbuffer_distance_(kNoTimestamp()),
+      max_interbuffer_distance_(kNoTimestamp),
       memory_limit_(kSourceBufferAudioMemoryLimit),
       splice_frames_enabled_(splice_frames_enabled) {}
 
@@ -208,7 +208,7 @@ void SourceBufferStream::OnStartOfCodedFrameGroup(
       !AreAdjacentInSequence(last_appended_buffer_timestamp_,
                              coded_frame_group_start_time)) {
     last_appended_buffer_timestamp_ = kNoDecodeTimestamp();
-    last_appended_buffer_duration_ = kNoTimestamp();
+    last_appended_buffer_duration_ = kNoTimestamp;
     last_appended_buffer_is_keyframe_ = false;
     DVLOG(3) << __FUNCTION__ << " next appended buffers will "
              << (range_for_next_append_ == ranges_.end()
@@ -401,7 +401,7 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
   DCHECK(start >= base::TimeDelta()) << start.InSecondsF();
   DCHECK(start < end) << "start " << start.InSecondsF()
                       << " end " << end.InSecondsF();
-  DCHECK(duration != kNoTimestamp());
+  DCHECK(duration != kNoTimestamp);
 
   DecodeTimestamp start_dts = DecodeTimestamp::FromPresentationTime(start);
   DecodeTimestamp end_dts = DecodeTimestamp::FromPresentationTime(end);
@@ -640,7 +640,7 @@ void SourceBufferStream::UpdateMaxInterbufferDistance(
     }
 
     if (interbuffer_distance > base::TimeDelta()) {
-      if (max_interbuffer_distance_ == kNoTimestamp()) {
+      if (max_interbuffer_distance_ == kNoTimestamp) {
         max_interbuffer_distance_ = interbuffer_distance;
       } else {
         max_interbuffer_distance_ =
@@ -722,7 +722,7 @@ bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
   // If last appended buffer position was earlier than the current playback time
   // then try deleting data between last append and current media_time.
   if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp() &&
-      last_appended_buffer_duration_ != kNoTimestamp() &&
+      last_appended_buffer_duration_ != kNoTimestamp &&
       media_time >
           last_appended_buffer_timestamp_ + last_appended_buffer_duration_) {
     size_t between = FreeBuffersAfterLastAppended(bytes_to_free, media_time);
@@ -1015,7 +1015,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   // Set end time for remove to include the duration of last buffer. If the
   // duration is estimated, use 1 microsecond instead to ensure frames are not
   // accidentally removed due to over-estimation.
-  if (duration != kNoTimestamp() && duration > base::TimeDelta() &&
+  if (duration != kNoTimestamp && duration > base::TimeDelta() &&
       !new_buffers.back()->is_duration_estimated()) {
     end += duration;
   } else {
@@ -1224,7 +1224,7 @@ SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithSplice(
   // have been inherently handled.
   DCHECK(pending_buffers_complete_);
   DCHECK_EQ(splice_buffers_index_, splice_buffers.size() - 1);
-  DCHECK(splice_buffers.back()->splice_timestamp() == kNoTimestamp());
+  DCHECK(splice_buffers.back()->splice_timestamp() == kNoTimestamp);
   *out_buffer = splice_buffers.back();
   pending_buffer_ = NULL;
 
@@ -1470,7 +1470,7 @@ const TextTrackConfig& SourceBufferStream::GetCurrentTextTrackConfig() {
 }
 
 base::TimeDelta SourceBufferStream::GetMaxInterbufferDistance() const {
-  if (max_interbuffer_distance_ == kNoTimestamp())
+  if (max_interbuffer_distance_ == kNoTimestamp)
     return base::TimeDelta::FromMilliseconds(kDefaultBufferDurationInMs);
   return max_interbuffer_distance_;
 }

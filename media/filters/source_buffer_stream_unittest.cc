@@ -143,7 +143,7 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void NewCodedFrameGroupAppend(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp(), false, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, false, true);
   }
 
   void NewCodedFrameGroupAppend(base::TimeDelta start_timestamp,
@@ -152,24 +152,24 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void AppendBuffers(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp(), false, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, false, true);
   }
 
   void NewCodedFrameGroupAppendOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp(), true, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, true, true);
   }
 
   void AppendBuffersOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp(), true, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, true, true);
   }
 
   void NewCodedFrameGroupAppend_ExpectFailure(
       const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp(), false, false);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, false, false);
   }
 
   void AppendBuffers_ExpectFailure(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp(), false, false);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, false, false);
   }
 
   void Seek(int position) {
@@ -306,7 +306,7 @@ class SourceBufferStreamTest : public testing::Test {
         expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
     const SourceBufferStream::Type type = stream_->GetType();
-    base::TimeDelta active_splice_timestamp = kNoTimestamp();
+    base::TimeDelta active_splice_timestamp = kNoTimestamp;
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
       SourceBufferStream::Status status = stream_->GetNextBuffer(&buffer);
@@ -372,7 +372,7 @@ class SourceBufferStreamTest : public testing::Test {
         ASSERT_EQ(buffer->timestamp(), preroll_buffer->timestamp());
         ASSERT_EQ(buffer->GetDecodeTimestamp(),
                   preroll_buffer->GetDecodeTimestamp());
-        ASSERT_EQ(kInfiniteDuration(), preroll_buffer->discard_padding().first);
+        ASSERT_EQ(kInfiniteDuration, preroll_buffer->discard_padding().first);
         ASSERT_EQ(base::TimeDelta(), preroll_buffer->discard_padding().second);
         ASSERT_TRUE(buffer->is_key_frame());
 
@@ -384,9 +384,9 @@ class SourceBufferStreamTest : public testing::Test {
       // Until the last splice frame is seen, indicated by a matching timestamp,
       // all buffers must have the same splice_timestamp().
       if (buffer->timestamp() == active_splice_timestamp) {
-        ASSERT_EQ(buffer->splice_timestamp(), kNoTimestamp());
+        ASSERT_EQ(buffer->splice_timestamp(), kNoTimestamp);
       } else {
-        ASSERT_TRUE(active_splice_timestamp == kNoTimestamp() ||
+        ASSERT_TRUE(active_splice_timestamp == kNoTimestamp ||
                     active_splice_timestamp == buffer->splice_timestamp());
       }
 
@@ -691,7 +691,7 @@ class SourceBufferStreamTest : public testing::Test {
 
     if (start_new_coded_frame_group) {
       base::TimeDelta start_timestamp = coded_frame_group_start_timestamp;
-      if (start_timestamp == kNoTimestamp())
+      if (start_timestamp == kNoTimestamp)
         start_timestamp = buffers[0]->timestamp();
 
       ASSERT_TRUE(start_timestamp <= buffers[0]->timestamp());
@@ -3790,7 +3790,7 @@ TEST_F(SourceBufferStreamTest, Remove_ZeroToInfinity) {
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
   NewCodedFrameGroupAppend("2000K 2030 2060K 2090 2120K");
   CheckExpectedRangesByTimestamp("{ [10,160) [1000,1150) [2000,2150) }");
-  Remove(base::TimeDelta(), kInfiniteDuration(), kInfiniteDuration());
+  Remove(base::TimeDelta(), kInfiniteDuration, kInfiniteDuration);
   CheckExpectedRangesByTimestamp("{ }");
 }
 

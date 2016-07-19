@@ -392,10 +392,10 @@ base::TimeDelta RemoteMediaPlayerBridge::GetDuration() {
   if (duration_ms == 0) {
     MediaPlayerAndroid* local_player = GetLocalPlayer();
     if (!local_player)
-      return media::kInfiniteDuration();
+      return media::kInfiniteDuration;
     return local_player->GetDuration();
   }
-  return duration_ms < 0 ? media::kInfiniteDuration()
+  return duration_ms < 0 ? media::kInfiniteDuration
                          : base::TimeDelta::FromMilliseconds(duration_ms);
 }
 

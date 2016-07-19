@@ -296,7 +296,7 @@ TEST_F(SeekableBufferTest, AllMethods) {
 }
 
 TEST_F(SeekableBufferTest, GetTime) {
-  const int64_t kNoTS = kNoTimestamp().ToInternalValue();
+  const int64_t kNoTS = kNoTimestamp.ToInternalValue();
   const struct {
     int64_t first_time_useconds;
     int64_t duration_useconds;
@@ -332,8 +332,8 @@ TEST_F(SeekableBufferTest, GetTime) {
     { 5, 8000000, kWriteSize, 8000005 },
   };
 
-  // current_time() must initially return kNoTimestamp().
-  EXPECT_EQ(kNoTimestamp().ToInternalValue(),
+  // current_time() must initially return kNoTimestamp.
+  EXPECT_EQ(kNoTimestamp.ToInternalValue(),
             buffer_.current_time().ToInternalValue());
 
   scoped_refptr<DataBuffer> buffer = DataBuffer::CopyFrom(data_, kWriteSize);

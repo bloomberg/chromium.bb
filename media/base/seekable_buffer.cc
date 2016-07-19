@@ -18,7 +18,7 @@ SeekableBuffer::SeekableBuffer(int backward_capacity, int forward_capacity)
       backward_bytes_(0),
       forward_capacity_(forward_capacity),
       forward_bytes_(0),
-      current_time_(kNoTimestamp()) {
+      current_time_(kNoTimestamp) {
   current_buffer_ = buffers_.begin();
 }
 
@@ -31,7 +31,7 @@ void SeekableBuffer::Clear() {
   current_buffer_offset_ = 0;
   backward_bytes_ = 0;
   forward_bytes_ = 0;
-  current_time_ = kNoTimestamp();
+  current_time_ = kNoTimestamp;
 }
 
 int SeekableBuffer::Read(uint8_t* data, int size) {
@@ -61,7 +61,7 @@ bool SeekableBuffer::GetCurrentChunk(const uint8_t** data, int* size) const {
 }
 
 bool SeekableBuffer::Append(const scoped_refptr<DataBuffer>& buffer_in) {
-  if (buffers_.empty() && buffer_in->timestamp() != kNoTimestamp()) {
+  if (buffers_.empty() && buffer_in->timestamp() != kNoTimestamp) {
     current_time_ = buffer_in->timestamp();
   }
 
@@ -266,8 +266,7 @@ int SeekableBuffer::InternalRead(uint8_t* data,
 void SeekableBuffer::UpdateCurrentTime(BufferQueue::iterator buffer,
                                        int offset) {
   // Garbage values are unavoidable, so this check will remain.
-  if (buffer != buffers_.end() &&
-      (*buffer)->timestamp() != kNoTimestamp()) {
+  if (buffer != buffers_.end() && (*buffer)->timestamp() != kNoTimestamp) {
     int64_t time_offset = ((*buffer)->duration().InMicroseconds() * offset) /
                           (*buffer)->data_size();
 

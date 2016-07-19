@@ -17,11 +17,7 @@
 namespace media {
 namespace mp2t {
 
-EsParserTestBase::Packet::Packet()
-    : offset(0u),
-      size(0u),
-      pts(kNoTimestamp()) {
-}
+EsParserTestBase::Packet::Packet() : offset(0u), size(0u), pts(kNoTimestamp) {}
 
 EsParserTestBase::EsParserTestBase()
     : config_count_(0u),
@@ -56,7 +52,7 @@ std::vector<EsParserTestBase::Packet> EsParserTestBase::LoadPacketsFromFiles(
     Packet packet;
     packet.offset = stream_.size();
     packet.size = stream.length();
-    packet.pts = kNoTimestamp();
+    packet.pts = kNoTimestamp;
 
     stream_.insert(stream_.end(), stream.data(),
                    stream.data() + stream.length());
@@ -95,7 +91,7 @@ bool EsParserTestBase::ProcessPesPackets(
     size_t cur_pes_offset = pes_packets[k].offset;
     size_t cur_pes_size = pes_packets[k].size;
 
-    base::TimeDelta pts = kNoTimestamp();
+    base::TimeDelta pts = kNoTimestamp;
     DecodeTimestamp dts = kNoDecodeTimestamp();
     if (pes_packets[k].pts >= base::TimeDelta() || force_timing)
       pts = pes_packets[k].pts;
@@ -135,7 +131,7 @@ EsParserTestBase::GenerateFixedSizePesPacket(size_t pes_size) {
 
   Packet cur_pes_packet;
   cur_pes_packet.offset = 0;
-  cur_pes_packet.pts = kNoTimestamp();
+  cur_pes_packet.pts = kNoTimestamp;
   while (cur_pes_packet.offset < stream_.size()) {
     pes_packets.push_back(cur_pes_packet);
     cur_pes_packet.offset += pes_size;

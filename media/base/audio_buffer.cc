@@ -121,14 +121,9 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateBuffer(
     int sample_rate,
     int frame_count) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
-  return make_scoped_refptr(new AudioBuffer(sample_format,
-                                            channel_layout,
-                                            channel_count,
-                                            sample_rate,
-                                            frame_count,
-                                            true,
-                                            NULL,
-                                            kNoTimestamp()));
+  return make_scoped_refptr(
+      new AudioBuffer(sample_format, channel_layout, channel_count, sample_rate,
+                      frame_count, true, NULL, kNoTimestamp));
 }
 
 // static
@@ -153,13 +148,8 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new AudioBuffer(kUnknownSampleFormat,
-                                            CHANNEL_LAYOUT_NONE,
-                                            0,
-                                            0,
-                                            0,
-                                            false,
-                                            NULL,
-                                            kNoTimestamp()));
+                                            CHANNEL_LAYOUT_NONE, 0, 0, 0, false,
+                                            NULL, kNoTimestamp));
 }
 
 template <typename Target, typename Dest>

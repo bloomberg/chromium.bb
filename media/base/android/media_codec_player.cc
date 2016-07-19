@@ -53,7 +53,7 @@ MediaCodecPlayer::MediaCodecPlayer(
       state_(kStatePaused),
       interpolator_(&default_tick_clock_),
       pending_start_(false),
-      pending_seek_(kNoTimestamp()),
+      pending_seek_(kNoTimestamp),
       cdm_registration_id_(0),
       key_is_required_(false),
       key_is_added_(false),
@@ -358,8 +358,8 @@ void MediaCodecPlayer::Release() {
   key_is_added_ = false;
 
   base::TimeDelta pending_seek_time = GetPendingSeek();
-  if (pending_seek_time != kNoTimestamp()) {
-    SetPendingSeek(kNoTimestamp());
+  if (pending_seek_time != kNoTimestamp) {
+    SetPendingSeek(kNoTimestamp);
     SetState(kStateWaitingForSeek);
     RequestDemuxerSeek(pending_seek_time);
   }
@@ -516,7 +516,7 @@ void MediaCodecPlayer::OnDemuxerSeekDone(
   DVLOG(1) << __FUNCTION__ << " actual_time:" << actual_browser_seek_time;
 
   DCHECK(seek_info_.get());
-  DCHECK(seek_info_->seek_time != kNoTimestamp());
+  DCHECK(seek_info_->seek_time != kNoTimestamp);
 
   // A browser seek must not jump into the past. Ideally, it seeks to the
   // requested time, but it might jump into the future.
@@ -551,9 +551,9 @@ void MediaCodecPlayer::OnDemuxerSeekDone(
   DCHECK_EQ(kStateWaitingForSeek, state_);
 
   base::TimeDelta pending_seek_time = GetPendingSeek();
-  if (pending_seek_time != kNoTimestamp()) {
+  if (pending_seek_time != kNoTimestamp) {
     // Keep kStateWaitingForSeek
-    SetPendingSeek(kNoTimestamp());
+    SetPendingSeek(kNoTimestamp);
     RequestDemuxerSeek(pending_seek_time);
     return;
   }
@@ -642,7 +642,7 @@ void MediaCodecPlayer::OnMediaMetadataChanged(base::TimeDelta duration,
                                               const gfx::Size& video_size) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  if (duration != kNoTimestamp())
+  if (duration != kNoTimestamp)
     metadata_cache_.duration = duration;
 
   if (!video_size.IsEmpty())
@@ -814,9 +814,9 @@ void MediaCodecPlayer::OnStopDone(DemuxerStream::Type type) {
   switch (state_) {
     case kStateStopping: {
       base::TimeDelta seek_time = GetPendingSeek();
-      if (seek_time != kNoTimestamp()) {
+      if (seek_time != kNoTimestamp) {
         SetState(kStateWaitingForSeek);
-        SetPendingSeek(kNoTimestamp());
+        SetPendingSeek(kNoTimestamp);
         RequestDemuxerSeek(seek_time);
       } else if (HasPendingStart()) {
         SetPendingStart(false);
@@ -942,7 +942,7 @@ void MediaCodecPlayer::OnVideoResolutionChanged(const gfx::Size& size) {
 
   // Update cache and notify manager on UI thread
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(metadata_changed_cb_, kNoTimestamp(), size));
+      FROM_HERE, base::Bind(metadata_changed_cb_, kNoTimestamp, size));
 }
 
 // Callbacks from MediaDrmBridge.

@@ -185,7 +185,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
 
     const bool fresh_algorithm = !algorithm_.have_rendered_frames_;
 
-    base::TimeDelta last_start_timestamp = kNoTimestamp();
+    base::TimeDelta last_start_timestamp = kNoTimestamp;
     bool should_use_cadence = false;
     int glitch_count = 0;
     const base::TimeTicks start_time = tick_clock_->NowTicks();
@@ -216,7 +216,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
       // If we have a frame, the timestamps should always be monotonically
       // increasing.
       if (frame) {
-        if (last_start_timestamp != kNoTimestamp())
+        if (last_start_timestamp != kNoTimestamp)
           ASSERT_LE(last_start_timestamp, frame->timestamp());
         else
           last_start_timestamp = frame->timestamp();

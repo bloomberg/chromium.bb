@@ -11,13 +11,13 @@ namespace media {
 
 static base::TimeDelta ToTimeDelta(int seconds) {
   if (seconds < 0)
-    return kNoTimestamp();
+    return kNoTimestamp;
   return base::TimeDelta::FromSeconds(seconds);
 }
 
 // Helper to create buffers with specified timestamp in seconds.
 //
-// Negative numbers will be converted to kNoTimestamp();
+// Negative numbers will be converted to kNoTimestamp;
 static scoped_refptr<DecoderBuffer> CreateBuffer(int timestamp) {
   scoped_refptr<DecoderBuffer> buffer = new DecoderBuffer(0);
   buffer->set_timestamp(ToTimeDelta(timestamp));

@@ -553,12 +553,10 @@ TEST_F(FFmpegDemuxerTest,
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
     audio->Read(
-        NewReadCBWithCheckedDiscard(FROM_HERE, 40, 0, kInfiniteDuration(),
-                                    true));
+        NewReadCBWithCheckedDiscard(FROM_HERE, 40, 0, kInfiniteDuration, true));
     base::RunLoop().Run();
-    audio->Read(
-        NewReadCBWithCheckedDiscard(FROM_HERE, 41, 2903, kInfiniteDuration(),
-                                    true));
+    audio->Read(NewReadCBWithCheckedDiscard(FROM_HERE, 41, 2903,
+                                            kInfiniteDuration, true));
     base::RunLoop().Run();
     audio->Read(NewReadCBWithCheckedDiscard(
         FROM_HERE, 173, 5805, base::TimeDelta::FromMicroseconds(10159), true));

@@ -696,14 +696,14 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
           vpx_image->stride[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_V],
           vpx_image_alpha->stride[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_Y],
           vpx_image->planes[VPX_PLANE_U], vpx_image->planes[VPX_PLANE_V],
-          &frame_buffer->alpha_data[0], kNoTimestamp());
+          &frame_buffer->alpha_data[0], kNoTimestamp);
     } else {
       *video_frame = VideoFrame::WrapExternalYuvData(
           codec_format, coded_size, gfx::Rect(visible_size),
           config_.natural_size(), vpx_image->stride[VPX_PLANE_Y],
           vpx_image->stride[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_V],
           vpx_image->planes[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_U],
-          vpx_image->planes[VPX_PLANE_V], kNoTimestamp());
+          vpx_image->planes[VPX_PLANE_V], kNoTimestamp);
     }
     if (!(*video_frame))
       return false;
@@ -716,9 +716,9 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
   DCHECK(codec_format == PIXEL_FORMAT_YV12 ||
          codec_format == PIXEL_FORMAT_YV12A);
 
-  *video_frame = frame_pool_.CreateFrame(
-      codec_format, visible_size, gfx::Rect(visible_size),
-      config_.natural_size(), kNoTimestamp());
+  *video_frame = frame_pool_.CreateFrame(codec_format, visible_size,
+                                         gfx::Rect(visible_size),
+                                         config_.natural_size(), kNoTimestamp);
   if (!(*video_frame))
     return false;
 

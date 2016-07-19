@@ -200,7 +200,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8_t* data, int size) {
   bytes_parsed += result;
 
   double timecode_scale_in_us = info_parser.timecode_scale() / 1000.0;
-  InitParameters params(kInfiniteDuration());
+  InitParameters params(kInfiniteDuration);
 
   if (info_parser.duration() > 0) {
     int64_t duration_in_us = info_parser.duration() * timecode_scale_in_us;

@@ -222,7 +222,7 @@ bool TsSectionPes::ParseInternal(const uint8_t* raw_pes, int raw_pes_size) {
   }
 
   // Convert and unroll the timestamps.
-  base::TimeDelta media_pts(kNoTimestamp());
+  base::TimeDelta media_pts(kNoTimestamp);
   DecodeTimestamp media_dts(kNoDecodeTimestamp());
   if (is_pts_valid) {
     int64_t pts = timestamp_unroller_->GetUnrolledTimestamp(

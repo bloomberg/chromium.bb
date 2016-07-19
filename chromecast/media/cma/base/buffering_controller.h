@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BASE_BUFFERING_CONTROLLER_H
-#define CHROMECAST_MEDIA_CMA_BASE_BUFFERING_CONTROLLER_H
+#ifndef CHROMECAST_MEDIA_CMA_BASE_BUFFERING_CONTROLLER_H_
+#define CHROMECAST_MEDIA_CMA_BASE_BUFFERING_CONTROLLER_H_
 
 #include <list>
 #include <string>
@@ -43,7 +43,7 @@ class BufferingController {
   void SetMediaTime(base::TimeDelta time);
 
   // Returns the maximum media time available for rendering.
-  // Return kNoTimestamp() if unknown.
+  // Return kNoTimestamp if unknown.
   base::TimeDelta GetMaxRenderingTime() const;
 
   // Returns whether there is an active buffering phase.
@@ -108,4 +108,4 @@ class BufferingController {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BASE_BUFFERING_CONTROLLER_H
+#endif  // CHROMECAST_MEDIA_CMA_BASE_BUFFERING_CONTROLLER_H_

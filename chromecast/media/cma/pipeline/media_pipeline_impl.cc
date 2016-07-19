@@ -87,7 +87,7 @@ MediaPipelineImpl::MediaPipelineImpl()
       audio_decoder_(nullptr),
       video_decoder_(nullptr),
       pending_time_update_task_(false),
-      last_media_time_(::media::kNoTimestamp()),
+      last_media_time_(::media::kNoTimestamp),
       statistics_rolling_counter_(0),
       audio_bytes_for_bitrate_estimation_(0),
       video_bytes_for_bitrate_estimation_(0),
@@ -432,7 +432,7 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
 
 void MediaPipelineImpl::CheckForPlaybackStall(base::TimeDelta media_time,
                                               base::TimeTicks current_stc) {
-  DCHECK(media_time != ::media::kNoTimestamp());
+  DCHECK(media_time != ::media::kNoTimestamp);
 
   // A playback stall is defined as a scenario where the underlying media
   // pipeline has unexpectedly stopped making forward progress. The pipeline is
@@ -520,7 +520,7 @@ void MediaPipelineImpl::UpdateMediaTime() {
 
   base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(
       media_pipeline_backend_->GetCurrentPts());
-  if (media_time == ::media::kNoTimestamp()) {
+  if (media_time == ::media::kNoTimestamp) {
     pending_time_update_task_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&MediaPipelineImpl::UpdateMediaTime, weak_this_),
@@ -539,7 +539,7 @@ void MediaPipelineImpl::UpdateMediaTime() {
     // so don't interpolate ahead.
     if (media_time != last_media_time_) {
       max_rendering_time = buffering_controller_->GetMaxRenderingTime();
-      if (max_rendering_time == ::media::kNoTimestamp())
+      if (max_rendering_time == ::media::kNoTimestamp)
         max_rendering_time = media_time;
 
       // Cap interpolation time to avoid interpolating too far ahead.

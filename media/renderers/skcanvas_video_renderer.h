@@ -88,7 +88,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // Last image used to draw to the canvas.
   sk_sp<SkImage> last_image_;
   // Timestamp of the videoframe used to generate |last_image_|.
-  base::TimeDelta last_timestamp_ = media::kNoTimestamp();
+  base::TimeDelta last_timestamp_ = media::kNoTimestamp;
   // If |last_image_| is not used for a while, it's deleted to save memory.
   base::DelayTimer last_image_deleting_timer_;
 

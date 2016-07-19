@@ -60,7 +60,7 @@ class MEDIA_EXPORT AudioDiscardHelper {
 
   // Whether any buffers have been processed.
   bool initialized() const {
-    return timestamp_helper_.base_timestamp() != kNoTimestamp();
+    return timestamp_helper_.base_timestamp() != kNoTimestamp;
   }
 
  private:

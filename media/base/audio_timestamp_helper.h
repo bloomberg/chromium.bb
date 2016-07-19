@@ -40,7 +40,7 @@ class MEDIA_EXPORT AudioTimestampHelper {
 
   // Adds |frame_count| to the frame counter.
   // Note: SetBaseTimestamp() must be called with a value other than
-  // kNoTimestamp() before this method can be called.
+  // kNoTimestamp before this method can be called.
   void AddFrames(int frame_count);
 
   // Get the current timestamp. This value is computed from the base_timestamp()

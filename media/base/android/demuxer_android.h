@@ -50,7 +50,7 @@ class MEDIA_EXPORT DemuxerAndroidClient {
   // If this is in response to a request with |is_browser_seek| set to true,
   // then |actual_browser_seek_time| may differ from the requested
   // |time_to_seek|, and reflects the actual time seeked to by the demuxer.
-  // For regular demuxer seeks, |actual_browser_seek_time| is kNoTimestamp() and
+  // For regular demuxer seeks, |actual_browser_seek_time| is kNoTimestamp and
   // should be ignored by browser player.
   virtual void OnDemuxerSeekDone(
       base::TimeDelta actual_browser_seek_time) = 0;

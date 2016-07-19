@@ -45,8 +45,8 @@ static base::TimeDelta TimeForByteOffset(int64_t byte_offset,
 void BufferedDataSourceHostImpl::AddBufferedTimeRanges(
     Ranges<base::TimeDelta>* buffered_time_ranges,
     base::TimeDelta media_duration) const {
-  DCHECK(media_duration != kNoTimestamp());
-  DCHECK(media_duration != kInfiniteDuration());
+  DCHECK(media_duration != kNoTimestamp);
+  DCHECK(media_duration != kInfiniteDuration);
   if (total_bytes_ && !buffered_byte_ranges_.empty()) {
     for (const auto i : buffered_byte_ranges_) {
       if (i.second) {

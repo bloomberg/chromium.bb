@@ -23,21 +23,18 @@ BufferingConfig::BufferingConfig(
 BufferingConfig::~BufferingConfig() {
 }
 
-
-BufferingState::BufferingState(
-    const std::string& stream_id,
-    const scoped_refptr<BufferingConfig>& config,
-    const base::Closure& state_changed_cb,
-    const HighLevelBufferCB& high_level_buffer_cb)
+BufferingState::BufferingState(const std::string& stream_id,
+                               const scoped_refptr<BufferingConfig>& config,
+                               const base::Closure& state_changed_cb,
+                               const HighLevelBufferCB& high_level_buffer_cb)
     : stream_id_(stream_id),
       config_(config),
       state_changed_cb_(state_changed_cb),
       high_level_buffer_cb_(high_level_buffer_cb),
       state_(kLowLevel),
-      media_time_(::media::kNoTimestamp()),
-      max_rendering_time_(::media::kNoTimestamp()),
-      buffered_time_(::media::kNoTimestamp()) {
-}
+      media_time_(::media::kNoTimestamp),
+      max_rendering_time_(::media::kNoTimestamp),
+      buffered_time_(::media::kNoTimestamp) {}
 
 BufferingState::~BufferingState() {
 }
@@ -85,8 +82,8 @@ void BufferingState::NotifyEos() {
 }
 
 void BufferingState::NotifyMaxCapacity(base::TimeDelta buffered_time) {
-  if (media_time_ == ::media::kNoTimestamp() ||
-      buffered_time == ::media::kNoTimestamp()) {
+  if (media_time_ == ::media::kNoTimestamp ||
+      buffered_time == ::media::kNoTimestamp) {
     LOG(WARNING) << "Max capacity with no timestamp";
     return;
   }
@@ -96,7 +93,7 @@ void BufferingState::NotifyMaxCapacity(base::TimeDelta buffered_time) {
 }
 
 static const char* StateToString(BufferingState::State state) {
-  switch(state) {
+  switch (state) {
     case BufferingState::kLowLevel:
       return "kLowLevel";
     case BufferingState::kMediumLevel:
@@ -113,7 +110,7 @@ static const char* StateToString(BufferingState::State state) {
 }
 
 static std::string TimeDeltaToString(const base::TimeDelta& t) {
-  if (t == ::media::kNoTimestamp())
+  if (t == ::media::kNoTimestamp)
     return "kNoTimestamp";
   return base::DoubleToString(t.InSecondsF());
 }
@@ -127,8 +124,8 @@ std::string BufferingState::ToString() const {
 }
 
 BufferingState::State BufferingState::GetBufferLevelState() const {
-  if (media_time_ == ::media::kNoTimestamp() ||
-      buffered_time_ == ::media::kNoTimestamp()) {
+  if (media_time_ == ::media::kNoTimestamp ||
+      buffered_time_ == ::media::kNoTimestamp) {
     return kLowLevel;
   }
 

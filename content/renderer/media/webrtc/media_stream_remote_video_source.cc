@@ -80,7 +80,7 @@ MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
         const VideoCaptureDeliverFrameCB& new_frame_callback)
     : io_task_runner_(io_task_runner),
       frame_callback_(new_frame_callback),
-      start_timestamp_(media::kNoTimestamp()),
+      start_timestamp_(media::kNoTimestamp),
       // TODO(qiangchen): There can be two differences between clocks: 1)
       // the offset, 2) the rate (i.e., one clock runs faster than the other).
       // See http://crbug/516700
@@ -105,8 +105,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   TRACE_EVENT1("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
                "Ideal Render Instant", render_time.ToInternalValue());
 
-  CHECK_NE(media::kNoTimestamp(), incoming_timestamp);
-  if (start_timestamp_ == media::kNoTimestamp())
+  CHECK_NE(media::kNoTimestamp, incoming_timestamp);
+  if (start_timestamp_ == media::kNoTimestamp)
     start_timestamp_ = incoming_timestamp;
   const base::TimeDelta elapsed_timestamp =
       incoming_timestamp - start_timestamp_;

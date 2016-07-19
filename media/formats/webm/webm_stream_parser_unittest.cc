@@ -97,7 +97,7 @@ class WebMStreamParserTest : public testing::Test {
 TEST_F(WebMStreamParserTest, VerifyMediaTrackMetadata) {
   EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
       .Times(testing::AnyNumber());
-  StreamParser::InitParameters params(kInfiniteDuration());
+  StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 1;
   params.detected_video_track_count = 1;
   params.detected_text_track_count = 0;
@@ -124,7 +124,7 @@ TEST_F(WebMStreamParserTest, VerifyMediaTrackMetadata) {
 TEST_F(WebMStreamParserTest, VerifyDetectedTrack_AudioOnly) {
   EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
       .Times(testing::AnyNumber());
-  StreamParser::InitParameters params(kInfiniteDuration());
+  StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 1;
   params.detected_video_track_count = 0;
   params.detected_text_track_count = 0;
@@ -134,7 +134,7 @@ TEST_F(WebMStreamParserTest, VerifyDetectedTrack_AudioOnly) {
 }
 
 TEST_F(WebMStreamParserTest, VerifyDetectedTrack_VideoOnly) {
-  StreamParser::InitParameters params(kInfiniteDuration());
+  StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 0;
   params.detected_video_track_count = 1;
   params.detected_text_track_count = 0;
@@ -146,7 +146,7 @@ TEST_F(WebMStreamParserTest, VerifyDetectedTrack_VideoOnly) {
 TEST_F(WebMStreamParserTest, VerifyDetectedTracks_AVText) {
   EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
       .Times(testing::AnyNumber());
-  StreamParser::InitParameters params(kInfiniteDuration());
+  StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 1;
   params.detected_video_track_count = 1;
   params.detected_text_track_count = 1;

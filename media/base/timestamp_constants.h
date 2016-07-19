@@ -10,19 +10,16 @@
 #include <limits>
 
 #include "base/time/time.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
 // Indicates an invalid or missing timestamp.
-MEDIA_EXPORT inline base::TimeDelta kNoTimestamp() {
-  return base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min());
-}
+constexpr base::TimeDelta kNoTimestamp =
+    base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min());
 
 // Represents an infinite stream duration.
-MEDIA_EXPORT inline base::TimeDelta kInfiniteDuration() {
-  return base::TimeDelta::Max();
-}
+constexpr base::TimeDelta kInfiniteDuration =
+    base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max());
 
 }  // namespace media
 

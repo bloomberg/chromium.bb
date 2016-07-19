@@ -486,7 +486,7 @@ void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& seek_request,
   // Post OnDemuxerSeekDone() to the player.
   DCHECK(client_);
   base::TimeDelta reported_seek_time =
-      is_browser_seek ? seek_request : kNoTimestamp();
+      is_browser_seek ? seek_request : kNoTimestamp;
   GetMediaTaskRunner()->PostDelayedTask(
       FROM_HERE, base::Bind(&MockDemuxerAndroid::OnDemuxerSeekDone,
                             weak_factory_.GetWeakPtr(), reported_seek_time),

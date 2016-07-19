@@ -11,9 +11,7 @@ namespace media {
 namespace mp2t {
 
 EsParser::TimingDesc::TimingDesc()
-    : dts(kNoDecodeTimestamp()),
-      pts(kNoTimestamp()) {
-}
+    : dts(kNoDecodeTimestamp()), pts(kNoTimestamp) {}
 
 EsParser::TimingDesc::TimingDesc(
     DecodeTimestamp dts_in, base::TimeDelta pts_in)
@@ -35,7 +33,7 @@ bool EsParser::Parse(const uint8_t* buf,
   DCHECK(buf);
   DCHECK_GT(size, 0);
 
-  if (pts != kNoTimestamp()) {
+  if (pts != kNoTimestamp) {
     // Link the end of the byte queue with the incoming timing descriptor.
     TimingDesc timing_desc(dts, pts);
     timing_desc_list_.push_back(

@@ -318,8 +318,8 @@ class WebMClusterParserTest : public testing::Test {
         kTestVideoFrameDefaultDurationInMs);
     ASSERT_GE(default_audio_duration, base::TimeDelta());
     ASSERT_GE(default_video_duration, base::TimeDelta());
-    ASSERT_NE(kNoTimestamp(), default_audio_duration);
-    ASSERT_NE(kNoTimestamp(), default_video_duration);
+    ASSERT_NE(kNoTimestamp, default_audio_duration);
+    ASSERT_NE(kNoTimestamp, default_video_duration);
 
     parser_.reset(CreateParserWithDefaultDurationsAndOptionalTextTracks(
         default_audio_duration, default_video_duration));
@@ -343,7 +343,7 @@ class WebMClusterParserTest : public testing::Test {
 
   // Create a default version of the parser for test.
   WebMClusterParser* CreateDefaultParser() {
-    return CreateParserHelper(kNoTimestamp(), kNoTimestamp(), TextTracks(),
+    return CreateParserHelper(kNoTimestamp, kNoTimestamp, TextTracks(),
                               std::set<int64_t>(), std::string(), std::string(),
                               kUnknownAudioCodec);
   }
@@ -362,7 +362,7 @@ class WebMClusterParserTest : public testing::Test {
   // Create a parser for test with custom ignored tracks.
   WebMClusterParser* CreateParserWithIgnoredTracks(
       std::set<int64_t>& ignored_tracks) {
-    return CreateParserHelper(kNoTimestamp(), kNoTimestamp(), TextTracks(),
+    return CreateParserHelper(kNoTimestamp, kNoTimestamp, TextTracks(),
                               ignored_tracks, std::string(), std::string(),
                               kUnknownAudioCodec);
   }
@@ -372,7 +372,7 @@ class WebMClusterParserTest : public testing::Test {
       const std::string& audio_encryption_key_id,
       const std::string& video_encryption_key_id,
       const AudioCodec audio_codec) {
-    return CreateParserHelper(kNoTimestamp(), kNoTimestamp(), TextTracks(),
+    return CreateParserHelper(kNoTimestamp, kNoTimestamp, TextTracks(),
                               std::set<int64_t>(), audio_encryption_key_id,
                               video_encryption_key_id, audio_codec);
   }
@@ -400,9 +400,9 @@ TEST_F(WebMClusterParserTest, HeldBackBufferHoldsBackAllTracks) {
   base::TimeDelta default_audio_duration =
       base::TimeDelta::FromMilliseconds(kTestAudioFrameDefaultDurationInMs);
   ASSERT_GE(default_audio_duration, base::TimeDelta());
-  ASSERT_NE(kNoTimestamp(), default_audio_duration);
+  ASSERT_NE(kNoTimestamp, default_audio_duration);
   parser_.reset(CreateParserWithDefaultDurationsAndOptionalTextTracks(
-      default_audio_duration, kNoTimestamp(), text_tracks));
+      default_audio_duration, kNoTimestamp, text_tracks));
 
   const int kExpectedVideoEstimationInMs = 33;
 
@@ -639,7 +639,7 @@ TEST_F(WebMClusterParserTest, ParseTextTracks) {
                                                     "")));
 
   parser_.reset(CreateParserWithDefaultDurationsAndOptionalTextTracks(
-      kNoTimestamp(), kNoTimestamp(), text_tracks));
+      kNoTimestamp, kNoTimestamp, text_tracks));
 
   const BlockInfo kInputBlockInfo[] = {
       {kAudioTrackNum, 0, 23, true, NULL, 0, false},
@@ -670,7 +670,7 @@ TEST_F(WebMClusterParserTest, TextTracksSimpleBlock) {
                                                     "")));
 
   parser_.reset(CreateParserWithDefaultDurationsAndOptionalTextTracks(
-      kNoTimestamp(), kNoTimestamp(), text_tracks));
+      kNoTimestamp, kNoTimestamp, text_tracks));
 
   const BlockInfo kInputBlockInfo[] = {
     { kTextTrackNum,  33, 42, true },
@@ -699,7 +699,7 @@ TEST_F(WebMClusterParserTest, ParseMultipleTextTracks) {
                                                     "")));
 
   parser_.reset(CreateParserWithDefaultDurationsAndOptionalTextTracks(
-      kNoTimestamp(), kNoTimestamp(), text_tracks));
+      kNoTimestamp, kNoTimestamp, text_tracks));
 
   const BlockInfo kInputBlockInfo[] = {
       {kAudioTrackNum, 0, 23, true, NULL, 0, false},
@@ -789,7 +789,7 @@ TEST_F(WebMClusterParserTest, ParseInvalidTextBlockGroupWithoutDuration) {
                                                     "")));
 
   parser_.reset(CreateParserWithDefaultDurationsAndOptionalTextTracks(
-      kNoTimestamp(), kNoTimestamp(), text_tracks));
+      kNoTimestamp, kNoTimestamp, text_tracks));
 
   const BlockInfo kBlockInfo[] = {
       {kTextTrackNum, 33, -42, false, NULL, 0, false},

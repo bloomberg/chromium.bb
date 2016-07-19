@@ -165,7 +165,7 @@ class MEDIA_EXPORT FrameProcessor {
   DecodeTimestamp coded_frame_group_last_dts_ = kNoDecodeTimestamp();
 
   // Tracks the MSE coded frame processing variable of same name.
-  // Initially kNoTimestamp(), meaning "unset".
+  // Initially kNoTimestamp, meaning "unset".
   base::TimeDelta group_start_timestamp_;
 
   // Tracks the MSE coded frame processing variable of same name. It stores the

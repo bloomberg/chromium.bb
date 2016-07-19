@@ -112,19 +112,19 @@ class AudioRendererAlgorithmTest : public testing::Test {
           buffer = MakeAudioBuffer<uint8_t>(
               sample_format_, channel_layout_,
               ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kNoTimestamp());
+              1, 1, kFrameSize, kNoTimestamp);
           break;
         case kSampleFormatS16:
           buffer = MakeAudioBuffer<int16_t>(
               sample_format_, channel_layout_,
               ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kNoTimestamp());
+              1, 1, kFrameSize, kNoTimestamp);
           break;
         case kSampleFormatS32:
           buffer = MakeAudioBuffer<int32_t>(
               sample_format_, channel_layout_,
               ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
-              1, 1, kFrameSize, kNoTimestamp());
+              1, 1, kFrameSize, kNoTimestamp);
           break;
         default:
           NOTREACHED() << "Unrecognized format " << sample_format_;

@@ -57,7 +57,7 @@ MediaSourceDelegate::MediaSourceDelegate(
       seeking_(false),
       is_video_encrypted_(false),
       doing_browser_seek_(false),
-      browser_seek_time_(media::kNoTimestamp()),
+      browser_seek_time_(media::kNoTimestamp),
       expecting_regular_seek_(false),
       access_unit_size_(0),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -293,7 +293,7 @@ void MediaSourceDelegate::Seek(
       browser_seek_time_ = internal_seek_time;
     } else {
       expecting_regular_seek_ = false;
-      browser_seek_time_ = media::kNoTimestamp();
+      browser_seek_time_ = media::kNoTimestamp;
     }
   }
 
@@ -701,11 +701,11 @@ void MediaSourceDelegate::NotifyDemuxerReady(bool is_cdm_attached) {
 base::TimeDelta MediaSourceDelegate::GetDuration() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!chunk_demuxer_)
-    return media::kNoTimestamp();
+    return media::kNoTimestamp;
 
   double duration = chunk_demuxer_->GetDuration();
   if (duration == std::numeric_limits<double>::infinity())
-    return media::kInfiniteDuration();
+    return media::kInfiniteDuration;
 
   return base::TimeDelta::FromSecondsD(duration);
 }

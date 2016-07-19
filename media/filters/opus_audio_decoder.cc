@@ -202,7 +202,7 @@ void OpusAudioDecoder::DecodeBuffer(
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (input->timestamp() == kNoTimestamp()) {
+  if (input->timestamp() == kNoTimestamp) {
     DLOG(ERROR) << "Received a buffer without timestamps!";
     decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;

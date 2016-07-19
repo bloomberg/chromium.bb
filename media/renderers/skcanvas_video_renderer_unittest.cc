@@ -306,7 +306,7 @@ TEST_F(SkCanvasVideoRendererTest, Smaller) {
 
 TEST_F(SkCanvasVideoRendererTest, NoTimestamp) {
   VideoFrame* video_frame = natural_frame().get();
-  video_frame->set_timestamp(media::kNoTimestamp());
+  video_frame->set_timestamp(media::kNoTimestamp);
   Paint(video_frame, target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
 }
@@ -534,7 +534,7 @@ TEST_F(SkCanvasVideoRendererTest, ContextLost) {
       gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
   auto video_frame = VideoFrame::WrapNativeTextures(
       PIXEL_FORMAT_UYVY, holders, base::Bind(MailboxHoldersReleased), size,
-      gfx::Rect(size), size, kNoTimestamp());
+      gfx::Rect(size), size, kNoTimestamp);
 
   renderer_.Paint(video_frame, &canvas, kNaturalRect, 0xFF,
                   SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_90, context_3d);

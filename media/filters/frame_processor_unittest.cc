@@ -49,8 +49,8 @@ class FrameProcessorTestCallbackHelper {
   // |new_duration|.
   void OnPossibleDurationIncrease(base::TimeDelta new_duration) {
     PossibleDurationIncrease(new_duration);
-    ASSERT_NE(kNoTimestamp(), new_duration);
-    ASSERT_NE(kInfiniteDuration(), new_duration);
+    ASSERT_NE(kNoTimestamp, new_duration);
+    ASSERT_NE(kInfiniteDuration, new_duration);
   }
 
  private:
@@ -67,7 +67,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
                 &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
                 base::Unretained(&callbacks_)),
             new MediaLog())),
-        append_window_end_(kInfiniteDuration()),
+        append_window_end_(kInfiniteDuration),
         frame_duration_(base::TimeDelta::FromMilliseconds(10)),
         audio_id_(FrameProcessor::kAudioTrackId),
         video_id_(FrameProcessor::kVideoTrackId) {}
@@ -162,7 +162,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   void CheckExpectedRangesByTimestamp(ChunkDemuxerStream* stream,
                                       const std::string& expected) {
     // Note, DemuxerStream::TEXT streams return [0,duration (==infinity here))
-    Ranges<base::TimeDelta> r = stream->GetBufferedRanges(kInfiniteDuration());
+    Ranges<base::TimeDelta> r = stream->GetBufferedRanges(kInfiniteDuration);
 
     std::stringstream ss;
     ss << "{ ";
@@ -233,7 +233,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
         ss << ":" << original_time_in_ms;
 
       // Detect full-discard preroll buffer.
-      if (last_read_buffer_->discard_padding().first == kInfiniteDuration() &&
+      if (last_read_buffer_->discard_padding().first == kInfiniteDuration &&
           last_read_buffer_->discard_padding().second.is_zero()) {
         ss << "P";
       }

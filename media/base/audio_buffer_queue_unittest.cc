@@ -42,14 +42,9 @@ static scoped_refptr<AudioBuffer> MakeTestBuffer(SampleFormat format,
                                                  T start,
                                                  T step,
                                                  int frames) {
-  return MakeAudioBuffer<T>(format,
-                            channel_layout,
+  return MakeAudioBuffer<T>(format, channel_layout,
                             ChannelLayoutToChannelCount(channel_layout),
-                            kSampleRate,
-                            start,
-                            step,
-                            frames,
-                            kNoTimestamp());
+                            kSampleRate, start, step, frames, kNoTimestamp);
 }
 
 TEST(AudioBufferQueueTest, AppendAndClear) {

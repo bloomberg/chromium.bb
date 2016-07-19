@@ -541,7 +541,7 @@ bool WebMediaPlayerAndroid::seeking() const {
 
 double WebMediaPlayerAndroid::duration() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (duration_ == media::kInfiniteDuration())
+  if (duration_ == media::kInfiniteDuration)
     return std::numeric_limits<double>::infinity();
 
   return duration_.InSecondsF();
@@ -804,7 +804,7 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
   // For HLS streams, the reported duration may be zero for infinite streams.
   // See http://crbug.com/501213.
   if (duration.is_zero() && IsHLSStream())
-    duration = media::kInfiniteDuration();
+    duration = media::kInfiniteDuration;
 
   // Update duration, if necessary, prior to ready state updates that may
   // cause duration() query.

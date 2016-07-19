@@ -41,8 +41,8 @@ AvPipelineImpl::AvPipelineImpl(MediaPipelineBackend::Decoder* decoder,
       decoder_(decoder),
       client_(client),
       state_(kUninitialized),
-      buffered_time_(::media::kNoTimestamp()),
-      playable_buffered_time_(::media::kNoTimestamp()),
+      buffered_time_(::media::kNoTimestamp),
+      playable_buffered_time_(::media::kNoTimestamp),
       enable_feeding_(false),
       pending_read_(false),
       cast_cdm_context_(NULL),
@@ -122,8 +122,8 @@ void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
   pushed_buffer_ = nullptr;
   // Remove any frames left in the frame provider.
   pending_read_ = false;
-  buffered_time_ = ::media::kNoTimestamp();
-  playable_buffered_time_ = ::media::kNoTimestamp();
+  buffered_time_ = ::media::kNoTimestamp;
+  playable_buffered_time_ = ::media::kNoTimestamp;
   non_playable_frames_.clear();
 
   frame_provider_->Flush(base::Bind(&AvPipelineImpl::OnFlushDone, weak_this_));
@@ -256,7 +256,7 @@ void AvPipelineImpl::PushPendingBuffer() {
   if (!pending_buffer_->end_of_stream() && buffering_state_.get()) {
     base::TimeDelta timestamp =
         base::TimeDelta::FromMicroseconds(pending_buffer_->timestamp());
-    if (timestamp != ::media::kNoTimestamp())
+    if (timestamp != ::media::kNoTimestamp)
       buffering_state_->SetMaxRenderingTime(timestamp);
   }
 
@@ -348,7 +348,7 @@ void AvPipelineImpl::OnDataBuffered(
     return;
 
   if (!buffer->end_of_stream() &&
-      (buffered_time_ == ::media::kNoTimestamp() ||
+      (buffered_time_ == ::media::kNoTimestamp ||
        buffered_time_ <
            base::TimeDelta::FromMicroseconds(buffer->timestamp()))) {
     buffered_time_ = base::TimeDelta::FromMicroseconds(buffer->timestamp());
@@ -384,7 +384,7 @@ void AvPipelineImpl::UpdatePlayableFrames() {
         break;
       }
 
-      if (playable_buffered_time_ == ::media::kNoTimestamp() ||
+      if (playable_buffered_time_ == ::media::kNoTimestamp ||
           playable_buffered_time_ < base::TimeDelta::FromMicroseconds(
                                         non_playable_frame->timestamp())) {
         playable_buffered_time_ =

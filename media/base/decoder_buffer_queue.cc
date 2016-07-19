@@ -11,9 +11,7 @@
 namespace media {
 
 DecoderBufferQueue::DecoderBufferQueue()
-    : earliest_valid_timestamp_(kNoTimestamp()),
-      data_size_(0) {
-}
+    : earliest_valid_timestamp_(kNoTimestamp), data_size_(0) {}
 
 DecoderBufferQueue::~DecoderBufferQueue() {}
 
@@ -26,12 +24,12 @@ void DecoderBufferQueue::Push(const scoped_refptr<DecoderBuffer>& buffer) {
 
   // TODO(scherkus): FFmpeg returns some packets with no timestamp after
   // seeking. Fix and turn this into CHECK(). See http://crbug.com/162192
-  if (buffer->timestamp() == kNoTimestamp()) {
+  if (buffer->timestamp() == kNoTimestamp) {
     DVLOG(1) << "Buffer has no timestamp";
     return;
   }
 
-  if (earliest_valid_timestamp_ == kNoTimestamp()) {
+  if (earliest_valid_timestamp_ == kNoTimestamp) {
     earliest_valid_timestamp_ = buffer->timestamp();
   }
 
@@ -68,7 +66,7 @@ void DecoderBufferQueue::Clear() {
   queue_.clear();
   data_size_ = 0;
   in_order_queue_.clear();
-  earliest_valid_timestamp_ = kNoTimestamp();
+  earliest_valid_timestamp_ = kNoTimestamp;
 }
 
 bool DecoderBufferQueue::IsEmpty() {

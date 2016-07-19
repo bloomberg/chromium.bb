@@ -400,7 +400,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
   RCHECK(config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()));
 
-  StreamParser::InitParameters params(kInfiniteDuration());
+  StreamParser::InitParameters params(kInfiniteDuration);
   if (moov_->extends.header.fragment_duration > 0) {
     params.duration = TimeDeltaFromRational(
         moov_->extends.header.fragment_duration, moov_->header.timescale);

@@ -61,7 +61,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     int track_num() const { return track_num_; }
 
     // If a buffer is currently held aside pending duration calculation, returns
-    // its decode timestamp. Otherwise, returns kInfiniteDuration().
+    // its decode timestamp. Otherwise, returns kInfiniteDuration.
     DecodeTimestamp GetReadyUpperBound();
 
     // Prepares |ready_buffers_| for retrieval. Prior to calling,
@@ -80,7 +80,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
 
     // If |last_added_buffer_missing_duration_| is set, updates its duration to
-    // be non-kNoTimestamp() value of |estimated_next_frame_duration_| or a
+    // be non-kNoTimestamp value of |estimated_next_frame_duration_| or a
     // hard-coded default, then adds it to |buffers_| and unsets
     // |last_added_buffer_missing_duration_|. (This method helps stream parser
     // emit all buffers in a media segment before signaling end of segment.)
@@ -131,12 +131,12 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // timestamp).
     BufferQueue ready_buffers_;
 
-    // If kNoTimestamp(), then |estimated_next_frame_duration_| will be used.
+    // If kNoTimestamp, then |estimated_next_frame_duration_| will be used.
     base::TimeDelta default_duration_;
 
-    // If kNoTimestamp(), then a default value will be used. This estimate is
+    // If kNoTimestamp, then a default value will be used. This estimate is
     // the maximum (for video), or minimum (for audio) duration seen so far for
-    // this track, and is used only if |default_duration_| is kNoTimestamp().
+    // this track, and is used only if |default_duration_| is kNoTimestamp.
     // TODO(chcunningham): Use maximum for audio too, adding checks to disable
     // splicing when these estimates are observed in SourceBufferStream.
     base::TimeDelta estimated_next_frame_duration_;
@@ -239,7 +239,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // |ready_buffer_upper_bound_| and calls ExtractReadyBuffers() on each track.
   // If |cluster_ended_| is true, first applies duration estimate if needed for
   // |audio_| and |video_| and sets |ready_buffer_upper_bound_| to
-  // kInfiniteDuration(). Otherwise, sets |ready_buffer_upper_bound_| to the
+  // kInfiniteDuration. Otherwise, sets |ready_buffer_upper_bound_| to the
   // minimum upper bound across |audio_| and |video_|. (Text tracks can have no
   // buffers missing duration, so they are not involved in calculating the upper
   // bound.)
@@ -253,7 +253,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   Track* FindTextTrack(int track_num);
 
   // Attempts to read the duration from the encoded audio data, returning as
-  // TimeDelta or kNoTimestamp() if duration cannot be retrieved. This obviously
+  // TimeDelta or kNoTimestamp if duration cannot be retrieved. This obviously
   // violates layering rules, but is useful for MSE to know duration in cases
   // where it isn't explicitly given and cannot be calculated for Blocks at the
   // end of a Cluster (the next Cluster in playback-order may not be the next
@@ -263,7 +263,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   base::TimeDelta TryGetEncodedAudioDuration(const uint8_t* data, int size);
 
   // Reads Opus packet header to determine packet duration. Duration returned
-  // as TimeDelta or kNoTimestamp() upon failure to read duration from packet.
+  // as TimeDelta or kNoTimestamp upon failure to read duration from packet.
   base::TimeDelta ReadOpusDuration(const uint8_t* data, int size);
 
   // Tracks the number of MEDIA_LOGs made in process of reading encoded
@@ -313,7 +313,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // calculated, by Reset() and Parse(). If kNoDecodeTimestamp(), then
   // Get{Audio,Video,Text}Buffers() will calculate it to be the minimum (decode)
   // timestamp across all tracks' |last_buffer_missing_duration_|, or
-  // kInfiniteDuration() if no buffers are currently missing duration.
+  // kInfiniteDuration if no buffers are currently missing duration.
   DecodeTimestamp ready_buffer_upper_bound_;
 
   scoped_refptr<MediaLog> media_log_;

@@ -34,12 +34,12 @@ static base::TimeDelta PrecisionCappedDefaultDuration(
     const double timecode_scale_in_us,
     const int64_t duration_in_ns) {
   if (duration_in_ns <= 0)
-    return kNoTimestamp();
+    return kNoTimestamp;
 
   int64_t mult = duration_in_ns / 1000;
   mult /= timecode_scale_in_us;
   if (mult == 0)
-    return kNoTimestamp();
+    return kNoTimestamp;
 
   mult = static_cast<double>(mult) * timecode_scale_in_us;
   return base::TimeDelta::FromMicroseconds(mult);

@@ -105,7 +105,7 @@ StreamReader::StreamReader(media::Demuxer* demuxer,
   if (stream) {
     streams_.push_back(stream);
     end_of_stream_.push_back(false);
-    last_read_timestamp_.push_back(media::kNoTimestamp());
+    last_read_timestamp_.push_back(media::kNoTimestamp);
     counts_.push_back(0);
   }
 
@@ -113,7 +113,7 @@ StreamReader::StreamReader(media::Demuxer* demuxer,
   if (stream) {
     streams_.push_back(stream);
     end_of_stream_.push_back(false);
-    last_read_timestamp_.push_back(media::kNoTimestamp());
+    last_read_timestamp_.push_back(media::kNoTimestamp);
     counts_.push_back(0);
 
     if (enable_bitstream_converter)
@@ -133,7 +133,7 @@ void StreamReader::Read() {
       base::MessageLoop::current(), &end_of_stream, &timestamp));
   base::RunLoop().Run();
 
-  CHECK(end_of_stream || timestamp != media::kNoTimestamp());
+  CHECK(end_of_stream || timestamp != media::kNoTimestamp);
   end_of_stream_[index] = end_of_stream;
   last_read_timestamp_[index] = timestamp;
   counts_[index]++;
@@ -156,7 +156,7 @@ void StreamReader::OnReadDone(
   CHECK_EQ(status, media::DemuxerStream::kOk);
   CHECK(buffer.get());
   *end_of_stream = buffer->end_of_stream();
-  *timestamp = *end_of_stream ? media::kNoTimestamp() : buffer->timestamp();
+  *timestamp = *end_of_stream ? media::kNoTimestamp : buffer->timestamp();
   message_loop->task_runner()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
@@ -169,7 +169,7 @@ int StreamReader::GetNextStreamIndexToRead() {
       continue;
 
     // Use a stream if it hasn't been read from yet.
-    if (last_read_timestamp_[i] == media::kNoTimestamp())
+    if (last_read_timestamp_[i] == media::kNoTimestamp)
       return i;
 
     if (index < 0 ||

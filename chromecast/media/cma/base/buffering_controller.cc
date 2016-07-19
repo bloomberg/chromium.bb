@@ -97,14 +97,14 @@ void BufferingController::SetMediaTime(base::TimeDelta time) {
 }
 
 base::TimeDelta BufferingController::GetMaxRenderingTime() const {
-  base::TimeDelta max_rendering_time(::media::kNoTimestamp());
+  base::TimeDelta max_rendering_time(::media::kNoTimestamp);
   for (StreamList::const_iterator it = stream_list_.begin();
        it != stream_list_.end(); ++it) {
     base::TimeDelta max_stream_rendering_time =
         (*it)->GetMaxRenderingTime();
-    if (max_stream_rendering_time == ::media::kNoTimestamp())
-      return ::media::kNoTimestamp();
-    if (max_rendering_time == ::media::kNoTimestamp() ||
+    if (max_stream_rendering_time == ::media::kNoTimestamp)
+      return ::media::kNoTimestamp;
+    if (max_rendering_time == ::media::kNoTimestamp ||
         max_stream_rendering_time < max_rendering_time) {
       max_rendering_time = max_stream_rendering_time;
     }

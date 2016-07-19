@@ -225,7 +225,7 @@ void FFmpegAudioDecoder::DecodeBuffer(
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
+  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp) {
     DVLOG(1) << "Received a buffer without timestamps!";
     decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;

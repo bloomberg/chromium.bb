@@ -687,7 +687,7 @@ blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
       pipeline_.GetBufferedTimeRanges();
 
   const base::TimeDelta duration = pipeline_.GetMediaDuration();
-  if (duration != kInfiniteDuration()) {
+  if (duration != kInfiniteDuration) {
     buffered_data_source_host_.AddBufferedTimeRanges(
         &buffered_time_ranges, duration);
   }
@@ -1424,7 +1424,7 @@ double WebMediaPlayerImpl::GetPipelineDuration() const {
 
   // Return positive infinity if the resource is unbounded.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
-  if (duration == kInfiniteDuration())
+  if (duration == kInfiniteDuration)
     return std::numeric_limits<double>::infinity();
 
   return duration.InSecondsF();

@@ -130,7 +130,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
   // to do so can lead to unitialized value usage.  See http://crbug.com/390941
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
-      format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());
+      format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp);
 
   // Prefer the color space from the codec context. If it's not specified (or is
   // set to an unsupported value), fall back on the value from the config.

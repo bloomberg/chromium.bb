@@ -32,7 +32,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<NullMediaLog> media_log(new NullMediaLog());
   media::mp2t::EsParserMpeg1Audio es_parser(base::Bind(&NewAudioConfig),
                                             base::Bind(&EmitBuffer), media_log);
-  if (!es_parser.Parse(data, size, media::kNoTimestamp(),
+  if (!es_parser.Parse(data, size, media::kNoTimestamp,
                        media::kNoDecodeTimestamp())) {
     return 0;
   }

@@ -550,7 +550,7 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
   // TODO(wolenetz): If possible, detect and report track counts by type more
   // accurately here. Currently, capped at max 1 each for audio and video, with
   // assumption of 0 text tracks.
-  InitParameters params(kInfiniteDuration());
+  InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count =
       queue_with_config.audio_config.IsValidConfig() ? 1 : 0;
   params.detected_video_track_count =

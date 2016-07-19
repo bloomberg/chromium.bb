@@ -119,7 +119,7 @@ class BufferingState
   State state_;
 
   // Playback media time.
-  // Equal to kNoTimestamp() when not known.
+  // Equal to kNoTimestamp when not known.
   base::TimeDelta media_time_;
 
   // Maximum rendering media time.
@@ -128,7 +128,7 @@ class BufferingState
   base::TimeDelta max_rendering_time_;
 
   // Buffered media time.
-  // Equal to kNoTimestamp() when not known.
+  // Equal to kNoTimestamp when not known.
   base::TimeDelta buffered_time_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferingState);

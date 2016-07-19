@@ -375,7 +375,7 @@ void DecoderStream<StreamType>::DecodeInternal(
 
   if (buffer->end_of_stream())
     decoding_eos_ = true;
-  else if (buffer->duration() != kNoTimestamp())
+  else if (buffer->duration() != kNoTimestamp)
     duration_tracker_.AddSample(buffer->duration());
 
   ++pending_decode_requests_;
@@ -667,7 +667,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   }
 
   if (!splice_observer_cb_.is_null() && !buffer->end_of_stream()) {
-    const bool has_splice_ts = buffer->splice_timestamp() != kNoTimestamp();
+    const bool has_splice_ts = buffer->splice_timestamp() != kNoTimestamp;
     if (active_splice_ || has_splice_ts) {
       splice_observer_cb_.Run(buffer->splice_timestamp());
       active_splice_ = has_splice_ts;

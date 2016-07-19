@@ -139,9 +139,8 @@ FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(ClearKeyCdmHost* host)
       channels_(0),
       av_sample_format_(0),
       bytes_per_frame_(0),
-      last_input_timestamp_(kNoTimestamp()),
-      output_bytes_to_drop_(0) {
-}
+      last_input_timestamp_(kNoTimestamp),
+      output_bytes_to_drop_(0) {}
 
 FFmpegCdmAudioDecoder::~FFmpegCdmAudioDecoder() {
   ReleaseFFmpegResources();
@@ -233,7 +232,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 
   bool is_vorbis = codec_context_->codec_id == AV_CODEC_ID_VORBIS;
   if (!is_end_of_stream) {
-    if (last_input_timestamp_ == kNoTimestamp()) {
+    if (last_input_timestamp_ == kNoTimestamp) {
       if (is_vorbis && timestamp < base::TimeDelta()) {
         // Dropping frames for negative timestamps as outlined in section A.2
         // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
@@ -243,7 +242,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
       } else {
         last_input_timestamp_ = timestamp;
       }
-    } else if (timestamp != kNoTimestamp()) {
+    } else if (timestamp != kNoTimestamp) {
       if (timestamp < last_input_timestamp_) {
         base::TimeDelta diff = timestamp - last_input_timestamp_;
         DVLOG(1) << "Input timestamps are not monotonically increasing! "
@@ -299,9 +298,9 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
     packet.size -= result;
     packet.data += result;
 
-    if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
+    if (output_timestamp_helper_->base_timestamp() == kNoTimestamp &&
         !is_end_of_stream) {
-      DCHECK(timestamp != kNoTimestamp());
+      DCHECK(timestamp != kNoTimestamp);
       if (output_bytes_to_drop_ > 0) {
         // Currently Vorbis is the only codec that causes us to drop samples.
         // If we have to drop samples it always means the timeline starts at 0.
@@ -410,8 +409,8 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 }
 
 void FFmpegCdmAudioDecoder::ResetTimestampState() {
-  output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
-  last_input_timestamp_ = kNoTimestamp();
+  output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp);
+  last_input_timestamp_ = kNoTimestamp;
   output_bytes_to_drop_ = 0;
 }
 

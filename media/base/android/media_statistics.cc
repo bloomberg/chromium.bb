@@ -41,7 +41,7 @@ MediaStatistics::~MediaStatistics() {}
 void MediaStatistics::Start(base::TimeDelta current_playback_time) {
   DVLOG(1) << __FUNCTION__;
 
-  if (start_time_ == kNoTimestamp()) {
+  if (start_time_ == kNoTimestamp) {
     Clear();
     start_time_ = current_playback_time;
   }
@@ -50,19 +50,19 @@ void MediaStatistics::Start(base::TimeDelta current_playback_time) {
 void MediaStatistics::StopAndReport(base::TimeDelta current_playback_time) {
   DVLOG(1) << __FUNCTION__;
 
-  if (start_time_ == kNoTimestamp())
+  if (start_time_ == kNoTimestamp)
     return;  // skip if there was no prior Start().
 
-  if (current_playback_time == kNoTimestamp()) {
+  if (current_playback_time == kNoTimestamp) {
     // Cancel the start event and skip if current time is unknown.
-    start_time_ = kNoTimestamp();
+    start_time_ = kNoTimestamp;
     return;
   }
 
   base::TimeDelta duration = current_playback_time - start_time_;
 
   // Reset start time.
-  start_time_ = kNoTimestamp();
+  start_time_ = kNoTimestamp;
 
   if (duration < base::TimeDelta::FromSeconds(kMinDurationInSeconds))
     return;  // duration is too short.
@@ -74,7 +74,7 @@ void MediaStatistics::StopAndReport(base::TimeDelta current_playback_time) {
 }
 
 void MediaStatistics::Clear() {
-  start_time_ = kNoTimestamp();
+  start_time_ = kNoTimestamp;
   audio_frame_stats_.Clear();
   video_frame_stats_.Clear();
   num_starvations_ = 0;

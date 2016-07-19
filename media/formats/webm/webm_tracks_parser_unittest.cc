@@ -152,9 +152,9 @@ TEST_F(WebMTracksParserTest, AudioVideoDefaultDurationUnset) {
   EXPECT_LE(0, result);
   EXPECT_EQ(static_cast<int>(buf.size()), result);
 
-  EXPECT_EQ(kNoTimestamp(),
+  EXPECT_EQ(kNoTimestamp,
             parser->GetAudioDefaultDuration(kDefaultTimecodeScaleInUs));
-  EXPECT_EQ(kNoTimestamp(),
+  EXPECT_EQ(kNoTimestamp,
             parser->GetVideoDefaultDuration(kDefaultTimecodeScaleInUs));
 
   const VideoDecoderConfig& video_config = parser->video_decoder_config();
@@ -186,7 +186,7 @@ TEST_F(WebMTracksParserTest, AudioVideoDefaultDurationSet) {
             parser->GetAudioDefaultDuration(kDefaultTimecodeScaleInUs));
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(985000),
             parser->GetVideoDefaultDuration(5000.0));  // 5 ms resolution
-  EXPECT_EQ(kNoTimestamp(), parser->GetAudioDefaultDuration(12346.0));
+  EXPECT_EQ(kNoTimestamp, parser->GetAudioDefaultDuration(12346.0));
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(12345),
             parser->GetAudioDefaultDuration(12345.0));
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(12003),

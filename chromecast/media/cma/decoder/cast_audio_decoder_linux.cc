@@ -137,7 +137,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     // FFmpegAudioDecoder requires a timestamp to be set.
     base::TimeDelta timestamp =
         base::TimeDelta::FromMicroseconds(data->timestamp());
-    if (timestamp == ::media::kNoTimestamp())
+    if (timestamp == ::media::kNoTimestamp)
       data->set_timestamp(base::TimeDelta());
 
     decode_pending_ = true;

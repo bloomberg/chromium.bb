@@ -553,7 +553,7 @@ DecodeTimestamp SourceBufferRange::GetEndTimestamp() const {
 DecodeTimestamp SourceBufferRange::GetBufferedEndTimestamp() const {
   DCHECK(!buffers_.empty());
   base::TimeDelta duration = buffers_.back()->duration();
-  if (duration == kNoTimestamp() || duration.is_zero())
+  if (duration == kNoTimestamp || duration.is_zero())
     duration = GetApproximateDuration();
   return GetEndTimestamp() + duration;
 }
@@ -606,7 +606,7 @@ base::TimeDelta SourceBufferRange::GetFudgeRoom() const {
 
 base::TimeDelta SourceBufferRange::GetApproximateDuration() const {
   base::TimeDelta max_interbuffer_distance = interbuffer_distance_cb_.Run();
-  DCHECK(max_interbuffer_distance != kNoTimestamp());
+  DCHECK(max_interbuffer_distance != kNoTimestamp);
   return max_interbuffer_distance;
 }
 
@@ -625,7 +625,7 @@ bool SourceBufferRange::GetBuffersInRange(DecodeTimestamp start,
        ++it) {
     const scoped_refptr<StreamParserBuffer>& buffer = *it;
     // Buffers without duration are not supported, so bail if we encounter any.
-    if (buffer->duration() == kNoTimestamp() ||
+    if (buffer->duration() == kNoTimestamp ||
         buffer->duration() <= base::TimeDelta()) {
       return false;
     }

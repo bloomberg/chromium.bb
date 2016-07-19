@@ -534,7 +534,7 @@ class MockMediaSource {
     chunk_demuxer_->StartWaitingForSeek(seek_time);
 
     chunk_demuxer_->ResetParserState(kSourceId, base::TimeDelta(),
-                                     kInfiniteDuration(),
+                                     kInfiniteDuration,
                                      &last_timestamp_offset_);
 
     DCHECK_LT(new_position, file_data_->data_size());
@@ -554,7 +554,7 @@ class MockMediaSource {
 
     ASSERT_TRUE(chunk_demuxer_->AppendData(
         kSourceId, file_data_->data() + current_position_, size,
-        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_));
+        base::TimeDelta(), kInfiniteDuration, &last_timestamp_offset_));
     current_position_ += size;
   }
 
@@ -564,7 +564,7 @@ class MockMediaSource {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     bool success =
         chunk_demuxer_->AppendData(kSourceId, pData, size, base::TimeDelta(),
-                                   kInfiniteDuration(), &timestamp_offset);
+                                   kInfiniteDuration, &timestamp_offset);
     last_timestamp_offset_ = timestamp_offset;
     return success;
   }
@@ -600,7 +600,7 @@ class MockMediaSource {
     if (!chunk_demuxer_)
       return;
     chunk_demuxer_->ResetParserState(kSourceId, base::TimeDelta(),
-                                     kInfiniteDuration(),
+                                     kInfiniteDuration,
                                      &last_timestamp_offset_);
     chunk_demuxer_->Shutdown();
     chunk_demuxer_ = NULL;
@@ -1504,7 +1504,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
 
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.adts");
   source.AppendAtTimeWithWindow(
-      append_time, append_time + adts_preroll_duration, kInfiniteDuration(),
+      append_time, append_time + adts_preroll_duration, kInfiniteDuration,
       second_file->data(), second_file->data_size());
   source.EndOfStream();
 
@@ -1636,7 +1636,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
 
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.mp3");
   source.AppendAtTimeWithWindow(append_time, append_time + mp3_preroll_duration,
-                                kInfiniteDuration(), second_file->data(),
+                                kInfiniteDuration, second_file->data(),
                                 second_file->data_size());
   source.EndOfStream();
 

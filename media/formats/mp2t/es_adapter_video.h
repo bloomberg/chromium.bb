@@ -62,7 +62,7 @@ class MEDIA_EXPORT EsAdapterVideo {
   void ProcessPendingBuffers(bool flush);
 
   // Return the PTS of the frame that comes just after |current_pts| in
-  // presentation order. Return kNoTimestamp() if not found.
+  // presentation order. Return kNoTimestamp if not found.
   base::TimeDelta GetNextFramePts(base::TimeDelta current_pts);
 
   // Replace the leading non key frames by |stream_parser_buffer|

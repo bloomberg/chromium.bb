@@ -167,7 +167,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                     const DecodeCB& decode_cb) {
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
-  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
+  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp) {
     DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
              << ": no timestamp, skipping this buffer";
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
@@ -212,7 +212,7 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
     success = CreateMediaCodecLoop();
 
   // Reset AudioTimestampHelper.
-  timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
+  timestamp_helper_->SetBaseTimestamp(kNoTimestamp);
 
   SetState(success ? STATE_READY : STATE_ERROR);
 
@@ -440,8 +440,7 @@ bool MediaCodecAudioDecoder::OnDecodedFrame(
 
   // Calculate and set buffer timestamp.
 
-  const bool first_buffer =
-      timestamp_helper_->base_timestamp() == kNoTimestamp();
+  const bool first_buffer = timestamp_helper_->base_timestamp() == kNoTimestamp;
   if (first_buffer) {
     // Clamp the base timestamp to zero.
     timestamp_helper_->SetBaseTimestamp(std::max(base::TimeDelta(), out.pts));

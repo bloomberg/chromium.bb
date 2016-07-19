@@ -235,7 +235,7 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
                              bool is_key_frame,
                              int pps_id) {
   // Get the access unit timing info.
-  // Note: |current_timing_desc.pts| might be |kNoTimestamp()| at this point
+  // Note: |current_timing_desc.pts| might be |kNoTimestamp| at this point
   // if:
   // - the stream is not fully MPEG-2 compliant.
   // - or if the stream relies on H264 VUI parameters to compute the timestamps.
@@ -243,8 +243,7 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   //   This part is not yet implemented in EsParserH264.
   // |es_adapter_| will take care of the missing timestamps.
   TimingDesc current_timing_desc = GetTimingDescriptor(access_unit_pos);
-  DVLOG_IF(1, current_timing_desc.pts == kNoTimestamp())
-      << "Missing timestamp";
+  DVLOG_IF(1, current_timing_desc.pts == kNoTimestamp) << "Missing timestamp";
 
   // If only the PTS is provided, copy the PTS into the DTS.
   if (current_timing_desc.dts == kNoDecodeTimestamp()) {

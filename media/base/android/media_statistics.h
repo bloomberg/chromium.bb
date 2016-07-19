@@ -77,7 +77,7 @@ class MediaStatistics {
   // the duration to UMA.
   void Report(base::TimeDelta duration);
 
-  base::TimeDelta start_time_ = kNoTimestamp();
+  base::TimeDelta start_time_ = kNoTimestamp;
   FrameStatistics audio_frame_stats_;
   FrameStatistics video_frame_stats_;
   uint32_t num_starvations_ = 0;

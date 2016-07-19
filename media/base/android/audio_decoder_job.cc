@@ -108,7 +108,7 @@ void AudioDecoderJob::ReleaseOutputBuffer(
   bool is_audio_underrun = false;
 
   // Ignore input value.
-  current_presentation_timestamp = kNoTimestamp();
+  current_presentation_timestamp = kNoTimestamp;
 
   if (render_output) {
     int64_t head_position;

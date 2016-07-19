@@ -266,7 +266,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   ChunkDemuxerTest()
       : media_log_(new StrictMock<MockMediaLog>()),
-        append_window_end_for_next_append_(kInfiniteDuration()) {
+        append_window_end_for_next_append_(kInfiniteDuration) {
     init_segment_received_cb_ = base::Bind(
         &ChunkDemuxerTest::InitSegmentReceived, base::Unretained(this));
     CreateNewDemuxer();
@@ -792,7 +792,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   PipelineStatusCB CreateInitDoneCB(const base::TimeDelta& expected_duration,
                                     PipelineStatus expected_status) {
-    if (expected_duration != kNoTimestamp())
+    if (expected_duration != kNoTimestamp)
       EXPECT_CALL(host_, SetDuration(expected_duration));
     return CreateInitDoneCB(expected_status);
   }
@@ -833,7 +833,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     PipelineStatus expected_status =
         (stream_flags != 0) ? PIPELINE_OK : CHUNK_DEMUXER_ERROR_APPEND_FAILED;
 
-    base::TimeDelta expected_duration = kNoTimestamp();
+    base::TimeDelta expected_duration = kNoTimestamp;
     if (expected_status == PIPELINE_OK)
       expected_duration = kDefaultDuration();
 
@@ -1228,7 +1228,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     DemuxerStream* stream = demuxer_->GetStream(type);
     scoped_refptr<DecoderBuffer> buffer;
 
-    *last_timestamp = kNoTimestamp();
+    *last_timestamp = kNoTimestamp;
     do {
       stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
                               base::Unretained(this), status, &buffer));
@@ -1286,7 +1286,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
       // Handle preroll buffers.
       if (base::EndsWith(timestamps[i], "P", base::CompareCase::SENSITIVE)) {
-        ASSERT_EQ(kInfiniteDuration(), buffer->discard_padding().first);
+        ASSERT_EQ(kInfiniteDuration, buffer->discard_padding().first);
         ASSERT_EQ(base::TimeDelta(), buffer->discard_padding().second);
         ss << "P";
       }
@@ -2265,7 +2265,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
   ExpectInitMediaLogs(HAS_AUDIO | HAS_VIDEO);
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2)).Times(7);
   ASSERT_TRUE(ParseWebMFile("bear-320x240-live.webm", buffer_timestamps,
-                            kInfiniteDuration()));
+                            kInfiniteDuration));
 
   DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
   EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, audio->liveness());
@@ -2391,8 +2391,7 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
 TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_,
-      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
@@ -2407,8 +2406,7 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
 TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_,
-      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
   std::vector<std::string> codecs(1);
@@ -2428,8 +2426,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
 TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_,
-      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
   std::vector<std::string> codecs(1);
@@ -2449,8 +2446,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
 TEST_F(ChunkDemuxerTest, AudioOnlyHeaderWithAVType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_,
-      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
   std::vector<std::string> codecs(2);
@@ -2471,8 +2467,7 @@ TEST_F(ChunkDemuxerTest, AudioOnlyHeaderWithAVType) {
 TEST_F(ChunkDemuxerTest, VideoOnlyHeaderWithAVType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_,
-      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
   std::vector<std::string> codecs(2);
@@ -3484,8 +3479,8 @@ TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
   EXPECT_MEDIA_LOG(CodecName("audio", "aac"));
   EXPECT_MEDIA_LOG(FoundStream("video"));
   EXPECT_MEDIA_LOG(CodecName("video", "h264"));
-  demuxer_->Initialize(
-      &host_, CreateInitDoneCB(kInfiniteDuration(), PIPELINE_OK), true);
+  demuxer_->Initialize(&host_, CreateInitDoneCB(kInfiniteDuration, PIPELINE_OK),
+                       true);
   EXPECT_EQ(ChunkDemuxer::kOk, AddIdForMp2tSource(kSourceId));
 
   // For info:
@@ -3532,8 +3527,8 @@ TEST_F(ChunkDemuxerTest, SeekCompleteDuringAbort) {
   EXPECT_MEDIA_LOG(CodecName("audio", "aac"));
   EXPECT_MEDIA_LOG(FoundStream("video"));
   EXPECT_MEDIA_LOG(CodecName("video", "h264"));
-  demuxer_->Initialize(
-      &host_, CreateInitDoneCB(kInfiniteDuration(), PIPELINE_OK), true);
+  demuxer_->Initialize(&host_, CreateInitDoneCB(kInfiniteDuration, PIPELINE_OK),
+                       true);
   EXPECT_EQ(ChunkDemuxer::kOk, AddIdForMp2tSource(kSourceId));
 
   // For info:
@@ -4322,7 +4317,7 @@ TEST_F(ChunkDemuxerTest, Remove_StartAtDuration) {
 
   demuxer_->Remove(kSourceId,
                    base::TimeDelta::FromSecondsD(demuxer_->GetDuration()),
-                   kInfiniteDuration());
+                   kInfiniteDuration);
 
   Seek(base::TimeDelta());
   CheckExpectedRanges("{ [0,160) }");

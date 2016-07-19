@@ -394,7 +394,7 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
   JNIEnv* env = base::android::AttachCurrentThread();
   const int duration_ms =
       Java_MediaPlayerBridge_getDuration(env, j_media_player_bridge_.obj());
-  return duration_ms < 0 ? media::kInfiniteDuration()
+  return duration_ms < 0 ? media::kInfiniteDuration
                          : base::TimeDelta::FromMilliseconds(duration_ms);
 }
 

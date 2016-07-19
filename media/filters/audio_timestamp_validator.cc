@@ -28,7 +28,7 @@ AudioTimestampValidator::AudioTimestampValidator(
     const scoped_refptr<MediaLog>& media_log)
     : has_codec_delay_(decoder_config.codec_delay() > 0),
       media_log_(media_log),
-      audio_base_ts_(kNoTimestamp()),
+      audio_base_ts_(kNoTimestamp),
       reached_stable_state_(false),
       num_unstable_audio_tries_(0),
       limit_unstable_audio_tries_(kLimitTriesForStableTiming),
@@ -42,12 +42,12 @@ void AudioTimestampValidator::CheckForTimestampGap(
     const scoped_refptr<DecoderBuffer>& buffer) {
   if (buffer->end_of_stream())
     return;
-  DCHECK_NE(kNoTimestamp(), buffer->timestamp());
+  DCHECK_NE(kNoTimestamp, buffer->timestamp());
 
-  // If audio_base_ts_ == kNoTimestamp(), we are processing our first buffer.
+  // If audio_base_ts_ == kNoTimestamp, we are processing our first buffer.
   // If stream has neither codec delay nor discard padding, we should expect
   // timestamps and output durations to line up from the start (i.e. be stable).
-  if (audio_base_ts_ == kNoTimestamp() && !has_codec_delay_ &&
+  if (audio_base_ts_ == kNoTimestamp && !has_codec_delay_ &&
       buffer->discard_padding().first == base::TimeDelta() &&
       buffer->discard_padding().second == base::TimeDelta()) {
     DVLOG(3) << __FUNCTION__
@@ -131,7 +131,7 @@ void AudioTimestampValidator::CheckForTimestampGap(
 void AudioTimestampValidator::RecordOutputDuration(
     const scoped_refptr<AudioBuffer>& audio_buffer) {
   if (!audio_output_ts_helper_) {
-    DCHECK_NE(audio_base_ts_, kNoTimestamp());
+    DCHECK_NE(audio_base_ts_, kNoTimestamp);
     // SUBTLE: deliberately creating this with output buffer sample rate because
     // demuxer stream config is potentially stale for implicit AAC.
     audio_output_ts_helper_.reset(

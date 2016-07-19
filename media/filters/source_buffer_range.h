@@ -178,7 +178,7 @@ class SourceBufferRange {
   void ResetNextBufferPosition();
 
   // Returns the timestamp of the next buffer that will be returned from
-  // GetNextBuffer(), or kNoTimestamp() if the timestamp is unknown.
+  // GetNextBuffer(), or kNoTimestamp if the timestamp is unknown.
   DecodeTimestamp GetNextTimestamp() const;
 
   // Returns the start timestamp of the range.
@@ -193,7 +193,7 @@ class SourceBufferRange {
   DecodeTimestamp GetBufferedEndTimestamp() const;
 
   // Gets the timestamp for the keyframe that is after |timestamp|. If
-  // there isn't a keyframe in the range after |timestamp| then kNoTimestamp()
+  // there isn't a keyframe in the range after |timestamp| then kNoTimestamp
   // is returned. If |timestamp| is in the "gap" between the value  returned by
   // GetStartTimestamp() and the timestamp on the first buffer in |buffers_|,
   // then |timestamp| is returned.
@@ -201,7 +201,7 @@ class SourceBufferRange {
 
   // Gets the timestamp for the closest keyframe that is <= |timestamp|. If
   // there isn't a keyframe before |timestamp| or |timestamp| is outside
-  // this range, then kNoTimestamp() is returned.
+  // this range, then kNoTimestamp is returned.
   DecodeTimestamp KeyframeBeforeTimestamp(DecodeTimestamp timestamp);
 
   // Returns whether a buffer with a starting timestamp of |timestamp| would

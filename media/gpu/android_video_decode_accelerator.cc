@@ -82,32 +82,26 @@ static const VideoCodecProfile kSupportedH264Profiles[] = {
 // saturated).  This function defines the polling delay.  The value used is an
 // arbitrary choice that trades off CPU utilization (spinning) against latency.
 // Mirrors android_video_encode_accelerator.cc:EncodePollDelay().
-static inline const base::TimeDelta DecodePollDelay() {
-  // An alternative to this polling scheme could be to dedicate a new thread
-  // (instead of using the ChildThread) to run the MediaCodec, and make that
-  // thread use the timeout-based flavor of MediaCodec's dequeue methods when it
-  // believes the codec should complete "soon" (e.g. waiting for an input
-  // buffer, or waiting for a picture when it knows enough complete input
-  // pictures have been fed to saturate any internal buffering).  This is
-  // speculative and it's unclear that this would be a win (nor that there's a
-  // reasonably device-agnostic way to fill in the "believes" above).
-  return base::TimeDelta::FromMilliseconds(10);
-}
+//
+// An alternative to this polling scheme could be to dedicate a new thread
+// (instead of using the ChildThread) to run the MediaCodec, and make that
+// thread use the timeout-based flavor of MediaCodec's dequeue methods when it
+// believes the codec should complete "soon" (e.g. waiting for an input
+// buffer, or waiting for a picture when it knows enough complete input
+// pictures have been fed to saturate any internal buffering).  This is
+// speculative and it's unclear that this would be a win (nor that there's a
+// reasonably device-agnostic way to fill in the "believes" above).
+constexpr base::TimeDelta DecodePollDelay =
+    base::TimeDelta::FromMilliseconds(10);
 
-static inline const base::TimeDelta NoWaitTimeOut() {
-  return base::TimeDelta::FromMicroseconds(0);
-}
+constexpr base::TimeDelta NoWaitTimeOut = base::TimeDelta::FromMicroseconds(0);
 
-static inline const base::TimeDelta IdleTimerTimeOut() {
-  return base::TimeDelta::FromSeconds(1);
-}
+constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 
 // Time between when we notice an error, and when we actually notify somebody.
 // This is to prevent codec errors caused by SurfaceView fullscreen transitions
 // from breaking the pipeline, if we're about to be reset anyway.
-static inline const base::TimeDelta ErrorPostingDelay() {
-  return base::TimeDelta::FromSeconds(2);
-}
+constexpr base::TimeDelta ErrorPostingDelay = base::TimeDelta::FromSeconds(2);
 
 // For RecordFormatChangedMetric.
 enum FormatChangedValue {
@@ -224,7 +218,7 @@ class AVDATimerManager {
 
   // Request periodic callback of |avda_instance|->DoIOTask(). Does nothing if
   // the instance is already registered and the timer started. The first request
-  // will start the repeating timer on an interval of DecodePollDelay().
+  // will start the repeating timer on an interval of DecodePollDelay.
   void StartTimer(AndroidVideoDecodeAccelerator* avda_instance) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -237,7 +231,7 @@ class AVDATimerManager {
 
     if (io_timer_.IsRunning())
       return;
-    io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
+    io_timer_.Start(FROM_HERE, DecodePollDelay, this,
                     &AVDATimerManager::RunTimer);
   }
 
@@ -648,7 +642,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   // available input buffers. We have to reuse it in QueueSecureInputBuffer().
   if (input_buf_index == -1) {
     MediaCodecStatus status =
-        media_codec_->DequeueInputBuffer(NoWaitTimeOut(), &input_buf_index);
+        media_codec_->DequeueInputBuffer(NoWaitTimeOut, &input_buf_index);
     switch (status) {
       case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
         return false;
@@ -692,7 +686,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   const base::TimeDelta presentation_timestamp =
       bitstream_buffer.presentation_timestamp();
-  DCHECK(presentation_timestamp != kNoTimestamp())
+  DCHECK(presentation_timestamp != kNoTimestamp)
       << "Bitstream buffers must have valid presentation timestamps";
 
   // There may already be a bitstream buffer with this timestamp, e.g., VP9 alt
@@ -782,7 +776,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 
     TRACE_EVENT_BEGIN0("media", "AVDA::DequeueOutput");
     MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
-        NoWaitTimeOut(), &buf_index, &offset, &size, &presentation_timestamp,
+        NoWaitTimeOut, &buf_index, &offset, &size, &presentation_timestamp,
         &eos, NULL);
     TRACE_EVENT_END2("media", "AVDA::DequeueOutput", "status", status,
                      "presentation_timestamp (ms)",
@@ -1533,7 +1527,7 @@ void AndroidVideoDecodeAccelerator::PostError(
       from_here,
       base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
                  weak_this_factory_.GetWeakPtr(), error, error_sequence_token_),
-      (defer_errors_ ? ErrorPostingDelay() : base::TimeDelta()));
+      (defer_errors_ ? ErrorPostingDelay : base::TimeDelta()));
   state_ = ERROR;
 }
 
@@ -1653,7 +1647,7 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
   base::TimeTicks now = base::TimeTicks::Now();
   if (!did_work && !most_recent_work_.is_null()) {
     // Make sure that we have done work recently enough, else stop the timer.
-    if (now - most_recent_work_ > IdleTimerTimeOut()) {
+    if (now - most_recent_work_ > IdleTimerTimeOut) {
       most_recent_work_ = base::TimeTicks();
       should_be_running = false;
     }

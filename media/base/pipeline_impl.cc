@@ -93,8 +93,8 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
     PipelineStatistics statistics;
 
     // The media timestamp to return while the pipeline is suspended.
-    // Otherwise set to kNoTimestamp().
-    base::TimeDelta suspend_timestamp = kNoTimestamp();
+    // Otherwise set to kNoTimestamp.
+    base::TimeDelta suspend_timestamp = kNoTimestamp;
   };
 
   // DemuxerHost implementaion.
@@ -298,7 +298,7 @@ void PipelineImpl::RendererWrapper::Suspend() {
   {
     base::AutoLock auto_lock(shared_state_lock_);
     shared_state_.suspend_timestamp = shared_state_.renderer->GetMediaTime();
-    DCHECK(shared_state_.suspend_timestamp != kNoTimestamp());
+    DCHECK(shared_state_.suspend_timestamp != kNoTimestamp);
   }
 
   // Queue the asynchronous actions required to stop playback. (Matches setup in
@@ -385,7 +385,7 @@ base::TimeDelta PipelineImpl::RendererWrapper::GetMediaTime() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(shared_state_lock_);
-  if (shared_state_.suspend_timestamp != kNoTimestamp())
+  if (shared_state_.suspend_timestamp != kNoTimestamp)
     return shared_state_.suspend_timestamp;
   return shared_state_.renderer ? shared_state_.renderer->GetMediaTime()
                                 : base::TimeDelta();
@@ -831,7 +831,7 @@ void PipelineImpl::RendererWrapper::StateTransitionTask(PipelineStatus status) {
       shared_state_.renderer->StartPlayingFrom(start_timestamp_);
       {
         base::AutoLock auto_lock(shared_state_lock_);
-        shared_state_.suspend_timestamp = kNoTimestamp();
+        shared_state_.suspend_timestamp = kNoTimestamp;
       }
 
       if (text_renderer_)

@@ -100,7 +100,7 @@ StreamParserBuffer::StreamParserBuffer(const uint8_t* data,
   // duration to force clients to set them? Today they end up being zero which
   // is both a common and valid value and could lead to bugs.
   if (data) {
-    set_duration(kNoTimestamp());
+    set_duration(kNoTimestamp);
   }
 
   if (is_key_frame)
@@ -160,7 +160,7 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
 
   // Make a copy of this first, before making any changes.
   scoped_refptr<StreamParserBuffer> overlapping_buffer = CopyBuffer(*this);
-  overlapping_buffer->set_splice_timestamp(kNoTimestamp());
+  overlapping_buffer->set_splice_timestamp(kNoTimestamp);
 
   const scoped_refptr<StreamParserBuffer>& first_splice_buffer =
       pre_splice_buffers.front();
@@ -219,7 +219,7 @@ void StreamParserBuffer::SetPrerollBuffer(
   DCHECK(!end_of_stream());
   DCHECK(!preroll_buffer->end_of_stream());
   DCHECK(!preroll_buffer->preroll_buffer_.get());
-  DCHECK(preroll_buffer->splice_timestamp() == kNoTimestamp());
+  DCHECK(preroll_buffer->splice_timestamp() == kNoTimestamp);
   DCHECK(preroll_buffer->splice_buffers().empty());
   DCHECK(preroll_buffer->timestamp() <= timestamp());
   DCHECK(preroll_buffer->discard_padding() == DecoderBuffer::DiscardPadding());
@@ -232,7 +232,7 @@ void StreamParserBuffer::SetPrerollBuffer(
 
   // Mark the entire buffer for discard.
   preroll_buffer_->set_discard_padding(
-      std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+      std::make_pair(kInfiniteDuration, base::TimeDelta()));
 }
 
 void StreamParserBuffer::set_timestamp(base::TimeDelta timestamp) {

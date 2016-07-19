@@ -58,7 +58,7 @@ class MEDIA_EXPORT AudioBuffer
                                              const base::TimeDelta timestamp);
 
   // Create an AudioBuffer with |frame_count| frames. Buffer is allocated, but
-  // not initialized. Timestamp and duration are set to kNoTimestamp().
+  // not initialized. Timestamp and duration are set to kNoTimestamp.
   static scoped_refptr<AudioBuffer> CreateBuffer(SampleFormat sample_format,
                                                  ChannelLayout channel_layout,
                                                  int channel_count,

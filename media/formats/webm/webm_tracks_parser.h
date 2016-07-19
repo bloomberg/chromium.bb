@@ -48,7 +48,7 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   // If TrackEntry DefaultDuration field existed for the associated audio or
   // video track, returns that value converted from ns to base::TimeDelta with
   // precision not greater than |timecode_scale_in_us|. Defaults to
-  // kNoTimestamp().
+  // kNoTimestamp.
   base::TimeDelta GetAudioDefaultDuration(
       const double timecode_scale_in_us) const;
   base::TimeDelta GetVideoDefaultDuration(

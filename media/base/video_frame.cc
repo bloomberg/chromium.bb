@@ -464,7 +464,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
   scoped_refptr<VideoFrame> frame =
       new VideoFrame(PIXEL_FORMAT_UNKNOWN, STORAGE_UNKNOWN, gfx::Size(),
-                     gfx::Rect(), gfx::Size(), kNoTimestamp());
+                     gfx::Rect(), gfx::Size(), kNoTimestamp);
   frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
   return frame;
 }

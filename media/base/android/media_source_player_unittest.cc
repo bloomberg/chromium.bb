@@ -487,7 +487,7 @@ class MediaSourcePlayerTest : public testing::Test {
     // Send back the seek done notification. This should trigger the player to
     // call OnReadFromDemuxer() again.
     EXPECT_EQ(original_num_data_requests, demuxer_->num_data_requests());
-    player_.OnDemuxerSeekDone(kNoTimestamp());
+    player_.OnDemuxerSeekDone(kNoTimestamp);
     EXPECT_EQ(original_num_data_requests + 1, demuxer_->num_data_requests());
 
     // No other seek should have been requested.
@@ -768,7 +768,7 @@ class MediaSourcePlayerTest : public testing::Test {
     EXPECT_TRUE(manager_.playback_completed());
 
     player_.SeekTo(base::TimeDelta());
-    player_.OnDemuxerSeekDone(kNoTimestamp());
+    player_.OnDemuxerSeekDone(kNoTimestamp);
     Resume(have_audio, have_video);
   }
 
@@ -821,7 +821,7 @@ class MediaSourcePlayerTest : public testing::Test {
     WaitForDecodeDone(have_audio, have_video);
     EXPECT_EQ(1, demuxer_->num_seek_requests());
 
-    player_.OnDemuxerSeekDone(kNoTimestamp());
+    player_.OnDemuxerSeekDone(kNoTimestamp);
     EXPECT_FALSE(manager_.playback_completed());
   }
 
@@ -961,7 +961,7 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
   player_.Start();
 
   // Send the seek done notification. The player should start requesting data.
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_FALSE(GetMediaCodecBridge(false));
   EXPECT_EQ(1, demuxer_->num_data_requests());
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo(false));
@@ -1091,7 +1091,7 @@ TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {
   EXPECT_EQ(0, demuxer_->num_data_requests());
 
   // Sending back the seek done notification.
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_FALSE(GetMediaCodecBridge(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
@@ -1121,7 +1121,7 @@ TEST_F(MediaSourcePlayerTest, VideoOnlyStartAfterSeekFinish) {
   EXPECT_EQ(0, demuxer_->num_data_requests());
 
   // Sending back the seek done notification.
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_FALSE(GetMediaCodecBridge(false));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
@@ -1503,7 +1503,7 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_RegularSeekPendsBrowserSeekDone) {
 
   // Simulate regular seek is done and confirm player requests more data for
   // new video codec.
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_FALSE(GetMediaCodecBridge(false));
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(2, demuxer_->num_seek_requests());
@@ -1756,7 +1756,7 @@ TEST_F(MediaSourcePlayerTest, AudioPrerollFinishesBeforeVideo) {
 
   // Verify that the seek is requested.
   EXPECT_EQ(1, demuxer_->num_seek_requests());
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_EQ(4, demuxer_->num_data_requests());
   EXPECT_EQ(player_.GetCurrentTime().InMillisecondsF(), 100.0);
   EXPECT_EQ(GetPrerollTimestamp().InMillisecondsF(), 100.0);
@@ -1982,7 +1982,7 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySeek) {
   player_.SeekTo(base::TimeDelta::FromMilliseconds(100));
   WaitForAudioDecodeDone();
   EXPECT_FALSE(IsDrainingDecoder(true));
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
 
   EXPECT_EQ(1, demuxer_->num_seek_requests());
   EXPECT_EQ(4, demuxer_->num_data_requests());
@@ -2118,7 +2118,7 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekAndDone) {
   WaitForAudioDecodeDone();
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
   EXPECT_FALSE(GetMediaCodecBridge(true));
   EXPECT_FALSE(player_.IsPlaying());
@@ -2153,7 +2153,7 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekThenStart) {
 
   WaitForAudioDecodeDone();
   EXPECT_EQ(1, demuxer_->num_seek_requests());
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_TRUE(GetMediaDecoderJob(true));
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
@@ -2175,7 +2175,7 @@ TEST_F(MediaSourcePlayerTest, SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 
   ReleasePlayer();
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_FALSE(player_.IsPlaying());
   EXPECT_FALSE(GetMediaCodecBridge(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
@@ -2206,7 +2206,7 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenStart) {
   EXPECT_EQ(2, demuxer_->num_data_requests());
   Resume(false, false);
 
-  player_.OnDemuxerSeekDone(kNoTimestamp());
+  player_.OnDemuxerSeekDone(kNoTimestamp);
   EXPECT_FALSE(GetMediaCodecBridge(true));
   EXPECT_TRUE(IsPrerolling(true));
   EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());

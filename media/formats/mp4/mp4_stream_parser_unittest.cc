@@ -214,7 +214,7 @@ class MP4StreamParserTest : public testing::Test {
   StreamParser::InitParameters GetDefaultInitParametersExpectations() {
     // Most unencrypted test mp4 files have zero duration and are treated as
     // live streams.
-    StreamParser::InitParameters params(kInfiniteDuration());
+    StreamParser::InitParameters params(kInfiniteDuration);
     params.liveness = DemuxerStream::LIVENESS_LIVE;
     params.detected_audio_track_count = 1;
     params.detected_video_track_count = 1;

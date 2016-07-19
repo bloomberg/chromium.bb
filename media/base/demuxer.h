@@ -37,7 +37,7 @@ class MEDIA_EXPORT DemuxerHost {
       const Ranges<base::TimeDelta>& ranges) = 0;
 
   // Sets the duration of the media in microseconds.
-  // Duration may be kInfiniteDuration() if the duration is not known.
+  // Duration may be kInfiniteDuration if the duration is not known.
   virtual void SetDuration(base::TimeDelta duration) = 0;
 
   // Stops execution of the pipeline due to a fatal error. Do not call this

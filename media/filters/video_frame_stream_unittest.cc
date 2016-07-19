@@ -633,7 +633,7 @@ TEST_P(VideoFrameStreamTest, Reset_AfterNormalReadWithActiveSplice) {
 
   // Issue an explicit Reset() and clear the splice timestamp.
   Reset();
-  demuxer_stream_->set_splice_timestamp(kNoTimestamp());
+  demuxer_stream_->set_splice_timestamp(kNoTimestamp);
 
   // Ensure none of the upcoming calls indicate they have a splice timestamp.
   EXPECT_CALL(*this, OnNewSpliceBuffer(_)).Times(0);

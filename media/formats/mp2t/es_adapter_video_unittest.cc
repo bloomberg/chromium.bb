@@ -47,7 +47,7 @@ GenerateFakeBuffers(const int* frame_pts_ms,
         dummy_buffer, arraysize(dummy_buffer),
         is_key_frame[k], DemuxerStream::VIDEO, 0);
     if (frame_pts_ms[k] < 0) {
-      buffers[k]->set_timestamp(kNoTimestamp());
+      buffers[k]->set_timestamp(kNoTimestamp);
     } else {
       buffers[k]->set_timestamp(
           base::TimeDelta::FromMilliseconds(frame_pts_ms[k]));

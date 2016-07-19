@@ -109,7 +109,7 @@ static void SetDiscardPadding(AVPacket* packet,
   // Discard negative timestamps.
   if (buffer->timestamp() + buffer->duration() < base::TimeDelta()) {
     buffer->set_discard_padding(
-        std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+        std::make_pair(kInfiniteDuration, base::TimeDelta()));
     return;
   }
   if (buffer->timestamp() < base::TimeDelta()) {
@@ -452,7 +452,7 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
   SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
-  buffer->set_timestamp(kNoTimestamp());
+  buffer->set_timestamp(kNoTimestamp);
   DecodeBuffer(buffer);
   EXPECT_EQ(DecodeStatus::DECODE_ERROR, last_decode_status());
 }

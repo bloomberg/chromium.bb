@@ -359,7 +359,7 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
   // I-frame later than the requested one due to data removal or GC. Update
   // player clock to the actual seek target.
   if (doing_browser_seek_) {
-    DCHECK(actual_browser_seek_time != kNoTimestamp());
+    DCHECK(actual_browser_seek_time != kNoTimestamp);
     base::TimeDelta seek_time = actual_browser_seek_time;
     // A browser seek must not jump into the past. Ideally, it seeks to the
     // requested time, but it might jump into the future.
@@ -369,7 +369,7 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
     interpolator_.SetBounds(seek_time, seek_time);
     audio_decoder_job_->SetBaseTimestamp(seek_time);
   } else {
-    DCHECK(actual_browser_seek_time == kNoTimestamp());
+    DCHECK(actual_browser_seek_time == kNoTimestamp);
   }
 
   base::TimeDelta current_time = GetCurrentTime();
@@ -508,7 +508,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
   }
 
   // Increment frame counts for UMA.
-  if (current_presentation_timestamp != kNoTimestamp()) {
+  if (current_presentation_timestamp != kNoTimestamp) {
     FrameStatistics& frame_stats = is_audio ? media_stat_->audio_frame_stats()
                                             : media_stat_->video_frame_stats();
     frame_stats.IncrementFrameCount();
@@ -530,7 +530,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
   }
 
   if ((status == MEDIA_CODEC_OK || status == MEDIA_CODEC_INPUT_END_OF_STREAM) &&
-      is_clock_manager && current_presentation_timestamp != kNoTimestamp()) {
+      is_clock_manager && current_presentation_timestamp != kNoTimestamp) {
     UpdateTimestamps(current_presentation_timestamp,
                      max_presentation_timestamp);
   }
@@ -603,7 +603,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
     // If we have a valid timestamp, start the starvation callback. Otherwise,
     // reset the |start_time_ticks_| so that the next frame will not suffer
     // from the decoding delay caused by the current frame.
-    if (current_presentation_timestamp != kNoTimestamp())
+    if (current_presentation_timestamp != kNoTimestamp)
       StartStarvationCallback(current_presentation_timestamp,
                               max_presentation_timestamp);
     else

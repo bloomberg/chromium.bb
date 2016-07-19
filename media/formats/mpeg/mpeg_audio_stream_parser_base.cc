@@ -228,7 +228,7 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
       return -1;
 
     if (!init_cb_.is_null()) {
-      InitParameters params(kInfiniteDuration());
+      InitParameters params(kInfiniteDuration);
       params.detected_audio_track_count = 1;
       params.auto_update_timestamp_offset = true;
       base::ResetAndReturn(&init_cb_).Run(params);

@@ -128,7 +128,7 @@ class MEDIA_EXPORT SeekableBuffer {
   // timestamp for the current buffer is set to 0 or the data was added with
   // Append(const uint*, int), then returns value that corresponds to the
   // last position in a buffer that had timestamp set.
-  // kNoTimestamp() is returned if no buffers we read from had timestamp set.
+  // kNoTimestamp is returned if no buffers we read from had timestamp set.
   base::TimeDelta current_time() const { return current_time_; }
 
  private:

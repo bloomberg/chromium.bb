@@ -50,7 +50,7 @@ void DecoderBuffer::Initialize() {
   data_.reset(AllocateFFmpegSafeBlock(size_));
   if (side_data_size_ > 0)
     side_data_.reset(AllocateFFmpegSafeBlock(side_data_size_));
-  splice_timestamp_ = kNoTimestamp();
+  splice_timestamp_ = kNoTimestamp;
 }
 
 // static

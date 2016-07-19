@@ -45,7 +45,7 @@ class MediaDecoderJob {
   // Callback when a decoder job finishes its work. Args: whether decode
   // finished successfully, a flag whether the frame is late for statistics,
   // cacurrent presentation time, max presentation time.
-  // If the current presentation time is equal to kNoTimestamp(), the decoder
+  // If the current presentation time is equal to kNoTimestamp, the decoder
   // job skipped rendering of the decoded output and the callback target should
   // ignore the timestamps provided. The late frame flag has no meaning in this
   // case.

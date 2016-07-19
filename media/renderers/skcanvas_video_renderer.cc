@@ -675,7 +675,7 @@ void SkCanvasVideoRenderer::ResetCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Clear cached values.
   last_image_ = nullptr;
-  last_timestamp_ = kNoTimestamp();
+  last_timestamp_ = kNoTimestamp;
 }
 
 }  // namespace media

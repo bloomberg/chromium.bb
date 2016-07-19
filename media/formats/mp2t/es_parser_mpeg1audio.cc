@@ -60,10 +60,10 @@ bool EsParserMpeg1Audio::ParseFromEsQueue() {
     // Get the PTS & the duration of this access unit.
     TimingDesc current_timing_desc =
         GetTimingDescriptor(mpeg1audio_frame.queue_offset);
-    if (current_timing_desc.pts != kNoTimestamp())
+    if (current_timing_desc.pts != kNoTimestamp)
       audio_timestamp_helper_->SetBaseTimestamp(current_timing_desc.pts);
 
-    if (audio_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
+    if (audio_timestamp_helper_->base_timestamp() == kNoTimestamp) {
       DVLOG(1) << "Skipping audio frame with unknown timestamp";
       SkipMpeg1AudioFrame(mpeg1audio_frame);
       continue;
@@ -179,7 +179,7 @@ bool EsParserMpeg1Audio::UpdateAudioConfiguration(
     DVLOG(1) << "Channel layout: " << header.channel_layout;
     // Reset the timestamp helper to use a new time scale.
     if (audio_timestamp_helper_ &&
-        audio_timestamp_helper_->base_timestamp() != kNoTimestamp()) {
+        audio_timestamp_helper_->base_timestamp() != kNoTimestamp) {
       base::TimeDelta base_timestamp = audio_timestamp_helper_->GetTimestamp();
       audio_timestamp_helper_.reset(
         new AudioTimestampHelper(header.sample_rate));

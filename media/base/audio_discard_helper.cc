@@ -13,7 +13,7 @@ namespace media {
 
 static void WarnOnNonMonotonicTimestamps(base::TimeDelta last_timestamp,
                                          base::TimeDelta current_timestamp) {
-  if (last_timestamp == kNoTimestamp() || last_timestamp < current_timestamp)
+  if (last_timestamp == kNoTimestamp || last_timestamp < current_timestamp)
     return;
 
   const base::TimeDelta diff = current_timestamp - last_timestamp;
@@ -27,7 +27,7 @@ AudioDiscardHelper::AudioDiscardHelper(int sample_rate, size_t decoder_delay)
       decoder_delay_(decoder_delay),
       timestamp_helper_(sample_rate_),
       discard_frames_(0),
-      last_input_timestamp_(kNoTimestamp()),
+      last_input_timestamp_(kNoTimestamp),
       delayed_discard_(false),
       delayed_end_discard_(0) {
   DCHECK_GT(sample_rate_, 0);
@@ -43,8 +43,8 @@ size_t AudioDiscardHelper::TimeDeltaToFrames(base::TimeDelta duration) const {
 
 void AudioDiscardHelper::Reset(size_t initial_discard) {
   discard_frames_ = initial_discard;
-  last_input_timestamp_ = kNoTimestamp();
-  timestamp_helper_.SetBaseTimestamp(kNoTimestamp());
+  last_input_timestamp_ = kNoTimestamp;
+  timestamp_helper_.SetBaseTimestamp(kNoTimestamp);
   delayed_discard_ = false;
   delayed_discard_padding_ = DecoderBuffer::DiscardPadding();
 }
@@ -53,7 +53,7 @@ bool AudioDiscardHelper::ProcessBuffers(
     const scoped_refptr<DecoderBuffer>& encoded_buffer,
     const scoped_refptr<AudioBuffer>& decoded_buffer) {
   DCHECK(!encoded_buffer->end_of_stream());
-  DCHECK(encoded_buffer->timestamp() != kNoTimestamp());
+  DCHECK(encoded_buffer->timestamp() != kNoTimestamp);
 
   // Issue a debug warning when we see non-monotonic timestamps.  Only a warning
   // to allow chained OGG playback.
@@ -139,7 +139,7 @@ bool AudioDiscardHelper::ProcessBuffers(
     // we have to estimate the correct number of frames to discard based on the
     // duration of the encoded buffer.
     const size_t start_frames_to_discard =
-        current_discard_padding.first == kInfiniteDuration()
+        current_discard_padding.first == kInfiniteDuration
             ? (decoder_delay_ > 0
                    ? TimeDeltaToFrames(encoded_buffer->duration())
                    : decoded_frames)

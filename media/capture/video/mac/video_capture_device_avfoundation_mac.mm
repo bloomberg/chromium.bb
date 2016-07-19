@@ -481,7 +481,7 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
             ? base::TimeDelta::FromMicroseconds(
                   cm_timestamp.value * base::TimeTicks::kMicrosecondsPerSecond /
                   cm_timestamp.timescale)
-            : media::kNoTimestamp();
+            : media::kNoTimestamp;
 
     if (frameReceiver_ && baseAddress) {
       frameReceiver_->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress),

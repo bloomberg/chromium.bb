@@ -20,7 +20,7 @@ class MediaTaskRunner
   MediaTaskRunner();
 
   // Post a task with the given media |timestamp|. If |timestamp| is equal to
-  // |kNoTimestamp()|, the task is scheduled right away.
+  // |kNoTimestamp|, the task is scheduled right away.
   // How the media timestamp is used to schedule the task is an implementation
   // detail of derived classes.
   // Returns true if the task may be run at some point in the future, and false

@@ -194,9 +194,9 @@ class MediaCodecDecoderTest : public testing::Test {
 
     pts_stat_.AddValue(last_buffered);
 
-    if (stop_request_time_ != kNoTimestamp() &&
+    if (stop_request_time_ != kNoTimestamp &&
         now_playing >= stop_request_time_) {
-      stop_request_time_ = kNoTimestamp();
+      stop_request_time_ = kNoTimestamp;
       decoder_->RequestToStop();
     }
   }
@@ -237,9 +237,8 @@ MediaCodecDecoderTest::MediaCodecDecoderTest()
       is_prefetched_(false),
       is_stopped_(false),
       is_starved_(false),
-      stop_request_time_(kNoTimestamp()),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-}
+      stop_request_time_(kNoTimestamp),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 MediaCodecDecoderTest::~MediaCodecDecoderTest() {}
 

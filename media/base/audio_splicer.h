@@ -57,7 +57,7 @@ class MEDIA_EXPORT AudioSplicer {
 
   // Indicates an upcoming splice point.  All buffers overlapping or after the
   // |splice_timestamp| will be considered as "before the splice."  Clients must
-  // then call SetSpliceTimestamp(kNoTimestamp()) to signal that future buffers
+  // then call SetSpliceTimestamp(kNoTimestamp) to signal that future buffers
   // should be considered as "after the splice."
   //
   // Once |kCrossfadeDurationInMilliseconds| of buffers "after the splice" or
@@ -93,7 +93,7 @@ class MEDIA_EXPORT AudioSplicer {
 
   // Reset the splice and splice end timestamps.
   void reset_splice_timestamps() {
-    splice_timestamp_ = max_splice_end_timestamp_ = kNoTimestamp();
+    splice_timestamp_ = max_splice_end_timestamp_ = kNoTimestamp;
   }
 
   const base::TimeDelta max_crossfade_duration_;

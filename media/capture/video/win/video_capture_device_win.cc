@@ -458,7 +458,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 
   // There is a chance that the platform does not provide us with the timestamp,
   // in which case, we use reference time to calculate a timestamp.
-  if (timestamp == media::kNoTimestamp())
+  if (timestamp == media::kNoTimestamp)
     timestamp = base::TimeTicks::Now() - first_ref_time_;
 
   client_->OnIncomingCapturedData(buffer, length, capture_format_, 0,

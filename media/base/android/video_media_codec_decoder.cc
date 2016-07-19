@@ -202,7 +202,7 @@ void VideoMediaCodecDecoder::AssociateCurrentTimeWithPTS(base::TimeDelta pts) {
 void VideoMediaCodecDecoder::DissociatePTSFromTime() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  start_pts_ = last_seen_pts_ = kNoTimestamp();
+  start_pts_ = last_seen_pts_ = kNoTimestamp;
 }
 
 bool VideoMediaCodecDecoder::OnOutputFormatChanged() {
@@ -265,7 +265,7 @@ bool VideoMediaCodecDecoder::Render(int buffer_index,
   }
 
   DCHECK_EQ(kRenderNow, render_mode);
-  DCHECK_NE(kNoTimestamp(), start_pts_);  // start_pts_ must be set
+  DCHECK_NE(kNoTimestamp, start_pts_);  // start_pts_ must be set
 
   base::TimeDelta time_to_render =
       pts - (base::TimeTicks::Now() - start_time_ticks_ + start_pts_);
