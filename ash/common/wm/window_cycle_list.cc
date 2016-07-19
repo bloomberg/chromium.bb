@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_cycle_list.h"
+#include "ash/common/wm/window_cycle_list.h"
 
 #include <list>
 #include <map>
@@ -15,29 +15,15 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shell.h"
 #include "base/command_line.h"
-#include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/visibility_controller.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
-
-void EnsureAllChildrenAreVisible(ui::Layer* layer) {
-  std::list<ui::Layer*> layers;
-  layers.push_back(layer);
-  while (!layers.empty()) {
-    for (auto child : layers.front()->children())
-      layers.push_back(child);
-    layers.front()->SetVisible(true);
-    layers.pop_front();
-  }
-}
 
 // Returns the window immediately below |window| in the current container.
 WmWindow* GetWindowBelow(WmWindow* window) {
@@ -80,90 +66,6 @@ class ScopedShowWindow : public WmWindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedShowWindow);
 };
 
-// A view that mirrors a single window. Layers are lifted from the underlying
-// window (which gets new ones in their place). New paint calls, if any, are
-// forwarded to the underlying window.
-class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
- public:
-  explicit WindowMirrorView(WmWindow* window) : target_(window) {
-    DCHECK(window);
-  }
-  ~WindowMirrorView() override {}
-
-  void Init() {
-    SetPaintToLayer(true);
-
-    layer_owner_ = ::wm::RecreateLayers(
-        target_->GetInternalWidget()->GetNativeView(), this);
-
-    GetMirrorLayer()->parent()->Remove(GetMirrorLayer());
-    layer()->Add(GetMirrorLayer());
-
-    // Some extra work is needed when the target window is minimized.
-    if (target_->GetWindowState()->IsMinimized()) {
-      GetMirrorLayer()->SetVisible(true);
-      GetMirrorLayer()->SetOpacity(1);
-      EnsureAllChildrenAreVisible(GetMirrorLayer());
-    }
-  }
-
-  // views::View:
-  gfx::Size GetPreferredSize() const override {
-    const int kMaxWidth = 512;
-    const int kMaxHeight = 256;
-
-    gfx::Size target_size = target_->GetBounds().size();
-    if (target_size.width() <= kMaxWidth &&
-        target_size.height() <= kMaxHeight) {
-      return target_size;
-    }
-
-    float scale =
-        std::min(kMaxWidth / static_cast<float>(target_size.width()),
-                 kMaxHeight / static_cast<float>(target_size.height()));
-    return gfx::ScaleToCeiledSize(target_size, scale, scale);
-  }
-
-  void Layout() override {
-    // Position at 0, 0.
-    GetMirrorLayer()->SetBounds(gfx::Rect(GetMirrorLayer()->bounds().size()));
-
-    // Scale down if necessary.
-    gfx::Transform mirror_transform;
-    if (size() != target_->GetBounds().size()) {
-      const float scale =
-          width() / static_cast<float>(target_->GetBounds().width());
-      mirror_transform.Scale(scale, scale);
-    }
-    GetMirrorLayer()->SetTransform(mirror_transform);
-  }
-
-  // ::wm::LayerDelegateFactory:
-  ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override {
-    if (!delegate)
-      return nullptr;
-    delegates_.push_back(
-        base::WrapUnique(new wm::ForwardingLayerDelegate(target_, delegate)));
-
-    return delegates_.back().get();
-  }
-
- private:
-  // Gets the root of the layer tree that was lifted from |target_| (and is now
-  // a child of |this->layer()|).
-  ui::Layer* GetMirrorLayer() { return layer_owner_->root(); }
-
-  // The original window that is being represented by |this|.
-  WmWindow* target_;
-
-  // Retains ownership of the mirror layer tree.
-  std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
-
-  std::vector<std::unique_ptr<wm::ForwardingLayerDelegate>> delegates_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowMirrorView);
-};
-
 // A view that shows a collection of windows the user can tab through.
 class WindowCycleView : public views::View {
  public:
@@ -194,8 +96,8 @@ class WindowCycleView : public views::View {
         ui::LayerAnimator::CreateImplicitAnimator());
 
     for (WmWindow* window : windows) {
-      WindowMirrorView* view = new WindowMirrorView(window);
-      view->Init();
+      // |mirror_container_| owns |view|.
+      views::View* view = window->CreateViewWithRecreatedLayers().release();
       window_view_map_[window] = view;
       mirror_container_->AddChildView(view);
     }
@@ -267,7 +169,7 @@ class WindowCycleView : public views::View {
   WmWindow* target_window() { return target_window_; }
 
  private:
-  std::map<WmWindow*, WindowMirrorView*> window_view_map_;
+  std::map<WmWindow*, views::View*> window_view_map_;
   views::View* mirror_container_;
   views::View* highlight_view_;
   WmWindow* target_window_;
@@ -429,7 +331,7 @@ void WindowCycleList::OnWindowDestroying(WmWindow* window) {
     cycle_view_->HandleWindowDestruction(window, new_target_window);
     if (windows_.empty()) {
       // This deletes us.
-      Shell::GetInstance()->window_cycle_controller()->StopCycling();
+      WmShell::Get()->window_cycle_controller()->StopCycling();
       return;
     }
   }

@@ -121,6 +121,8 @@ WmShellMus::~WmShellMus() {
   // need to be removed.
   DeleteMaximizeModeController();
   DeleteSystemTrayDelegate();
+  // Has to happen before ~MruWindowTracker.
+  DeleteWindowCycleController();
   DeleteWindowSelectorController();
   DeleteMruWindowTracker();
   RemoveClientObserver();

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_cycle_controller.h"
+#include "ash/common/wm/window_cycle_controller.h"
 
 #include "ash/common/metrics/task_switch_source.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_cycle_event_filter.h"
+#include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/wm/window_cycle_list.h"
 #include "base/metrics/histogram.h"
 
 namespace ash {

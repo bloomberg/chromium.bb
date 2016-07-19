@@ -21,6 +21,7 @@
 #include "ui/aura/mus/mus_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -705,6 +706,12 @@ void WmWindowMus::SetDescendantsStayInSameRootWindow(bool value) {
   // TODO: this logic feeds into SetBoundsInScreen(), which is not implemented:
   // http://crbug.com/615552.
   NOTIMPLEMENTED();
+}
+
+std::unique_ptr<views::View> WmWindowMus::CreateViewWithRecreatedLayers() {
+  // TODO: need real implementation, http://crbug.com/629497.
+  std::unique_ptr<views::View> view(new views::View);
+  return view;
 }
 
 void WmWindowMus::AddObserver(WmWindowObserver* observer) {

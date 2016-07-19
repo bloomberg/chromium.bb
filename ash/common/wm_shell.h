@@ -35,6 +35,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
+class WindowCycleController;
 class WindowCycleEventFilter;
 class WindowResizer;
 class WindowSelectorController;
@@ -97,6 +98,10 @@ class ASH_EXPORT WmShell {
 
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
+  }
+
+  WindowCycleController* window_cycle_controller() {
+    return window_cycle_controller_.get();
   }
 
   WindowSelectorController* window_selector_controller() {
@@ -244,6 +249,8 @@ class ASH_EXPORT WmShell {
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
 
+  void DeleteWindowCycleController();
+
   void DeleteWindowSelectorController();
 
   void CreateMaximizeModeController();
@@ -272,6 +279,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
+  std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 
   bool simulate_modal_window_open_for_testing_ = false;

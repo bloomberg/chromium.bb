@@ -32,6 +32,7 @@ class Layer;
 }
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -270,6 +271,9 @@ class ASH_EXPORT WmWindow {
   // Sets whether descendants of this should not be moved to a different
   // container. This is used by SetBoundsInScreen().
   virtual void SetDescendantsStayInSameRootWindow(bool value) = 0;
+
+  // Returns a View that renders the contents of this window's layers.
+  virtual std::unique_ptr<views::View> CreateViewWithRecreatedLayers() = 0;
 
   virtual void AddObserver(WmWindowObserver* observer) = 0;
   virtual void RemoveObserver(WmWindowObserver* observer) = 0;

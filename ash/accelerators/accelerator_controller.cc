@@ -34,6 +34,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
@@ -55,7 +56,6 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
@@ -193,7 +193,7 @@ void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
 
-  Shell::GetInstance()->window_cycle_controller()->HandleCycleWindow(
+  WmShell::Get()->window_cycle_controller()->HandleCycleWindow(
       WindowCycleController::BACKWARD);
 }
 
@@ -201,7 +201,7 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_Tab"));
 
-  Shell::GetInstance()->window_cycle_controller()->HandleCycleWindow(
+  WmShell::Get()->window_cycle_controller()->HandleCycleWindow(
       WindowCycleController::FORWARD);
 }
 

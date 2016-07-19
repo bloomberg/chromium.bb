@@ -150,6 +150,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void SnapToPixelBoundaryIfNecessary() override;
   void SetChildrenUseExtendedHitRegion() override;
   void SetDescendantsStayInSameRootWindow(bool value) override;
+  std::unique_ptr<views::View> CreateViewWithRecreatedLayers() override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
   bool HasObserver(const WmWindowObserver* observer) const override;

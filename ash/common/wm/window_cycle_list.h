@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_CYCLE_LIST_H_
-#define ASH_WM_WINDOW_CYCLE_LIST_H_
+#ifndef ASH_COMMON_WM_WINDOW_CYCLE_LIST_H_
+#define ASH_COMMON_WM_WINDOW_CYCLE_LIST_H_
 
 #include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_window_observer.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "base/macros.h"
 
 namespace views {
@@ -77,4 +77,4 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_CYCLE_LIST_H_
+#endif  // ASH_COMMON_WM_WINDOW_CYCLE_LIST_H_

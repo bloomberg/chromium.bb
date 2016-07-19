@@ -18,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -633,6 +634,12 @@ void WmWindowAura::SetChildrenUseExtendedHitRegion() {
 
 void WmWindowAura::SetDescendantsStayInSameRootWindow(bool value) {
   window_->SetProperty(kStayInSameRootWindowKey, true);
+}
+
+std::unique_ptr<views::View> WmWindowAura::CreateViewWithRecreatedLayers() {
+  std::unique_ptr<wm::WindowMirrorView> view(new wm::WindowMirrorView(this));
+  view->Init();
+  return std::move(view);
 }
 
 void WmWindowAura::AddObserver(WmWindowObserver* observer) {

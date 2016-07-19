@@ -79,7 +79,6 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
@@ -703,7 +702,8 @@ Shell::~Shell() {
   shadow_controller_.reset();
   resize_shadow_controller_.reset();
 
-  window_cycle_controller_.reset();
+  // Has to happen before ~MruWindowTracker.
+  wm_shell_->DeleteWindowCycleController();
   wm_shell_->DeleteWindowSelectorController();
 
   // |shelf_window_watcher_| has a weak pointer to |shelf_Model_|
@@ -994,7 +994,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
-  window_cycle_controller_.reset(new WindowCycleController());
 
   tooltip_controller_.reset(new views::corewm::TooltipController(
       std::unique_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));

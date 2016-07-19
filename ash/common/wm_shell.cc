@@ -18,6 +18,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -90,6 +91,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
   brightness_control_delegate_.reset(new system::BrightnessControllerChromeos);
   keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);
 #endif
+  window_cycle_controller_.reset(new WindowCycleController());
 }
 
 WmShell::~WmShell() {}
@@ -138,6 +140,10 @@ void WmShell::DeleteSystemTrayDelegate() {
   logout_confirmation_controller_.reset();
 #endif
   system_tray_delegate_.reset();
+}
+
+void WmShell::DeleteWindowCycleController() {
+  window_cycle_controller_.reset();
 }
 
 void WmShell::DeleteWindowSelectorController() {
