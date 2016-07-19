@@ -147,6 +147,9 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         'ChromeDriverTest.testSwitchToWindow',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1431
+        'ChromeDriverTest.testAutoReporting',
+        'ChromeDriverTest.testConsoleLogSources',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
