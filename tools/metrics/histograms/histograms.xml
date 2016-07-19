@@ -76871,6 +76871,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1444" label="SecureContextCheckForSandboxedOriginFailed"/>
   <int value="1445" label="V8DefineGetterOrSetterWouldThrow"/>
   <int value="1446" label="V8FunctionConstructorReturnedUndefined"/>
+  <int value="1447" label="V8BroadcastChannel_Constructor"/>
+  <int value="1448" label="V8BroadcastChannel_PostMessage_Method"/>
+  <int value="1449" label="V8BroadcastChannel_Close_Method"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -11,6 +11,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter type
 [Worker]     method constructor
 [Worker]     method slice
+[Worker] interface BroadcastChannel : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter name
+[Worker]     getter onmessage
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method postMessage
+[Worker]     setter onmessage
 [Worker] interface ByteLengthQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size

@@ -264,6 +264,14 @@ interface BlobEvent : Event
     attribute @@toStringTag
     getter data
     method constructor
+interface BroadcastChannel : EventTarget
+    attribute @@toStringTag
+    getter name
+    getter onmessage
+    method close
+    method constructor
+    method postMessage
+    setter onmessage
 interface ByteLengthQueuingStrategy
     method constructor
     method size

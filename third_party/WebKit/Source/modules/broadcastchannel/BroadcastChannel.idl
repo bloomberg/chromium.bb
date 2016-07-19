@@ -12,11 +12,12 @@
     Exposed=(Window,Worker),
     ActiveScriptWrappable,
     DependentLifetime,
+    Measure,
 ] interface BroadcastChannel : EventTarget {
     readonly attribute DOMString name;
 
-    [RaisesException] void postMessage(any message);
-    void close();
+    [RaisesException, Measure] void postMessage(any message);
+    [Measure] void close();
 
     // event handlers
     attribute EventHandler onmessage;

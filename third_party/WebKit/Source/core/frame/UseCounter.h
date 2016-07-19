@@ -1248,6 +1248,9 @@ public:
         SecureContextCheckForSandboxedOriginFailed = 1444,
         V8DefineGetterOrSetterWouldThrow = 1445,
         V8FunctionConstructorReturnedUndefined = 1446,
+        V8BroadcastChannel_Constructor = 1447,
+        V8BroadcastChannel_PostMessage_Method = 1448,
+        V8BroadcastChannel_Close_Method = 1449,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
