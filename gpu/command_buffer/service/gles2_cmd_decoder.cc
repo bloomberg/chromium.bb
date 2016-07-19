@@ -245,9 +245,6 @@ class GLES2DecoderImpl;
 #define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label) \
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(state_.GetErrorState(), \
                                          function_name, value, label)
-#define LOCAL_SET_GL_ERROR_INVALID_PARAM(error, function_name, pname) \
-    ERRORSTATE_SET_GL_ERROR_INVALID_PARAM(state_.GetErrorState(), error, \
-                                          function_name, pname)
 #define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name) \
     ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(state_.GetErrorState(), \
                                               function_name)
