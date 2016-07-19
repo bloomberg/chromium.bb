@@ -7,8 +7,11 @@ skyostil@chromium.org
 sullivan@chromium.org
 zhenw@chromium.org
 
-# Simple rubberstamp-only oilpan-related changes
+# Simple rubberstamp-only oilpan-related changes.
 peria@chromium.org
+
+# For system health related changes.
+per-file *system_health*=petrcermak@chromium.org
 
 # emeritus:
 # marja@chromium.org
