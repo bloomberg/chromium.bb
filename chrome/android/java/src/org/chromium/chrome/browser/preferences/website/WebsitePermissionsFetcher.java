@@ -29,9 +29,13 @@ public class WebsitePermissionsFetcher {
     }
 
     // This is a 1 <--> 1..N mapping between origin and Website.
+    // TODO(mvanouwerkerk): The Website class has no equals or hashCode methods so storing them in
+    // a HashSet is really confusing to readers of this code. There is no deduplication at all.
     private final Map<String, Set<Website>> mSitesByOrigin = new HashMap<>();
 
     // This is a 1 <--> 1..N mapping between host and Website.
+    // TODO(mvanouwerkerk): The Website class has no equals or hashCode methods so storing them in
+    // a HashSet is really confusing to readers of this code. There is no deduplication at all.
     private final Map<String, Set<Website>> mSitesByHost = new HashMap<>();
 
     // The callback to run when the permissions have been fetched.
@@ -83,8 +87,6 @@ public class WebsitePermissionsFetcher {
         queue.add(new BackgroundSyncExceptionInfoFetcher());
         // Autoplay permission is per-origin.
         queue.add(new AutoplayExceptionInfoFetcher());
-        // USB device permission is per-origin and per-embedder.
-        queue.add(new UsbInfoFetcher());
 
         queue.add(new PermissionsAvailableCallbackRunner());
 
@@ -406,18 +408,6 @@ public class WebsitePermissionsFetcher {
         @Override
         public void run() {
             setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
-        }
-    }
-
-    private class UsbInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (UsbInfo info : WebsitePreferenceBridge.getUsbInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByOrigin(address);
-                for (Website site : sites) site.addUsbInfo(info);
-            }
         }
     }
 
