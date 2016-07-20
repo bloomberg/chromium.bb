@@ -122,10 +122,11 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
     local_state_->SetInteger(prefs::kStabilityRendererHangCount, 0);
   }
 
-  count = local_state_->GetInteger(prefs::kStabilityRendererLaunchCount);
+  count =
+      local_state_->GetInteger(prefs::kStabilityExtensionRendererLaunchCount);
   if (count) {
-    stability_proto->set_renderer_launch_count(count);
-    local_state_->SetInteger(prefs::kStabilityRendererLaunchCount, 0);
+    stability_proto->set_extension_renderer_launch_count(count);
+    local_state_->SetInteger(prefs::kStabilityExtensionRendererLaunchCount, 0);
   }
 }
 
