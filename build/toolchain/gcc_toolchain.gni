@@ -494,6 +494,7 @@ template("gcc_toolchain") {
       use_drfuzz = false
       use_libfuzzer = false
       use_prebuilt_instrumented_libraries = false
+      use_locally_built_instrumented_libraries = false
       use_sanitizer_coverage = false
     }
 

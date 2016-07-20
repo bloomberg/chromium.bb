@@ -403,6 +403,9 @@ config("executable_config") {
   if (prebuilt_instrumented_libraries_available) {
     configs += [ "//third_party/instrumented_libraries:prebuilt_ldflags" ]
   }
+  if (use_locally_built_instrumented_libraries) {
+    configs += [ "//third_party/instrumented_libraries:locally_built_ldflags" ]
+  }
 }
 
 # Shared library configs -------------------------------------------------------
@@ -423,6 +426,9 @@ config("shared_library_config") {
   # need to add ldflags to every binary to make sure they are picked up.
   if (prebuilt_instrumented_libraries_available) {
     configs += [ "//third_party/instrumented_libraries:prebuilt_ldflags" ]
+  }
+  if (use_locally_built_instrumented_libraries) {
+    configs += [ "//third_party/instrumented_libraries:locally_built_ldflags" ]
   }
 }
 
