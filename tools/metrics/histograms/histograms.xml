@@ -70082,6 +70082,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="85436397" label="Crashpad_SimulatedCrash"/>
   <int value="529697949" label="CPP_EH_EXCEPTION"/>
   <int value="533692099" label="STATUS_GUARD_PAGE_VIOLATION"/>
+  <int value="536870904" label="EXCEPTION_OUT_OF_MEMORY"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
   <int value="1073741510" label="STATUS_CONTROL_C_EXIT"/>
   <int value="1073741515" label="STATUS_DLL_NOT_FOUND"/>

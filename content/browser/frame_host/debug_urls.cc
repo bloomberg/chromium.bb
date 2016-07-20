@@ -261,7 +261,8 @@ bool IsRendererDebugURL(const GURL& url) {
          url == GURL(kChromeUIDumpURL) ||
          url == GURL(kChromeUIKillURL) ||
          url == GURL(kChromeUIHangURL) ||
-         url == GURL(kChromeUIShorthangURL);
+         url == GURL(kChromeUIShorthangURL) ||
+         url == GURL(kChromeUIMemoryExhaustURL);
 }
 
 }  // namespace content

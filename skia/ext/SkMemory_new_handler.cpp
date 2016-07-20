@@ -9,6 +9,10 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 // This implementation of sk_malloc_flags() and friends is similar to
 // SkMemory_malloc.cpp, except it uses base::UncheckedMalloc and friends
 // for non-SK_MALLOC_THROW calls.
@@ -30,6 +34,13 @@ void sk_abort_no_print() {
 
 void sk_out_of_memory(void) {
     SkASSERT(!"sk_out_of_memory");
+#if defined(OS_WIN)
+    // Kill the process. This is important for security since most of code
+    // does not check the result of memory allocation.
+    // https://msdn.microsoft.com/en-us/library/het71c37.aspx
+    ::RaiseException(base::win::kOomExceptionCode, EXCEPTION_NONCONTINUABLE, 0,
+                     nullptr);
+#endif
     abort();
 }
 

@@ -92,8 +92,15 @@ static Frame* findFrame(v8::Isolate* isolate, v8::Local<v8::Object> host, v8::Lo
 static void reportFatalErrorInMainThread(const char* location, const char* message)
 {
     int memoryUsageMB = Platform::current()->actualMemoryUsageMB();
-    printf("V8 error: %s (%s).  Current memory usage: %d MB\n", message, location, memoryUsageMB);
+    DVLOG(1) << "V8 error: " << message << " (" << location << ").  Current memory usage: " << memoryUsageMB << " MB";
     CRASH();
+}
+
+static void reportOOMErrorInMainThread(const char* location, bool isJsHeap)
+{
+    int memoryUsageMB = Platform::current()->actualMemoryUsageMB();
+    DVLOG(1) << "V8 " << (isJsHeap ? "javascript" : "process") << " OOM: (" << location << ").  Current memory usage: " << memoryUsageMB << " MB";
+    OOM_CRASH();
 }
 
 static String extractMessageForConsole(v8::Isolate* isolate, v8::Local<v8::Value> data)
@@ -356,6 +363,7 @@ void V8Initializer::initializeMainThread()
 
     initializeV8Common(isolate);
 
+    isolate->SetOOMErrorHandler(reportOOMErrorInMainThread);
     isolate->SetFatalErrorHandler(reportFatalErrorInMainThread);
     isolate->AddMessageListener(messageHandlerInMainThread);
     isolate->SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);

@@ -399,6 +399,13 @@ bool IsBrowserInitiated(NavigationParams* pending) {
          !pending->common_params.url.SchemeIs(url::kJavaScriptScheme);
 }
 
+NOINLINE void ExhaustMemory() {
+  volatile void* ptr = nullptr;
+  do {
+    ptr = malloc(0x10000000);
+  } while (ptr);
+}
+
 NOINLINE void CrashIntentionally() {
   // NOTE(shess): Crash directly rather than using NOTREACHED() so
   // that the signature is easier to triage in crash reports.
@@ -508,6 +515,11 @@ void MaybeHandleDebugURL(const GURL& url) {
     LOG(ERROR) << "Intentionally sleeping renderer for 20 seconds"
                << " because user navigated to " << url.spec();
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
+  } else if (url == GURL(kChromeUIMemoryExhaustURL)) {
+    LOG(ERROR)
+        << "Intentionally exhausting renderer memory because user navigated to "
+        << url.spec();
+    ExhaustMemory();
   }
 
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)

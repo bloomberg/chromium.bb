@@ -559,6 +559,7 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
       chrome::kChromeUIQuitHost,
       chrome::kChromeUIRestartHost,
       content::kChromeUIBrowserCrashHost,
+      content::kChromeUIMemoryExhaustHost,
   };
 
   // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.

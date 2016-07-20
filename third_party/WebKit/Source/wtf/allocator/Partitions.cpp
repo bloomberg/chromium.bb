@@ -117,56 +117,56 @@ static NEVER_INLINE void partitionsOutOfMemoryUsing2G()
 {
     size_t signature = 2UL * 1024 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing1G()
 {
     size_t signature = 1UL * 1024 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing512M()
 {
     size_t signature = 512 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing256M()
 {
     size_t signature = 256 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing128M()
 {
     size_t signature = 128 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing64M()
 {
     size_t signature = 64 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing32M()
 {
     size_t signature = 32 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsing16M()
 {
     size_t signature = 16 * 1024 * 1024;
     base::debug::Alias(&signature);
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionsOutOfMemoryUsingLessThan16M()

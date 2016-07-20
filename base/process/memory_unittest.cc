@@ -92,7 +92,15 @@ TEST(MemoryTest, AllocatorShimWorking) {
     !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 namespace {
-const char *kOomRegex = "Out of memory";
+#if defined(OS_WIN)
+// Windows raises an exception rather than using LOG(FATAL) in order to make the
+// exit code unique to OOM.
+const char* kOomRegex = "";
+const int kExitCode = base::win::kOomExceptionCode;
+#else
+const char* kOomRegex = "Out of memory";
+const int kExitCode = 1;
+#endif
 }  // namespace
 
 class OutOfMemoryTest : public testing::Test {
@@ -128,54 +136,54 @@ class OutOfMemoryDeathTest : public OutOfMemoryTest {
 };
 
 TEST_F(OutOfMemoryDeathTest, New) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = operator new(test_size_);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, NewArray) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = new char[test_size_];
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, Malloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = malloc(test_size_);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, Realloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = realloc(NULL, test_size_);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, Calloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = calloc(1024, test_size_ / 1024L);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, AlignedAlloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = base::AlignedAlloc(test_size_, 8);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 // POSIX does not define an aligned realloc function.
 #if defined(OS_WIN)
 TEST_F(OutOfMemoryDeathTest, AlignedRealloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = _aligned_realloc(NULL, test_size_, 8);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 #endif  // defined(OS_WIN)
 
@@ -183,54 +191,54 @@ TEST_F(OutOfMemoryDeathTest, AlignedRealloc) {
 // See https://crbug.com/169327.
 #if !defined(OS_MACOSX)
 TEST_F(OutOfMemoryDeathTest, SecurityNew) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = operator new(insecure_test_size_);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityNewArray) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = new char[insecure_test_size_];
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityMalloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = malloc(insecure_test_size_);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityRealloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = realloc(NULL, insecure_test_size_);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityCalloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = calloc(1024, insecure_test_size_ / 1024L);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 TEST_F(OutOfMemoryDeathTest, SecurityAlignedAlloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = base::AlignedAlloc(insecure_test_size_, 8);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
 // POSIX does not define an aligned realloc function.
 #if defined(OS_WIN)
 TEST_F(OutOfMemoryDeathTest, SecurityAlignedRealloc) {
-  ASSERT_DEATH({
+  ASSERT_EXIT({
       SetUpInDeathAssert();
       value_ = _aligned_realloc(NULL, insecure_test_size_, 8);
-    }, kOomRegex);
+    }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 #endif  // defined(OS_WIN)
 #endif  // !defined(OS_MACOSX)

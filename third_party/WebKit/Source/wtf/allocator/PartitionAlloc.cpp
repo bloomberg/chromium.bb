@@ -308,7 +308,7 @@ bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
 #if !CPU(64BIT)
 static NEVER_INLINE void partitionOutOfMemoryWithLotsOfUncommitedPages()
 {
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 #endif
 
@@ -323,17 +323,17 @@ static NEVER_INLINE void partitionOutOfMemory(const PartitionRootBase* root)
 #endif
     if (PartitionRootBase::gOomHandlingFunction)
         (*PartitionRootBase::gOomHandlingFunction)();
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionExcessiveAllocationSize()
 {
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 static NEVER_INLINE void partitionBucketFull()
 {
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 // partitionPageStateIs*

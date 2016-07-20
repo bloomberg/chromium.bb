@@ -59,7 +59,7 @@ void PageMemoryRegion::pageDeleted(Address page)
 // virtual address space OOM.
 static NEVER_INLINE void blinkGCOutOfMemory()
 {
-    IMMEDIATE_CRASH();
+    OOM_CRASH();
 }
 
 PageMemoryRegion* PageMemoryRegion::allocate(size_t size, unsigned numPages, RegionTree* regionTree)

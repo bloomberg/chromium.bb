@@ -713,6 +713,7 @@ const char* const kChromeDebugURLs[] = {
   content::kChromeUIGpuCleanURL,
   content::kChromeUIGpuCrashURL,
   content::kChromeUIGpuHangURL,
+  content::kChromeUIMemoryExhaustURL,
   content::kChromeUIPpapiFlashCrashURL,
   content::kChromeUIPpapiFlashHangURL,
   chrome::kChromeUIQuitURL,

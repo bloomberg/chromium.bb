@@ -48,6 +48,10 @@
 #include "wtf/build_config.h"
 #include <stdarg.h>
 
+#if OS(WIN)
+#include <windows.h>
+#endif
+
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code
 // testing this macro has included this header.
 #ifndef ENABLE_ASSERT
@@ -147,6 +151,18 @@ private:
 #define IMMEDIATE_CRASH() __builtin_trap()
 #else
 #define IMMEDIATE_CRASH() ((void)(*(volatile char*)0 = 0))
+#endif
+#endif
+
+/* OOM_CRASH() - Specialization of IMMEDIATE_CRASH which will raise a custom exception on Windows to signal this is OOM and not a normal assert. */
+#ifndef OOM_CRASH
+#if OS(WIN)
+#define OOM_CRASH() do { \
+    ::RaiseException(0xE0000008, EXCEPTION_NONCONTINUABLE, 0, nullptr); \
+    IMMEDIATE_CRASH(); \
+} while (0)
+#else
+#define OOM_CRASH() IMMEDIATE_CRASH()
 #endif
 #endif
 
