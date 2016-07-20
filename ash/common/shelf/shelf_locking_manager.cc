@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_locking_manager.h"
+#include "ash/common/shelf/shelf_locking_manager.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shell.h"
-#include "ash/wm/lock_state_controller.h"
 
 namespace ash {
 
-ShelfLockingManager::ShelfLockingManager(Shelf* shelf) : shelf_(shelf) {
-  Shell* shell = Shell::GetInstance();
-  shell->lock_state_controller()->AddObserver(this);
+ShelfLockingManager::ShelfLockingManager(WmShelf* shelf) : shelf_(shelf) {
+  WmShell::Get()->AddLockStateObserver(this);
   SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
   session_locked_ =
       delegate->GetSessionState() != SessionStateDelegate::SESSION_STATE_ACTIVE;
@@ -24,7 +21,7 @@ ShelfLockingManager::ShelfLockingManager(Shelf* shelf) : shelf_(shelf) {
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
-  Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
+  WmShell::Get()->RemoveLockStateObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
@@ -47,7 +44,7 @@ void ShelfLockingManager::OnLockStateEvent(EventType event) {
 }
 
 void ShelfLockingManager::UpdateLockedState() {
-  const ShelfAlignment alignment = shelf_->alignment();
+  const ShelfAlignment alignment = shelf_->GetAlignment();
   if (is_locked() && alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     stored_alignment_ = alignment;
     shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM_LOCKED);

@@ -9,11 +9,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
-#include "ash/wm/lock_state_observer.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
@@ -146,10 +144,6 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   void SetDelegate(std::unique_ptr<LockStateControllerDelegate> delegate);
 
-  void AddObserver(LockStateObserver* observer);
-  void RemoveObserver(LockStateObserver* observer);
-  bool HasObserver(const LockStateObserver* observer) const;
-
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
   // will be called unless CancelShutdownAnimation() is called, if
@@ -281,8 +275,6 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   std::unique_ptr<SessionStateAnimator> animator_;
 
   std::unique_ptr<LockStateControllerDelegate> delegate_;
-
-  base::ObserverList<LockStateObserver> observers_;
 
   // The current login status, or original login status from before we locked.
   LoginStatus login_status_;

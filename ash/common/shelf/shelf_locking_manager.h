@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_LOCKING_MANAGER_H_
-#define ASH_SHELF_SHELF_LOCKING_MANAGER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_LOCKING_MANAGER_H_
+#define ASH_COMMON_SHELF_SHELF_LOCKING_MANAGER_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_observer.h"
-#include "ash/wm/lock_state_observer.h"
+#include "ash/common/wm/lock_state_observer.h"
 
 namespace ash {
 
-class Shelf;
+class WmShelf;
 
 // ShelfLockingManager observes screen and session events to [un]lock the shelf.
 class ASH_EXPORT ShelfLockingManager : public ShellObserver,
                                        public SessionStateObserver,
                                        public LockStateObserver {
  public:
-  explicit ShelfLockingManager(Shelf* shelf);
+  explicit ShelfLockingManager(WmShelf* shelf);
   ~ShelfLockingManager() override;
 
   bool is_locked() const { return session_locked_ || screen_locked_; }
@@ -39,7 +39,7 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
   // Update the shelf state for session and screen lock changes.
   void UpdateLockedState();
 
-  Shelf* shelf_;
+  WmShelf* shelf_;
   bool session_locked_ = false;
   bool screen_locked_ = false;
   ShelfAlignment stored_alignment_ = SHELF_ALIGNMENT_BOTTOM;
@@ -49,4 +49,4 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_LOCKING_MANAGER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_LOCKING_MANAGER_H_

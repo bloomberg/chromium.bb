@@ -13,6 +13,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/metrics/user_metrics_action.h"
+#include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 
 namespace views {
@@ -244,6 +245,11 @@ class ASH_EXPORT WmShell {
   virtual void AddPointerDownWatcher(views::PointerDownWatcher* watcher) = 0;
   virtual void RemovePointerDownWatcher(views::PointerDownWatcher* watcher) = 0;
 
+  // TODO: Move these back to LockStateController when that has been moved.
+  void OnLockStateEvent(LockStateObserver::EventType event);
+  void AddLockStateObserver(LockStateObserver* observer);
+  void RemoveLockStateObserver(LockStateObserver* observer);
+
 #if defined(OS_CHROMEOS)
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
@@ -301,6 +307,8 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
+
+  base::ObserverList<LockStateObserver> lock_state_observers_;
 
   bool simulate_modal_window_open_for_testing_ = false;
 

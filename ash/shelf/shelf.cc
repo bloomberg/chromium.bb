@@ -47,7 +47,7 @@ Shelf::Shelf(ShelfModel* shelf_model,
       wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
       shelf_view_(new ShelfView(shelf_model, delegate_, wm_shelf, this)),
-      shelf_locking_manager_(this) {
+      shelf_locking_manager_(wm_shelf) {
   DCHECK(wm_shelf_);
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);

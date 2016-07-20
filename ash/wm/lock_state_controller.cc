@@ -97,18 +97,6 @@ void LockStateController::SetDelegate(
   delegate_ = std::move(delegate);
 }
 
-void LockStateController::AddObserver(LockStateObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void LockStateController::RemoveObserver(LockStateObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-bool LockStateController::HasObserver(const LockStateObserver* observer) const {
-  return observers_.HasObserver(observer);
-}
-
 void LockStateController::StartLockAnimation(bool shutdown_after_lock) {
   if (animating_lock_)
     return;
@@ -382,9 +370,8 @@ void LockStateController::StartImmediatePreLockAnimation(
   animation_sequence->EndSequence();
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(
-      LockStateObserver, observers_,
-      OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+  WmShell::Get()->OnLockStateEvent(
+      LockStateObserver::EVENT_LOCK_ANIMATION_STARTED);
 }
 
 void LockStateController::StartCancellablePreLockAnimation() {
@@ -412,9 +399,8 @@ void LockStateController::StartCancellablePreLockAnimation() {
       SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, animation_sequence);
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(
-      LockStateObserver, observers_,
-      OnLockStateEvent(LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
+  WmShell::Get()->OnLockStateEvent(
+      LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED);
   animation_sequence->EndSequence();
 }
 
@@ -533,9 +519,8 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 void LockStateController::PostLockAnimationFinished() {
   animating_lock_ = false;
   VLOG(1) << "PostLockAnimationFinished";
-  FOR_EACH_OBSERVER(
-      LockStateObserver, observers_,
-      OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
+  WmShell::Get()->OnLockStateEvent(
+      LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
   if (!lock_screen_displayed_callback_.is_null()) {
     lock_screen_displayed_callback_.Run();
     lock_screen_displayed_callback_.Reset();

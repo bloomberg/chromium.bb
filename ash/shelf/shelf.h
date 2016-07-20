@@ -11,8 +11,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_locking_manager.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/shelf/shelf_locking_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -152,6 +152,10 @@ class ASH_EXPORT Shelf {
 
   // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
+
+  ShelfLockingManager* shelf_locking_manager_for_testing() {
+    return &shelf_locking_manager_;
+  }
 
  private:
   friend class test::ShelfTestAPI;

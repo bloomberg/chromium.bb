@@ -85,6 +85,19 @@ void WmShell::RemoveShellObserver(ShellObserver* observer) {
   shell_observers_.RemoveObserver(observer);
 }
 
+void WmShell::OnLockStateEvent(LockStateObserver::EventType event) {
+  FOR_EACH_OBSERVER(LockStateObserver, lock_state_observers_,
+                    OnLockStateEvent(event));
+}
+
+void WmShell::AddLockStateObserver(LockStateObserver* observer) {
+  lock_state_observers_.AddObserver(observer);
+}
+
+void WmShell::RemoveLockStateObserver(LockStateObserver* observer) {
+  lock_state_observers_.RemoveObserver(observer);
+}
+
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       focus_cycler_(new FocusCycler),

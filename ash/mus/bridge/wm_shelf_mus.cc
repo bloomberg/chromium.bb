@@ -137,5 +137,10 @@ void WmShelfMus::SetKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
+ShelfLockingManager* WmShelfMus::GetShelfLockingManagerForTesting() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 }  // namespace mus
 }  // namespace ash

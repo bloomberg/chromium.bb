@@ -34,7 +34,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
-#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -222,7 +221,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
         ->GetRootWindowController()
         ->AddObserver(root_window_controller_observer_.get());
   }
-  Shell::GetInstance()->lock_state_controller()->AddObserver(this);
+  WmShell::Get()->AddLockStateObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 }
@@ -234,7 +233,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     WillDeleteShelfLayoutManager());
   WmShell::Get()->RemoveShellObserver(this);
-  Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
+  WmShell::Get()->RemoveLockStateObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
       this);
   if (root_window_controller_observer_) {

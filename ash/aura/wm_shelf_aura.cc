@@ -163,6 +163,10 @@ void WmShelfAura::SetKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   shelf_layout_manager_->OnKeyboardBoundsChanging(bounds);
 }
 
+ShelfLockingManager* WmShelfAura::GetShelfLockingManagerForTesting() {
+  return shelf_->shelf_locking_manager_for_testing();
+}
+
 void WmShelfAura::WillDeleteShelfLayoutManager() {
   ResetShelfLayoutManager();
 }
