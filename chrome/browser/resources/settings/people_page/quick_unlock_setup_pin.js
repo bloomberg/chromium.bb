@@ -104,7 +104,9 @@ Polymer({
   /** @override */
   attached: function() {
     this.resetState_();
-    this.askForPasswordIfUnset();
+
+    if (this.isScreenActive(QuickUnlockScreen.SETUP_PIN))
+      this.askForPasswordIfUnset();
   },
 
   /**

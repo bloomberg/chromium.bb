@@ -79,7 +79,8 @@ Polymer({
     chrome.quickUnlockPrivate.onActiveModesChanged.addListener(
         this.boundOnActiveModesChanged_);
 
-    this.askForPasswordIfUnset();
+    if (this.isScreenActive(QuickUnlockScreen.CHOOSE_METHOD))
+      this.askForPasswordIfUnset();
   },
 
   /** @override */
