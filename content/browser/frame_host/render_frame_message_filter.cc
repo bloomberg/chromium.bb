@@ -57,15 +57,14 @@ const int kPluginsRefreshThresholdInSeconds = 3;
 
 const char kEnforceStrictSecureExperiment[] = "StrictSecureCookies";
 
-void CreateChildFrameOnUI(
-    int process_id,
-    int parent_routing_id,
-    blink::WebTreeScopeType scope,
-    const std::string& frame_name,
-    const std::string& frame_unique_name,
-    blink::WebSandboxFlags sandbox_flags,
-    const blink::WebFrameOwnerProperties& frame_owner_properties,
-    int new_routing_id) {
+void CreateChildFrameOnUI(int process_id,
+                          int parent_routing_id,
+                          blink::WebTreeScopeType scope,
+                          const std::string& frame_name,
+                          const std::string& frame_unique_name,
+                          blink::WebSandboxFlags sandbox_flags,
+                          const FrameOwnerProperties& frame_owner_properties,
+                          int new_routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
@@ -302,8 +301,7 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
       base::Bind(&CreateChildFrameOnUI, render_process_id_,
                  params.parent_routing_id, params.scope, params.frame_name,
                  params.frame_unique_name, params.sandbox_flags,
-                 params.frame_owner_properties.ToWebFrameOwnerProperties(),
-                 *new_routing_id));
+                 params.frame_owner_properties, *new_routing_id));
 }
 
 void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,

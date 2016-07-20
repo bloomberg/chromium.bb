@@ -8,6 +8,7 @@
 #include "base/debug/leak_annotations.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -21,7 +22,6 @@
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -65,7 +65,7 @@ class RenderFrameImplTest : public RenderViewTest {
     RenderFrameImpl::CreateFrame(
         kSubframeRouteId, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
         kFrameProxyRouteId, MSG_ROUTING_NONE, frame_replication_state,
-        &compositor_deps_, widget_params, blink::WebFrameOwnerProperties());
+        &compositor_deps_, widget_params, FrameOwnerProperties());
 
     frame_ = RenderFrameImpl::FromRoutingID(kSubframeRouteId);
     EXPECT_FALSE(frame_->is_main_frame_);

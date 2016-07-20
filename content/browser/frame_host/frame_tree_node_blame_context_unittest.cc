@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,10 +131,10 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
     int consumption = 0;
     for (int child_num = 1; shape[consumption++] == '('; ++child_num) {
       int child_id = self_id * 10 + child_num;
-      tree()->AddFrame(
-          node, process_id(), child_id, blink::WebTreeScopeType::Document,
-          std::string(), base::StringPrintf("uniqueName%d", child_id),
-          blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
+      tree()->AddFrame(node, process_id(), child_id,
+                       blink::WebTreeScopeType::Document, std::string(),
+                       base::StringPrintf("uniqueName%d", child_id),
+                       blink::WebSandboxFlags::None, FrameOwnerProperties());
       FrameTreeNode* child = node->child_at(child_num - 1);
       consumption += CreateSubframes(child, child_id, shape + consumption);
     }

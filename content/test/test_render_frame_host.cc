@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
@@ -88,7 +89,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
                      blink::WebTreeScopeType::Document, frame_name,
                      frame_unique_name, blink::WebSandboxFlags::None,
-                     blink::WebFrameOwnerProperties());
+                     FrameOwnerProperties());
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }

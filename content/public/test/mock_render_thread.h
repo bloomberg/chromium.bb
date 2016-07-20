@@ -31,7 +31,6 @@ class MessageReplyDeserializer;
 namespace blink {
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
-struct WebFrameOwnerProperties;
 }
 
 namespace content {

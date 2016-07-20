@@ -83,7 +83,6 @@
 #include "content/public/common/url_utils.h"
 #include "device/vibration/vibration_manager_impl.h"
 #include "services/shell/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -906,7 +905,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     blink::WebSandboxFlags sandbox_flags,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+    const FrameOwnerProperties& frame_owner_properties) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
 
@@ -1667,12 +1666,9 @@ void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
   if (!child)
     return;
 
-  blink::WebFrameOwnerProperties web_properties =
-      properties.ToWebFrameOwnerProperties();
+  child->set_frame_owner_properties(properties);
 
-  child->set_frame_owner_properties(web_properties);
-
-  child->render_manager()->OnDidUpdateFrameOwnerProperties(web_properties);
+  child->render_manager()->OnDidUpdateFrameOwnerProperties(properties);
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(

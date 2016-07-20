@@ -17,9 +17,9 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -65,7 +65,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 blink::WebTreeScopeType scope,
                 const std::string& name,
                 const std::string& unique_name,
-                const blink::WebFrameOwnerProperties& frame_owner_properties);
+                const FrameOwnerProperties& frame_owner_properties);
 
   ~FrameTreeNode();
 
@@ -190,12 +190,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // flags were changed.
   bool CommitPendingSandboxFlags();
 
-  const blink::WebFrameOwnerProperties& frame_owner_properties() {
+  const FrameOwnerProperties& frame_owner_properties() {
     return frame_owner_properties_;
   }
 
   void set_frame_owner_properties(
-      const blink::WebFrameOwnerProperties& frame_owner_properties) {
+      const FrameOwnerProperties& frame_owner_properties) {
     frame_owner_properties_ = frame_owner_properties;
   }
 
@@ -352,7 +352,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // properties, we update them here too.
   //
   // Note that dynamic updates only take effect on the next frame navigation.
-  blink::WebFrameOwnerProperties frame_owner_properties_;
+  FrameOwnerProperties frame_owner_properties_;
 
   // Used to track this node's loading progress (from 0 to 1).
   double loading_progress_;

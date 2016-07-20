@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionType.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 
@@ -15,7 +16,7 @@ namespace content {
 // Used for IPC transport of WebFrameOwnerProperties. WebFrameOwnerProperties
 // can't be used directly as it contains a WebVector which doesn't have
 // ParamTraits defined.
-struct FrameOwnerProperties {
+struct CONTENT_EXPORT FrameOwnerProperties {
   FrameOwnerProperties();
   FrameOwnerProperties(const FrameOwnerProperties& other);
   explicit FrameOwnerProperties(
@@ -23,6 +24,11 @@ struct FrameOwnerProperties {
   ~FrameOwnerProperties();
 
   blink::WebFrameOwnerProperties ToWebFrameOwnerProperties() const;
+
+  bool operator==(const FrameOwnerProperties& other) const;
+  bool operator!=(const FrameOwnerProperties& other) const {
+    return !(*this == other);
+  }
 
   blink::WebFrameOwnerProperties::ScrollingMode scrolling_mode;
   int margin_width;

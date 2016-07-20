@@ -195,14 +195,13 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 
   render_frame_proxy_created_ = true;
 
-  // For subframes, initialize the proxy's WebFrameOwnerProperties only if they
+  // For subframes, initialize the proxy's FrameOwnerProperties only if they
   // differ from default values.
-  bool should_send_properties = frame_tree_node_->frame_owner_properties() !=
-                                blink::WebFrameOwnerProperties();
+  bool should_send_properties =
+      frame_tree_node_->frame_owner_properties() != FrameOwnerProperties();
   if (frame_tree_node_->parent() && should_send_properties) {
     Send(new FrameMsg_SetFrameOwnerProperties(
-        routing_id_,
-        FrameOwnerProperties(frame_tree_node_->frame_owner_properties())));
+        routing_id_, frame_tree_node_->frame_owner_properties()));
   }
 
   return true;

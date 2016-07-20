@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 #if defined(ENABLE_PLUGINS)

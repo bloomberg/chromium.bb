@@ -65,10 +65,6 @@ class ListValue;
 }
 
 namespace blink {
-struct WebFrameOwnerProperties;
-}
-
-namespace blink {
 namespace mojom {
 class WebBluetoothService;
 }
@@ -224,13 +220,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Init();
 
   int routing_id() const { return routing_id_; }
-  void OnCreateChildFrame(
-      int new_routing_id,
-      blink::WebTreeScopeType scope,
-      const std::string& frame_name,
-      const std::string& frame_unique_name,
-      blink::WebSandboxFlags sandbox_flags,
-      const blink::WebFrameOwnerProperties& frame_owner_properties);
+  void OnCreateChildFrame(int new_routing_id,
+                          blink::WebTreeScopeType scope,
+                          const std::string& frame_name,
+                          const std::string& frame_unique_name,
+                          blink::WebSandboxFlags sandbox_flags,
+                          const FrameOwnerProperties& frame_owner_properties);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }

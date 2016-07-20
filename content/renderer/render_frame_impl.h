@@ -90,7 +90,6 @@ struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
-struct WebFrameOwnerProperties;
 struct WebScreenInfo;
 }
 
@@ -194,16 +193,15 @@ class CONTENT_EXPORT RenderFrameImpl
   // the latter is MSG_ROUTING_NONE.  Note: This is called only when
   // RenderFrame is being created in response to IPC message from the browser
   // process. All other frame creation is driven through Blink and Create.
-  static void CreateFrame(
-      int routing_id,
-      int proxy_routing_id,
-      int opener_routing_id,
-      int parent_routing_id,
-      int previous_sibling_routing_id,
-      const FrameReplicationState& replicated_state,
-      CompositorDependencies* compositor_deps,
-      const FrameMsg_NewFrame_WidgetParams& params,
-      const blink::WebFrameOwnerProperties& frameOwner_properties);
+  static void CreateFrame(int routing_id,
+                          int proxy_routing_id,
+                          int opener_routing_id,
+                          int parent_routing_id,
+                          int previous_sibling_routing_id,
+                          const FrameReplicationState& replicated_state,
+                          CompositorDependencies* compositor_deps,
+                          const FrameMsg_NewFrame_WidgetParams& params,
+                          const FrameOwnerProperties& frame_owner_properties);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);

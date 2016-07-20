@@ -978,11 +978,11 @@ void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
 }
 
 void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
-    const blink::WebFrameOwnerProperties& properties) {
+    const FrameOwnerProperties& properties) {
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return;
 
-  // WebFrameOwnerProperties exist only for frames that have a parent.
+  // FrameOwnerProperties exist only for frames that have a parent.
   CHECK(frame_tree_node_->parent());
   SiteInstance* parent_instance =
       frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
@@ -990,7 +990,7 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
   // Notify the RenderFrame if it lives in a different process from its parent.
   if (render_frame_host_->GetSiteInstance() != parent_instance) {
     render_frame_host_->Send(new FrameMsg_SetFrameOwnerProperties(
-        render_frame_host_->GetRoutingID(), FrameOwnerProperties(properties)));
+        render_frame_host_->GetRoutingID(), properties));
   }
 
   // Notify this frame's proxies if they live in a different process from its
@@ -1002,7 +1002,7 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_instance) {
       pair.second->Send(new FrameMsg_SetFrameOwnerProperties(
-          pair.second->GetRoutingID(), FrameOwnerProperties(properties)));
+          pair.second->GetRoutingID(), properties));
     }
   }
 }

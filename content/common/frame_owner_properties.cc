@@ -41,4 +41,13 @@ blink::WebFrameOwnerProperties FrameOwnerProperties::ToWebFrameOwnerProperties()
   return result;
 }
 
+bool FrameOwnerProperties::operator==(const FrameOwnerProperties& other) const {
+  return scrolling_mode == other.scrolling_mode &&
+         margin_width == other.margin_width &&
+         margin_height == other.margin_height &&
+         allow_fullscreen == other.allow_fullscreen &&
+         std::equal(delegated_permissions.begin(), delegated_permissions.end(),
+                    other.delegated_permissions.begin());
+}
+
 }  // namespace content

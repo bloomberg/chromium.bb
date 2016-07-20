@@ -43,22 +43,6 @@ struct WebFrameOwnerProperties {
     {
     }
 #endif
-
-    bool operator==(const WebFrameOwnerProperties& other) const
-    {
-        return scrollingMode == other.scrollingMode
-            && marginWidth == other.marginWidth
-            && marginHeight == other.marginHeight
-            && allowFullscreen == other.allowFullscreen
-            && std::equal(delegatedPermissions.begin(),
-                delegatedPermissions.end(),
-                other.delegatedPermissions.begin());
-    }
-
-    bool operator!=(const WebFrameOwnerProperties& other) const
-    {
-        return !(*this == other);
-    }
 };
 
 } // namespace blink

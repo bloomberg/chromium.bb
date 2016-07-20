@@ -7377,14 +7377,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, AllowFullscreen) {
 
   EXPECT_TRUE(is_fullscreen_allowed(root));
   EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)));
-  EXPECT_TRUE(root->child_at(0)->frame_owner_properties().allowFullscreen);
+  EXPECT_TRUE(root->child_at(0)->frame_owner_properties().allow_fullscreen);
 
   // Now navigate to a page with two <iframe>'s, both without allowFullscreen.
   GURL url_2(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
-  EXPECT_FALSE(root->child_at(0)->frame_owner_properties().allowFullscreen);
-  EXPECT_FALSE(root->child_at(1)->frame_owner_properties().allowFullscreen);
+  EXPECT_FALSE(root->child_at(0)->frame_owner_properties().allow_fullscreen);
+  EXPECT_FALSE(root->child_at(1)->frame_owner_properties().allow_fullscreen);
 
   EXPECT_TRUE(is_fullscreen_allowed(root));
   EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)));
@@ -7394,7 +7394,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, AllowFullscreen) {
   // fullscreen property was updated on the FrameTreeNode.
   EXPECT_TRUE(ExecuteScript(
       root, "document.getElementById('child-0').allowFullscreen='true'"));
-  EXPECT_TRUE(root->child_at(0)->frame_owner_properties().allowFullscreen);
+  EXPECT_TRUE(root->child_at(0)->frame_owner_properties().allow_fullscreen);
 
   // Check that the first subframe is now allowed to go fullscreen.  Other
   // frames shouldn't be affected.

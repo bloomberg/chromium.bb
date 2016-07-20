@@ -959,7 +959,7 @@ void RenderFrameImpl::CreateFrame(
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
     const FrameMsg_NewFrame_WidgetParams& widget_params,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+    const FrameOwnerProperties& frame_owner_properties) {
   blink::WebLocalFrame* web_frame;
   RenderFrameImpl* render_frame;
   if (proxy_routing_id == MSG_ROUTING_NONE) {
@@ -984,7 +984,8 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         WebString::fromUTF8(replicated_state.unique_name),
         replicated_state.sandbox_flags, render_frame,
-        previous_sibling_web_frame, frame_owner_properties,
+        previous_sibling_web_frame,
+        frame_owner_properties.ToWebFrameOwnerProperties(),
         ResolveOpener(opener_routing_id, nullptr));
 
     // The RenderFrame is created and inserted into the frame tree in the above

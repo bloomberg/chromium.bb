@@ -26,6 +26,7 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
@@ -897,7 +898,7 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
   RenderFrameImpl::CreateFrame(routing_id, kProxyRoutingId, MSG_ROUTING_NONE,
                                frame()->GetRoutingID(), MSG_ROUTING_NONE,
                                replication_state, nullptr, widget_params,
-                               blink::WebFrameOwnerProperties());
+                               FrameOwnerProperties());
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);

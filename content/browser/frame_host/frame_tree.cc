@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/frame_owner_properties.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -105,7 +106,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               blink::WebTreeScopeType::Document,
                               std::string(),
                               std::string(),
-                              blink::WebFrameOwnerProperties())),
+                              FrameOwnerProperties())),
       focused_frame_tree_node_id_(-1),
       load_progress_(0.0) {}
 
@@ -166,15 +167,14 @@ FrameTree::NodeRange FrameTree::NodesExcept(FrameTreeNode* node_to_skip) {
   return NodeRange(root_, node_to_skip);
 }
 
-bool FrameTree::AddFrame(
-    FrameTreeNode* parent,
-    int process_id,
-    int new_routing_id,
-    blink::WebTreeScopeType scope,
-    const std::string& frame_name,
-    const std::string& frame_unique_name,
-    blink::WebSandboxFlags sandbox_flags,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+bool FrameTree::AddFrame(FrameTreeNode* parent,
+                         int process_id,
+                         int new_routing_id,
+                         blink::WebTreeScopeType scope,
+                         const std::string& frame_name,
+                         const std::string& frame_unique_name,
+                         blink::WebSandboxFlags sandbox_flags,
+                         const FrameOwnerProperties& frame_owner_properties) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 
   // A child frame always starts with an initial empty document, which means
