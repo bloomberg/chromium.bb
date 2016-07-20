@@ -1,27 +1,9 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x332
-  LayoutBlockFlow {HTML} at (0,0) size 800x332
-    LayoutBlockFlow {BODY} at (8,8) size 784x316
-      LayoutBlockFlow (anonymous) at (0,0) size 784x244
-        LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,244) size 784x72
-        LayoutInline {SPAN} at (0,0) size 377x18
-          LayoutText {#text} at (0,0) size 377x18
-            text run at (0,0) width 377: "Rendering vertical line-positioned cues with Japanese text."
-          LayoutBR {BR} at (376,0) size 1x18
-        LayoutInline {SPAN} at (0,0) size 163x18
-          LayoutText {#text} at (0,18) size 163x18
-            text run at (0,18) width 163: "EVENT(canplaythrough)"
-          LayoutBR {BR} at (162,18) size 1x18
-        LayoutInline {SPAN} at (0,0) size 107x18
-          LayoutText {#text} at (0,36) size 107x18
-            text run at (0,36) width 107: "EVENT(seeked)"
-          LayoutBR {BR} at (106,36) size 1x18
-        LayoutInline {SPAN} at (0,0) size 100x18
-          LayoutText {#text} at (0,54) size 100x18
-            text run at (0,54) width 100: "END OF TEST"
-          LayoutBR {BR} at (99,54) size 1x18
+layer at (0,0) size 800x260
+  LayoutBlockFlow {HTML} at (0,0) size 800x260
+    LayoutBlockFlow {BODY} at (8,8) size 784x244
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (8,8) size 320x240
