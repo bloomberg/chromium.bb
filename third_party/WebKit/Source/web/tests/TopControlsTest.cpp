@@ -129,9 +129,9 @@ public:
     }
 
 
-    WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
-    LocalFrame* frame() const { return m_helper.webViewImpl()->mainFrameImpl()->frame(); }
-    VisualViewport& visualViewport() const { return m_helper.webViewImpl()->page()->frameHost().visualViewport(); }
+    WebViewImpl* webViewImpl() const { return m_helper.webView(); }
+    LocalFrame* frame() const { return m_helper.webView()->mainFrameImpl()->frame(); }
+    VisualViewport& visualViewport() const { return m_helper.webView()->page()->frameHost().visualViewport(); }
 
 private:
     std::string m_baseURL;

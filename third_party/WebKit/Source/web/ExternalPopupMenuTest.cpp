@@ -125,9 +125,9 @@ protected:
         webView()->updateAllLifecyclePhases();
     }
 
-    WebViewImpl* webView() const { return m_helper.webViewImpl(); }
+    WebViewImpl* webView() const { return m_helper.webView(); }
     const ExternalPopupMenuWebFrameClient& client() const { return m_webFrameClient; }
-    WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
+    WebLocalFrameImpl* mainFrame() const { return m_helper.webView()->mainFrameImpl(); }
 
 private:
     std::string m_baseURL;

@@ -120,7 +120,7 @@ protected:
     {
         FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).getString().utf8().data());
         FrameSerializer serializer(m_resources, *this);
-        Frame* frame = m_helper.webViewImpl()->mainFrameImpl()->frame();
+        Frame* frame = m_helper.webView()->mainFrameImpl()->frame();
         for (; frame; frame = frame->tree().traverseNext()) {
             // This is safe, because tests do not do cross-site navigation
             // (and therefore don't have remote frames).

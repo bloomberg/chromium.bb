@@ -123,7 +123,7 @@ protected:
 
     WebLocalFrameImpl* mainFrameImpl()
     {
-        return m_helper.webViewImpl()->mainFrameImpl();
+        return m_helper.webView()->mainFrameImpl();
     }
 
 private:

@@ -53,7 +53,7 @@ Document& SimTest::document()
 
 WebViewImpl& SimTest::webView()
 {
-    return *m_webViewHelper.webViewImpl();
+    return *m_webViewHelper.webView();
 }
 
 const SimWebViewClient& SimTest::webViewClient() const

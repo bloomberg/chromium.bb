@@ -72,8 +72,8 @@ protected:
         m_activityLogger = new TestActivityLogger();
         V8DOMActivityLogger::setActivityLogger(isolatedWorldId, String(), wrapUnique(m_activityLogger));
         m_webViewHelper.initialize(true);
-        m_scriptController = &m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->script();
-        FrameTestHelpers::loadFrame(m_webViewHelper.webViewImpl()->mainFrame(), "about:blank");
+        m_scriptController = &m_webViewHelper.webView()->mainFrameImpl()->frame()->script();
+        FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), "about:blank");
     }
 
     ~ActivityLoggerTest()
@@ -85,7 +85,7 @@ protected:
     {
         v8::HandleScope scope(v8::Isolate::GetCurrent());
         m_scriptController->executeScriptInMainWorld(script);
-        pumpPendingRequestsForFrameToLoad(m_webViewHelper.webViewImpl()->mainFrame());
+        pumpPendingRequestsForFrameToLoad(m_webViewHelper.webView()->mainFrame());
     }
 
     void executeScriptInIsolatedWorld(const String& script) const
@@ -95,7 +95,7 @@ protected:
         sources.append(ScriptSourceCode(script));
         Vector<v8::Local<v8::Value>> results;
         m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources, extensionGroup, 0);
-        pumpPendingRequestsForFrameToLoad(m_webViewHelper.webViewImpl()->mainFrame());
+        pumpPendingRequestsForFrameToLoad(m_webViewHelper.webView()->mainFrame());
     }
 
     bool verifyActivities(const String& activities)

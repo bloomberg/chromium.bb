@@ -78,7 +78,7 @@ protected:
         ASSERT_EQ(compositingMode == AcceleratedCompositing, webViewImpl()->isAcceleratedCompositingActive());
     }
 
-    WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
+    WebViewImpl* webViewImpl() const { return m_helper.webView(); }
 
     std::unique_ptr<PageOverlay> createSolidYellowOverlay()
     {

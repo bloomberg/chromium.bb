@@ -32,7 +32,7 @@ protected:
     TextFinderTest()
     {
         m_webViewHelper.initialize();
-        WebLocalFrameImpl& frameImpl = *m_webViewHelper.webViewImpl()->mainFrameImpl();
+        WebLocalFrameImpl& frameImpl = *m_webViewHelper.webView()->mainFrameImpl();
         frameImpl.viewImpl()->resize(WebSize(640, 480));
         frameImpl.viewImpl()->updateAllLifecyclePhases();
         m_document = static_cast<Document*>(frameImpl.document());

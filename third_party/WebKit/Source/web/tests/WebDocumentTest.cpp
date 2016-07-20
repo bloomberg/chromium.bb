@@ -52,7 +52,7 @@ void WebDocumentTest::loadURL(const std::string& url)
 
 Document* WebDocumentTest::topDocument() const
 {
-    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame())->document();
+    return toLocalFrame(m_webViewHelper.webView()->page()->mainFrame())->document();
 }
 
 WebDocument WebDocumentTest::topWebDocument() const
@@ -216,12 +216,12 @@ void WebDocumentFirstPartyTest::load(const char* file)
 
 Document* WebDocumentFirstPartyTest::nestedDocument() const
 {
-    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame()->tree().firstChild())->document();
+    return toLocalFrame(m_webViewHelper.webView()->page()->mainFrame()->tree().firstChild())->document();
 }
 
 Document* WebDocumentFirstPartyTest::nestedNestedDocument() const
 {
-    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame()->tree().firstChild()->tree().firstChild())->document();
+    return toLocalFrame(m_webViewHelper.webView()->page()->mainFrame()->tree().firstChild()->tree().firstChild())->document();
 }
 
 TEST_F(WebDocumentFirstPartyTest, Empty)

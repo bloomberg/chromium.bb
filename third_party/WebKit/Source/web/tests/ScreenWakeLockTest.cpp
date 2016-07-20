@@ -100,14 +100,14 @@ protected:
         blink::FrameTestHelpers::loadFrame(
             m_webViewHelper.webView()->mainFrame(),
             "http://example.com/foo.html");
-        m_webViewHelper.webViewImpl()->updateAllLifecyclePhases();
+        m_webViewHelper.webView()->updateAllLifecyclePhases();
     }
 
     blink::LocalFrame* frame()
     {
-        DCHECK(m_webViewHelper.webViewImpl());
-        DCHECK(m_webViewHelper.webViewImpl()->mainFrameImpl());
-        return m_webViewHelper.webViewImpl()->mainFrameImpl()->frame();
+        DCHECK(m_webViewHelper.webView());
+        DCHECK(m_webViewHelper.webView()->mainFrameImpl());
+        return m_webViewHelper.webView()->mainFrameImpl()->frame();
     }
 
     blink::Screen* screen()

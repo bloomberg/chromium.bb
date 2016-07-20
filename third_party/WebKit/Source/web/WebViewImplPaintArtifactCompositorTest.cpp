@@ -56,7 +56,7 @@ protected:
     }
 
     MockWebLayerTreeView& webLayerTreeView() { return m_webLayerTreeView; }
-    WebViewImpl& webViewImpl() { return *m_helper.webViewImpl(); }
+    WebViewImpl& webViewImpl() { return *m_helper.webView(); }
     PaintArtifactCompositor& getPaintArtifactCompositor() { return webViewImpl().getPaintArtifactCompositor(); }
 
 private:

@@ -90,7 +90,7 @@ protected:
     }
 
     const std::string& baseURL() const { return m_baseURL; }
-    WebFrame* mainFrame() { return m_webViewHelper.webViewImpl()->mainFrame(); }
+    WebFrame* mainFrame() { return m_webViewHelper.webView()->mainFrame(); }
     const std::vector<std::string>& queriedSubresourcePaths() const { return m_client.subresourceFilter()->queriedSubresourcePaths(); }
 
 private:

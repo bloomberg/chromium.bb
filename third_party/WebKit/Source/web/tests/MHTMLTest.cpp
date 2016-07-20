@@ -112,7 +112,7 @@ protected:
         FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), url.string().utf8().data());
     }
 
-    Page* page() const { return m_helper.webViewImpl()->page(); }
+    Page* page() const { return m_helper.webView()->page(); }
 
 
     void addResource(const char* url, const char* mime, PassRefPtr<SharedBuffer> data)

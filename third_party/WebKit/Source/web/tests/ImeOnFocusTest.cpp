@@ -103,7 +103,7 @@ void ImeOnFocusTest::runImeOnFocusTest(std::string fileName, int expectedImeRequ
     WebViewImpl* webView = m_webViewHelper.initialize(true, 0, &client);
     webView->resize(WebSize(800, 1200));
     loadFrame(webView->mainFrame(), m_baseURL + fileName);
-    m_document = m_webViewHelper.webViewImpl()->mainFrameImpl()->document().unwrap<Document>();
+    m_document = m_webViewHelper.webView()->mainFrameImpl()->document().unwrap<Document>();
 
     if (!focusElement.isNull())
         focus(focusElement);

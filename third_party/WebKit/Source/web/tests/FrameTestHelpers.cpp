@@ -42,7 +42,6 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebFrameWidget.h"
-#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
@@ -172,12 +171,12 @@ WebMouseEvent createMouseEvent(WebInputEvent::Type type, WebMouseEvent::Button b
     return result;
 }
 
-WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name, WebFrameClient* client, WebWidgetClient* widgetClient, WebFrame* previousSibling, const WebFrameOwnerProperties& properties)
+WebLocalFrameImpl* createLocalChild(WebRemoteFrame* parent, const WebString& name, WebFrameClient* client, WebWidgetClient* widgetClient, WebFrame* previousSibling, const WebFrameOwnerProperties& properties)
 {
     if (!client)
         client = defaultWebFrameClient();
 
-    WebLocalFrame* frame = parent->createLocalChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, previousSibling, properties, nullptr);
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(parent->createLocalChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, previousSibling, properties, nullptr));
 
     if (!widgetClient)
         widgetClient = defaultWebWidgetClient();
@@ -186,9 +185,9 @@ WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name, W
     return frame;
 }
 
-WebRemoteFrame* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClient* client, const WebString& name)
+WebRemoteFrameImpl* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClient* client, const WebString& name)
 {
-    return parent->createRemoteChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, nullptr);
+    return toWebRemoteFrameImpl(parent->createRemoteChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, nullptr));
 }
 
 void DefaultSettingOverride(WebSettings*)
@@ -260,7 +259,7 @@ WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enabl
 
     loadFrame(webView()->mainFrame(), url);
 
-    return webViewImpl();
+    return webView();
 }
 
 void WebViewHelper::reset()
@@ -276,7 +275,7 @@ void WebViewHelper::reset()
 void WebViewHelper::resize(WebSize size)
 {
     m_testWebViewClient->clearAnimationScheduled();
-    webViewImpl()->resize(size);
+    webView()->resize(size);
     EXPECT_FALSE(m_testWebViewClient->animationScheduled());
     m_testWebViewClient->clearAnimationScheduled();
 }

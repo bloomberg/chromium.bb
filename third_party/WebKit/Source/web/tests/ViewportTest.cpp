@@ -115,7 +115,7 @@ TEST_F(ViewportTest, viewport1)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-1.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -133,7 +133,7 @@ TEST_F(ViewportTest, viewport2)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-2.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -151,7 +151,7 @@ TEST_F(ViewportTest, viewport3)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-3.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -169,7 +169,7 @@ TEST_F(ViewportTest, viewport4)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-4.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(160, constraints.layoutSize.width());
@@ -187,7 +187,7 @@ TEST_F(ViewportTest, viewport5)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-5.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -205,7 +205,7 @@ TEST_F(ViewportTest, viewport6)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-6.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(200, constraints.layoutSize.width());
@@ -224,7 +224,7 @@ TEST_F(ViewportTest, viewport7)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-7.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -242,7 +242,7 @@ TEST_F(ViewportTest, viewport8)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-8.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -260,7 +260,7 @@ TEST_F(ViewportTest, viewport9)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-9.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -278,7 +278,7 @@ TEST_F(ViewportTest, viewport10)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-10.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -296,7 +296,7 @@ TEST_F(ViewportTest, viewport11)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-11.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -314,7 +314,7 @@ TEST_F(ViewportTest, viewport12)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-12.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -332,7 +332,7 @@ TEST_F(ViewportTest, viewport13)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-13.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -350,7 +350,7 @@ TEST_F(ViewportTest, viewport14)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-14.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -368,7 +368,7 @@ TEST_F(ViewportTest, viewport15)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-15.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -386,7 +386,7 @@ TEST_F(ViewportTest, viewport16)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-16.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -404,7 +404,7 @@ TEST_F(ViewportTest, viewport17)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-17.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -422,7 +422,7 @@ TEST_F(ViewportTest, viewport18)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-18.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -440,7 +440,7 @@ TEST_F(ViewportTest, viewport19)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-19.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(160, constraints.layoutSize.width());
@@ -458,7 +458,7 @@ TEST_F(ViewportTest, viewport20)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-20.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -476,7 +476,7 @@ TEST_F(ViewportTest, viewport21)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-21.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -494,7 +494,7 @@ TEST_F(ViewportTest, viewport22)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-22.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -512,7 +512,7 @@ TEST_F(ViewportTest, viewport23)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-23.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -530,7 +530,7 @@ TEST_F(ViewportTest, viewport24)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-24.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -548,7 +548,7 @@ TEST_F(ViewportTest, viewport25)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-25.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -566,7 +566,7 @@ TEST_F(ViewportTest, viewport26)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-26.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -584,7 +584,7 @@ TEST_F(ViewportTest, viewport27)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-27.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -602,7 +602,7 @@ TEST_F(ViewportTest, viewport28)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-28.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(352, constraints.layoutSize.width());
@@ -620,7 +620,7 @@ TEST_F(ViewportTest, viewport29)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-29.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(700, constraints.layoutSize.width());
@@ -638,7 +638,7 @@ TEST_F(ViewportTest, viewport30)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-30.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(200, constraints.layoutSize.width());
@@ -656,7 +656,7 @@ TEST_F(ViewportTest, viewport31)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-31.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -674,7 +674,7 @@ TEST_F(ViewportTest, viewport32)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-32.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -692,7 +692,7 @@ TEST_F(ViewportTest, viewport33)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-33.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -710,7 +710,7 @@ TEST_F(ViewportTest, viewport34)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-34.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -728,7 +728,7 @@ TEST_F(ViewportTest, viewport35)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-35.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -746,7 +746,7 @@ TEST_F(ViewportTest, viewport36)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-36.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_NEAR(636.36, constraints.layoutSize.width(), 0.01f);
@@ -764,7 +764,7 @@ TEST_F(ViewportTest, viewport37)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-37.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -782,7 +782,7 @@ TEST_F(ViewportTest, viewport38)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-38.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -800,7 +800,7 @@ TEST_F(ViewportTest, viewport39)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-39.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(200, constraints.layoutSize.width());
@@ -818,7 +818,7 @@ TEST_F(ViewportTest, viewport40)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-40.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(700, constraints.layoutSize.width());
@@ -836,7 +836,7 @@ TEST_F(ViewportTest, viewport41)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-41.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1000, constraints.layoutSize.width());
@@ -854,7 +854,7 @@ TEST_F(ViewportTest, viewport42)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-42.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -872,7 +872,7 @@ TEST_F(ViewportTest, viewport43)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-43.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -890,7 +890,7 @@ TEST_F(ViewportTest, viewport44)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-44.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(10000, constraints.layoutSize.width());
@@ -908,7 +908,7 @@ TEST_F(ViewportTest, viewport45)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-45.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(3200, constraints.layoutSize.width());
@@ -926,7 +926,7 @@ TEST_F(ViewportTest, viewport46)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-46.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(32, constraints.layoutSize.width());
@@ -944,7 +944,7 @@ TEST_F(ViewportTest, viewport47)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-47.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -962,7 +962,7 @@ TEST_F(ViewportTest, viewport48)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-48.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(3000, constraints.layoutSize.width());
@@ -980,7 +980,7 @@ TEST_F(ViewportTest, viewport49)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-49.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -998,7 +998,7 @@ TEST_F(ViewportTest, viewport50)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-50.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1016,7 +1016,7 @@ TEST_F(ViewportTest, viewport51)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-51.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1034,7 +1034,7 @@ TEST_F(ViewportTest, viewport52)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-52.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1052,7 +1052,7 @@ TEST_F(ViewportTest, viewport53)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-53.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1070,7 +1070,7 @@ TEST_F(ViewportTest, viewport54)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-54.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1088,7 +1088,7 @@ TEST_F(ViewportTest, viewport55)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-55.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1106,7 +1106,7 @@ TEST_F(ViewportTest, viewport56)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-56.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1124,7 +1124,7 @@ TEST_F(ViewportTest, viewport57)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-57.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1142,7 +1142,7 @@ TEST_F(ViewportTest, viewport58)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-58.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(3200, constraints.layoutSize.width());
@@ -1160,7 +1160,7 @@ TEST_F(ViewportTest, viewport59)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-59.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1178,7 +1178,7 @@ TEST_F(ViewportTest, viewport60)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-60.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(32, constraints.layoutSize.width());
@@ -1196,7 +1196,7 @@ TEST_F(ViewportTest, viewport61)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-61.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1214,7 +1214,7 @@ TEST_F(ViewportTest, viewport62)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-62.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1232,7 +1232,7 @@ TEST_F(ViewportTest, viewport63)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-63.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1250,7 +1250,7 @@ TEST_F(ViewportTest, viewport64)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-64.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1268,7 +1268,7 @@ TEST_F(ViewportTest, viewport65)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-65.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1286,7 +1286,7 @@ TEST_F(ViewportTest, viewport66)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-66.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1304,7 +1304,7 @@ TEST_F(ViewportTest, viewport67)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-67.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1322,7 +1322,7 @@ TEST_F(ViewportTest, viewport68)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-68.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1340,7 +1340,7 @@ TEST_F(ViewportTest, viewport69)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-69.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1358,7 +1358,7 @@ TEST_F(ViewportTest, viewport70)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-70.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1376,7 +1376,7 @@ TEST_F(ViewportTest, viewport71)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-71.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1394,7 +1394,7 @@ TEST_F(ViewportTest, viewport72)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-72.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1412,7 +1412,7 @@ TEST_F(ViewportTest, viewport73)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-73.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1430,7 +1430,7 @@ TEST_F(ViewportTest, viewport74)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-74.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1448,7 +1448,7 @@ TEST_F(ViewportTest, viewport75)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-75.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1466,7 +1466,7 @@ TEST_F(ViewportTest, viewport76)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-76.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(32, constraints.layoutSize.width());
@@ -1484,7 +1484,7 @@ TEST_F(ViewportTest, viewport77)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-77.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1280, constraints.layoutSize.width());
@@ -1502,7 +1502,7 @@ TEST_F(ViewportTest, viewport78)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-78.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(100, constraints.layoutSize.width());
@@ -1520,7 +1520,7 @@ TEST_F(ViewportTest, viewport79)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-79.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1538,7 +1538,7 @@ TEST_F(ViewportTest, viewport80)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-80.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -1556,7 +1556,7 @@ TEST_F(ViewportTest, viewport81)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-81.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(3000, constraints.layoutSize.width());
@@ -1574,7 +1574,7 @@ TEST_F(ViewportTest, viewport82)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-82.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -1592,7 +1592,7 @@ TEST_F(ViewportTest, viewport83)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-83.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1610,7 +1610,7 @@ TEST_F(ViewportTest, viewport84)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-84.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1628,7 +1628,7 @@ TEST_F(ViewportTest, viewport85)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-85.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(540, constraints.layoutSize.width());
@@ -1646,7 +1646,7 @@ TEST_F(ViewportTest, viewport86)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-86.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_NEAR(457.14, constraints.layoutSize.width(), 0.01f);
@@ -1664,7 +1664,7 @@ TEST_F(ViewportTest, viewport87)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-87.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -1682,7 +1682,7 @@ TEST_F(ViewportTest, viewport88)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-88.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1700,7 +1700,7 @@ TEST_F(ViewportTest, viewport90)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-90.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(700, constraints.layoutSize.width());
@@ -1718,7 +1718,7 @@ TEST_F(ViewportTest, viewport100)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-100.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -1736,7 +1736,7 @@ TEST_F(ViewportTest, viewport101)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-101.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -1754,7 +1754,7 @@ TEST_F(ViewportTest, viewport102)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-102.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -1772,7 +1772,7 @@ TEST_F(ViewportTest, viewport103)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-103.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -1790,7 +1790,7 @@ TEST_F(ViewportTest, viewport104)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-104.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1808,7 +1808,7 @@ TEST_F(ViewportTest, viewport105)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-105.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1826,7 +1826,7 @@ TEST_F(ViewportTest, viewport106)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-106.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1844,7 +1844,7 @@ TEST_F(ViewportTest, viewport107)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-107.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1862,7 +1862,7 @@ TEST_F(ViewportTest, viewport108)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-108.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1880,7 +1880,7 @@ TEST_F(ViewportTest, viewport109)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-109.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1898,7 +1898,7 @@ TEST_F(ViewportTest, viewport110)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-110.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1916,7 +1916,7 @@ TEST_F(ViewportTest, viewport111)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-111.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1934,7 +1934,7 @@ TEST_F(ViewportTest, viewport112)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-112.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -1952,7 +1952,7 @@ TEST_F(ViewportTest, viewport113)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-113.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1970,7 +1970,7 @@ TEST_F(ViewportTest, viewport114)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-114.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -1988,7 +1988,7 @@ TEST_F(ViewportTest, viewport115)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-115.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -2006,7 +2006,7 @@ TEST_F(ViewportTest, viewport116)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-116.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(400, constraints.layoutSize.width());
@@ -2024,7 +2024,7 @@ TEST_F(ViewportTest, viewport117)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-117.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -2042,7 +2042,7 @@ TEST_F(ViewportTest, viewport118)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-118.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2060,7 +2060,7 @@ TEST_F(ViewportTest, viewport119)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-119.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2078,7 +2078,7 @@ TEST_F(ViewportTest, viewport120)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-120.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2096,7 +2096,7 @@ TEST_F(ViewportTest, viewport121)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-121.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -2114,7 +2114,7 @@ TEST_F(ViewportTest, viewport122)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-122.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -2132,7 +2132,7 @@ TEST_F(ViewportTest, viewport123)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-123.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2150,7 +2150,7 @@ TEST_F(ViewportTest, viewport124)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-124.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2168,7 +2168,7 @@ TEST_F(ViewportTest, viewport125)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-125.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -2186,7 +2186,7 @@ TEST_F(ViewportTest, viewport126)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-126.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -2204,7 +2204,7 @@ TEST_F(ViewportTest, viewport127)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-127.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(64, constraints.layoutSize.width());
@@ -2222,7 +2222,7 @@ TEST_F(ViewportTest, viewport129)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-129.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(123, constraints.layoutSize.width());
@@ -2240,7 +2240,7 @@ TEST_F(ViewportTest, viewport130)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-130.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2258,7 +2258,7 @@ TEST_F(ViewportTest, viewport131)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-131.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2276,7 +2276,7 @@ TEST_F(ViewportTest, viewport132)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-132.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2294,7 +2294,7 @@ TEST_F(ViewportTest, viewport133)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-133.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -2312,7 +2312,7 @@ TEST_F(ViewportTest, viewport134)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-134.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(160, constraints.layoutSize.width());
@@ -2330,7 +2330,7 @@ TEST_F(ViewportTest, viewport135)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-135.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -2348,7 +2348,7 @@ TEST_F(ViewportTest, viewport136)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-136.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2366,7 +2366,7 @@ TEST_F(ViewportTest, viewport137)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-137.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(980, constraints.layoutSize.width());
@@ -2384,7 +2384,7 @@ TEST_F(ViewportTest, viewport138)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-138.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_NEAR(123.0f, constraints.layoutSize.width(), 0.01);
@@ -2402,7 +2402,7 @@ TEST_F(ViewportTest, viewportLegacyHandheldFriendly)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-handheldfriendly.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2428,7 +2428,7 @@ TEST_F(ViewportTest, viewportLegacyMergeQuirk1)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-merge-quirk-1.html", true, nullptr, nullptr, nullptr, setQuirkViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -2446,7 +2446,7 @@ TEST_F(ViewportTest, viewportLegacyMergeQuirk2)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-merge-quirk-2.html", true, nullptr, nullptr, nullptr, setQuirkViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     // This quirk allows content attributes of meta viewport tags to be merged.
     page->settings().setViewportMetaMergeContentQuirk(true);
@@ -2467,7 +2467,7 @@ TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWithoutContent)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-mobileoptimized.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2486,7 +2486,7 @@ TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWith0)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-mobileoptimized-2.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2505,7 +2505,7 @@ TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWith400)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-mobileoptimized-2.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2524,7 +2524,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering2)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-2.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2543,7 +2543,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering3)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-3.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2562,7 +2562,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering4)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-4.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2581,7 +2581,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering5)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-5.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2600,7 +2600,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering6)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-6.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2619,7 +2619,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering7)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-7.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2638,7 +2638,7 @@ TEST_F(ViewportTest, viewportLegacyOrdering8)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-8.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
@@ -2657,7 +2657,7 @@ TEST_F(ViewportTest, viewportLegacyEmptyAtViewportDoesntOverrideViewportMeta)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-ordering-10.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 800, 600);
 
     EXPECT_EQ(5000, constraints.layoutSize.width());
@@ -2670,7 +2670,7 @@ TEST_F(ViewportTest, viewportLegacyDefaultValueChangedByXHTMLMP)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-xhtmlmp.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2688,7 +2688,7 @@ TEST_F(ViewportTest, viewportLegacyDefaultValueChangedByXHTMLMPAndOverriddenByMe
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-xhtmlmp-misplaced-doctype.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -2706,7 +2706,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPOrdering)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-xhtmlmp-ordering.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(640, constraints.layoutSize.width());
@@ -2724,7 +2724,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-xhtmlmp.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(320, constraints.layoutSize.width());
@@ -2734,7 +2734,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd)
     EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
     EXPECT_TRUE(page->viewportDescription().userZoom);
 
-    executeScript(webViewHelper.webViewImpl()->mainFrame(),
+    executeScript(webViewHelper.webView()->mainFrame(),
         "originalDoctype = document.doctype;"
         "document.removeChild(originalDoctype);");
 
@@ -2747,7 +2747,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd)
     EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
     EXPECT_TRUE(page->viewportDescription().userZoom);
 
-    executeScript(webViewHelper.webViewImpl()->mainFrame(),
+    executeScript(webViewHelper.webView()->mainFrame(),
         "document.insertBefore(originalDoctype, document.firstChild);");
 
     constraints = runViewportTest(page, 320, 352);
@@ -2767,7 +2767,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScale)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-limits-adjusted-for-no-user-scale.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     EXPECT_FALSE(page->viewportDescription().userZoom);
 }
@@ -2779,7 +2779,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScaleControl)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-limits-adjusted-for-no-user-scale-control.html", true, nullptr, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
 
     EXPECT_TRUE(page->viewportDescription().userZoom);
 }
@@ -2791,42 +2791,42 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization)
     registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization-disabled-without-viewport.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-disabled-without-viewport.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_FALSE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_FALSE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization-expanded-heuristics.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-expanded-heuristics.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-1.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-1.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-15.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-15.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-130.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-130.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-handheldfriendly.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-legacy-handheldfriendly.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 }
 
 class ConsoleMessageWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -2848,7 +2848,7 @@ TEST_F(ViewportTest, viewportWarnings1)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-1.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_TRUE(webFrameClient.messages.isEmpty());
@@ -2870,7 +2870,7 @@ TEST_F(ViewportTest, viewportWarnings2)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-2.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1U, webFrameClient.messages.size());
@@ -2894,7 +2894,7 @@ TEST_F(ViewportTest, viewportWarnings3)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-3.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1U, webFrameClient.messages.size());
@@ -2919,7 +2919,7 @@ TEST_F(ViewportTest, viewportWarnings4)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-4.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1U, webFrameClient.messages.size());
@@ -2944,7 +2944,7 @@ TEST_F(ViewportTest, viewportWarnings5)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-5.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(5U, webFrameClient.messages.size());
@@ -2986,7 +2986,7 @@ TEST_F(ViewportTest, viewportWarnings6)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-6.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
     EXPECT_EQ(1U, webFrameClient.messages.size());
@@ -3011,7 +3011,7 @@ TEST_F(ViewportTest, viewportWarnings7)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-7.html", true, &webFrameClient, nullptr, nullptr, setViewportSettings);
 
-    Page* page = webViewHelper.webViewImpl()->page();
+    Page* page = webViewHelper.webView()->page();
     runViewportTest(page, 320, 352);
 
     EXPECT_EQ(0U, webFrameClient.messages.size());

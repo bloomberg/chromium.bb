@@ -199,7 +199,7 @@ public:
 
     Element& console()
     {
-        Document* document = m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->document();
+        Document* document = m_webViewHelper.webView()->mainFrameImpl()->frame()->document();
         Element* console = document->getElementById("console");
         DCHECK(isHTMLUListElement(console));
         return *console;

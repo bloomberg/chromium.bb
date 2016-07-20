@@ -34,7 +34,7 @@ protected:
 
     WebLocalFrameImpl* mainFrame()
     {
-        return m_webViewHelper.webViewImpl()->mainFrameImpl();
+        return m_webViewHelper.webView()->mainFrameImpl();
     }
 
     FrameTestHelpers::WebViewHelper m_webViewHelper;

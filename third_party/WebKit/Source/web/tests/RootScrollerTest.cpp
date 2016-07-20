@@ -123,22 +123,22 @@ public:
 
     WebViewImpl* webViewImpl() const
     {
-        return m_helper.webViewImpl();
+        return m_helper.webView();
     }
 
     FrameHost& frameHost() const
     {
-        return m_helper.webViewImpl()->page()->frameHost();
+        return m_helper.webView()->page()->frameHost();
     }
 
     LocalFrame* mainFrame() const
     {
-        return toWebLocalFrameImpl(webViewImpl()->mainFrame())->frame();
+        return webViewImpl()->mainFrameImpl()->frame();
     }
 
     WebLocalFrame* mainWebFrame() const
     {
-        return toWebLocalFrameImpl(webViewImpl()->mainFrame());
+        return webViewImpl()->mainFrameImpl();
     }
 
     FrameView* mainFrameView() const
