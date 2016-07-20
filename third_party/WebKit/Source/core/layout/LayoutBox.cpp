@@ -1092,28 +1092,33 @@ LayoutUnit LayoutBox::overrideLogicalContentHeight() const
     return m_rareData->m_overrideLogicalContentHeight;
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 LayoutUnit LayoutBox::overrideContainingBlockContentLogicalWidth() const
 {
     ASSERT(hasOverrideContainingBlockLogicalWidth());
     return gOverrideContainingBlockLogicalWidthMap->get(this);
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 LayoutUnit LayoutBox::overrideContainingBlockContentLogicalHeight() const
 {
     ASSERT(hasOverrideContainingBlockLogicalHeight());
     return gOverrideContainingBlockLogicalHeightMap->get(this);
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 bool LayoutBox::hasOverrideContainingBlockLogicalWidth() const
 {
     return gOverrideContainingBlockLogicalWidthMap && gOverrideContainingBlockLogicalWidthMap->contains(this);
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 bool LayoutBox::hasOverrideContainingBlockLogicalHeight() const
 {
     return gOverrideContainingBlockLogicalHeightMap && gOverrideContainingBlockLogicalHeightMap->contains(this);
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 void LayoutBox::setOverrideContainingBlockContentLogicalWidth(LayoutUnit logicalWidth)
 {
     if (!gOverrideContainingBlockLogicalWidthMap)
@@ -1121,6 +1126,7 @@ void LayoutBox::setOverrideContainingBlockContentLogicalWidth(LayoutUnit logical
     gOverrideContainingBlockLogicalWidthMap->set(this, logicalWidth);
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 void LayoutBox::setOverrideContainingBlockContentLogicalHeight(LayoutUnit logicalHeight)
 {
     if (!gOverrideContainingBlockLogicalHeightMap)
@@ -1128,6 +1134,7 @@ void LayoutBox::setOverrideContainingBlockContentLogicalHeight(LayoutUnit logica
     gOverrideContainingBlockLogicalHeightMap->set(this, logicalHeight);
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 void LayoutBox::clearContainingBlockOverrideSize()
 {
     if (gOverrideContainingBlockLogicalWidthMap)
@@ -1135,10 +1142,31 @@ void LayoutBox::clearContainingBlockOverrideSize()
     clearOverrideContainingBlockContentLogicalHeight();
 }
 
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 void LayoutBox::clearOverrideContainingBlockContentLogicalHeight()
 {
     if (gOverrideContainingBlockLogicalHeightMap)
         gOverrideContainingBlockLogicalHeightMap->remove(this);
+}
+
+LayoutUnit LayoutBox::overrideContainingBlockContentWidth() const
+{
+    return containingBlock()->isHorizontalWritingMode() ? overrideContainingBlockContentLogicalWidth() : overrideContainingBlockContentLogicalHeight();
+}
+
+LayoutUnit LayoutBox::overrideContainingBlockContentHeight() const
+{
+    return containingBlock()->isHorizontalWritingMode() ? overrideContainingBlockContentLogicalHeight() : overrideContainingBlockContentLogicalWidth();
+}
+
+bool LayoutBox::hasOverrideContainingBlockWidth() const
+{
+    return containingBlock()->isHorizontalWritingMode() ? hasOverrideContainingBlockLogicalWidth() : hasOverrideContainingBlockLogicalHeight();
+}
+
+bool LayoutBox::hasOverrideContainingBlockHeight() const
+{
+    return containingBlock()->isHorizontalWritingMode() ? hasOverrideContainingBlockLogicalHeight() : hasOverrideContainingBlockLogicalWidth();
 }
 
 LayoutUnit LayoutBox::extraInlineOffset() const

@@ -166,6 +166,8 @@ private:
     const GridTrackSize& rawGridTrackSize(GridTrackSizingDirection, size_t) const;
     GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t, SizingOperation = TrackSizing) const;
 
+    bool isChildOverflowingContainingBlockWidth(const LayoutBox&) const;
+    bool isChildOverflowingContainingBlockHeight(const LayoutBox&) const;
     bool updateOverrideContainingBlockContentSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;
     LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&) const;
     LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;

@@ -552,6 +552,10 @@ public:
     void setOverrideContainingBlockContentLogicalHeight(LayoutUnit);
     void clearContainingBlockOverrideSize();
     void clearOverrideContainingBlockContentLogicalHeight();
+    LayoutUnit overrideContainingBlockContentWidth() const;
+    LayoutUnit overrideContainingBlockContentHeight() const;
+    bool hasOverrideContainingBlockWidth() const;
+    bool hasOverrideContainingBlockHeight() const;
 
     LayoutUnit extraInlineOffset() const;
     LayoutUnit extraBlockOffset() const;
