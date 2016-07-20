@@ -262,7 +262,7 @@ void SystemTrayDelegateChromeOS::Initialize() {
 void SystemTrayDelegateChromeOS::InitializeOnAdapterReady(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   bluetooth_adapter_ = adapter;
-  CHECK(bluetooth_adapter_.get());
+  CHECK(bluetooth_adapter_);
   bluetooth_adapter_->AddObserver(this);
 
   local_state_registrar_.reset(new PrefChangeRegistrar);
@@ -304,7 +304,8 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
-  bluetooth_adapter_->RemoveObserver(this);
+  if (bluetooth_adapter_)
+    bluetooth_adapter_->RemoveObserver(this);
   ash::WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
       this);
 
@@ -673,7 +674,7 @@ void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
 }
 
 bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() {
-  return bluetooth_adapter_->IsDiscovering();
+  return bluetooth_adapter_ && bluetooth_adapter_->IsDiscovering();
 }
 
 void SystemTrayDelegateChromeOS::GetCurrentIME(ash::IMEInfo* info) {
@@ -753,16 +754,16 @@ void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
-  return bluetooth_adapter_->IsPresent();
+  return bluetooth_adapter_ && bluetooth_adapter_->IsPresent();
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
-  return bluetooth_adapter_->IsPowered();
+  return bluetooth_adapter_ && bluetooth_adapter_->IsPowered();
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
-  return (bluetooth_discovery_session_.get() &&
-      bluetooth_discovery_session_->IsActive());
+  return bluetooth_discovery_session_ &&
+         bluetooth_discovery_session_->IsActive();
 }
 
 void SystemTrayDelegateChromeOS::ChangeProxySettings() {

@@ -31,11 +31,9 @@
 #include "components/user_manager/user_manager.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
-    : created_profile_helper_(false) {
-}
+    : created_profile_helper_(false) {}
 
-BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
-}
+BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {}
 
 void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
   DCHECK(!automatic_reboot_manager_);
@@ -142,12 +140,6 @@ chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
   return timezone_resolver_.get();
 }
 
-chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
-  if (!system_clock_.get())
-    system_clock_.reset(new chromeos::system::SystemClock());
-
-  return system_clock_.get();
-}
 void BrowserProcessPlatformPart::StartTearDown() {
   // interactive_ui_tests check for memory leaks before this object is
   // destroyed.  So we need to destroy |timezone_resolver_| here.
@@ -159,6 +151,16 @@ std::unique_ptr<policy::BrowserPolicyConnector>
 BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
   return std::unique_ptr<policy::BrowserPolicyConnector>(
       new policy::BrowserPolicyConnectorChromeOS());
+}
+
+chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
+  if (!system_clock_.get())
+    system_clock_.reset(new chromeos::system::SystemClock());
+  return system_clock_.get();
+}
+
+void BrowserProcessPlatformPart::DestroySystemClock() {
+  system_clock_.reset();
 }
 
 void BrowserProcessPlatformPart::CreateProfileHelper() {

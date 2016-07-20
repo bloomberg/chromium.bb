@@ -107,6 +107,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
       override;
 
   chromeos::system::SystemClock* GetSystemClock();
+  void DestroySystemClock();
 
  private:
   void CreateProfileHelper();
