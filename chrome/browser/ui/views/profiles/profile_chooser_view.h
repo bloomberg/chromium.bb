@@ -211,6 +211,12 @@ class ProfileChooserView : public content::WebContentsDelegate,
       views::LabelButton** button,
       views::ImageButton** close_button);
 
+  // Creates a header for signin and sync error surfacing for the user menu.
+  views::View* CreateSyncErrorViewIfNeeded();
+  views::View* CreateSyncErrorView(const int content_string_id,
+                                   const int button_string_id,
+                                   views::LabelButton** button_out);
+
   // Create a view that shows various options for an upgrade user who is not
   // the same person as the currently signed in user.
   views::View* CreateSwitchUserView();
@@ -237,6 +243,13 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::Link* tutorial_not_you_link_;
   views::Link* tutorial_learn_more_link_;
   views::ImageButton* tutorial_close_button_;
+
+  // Buttons in the signin/sync error header on top of the desktop user menu.
+  views::LabelButton* sync_error_signin_button_;
+  views::LabelButton* sync_error_passphrase_button_;
+  views::LabelButton* sync_error_upgrade_button_;
+  views::LabelButton* sync_error_signin_again_button_;
+  views::LabelButton* sync_error_signout_button_;
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;

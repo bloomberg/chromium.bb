@@ -351,6 +351,7 @@ const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSearchSubPage[] = "search";
 const char kSearchUsersSubPage[] = "search#Users";
+const char kSignOutSubPage[] = "signOut";
 const char kSyncSetupSubPage[] = "syncSetup";
 const char kTriggeredResetProfileSettingsSubPage[] =
     "triggeredResetProfileSettings";
