@@ -682,3 +682,10 @@ def valgrind(c):  # pragma: no cover
   """Add Valgrind binaries to the gclient solution."""
   c.solutions[0].custom_deps['src/third_party/valgrind'] = \
     ChromiumGitURL(c, 'chromium', 'deps', 'valgrind', 'binaries')
+
+@config_ctx(includes=['chromium'])
+def chromedriver(c):
+  """Add Selenium Java tests to the gclient solution."""
+  c.solutions[0].custom_deps[
+      'src/chrome/test/chromedriver/third_party/java_tests'] = (
+          ChromiumGitURL(c, 'chromium', 'deps', 'webdriver'))

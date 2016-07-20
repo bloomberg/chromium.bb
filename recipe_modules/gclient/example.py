@@ -17,6 +17,7 @@ TEST_CONFIGS = [
   'build_internal',
   'build_internal_scripts_slave',
   'catapult',
+  'chromedriver',
   'chrome_internal',
   'chromium',
   'chromium_lkcr',
