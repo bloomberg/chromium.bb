@@ -178,17 +178,16 @@ struct BaseState {
 struct EncryptState : public BaseState {
   EncryptState(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
-               const unsigned char* data,
-               unsigned int data_size,
+               blink::WebVector<unsigned char> data,
                const blink::WebCryptoResult& result)
       : BaseState(result),
         algorithm(algorithm),
         key(key),
-        data(data, data + data_size) {}
+        data(std::move(data)) {}
 
   const blink::WebCryptoAlgorithm algorithm;
   const blink::WebCryptoKey key;
-  const std::vector<uint8_t> data;
+  const blink::WebVector<unsigned char> data;
 
   std::vector<uint8_t> buffer;
 };
@@ -215,21 +214,20 @@ struct GenerateKeyState : public BaseState {
 
 struct ImportKeyState : public BaseState {
   ImportKeyState(blink::WebCryptoKeyFormat format,
-                 const unsigned char* key_data,
-                 unsigned int key_data_size,
+                 blink::WebVector<unsigned char> key_data,
                  const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usages,
                  const blink::WebCryptoResult& result)
       : BaseState(result),
         format(format),
-        key_data(key_data, key_data + key_data_size),
+        key_data(std::move(key_data)),
         algorithm(algorithm),
         extractable(extractable),
         usages(usages) {}
 
   const blink::WebCryptoKeyFormat format;
-  const std::vector<uint8_t> key_data;
+  const blink::WebVector<unsigned char> key_data;
   const blink::WebCryptoAlgorithm algorithm;
   const bool extractable;
   const blink::WebCryptoKeyUsageMask usages;
@@ -254,22 +252,20 @@ typedef EncryptState SignState;
 struct VerifySignatureState : public BaseState {
   VerifySignatureState(const blink::WebCryptoAlgorithm& algorithm,
                        const blink::WebCryptoKey& key,
-                       const unsigned char* signature,
-                       unsigned int signature_size,
-                       const unsigned char* data,
-                       unsigned int data_size,
+                       blink::WebVector<unsigned char> signature,
+                       blink::WebVector<unsigned char> data,
                        const blink::WebCryptoResult& result)
       : BaseState(result),
         algorithm(algorithm),
         key(key),
-        signature(signature, signature + signature_size),
-        data(data, data + data_size),
+        signature(std::move(signature)),
+        data(std::move(data)),
         verify_result(false) {}
 
   const blink::WebCryptoAlgorithm algorithm;
   const blink::WebCryptoKey key;
-  const std::vector<uint8_t> signature;
-  const std::vector<uint8_t> data;
+  blink::WebVector<unsigned char> signature;
+  blink::WebVector<unsigned char> data;
 
   bool verify_result;
 };
@@ -296,8 +292,7 @@ struct WrapKeyState : public BaseState {
 
 struct UnwrapKeyState : public BaseState {
   UnwrapKeyState(blink::WebCryptoKeyFormat format,
-                 const unsigned char* wrapped_key,
-                 unsigned wrapped_key_size,
+                 blink::WebVector<unsigned char> wrapped_key,
                  const blink::WebCryptoKey& wrapping_key,
                  const blink::WebCryptoAlgorithm& unwrap_algorithm,
                  const blink::WebCryptoAlgorithm& unwrapped_key_algorithm,
@@ -306,7 +301,7 @@ struct UnwrapKeyState : public BaseState {
                  const blink::WebCryptoResult& result)
       : BaseState(result),
         format(format),
-        wrapped_key(wrapped_key, wrapped_key + wrapped_key_size),
+        wrapped_key(std::move(wrapped_key)),
         wrapping_key(wrapping_key),
         unwrap_algorithm(unwrap_algorithm),
         unwrapped_key_algorithm(unwrapped_key_algorithm),
@@ -314,7 +309,7 @@ struct UnwrapKeyState : public BaseState {
         usages(usages) {}
 
   const blink::WebCryptoKeyFormat format;
-  const std::vector<uint8_t> wrapped_key;
+  blink::WebVector<unsigned char> wrapped_key;
   const blink::WebCryptoKey wrapping_key;
   const blink::WebCryptoAlgorithm unwrap_algorithm;
   const blink::WebCryptoAlgorithm unwrapped_key_algorithm;
@@ -595,13 +590,12 @@ WebCryptoImpl::~WebCryptoImpl() {
 
 void WebCryptoImpl::encrypt(const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
-                            const unsigned char* data,
-                            unsigned int data_size,
+                            blink::WebVector<unsigned char> data,
                             blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
 
   std::unique_ptr<EncryptState> state(
-      new EncryptState(algorithm, key, data, data_size, result));
+      new EncryptState(algorithm, key, std::move(data), result));
   if (!CryptoThreadPool::PostTask(
           FROM_HERE, base::Bind(DoEncrypt, base::Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -610,13 +604,12 @@ void WebCryptoImpl::encrypt(const blink::WebCryptoAlgorithm& algorithm,
 
 void WebCryptoImpl::decrypt(const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
-                            const unsigned char* data,
-                            unsigned int data_size,
+                            blink::WebVector<unsigned char> data,
                             blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
 
   std::unique_ptr<DecryptState> state(
-      new DecryptState(algorithm, key, data, data_size, result));
+      new DecryptState(algorithm, key, std::move(data), result));
   if (!CryptoThreadPool::PostTask(
           FROM_HERE, base::Bind(DoDecrypt, base::Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -624,13 +617,12 @@ void WebCryptoImpl::decrypt(const blink::WebCryptoAlgorithm& algorithm,
 }
 
 void WebCryptoImpl::digest(const blink::WebCryptoAlgorithm& algorithm,
-                           const unsigned char* data,
-                           unsigned int data_size,
+                           blink::WebVector<unsigned char> data,
                            blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
 
   std::unique_ptr<DigestState> state(new DigestState(
-      algorithm, blink::WebCryptoKey::createNull(), data, data_size, result));
+      algorithm, blink::WebCryptoKey::createNull(), std::move(data), result));
   if (!CryptoThreadPool::PostTask(FROM_HERE,
                                   base::Bind(DoDigest, base::Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -652,14 +644,13 @@ void WebCryptoImpl::generateKey(const blink::WebCryptoAlgorithm& algorithm,
 }
 
 void WebCryptoImpl::importKey(blink::WebCryptoKeyFormat format,
-                              const unsigned char* key_data,
-                              unsigned int key_data_size,
+                              blink::WebVector<unsigned char> key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
                               blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoResult result) {
   std::unique_ptr<ImportKeyState> state(new ImportKeyState(
-      format, key_data, key_data_size, algorithm, extractable, usages, result));
+      format, std::move(key_data), algorithm, extractable, usages, result));
   if (!CryptoThreadPool::PostTask(
           FROM_HERE, base::Bind(DoImportKey, base::Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -679,11 +670,10 @@ void WebCryptoImpl::exportKey(blink::WebCryptoKeyFormat format,
 
 void WebCryptoImpl::sign(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
-                         const unsigned char* data,
-                         unsigned int data_size,
+                         blink::WebVector<unsigned char> data,
                          blink::WebCryptoResult result) {
   std::unique_ptr<SignState> state(
-      new SignState(algorithm, key, data, data_size, result));
+      new SignState(algorithm, key, std::move(data), result));
   if (!CryptoThreadPool::PostTask(FROM_HERE,
                                   base::Bind(DoSign, base::Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -692,13 +682,11 @@ void WebCryptoImpl::sign(const blink::WebCryptoAlgorithm& algorithm,
 
 void WebCryptoImpl::verifySignature(const blink::WebCryptoAlgorithm& algorithm,
                                     const blink::WebCryptoKey& key,
-                                    const unsigned char* signature,
-                                    unsigned int signature_size,
-                                    const unsigned char* data,
-                                    unsigned int data_size,
+                                    blink::WebVector<unsigned char> signature,
+                                    blink::WebVector<unsigned char> data,
                                     blink::WebCryptoResult result) {
   std::unique_ptr<VerifySignatureState> state(new VerifySignatureState(
-      algorithm, key, signature, signature_size, data, data_size, result));
+      algorithm, key, std::move(signature), std::move(data), result));
   if (!CryptoThreadPool::PostTask(FROM_HERE,
                                   base::Bind(DoVerify, base::Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -720,8 +708,7 @@ void WebCryptoImpl::wrapKey(blink::WebCryptoKeyFormat format,
 
 void WebCryptoImpl::unwrapKey(
     blink::WebCryptoKeyFormat format,
-    const unsigned char* wrapped_key,
-    unsigned wrapped_key_size,
+    blink::WebVector<unsigned char> wrapped_key,
     const blink::WebCryptoKey& wrapping_key,
     const blink::WebCryptoAlgorithm& unwrap_algorithm,
     const blink::WebCryptoAlgorithm& unwrapped_key_algorithm,
@@ -729,7 +716,7 @@ void WebCryptoImpl::unwrapKey(
     blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoResult result) {
   std::unique_ptr<UnwrapKeyState> state(new UnwrapKeyState(
-      format, wrapped_key, wrapped_key_size, wrapping_key, unwrap_algorithm,
+      format, std::move(wrapped_key), wrapping_key, unwrap_algorithm,
       unwrapped_key_algorithm, extractable, usages, result));
   if (!CryptoThreadPool::PostTask(
           FROM_HERE, base::Bind(DoUnwrapKey, base::Passed(&state)))) {

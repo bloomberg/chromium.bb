@@ -93,10 +93,22 @@ public:
     {
     }
 
+    WebVector(WebVector<T>&& other)
+    {
+        swap(other);
+    }
+
     WebVector& operator=(const WebVector& other)
     {
         if (this != &other)
             assign(other);
+        return *this;
+    }
+
+    WebVector& operator=(WebVector&& other)
+    {
+        if (this != &other)
+            swap(other);
         return *this;
     }
 

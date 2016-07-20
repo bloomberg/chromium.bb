@@ -44,10 +44,6 @@
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 
-// TODO(eroman): Change the public blink::WebCrypto interface to allow
-//               transferring ownership of data buffers instead of just taking
-//               a raw pointer+length. This will avoid an extra copy.
-
 namespace blink {
 
 static bool parseAlgorithm(const AlgorithmIdentifier& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, CryptoResult* result)
@@ -95,7 +91,7 @@ static bool copySequenceOfStringProperty(const char* property, const Dictionary&
 // an unpublished editor's draft for:
 //   https://www.w3.org/Bugs/Public/show_bug.cgi?id=24963
 // See http://crbug.com/373917.
-static bool copyJwkDictionaryToJson(const Dictionary& dict, Vector<uint8_t>& jsonUtf8, CryptoResult* result)
+static bool copyJwkDictionaryToJson(const Dictionary& dict, WebVector<uint8_t>& jsonUtf8, CryptoResult* result)
 {
     RefPtr<JSONObject> jsonObject = JSONObject::create();
 
@@ -117,16 +113,13 @@ static bool copyJwkDictionaryToJson(const Dictionary& dict, Vector<uint8_t>& jso
         copyStringProperty(propertyNames[i], dict, jsonObject.get());
 
     String json = jsonObject->toJSONString();
-    jsonUtf8.clear();
-    jsonUtf8.append(json.utf8().data(), json.utf8().length());
+    jsonUtf8 = WebVector<uint8_t>(json.utf8().data(), json.utf8().length());
     return true;
 }
 
-static Vector<uint8_t> copyBytes(const DOMArrayPiece& source)
+static WebVector<uint8_t> copyBytes(const DOMArrayPiece& source)
 {
-    Vector<uint8_t> result;
-    result.append(reinterpret_cast<const uint8_t*>(source.data()), source.byteLength());
-    return result;
+    return WebVector<uint8_t>(static_cast<uint8_t*>(source.data()), source.byteLength());
 }
 
 SubtleCrypto::SubtleCrypto()
@@ -145,7 +138,7 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const AlgorithmIde
 
     // 14.3.1.2: Let data be the result of getting a copy of the bytes held by
     //           the data parameter passed to the encrypt method.
-    Vector<uint8_t> data = copyBytes(rawData);
+    WebVector<uint8_t> data = copyBytes(rawData);
 
     // 14.3.1.3: Let normalizedAlgorithm be the result of normalizing an
     //           algorithm, with alg set to algorithm and op set to "encrypt".
@@ -163,7 +156,7 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const AlgorithmIde
         return promise;
 
     histogramAlgorithmAndKey(scriptState->getExecutionContext(), normalizedAlgorithm, key->key());
-    Platform::current()->crypto()->encrypt(normalizedAlgorithm, key->key(), data.data(), data.size(), result->result());
+    Platform::current()->crypto()->encrypt(normalizedAlgorithm, key->key(), std::move(data), result->result());
     return promise;
 }
 
@@ -179,7 +172,7 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const AlgorithmIde
 
     // 14.3.2.2: Let data be the result of getting a copy of the bytes held by
     //           the data parameter passed to the decrypt method.
-    Vector<uint8_t> data = copyBytes(rawData);
+    WebVector<uint8_t> data = copyBytes(rawData);
 
     // 14.3.2.3: Let normalizedAlgorithm be the result of normalizing an
     //           algorithm, with alg set to algorithm and op set to "decrypt".
@@ -197,7 +190,7 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const AlgorithmIde
         return promise;
 
     histogramAlgorithmAndKey(scriptState->getExecutionContext(), normalizedAlgorithm, key->key());
-    Platform::current()->crypto()->decrypt(normalizedAlgorithm, key->key(), data.data(), data.size(), result->result());
+    Platform::current()->crypto()->decrypt(normalizedAlgorithm, key->key(), std::move(data), result->result());
     return promise;
 }
 
@@ -213,7 +206,7 @@ ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const AlgorithmIdenti
 
     // 14.3.3.2: Let data be the result of getting a copy of the bytes held by
     //           the data parameter passed to the sign method.
-    Vector<uint8_t> data = copyBytes(rawData);
+    WebVector<uint8_t> data = copyBytes(rawData);
 
     // 14.3.3.3: Let normalizedAlgorithm be the result of normalizing an
     //           algorithm, with alg set to algorithm and op set to "sign".
@@ -231,7 +224,7 @@ ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const AlgorithmIdenti
         return promise;
 
     histogramAlgorithmAndKey(scriptState->getExecutionContext(), normalizedAlgorithm, key->key());
-    Platform::current()->crypto()->sign(normalizedAlgorithm, key->key(), data.data(), data.size(), result->result());
+    Platform::current()->crypto()->sign(normalizedAlgorithm, key->key(), std::move(data), result->result());
     return promise;
 }
 
@@ -247,7 +240,7 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
 
     // 14.3.4.2: Let signature be the result of getting a copy of the bytes
     //           held by the signature parameter passed to the verify method.
-    Vector<uint8_t> signature = copyBytes(rawSignature);
+    WebVector<uint8_t> signature = copyBytes(rawSignature);
 
     // 14.3.4.3: Let normalizedAlgorithm be the result of normalizing an
     //           algorithm, with alg set to algorithm and op set to "verify".
@@ -257,7 +250,7 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
 
     // 14.3.4.5: Let data be the result of getting a copy of the bytes held by
     //           the data parameter passed to the verify method.
-    Vector<uint8_t> data = copyBytes(rawData);
+    WebVector<uint8_t> data = copyBytes(rawData);
 
     // 14.3.4.9: If the name member of normalizedAlgorithm is not equal to the
     //           name attribute of the [[algorithm]] internal slot of key then throw an
@@ -269,7 +262,7 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
         return promise;
 
     histogramAlgorithmAndKey(scriptState->getExecutionContext(), normalizedAlgorithm, key->key());
-    Platform::current()->crypto()->verifySignature(normalizedAlgorithm, key->key(), signature.data(), signature.size(), data.data(), data.size(), result->result());
+    Platform::current()->crypto()->verifySignature(normalizedAlgorithm, key->key(), std::move(signature), std::move(data), result->result());
     return promise;
 }
 
@@ -285,7 +278,7 @@ ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const AlgorithmIden
 
     // 14.3.5.2: Let data be the result of getting a copy of the bytes held
     //              by the data parameter passed to the digest method.
-    Vector<uint8_t> data = copyBytes(rawData);
+    WebVector<uint8_t> data = copyBytes(rawData);
 
     // 14.3.5.3: Let normalizedAlgorithm be the result of normalizing an
     //           algorithm, with alg set to algorithm and op set to "digest".
@@ -294,7 +287,7 @@ ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const AlgorithmIden
         return promise;
 
     histogramAlgorithm(scriptState->getExecutionContext(), normalizedAlgorithm);
-    Platform::current()->crypto()->digest(normalizedAlgorithm, data.data(), data.size(), result->result());
+    Platform::current()->crypto()->digest(normalizedAlgorithm, std::move(data), result->result());
     return promise;
 }
 
@@ -365,7 +358,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
         return promise;
     }
 
-    Vector<uint8_t> keyData;
+    WebVector<uint8_t> keyData;
 
     // TODO(eroman): Match the procedure given in the spec to more
     // easily provide a normative reference.
@@ -378,7 +371,7 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
             return promise;
     }
     histogramAlgorithm(scriptState->getExecutionContext(), normalizedAlgorithm);
-    Platform::current()->crypto()->importKey(format, keyData.data(), keyData.size(), normalizedAlgorithm, extractable, keyUsages, result->result());
+    Platform::current()->crypto()->importKey(format, std::move(keyData), normalizedAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }
 
@@ -480,7 +473,7 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
     // 14.3.12.2: Let wrappedKey be the result of getting a copy of the bytes
     //            held by the wrappedKey parameter passed to the unwrapKey
     //            method.
-    Vector<uint8_t> wrappedKey = copyBytes(rawWrappedKey);
+    WebVector<uint8_t> wrappedKey = copyBytes(rawWrappedKey);
 
     // 14.3.12.3: Let normalizedAlgorithm be the result of normalizing an
     //            algorithm, with alg set to algorithm and op set to
@@ -516,7 +509,7 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
 
     histogramAlgorithmAndKey(scriptState->getExecutionContext(), normalizedAlgorithm, unwrappingKey->key());
     histogramAlgorithm(scriptState->getExecutionContext(), normalizedKeyAlgorithm);
-    Platform::current()->crypto()->unwrapKey(format, wrappedKey.data(), wrappedKey.size(), unwrappingKey->key(), normalizedAlgorithm, normalizedKeyAlgorithm, extractable, keyUsages, result->result());
+    Platform::current()->crypto()->unwrapKey(format, std::move(wrappedKey), unwrappingKey->key(), normalizedAlgorithm, normalizedKeyAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }
 

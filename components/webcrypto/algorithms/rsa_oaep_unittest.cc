@@ -26,9 +26,7 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
     const std::vector<uint8_t>& label) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaOaep,
-      new blink::WebCryptoRsaOaepParams(
-          !label.empty(), label.data(),
-          static_cast<unsigned int>(label.size())));
+      new blink::WebCryptoRsaOaepParams(!label.empty(), label));
 }
 
 std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {

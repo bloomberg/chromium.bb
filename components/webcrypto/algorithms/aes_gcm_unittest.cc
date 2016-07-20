@@ -26,11 +26,8 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
     unsigned int tag_length_bits) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesGcm,
-      new blink::WebCryptoAesGcmParams(
-          iv.data(), static_cast<unsigned int>(iv.size()), true,
-          additional_data.data(),
-          static_cast<unsigned int>(additional_data.size()), true,
-          tag_length_bits));
+      new blink::WebCryptoAesGcmParams(iv, true, additional_data, true,
+                                       tag_length_bits));
 }
 
 blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(

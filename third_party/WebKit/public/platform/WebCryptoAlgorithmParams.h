@@ -60,8 +60,8 @@ public:
 
 class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesCbcParams(const unsigned char* iv, unsigned ivSize)
-        : m_iv(iv, ivSize)
+    explicit WebCryptoAesCbcParams(WebVector<unsigned char> iv)
+        : m_iv(std::move(iv))
     {
     }
 
@@ -89,9 +89,9 @@ private:
 
 class WebCryptoAesCtrParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesCtrParams(unsigned char lengthBits, const unsigned char* counter, unsigned counterSize)
+    WebCryptoAesCtrParams(unsigned char lengthBits, WebVector<unsigned char> counter)
         : WebCryptoAlgorithmParams()
-        , m_counter(counter, counterSize)
+        , m_counter(std::move(counter))
         , m_lengthBits(lengthBits)
     {
     }
@@ -173,14 +173,14 @@ private:
 
 class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesGcmParams(const unsigned char* iv, unsigned ivSize, bool hasAdditionalData, const unsigned char* additionalData, unsigned additionalDataSize, bool hasTagLengthBits, unsigned char tagLengthBits)
-        : m_iv(iv, ivSize)
+    WebCryptoAesGcmParams(WebVector<unsigned char> iv, bool hasAdditionalData, WebVector<unsigned char> additionalData, bool hasTagLengthBits, unsigned char tagLengthBits)
+        : m_iv(std::move(iv))
         , m_hasAdditionalData(hasAdditionalData)
-        , m_optionalAdditionalData(additionalData, additionalDataSize)
+        , m_optionalAdditionalData(std::move(additionalData))
         , m_hasTagLengthBits(hasTagLengthBits)
         , m_optionalTagLengthBits(tagLengthBits)
     {
-        DCHECK(hasAdditionalData || !additionalDataSize);
+        DCHECK(hasAdditionalData || m_optionalAdditionalData.isEmpty());
         DCHECK(hasTagLengthBits || !tagLengthBits);
     }
 
@@ -214,9 +214,9 @@ public:
 
 class WebCryptoRsaHashedKeyGenParams : public WebCryptoAlgorithmParams {
 public:
-    explicit WebCryptoRsaHashedKeyGenParams(const WebCryptoAlgorithm& hash, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
+    WebCryptoRsaHashedKeyGenParams(const WebCryptoAlgorithm& hash, unsigned modulusLengthBits, WebVector<unsigned char> publicExponent)
         : m_modulusLengthBits(modulusLengthBits)
-        , m_publicExponent(publicExponent, publicExponentSize)
+        , m_publicExponent(std::move(publicExponent))
         , m_hash(hash)
     {
         DCHECK(!hash.isNull());
@@ -252,11 +252,11 @@ private:
 
 class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoRsaOaepParams(bool hasLabel, const unsigned char* label, unsigned labelSize)
+    WebCryptoRsaOaepParams(bool hasLabel, WebVector<unsigned char> label)
         : m_hasLabel(hasLabel)
-        , m_optionalLabel(label, labelSize)
+        , m_optionalLabel(std::move(label))
     {
-        DCHECK(hasLabel || !labelSize);
+        DCHECK(hasLabel || m_optionalLabel.isEmpty());
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaOaepParams; }
@@ -356,10 +356,10 @@ private:
 
 class WebCryptoHkdfParams : public WebCryptoAlgorithmParamsWithHash {
 public:
-    WebCryptoHkdfParams(const WebCryptoAlgorithm& hash, const unsigned char* salt, unsigned saltSize, const unsigned char* info, unsigned infoSize)
+    WebCryptoHkdfParams(const WebCryptoAlgorithm& hash, WebVector<unsigned char> salt, WebVector<unsigned char> info)
         : WebCryptoAlgorithmParamsWithHash(hash)
-        , m_salt(salt, saltSize)
-        , m_info(info, infoSize)
+        , m_salt(std::move(salt))
+        , m_info(std::move(info))
     {
     }
 
@@ -379,9 +379,9 @@ private:
 
 class WebCryptoPbkdf2Params : public WebCryptoAlgorithmParamsWithHash {
 public:
-    WebCryptoPbkdf2Params(const WebCryptoAlgorithm& hash, const unsigned char* salt, unsigned saltLength, unsigned iterations)
+    WebCryptoPbkdf2Params(const WebCryptoAlgorithm& hash, WebVector<unsigned char> salt, unsigned iterations)
         : WebCryptoAlgorithmParamsWithHash(hash)
-        , m_salt(salt, saltLength)
+        , m_salt(std::move(salt))
         , m_iterations(iterations)
     {
     }

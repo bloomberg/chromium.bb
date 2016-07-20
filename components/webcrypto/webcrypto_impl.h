@@ -27,25 +27,21 @@ class WebCryptoImpl : public blink::WebCrypto {
 
   void encrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
-               const unsigned char* data,
-               unsigned int data_size,
+               blink::WebVector<unsigned char> data,
                blink::WebCryptoResult result) override;
   void decrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
-               const unsigned char* data,
-               unsigned int data_size,
+               blink::WebVector<unsigned char> data,
                blink::WebCryptoResult result) override;
   void digest(const blink::WebCryptoAlgorithm& algorithm,
-              const unsigned char* data,
-              unsigned int data_size,
+              blink::WebVector<unsigned char> data,
               blink::WebCryptoResult result) override;
   void generateKey(const blink::WebCryptoAlgorithm& algorithm,
                    bool extractable,
                    blink::WebCryptoKeyUsageMask usages,
                    blink::WebCryptoResult result) override;
   void importKey(blink::WebCryptoKeyFormat format,
-                 const unsigned char* key_data,
-                 unsigned int key_data_size,
+                 blink::WebVector<unsigned char> key_data,
                  const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usages,
@@ -55,15 +51,12 @@ class WebCryptoImpl : public blink::WebCrypto {
                  blink::WebCryptoResult result) override;
   void sign(const blink::WebCryptoAlgorithm& algorithm,
             const blink::WebCryptoKey& key,
-            const unsigned char* data,
-            unsigned int data_size,
+            blink::WebVector<unsigned char> data,
             blink::WebCryptoResult result) override;
   void verifySignature(const blink::WebCryptoAlgorithm& algorithm,
                        const blink::WebCryptoKey& key,
-                       const unsigned char* signature,
-                       unsigned int signature_size,
-                       const unsigned char* data,
-                       unsigned int data_size,
+                       blink::WebVector<unsigned char> signature,
+                       blink::WebVector<unsigned char> data,
                        blink::WebCryptoResult result) override;
   void wrapKey(blink::WebCryptoKeyFormat format,
                const blink::WebCryptoKey& key,
@@ -71,8 +64,7 @@ class WebCryptoImpl : public blink::WebCrypto {
                const blink::WebCryptoAlgorithm& wrap_algorithm,
                blink::WebCryptoResult result) override;
   void unwrapKey(blink::WebCryptoKeyFormat format,
-                 const unsigned char* wrapped_key,
-                 unsigned wrapped_key_size,
+                 blink::WebVector<unsigned char> wrapped_key,
                  const blink::WebCryptoKey& wrapping_key,
                  const blink::WebCryptoAlgorithm& unwrap_algorithm,
                  const blink::WebCryptoAlgorithm& unwrapped_key_algorithm,

@@ -46,10 +46,6 @@
 #include <algorithm>
 #include <memory>
 
-// TODO(eroman): Change the interface for constructing
-//               WebCryptoAlgorithmParams to allow transferring byte
-//               parameters (whereas currently it makes a copy).
-
 namespace blink {
 
 namespace {
@@ -274,18 +270,16 @@ private:
     Vector<const char*, 10> m_messages;
 };
 
-static Vector<uint8_t> copyBytes(const DOMArrayPiece& source)
+static WebVector<uint8_t> copyBytes(const DOMArrayPiece& source)
 {
-    Vector<uint8_t> result;
-    result.append(reinterpret_cast<const uint8_t*>(source.data()), source.byteLength());
-    return result;
+    return WebVector<uint8_t>(static_cast<const uint8_t*>(source.data()), source.byteLength());
 }
 
 // Defined by the WebCrypto spec as:
 //
 //     typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 //
-bool getOptionalBufferSource(const Dictionary& raw, const char* propertyName, bool& hasProperty, Vector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
+bool getOptionalBufferSource(const Dictionary& raw, const char* propertyName, bool& hasProperty, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
 {
     hasProperty = false;
     v8::Local<v8::Value> v8Value;
@@ -310,7 +304,7 @@ bool getOptionalBufferSource(const Dictionary& raw, const char* propertyName, bo
     return true;
 }
 
-bool getBufferSource(const Dictionary& raw, const char* propertyName, Vector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
+bool getBufferSource(const Dictionary& raw, const char* propertyName, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasProperty;
     bool ok = getOptionalBufferSource(raw, propertyName, hasProperty, bytes, context, error);
@@ -321,7 +315,7 @@ bool getBufferSource(const Dictionary& raw, const char* propertyName, Vector<uin
     return ok;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, Vector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
+bool getUint8Array(const Dictionary& raw, const char* propertyName, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
 {
     DOMUint8Array* array = nullptr;
     if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
@@ -335,14 +329,15 @@ bool getUint8Array(const Dictionary& raw, const char* propertyName, Vector<uint8
 // Defined by the WebCrypto spec as:
 //
 //     typedef Uint8Array BigInteger;
-bool getBigInteger(const Dictionary& raw, const char* propertyName, Vector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
+bool getBigInteger(const Dictionary& raw, const char* propertyName, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
 {
     if (!getUint8Array(raw, propertyName, bytes, context, error))
         return false;
 
     if (bytes.isEmpty()) {
         // Empty BigIntegers represent 0 according to the spec
-        bytes.fill(0, 1);
+        bytes = WebVector<uint8_t>(static_cast<size_t>(1u));
+        DCHECK_EQ(0u, bytes[0]);
     }
 
     return true;
@@ -464,11 +459,11 @@ bool getAlgorithmIdentifier(const Dictionary& raw, const char* propertyName, Alg
 //    };
 bool parseAesCbcParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    Vector<uint8_t> iv;
+    WebVector<uint8_t> iv;
     if (!getBufferSource(raw, "iv", iv, context, error))
         return false;
 
-    params = wrapUnique(new WebCryptoAesCbcParams(iv.data(), iv.size()));
+    params = wrapUnique(new WebCryptoAesCbcParams(std::move(iv)));
     return true;
 }
 
@@ -576,7 +571,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCrypto
     if (!getUint32(raw, "modulusLength", modulusLength, context, error))
         return false;
 
-    Vector<uint8_t> publicExponent;
+    WebVector<uint8_t> publicExponent;
     if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
         return false;
 
@@ -584,7 +579,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCrypto
     if (!parseHash(raw, hash, context, error))
         return false;
 
-    params = wrapUnique(new WebCryptoRsaHashedKeyGenParams(hash, modulusLength, publicExponent.data(), publicExponent.size()));
+    params = wrapUnique(new WebCryptoRsaHashedKeyGenParams(hash, modulusLength, std::move(publicExponent)));
     return true;
 }
 
@@ -596,7 +591,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCrypto
 //    };
 bool parseAesCtrParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    Vector<uint8_t> counter;
+    WebVector<uint8_t> counter;
     if (!getBufferSource(raw, "counter", counter, context, error))
         return false;
 
@@ -604,7 +599,7 @@ bool parseAesCtrParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
     if (!getUint8(raw, "length", length, context, error))
         return false;
 
-    params = wrapUnique(new WebCryptoAesCtrParams(length, counter.data(), counter.size()));
+    params = wrapUnique(new WebCryptoAesCtrParams(length, std::move(counter)));
     return true;
 }
 
@@ -617,12 +612,12 @@ bool parseAesCtrParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 //     }
 bool parseAesGcmParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    Vector<uint8_t> iv;
+    WebVector<uint8_t> iv;
     if (!getBufferSource(raw, "iv", iv, context, error))
         return false;
 
     bool hasAdditionalData;
-    Vector<uint8_t> additionalData;
+    WebVector<uint8_t> additionalData;
     if (!getOptionalBufferSource(raw, "additionalData", hasAdditionalData, additionalData, context, error))
         return false;
 
@@ -631,7 +626,7 @@ bool parseAesGcmParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
     if (!getOptionalUint8(raw, "tagLength", hasTagLength, tagLength, context, error))
         return false;
 
-    params = wrapUnique(new WebCryptoAesGcmParams(iv.data(), iv.size(), hasAdditionalData, additionalData.data(), additionalData.size(), hasTagLength, tagLength));
+    params = wrapUnique(new WebCryptoAesGcmParams(std::move(iv), hasAdditionalData, std::move(additionalData), hasTagLength, tagLength));
     return true;
 }
 
@@ -643,11 +638,11 @@ bool parseAesGcmParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 bool parseRsaOaepParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasLabel;
-    Vector<uint8_t> label;
+    WebVector<uint8_t> label;
     if (!getOptionalBufferSource(raw, "label", hasLabel, label, context, error))
         return false;
 
-    params = wrapUnique(new WebCryptoRsaOaepParams(hasLabel, label.data(), label.size()));
+    params = wrapUnique(new WebCryptoRsaOaepParams(hasLabel, std::move(label)));
     return true;
 }
 
@@ -776,7 +771,7 @@ bool parseEcdhKeyDeriveParams(const Dictionary& raw, std::unique_ptr<WebCryptoAl
 //     };
 bool parsePbkdf2Params(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    Vector<uint8_t> salt;
+    WebVector<uint8_t> salt;
     if (!getBufferSource(raw, "salt", salt, context, error))
         return false;
 
@@ -787,7 +782,7 @@ bool parsePbkdf2Params(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
     WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
-    params = wrapUnique(new WebCryptoPbkdf2Params(hash, salt.data(), salt.size(), iterations));
+    params = wrapUnique(new WebCryptoPbkdf2Params(hash, std::move(salt), iterations));
     return true;
 }
 
@@ -823,14 +818,14 @@ bool parseHkdfParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmPa
     WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
-    Vector<uint8_t> salt;
+    WebVector<uint8_t> salt;
     if (!getBufferSource(raw, "salt", salt, context, error))
         return false;
-    Vector<uint8_t> info;
+    WebVector<uint8_t> info;
     if (!getBufferSource(raw, "info", info, context, error))
         return false;
 
-    params = wrapUnique(new WebCryptoHkdfParams(hash, salt.data(), salt.size(), info.data(), info.size()));
+    params = wrapUnique(new WebCryptoHkdfParams(hash, std::move(salt), std::move(info)));
     return true;
 }
 

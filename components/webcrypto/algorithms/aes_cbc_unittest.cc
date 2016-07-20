@@ -23,9 +23,7 @@ namespace {
 blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
     const std::vector<uint8_t>& iv) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdAesCbc,
-      new blink::WebCryptoAesCbcParams(iv.data(),
-                                       static_cast<unsigned int>(iv.size())));
+      blink::WebCryptoAlgorithmIdAesCbc, new blink::WebCryptoAesCbcParams(iv));
 }
 
 blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
