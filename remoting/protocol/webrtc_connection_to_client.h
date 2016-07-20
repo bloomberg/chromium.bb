@@ -56,6 +56,9 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void OnWebrtcTransportConnecting() override;
   void OnWebrtcTransportConnected() override;
   void OnWebrtcTransportError(ErrorCode error) override;
+  void OnWebrtcTransportIncomingDataChannel(
+      const std::string& name,
+      std::unique_ptr<MessagePipe> pipe) override;
   void OnWebrtcTransportMediaStreamAdded(
       scoped_refptr<webrtc::MediaStreamInterface> stream) override;
   void OnWebrtcTransportMediaStreamRemoved(
@@ -63,6 +66,7 @@ class WebrtcConnectionToClient : public ConnectionToClient,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
  private:
   base::ThreadChecker thread_checker_;

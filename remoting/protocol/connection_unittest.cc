@@ -100,6 +100,11 @@ class ConnectionTest : public testing::Test,
  public:
   ConnectionTest() {}
 
+  void DestroyHost() {
+    host_connection_.reset();
+    run_loop_->Quit();
+  }
+
  protected:
   bool is_using_webrtc() { return GetParam(); }
 
@@ -311,7 +316,7 @@ TEST_P(ConnectionTest, Events) {
   EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(event)))
       .WillOnce(QuitRunLoop(&run_loop));
 
-  // Send capabilities from the client.
+  // Send key event from the client.
   client_connection_->input_stub()->InjectKeyEvent(event);
 
   run_loop.Run();

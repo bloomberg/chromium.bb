@@ -24,13 +24,23 @@ namespace protocol {
 // Represents a bi-directional pipe that allows to send and receive messages.
 class MessagePipe {
  public:
-  typedef base::Callback<void(std::unique_ptr<CompoundBuffer> message)>
-      MessageReceivedCallback;
+  class EventHandler {
+   public:
+    // Called when a message is received.
+    virtual void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) = 0;
+
+    // Called when the channel is closed.
+    virtual void OnMessagePipeClosed() = 0;
+
+   protected:
+    virtual ~EventHandler() {}
+  };
 
   virtual ~MessagePipe() {}
 
-  // Starts receiving incoming messages and calls |callback| for each message.
-  virtual void StartReceiving(const MessageReceivedCallback& callback) = 0;
+  // Starts the channel. |event_handler| will be called to notify when a message
+  // is received or the pipe is closed.
+  virtual void Start(EventHandler* event_handler) = 0;
 
   // Sends a message. |done| is called when the message has been sent to the
   // client, but it doesn't mean that the client has received it. |done| is

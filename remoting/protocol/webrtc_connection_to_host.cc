@@ -11,6 +11,7 @@
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/webrtc_transport.h"
@@ -102,11 +103,6 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportConnecting() {
-  control_dispatcher_.reset(new ClientControlDispatcher());
-  control_dispatcher_->Init(transport_->incoming_channel_factory(), this);
-  control_dispatcher_->set_client_stub(client_stub_);
-  control_dispatcher_->set_clipboard_stub(clipboard_stub_);
-
   event_dispatcher_.reset(new ClientEventDispatcher());
   event_dispatcher_->Init(transport_->outgoing_channel_factory(), this);
 }
@@ -116,6 +112,19 @@ void WebrtcConnectionToHost::OnWebrtcTransportConnected() {}
 void WebrtcConnectionToHost::OnWebrtcTransportError(ErrorCode error) {
   CloseChannels();
   SetState(FAILED, error);
+}
+
+void WebrtcConnectionToHost::OnWebrtcTransportIncomingDataChannel(
+    const std::string& name,
+    std::unique_ptr<MessagePipe> pipe) {
+  if (!control_dispatcher_)
+    control_dispatcher_.reset(new ClientControlDispatcher());
+  if (name == control_dispatcher_->channel_name() &&
+      !control_dispatcher_->is_connected()) {
+    control_dispatcher_->set_client_stub(client_stub_);
+    control_dispatcher_->set_clipboard_stub(clipboard_stub_);
+    control_dispatcher_->Init(std::move(pipe), this);
+  }
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
@@ -136,6 +145,13 @@ void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(
 void WebrtcConnectionToHost::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   NotifyIfChannelsReady();
+}
+
+void WebrtcConnectionToHost::OnChannelClosed(
+    ChannelDispatcherBase* channel_dispatcher) {
+  LOG(ERROR) << "Channel " << channel_dispatcher->channel_name()
+             << " was closed unexpectedly.";
+  SetState(FAILED, INCOMPATIBLE_PROTOCOL);
 }
 
 ConnectionToHost::State WebrtcConnectionToHost::state() const {

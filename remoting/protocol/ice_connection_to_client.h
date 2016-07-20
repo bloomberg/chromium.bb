@@ -55,6 +55,7 @@ class IceConnectionToClient : public ConnectionToClient,
   void set_host_stub(HostStub* host_stub) override;
   void set_input_stub(InputStub* input_stub) override;
 
+ private:
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
 
@@ -65,8 +66,8 @@ class IceConnectionToClient : public ConnectionToClient,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
- private:
   void NotifyIfChannelsReady();
 
   void CloseChannels();

@@ -36,9 +36,10 @@ StreamMessagePipeAdapter::StreamMessagePipeAdapter(
 
 StreamMessagePipeAdapter::~StreamMessagePipeAdapter() {}
 
-void StreamMessagePipeAdapter::StartReceiving(
-    const MessageReceivedCallback& callback) {
-  reader_.StartReading(socket_.get(), callback,
+void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
+  reader_.StartReading(socket_.get(),
+                       base::Bind(&EventHandler::OnMessageReceived,
+                                  base::Unretained(event_handler)),
                        base::Bind(&StreamMessagePipeAdapter::CloseOnError,
                                   base::Unretained(this)));
 }

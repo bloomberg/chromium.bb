@@ -272,8 +272,7 @@ MessagePipeConnectionTester::MessagePipeConnectionTester(
 MessagePipeConnectionTester::~MessagePipeConnectionTester() {}
 
 void MessagePipeConnectionTester::RunAndCheckResults() {
-  host_pipe_->StartReceiving(base::Bind(
-      &MessagePipeConnectionTester::OnMessageReceived, base::Unretained(this)));
+  host_pipe_->Start(this);
 
   for (int i = 0; i < message_count_; ++i) {
     std::unique_ptr<VideoPacket> message(new VideoPacket());
@@ -299,6 +298,11 @@ void MessagePipeConnectionTester::OnMessageReceived(
   if (received_messages_.size() >= sent_messages_.size()) {
     run_loop_.Quit();
   }
+}
+
+void MessagePipeConnectionTester::OnMessagePipeClosed() {
+  run_loop_.Quit();
+  FAIL();
 }
 
 }  // namespace protocol

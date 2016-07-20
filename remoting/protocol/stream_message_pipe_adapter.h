@@ -29,7 +29,7 @@ class StreamMessagePipeAdapter : public MessagePipe {
   ~StreamMessagePipeAdapter() override;
 
   // MessagePipe interface.
-  void StartReceiving(const MessageReceivedCallback& callback) override;
+  void Start(EventHandler* event_handler) override;
   void Send(google::protobuf::MessageLite* message,
             const base::Closure& done) override;
 

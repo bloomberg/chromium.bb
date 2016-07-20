@@ -30,6 +30,7 @@ namespace protocol {
 
 class TransportContext;
 class MessageChannelFactory;
+class MessagePipe;
 
 class WebrtcTransport : public Transport,
                         public webrtc::PeerConnectionObserver {
@@ -50,11 +51,19 @@ class WebrtcTransport : public Transport,
     // Called when there is an error connecting the session.
     virtual void OnWebrtcTransportError(ErrorCode error) = 0;
 
+    // Called when a new data channel is created by the peer.
+    virtual void OnWebrtcTransportIncomingDataChannel(
+        const std::string& name,
+        std::unique_ptr<MessagePipe> pipe) = 0;
+
     // Called when an incoming media stream is added or removed.
     virtual void OnWebrtcTransportMediaStreamAdded(
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
     virtual void OnWebrtcTransportMediaStreamRemoved(
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
+
+   protected:
+    virtual ~EventHandler() {}
   };
 
   WebrtcTransport(rtc::Thread* worker_thread,
@@ -72,13 +81,10 @@ class WebrtcTransport : public Transport,
     return video_encoder_factory_;
   }
 
-  // Factories for outgoing and incoming data channels. Must be used only after
-  // the transport is connected.
+  // Factory for outgoing data channels. Must be used only after the transport
+  // is connected.
   MessageChannelFactory* outgoing_channel_factory() {
-    return &outgoing_data_stream_adapter_;
-  }
-  MessageChannelFactory* incoming_channel_factory() {
-    return &incoming_data_stream_adapter_;
+    return data_stream_adapter_.get();
   }
 
   // Transport interface.
@@ -144,8 +150,7 @@ class WebrtcTransport : public Transport,
 
   ScopedVector<webrtc::IceCandidateInterface> pending_incoming_candidates_;
 
-  WebrtcDataStreamAdapter outgoing_data_stream_adapter_;
-  WebrtcDataStreamAdapter incoming_data_stream_adapter_;
+  std::unique_ptr<WebrtcDataStreamAdapter> data_stream_adapter_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 

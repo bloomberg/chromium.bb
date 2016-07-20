@@ -18,6 +18,7 @@
 #include "remoting/protocol/host_event_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_transport.h"
 #include "remoting/protocol/webrtc_video_stream.h"
@@ -144,9 +145,9 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
 
     case Session::CLOSED:
     case Session::FAILED:
-      transport_->Close(state == Session::CLOSED ? OK : session_->error());
       control_dispatcher_.reset();
       event_dispatcher_.reset();
+      transport_->Close(state == Session::CLOSED ? OK : session_->error());
       event_handler_->OnConnectionClosed(
           this, state == Session::CLOSED ? OK : session_->error());
       break;
@@ -154,11 +155,10 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnecting() {
+  // Create outgoing control channel by initializing |control_dispatcher_|.
+  // |event_dispatcher_| is initialized later because event channel is expected
+  // to be created by the client.
   control_dispatcher_->Init(transport_->outgoing_channel_factory(), this);
-
-  event_dispatcher_->Init(transport_->incoming_channel_factory(), this);
-  event_dispatcher_->set_on_input_event_callback(base::Bind(
-      &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
@@ -168,6 +168,17 @@ void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
 void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Disconnect(error);
+}
+
+void WebrtcConnectionToClient::OnWebrtcTransportIncomingDataChannel(
+    const std::string& name,
+    std::unique_ptr<MessagePipe> pipe) {
+  if (name == event_dispatcher_->channel_name() &&
+      !event_dispatcher_->is_connected()) {
+    event_dispatcher_->set_on_input_event_callback(base::Bind(
+        &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
+    event_dispatcher_->Init(std::move(pipe), this);
+  }
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamAdded(
@@ -186,6 +197,15 @@ void WebrtcConnectionToClient::OnChannelInitialized(
       event_dispatcher_ && event_dispatcher_->is_connected()) {
     event_handler_->OnConnectionChannelsConnected(this);
   }
+}
+
+void WebrtcConnectionToClient::OnChannelClosed(
+    ChannelDispatcherBase* channel_dispatcher) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  LOG(ERROR) << "Channel " << channel_dispatcher->channel_name()
+             << " was closed unexpectedly.";
+  Disconnect(INCOMPATIBLE_PROTOCOL);
 }
 
 }  // namespace protocol

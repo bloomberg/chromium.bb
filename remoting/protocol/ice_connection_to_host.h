@@ -66,6 +66,7 @@ class IceConnectionToHost : public ConnectionToHost,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
   // MonitoredVideoStub::EventHandler interface.
   virtual void OnVideoChannelStatus(bool active);

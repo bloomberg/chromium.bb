@@ -34,6 +34,7 @@ class ClientVideoDispatcherTest : public testing::Test,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
+  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
  protected:
   void OnChannelError(int error);
@@ -94,6 +95,12 @@ void ClientVideoDispatcherTest::ProcessVideoPacket(
 void ClientVideoDispatcherTest::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   initialized_ = true;
+}
+
+void ClientVideoDispatcherTest::OnChannelClosed(
+    ChannelDispatcherBase* channel_dispatcher) {
+  // Don't expect channels to be closed.
+  FAIL();
 }
 
 void ClientVideoDispatcherTest::OnChannelError(int error) {

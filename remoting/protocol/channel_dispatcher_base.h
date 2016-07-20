@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "remoting/protocol/errors.h"
+#include "remoting/protocol/message_pipe.h"
 
 namespace remoting {
 
@@ -19,32 +20,38 @@ class CompoundBuffer;
 namespace protocol {
 
 class MessageChannelFactory;
-class MessagePipe;
 
 // Base class for channel message dispatchers. It's responsible for
 // creating the named channel. Derived dispatchers then dispatch
 // incoming messages on this channel as well as send outgoing
 // messages.
-class ChannelDispatcherBase {
+class ChannelDispatcherBase : public MessagePipe::EventHandler {
  public:
   class EventHandler {
    public:
     EventHandler() {}
     virtual ~EventHandler() {}
 
+    // Called after the channel is initialized.
     virtual void OnChannelInitialized(
         ChannelDispatcherBase* channel_dispatcher) = 0;
+
+    // Called after the channel is closed.
+    virtual void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) = 0;
   };
 
   // The callback is called when initialization is finished. The
   // parameter is set to true on success.
   typedef base::Callback<void(bool)> InitializedCallback;
 
-  virtual ~ChannelDispatcherBase();
+  ~ChannelDispatcherBase() override;
 
-  // Creates and connects the channel in the specified
-  // |session|. Caller retains ownership of the Session.
+  // Creates and connects the channel using |channel_factory|.
   void Init(MessageChannelFactory* channel_factory,
+            EventHandler* event_handler);
+
+  // Initializes the channel using |message_pipe| that's already connected.
+  void Init(std::unique_ptr<MessagePipe> message_pipe,
             EventHandler* event_handler);
 
   const std::string& channel_name() { return channel_name_; }
@@ -62,7 +69,10 @@ class ChannelDispatcherBase {
 
  private:
   void OnChannelReady(std::unique_ptr<MessagePipe> message_pipe);
-  void OnPipeError(int error);
+
+  // MessagePipe::EventHandler interface.
+  void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override;
+  void OnMessagePipeClosed() override;
 
   std::string channel_name_;
   MessageChannelFactory* channel_factory_ = nullptr;

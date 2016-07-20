@@ -170,6 +170,12 @@ void IceConnectionToClient::OnChannelInitialized(
   NotifyIfChannelsReady();
 }
 
+void IceConnectionToClient::OnChannelClosed(
+    ChannelDispatcherBase* channel_dispatcher) {
+  // ICE transport doesn't close channels dynamically.
+  NOTREACHED();
+}
+
 void IceConnectionToClient::NotifyIfChannelsReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
 

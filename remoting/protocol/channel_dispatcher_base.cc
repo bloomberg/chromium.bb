@@ -31,14 +31,28 @@ void ChannelDispatcherBase::Init(MessageChannelFactory* channel_factory,
       &ChannelDispatcherBase::OnChannelReady, base::Unretained(this)));
 }
 
+void ChannelDispatcherBase::Init(std::unique_ptr<MessagePipe> message_pipe,
+                                 EventHandler* event_handler) {
+  event_handler_ = event_handler;
+  OnChannelReady(std::move(message_pipe));
+}
+
 void ChannelDispatcherBase::OnChannelReady(
     std::unique_ptr<MessagePipe> message_pipe) {
   channel_factory_ = nullptr;
   message_pipe_ = std::move(message_pipe);
-  message_pipe_->StartReceiving(base::Bind(
-      &ChannelDispatcherBase::OnIncomingMessage, base::Unretained(this)));
+  message_pipe_->Start(this);
 
   event_handler_->OnChannelInitialized(this);
+}
+
+void ChannelDispatcherBase::OnMessageReceived(
+    std::unique_ptr<CompoundBuffer> message) {
+  OnIncomingMessage(std::move(message));
+}
+
+void ChannelDispatcherBase::OnMessagePipeClosed() {
+  event_handler_->OnChannelClosed(this);
 }
 
 }  // namespace protocol

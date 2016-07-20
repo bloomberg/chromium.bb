@@ -114,8 +114,9 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
 }
 
 void MessageReader::RunCallback(std::unique_ptr<CompoundBuffer> message) {
-  if (!message_received_callback_.is_null())
+  if (!message_received_callback_.is_null()) {
     message_received_callback_.Run(std::move(message));
+  }
 }
 
 }  // namespace protocol

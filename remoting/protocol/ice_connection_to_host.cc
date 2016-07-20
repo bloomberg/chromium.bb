@@ -168,6 +168,12 @@ void IceConnectionToHost::OnChannelInitialized(
   NotifyIfChannelsReady();
 }
 
+void IceConnectionToHost::OnChannelClosed(
+    ChannelDispatcherBase* channel_dispatcher) {
+  // ICE transport doesn't close channels dynamically.
+  NOTREACHED();
+}
+
 void IceConnectionToHost::OnVideoChannelStatus(bool active) {
   event_callback_->OnConnectionReady(active);
 }

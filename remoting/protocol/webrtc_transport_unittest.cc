@@ -13,6 +13,7 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/message_channel_factory.h"
@@ -34,9 +35,12 @@ const char kAuthKey[] = "test_auth_key";
 class TestTransportEventHandler : public WebrtcTransport::EventHandler {
  public:
   typedef base::Callback<void(ErrorCode error)> ErrorCallback;
+  typedef base::Callback<void(const std::string& name,
+                              std::unique_ptr<MessagePipe> pipe)>
+      IncomingChannelCallback;
 
   TestTransportEventHandler() {}
-  ~TestTransportEventHandler() {}
+  ~TestTransportEventHandler() override {}
 
   // All callbacks must be set before the test handler is passed to a Transport
   // object.
@@ -48,6 +52,9 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   }
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
+  }
+  void set_incoming_channel_callback(const IncomingChannelCallback& callback) {
+    incoming_channel_callback_ = callback;
   }
 
   // WebrtcTransport::EventHandler interface.
@@ -62,6 +69,15 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   void OnWebrtcTransportError(ErrorCode error) override {
     error_callback_.Run(error);
   }
+  void OnWebrtcTransportIncomingDataChannel(
+      const std::string& name,
+      std::unique_ptr<MessagePipe> pipe) override {
+    if (!incoming_channel_callback_.is_null()) {
+      incoming_channel_callback_.Run(name, std::move(pipe));
+    } else {
+      FAIL() << "Received unexpected incoming channel.";
+    }
+  }
   void OnWebrtcTransportMediaStreamAdded(
       scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
   void OnWebrtcTransportMediaStreamRemoved(
@@ -71,8 +87,37 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   base::Closure connecting_callback_;
   base::Closure connected_callback_;
   ErrorCallback error_callback_;
+  IncomingChannelCallback incoming_channel_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTransportEventHandler);
+};
+
+class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
+ public:
+  TestMessagePipeEventHandler() {}
+  ~TestMessagePipeEventHandler() override {}
+
+  void set_closed_callback(const base::Closure& callback) {
+    closed_callback_ = callback;
+  }
+
+  // MessagePipe::EventHandler interface.
+  void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override {
+    NOTREACHED();
+  }
+
+  void OnMessagePipeClosed() override {
+    if (!closed_callback_.is_null()) {
+      closed_callback_.Run();
+    } else {
+      FAIL() << "Channel closed unexpectedly.";
+    }
+  }
+
+ private:
+  base::Closure closed_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMessagePipeEventHandler);
 };
 
 }  // namespace
@@ -169,10 +214,9 @@ class WebrtcTransportTest : public testing::Test {
     EXPECT_EQ(OK, host_error_);
   }
 
-  void CreateClientDataStream() {
-    client_transport_->incoming_channel_factory()->CreateChannel(
-        kChannelName, base::Bind(&WebrtcTransportTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
+  void ExpectClientDataStream() {
+    client_event_handler_.set_incoming_channel_callback(base::Bind(
+        &WebrtcTransportTest::OnIncomingChannel, base::Unretained(this)));
   }
 
   void CreateHostDataStream() {
@@ -181,7 +225,9 @@ class WebrtcTransportTest : public testing::Test {
                                  base::Unretained(this)));
   }
 
-  void OnClientChannelCreated(std::unique_ptr<MessagePipe> pipe) {
+  void OnIncomingChannel(const std::string& name,
+                         std::unique_ptr<MessagePipe> pipe) {
+    EXPECT_EQ(kChannelName, name);
     client_message_pipe_ = std::move(pipe);
     if (run_loop_ && host_message_pipe_)
       run_loop_->Quit();
@@ -211,6 +257,11 @@ class WebrtcTransportTest : public testing::Test {
     run_loop_->Quit();
   }
 
+  void OnHostChannelClosed() {
+    host_message_pipe_.reset();
+    run_loop_->Quit();
+  }
+
   void QuitRunLoopOnCounter(int* counter) {
     --(*counter);
     if (*counter == 0)
@@ -233,6 +284,7 @@ class WebrtcTransportTest : public testing::Test {
 
   std::unique_ptr<MessagePipe> client_message_pipe_;
   std::unique_ptr<MessagePipe> host_message_pipe_;
+  TestMessagePipeEventHandler host_message_pipe_event_handler_;
 
   ErrorCode client_error_ = OK;
   ErrorCode host_error_ = OK;
@@ -259,7 +311,7 @@ TEST_F(WebrtcTransportTest, InvalidAuthKey) {
 
 TEST_F(WebrtcTransportTest, DataStream) {
   client_event_handler_.set_connecting_callback(base::Bind(
-      &WebrtcTransportTest::CreateClientDataStream, base::Unretained(this)));
+      &WebrtcTransportTest::ExpectClientDataStream, base::Unretained(this)));
   host_event_handler_.set_connecting_callback(base::Bind(
       &WebrtcTransportTest::CreateHostDataStream, base::Unretained(this)));
 
@@ -286,7 +338,7 @@ TEST_F(WebrtcTransportTest, DataStreamLate) {
   StartConnection();
   WaitUntilConnected();
 
-  CreateClientDataStream();
+  ExpectClientDataStream();
   CreateHostDataStream();
 
   run_loop_.reset(new base::RunLoop());
@@ -301,7 +353,7 @@ TEST_F(WebrtcTransportTest, TerminateDataChannel) {
   StartConnection();
   WaitUntilConnected();
 
-  CreateClientDataStream();
+  ExpectClientDataStream();
   CreateHostDataStream();
 
   run_loop_.reset(new base::RunLoop());
@@ -312,6 +364,12 @@ TEST_F(WebrtcTransportTest, TerminateDataChannel) {
 
   destroy_on_error_ = true;
 
+  // Expect that the channel is closed on the host side once the client closes
+  // the channel.
+  host_message_pipe_->Start(&host_message_pipe_event_handler_);
+  host_message_pipe_event_handler_.set_closed_callback(base::Bind(
+      &WebrtcTransportTest::OnHostChannelClosed, base::Unretained(this)));
+
   // Destroy pipe on one side of the of the connection. It should get closed on
   // the other side.
   client_message_pipe_.reset();
@@ -319,9 +377,9 @@ TEST_F(WebrtcTransportTest, TerminateDataChannel) {
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
 
-  // Check that OnSessionError() has been called.
-  EXPECT_EQ(CHANNEL_CONNECTION_ERROR, host_error_);
-  EXPECT_FALSE(host_transport_);
+  // Check that OnHostChannelClosed() has been called.
+  EXPECT_EQ(OK, host_error_);
+  EXPECT_FALSE(host_message_pipe_);
 }
 
 }  // namespace protocol

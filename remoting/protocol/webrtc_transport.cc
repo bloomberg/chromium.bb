@@ -146,12 +146,6 @@ WebrtcTransport::WebrtcTransport(
       transport_context_(transport_context),
       event_handler_(event_handler),
       handshake_hmac_(crypto::HMAC::SHA256),
-      outgoing_data_stream_adapter_(
-          true,
-          base::Bind(&WebrtcTransport::Close, base::Unretained(this))),
-      incoming_data_stream_adapter_(
-          false,
-          base::Bind(&WebrtcTransport::Close, base::Unretained(this))),
       weak_factory_(this) {
   transport_context_->set_relay_mode(TransportContext::RelayMode::TURN);
 }
@@ -198,8 +192,9 @@ void WebrtcTransport::Start(
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
       rtc_config, &constraints, std::move(port_allocator), nullptr, this);
 
-  outgoing_data_stream_adapter_.Initialize(peer_connection_);
-  incoming_data_stream_adapter_.Initialize(peer_connection_);
+  data_stream_adapter_.reset(new WebrtcDataStreamAdapter(
+      base::Bind(&WebrtcTransport::Close, base::Unretained(this))));
+  data_stream_adapter_->Initialize(peer_connection_);
 
   event_handler_->OnWebrtcTransportConnecting();
 
@@ -439,7 +434,10 @@ void WebrtcTransport::OnRemoveStream(
 void WebrtcTransport::OnDataChannel(
     rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  incoming_data_stream_adapter_.OnIncomingDataChannel(data_channel);
+  data_stream_adapter_->WrapIncomingDataChannel(
+      data_channel,
+      base::Bind(&EventHandler::OnWebrtcTransportIncomingDataChannel,
+                 base::Unretained(event_handler_), data_channel->label()));
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {
@@ -573,6 +571,9 @@ void WebrtcTransport::Close(ErrorCode error) {
     return;
 
   weak_factory_.InvalidateWeakPtrs();
+
+  data_stream_adapter_.reset();
+
   peer_connection_->Close();
   peer_connection_ = nullptr;
   peer_connection_factory_ = nullptr;
