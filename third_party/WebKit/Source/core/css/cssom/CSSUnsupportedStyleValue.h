@@ -18,8 +18,8 @@ public:
     }
 
     StyleValueType type() const override { return StyleValueType::Unknown; }
-    CSSValue* toCSSValue() const override;
-    CSSValue* toCSSValueWithProperty(CSSPropertyID) const override;
+    const CSSValue* toCSSValue() const override;
+    const CSSValue* toCSSValueWithProperty(CSSPropertyID) const override;
     String cssText() const override { return m_cssText; }
 
 private:

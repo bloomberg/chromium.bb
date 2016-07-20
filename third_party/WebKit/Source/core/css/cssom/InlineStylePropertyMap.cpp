@@ -21,7 +21,7 @@ namespace blink {
 
 namespace {
 
-CSSValue* styleValueToCSSValue(CSSPropertyID propertyID, const CSSStyleValue& styleValue)
+const CSSValue* styleValueToCSSValue(CSSPropertyID propertyID, const CSSStyleValue& styleValue)
 {
     if (!CSSOMTypes::propertyCanTake(propertyID, styleValue))
         return nullptr;
@@ -62,7 +62,7 @@ Vector<String> InlineStylePropertyMap::getProperties()
 void InlineStylePropertyMap::set(CSSPropertyID propertyID, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
 {
     if (item.isCSSStyleValue()) {
-        CSSValue* cssValue = styleValueToCSSValue(propertyID, *item.getAsCSSStyleValue());
+        const CSSValue* cssValue = styleValueToCSSValue(propertyID, *item.getAsCSSStyleValue());
         if (!cssValue) {
             exceptionState.throwTypeError("Invalid type for property");
             return;
@@ -78,7 +78,7 @@ void InlineStylePropertyMap::set(CSSPropertyID propertyID, CSSStyleValueOrCSSSty
         CSSValueList* valueList = CSSValueList::createSpaceSeparated();
         CSSStyleValueVector styleValueVector = item.getAsCSSStyleValueSequence();
         for (const Member<CSSStyleValue> value : styleValueVector) {
-            CSSValue* cssValue = styleValueToCSSValue(propertyID, *value);
+            const CSSValue* cssValue = styleValueToCSSValue(propertyID, *value);
             if (!cssValue) {
                 exceptionState.throwTypeError("Invalid type for property");
                 return;
@@ -113,7 +113,7 @@ void InlineStylePropertyMap::append(CSSPropertyID propertyID, CSSStyleValueOrCSS
     }
 
     if (item.isCSSStyleValue()) {
-        CSSValue* cssValue = styleValueToCSSValue(propertyID, *item.getAsCSSStyleValue());
+        const CSSValue* cssValue = styleValueToCSSValue(propertyID, *item.getAsCSSStyleValue());
         if (!cssValue) {
             exceptionState.throwTypeError("Invalid type for property");
             return;
@@ -121,7 +121,7 @@ void InlineStylePropertyMap::append(CSSPropertyID propertyID, CSSStyleValueOrCSS
         cssValueList->append(*cssValue);
     } else if (item.isCSSStyleValueSequence()) {
         for (CSSStyleValue* styleValue : item.getAsCSSStyleValueSequence()) {
-            CSSValue* cssValue = styleValueToCSSValue(propertyID, *styleValue);
+            const CSSValue* cssValue = styleValueToCSSValue(propertyID, *styleValue);
             if (!cssValue) {
                 exceptionState.throwTypeError("Invalid type for property");
                 return;

@@ -9,16 +9,15 @@
 
 namespace blink {
 
-CSSValue* CSSUnsupportedStyleValue::toCSSValue() const
+const CSSValue* CSSUnsupportedStyleValue::toCSSValue() const
 {
     NOTREACHED();
     return nullptr;
 }
 
-CSSValue* CSSUnsupportedStyleValue::toCSSValueWithProperty(CSSPropertyID propertyID) const
+const CSSValue* CSSUnsupportedStyleValue::toCSSValueWithProperty(CSSPropertyID propertyID) const
 {
-    // TODO(sashab): Make CSSStyleValue return const CSSValue*s and remove this cast.
-    return const_cast<CSSValue*>(CSSParser::parseSingleValue(propertyID, m_cssText, strictCSSParserContext()));
+    return CSSParser::parseSingleValue(propertyID, m_cssText, strictCSSParserContext());
 }
 
 } // namespace blink

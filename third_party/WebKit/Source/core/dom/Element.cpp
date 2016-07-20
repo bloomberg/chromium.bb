@@ -3575,7 +3575,7 @@ void Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSS
     setInlineStyleProperty(propertyID, CSSPrimitiveValue::create(value, unit), important);
 }
 
-void Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValue* value, bool important)
+void Element::setInlineStyleProperty(CSSPropertyID propertyID, const CSSValue* value, bool important)
 {
     DCHECK(isStyledElement());
     ensureMutableInlineStyle().setProperty(propertyID, value, important);

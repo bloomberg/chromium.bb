@@ -32,7 +32,7 @@ public:
 
     bool is2D() const;
 
-    CSSValue* toCSSValue() const override;
+    const CSSValue* toCSSValue() const override;
 
     StyleValueType type() const override { return TransformType; }
 

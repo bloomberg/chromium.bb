@@ -37,8 +37,8 @@ public:
 
     static ScriptValue parse(ScriptState*, const String& propertyName, const String& value, ExceptionState&);
 
-    virtual CSSValue* toCSSValue() const = 0;
-    virtual CSSValue* toCSSValueWithProperty(CSSPropertyID) const
+    virtual const CSSValue* toCSSValue() const = 0;
+    virtual const CSSValue* toCSSValueWithProperty(CSSPropertyID) const
     {
         return toCSSValue();
     }

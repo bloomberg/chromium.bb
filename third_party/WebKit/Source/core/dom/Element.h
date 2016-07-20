@@ -283,7 +283,7 @@ public:
 
     void setInlineStyleProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
     void setInlineStyleProperty(CSSPropertyID, double value, CSSPrimitiveValue::UnitType, bool important = false);
-    void setInlineStyleProperty(CSSPropertyID, CSSValue*, bool important = false);
+    void setInlineStyleProperty(CSSPropertyID, const CSSValue*, bool important = false);
     bool setInlineStyleProperty(CSSPropertyID, const String& value, bool important = false);
 
     bool removeInlineStyleProperty(CSSPropertyID);

@@ -70,7 +70,7 @@ bool CSSTransformValue::is2D() const
     return true;
 }
 
-CSSValue* CSSTransformValue::toCSSValue() const
+const CSSValue* CSSTransformValue::toCSSValue() const
 {
     CSSValueList* transformCSSValue = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < m_transformComponents.size(); i++) {
