@@ -45,7 +45,7 @@ public:
 
 private:
     bool shouldPaintSelection(const PaintInfo&) const;
-    FloatRect boundsForDrawingRecorder(const LayoutPoint&, bool includeSelectionRect) const;
+    FloatRect boundsForDrawingRecorder(const PaintInfo&, const ComputedStyle&, const LayoutPoint&, bool includeSelectionRect) const;
     void paintTextFragments(const PaintInfo&, LayoutObject&);
     void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
     bool setupTextPaint(const PaintInfo&, const ComputedStyle&, LayoutSVGResourceMode, SkPaint&);

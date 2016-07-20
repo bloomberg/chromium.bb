@@ -38,8 +38,14 @@ bool SVGInlineTextBoxPainter::shouldPaintSelection(const PaintInfo& paintInfo) c
     return !paintInfo.isPrinting() && m_svgInlineTextBox.getSelectionState() != SelectionNone;
 }
 
+static bool hasShadow(const PaintInfo& paintInfo, const ComputedStyle& style)
+{
+    // Text shadows are disabled when printing. http://crbug.com/258321
+    return style.textShadow() && !paintInfo.isPrinting();
+}
+
 FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
-    const LayoutPoint& paintOffset, bool includeSelectionRect) const
+    const PaintInfo& paintInfo, const ComputedStyle& style, const LayoutPoint& paintOffset, bool includeSelectionRect) const
 {
     // We compute the paint rect with what looks like the logical values, to match the
     // computation in SVGInlineTextBox::calculateBoundaries, and the fact that vertical (etc)
@@ -47,6 +53,8 @@ FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
     LayoutRect bounds(
         LayoutPoint(m_svgInlineTextBox.topLeft() + paintOffset),
         LayoutSize(m_svgInlineTextBox.logicalWidth(), m_svgInlineTextBox.logicalHeight()));
+    if (hasShadow(paintInfo, style))
+        bounds.expand(style.textShadow()->rectOutsetsIncludingOriginal());
     if (includeSelectionRect) {
         bounds.unite(m_svgInlineTextBox.localSelectionRect(
             m_svgInlineTextBox.start(), m_svgInlineTextBox.start() + m_svgInlineTextBox.len()));
@@ -81,7 +89,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         bool includeSelectionRect = paintInfo.phase != PaintPhaseSelection
             && (haveSelection || InlineTextBoxPainter::paintsMarkerHighlights(textLayoutObject));
         DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox, displayItemType,
-            boundsForDrawingRecorder(paintOffset, includeSelectionRect));
+            boundsForDrawingRecorder(paintInfo, style, paintOffset, includeSelectionRect));
         InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
             paintInfo, paintOffset, style,
             textLayoutObject.scaledFont(), DocumentMarkerPaintPhase::Background);
@@ -314,11 +322,6 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo, const C
     float scalingFactor = textLayoutObject.scalingFactor();
     ASSERT(scalingFactor);
 
-    const ShadowList* shadowList = style.textShadow();
-
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    bool hasShadow = shadowList && !paintInfo.isPrinting();
-
     AffineTransform paintServerTransform;
     const AffineTransform* additionalPaintServerTransform = 0;
 
@@ -332,8 +335,8 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo, const C
         return false;
     paint.setAntiAlias(true);
 
-    if (hasShadow) {
-        std::unique_ptr<DrawLooperBuilder> drawLooperBuilder = shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha, style.visitedDependentColor(CSSPropertyColor));
+    if (hasShadow(paintInfo, style)) {
+        std::unique_ptr<DrawLooperBuilder> drawLooperBuilder = style.textShadow()->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha, style.visitedDependentColor(CSSPropertyColor));
         paint.setLooper(toSkSp(drawLooperBuilder->detachDrawLooper()));
     }
 
