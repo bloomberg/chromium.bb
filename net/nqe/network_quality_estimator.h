@@ -52,7 +52,7 @@ class URLRequest;
 // A single instance of NQE can be attached to multiple URLRequestContexts,
 // thereby increasing the single NQE instance's accuracy by providing more
 // observed traffic characteristics.
-class NET_EXPORT_PRIVATE NetworkQualityEstimator
+class NET_EXPORT NetworkQualityEstimator
     : public NetworkChangeNotifier::ConnectionTypeObserver,
       public ExternalEstimateProvider::UpdatedEstimateDelegate {
  public:
@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   };
 
   // Observes changes in effective connection type.
-  class NET_EXPORT_PRIVATE EffectiveConnectionTypeObserver {
+  class NET_EXPORT EffectiveConnectionTypeObserver {
    public:
     // Notifies the observer of a change in the effective connection type.
     // NetworkQualityEstimator computes the effective connection type once in
@@ -236,6 +236,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Allows the responses smaller than |kMinTransferSizeInBits| to be used for
   // network quality estimation.
   void SetUseSmallResponsesForTesting(bool use_small_responses);
+
+  // Reports |effective_connection_type| to all
+  // EffectiveConnectionTypeObservers.
+  void ReportEffectiveConnectionTypeForTesting(
+      EffectiveConnectionType effective_connection_type);
 
  protected:
   // NetworkID is used to uniquely identify a network.

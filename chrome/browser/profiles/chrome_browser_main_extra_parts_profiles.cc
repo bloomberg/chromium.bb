@@ -27,6 +27,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
@@ -193,6 +194,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_ANDROID)
   chrome::android::DataUseUITabModelFactory::GetInstance();
 #endif
+  UINetworkQualityEstimatorServiceFactory::GetInstance();
 #if defined(ENABLE_PRINT_PREVIEW)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif

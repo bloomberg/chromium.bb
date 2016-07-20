@@ -737,6 +737,14 @@ void NetworkQualityEstimator::SetUseSmallResponsesForTesting(
   throughput_analyzer_->SetUseSmallResponsesForTesting(use_small_responses_);
 }
 
+void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
+    EffectiveConnectionType effective_connection_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(
+      EffectiveConnectionTypeObserver, effective_connection_type_observer_list_,
+      OnEffectiveConnectionTypeChanged(effective_connection_type));
+}
+
 bool NetworkQualityEstimator::RequestProvidesRTTObservation(
     const URLRequest& request) const {
   DCHECK(thread_checker_.CalledOnValidThread());
