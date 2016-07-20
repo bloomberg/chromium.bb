@@ -1,4 +1,0 @@
-include_rules = [
-  "+services/ui/public/interfaces",
-  "+ui/display",
-]

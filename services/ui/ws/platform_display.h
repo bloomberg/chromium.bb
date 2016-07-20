@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +21,7 @@
 #include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/platform_display_delegate.h"
+#include "ui/display/display.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace cc {
@@ -70,7 +72,7 @@ class PlatformDisplay {
 
   virtual void SetCursorById(int32_t cursor) = 0;
 
-  virtual mojom::Rotation GetRotation() = 0;
+  virtual ::display::Display::Rotation GetRotation() = 0;
 
   virtual float GetDeviceScaleFactor() = 0;
 
@@ -115,7 +117,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void ReleaseCapture() override;
   void SetCursorById(int32_t cursor) override;
   float GetDeviceScaleFactor() override;
-  mojom::Rotation GetRotation() override;
+  ::display::Display::Rotation GetRotation() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
   bool IsFramePending() const override;

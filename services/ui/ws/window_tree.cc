@@ -181,7 +181,7 @@ void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
   Display* display = GetDisplay(root);
   DCHECK(display);
 
-  window_manager_internal_->WmNewDisplayAdded(display->ToMojomDisplay(),
+  window_manager_internal_->WmNewDisplayAdded(display->ToDisplay(),
                                               WindowToWindowData(root),
                                               root->parent()->IsDrawn());
 }

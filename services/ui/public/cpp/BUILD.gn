@@ -64,7 +64,6 @@ source_set("cpp") {
     "//services/ui/gles2:lib",
     "//services/ui/public/interfaces",
     "//ui/display",
-    "//ui/display/mojo",
     "//ui/events",
     "//ui/gfx/geometry",
   ]

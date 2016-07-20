@@ -23,7 +23,6 @@
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
-#include "ui/display/mojo/display_type_converters.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -1086,11 +1085,10 @@ void WindowTreeClient::OnConnect(ClientSpecificId client_id) {
   client_id_ = client_id;
 }
 
-void WindowTreeClient::WmNewDisplayAdded(mojom::DisplayPtr display,
+void WindowTreeClient::WmNewDisplayAdded(const display::Display& display,
                                          mojom::WindowDataPtr root_data,
                                          bool parent_drawn) {
-  WmNewDisplayAddedImpl(display.To<display::Display>(), std::move(root_data),
-                        parent_drawn);
+  WmNewDisplayAddedImpl(display, std::move(root_data), parent_drawn);
 }
 
 void WindowTreeClient::WmSetBounds(uint32_t change_id,

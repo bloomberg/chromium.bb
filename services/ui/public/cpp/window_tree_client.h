@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -321,7 +322,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   // Overridden from WindowManager:
   void OnConnect(ClientSpecificId client_id) override;
-  void WmNewDisplayAdded(mojom::DisplayPtr display,
+  void WmNewDisplayAdded(const display::Display& display,
                          mojom::WindowDataPtr root_data,
                          bool parent_drawn) override;
   void WmSetBounds(uint32_t change_id,

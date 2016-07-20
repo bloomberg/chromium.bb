@@ -64,7 +64,7 @@ class UserDisplayManager : public mojom::DisplayManager {
   // notifies the observer immediately.
   void OnObserverAdded(mojom::DisplayManagerObserver* observer);
 
-  mojo::Array<mojom::DisplayPtr> GetAllDisplays();
+  mojo::Array<mojom::WsDisplayPtr> GetAllDisplays();
 
   // Calls OnDisplays() on |observer|.
   void CallOnDisplays(mojom::DisplayManagerObserver* observer);

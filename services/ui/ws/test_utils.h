@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "services/ui/public/interfaces/display.mojom.h"
@@ -301,7 +302,7 @@ class TestWindowManager : public mojom::WindowManager {
  private:
   // WindowManager:
   void OnConnect(uint16_t client_id) override {}
-  void WmNewDisplayAdded(ui::mojom::DisplayPtr display,
+  void WmNewDisplayAdded(const display::Display& display,
                          ui::mojom::WindowDataPtr root,
                          bool drawn) override {}
   void WmSetBounds(uint32_t change_id,

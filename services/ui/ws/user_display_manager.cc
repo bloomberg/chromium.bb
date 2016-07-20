@@ -4,6 +4,8 @@
 
 #include "services/ui/ws/user_display_manager.h"
 
+#include <utility>
+
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/display_manager_delegate.h"
@@ -33,7 +35,7 @@ void UserDisplayManager::OnFrameDecorationValuesChanged() {
     return;
   }
 
-  mojo::Array<mojom::DisplayPtr> displays = GetAllDisplays();
+  mojo::Array<mojom::WsDisplayPtr> displays = GetAllDisplays();
   display_manager_observers_.ForAllPtrs(
       [this, &displays](mojom::DisplayManagerObserver* observer) {
         observer->OnDisplaysChanged(displays.Clone());
@@ -73,8 +75,8 @@ void UserDisplayManager::OnDisplayUpdate(Display* display) {
   if (!got_valid_frame_decorations_)
     return;
 
-  mojo::Array<mojom::DisplayPtr> displays(1);
-  displays[0] = display->ToMojomDisplay();
+  mojo::Array<mojom::WsDisplayPtr> displays(1);
+  displays[0] = display->ToWsDisplay();
   delegate_->GetFrameDecorationsForUser(
       user_id_, &(displays[0]->frame_decoration_values));
   display_manager_observers_.ForAllPtrs(
@@ -119,14 +121,14 @@ void UserDisplayManager::OnObserverAdded(
   CallOnDisplays(observer);
 }
 
-mojo::Array<mojom::DisplayPtr> UserDisplayManager::GetAllDisplays() {
+mojo::Array<mojom::WsDisplayPtr> UserDisplayManager::GetAllDisplays() {
   const std::set<Display*>& displays = display_manager_->displays();
-  mojo::Array<mojom::DisplayPtr> display_ptrs(displays.size());
+  mojo::Array<mojom::WsDisplayPtr> display_ptrs(displays.size());
   {
     size_t i = 0;
     // TODO(sky): need ordering!
     for (Display* display : displays) {
-      display_ptrs[i] = display->ToMojomDisplay();
+      display_ptrs[i] = display->ToWsDisplay();
       delegate_->GetFrameDecorationsForUser(
           user_id_, &(display_ptrs[i]->frame_decoration_values));
       ++i;

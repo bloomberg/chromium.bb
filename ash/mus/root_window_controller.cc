@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/common/root_window_controller_common.h"
 #include "ash/common/shell_window_ids.h"
@@ -42,7 +45,6 @@
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_host_factory.h"
-#include "ui/display/mojo/display_type_converters.h"
 
 using ash::mojom::Container;
 

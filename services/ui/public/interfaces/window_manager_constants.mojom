@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "services/ui/public/interfaces/display/display.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum WindowManagerErrorCode {
@@ -24,13 +25,6 @@ enum ShowState {
   DOCKED,
 };
 
-enum Rotation {
-  VALUE_0,
-  VALUE_90,
-  VALUE_180,
-  VALUE_270,
-};
-
 const int32 kResizeBehaviorNone = 0;
 const int32 kResizeBehaviorCanResize = 1;
 const int32 kResizeBehaviorCanMaximize = 2;
@@ -45,19 +39,8 @@ struct FrameDecorationValues {
   uint32 max_title_bar_button_width;
 };
 
-enum TouchSupport {
-  UNKNOWN,
-  AVAILABLE,
-  UNAVAILABLE,
-};
-
-struct Display {
-  int64 id;
-  gfx.mojom.Rect bounds;
-  gfx.mojom.Rect work_area;
-  float device_pixel_ratio;
-  Rotation rotation;
-  TouchSupport touch_support;
+struct WsDisplay {
+  display.mojom.Display display;
   bool is_primary;
   FrameDecorationValues frame_decoration_values;
 };

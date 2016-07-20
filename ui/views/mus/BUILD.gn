@@ -73,7 +73,6 @@ component("mus") {
     "//ui/aura",
     "//ui/compositor",
     "//ui/display",
-    "//ui/display/mojo",
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gfx",

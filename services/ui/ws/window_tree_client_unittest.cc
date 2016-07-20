@@ -388,7 +388,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   // mojom::WindowManager:
   void OnConnect(uint16_t client_id) override {}
-  void WmNewDisplayAdded(mojom::DisplayPtr display,
+  void WmNewDisplayAdded(const display::Display& display,
                          mojom::WindowDataPtr root_data,
                          bool drawn) override {
     NOTIMPLEMENTED();

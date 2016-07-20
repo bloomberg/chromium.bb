@@ -55,21 +55,21 @@ class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
   }
 
   std::string DisplayIdsToString(
-      const mojo::Array<mojom::DisplayPtr>& displays) {
+      const mojo::Array<mojom::WsDisplayPtr>& wm_displays) {
     std::string display_ids;
-    for (const auto& display : displays) {
+    for (const auto& wm_display : wm_displays) {
       if (!display_ids.empty())
         display_ids += " ";
-      display_ids += base::Int64ToString(display->id);
+      display_ids += base::Int64ToString(wm_display->display.id());
     }
     return display_ids;
   }
 
   // mojom::DisplayManagerObserver:
-  void OnDisplays(mojo::Array<mojom::DisplayPtr> displays) override {
+  void OnDisplays(mojo::Array<mojom::WsDisplayPtr> displays) override {
     AddCall("OnDisplays " + DisplayIdsToString(displays));
   }
-  void OnDisplaysChanged(mojo::Array<mojom::DisplayPtr> displays) override {
+  void OnDisplaysChanged(mojo::Array<mojom::WsDisplayPtr> displays) override {
     AddCall("OnDisplaysChanged " + DisplayIdsToString(displays));
   }
   void OnDisplayRemoved(int64_t id) override {

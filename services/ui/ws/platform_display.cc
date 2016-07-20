@@ -142,9 +142,9 @@ float DefaultPlatformDisplay::GetDeviceScaleFactor() {
   return metrics_.device_scale_factor;
 }
 
-mojom::Rotation DefaultPlatformDisplay::GetRotation() {
+::display::Display::Rotation DefaultPlatformDisplay::GetRotation() {
   // TODO(sky): implement me.
-  return mojom::Rotation::VALUE_0;
+  return display::Display::ROTATE_0;
 }
 
 void DefaultPlatformDisplay::UpdateTextInputState(

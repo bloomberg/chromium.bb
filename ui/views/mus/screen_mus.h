@@ -57,10 +57,9 @@ class VIEWS_MUS_EXPORT ScreenMus
   void RemoveObserver(display::DisplayObserver* observer) override;
 
   // ui::mojom::DisplayManager:
-  void OnDisplays(
-      mojo::Array<ui::mojom::DisplayPtr> transport_displays) override;
+  void OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) override;
   void OnDisplaysChanged(
-      mojo::Array<ui::mojom::DisplayPtr> transport_displays) override;
+      mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) override;
   void OnDisplayRemoved(int64_t id) override;
 
   ScreenMusDelegate* delegate_;  // Can be nullptr.

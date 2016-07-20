@@ -9,7 +9,6 @@
 #include "ui/aura/window.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
-#include "ui/display/mojo/display_type_converters.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
@@ -150,22 +149,19 @@ void ScreenMus::RemoveObserver(display::DisplayObserver* observer) {
   display_list_.RemoveObserver(observer);
 }
 
-void ScreenMus::OnDisplays(
-    mojo::Array<ui::mojom::DisplayPtr> transport_displays) {
+void ScreenMus::OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) {
   // This should only be called once from Init() before any observers have been
   // added.
   DCHECK(display_list_.displays().empty());
-  std::vector<display::Display> displays =
-      transport_displays.To<std::vector<display::Display>>();
-  for (size_t i = 0; i < displays.size(); ++i) {
-    const bool is_primary = transport_displays[i]->is_primary;
-    display_list_.AddDisplay(displays[i], is_primary
-                                              ? DisplayList::Type::PRIMARY
-                                              : DisplayList::Type::NOT_PRIMARY);
+  for (size_t i = 0; i < ws_displays.size(); ++i) {
+    const bool is_primary = ws_displays[i]->is_primary;
+    display_list_.AddDisplay(ws_displays[i]->display,
+                             is_primary ? DisplayList::Type::PRIMARY
+                                        : DisplayList::Type::NOT_PRIMARY);
     if (is_primary) {
       // TODO(sky): Make WindowManagerFrameValues per display.
       WindowManagerFrameValues frame_values =
-          transport_displays[i]
+          ws_displays[i]
               ->frame_decoration_values.To<WindowManagerFrameValues>();
       WindowManagerFrameValues::SetInstance(frame_values);
     }
@@ -174,14 +170,13 @@ void ScreenMus::OnDisplays(
 }
 
 void ScreenMus::OnDisplaysChanged(
-    mojo::Array<ui::mojom::DisplayPtr> transport_displays) {
-  for (size_t i = 0; i < transport_displays.size(); ++i) {
-    const bool is_primary = transport_displays[i]->is_primary;
-    ProcessDisplayChanged(transport_displays[i].To<display::Display>(),
-                          is_primary);
+    mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) {
+  for (size_t i = 0; i < ws_displays.size(); ++i) {
+    const bool is_primary = ws_displays[i]->is_primary;
+    ProcessDisplayChanged(ws_displays[i]->display, is_primary);
     if (is_primary) {
       WindowManagerFrameValues frame_values =
-          transport_displays[i]
+          ws_displays[i]
               ->frame_decoration_values.To<WindowManagerFrameValues>();
       WindowManagerFrameValues::SetInstance(frame_values);
       if (delegate_)

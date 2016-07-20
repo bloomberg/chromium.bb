@@ -17,7 +17,6 @@
 namespace ui {
 
 namespace mojom {
-class Display;
 class WindowManagerFactory;
 class WindowTree;
 }

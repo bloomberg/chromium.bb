@@ -5,6 +5,7 @@
 #include "services/ui/ws/display.h"
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/debug/debugger.h"
@@ -80,23 +81,32 @@ const DisplayManager* Display::display_manager() const {
   return window_server_->display_manager();
 }
 
-mojom::DisplayPtr Display::ToMojomDisplay() const {
-  mojom::DisplayPtr display_ptr = mojom::Display::New();
-  display_ptr = mojom::Display::New();
-  display_ptr->id = id_;
-  // TODO(sky): Display should know it's origin.
-  display_ptr->bounds.SetRect(0, 0, root_->bounds().size().width(),
-                              root_->bounds().size().height());
-  // TODO(sky): window manager needs an API to set the work area.
-  display_ptr->work_area = display_ptr->bounds;
-  display_ptr->device_pixel_ratio = platform_display_->GetDeviceScaleFactor();
-  display_ptr->rotation = platform_display_->GetRotation();
+mojom::WsDisplayPtr Display::ToWsDisplay() const {
+  mojom::WsDisplayPtr display_ptr = mojom::WsDisplay::New();
+
+  display_ptr->display = ToDisplay();
+
   // TODO(sky): make this real.
   display_ptr->is_primary = true;
   // TODO(sky): make this real.
-  display_ptr->touch_support = mojom::TouchSupport::UNKNOWN;
   display_ptr->frame_decoration_values = mojom::FrameDecorationValues::New();
   return display_ptr;
+}
+
+::display::Display Display::ToDisplay() const {
+  ::display::Display display(id_);
+
+  // TODO(sky): Display should know its origin.
+  display.set_bounds(gfx::Rect(0, 0, root_->bounds().size().width(),
+                               root_->bounds().size().height()));
+  // TODO(sky): window manager needs an API to set the work area.
+  display.set_work_area(display.bounds());
+  display.set_device_scale_factor(platform_display_->GetDeviceScaleFactor());
+  display.set_rotation(platform_display_->GetRotation());
+  display.set_touch_support(
+      ::display::Display::TouchSupport::TOUCH_SUPPORT_UNKNOWN);
+
+  return display;
 }
 
 void Display::SchedulePaint(const ServerWindow* window,
@@ -116,7 +126,7 @@ void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
   window->AddObserver(this);
 }
 
-mojom::Rotation Display::GetRotation() const {
+::display::Display::Rotation Display::GetRotation() const {
   return platform_display_->GetRotation();
 }
 
