@@ -116,7 +116,7 @@ void ResourceLoader::cancel()
     didFail(nullptr, ResourceError::cancelledError(m_resource->lastResourceRequest().url()));
 }
 
-void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
+void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse, int64_t encodedDataLength)
 {
     ASSERT(!passedNewRequest.isNull());
     ASSERT(!passedRedirectResponse.isNull());
@@ -125,7 +125,7 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     newRequest.setRedirectStatus(ResourceRequest::RedirectStatus::FollowedRedirect);
 
-    if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest, redirectResponse)) {
+    if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest, redirectResponse, encodedDataLength)) {
         m_resource->willFollowRedirect(newRequest, redirectResponse);
     } else {
         m_resource->willNotFollowRedirect();
@@ -205,10 +205,12 @@ void ResourceLoader::didReceiveResponse(WebURLLoader* loader, const WebURLRespon
     didReceiveResponse(loader, response, nullptr);
 }
 
-void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length, int encodedDataLength)
+void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length, int encodedDataLength, int encodedBodyLength)
 {
     RELEASE_ASSERT(length >= 0);
     m_fetcher->didReceiveData(m_resource.get(), data, length, encodedDataLength);
+    m_resource->addToEncodedBodyLength(encodedBodyLength);
+    m_resource->addToDecodedBodyLength(length);
     m_resource->appendData(data, length);
 }
 
@@ -255,6 +257,7 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request)
         return;
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
     int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : WebURLLoaderClient::kUnknownEncodedDataLength;
+    DCHECK_GE(responseOut.toResourceResponse().encodedBodyLength(), 0);
 
     // Follow the async case convention of not calling didReceiveData or
     // appending data to m_resource if the response body is empty. Copying the

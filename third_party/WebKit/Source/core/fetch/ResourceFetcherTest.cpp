@@ -38,20 +38,29 @@
 #include "core/fetch/ResourceLoader.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/HeapAllocator.h"
+#include "platform/heap/Member.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/network/ResourceTimingInfo.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/weburl_loader_mock.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/Allocator.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/Vector.h"
 #include <memory>
 
 namespace blink {
 
 namespace {
+
+const char testImageFilename[] = "white-1x1.png";
+const int testImageSize = 103; // size of web/tests/data/white-1x1.png
 
 class MockTaskRunner : public blink::WebTaskRunner {
     void postTask(const WebTraceLocation&, Task*) override { }
@@ -82,16 +91,21 @@ public:
     void setLoadComplete(bool complete) { m_complete = complete; }
     bool isLoadComplete() const override { return m_complete; }
 
+    void addResourceTiming(const ResourceTimingInfo& resourceTimingInfo) override { m_transferSize = resourceTimingInfo.transferSize(); }
+    long long getTransferSize() const { return m_transferSize; }
+
 private:
     ResourceFetcherTestMockFetchContext()
         : m_policy(CachePolicyVerify)
         , m_runner(wrapUnique(new MockTaskRunner))
         , m_complete(false)
+        , m_transferSize(-1)
     { }
 
     CachePolicy m_policy;
     std::unique_ptr<MockTaskRunner> m_runner;
     bool m_complete;
+    long long m_transferSize;
 };
 
 class ResourceFetcherTest : public ::testing::Test {
@@ -205,7 +219,7 @@ TEST_F(ResourceFetcherTest, VaryImage)
     response.setHTTPStatusCode(200);
     response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
     response.setHTTPHeaderField(HTTPNames::Vary, "*");
-    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, "white-1x1.png", WebString::fromUTF8(""), WrappedResourceResponse(response));
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, testImageFilename, WebString::fromUTF8(""), WrappedResourceResponse(response));
 
     FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
     Resource* resource = fetcher->requestResource(fetchRequestOriginal, TestResourceFactory(Resource::Image));
@@ -379,7 +393,7 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel)
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
-    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, "white-1x1.png", WebString::fromUTF8(""), WrappedResourceResponse(response));
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, testImageFilename, WebString::fromUTF8(""), WrappedResourceResponse(response));
 
     ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
@@ -389,6 +403,102 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel)
     resource->loader()->cancel();
     resource->removeClient(client);
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+}
+
+class ScopedMockRedirectRequester {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(ScopedMockRedirectRequester);
+
+public:
+    ScopedMockRedirectRequester()
+        : m_context(nullptr)
+    {
+    }
+
+    ~ScopedMockRedirectRequester()
+    {
+        cleanUp();
+    }
+
+    void registerRedirect(const WebString& fromURL, const WebString& toURL)
+    {
+        KURL redirectURL(ParsedURLString, fromURL);
+        WebURLResponse redirectResponse;
+        redirectResponse.setURL(redirectURL);
+        redirectResponse.setHTTPStatusCode(301);
+        redirectResponse.setHTTPHeaderField(HTTPNames::Location, toURL);
+        Platform::current()->getURLLoaderMockFactory()->registerURL(redirectURL, redirectResponse, "");
+    }
+
+    void registerFinalResource(const WebString& url)
+    {
+        KURL finalURL(ParsedURLString, url);
+        WebURLResponse finalResponse;
+        finalResponse.setURL(finalURL);
+        finalResponse.setHTTPStatusCode(200);
+        URLTestHelpers::registerMockedURLLoadWithCustomResponse(finalURL, testImageFilename, "", finalResponse);
+    }
+
+    void request(const WebString& url)
+    {
+        DCHECK(!m_context);
+        m_context = ResourceFetcherTestMockFetchContext::create();
+        ResourceFetcher* fetcher = ResourceFetcher::create(m_context);
+        FetchRequest fetchRequest = FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
+        fetcher->requestResource(fetchRequest, TestResourceFactory());
+        Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    }
+
+    void cleanUp()
+    {
+        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+        memoryCache()->evictResources();
+    }
+
+    ResourceFetcherTestMockFetchContext* context() const { return m_context; }
+
+private:
+    Member<ResourceFetcherTestMockFetchContext> m_context;
+};
+
+TEST_F(ResourceFetcherTest, SameOriginRedirect)
+{
+    const char redirectURL[] = "http://127.0.0.1:8000/redirect.html";
+    const char finalURL[] = "http://127.0.0.1:8000/final.html";
+    ScopedMockRedirectRequester requester;
+    requester.registerRedirect(redirectURL, finalURL);
+    requester.registerFinalResource(finalURL);
+    requester.request(redirectURL);
+
+    EXPECT_EQ(kRedirectResponseOverheadBytes + testImageSize, requester.context()->getTransferSize());
+}
+
+TEST_F(ResourceFetcherTest, CrossOriginRedirect)
+{
+    const char redirectURL[] = "http://otherorigin.test/redirect.html";
+    const char finalURL[] = "http://127.0.0.1:8000/final.html";
+    ScopedMockRedirectRequester requester;
+    requester.registerRedirect(redirectURL, finalURL);
+    requester.registerFinalResource(finalURL);
+    requester.request(redirectURL);
+
+    EXPECT_EQ(testImageSize, requester.context()->getTransferSize());
+}
+
+TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect)
+{
+    const char redirectURL1[] = "http://127.0.0.1:8000/redirect1.html";
+    const char redirectURL2[] = "http://otherorigin.test/redirect2.html";
+    const char redirectURL3[] = "http://127.0.0.1:8000/redirect3.html";
+    const char finalURL[] = "http://127.0.0.1:8000/final.html";
+    ScopedMockRedirectRequester requester;
+    requester.registerRedirect(redirectURL1, redirectURL2);
+    requester.registerRedirect(redirectURL2, redirectURL3);
+    requester.registerRedirect(redirectURL3, finalURL);
+    requester.registerFinalResource(finalURL);
+    requester.request(redirectURL1);
+
+    EXPECT_EQ(testImageSize, requester.context()->getTransferSize());
 }
 
 } // namespace blink

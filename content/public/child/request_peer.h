@@ -36,21 +36,29 @@ struct ResourceResponseInfo;
 class CONTENT_EXPORT RequestPeer {
  public:
   // This class represents data gotten from the Browser process. Each data
-  // consists of |payload|, |length| and |encoded_length|. The payload is
-  // valid only when the data instance is valid.
+  // consists of |payload|, |length|, |encoded_data_length| and
+  // |encoded_body_length|. The payload is valid only when the data instance is
+  // valid.
   // In order to work with Chrome resource loading IPC, it is desirable to
   // reclaim data in FIFO order in a RequestPeer in terms of performance.
-  // |payload|, |length| and |encoded_length| functions are thread-safe, but
-  // the data object itself must be destroyed on the original thread.
+  // |payload|, |length|, |encoded_data_length| and |encoded_body_length|
+  // functions are thread-safe, but the data object itself must be destroyed on
+  // the original thread.
   class CONTENT_EXPORT ReceivedData {
    public:
     virtual ~ReceivedData() {}
     virtual const char* payload() const = 0;
     virtual int length() const = 0;
-    // The encoded_length is the length of the encoded data transferred
-    // over the network, which could be different from data length (e.g. for
-    // gzipped content).
-    virtual int encoded_length() const = 0;
+    // The encoded_data_length is the length of the encoded data transferred
+    // over the network, including headers. It is only set for responses
+    // originating from the network (ie. not the cache). It will usually be
+    // different from length(), and may be smaller if the content was
+    // compressed. -1 means this value is unavailable.
+    virtual int encoded_data_length() const = 0;
+    // The encoded_body_length is the size of the body as transferred over the
+    // network or stored in the disk cache, excluding headers. This will be
+    // different from length() if a content encoding was used.
+    virtual int encoded_body_length() const = 0;
   };
 
   // A ThreadSafeReceivedData can be deleted on ANY thread.

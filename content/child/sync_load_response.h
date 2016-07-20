@@ -14,7 +14,7 @@ namespace content {
 
 // See the SyncLoad method. (The name of this struct is not
 // suffixed with "Info" because it also contains the response data.)
-struct SyncLoadResponse : ResourceResponseInfo {
+struct CONTENT_EXPORT SyncLoadResponse : ResourceResponseInfo {
   SyncLoadResponse();
   ~SyncLoadResponse();
 

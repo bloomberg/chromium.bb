@@ -122,7 +122,7 @@ public:
     }
 
     // WebURLLoaderClient implementation.
-    void willFollowRedirect(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse) override
+    void willFollowRedirect(WebURLLoader* loader, WebURLRequest& newRequest, const WebURLResponse& redirectResponse, int64_t encodedDataLength) override
     {
         m_willFollowRedirect = true;
         EXPECT_EQ(m_expectedLoader.get(), loader);
@@ -155,7 +155,7 @@ public:
         EXPECT_EQ(m_expectedLoader.get(), loader);
     }
 
-    void didReceiveData(WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength) override
+    void didReceiveData(WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength, int encodedBodyLength) override
     {
         m_didReceiveData = true;
         EXPECT_EQ(m_expectedLoader.get(), loader);

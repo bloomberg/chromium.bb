@@ -88,7 +88,7 @@ protected:
 
 private:
     void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
-    void didReceiveData(WebURLLoader*, const char*, int, int) final;
+    void didReceiveData(WebURLLoader*, const char*, int, int, int) final;
     void didFinishLoading(WebURLLoader*, double, int64_t) final;
     void didFail(WebURLLoader*, const WebURLError&) final;
 

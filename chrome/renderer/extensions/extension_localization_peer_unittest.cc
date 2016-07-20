@@ -73,7 +73,7 @@ class MockRequestPeer : public content::RequestPeer {
   void OnReceivedData(
       std::unique_ptr<RequestPeer::ReceivedData> data) override {
     OnReceivedDataInternal(data->payload(), data->length(),
-                           data->encoded_length());
+                           data->encoded_data_length());
   }
   MOCK_METHOD3(OnReceivedDataInternal,
                void(const char* data,
@@ -139,12 +139,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
 
   const std::string data_chunk("12345");
   filter_peer_->OnReceivedData(base::WrapUnique(new content::FixedReceivedData(
-      data_chunk.data(), data_chunk.length(), -1)));
+      data_chunk.data(), data_chunk.length(), -1, 0)));
 
   EXPECT_EQ(data_chunk, GetData());
 
   filter_peer_->OnReceivedData(base::WrapUnique(new content::FixedReceivedData(
-      data_chunk.data(), data_chunk.length(), -1)));
+      data_chunk.data(), data_chunk.length(), -1, 0)));
   EXPECT_EQ(data_chunk + data_chunk, GetData());
 }
 

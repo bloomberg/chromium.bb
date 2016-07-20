@@ -281,6 +281,12 @@ public:
     unsigned short remotePort() const { return m_remotePort; }
     void setRemotePort(unsigned short value) { m_remotePort = value; }
 
+    long long encodedBodyLength() const { return m_encodedBodyLength; }
+    void addToEncodedBodyLength(int value);
+
+    long long decodedBodyLength() const { return m_decodedBodyLength; }
+    void addToDecodedBodyLength(int value);
+
     const String& downloadedFilePath() const { return m_downloadedFilePath; }
     void setDownloadedFilePath(const String&);
 
@@ -406,6 +412,13 @@ private:
     // Remote port number of the socket which fetched this resource.
     unsigned short m_remotePort;
 
+    // Size of the response body in bytes prior to decompression.
+    long long m_encodedBodyLength;
+
+    // Sizes of the response body in bytes after any content-encoding is
+    // removed.
+    long long m_decodedBodyLength;
+
     // The downloaded file path if the load streamed to a file.
     String m_downloadedFilePath;
 
@@ -454,6 +467,8 @@ public:
     int64_t m_responseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;
+    long long m_encodedBodyLength;
+    long long m_decodedBodyLength;
     String m_downloadedFilePath;
     RefPtr<BlobDataHandle> m_downloadedFileHandle;
 };

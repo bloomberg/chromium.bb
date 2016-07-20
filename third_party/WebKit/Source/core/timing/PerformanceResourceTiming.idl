@@ -46,10 +46,9 @@ interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp requestStart;
     readonly attribute DOMHighResTimeStamp responseStart;
     readonly attribute DOMHighResTimeStamp responseEnd;
-    // TODO(foolip): The spec has tranferSize/encodedBodySize/decodedBodySize
-    // and a serializer:
-    // readonly attribute unsigned short transferSize;
-    // readonly attribute unsigned short encodedBodySize;
-    // readonly attribute unsigned short decodedBodySize;
+    readonly attribute unsigned long long transferSize;
+    readonly attribute unsigned long long encodedBodySize;
+    readonly attribute unsigned long long decodedBodySize;
+    // TODO(foolip): The spec has a serializer:    
     // serializer = {inherit, attribute};
 };

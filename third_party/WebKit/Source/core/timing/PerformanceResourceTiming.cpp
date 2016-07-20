@@ -55,6 +55,9 @@ PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& i
     , m_timing(info.finalResponse().resourceLoadTiming())
     , m_lastRedirectEndTime(lastRedirectEndTime)
     , m_finishTime(info.loadFinishTime())
+    , m_transferSize(info.transferSize())
+    , m_encodedBodySize(info.finalResponse().encodedBodyLength())
+    , m_decodedBodySize(info.finalResponse().decodedBodyLength())
     , m_didReuseConnection(info.finalResponse().connectionReused())
     , m_allowTimingDetails(allowTimingDetails)
     , m_allowRedirectDetails(allowRedirectDetails)
@@ -213,6 +216,30 @@ double PerformanceResourceTiming::responseEnd() const
     return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_finishTime);
 }
 
+unsigned long long PerformanceResourceTiming::transferSize() const
+{
+    if (!m_allowTimingDetails)
+        return 0;
+
+    return m_transferSize;
+}
+
+unsigned long long PerformanceResourceTiming::encodedBodySize() const
+{
+    if (!m_allowTimingDetails)
+        return 0;
+
+    return m_encodedBodySize;
+}
+
+unsigned long long PerformanceResourceTiming::decodedBodySize() const
+{
+    if (!m_allowTimingDetails)
+        return 0;
+
+    return m_decodedBodySize;
+}
+
 void PerformanceResourceTiming::buildJSONValue(V8ObjectBuilder& builder) const
 {
     PerformanceEntry::buildJSONValue(builder);
@@ -229,6 +256,9 @@ void PerformanceResourceTiming::buildJSONValue(V8ObjectBuilder& builder) const
     builder.addNumber("requestStart", requestStart());
     builder.addNumber("responseStart", responseStart());
     builder.addNumber("responseEnd", responseEnd());
+    builder.addNumber("transferSize", transferSize());
+    builder.addNumber("encodedBodySize", encodedBodySize());
+    builder.addNumber("decodedBodySize", decodedBodySize());
 }
 
 } // namespace blink

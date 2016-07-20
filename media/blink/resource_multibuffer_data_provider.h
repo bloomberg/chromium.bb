@@ -45,10 +45,10 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   void SetDeferred(bool defer) override;
 
   // blink::WebURLLoaderClient implementation.
-  void willFollowRedirect(
-      blink::WebURLLoader* loader,
-      blink::WebURLRequest& newRequest,
-      const blink::WebURLResponse& redirectResponse) override;
+  void willFollowRedirect(blink::WebURLLoader* loader,
+                          blink::WebURLRequest& newRequest,
+                          const blink::WebURLResponse& redirectResponse,
+                          int64_t encodedDataLength) override;
   void didSendData(blink::WebURLLoader* loader,
                    unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override;
@@ -60,7 +60,8 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   void didReceiveData(blink::WebURLLoader* loader,
                       const char* data,
                       int data_length,
-                      int encoded_data_length) override;
+                      int encoded_data_length,
+                      int encoded_body_length) override;
   void didReceiveCachedMetadata(blink::WebURLLoader* loader,
                                 const char* data,
                                 int dataLength) override;

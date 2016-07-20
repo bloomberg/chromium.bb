@@ -102,6 +102,8 @@ ResourceResponse::ResourceResponse()
     , m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault)
     , m_responseTime(0)
     , m_remotePort(0)
+    , m_encodedBodyLength(0)
+    , m_decodedBodyLength(0)
 {
 }
 
@@ -138,6 +140,8 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault)
     , m_responseTime(0)
     , m_remotePort(0)
+    , m_encodedBodyLength(0)
+    , m_decodedBodyLength(0)
 {
 }
 
@@ -184,6 +188,8 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_responseTime = data->m_responseTime;
     m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
     m_remotePort = data->m_remotePort;
+    m_encodedBodyLength = data->m_encodedBodyLength;
+    m_decodedBodyLength = data->m_decodedBodyLength;
     m_downloadedFilePath = data->m_downloadedFilePath;
     m_downloadedFileHandle = data->m_downloadedFileHandle;
 
@@ -236,6 +242,8 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_responseTime = m_responseTime;
     data->m_remoteIPAddress = m_remoteIPAddress.getString().isolatedCopy();
     data->m_remotePort = m_remotePort;
+    data->m_encodedBodyLength = m_encodedBodyLength;
+    data->m_decodedBodyLength = m_decodedBodyLength;
     data->m_downloadedFilePath = m_downloadedFilePath.isolatedCopy();
     data->m_downloadedFileHandle = m_downloadedFileHandle;
 
@@ -583,6 +591,16 @@ void ResourceResponse::setResourceLoadInfo(PassRefPtr<ResourceLoadInfo> loadInfo
     m_resourceLoadInfo = loadInfo;
 }
 
+void ResourceResponse::addToEncodedBodyLength(int value)
+{
+    m_encodedBodyLength += value;
+}
+
+void ResourceResponse::addToDecodedBodyLength(int value)
+{
+    m_decodedBodyLength += value;
+}
+
 void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath)
 {
     m_downloadedFilePath = downloadedFilePath;
@@ -619,6 +637,10 @@ bool ResourceResponse::compare(const ResourceResponse& a, const ResourceResponse
     if (a.resourceLoadTiming() && b.resourceLoadTiming() && *a.resourceLoadTiming() == *b.resourceLoadTiming())
         return true;
     if (a.resourceLoadTiming() != b.resourceLoadTiming())
+        return false;
+    if (a.encodedBodyLength() != b.encodedBodyLength())
+        return false;
+    if (a.decodedBodyLength() != b.decodedBodyLength())
         return false;
     return true;
 }

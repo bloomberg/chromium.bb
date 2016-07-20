@@ -20,6 +20,8 @@ class WebURLLoaderTestDelegate;
 class WebURLRequest;
 class WebURLResponse;
 
+const int kRedirectResponseOverheadBytes = 300;
+
 // A simple class for mocking WebURLLoader.
 // If the WebURLLoaderMockFactory it is associated with has been configured to
 // mock the request it gets, it serves the mocked resource.  Otherwise it just

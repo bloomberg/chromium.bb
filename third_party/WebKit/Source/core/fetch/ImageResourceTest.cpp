@@ -369,7 +369,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
 
     Vector<unsigned char> jpeg2 = jpegImage2();
     cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(resourceResponse), nullptr);
-    cachedImage->loader()->didReceiveData(nullptr, reinterpret_cast<const char*>(jpeg2.data()), jpeg2.size(), jpeg2.size());
+    cachedImage->loader()->didReceiveData(nullptr, reinterpret_cast<const char*>(jpeg2.data()), jpeg2.size(), jpeg2.size(), jpeg2.size());
     cachedImage->loader()->didFinishLoading(nullptr, 0.0, jpeg2.size());
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());

@@ -248,7 +248,8 @@ void ResourceDispatcher::OnReceivedInlinedDataChunk(
   DCHECK(!request_info->buffer.get());
 
   std::unique_ptr<RequestPeer::ReceivedData> received_data(
-      new content::FixedReceivedData(data, encoded_data_length));
+      new content::FixedReceivedData(data, encoded_data_length,
+                                     encoded_body_length));
   request_info->peer->OnReceivedData(std::move(received_data));
 }
 
@@ -279,8 +280,8 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     }
 
     std::unique_ptr<RequestPeer::ReceivedData> data =
-        request_info->received_data_factory->Create(data_offset, data_length,
-                                                    encoded_data_length);
+        request_info->received_data_factory->Create(
+            data_offset, data_length, encoded_data_length, encoded_body_length);
     // |data| takes care of ACKing.
     send_ack = false;
     request_info->peer->OnReceivedData(std::move(data));
@@ -573,6 +574,7 @@ void ResourceDispatcher::StartSync(const RequestInfo& request_info,
   response->data.swap(result.data);
   response->download_file_path = result.download_file_path;
   response->socket_address = result.socket_address;
+  response->encoded_body_length = result.encoded_body_length;
 }
 
 int ResourceDispatcher::StartAsync(const RequestInfo& request_info,

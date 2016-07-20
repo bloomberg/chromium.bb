@@ -135,10 +135,10 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   bool range_supported();
 
   // blink::WebURLLoaderClient implementation.
-  void willFollowRedirect(
-      blink::WebURLLoader* loader,
-      blink::WebURLRequest& newRequest,
-      const blink::WebURLResponse& redirectResponse) override;
+  void willFollowRedirect(blink::WebURLLoader* loader,
+                          blink::WebURLRequest& newRequest,
+                          const blink::WebURLResponse& redirectResponse,
+                          int64_t encodedDataLength) override;
   void didSendData(
       blink::WebURLLoader* loader,
       unsigned long long bytesSent,
@@ -150,11 +150,11 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
       blink::WebURLLoader* loader,
       int data_length,
       int encoded_data_length) override;
-  void didReceiveData(
-      blink::WebURLLoader* loader,
-      const char* data,
-      int data_length,
-      int encoded_data_length) override;
+  void didReceiveData(blink::WebURLLoader* loader,
+                      const char* data,
+                      int data_length,
+                      int encoded_data_length,
+                      int encoded_body_length) override;
   void didReceiveCachedMetadata(
       blink::WebURLLoader* loader,
       const char* data, int dataLength) override;

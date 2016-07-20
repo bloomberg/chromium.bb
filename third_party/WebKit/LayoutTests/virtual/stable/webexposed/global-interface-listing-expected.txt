@@ -3635,8 +3635,10 @@ interface PerformanceResourceTiming : PerformanceEntry
     attribute @@toStringTag
     getter connectEnd
     getter connectStart
+    getter decodedBodySize
     getter domainLookupEnd
     getter domainLookupStart
+    getter encodedBodySize
     getter fetchStart
     getter initiatorType
     getter redirectEnd
@@ -3645,6 +3647,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter responseEnd
     getter responseStart
     getter secureConnectionStart
+    getter transferSize
     getter workerStart
     method constructor
 interface PerformanceTiming

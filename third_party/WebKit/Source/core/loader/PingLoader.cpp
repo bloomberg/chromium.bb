@@ -179,7 +179,7 @@ void PingLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& respons
     dispose();
 }
 
-void PingLoader::didReceiveData(WebURLLoader*, const char*, int, int)
+void PingLoader::didReceiveData(WebURLLoader*, const char*, int, int, int)
 {
     if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));

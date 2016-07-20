@@ -166,7 +166,8 @@ void ResourceMultiBufferDataProvider::SetDeferred(bool deferred) {
 void ResourceMultiBufferDataProvider::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
-    const WebURLResponse& redirectResponse) {
+    const WebURLResponse& redirectResponse,
+    int64_t encodedDataLength) {
   redirects_to_ = newRequest.url();
   url_data_->set_valid_until(base::Time::Now() +
                              GetCacheValidUntil(redirectResponse));
@@ -352,7 +353,8 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
 void ResourceMultiBufferDataProvider::didReceiveData(WebURLLoader* loader,
                                                      const char* data,
                                                      int data_length,
-                                                     int encoded_data_length) {
+                                                     int encoded_data_length,
+                                                     int encoded_body_length) {
   DVLOG(1) << "didReceiveData: " << data_length << " bytes";
   DCHECK(!Available());
   DCHECK(active_loader_);

@@ -26,7 +26,7 @@ void WebURLLoaderTestDelegate::didReceiveResponse(WebURLLoaderClient* originalCl
 
 void WebURLLoaderTestDelegate::didReceiveData(WebURLLoaderClient* originalClient, WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength)
 {
-    originalClient->didReceiveData(loader, data, dataLength, encodedDataLength);
+    originalClient->didReceiveData(loader, data, dataLength, encodedDataLength, dataLength);
 }
 
 void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient, WebURLLoader* loader, const WebURLError& error)

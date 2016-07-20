@@ -68,6 +68,9 @@ public:
     double requestStart() const;
     double responseStart() const;
     double responseEnd() const;
+    unsigned long long transferSize() const;
+    unsigned long long encodedBodySize() const;
+    unsigned long long decodedBodySize() const;
 
 protected:
     void buildJSONValue(V8ObjectBuilder&) const override;
@@ -83,6 +86,9 @@ private:
     RefPtr<ResourceLoadTiming> m_timing;
     double m_lastRedirectEndTime;
     double m_finishTime;
+    unsigned long long m_transferSize;
+    unsigned long long m_encodedBodySize;
+    unsigned long long m_decodedBodySize;
     bool m_didReuseConnection;
     bool m_allowTimingDetails;
     bool m_allowRedirectDetails;

@@ -57,7 +57,7 @@ void SimNetwork::didReceiveResponse(WebURLLoaderClient* client, WebURLLoader* lo
 void SimNetwork::didReceiveData(WebURLLoaderClient* client, WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength)
 {
     if (!m_currentRequest)
-        client->didReceiveData(loader, data, dataLength, encodedDataLength);
+        client->didReceiveData(loader, data, dataLength, encodedDataLength, dataLength);
 }
 
 void SimNetwork::didFail(WebURLLoaderClient* client, WebURLLoader* loader, const WebURLError& error)

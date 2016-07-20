@@ -25,11 +25,11 @@ void WebURLLoaderClientImpl::didReceiveResponse(
   response_ = response;
 }
 
-void WebURLLoaderClientImpl::didReceiveData(
-    blink::WebURLLoader* loader,
-    const char* data,
-    int data_length,
-    int encoded_data_length) {
+void WebURLLoaderClientImpl::didReceiveData(blink::WebURLLoader* loader,
+                                            const char* data,
+                                            int data_length,
+                                            int encoded_data_length,
+                                            int encoded_body_length) {
   // The AssociatedURLLoader will continue after a load failure.
   // For example, for an Access Control error.
   if (completed_)

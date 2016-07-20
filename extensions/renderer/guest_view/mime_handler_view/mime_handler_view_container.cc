@@ -205,6 +205,7 @@ v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
 void MimeHandlerViewContainer::didReceiveData(blink::WebURLLoader* /* unused */,
                                               const char* data,
                                               int data_length,
+                                              int /* unused */,
                                               int /* unused */) {
   view_id_ += std::string(data, data_length);
 }

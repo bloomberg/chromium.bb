@@ -76,8 +76,11 @@ public:
     void setFinalResponse(const ResourceResponse& response) { m_finalResponse = response; }
     const ResourceResponse& finalResponse() const { return m_finalResponse; }
 
-    void addRedirect(const ResourceResponse& redirectResponse) { m_redirectChain.append(redirectResponse); }
+    void addRedirect(const ResourceResponse& redirectResponse, long long encodedDataLength, bool crossOrigin);
     const Vector<ResourceResponse>& redirectChain() const { return m_redirectChain; }
+
+    void addFinalTransferSize(long long encodedDataLength) { m_transferSize += encodedDataLength; }
+    long long transferSize() const { return m_transferSize; }
 
     void clearLoadTimings()
     {
@@ -90,7 +93,9 @@ private:
     ResourceTimingInfo(const AtomicString& type, const double time, bool isMainResource)
         : m_type(type)
         , m_initialTime(time)
+        , m_transferSize(0)
         , m_isMainResource(isMainResource)
+        , m_hasCrossOriginRedirect(false)
     {
     }
 
@@ -101,7 +106,9 @@ private:
     ResourceRequest m_initialRequest;
     ResourceResponse m_finalResponse;
     Vector<ResourceResponse> m_redirectChain;
+    long long m_transferSize;
     bool m_isMainResource;
+    bool m_hasCrossOriginRedirect;
 };
 
 struct CrossThreadResourceTimingInfoData {
@@ -117,6 +124,7 @@ public:
     std::unique_ptr<CrossThreadResourceRequestData> m_initialRequest;
     std::unique_ptr<CrossThreadResourceResponseData> m_finalResponse;
     Vector<std::unique_ptr<CrossThreadResourceResponseData>> m_redirectChain;
+    long long m_transferSize;
     bool m_isMainResource;
 };
 

@@ -107,7 +107,7 @@ public:
     void stopFetching();
     bool isFetching() const;
 
-    bool willFollowRedirect(Resource*, ResourceRequest&, const ResourceResponse&);
+    bool willFollowRedirect(Resource*, ResourceRequest&, const ResourceResponse&, int64_t encodedDataLength);
     enum DidFinishLoadingReason {
         DidFinishLoading,
         DidFinishFirstPartInMultipart

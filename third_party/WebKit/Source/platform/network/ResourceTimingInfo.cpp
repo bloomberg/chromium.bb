@@ -33,8 +33,23 @@ std::unique_ptr<CrossThreadResourceTimingInfoData> ResourceTimingInfo::copyData(
     data->m_finalResponse = m_finalResponse.copyData();
     for (const auto& response : m_redirectChain)
         data->m_redirectChain.append(response.copyData());
+    data->m_transferSize = m_transferSize;
     data->m_isMainResource = m_isMainResource;
     return data;
+}
+
+void ResourceTimingInfo::addRedirect(const ResourceResponse& redirectResponse, long long encodedDataLength, bool crossOrigin)
+{
+    m_redirectChain.append(redirectResponse);
+    if (m_hasCrossOriginRedirect)
+        return;
+    if (crossOrigin) {
+        m_hasCrossOriginRedirect = true;
+        m_transferSize = 0;
+    } else {
+        DCHECK_GE(encodedDataLength, 0);
+        m_transferSize += encodedDataLength;
+    }
 }
 
 } // namespace blink

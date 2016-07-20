@@ -331,8 +331,8 @@ bool BufferedResourceLoader::range_supported() {
 void BufferedResourceLoader::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
-    const WebURLResponse& redirectResponse) {
-
+    const WebURLResponse& redirectResponse,
+    int64_t encodedDataLength) {
   // The load may have been stopped and |start_cb| is destroyed.
   // In this case we shouldn't do anything.
   if (start_cb_.is_null()) {
@@ -461,11 +461,11 @@ void BufferedResourceLoader::didReceiveResponse(
   DoneStart(kOk);
 }
 
-void BufferedResourceLoader::didReceiveData(
-    WebURLLoader* loader,
-    const char* data,
-    int data_length,
-    int encoded_data_length) {
+void BufferedResourceLoader::didReceiveData(WebURLLoader* loader,
+                                            const char* data,
+                                            int data_length,
+                                            int encoded_data_length,
+                                            int encoded_body_length) {
   DVLOG(1) << "didReceiveData: " << data_length << " bytes";
   DCHECK(active_loader_.get());
   DCHECK_GT(data_length, 0);

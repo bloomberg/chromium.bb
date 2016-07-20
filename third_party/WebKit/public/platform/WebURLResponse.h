@@ -281,6 +281,14 @@ public:
     BLINK_PLATFORM_EXPORT unsigned short remotePort() const;
     BLINK_PLATFORM_EXPORT void setRemotePort(unsigned short);
 
+    // Original size of the response body before decompression.
+    BLINK_PLATFORM_EXPORT long long encodedBodyLength() const;
+    BLINK_PLATFORM_EXPORT void addToEncodedBodyLength(long long);
+
+    // Size of the response body after removing any content encoding.
+    BLINK_PLATFORM_EXPORT long long decodedBodyLength() const;
+    BLINK_PLATFORM_EXPORT void addToDecodedBodyLength(long long);
+
     // Extra data associated with the underlying resource response. Resource
     // responses can be copied. If non-null, each copy of a resource response
     // holds a pointer to the extra data, and the extra data pointer will be

@@ -408,8 +408,8 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
     WebURLLoaderClient* document_loader) {
   for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
        ++it) {
-    document_loader->didReceiveData(
-        NULL, it->c_str(), it->length(), 0 /* encoded_data_length */);
+    document_loader->didReceiveData(NULL, it->c_str(), it->length(),
+                                    0 /* encoded_data_length */, it->length());
   }
   if (finished_loading_) {
     document_loader->didFinishLoading(
@@ -426,7 +426,8 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::didReceiveData(
     WebURLLoader* loader,
     const char* data,
     int data_length,
-    int encoded_data_length) {
+    int encoded_data_length,
+    int encoded_body_length) {
   data_.push_back(std::string(data, data_length));
 }
 

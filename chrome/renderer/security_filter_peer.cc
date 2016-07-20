@@ -149,7 +149,7 @@ void BufferedPeer::OnCompletedRequest(int error_code,
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty()) {
     original_peer_->OnReceivedData(base::WrapUnique(
-        new content::FixedReceivedData(data_.data(), data_.size(), -1)));
+        new content::FixedReceivedData(data_.data(), data_.size(), -1, 0)));
   }
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache, security_info,
@@ -191,7 +191,7 @@ void ReplaceContentPeer::OnCompletedRequest(
   original_peer_->OnReceivedResponse(info);
   if (!data_.empty()) {
     original_peer_->OnReceivedData(base::WrapUnique(
-        new content::FixedReceivedData(data_.data(), data_.size(), -1)));
+        new content::FixedReceivedData(data_.data(), data_.size(), -1, 0)));
   }
   original_peer_->OnCompletedRequest(net::OK, false, stale_copy_in_cache,
                                      security_info, completion_time,

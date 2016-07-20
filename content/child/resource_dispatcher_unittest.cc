@@ -90,7 +90,7 @@ class TestRequestPeer : public RequestPeer {
     EXPECT_TRUE(context_->received_response);
     EXPECT_FALSE(context_->complete);
     context_->data.append(data->payload(), data->length());
-    context_->total_encoded_data_length += data->encoded_length();
+    context_->total_encoded_data_length += data->encoded_data_length();
   }
 
   void OnCompletedRequest(int error_code,
@@ -290,9 +290,9 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
 
   void NotifyDataDownloaded(int request_id,
                             int decoded_length,
-                            int encoded_length) {
+                            int encoded_data_length) {
     EXPECT_TRUE(dispatcher_->OnMessageReceived(ResourceMsg_DataDownloaded(
-        request_id, decoded_length, encoded_length)));
+        request_id, decoded_length, encoded_data_length)));
   }
 
   void NotifyRequestComplete(int request_id, size_t total_size) {
@@ -551,8 +551,8 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
                             int64_t total_transfer_size) override {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
-        original_peer_->OnReceivedData(base::WrapUnique(
-            new FixedReceivedData(data_.data(), data_.size(), -1)));
+        original_peer_->OnReceivedData(base::WrapUnique(new FixedReceivedData(
+            data_.data(), data_.size(), -1, data_.size())));
       }
       original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                          stale_copy_in_cache, security_info,
@@ -824,15 +824,15 @@ TEST_F(ResourceDispatcherTest, DownloadToFile) {
   EXPECT_TRUE(peer_context.received_response);
 
   int expected_total_downloaded_length = 0;
-  int expected_total_encoded_length = 0;
+  int expected_total_encoded_data_length = 0;
   for (int i = 0; i < 10; ++i) {
     NotifyDataDownloaded(id, kDownloadedIncrement, kEncodedIncrement);
     ConsumeDataDownloaded_ACK(id);
     expected_total_downloaded_length += kDownloadedIncrement;
-    expected_total_encoded_length += kEncodedIncrement;
+    expected_total_encoded_data_length += kEncodedIncrement;
     EXPECT_EQ(expected_total_downloaded_length,
               peer_context.total_downloaded_data_length);
-    EXPECT_EQ(expected_total_encoded_length,
+    EXPECT_EQ(expected_total_encoded_data_length,
               peer_context.total_encoded_data_length);
   }
 
@@ -846,7 +846,7 @@ TEST_F(ResourceDispatcherTest, DownloadToFile) {
   EXPECT_EQ(0u, queued_messages());
   EXPECT_EQ(expected_total_downloaded_length,
             peer_context.total_downloaded_data_length);
-  EXPECT_EQ(expected_total_encoded_length,
+  EXPECT_EQ(expected_total_encoded_data_length,
             peer_context.total_encoded_data_length);
 }
 

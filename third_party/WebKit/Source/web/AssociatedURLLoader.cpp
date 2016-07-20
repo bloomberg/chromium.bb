@@ -149,7 +149,8 @@ void AssociatedURLLoader::ClientAdapter::willFollowRedirect(ResourceRequest& new
 
     WrappedResourceRequest wrappedNewRequest(newRequest);
     WrappedResourceResponse wrappedRedirectResponse(redirectResponse);
-    m_client->willFollowRedirect(m_loader, wrappedNewRequest, wrappedRedirectResponse);
+    // TODO(ricea): Do we need to set encodedDataLength here?
+    m_client->willFollowRedirect(m_loader, wrappedNewRequest, wrappedRedirectResponse, 0);
 }
 
 void AssociatedURLLoader::ClientAdapter::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -208,7 +209,7 @@ void AssociatedURLLoader::ClientAdapter::didReceiveData(const char* data, unsign
 
     CHECK_LE(dataLength, static_cast<unsigned>(std::numeric_limits<int>::max()));
 
-    m_client->didReceiveData(m_loader, data, dataLength, -1);
+    m_client->didReceiveData(m_loader, data, dataLength, -1, dataLength);
 }
 
 void AssociatedURLLoader::ClientAdapter::didReceiveCachedMetadata(const char* data, int dataLength)

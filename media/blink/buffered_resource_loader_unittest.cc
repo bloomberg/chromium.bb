@@ -202,7 +202,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     blink::WebURLRequest newRequest(redirectUrl);
     blink::WebURLResponse redirectResponse(gurl_);
 
-    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse);
+    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse, 0);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -218,16 +218,15 @@ class BufferedResourceLoaderTest : public testing::Test {
   void WriteLoader(int position, int size) {
     EXPECT_CALL(*this, ProgressCallback(position + size - 1));
     loader_->didReceiveData(url_loader_,
-                            reinterpret_cast<char*>(data_ + position),
-                            size,
-                            size);
+                            reinterpret_cast<char*>(data_ + position), size,
+                            size, size);
   }
 
   void WriteData(int size) {
     EXPECT_CALL(*this, ProgressCallback(_));
 
     std::unique_ptr<char[]> data(new char[size]);
-    loader_->didReceiveData(url_loader_, data.get(), size, size);
+    loader_->didReceiveData(url_loader_, data.get(), size, size, size);
   }
 
   void WriteUntilThreshold() {

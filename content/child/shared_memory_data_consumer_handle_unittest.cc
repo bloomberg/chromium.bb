@@ -82,7 +82,12 @@ class LoggingFixedReceivedData final : public RequestPeer::ReceivedData {
     return data_.empty() ? nullptr : &data_[0];
   }
   int length() const override { return static_cast<int>(data_.size()); }
-  int encoded_length() const override { return static_cast<int>(data_.size()); }
+  int encoded_data_length() const override {
+    return static_cast<int>(data_.size());
+  }
+  int encoded_body_length() const override {
+    return static_cast<int>(data_.size());
+  }
 
  private:
   const std::string name_;
@@ -197,7 +202,8 @@ class SharedMemoryDataConsumerHandleTest
     handle_.reset(new SharedMemoryDataConsumerHandle(GetParam(), &writer_));
   }
   std::unique_ptr<FixedReceivedData> NewFixedData(const char* s) {
-    return base::WrapUnique(new FixedReceivedData(s, strlen(s), strlen(s)));
+    auto size = strlen(s);
+    return base::WrapUnique(new FixedReceivedData(s, size, size, size));
   }
 
   StrictMock<MockClient> client_;

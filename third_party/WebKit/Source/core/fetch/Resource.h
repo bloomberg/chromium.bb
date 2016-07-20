@@ -232,6 +232,9 @@ public:
 
     double loadFinishTime() const { return m_loadFinishTime; }
 
+    void addToEncodedBodyLength(int value) { m_response.addToEncodedBodyLength(value); }
+    void addToDecodedBodyLength(int value) { m_response.addToDecodedBodyLength(value); }
+
     virtual bool canReuse(const ResourceRequest&) const { return true; }
 
     // Used by the MemoryCache to reduce the memory consumption of the entry.

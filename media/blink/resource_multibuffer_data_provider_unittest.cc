@@ -180,7 +180,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
         .WillOnce(
             Invoke(this, &ResourceMultiBufferDataProviderTest::SetUrlData));
 
-    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse);
+    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse, 0);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -194,13 +194,14 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   // Helper method to write to |loader_| from |data_|.
   void WriteLoader(int position, int size) {
-    loader_->didReceiveData(
-        url_loader_, reinterpret_cast<char*>(data_ + position), size, size);
+    loader_->didReceiveData(url_loader_,
+                            reinterpret_cast<char*>(data_ + position), size,
+                            size, size);
   }
 
   void WriteData(int size) {
     std::unique_ptr<char[]> data(new char[size]);
-    loader_->didReceiveData(url_loader_, data.get(), size, size);
+    loader_->didReceiveData(url_loader_, data.get(), size, size, size);
   }
 
   // Verifies that data in buffer[0...size] is equal to data_[pos...pos+size].

@@ -42,11 +42,11 @@ void ManifestDownloader::didReceiveResponse(
   status_code_ = response.httpStatusCode();
 }
 
-void ManifestDownloader::didReceiveData(
-    blink::WebURLLoader* loader,
-    const char* data,
-    int data_length,
-    int encoded_data_length) {
+void ManifestDownloader::didReceiveData(blink::WebURLLoader* loader,
+                                        const char* data,
+                                        int data_length,
+                                        int encoded_data_length,
+                                        int encoded_body_length) {
   if (buffer_.size() + data_length > kNaClManifestMaxFileBytes) {
     pp_nacl_error_ = PP_NACL_ERROR_MANIFEST_TOO_LARGE;
     buffer_.clear();

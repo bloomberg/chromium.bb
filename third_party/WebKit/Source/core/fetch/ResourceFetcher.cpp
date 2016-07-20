@@ -918,6 +918,11 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
         if (resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
             populateResourceTiming(info.get(), resource);
             info->setLoadFinishTime(finishTime);
+            // encodedDataLength == -1 means "not available".
+            // TODO(ricea): Find cases where it is not available but the
+            // PerformanceResourceTiming spec requires it to be available and
+            // fix them.
+            info->addFinalTransferSize(encodedDataLength == -1 ? 0 : encodedDataLength);
             if (resource->options().requestInitiatorContext == DocumentContext)
                 context().addResourceTiming(*info);
             resource->reportResourceTimingToClients(*info);
@@ -1035,7 +1040,7 @@ static bool isManualRedirectFetchRequest(const ResourceRequest& request)
     return request.fetchRedirectMode() == WebURLRequest::FetchRedirectModeManual && request.requestContext() == WebURLRequest::RequestContextFetch;
 }
 
-bool ResourceFetcher::willFollowRedirect(Resource* resource, ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
+bool ResourceFetcher::willFollowRedirect(Resource* resource, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, int64_t encodedDataLength)
 {
     if (!isManualRedirectFetchRequest(resource->resourceRequest())) {
         if (!context().canRequest(resource->getType(), newRequest, newRequest.url(), resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
@@ -1058,8 +1063,12 @@ bool ResourceFetcher::willFollowRedirect(Resource* resource, ResourceRequest& ne
     }
 
     ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
-    if (it != m_resourceTimingInfoMap.end())
-        it->value->addRedirect(redirectResponse);
+    if (it != m_resourceTimingInfoMap.end()) {
+        RefPtr<SecurityOrigin> originalSecurityOrigin = SecurityOrigin::create(redirectResponse.url());
+        RefPtr<SecurityOrigin> redirectedSecurityOrigin = SecurityOrigin::create(newRequest.url());
+        bool crossOrigin = !redirectedSecurityOrigin->isSameSchemeHostPort(originalSecurityOrigin.get());
+        it->value->addRedirect(redirectResponse, encodedDataLength, crossOrigin);
+    }
     willSendRequest(resource->identifier(), newRequest, redirectResponse, resource->options());
     return true;
 }

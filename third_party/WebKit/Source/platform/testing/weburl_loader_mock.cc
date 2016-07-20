@@ -82,7 +82,8 @@ WebURLRequest WebURLLoaderMock::ServeRedirect(
 
   WeakPtr<WebURLLoaderMock> self = weak_factory_.createWeakPtr();
 
-  client_->willFollowRedirect(this, newRequest, redirectResponse);
+  client_->willFollowRedirect(this, newRequest, redirectResponse,
+                              kRedirectResponseOverheadBytes);
 
   // |this| might be deleted in willFollowRedirect().
   if (!self)

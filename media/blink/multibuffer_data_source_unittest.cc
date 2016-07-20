@@ -324,7 +324,7 @@ class MultibufferDataSourceTest : public testing::Test {
     std::unique_ptr<char[]> data(new char[size]);
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
-    data_provider()->didReceiveData(url_loader(), data.get(), size, size);
+    data_provider()->didReceiveData(url_loader(), data.get(), size, size, size);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1354,7 +1354,7 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(url_loader(), request, response);
+  data_provider()->willFollowRedirect(url_loader(), request, response, 0);
   Respond(response_generator_->Generate206(kDataSize));
   ReceiveData(kDataSize);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
@@ -1370,7 +1370,7 @@ TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(url_loader(), request, response);
+  data_provider()->willFollowRedirect(url_loader(), request, response, 0);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   Respond(response_generator_->Generate206(0));
@@ -1392,7 +1392,7 @@ TEST_F(MultibufferDataSourceTest, Http_RangeNotSatisfiableAfterRedirect) {
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(url_loader(), request, response);
+  data_provider()->willFollowRedirect(url_loader(), request, response, 0);
 
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
   Respond(response_generator_->GenerateResponse(416));

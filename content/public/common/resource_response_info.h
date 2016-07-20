@@ -27,10 +27,10 @@ namespace content {
 
 // Note: when modifying this structure, also update ResourceResponse::DeepCopy
 // in resource_response.cc.
-struct ResourceResponseInfo {
-  CONTENT_EXPORT ResourceResponseInfo();
-  CONTENT_EXPORT ResourceResponseInfo(const ResourceResponseInfo& other);
-  CONTENT_EXPORT ~ResourceResponseInfo();
+struct CONTENT_EXPORT ResourceResponseInfo {
+  ResourceResponseInfo();
+  ResourceResponseInfo(const ResourceResponseInfo& other);
+  ~ResourceResponseInfo();
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.

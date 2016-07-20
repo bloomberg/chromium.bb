@@ -48,7 +48,8 @@ class ManifestDownloader : public blink::WebURLLoaderClient {
   void didReceiveData(blink::WebURLLoader* loader,
                       const char* data,
                       int data_length,
-                      int encoded_data_length) override;
+                      int encoded_data_length,
+                      int encoded_body_length) override;
   void didFinishLoading(blink::WebURLLoader* loader,
                         double finish_time,
                         int64_t total_encoded_data_length) override;

@@ -499,6 +499,26 @@ void WebURLResponse::setRemotePort(unsigned short remotePort)
     m_resourceResponse->setRemotePort(remotePort);
 }
 
+long long WebURLResponse::encodedBodyLength() const
+{
+    return m_resourceResponse->encodedBodyLength();
+}
+
+void WebURLResponse::addToEncodedBodyLength(long long length)
+{
+    m_resourceResponse->addToEncodedBodyLength(length);
+}
+
+long long WebURLResponse::decodedBodyLength() const
+{
+    return m_resourceResponse->decodedBodyLength();
+}
+
+void WebURLResponse::addToDecodedBodyLength(long long bytes)
+{
+    m_resourceResponse->addToDecodedBodyLength(bytes);
+}
+
 WebURLResponse::ExtraData* WebURLResponse::getExtraData() const
 {
     RefPtr<ResourceResponse::ExtraData> data = m_resourceResponse->getExtraData();

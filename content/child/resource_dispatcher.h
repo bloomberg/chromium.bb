@@ -66,9 +66,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // use this if you really need it!  There is also no way for the caller to
   // interrupt this method. Errors are reported via the status field of the
   // response parameter.
-  void StartSync(const RequestInfo& request_info,
-                 ResourceRequestBodyImpl* request_body,
-                 SyncLoadResponse* response);
+  virtual void StartSync(const RequestInfo& request_info,
+                         ResourceRequestBodyImpl* request_body,
+                         SyncLoadResponse* response);
 
   // Call this method to initiate the request. If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.

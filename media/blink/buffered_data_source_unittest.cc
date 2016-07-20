@@ -214,7 +214,7 @@ class BufferedDataSourceTest : public testing::Test {
     std::unique_ptr<char[]> data(new char[size]);
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
-    loader()->didReceiveData(url_loader(), data.get(), size, size);
+    loader()->didReceiveData(url_loader(), data.get(), size, size, size);
     base::RunLoop().RunUntilIdle();
     bytes_received_ += size;
     EXPECT_EQ(bytes_received_, data_source_->GetMemoryUsage());

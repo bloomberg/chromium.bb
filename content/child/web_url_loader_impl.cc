@@ -184,6 +184,7 @@ int GetInfoFromDataURL(const GURL& url,
   info->security_info.clear();
   info->content_length = data->length();
   info->encoded_data_length = 0;
+  info->encoded_body_length = 0;
 
   return net::OK;
 }
@@ -615,7 +616,8 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
           : blink::WebURLRequest::SkipServiceWorker::All,
       &new_request);
 
-  client_->willFollowRedirect(loader_, new_request, response);
+  client_->willFollowRedirect(loader_, new_request, response,
+                              info.encoded_data_length);
   request_ = new_request;
 
   // Only follow the redirect if WebKit left the URL unmodified.
@@ -729,7 +731,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
   const char* payload = data->payload();
   int data_length = data->length();
-  int encoded_data_length = data->encoded_length();
+  int encoded_data_length = data->encoded_data_length();
   if (!client_)
     return;
 
@@ -744,7 +746,8 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   } else {
     // We dispatch the data even when |useStreamOnResponse()| is set, in order
     // to make Devtools work.
-    client_->didReceiveData(loader_, payload, data_length, encoded_data_length);
+    client_->didReceiveData(loader_, payload, data_length, encoded_data_length,
+                            data->encoded_body_length());
 
     if (request_.useStreamOnResponse()) {
       // We don't support ftp_listening_delegate_ for now.
@@ -883,9 +886,10 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 
   if (error_code == net::OK) {
     OnReceivedResponse(info);
-    if (!data.empty())
+    auto size = data.size();
+    if (size != 0)
       OnReceivedData(
-          base::WrapUnique(new FixedReceivedData(data.data(), data.size(), 0)));
+          base::WrapUnique(new FixedReceivedData(data.data(), size, 0, size)));
   }
 
   OnCompletedRequest(error_code, false, false, info.security_info,
@@ -1150,9 +1154,10 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
 
   PopulateURLResponse(final_url, sync_load_response, &response,
                       request.reportRawHeaders());
+  response.addToEncodedBodyLength(sync_load_response.encoded_body_length);
+  response.addToDecodedBodyLength(sync_load_response.data.size());
 
-  data.assign(sync_load_response.data.data(),
-              sync_load_response.data.size());
+  data.assign(sync_load_response.data.data(), sync_load_response.data.size());
 }
 
 void WebURLLoaderImpl::loadAsynchronously(const WebURLRequest& request,
