@@ -50,6 +50,9 @@ cr.define('md_history', function() {
      * @private
      */
     onRemoveBookmarkTap_: function() {
+      if (this.$['bookmark-star'] == this.root.activeElement)
+        this.$['menu-button'].focus();
+
       md_history.BrowserService.getInstance()
         .removeBookmark(this.item.url);
       this.fire('remove-bookmark-stars', this.item.url);
