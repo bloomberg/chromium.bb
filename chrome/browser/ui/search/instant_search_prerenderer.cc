@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 
+#include <utility>
+
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -67,13 +69,13 @@ void InstantSearchPrerenderer::Init(
 
   // Only cancel the old prerender after starting the new one, so if the URLs
   // are the same, the underlying prerender will be reused.
-  std::unique_ptr<prerender::PrerenderHandle> old_prerender_handle(
-      prerender_handle_.release());
+  std::unique_ptr<prerender::PrerenderHandle> old_prerender_handle =
+      std::move(prerender_handle_);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
   if (prerender_manager) {
-    prerender_handle_.reset(prerender_manager->AddPrerenderForInstant(
-        prerender_url_, session_storage_namespace, size));
+    prerender_handle_ = prerender_manager->AddPrerenderForInstant(
+        prerender_url_, session_storage_namespace, size);
   }
   if (old_prerender_handle)
     old_prerender_handle->OnCancel();
@@ -193,7 +195,6 @@ content::WebContents* InstantSearchPrerenderer::prerender_contents() const {
 
 bool InstantSearchPrerenderer::QueryMatchesPrefetch(
     const base::string16& query) const {
-  if (search::ShouldReuseInstantSearchBasePage())
-    return true;
-  return last_instant_suggestion_.text == query;
+  return search::ShouldReuseInstantSearchBasePage() ||
+         last_instant_suggestion_.text == query;
 }

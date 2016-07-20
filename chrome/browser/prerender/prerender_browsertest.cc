@@ -347,8 +347,9 @@ class WebContentsDestructionObserver : public WebContentsObserver {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionObserver);
   base::RunLoop loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionObserver);
 };
 
 // A navigation observer to wait on either a new load or a swap of a
@@ -473,21 +474,19 @@ class NewTabNavigationOrSwapObserver {
 // PrerenderContents that stops the UI message loop on DidStopLoading().
 class TestPrerenderContents : public PrerenderContents {
  public:
-  TestPrerenderContents(
-      PrerenderManager* prerender_manager,
-      Profile* profile,
-      const GURL& url,
-      const content::Referrer& referrer,
-      Origin origin,
-      FinalStatus expected_final_status)
+  TestPrerenderContents(PrerenderManager* prerender_manager,
+                        Profile* profile,
+                        const GURL& url,
+                        const content::Referrer& referrer,
+                        Origin origin,
+                        FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, profile, url, referrer, origin),
         expected_final_status_(expected_final_status),
-        new_render_view_host_(NULL),
+        new_render_view_host_(nullptr),
         was_hidden_(false),
         was_shown_(false),
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
-        skip_final_checks_(false) {
-  }
+        skip_final_checks_(false) {}
 
   ~TestPrerenderContents() override {
     if (skip_final_checks_)
@@ -607,10 +606,7 @@ class TestPrerender : public PrerenderContents::Observer,
                       public base::SupportsWeakPtr<TestPrerender> {
  public:
   TestPrerender()
-      : contents_(NULL),
-        number_of_loads_(0),
-        expected_number_of_loads_(0) {
-  }
+      : contents_(nullptr), number_of_loads_(0), expected_number_of_loads_(0) {}
   ~TestPrerender() override {
     if (contents_)
       contents_->RemoveObserver(this);
@@ -660,7 +656,7 @@ class TestPrerender : public PrerenderContents::Observer,
 
   void OnPrerenderStop(PrerenderContents* contents) override {
     DCHECK(contents_);
-    contents_ = NULL;
+    contents_ = nullptr;
     stop_loop_.Quit();
     // If there is a WaitForLoads call and it has yet to see the expected number
     // of loads, stop the loop so the test fails instead of timing out.
@@ -1053,7 +1049,7 @@ class NeverRunsExternalProtocolHandlerDelegate
     NOTREACHED();
     // This will crash, but it shouldn't get this far with BlockState::BLOCK
     // anyway.
-    return NULL;
+    return nullptr;
   }
   ExternalProtocolHandler::BlockState GetBlockState(
       const std::string& scheme) override {
@@ -1085,20 +1081,20 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
       : autostart_test_server_(true),
-        prerender_contents_factory_(NULL),
+        prerender_contents_factory_(nullptr),
         safe_browsing_factory_(
             new safe_browsing::TestSafeBrowsingServiceFactory()),
         call_javascript_(true),
         check_load_events_(true),
         loader_path_("/prerender/prerender_loader.html"),
-        explicitly_set_browser_(NULL) {}
+        explicitly_set_browser_(nullptr) {}
 
   ~PrerenderBrowserTest() override {}
 
   content::SessionStorageNamespace* GetSessionStorageNamespace() const {
     WebContents* web_contents = GetActiveWebContents();
     if (!web_contents)
-      return NULL;
+      return nullptr;
     return web_contents->GetController().GetDefaultSessionStorageNamespace();
   }
 
@@ -1109,7 +1105,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    SafeBrowsingService::RegisterFactory(NULL);
+    SafeBrowsingService::RegisterFactory(nullptr);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1135,7 +1131,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     PrerenderManager* prerender_manager = GetPrerenderManager();
     ASSERT_TRUE(prerender_manager);
     prerender_manager->mutable_config().rate_limit_enabled = false;
-    ASSERT_TRUE(prerender_contents_factory_ == NULL);
+    ASSERT_FALSE(prerender_contents_factory_);
     prerender_contents_factory_ = new TestPrerenderContentsFactory;
     prerender_manager->SetPrerenderContentsFactoryForTest(
         prerender_contents_factory_);
@@ -1315,7 +1311,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   bool UrlIsInPrerenderManager(const GURL& url) const {
     return GetPrerenderManager()->FindPrerenderData(
-        url, GetSessionStorageNamespace()) != NULL;
+               url, GetSessionStorageNamespace()) != nullptr;
   }
 
   void UseHttpsSrcServer() {
@@ -1419,17 +1415,16 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return GetPrerenderLinkManager()->CountRunningPrerenders();
   }
 
-  // Returns length of |prerender_manager_|'s history, or -1 on failure.
-  int GetHistoryLength() const {
-    std::unique_ptr<base::DictionaryValue> prerender_dict(
-        static_cast<base::DictionaryValue*>(
-            GetPrerenderManager()->GetAsValue()));
-    if (!prerender_dict.get())
-      return -1;
+  // Returns length of |prerender_manager_|'s history, or SIZE_MAX on failure.
+  size_t GetHistoryLength() const {
+    std::unique_ptr<base::DictionaryValue> prerender_dict =
+        GetPrerenderManager()->GetAsValue();
+    if (!prerender_dict)
+      return std::numeric_limits<size_t>::max();
     base::ListValue* history_list;
     if (!prerender_dict->GetList("history", &history_list))
-      return -1;
-    return static_cast<int>(history_list->GetSize());
+      return std::numeric_limits<size_t>::max();
+    return history_list->GetSize();
   }
 
   FakeSafeBrowsingDatabaseManager* GetFakeSafeBrowsingDatabaseManager() {
@@ -1441,9 +1436,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   TestPrerenderContents* GetPrerenderContentsFor(const GURL& url) const {
     PrerenderManager::PrerenderData* prerender_data =
-        GetPrerenderManager()->FindPrerenderData(url, NULL);
+        GetPrerenderManager()->FindPrerenderData(url, nullptr);
     return static_cast<TestPrerenderContents*>(
-        prerender_data ? prerender_data->contents() : NULL);
+        prerender_data ? prerender_data->contents() : nullptr);
   }
 
   void SetLoaderHostOverride(const std::string& host) {
@@ -1596,8 +1591,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     } else {
       // Otherwise, check that it prerendered correctly.
       TestPrerenderContents* prerender_contents = prerenders[0]->contents();
-
-      CHECK_NE(static_cast<PrerenderContents*>(NULL), prerender_contents);
+      CHECK(prerender_contents);
       EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
       EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
 
@@ -1621,9 +1615,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   void NavigateToURLImpl(const content::OpenURLParams& params,
                          bool expect_swap_to_succeed) const {
-    ASSERT_NE(static_cast<PrerenderManager*>(NULL), GetPrerenderManager());
+    ASSERT_TRUE(GetPrerenderManager());
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    ASSERT_NE(static_cast<PrerenderContents*>(NULL), GetPrerenderContents());
+    ASSERT_TRUE(GetPrerenderContents());
 
     WebContents* web_contents = GetPrerenderContents()->prerender_contents();
 
@@ -1753,8 +1747,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPagePending) {
   const GURL prerender_page_url =
       embedded_test_server()->GetURL("/prerender/prerender_page.html");
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());
-  EXPECT_NE(static_cast<TestPrerenderContents*>(NULL),
-            GetPrerenderContentsFor(prerender_page_url));
+  EXPECT_TRUE(GetPrerenderContentsFor(prerender_page_url));
 
   // Now navigate to our target page.
   NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
@@ -3122,7 +3115,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
   prerender->WaitForStop();
 
   // Make sure prerender history was cleared.
-  EXPECT_EQ(0, GetHistoryLength());
+  EXPECT_EQ(0U, GetHistoryLength());
 }
 
 // Checks that when the cache is cleared, prerenders are cancelled but
@@ -3137,7 +3130,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
 
   // Make sure prerender history was not cleared.  Not a vital behavior, but
   // used to compare with PrerenderClearHistory test.
-  EXPECT_EQ(1, GetHistoryLength());
+  EXPECT_EQ(1U, GetHistoryLength());
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
@@ -3747,8 +3740,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   const NavigationController& controller =
       GetActiveWebContents()->GetController();
   // First entry is about:blank, second is prerender_page.html.
-  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
-  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_FALSE(controller.GetPendingEntry());
+  ASSERT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(GURL(url::kAboutBlankURL), controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(dest_url(), controller.GetEntryAtIndex(1)->GetURL());
 }

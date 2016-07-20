@@ -7,8 +7,12 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+
+using content::BrowserThread;
 
 namespace prerender {
 
@@ -19,63 +23,61 @@ PrerenderHandle::Observer::~Observer() {
 }
 
 PrerenderHandle::~PrerenderHandle() {
-  if (prerender_data_.get()) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (prerender_data_) {
     prerender_data_->contents()->RemoveObserver(this);
   }
 }
 
 void PrerenderHandle::SetObserver(Observer* observer) {
-  DCHECK_NE(static_cast<Observer*>(NULL), observer);
+  DCHECK(observer);
   observer_ = observer;
 }
 
 void PrerenderHandle::OnNavigateAway() {
-  DCHECK(CalledOnValidThread());
-  if (prerender_data_.get())
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (prerender_data_)
     prerender_data_->OnHandleNavigatedAway(this);
 }
 
 void PrerenderHandle::OnCancel() {
-  DCHECK(CalledOnValidThread());
-  if (prerender_data_.get())
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (prerender_data_)
     prerender_data_->OnHandleCanceled(this);
 }
 
 bool PrerenderHandle::IsPrerendering() const {
-  DCHECK(CalledOnValidThread());
-  return prerender_data_.get() != NULL;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return prerender_data_.get() != nullptr;
 }
 
 bool PrerenderHandle::IsFinishedLoading() const {
-  DCHECK(CalledOnValidThread());
-  if (!prerender_data_.get())
-    return false;
-  return prerender_data_->contents()->has_finished_loading();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return prerender_data_ && prerender_data_->contents()->has_finished_loading();
 }
 
 bool PrerenderHandle::IsAbandoned() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return prerender_data_ && !prerender_data_->abandon_time().is_null();
 }
 
 PrerenderContents* PrerenderHandle::contents() const {
-  DCHECK(CalledOnValidThread());
-  return prerender_data_ ? prerender_data_->contents() : NULL;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return prerender_data_ ? prerender_data_->contents() : nullptr;
 }
 
 bool PrerenderHandle::Matches(
     const GURL& url,
     const content::SessionStorageNamespace* session_storage_namespace) const {
-  DCHECK(CalledOnValidThread());
-  if (!prerender_data_.get())
-    return false;
-  return prerender_data_->contents()->Matches(url, session_storage_namespace);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return prerender_data_ &&
+         prerender_data_->contents()->Matches(url, session_storage_namespace);
 }
 
 PrerenderHandle::PrerenderHandle(
     PrerenderManager::PrerenderData* prerender_data)
-    : observer_(NULL),
-      weak_ptr_factory_(this) {
+    : observer_(nullptr), weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (prerender_data) {
     prerender_data_ = prerender_data->AsWeakPtr();
     prerender_data->OnHandleCreated(this);
@@ -83,8 +85,8 @@ PrerenderHandle::PrerenderHandle(
 }
 
 void PrerenderHandle::OnPrerenderStart(PrerenderContents* prerender_contents) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(prerender_data_.get());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(prerender_data_);
   DCHECK_EQ(prerender_data_->contents(), prerender_contents);
   if (observer_)
     observer_->OnPrerenderStart(this);
@@ -92,8 +94,8 @@ void PrerenderHandle::OnPrerenderStart(PrerenderContents* prerender_contents) {
 
 void PrerenderHandle::OnPrerenderStopLoading(
     PrerenderContents* prerender_contents) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(prerender_data_.get());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(prerender_data_);
   DCHECK_EQ(prerender_data_->contents(), prerender_contents);
   if (observer_)
     observer_->OnPrerenderStopLoading(this);
@@ -101,23 +103,23 @@ void PrerenderHandle::OnPrerenderStopLoading(
 
 void PrerenderHandle::OnPrerenderDomContentLoaded(
     PrerenderContents* prerender_contents) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(prerender_data_.get());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(prerender_data_);
   DCHECK_EQ(prerender_data_->contents(), prerender_contents);
   if (observer_)
     observer_->OnPrerenderDomContentLoaded(this);
 }
 
 void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (observer_)
     observer_->OnPrerenderStop(this);
 }
 
 bool PrerenderHandle::RepresentingSamePrerenderAs(
     PrerenderHandle* other) const {
-  return other && other->prerender_data_.get() && prerender_data_.get()
-      && prerender_data_.get() == other->prerender_data_.get();
+  return other && other->prerender_data_ && prerender_data_ &&
+         prerender_data_.get() == other->prerender_data_.get();
 }
 
 }  // namespace prerender

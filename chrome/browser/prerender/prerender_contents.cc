@@ -208,7 +208,7 @@ PrerenderContents::PrerenderContents(
       route_id_(-1),
       origin_(origin),
       network_bytes_(0) {
-  DCHECK(prerender_manager != NULL);
+  DCHECK(prerender_manager);
 }
 
 bool PrerenderContents::Init() {
@@ -235,7 +235,7 @@ PrerenderContents* PrerenderContents::FromWebContents(
 void PrerenderContents::StartPrerendering(
     const gfx::Size& size,
     SessionStorageNamespace* session_storage_namespace) {
-  DCHECK(profile_ != NULL);
+  DCHECK(profile_);
   DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
   DCHECK(!prerender_contents_);
@@ -359,10 +359,12 @@ PrerenderContents::~PrerenderContents() {
     host->Send(new PrerenderMsg_OnPrerenderRemoveAliases(alias_urls_));
   }
 
+  if (!prerender_contents_)
+    return;
+
   // If we still have a WebContents, clean up anything we need to and then
   // destroy it.
-  if (prerender_contents_.get())
-    delete ReleasePrerenderContents();
+  std::unique_ptr<WebContents> contents = ReleasePrerenderContents();
 }
 
 void PrerenderContents::AddObserver(Observer* observer) {
@@ -626,7 +628,7 @@ base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
 
 void PrerenderContents::DestroyWhenUsingTooManyResources() {
   base::ProcessMetrics* metrics = MaybeGetProcessMetrics();
-  if (metrics == NULL)
+  if (!metrics)
     return;
 
   size_t private_bytes, shared_bytes;
@@ -636,15 +638,15 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
   }
 }
 
-WebContents* PrerenderContents::ReleasePrerenderContents() {
-  prerender_contents_->SetDelegate(NULL);
-  content::WebContentsObserver::Observe(NULL);
+std::unique_ptr<WebContents> PrerenderContents::ReleasePrerenderContents() {
+  prerender_contents_->SetDelegate(nullptr);
+  content::WebContentsObserver::Observe(nullptr);
 
   // Clear the task manager tag we added earlier to our
   // WebContents since it's no longer a prerender contents.
   task_management::WebContentsTags::ClearTag(prerender_contents_.get());
 
-  return prerender_contents_.release();
+  return std::move(prerender_contents_);
 }
 
 RenderViewHost* PrerenderContents::GetRenderViewHostMutable() {
@@ -652,9 +654,8 @@ RenderViewHost* PrerenderContents::GetRenderViewHostMutable() {
 }
 
 const RenderViewHost* PrerenderContents::GetRenderViewHost() const {
-  if (!prerender_contents_.get())
-    return NULL;
-  return prerender_contents_->GetRenderViewHost();
+  return prerender_contents_ ? prerender_contents_->GetRenderViewHost()
+                             : nullptr;
 }
 
 void PrerenderContents::DidNavigate(
@@ -668,10 +669,10 @@ void PrerenderContents::CommitHistory(WebContents* tab) {
     history_tab_helper->UpdateHistoryForNavigation(add_page_vector_[i]);
 }
 
-base::Value* PrerenderContents::GetAsValue() const {
-  if (!prerender_contents_.get())
-    return NULL;
-  base::DictionaryValue* dict_value = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> PrerenderContents::GetAsValue() const {
+  if (!prerender_contents_)
+    return nullptr;
+  auto dict_value = base::MakeUnique<base::DictionaryValue>();
   dict_value->SetString("url", prerender_url_.spec());
   base::TimeTicks current_time = base::TimeTicks::Now();
   base::TimeDelta duration = current_time - load_start_time_;
@@ -682,10 +683,9 @@ base::Value* PrerenderContents::GetAsValue() const {
 }
 
 bool PrerenderContents::IsCrossSiteNavigationPending() const {
-  if (!prerender_contents_)
-    return false;
-  return (prerender_contents_->GetSiteInstance() !=
-          prerender_contents_->GetPendingSiteInstance());
+  return prerender_contents_ &&
+         prerender_contents_->GetSiteInstance() !=
+             prerender_contents_->GetPendingSiteInstance();
 }
 
 void PrerenderContents::PrepareForUse() {

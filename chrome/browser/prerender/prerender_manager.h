@@ -7,15 +7,13 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -28,15 +26,15 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "net/cookies/cookie_monster.h"
 #include "url/gurl.h"
 
-class Profile;
 class InstantSearchPrerendererTest;
+class Profile;
 struct ChromeCookieDetails;
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace chrome {
@@ -69,7 +67,6 @@ class PrerenderLocalPredictor;
 // views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
-                         public base::NonThreadSafe,
                          public content::NotificationObserver,
                          public content::RenderProcessHostObserver,
                          public KeyedService,
@@ -99,7 +96,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
-
   ~PrerenderManager() override;
 
   // From KeyedService:
@@ -109,11 +105,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Adds a prerender for |url| if valid. |process_id| and |route_id| identify
   // the RenderView that the prerender request came from. If |size| is empty, a
-  // default from the PrerenderConfig is used. Returns a caller-owned
-  // PrerenderHandle* if the URL was added, NULL if it was not. If the launching
-  // RenderView is itself prerendering, the prerender is added as a pending
-  // prerender.
-  PrerenderHandle* AddPrerenderFromLinkRelPrerender(
+  // default from the PrerenderConfig is used. Returns a PrerenderHandle if the
+  // URL was added, NULL if it was not. If the launching RenderView is itself
+  // prerendering, the prerender is added as a pending prerender.
+  std::unique_ptr<PrerenderHandle> AddPrerenderFromLinkRelPrerender(
       int process_id,
       int route_id,
       const GURL& url,
@@ -126,13 +121,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // child or route id, or a referrer. This method uses sensible values for
   // those. The |session_storage_namespace| matches the namespace of the active
   // tab at the time the prerender is generated from the omnibox. Returns a
-  // caller-owned PrerenderHandle*, or NULL.
-  PrerenderHandle* AddPrerenderFromOmnibox(
+  // PrerenderHandle or NULL.
+  std::unique_ptr<PrerenderHandle> AddPrerenderFromOmnibox(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
-  PrerenderHandle* AddPrerenderFromExternalRequest(
+  std::unique_ptr<PrerenderHandle> AddPrerenderFromExternalRequest(
       const GURL& url,
       const content::Referrer& referrer,
       content::SessionStorageNamespace* session_storage_namespace,
@@ -140,7 +135,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Adds a prerender from an external request that will prerender even on
   // cellular networks as long as the user setting for prerendering is ON.
-  PrerenderHandle* AddPrerenderOnCellularFromExternalRequest(
+  std::unique_ptr<PrerenderHandle> AddPrerenderOnCellularFromExternalRequest(
       const GURL& url,
       const content::Referrer& referrer,
       content::SessionStorageNamespace* session_storage_namespace,
@@ -148,15 +143,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Adds a prerender for Instant Search |url| if valid. The
   // |session_storage_namespace| matches the namespace of the active tab at the
-  // time the prerender is generated. Returns a caller-owned PrerenderHandle* or
-  // NULL.
-  PrerenderHandle* AddPrerenderForInstant(
+  // time the prerender is generated. Returns a PrerenderHandle or NULL.
+  std::unique_ptr<PrerenderHandle> AddPrerenderForInstant(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
-  // Adds a prerender for the background loader. Returns a caller-owned
-  // PrerenderHandle* if the URL was added, NULL if it was not.
+  // Adds a prerender for the background loader. Returns a PrerenderHandle if
+  // the URL was added, NULL if it was not.
   //
   // The caller may set an observer on the handle to receive load events. When
   // the caller is done using the WebContents, it should call OnCancel() on the
@@ -166,7 +160,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // 1. It must never ask for a swap-in;
   // 2. The SessionStorageNamespace must not be shared with any tab / page load
   //    to avoid swapping in from there.
-  PrerenderHandle* AddPrerenderForOffline(
+  std::unique_ptr<PrerenderHandle> AddPrerenderForOffline(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
@@ -194,7 +188,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Records the perceived page load time for a page - effectively the time from
   // when the user navigates to a page to when it finishes loading. The actual
   // load may have started prior to navigation due to prerender hints.
-  // This must be called on the UI thread.
   // |fraction_plt_elapsed_at_swap_in| must either be in [0.0, 1.0], or a value
   // outside that range indicating that it doesn't apply.
   void RecordPerceivedPageLoadTime(
@@ -243,7 +236,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       int child_id, int route_id) const;
 
   // Returns a list of all WebContents being prerendered.
-  const std::vector<content::WebContents*> GetAllPrerenderingContents() const;
+  std::vector<content::WebContents*> GetAllPrerenderingContents() const;
 
   // Checks whether |url| has been recently navigated to.
   bool HasRecentlyBeenNavigatedTo(Origin origin, const GURL& url);
@@ -259,9 +252,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool DoesSubresourceURLHaveValidScheme(const GURL& url);
 
   // Returns a Value object containing the active pages being prerendered, and
-  // a history of pages which were prerendered. The caller is responsible for
-  // deleting the return value.
-  base::DictionaryValue* GetAsValue() const;
+  // a history of pages which were prerendered.
+  std::unique_ptr<base::DictionaryValue> GetAsValue() const;
 
   // Clears the data indicated by which bits of clear_flags are set.
   //
@@ -332,7 +324,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     struct OrderByExpiryTime;
 
     PrerenderData(PrerenderManager* manager,
-                  PrerenderContents* contents,
+                  std::unique_ptr<PrerenderContents> contents,
                   base::TimeTicks expiry_time);
 
     ~PrerenderData();
@@ -353,7 +345,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     PrerenderContents* contents() { return contents_.get(); }
 
-    PrerenderContents* ReleaseContents();
+    std::unique_ptr<PrerenderContents> ReleaseContents();
 
     int handle_count() const { return handle_count_; }
 
@@ -365,7 +357,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     }
 
    private:
-    PrerenderManager* manager_;
+    PrerenderManager* const manager_;
     std::unique_ptr<PrerenderContents> contents_;
 
     // The number of distinct PrerenderHandles created for |this|, including
@@ -400,6 +392,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   class OnCloseWebContentsDeleter;
   struct NavigationRecord;
+  using PrerenderDataVector = std::vector<std::unique_ptr<PrerenderData>>;
 
   // Time interval before a new prerender is allowed.
   static const int kMinTimeBetweenPrerendersMs = 500;
@@ -419,8 +412,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a prerender for |url| from |referrer|. The |origin| specifies how the
   // prerender was added. If |size| is empty, then
   // PrerenderContents::StartPrerendering will instead use a default from
-  // PrerenderConfig. Returns a PrerenderHandle*, owned by the caller, or NULL.
-  PrerenderHandle* AddPrerender(
+  // PrerenderConfig. Returns a PrerenderHandle or NULL.
+  std::unique_ptr<PrerenderHandle> AddPrerender(
       Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
@@ -447,13 +440,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   base::TimeTicks GetExpiryTimeForNavigatedAwayPrerender() const;
 
   void DeleteOldEntries();
-  virtual PrerenderContents* CreatePrerenderContents(
+
+  // Virtual so unit tests can override this.
+  virtual std::unique_ptr<PrerenderContents> CreatePrerenderContents(
       const GURL& url,
       const content::Referrer& referrer,
       Origin origin);
 
   // Insures the |active_prerenders_| are sorted by increasing expiry time. Call
-  // after every mutation of active_prerenders_ that can possibly make it
+  // after every mutation of |active_prerenders_| that can possibly make it
   // unsorted (e.g. an insert, or changing an expiry time).
   void SortActivePrerenders();
 
@@ -463,10 +458,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const GURL& url,
       const content::SessionStorageNamespace* session_storage_namespace);
 
-  // Given the |prerender_contents|, find the iterator in active_prerenders_
+  // Given the |prerender_contents|, find the iterator in |active_prerenders_|
   // correponding to the given prerender.
-  ScopedVector<PrerenderData>::iterator
-      FindIteratorForPrerenderContents(PrerenderContents* prerender_contents);
+  PrerenderDataVector::iterator FindIteratorForPrerenderContents(
+      PrerenderContents* prerender_contents);
 
   bool DoesRateLimitAllowPrerender(Origin origin) const;
 
@@ -478,17 +473,16 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Cleans up old NavigationRecord's.
   void CleanUpOldNavigations();
 
-  // Arrange for the given WebContents to be deleted asap. If deleter is not
-  // NULL, deletes that as well.
-  void ScheduleDeleteOldWebContents(content::WebContents* tab,
+  // Arrange for the given WebContents to be deleted asap. Delete |deleter| as
+  // well.
+  void ScheduleDeleteOldWebContents(std::unique_ptr<content::WebContents> tab,
                                     OnCloseWebContentsDeleter* deleter);
 
   // Adds to the history list.
   void AddToHistory(PrerenderContents* contents);
 
-  // Returns a new Value representing the pages currently being prerendered. The
-  // caller is responsible for delete'ing the return value.
-  base::Value* GetActivePrerendersAsValue() const;
+  // Returns a new Value representing the pages currently being prerendered.
+  std::unique_ptr<base::ListValue> GetActivePrerendersAsValue() const;
 
   // Destroys all pending prerenders using FinalStatus.  Also deletes them as
   // well as any swapped out WebContents queued for destruction.
@@ -505,10 +499,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
   // if a swap-in was not possible.  If |should_replace_current_entry| is true,
   // the current history entry in |web_contents| is replaced.
-  content::WebContents* SwapInternal(const GURL& url,
-                                     content::WebContents* web_contents,
-                                     PrerenderData* prerender_data,
-                                     bool should_replace_current_entry);
+  std::unique_ptr<content::WebContents> SwapInternal(
+      const GURL& url,
+      content::WebContents* web_contents,
+      PrerenderData* prerender_data,
+      bool should_replace_current_entry);
 
   // The configuration.
   Config config_;
@@ -517,14 +512,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   Profile* profile_;
 
   // All running prerenders. Sorted by expiry time, in ascending order.
-  ScopedVector<PrerenderData> active_prerenders_;
+  PrerenderDataVector active_prerenders_;
 
   // Prerenders awaiting deletion.
-  ScopedVector<PrerenderData> to_delete_prerenders_;
+  PrerenderDataVector to_delete_prerenders_;
 
   // List of recent navigations in this profile, sorted by ascending
-  // navigate_time_.
-  std::list<NavigationRecord> navigations_;
+  // |navigate_time_|.
+  std::vector<NavigationRecord> navigations_;
 
   std::unique_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
@@ -541,9 +536,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Track time of last prerender to limit prerender spam.
   base::TimeTicks last_prerender_start_time_;
 
-  std::list<content::WebContents*> old_web_contents_list_;
+  std::vector<content::WebContents*> old_web_contents_list_;
 
-  ScopedVector<OnCloseWebContentsDeleter> on_close_web_contents_deleters_;
+  std::vector<std::unique_ptr<OnCloseWebContentsDeleter>>
+      on_close_web_contents_deleters_;
 
   std::unique_ptr<PrerenderHistory> prerender_history_;
 
@@ -559,7 +555,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   int64_t last_recorded_profile_network_bytes_;
 
   // Set of process hosts being prerendered.
-  typedef std::set<content::RenderProcessHost*> PrerenderProcessSet;
+  using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
   PrerenderProcessSet prerender_process_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);

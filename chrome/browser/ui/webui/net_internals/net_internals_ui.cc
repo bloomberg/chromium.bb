@@ -539,19 +539,18 @@ void NetInternalsMessageHandler::OnClearBrowserCache(
 }
 
 void NetInternalsMessageHandler::OnGetPrerenderInfo(
-    const base::ListValue* list) {
+    const base::ListValue* /* list */) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::DictionaryValue* value = NULL;
-  prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
-  if (!prerender_manager) {
-    value = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> value;
+  if (prerender_manager_) {
+    value = prerender_manager_->GetAsValue();
+  } else {
+    value.reset(new base::DictionaryValue());
     value->SetBoolean("enabled", false);
     value->SetBoolean("omnibox_enabled", false);
-  } else {
-    value = prerender_manager->GetAsValue();
   }
-  SendJavascriptCommand("receivedPrerenderInfo", value);
+  SendJavascriptCommand("receivedPrerenderInfo", value.release());
 }
 
 void NetInternalsMessageHandler::OnGetHistoricNetworkStats(

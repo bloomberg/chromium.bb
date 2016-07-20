@@ -195,7 +195,7 @@ class PrerenderContents : public content::NotificationObserver,
     return prerender_contents_.get();
   }
 
-  content::WebContents* ReleasePrerenderContents();
+  std::unique_ptr<content::WebContents> ReleasePrerenderContents();
 
   // Sets the final status, calls OnDestroy and adds |this| to the
   // PrerenderManager's pending deletes list.
@@ -210,7 +210,7 @@ class PrerenderContents : public content::NotificationObserver,
   // new tab.
   void CommitHistory(content::WebContents* tab);
 
-  base::Value* GetAsValue() const;
+  std::unique_ptr<base::DictionaryValue> GetAsValue() const;
 
   // Returns whether a pending cross-site navigation is happening.
   // This could happen with renderer-issued navigations, such as a

@@ -44,8 +44,8 @@ bool PrerenderAdapter::StartPrerender(
   DCHECK(manager);
 
   // Start prerendering the url and capture the handle for the prerendering.
-  active_handle_.reset(
-      manager->AddPrerenderForOffline(url, session_storage_namespace, size));
+  active_handle_ =
+      manager->AddPrerenderForOffline(url, session_storage_namespace, size);
   if (!active_handle_)
     return false;
 
@@ -82,25 +82,25 @@ void PrerenderAdapter::DestroyActive() {
 }
 
 void PrerenderAdapter::OnPrerenderStart(prerender::PrerenderHandle* handle) {
-  DCHECK(active_handle_.get() == handle);
+  DCHECK_EQ(active_handle_.get(), handle);
   observer_->OnPrerenderStart();
 }
 
 void PrerenderAdapter::OnPrerenderStopLoading(
     prerender::PrerenderHandle* handle) {
-  DCHECK(active_handle_.get() == handle);
+  DCHECK_EQ(active_handle_.get(), handle);
   observer_->OnPrerenderStopLoading();
 }
 
 void PrerenderAdapter::OnPrerenderDomContentLoaded(
     prerender::PrerenderHandle* handle) {
-  DCHECK(active_handle_.get() == handle);
+  DCHECK_EQ(active_handle_.get(), handle);
   observer_->OnPrerenderDomContentLoaded();
 }
 
 void PrerenderAdapter::OnPrerenderStop(prerender::PrerenderHandle* handle) {
   if (IsActive()) {
-    DCHECK(active_handle_.get() == handle);
+    DCHECK_EQ(active_handle_.get(), handle);
     observer_->OnPrerenderStop();
   }
 }

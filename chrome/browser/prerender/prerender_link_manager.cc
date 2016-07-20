@@ -381,9 +381,10 @@ void PrerenderLinkManager::StartPrerenders() {
       continue;
     }
 
-    PrerenderHandle* handle = manager_->AddPrerenderFromLinkRelPrerender(
-        (*i)->launcher_child_id, (*i)->render_view_route_id,
-        (*i)->url, (*i)->rel_types, (*i)->referrer, (*i)->size);
+    std::unique_ptr<PrerenderHandle> handle =
+        manager_->AddPrerenderFromLinkRelPrerender(
+            (*i)->launcher_child_id, (*i)->render_view_route_id, (*i)->url,
+            (*i)->rel_types, (*i)->referrer, (*i)->size);
     if (!handle) {
       // This prerender couldn't be launched, it's gone.
       prerenders_.erase(*i);
@@ -391,11 +392,11 @@ void PrerenderLinkManager::StartPrerenders() {
     }
 
     // We have successfully started a new prerender.
-    (*i)->handle = handle;
+    (*i)->handle = handle.release();
     ++total_started_prerender_count;
-    handle->SetObserver(this);
-    if (handle->IsPrerendering())
-      OnPrerenderStart(handle);
+    (*i)->handle->SetObserver(this);
+    if ((*i)->handle->IsPrerendering())
+      OnPrerenderStart((*i)->handle);
     RecordLinkManagerStarting((*i)->rel_types);
 
     running_launcher_and_render_view_routes.insert(
