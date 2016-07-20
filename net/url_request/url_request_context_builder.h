@@ -44,8 +44,10 @@ class SingleThreadTaskRunner;
 
 namespace net {
 
+class CertVerifier;
 class ChannelIDService;
 class CookieStore;
+class CTVerifier;
 class FtpTransactionFactory;
 class HostMappingRules;
 class HttpAuthHandlerFactory;
@@ -296,6 +298,8 @@ class NET_EXPORT URLRequestContextBuilder {
     socket_performance_watcher_factory_ = socket_performance_watcher_factory;
   }
 
+  void set_ct_verifier(std::unique_ptr<CTVerifier> ct_verifier);
+
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
   void SetInterceptors(std::vector<std::unique_ptr<URLRequestInterceptor>>
@@ -369,6 +373,7 @@ class NET_EXPORT URLRequestContextBuilder {
 #endif
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
+  std::unique_ptr<CTVerifier> ct_verifier_;
   std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>

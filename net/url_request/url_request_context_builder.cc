@@ -21,7 +21,10 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
@@ -249,6 +252,11 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
   http_network_session_params_.enable_quic = quic_enabled;
 }
 
+void URLRequestContextBuilder::set_ct_verifier(
+    std::unique_ptr<CTVerifier> ct_verifier) {
+  ct_verifier_ = std::move(ct_verifier);
+}
+
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
   cert_verifier_ = std::move(cert_verifier);
@@ -387,8 +395,14 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_cert_verifier(CertVerifier::CreateDefault());
   }
 
-  storage->set_cert_transparency_verifier(
-      base::MakeUnique<MultiLogCTVerifier>());
+  if (ct_verifier_) {
+    storage->set_cert_transparency_verifier(std::move(ct_verifier_));
+  } else {
+    std::unique_ptr<MultiLogCTVerifier> ct_verifier =
+        base::MakeUnique<MultiLogCTVerifier>();
+    ct_verifier->AddLogs(ct::CreateLogVerifiersForKnownLogs());
+    storage->set_cert_transparency_verifier(std::move(ct_verifier));
+  }
   storage->set_ct_policy_enforcer(base::MakeUnique<CTPolicyEnforcer>());
 
   if (throttling_enabled_) {
