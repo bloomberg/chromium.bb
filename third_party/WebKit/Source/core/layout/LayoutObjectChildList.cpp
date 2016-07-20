@@ -57,20 +57,18 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     if (oldChild->isFloatingOrOutOfFlowPositioned())
         toLayoutBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
 
-    {
+    if (!owner->documentBeingDestroyed()) {
         // So that we'll get the appropriate dirty bit set (either that a normal flow child got yanked or
         // that a positioned child got yanked). We also issue paint invalidations, so that the area exposed when the child
         // disappears gets paint invalidated properly.
-        if (!owner->documentBeingDestroyed() && notifyLayoutObject && oldChild->everHadLayout()) {
+        if (notifyLayoutObject && oldChild->everHadLayout())
             oldChild->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::RemovedFromLayout);
-            invalidatePaintOnRemoval(*oldChild);
-        }
+        invalidatePaintOnRemoval(*oldChild);
     }
 
     // If we have a line box wrapper, delete it.
     if (oldChild->isBox())
         toLayoutBox(oldChild)->deleteLineBoxWrapper();
-
 
     if (!owner->documentBeingDestroyed()) {
         // If oldChild is the start or end of the selection, then clear the selection to
