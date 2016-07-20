@@ -1076,7 +1076,8 @@ gfx::Transform LayerImpl::DrawTransform() const {
   if (!is_drawn_render_surface_layer_list_member()) {
     if (layer_tree_impl()->property_trees()->non_root_surfaces_enabled) {
       return draw_property_utils::DrawTransform(
-          this, layer_tree_impl()->property_trees()->transform_tree);
+          this, layer_tree_impl()->property_trees()->transform_tree,
+          layer_tree_impl()->property_trees()->effect_tree);
     } else {
       return draw_property_utils::ScreenSpaceTransform(
           this, layer_tree_impl()->property_trees()->transform_tree);

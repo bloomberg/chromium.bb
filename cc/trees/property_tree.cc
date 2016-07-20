@@ -172,12 +172,6 @@ bool TransformTree::ComputeTransformWithDestinationSurfaceContentsScale(
   return success;
 }
 
-bool TransformTree::Are2DAxisAligned(int source_id, int dest_id) const {
-  gfx::Transform transform;
-  return ComputeTransform(source_id, dest_id, &transform) &&
-         transform.Preserves2dAxisAlignment();
-}
-
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
   return (source_to_parent_updates_allowed() &&
           node->parent_id != node->source_node_id);

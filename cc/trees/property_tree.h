@@ -157,10 +157,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
       int dest_id,
       gfx::Transform* transform) const;
 
-  // Returns true iff the nodes indexed by |source_id| and |dest_id| are 2D axis
-  // aligned with respect to one another.
-  bool Are2DAxisAligned(int source_id, int dest_id) const;
-
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);

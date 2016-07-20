@@ -1043,12 +1043,14 @@ static void VerifyDrawTransformsMatch(LayerImpl* layer,
     draw_transform.FlattenTo2d();
   draw_transform.Translate(layer->offset_to_transform_parent().x(),
                            layer->offset_to_transform_parent().y());
-  DCHECK(draw_transform.ApproximatelyEqual(
-      DrawTransform(layer, property_trees->transform_tree)))
+  DCHECK(draw_transform.ApproximatelyEqual(DrawTransform(
+      layer, property_trees->transform_tree, property_trees->effect_tree)))
       << " layer: " << layer->id() << " source transform id: " << source_id
       << " destination transform id: " << destination_id
       << " draw transform from transform tree: "
-      << DrawTransform(layer, property_trees->transform_tree).ToString()
+      << DrawTransform(layer, property_trees->transform_tree,
+                       property_trees->effect_tree)
+             .ToString()
       << " v.s." << draw_transform.ToString();
 }
 
@@ -1188,23 +1190,30 @@ bool LayerNeedsUpdate(LayerImpl* layer,
 }
 
 gfx::Transform DrawTransform(const LayerImpl* layer,
-                             const TransformTree& tree) {
-  const TransformNode* node = tree.Node(layer->transform_tree_index());
+                             const TransformTree& transform_tree,
+                             const EffectTree& effect_tree) {
   gfx::Transform xform;
   const bool owns_non_root_surface =
       !IsRootLayer(layer) && layer->has_render_surface();
   if (!owns_non_root_surface) {
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.
-    xform = tree.ToTarget(layer->transform_tree_index());
+    xform = transform_tree.ToTarget(layer->transform_tree_index());
     if (layer->should_flatten_transform_from_property_tree())
       xform.FlattenTo2d();
     xform.Translate(layer->offset_to_transform_parent().x(),
                     layer->offset_to_transform_parent().y());
   } else {
     // Surfaces need to apply their surface contents scale.
-    xform.Scale(node->surface_contents_scale.x(),
-                node->surface_contents_scale.y());
+    const EffectNode* effect_node =
+        effect_tree.Node(layer->effect_tree_index());
+    xform.Scale(effect_node->surface_contents_scale.x(),
+                effect_node->surface_contents_scale.y());
+#if DCHECK_IS_ON()
+    VerifySurfaceContentsScalesMatch(layer->effect_tree_index(),
+                                     layer->transform_tree_index(), effect_tree,
+                                     transform_tree);
+#endif
   }
   return xform;
 }
@@ -1372,27 +1381,35 @@ static gfx::Rect LayerDrawableContentRect(
 
 static gfx::Transform ReplicaToSurfaceTransform(
     const RenderSurfaceImpl* render_surface,
-    const TransformTree& tree) {
+    const TransformTree& transform_tree,
+    const EffectTree& effect_tree) {
   gfx::Transform replica_to_surface;
   if (!render_surface->HasReplica())
     return replica_to_surface;
   const LayerImpl* replica_layer = render_surface->ReplicaLayer();
-  const TransformNode* surface_transform_node =
-      tree.Node(render_surface->TransformTreeIndex());
-  replica_to_surface.Scale(surface_transform_node->surface_contents_scale.x(),
-                           surface_transform_node->surface_contents_scale.y());
+  const EffectNode* surface_effect_node =
+      effect_tree.Node(render_surface->EffectTreeIndex());
+  if (render_surface->TransformTreeIndex() != 0) {
+    replica_to_surface.Scale(surface_effect_node->surface_contents_scale.x(),
+                             surface_effect_node->surface_contents_scale.y());
+#if DCHECK_IS_ON()
+    VerifySurfaceContentsScalesMatch(render_surface->EffectTreeIndex(),
+                                     render_surface->TransformTreeIndex(),
+                                     effect_tree, transform_tree);
+#endif
+  }
   replica_to_surface.Translate(replica_layer->offset_to_transform_parent().x(),
                                replica_layer->offset_to_transform_parent().y());
   gfx::Transform replica_transform_node_to_surface;
-  tree.ComputeTransform(replica_layer->transform_tree_index(),
-                        render_surface->TransformTreeIndex(),
-                        &replica_transform_node_to_surface);
+  transform_tree.ComputeTransform(replica_layer->transform_tree_index(),
+                                  render_surface->TransformTreeIndex(),
+                                  &replica_transform_node_to_surface);
   replica_to_surface.PreconcatTransform(replica_transform_node_to_surface);
-  if (surface_transform_node->surface_contents_scale.x() != 0 &&
-      surface_transform_node->surface_contents_scale.y() != 0) {
+  if (surface_effect_node->surface_contents_scale.x() != 0 &&
+      surface_effect_node->surface_contents_scale.y() != 0) {
     replica_to_surface.Scale(
-        1.0 / surface_transform_node->surface_contents_scale.x(),
-        1.0 / surface_transform_node->surface_contents_scale.y());
+        1.0 / surface_effect_node->surface_contents_scale.x(),
+        1.0 / surface_effect_node->surface_contents_scale.y());
   }
   return replica_to_surface;
 }
@@ -1407,8 +1424,8 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
   layer->draw_properties().screen_space_transform =
       ScreenSpaceTransformInternal(layer, property_trees->transform_tree);
   if (property_trees->non_root_surfaces_enabled) {
-    layer->draw_properties().target_space_transform =
-        DrawTransform(layer, property_trees->transform_tree);
+    layer->draw_properties().target_space_transform = DrawTransform(
+        layer, property_trees->transform_tree, property_trees->effect_tree);
   } else {
     layer->draw_properties().target_space_transform =
         layer->draw_properties().screen_space_transform;
@@ -1459,7 +1476,8 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
 
   if (render_surface->HasReplica()) {
     gfx::Transform replica_to_surface = ReplicaToSurfaceTransform(
-        render_surface, property_trees->transform_tree);
+        render_surface, property_trees->transform_tree,
+        property_trees->effect_tree);
     render_surface->SetReplicaDrawTransform(render_surface->draw_transform() *
                                             replica_to_surface);
     render_surface->SetReplicaScreenSpaceTransform(

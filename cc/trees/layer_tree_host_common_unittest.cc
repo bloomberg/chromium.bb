@@ -205,8 +205,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(1, 2), true, false);
 
-  TransformTree& tree =
+  TransformTree& transform_tree =
       host_impl()->active_tree()->property_trees()->transform_tree;
+  EffectTree& effect_tree =
+      host_impl()->active_tree()->property_trees()->effect_tree;
 
   // Case 2: Setting the bounds of the layer should not affect either the draw
   // transform or the screenspace transform.
@@ -216,9 +218,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
                                gfx::PointF(), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::DrawTransform(layer, tree));
+      identity_matrix,
+      draw_property_utils::DrawTransform(layer, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::ScreenSpaceTransform(layer, tree));
+      identity_matrix,
+      draw_property_utils::ScreenSpaceTransform(layer, transform_tree));
 
   // Case 3: The anchor point by itself (without a layer transform) should have
   // no effect on the transforms.
@@ -228,9 +232,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::DrawTransform(layer, tree));
+      identity_matrix,
+      draw_property_utils::DrawTransform(layer, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::ScreenSpaceTransform(layer, tree));
+      identity_matrix,
+      draw_property_utils::ScreenSpaceTransform(layer, transform_tree));
 
   // Case 4: A change in actual position affects both the draw transform and
   // screen space transform.
@@ -242,10 +248,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      position_transform, draw_property_utils::DrawTransform(layer, tree));
+      position_transform,
+      draw_property_utils::DrawTransform(layer, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       position_transform,
-      draw_property_utils::ScreenSpaceTransform(layer, tree));
+      draw_property_utils::ScreenSpaceTransform(layer, transform_tree));
 
   // Case 5: In the correct sequence of transforms, the layer transform should
   // pre-multiply the translation_to_center. This is easily tested by using a
@@ -257,9 +264,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      layer_transform, draw_property_utils::DrawTransform(layer, tree));
+      layer_transform,
+      draw_property_utils::DrawTransform(layer, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      layer_transform, draw_property_utils::ScreenSpaceTransform(layer, tree));
+      layer_transform,
+      draw_property_utils::ScreenSpaceTransform(layer, transform_tree));
 
   // Case 6: The layer transform should occur with respect to the anchor point.
   gfx::Transform translation_to_anchor;
@@ -272,9 +281,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_result, draw_property_utils::DrawTransform(layer, tree));
+      expected_result,
+      draw_property_utils::DrawTransform(layer, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_result, draw_property_utils::ScreenSpaceTransform(layer, tree));
+      expected_result,
+      draw_property_utils::ScreenSpaceTransform(layer, transform_tree));
 
   // Case 7: Verify that position pre-multiplies the layer transform.  The
   // current implementation of CalculateDrawProperties does this implicitly, but
@@ -287,9 +298,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_result, draw_property_utils::DrawTransform(layer, tree));
+      expected_result,
+      draw_property_utils::DrawTransform(layer, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_result, draw_property_utils::ScreenSpaceTransform(layer, tree));
+      expected_result,
+      draw_property_utils::ScreenSpaceTransform(layer, transform_tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
@@ -424,8 +437,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(1, 2), true, false);
 
-  TransformTree& tree =
+  TransformTree& transform_tree =
       host_impl()->active_tree()->property_trees()->transform_tree;
+  EffectTree& effect_tree =
+      host_impl()->active_tree()->property_trees()->effect_tree;
 
   // Case 1: parent's anchor point should not affect child or grand_child.
   SetLayerPropertiesForTesting(parent, identity_matrix,
@@ -438,14 +453,17 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::DrawTransform(child, tree));
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::ScreenSpaceTransform(child, tree));
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_matrix, draw_property_utils::DrawTransform(grand_child, tree));
+      identity_matrix,
+      draw_property_utils::DrawTransform(child, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       identity_matrix,
-      draw_property_utils::ScreenSpaceTransform(grand_child, tree));
+      draw_property_utils::ScreenSpaceTransform(child, transform_tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix, draw_property_utils::DrawTransform(
+                           grand_child, transform_tree, effect_tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      draw_property_utils::ScreenSpaceTransform(grand_child, transform_tree));
 
   // Case 2: parent's position affects child and grand_child.
   gfx::Transform parent_position_transform;
@@ -461,16 +479,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      draw_property_utils::DrawTransform(child, tree));
+      draw_property_utils::DrawTransform(child, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      draw_property_utils::ScreenSpaceTransform(child, tree));
+      draw_property_utils::ScreenSpaceTransform(child, transform_tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_position_transform, draw_property_utils::DrawTransform(
+                                     grand_child, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_position_transform,
-      draw_property_utils::DrawTransform(grand_child, tree));
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      parent_position_transform,
-      draw_property_utils::ScreenSpaceTransform(grand_child, tree));
+      draw_property_utils::ScreenSpaceTransform(grand_child, transform_tree));
 
   // Case 3: parent's local transform affects child and grandchild
   gfx::Transform parent_layer_transform;
@@ -491,16 +509,17 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      draw_property_utils::DrawTransform(child, tree));
+      draw_property_utils::DrawTransform(child, transform_tree, effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      draw_property_utils::ScreenSpaceTransform(child, tree));
+      draw_property_utils::ScreenSpaceTransform(child, transform_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      draw_property_utils::DrawTransform(grand_child, tree));
+      draw_property_utils::DrawTransform(grand_child, transform_tree,
+                                         effect_tree));
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       parent_composite_transform,
-      draw_property_utils::ScreenSpaceTransform(grand_child, tree));
+      draw_property_utils::ScreenSpaceTransform(grand_child, transform_tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
@@ -7190,32 +7209,34 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
 
   ExecuteCalculateDrawProperties(root);
 
-  TransformTree& tree =
+  TransformTree& transform_tree =
       host_impl()->active_tree()->property_trees()->transform_tree;
+  EffectTree& effect_tree =
+      host_impl()->active_tree()->property_trees()->effect_tree;
 
   gfx::Transform expected_fixed_draw_transform;
   expected_fixed_draw_transform.Translate(10.f, 15.f);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_fixed_draw_transform,
-      draw_property_utils::DrawTransform(fixed, tree));
+      draw_property_utils::DrawTransform(fixed, transform_tree, effect_tree));
 
   gfx::Transform expected_fixed_screen_space_transform;
   expected_fixed_screen_space_transform.Translate(17.f, 24.f);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_fixed_screen_space_transform,
-      draw_property_utils::ScreenSpaceTransform(fixed, tree));
+      draw_property_utils::ScreenSpaceTransform(fixed, transform_tree));
 
   gfx::Transform expected_child_draw_transform;
   expected_child_draw_transform.Translate(11.f, 17.f);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_child_draw_transform,
-      draw_property_utils::DrawTransform(child, tree));
+      draw_property_utils::DrawTransform(child, transform_tree, effect_tree));
 
   gfx::Transform expected_child_screen_space_transform;
   expected_child_screen_space_transform.Translate(18.f, 26.f);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_child_screen_space_transform,
-      draw_property_utils::ScreenSpaceTransform(child, tree));
+      draw_property_utils::ScreenSpaceTransform(child, transform_tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {

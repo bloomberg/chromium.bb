@@ -109,7 +109,8 @@ void CC_EXPORT VerifyTransformTreeCalculations(const LayerImplList& layer_list,
                                                PropertyTrees* property_trees);
 
 gfx::Transform CC_EXPORT DrawTransform(const LayerImpl* layer,
-                                       const TransformTree& tree);
+                                       const TransformTree& transform_tree,
+                                       const EffectTree& effect_tree);
 
 gfx::Transform CC_EXPORT ScreenSpaceTransform(const Layer* layer,
                                               const TransformTree& tree);
