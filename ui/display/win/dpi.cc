@@ -51,8 +51,7 @@ void SetDefaultDeviceScaleFactor(float scale) {
 float GetDPIScale() {
   if (display::Display::HasForceDeviceScaleFactor())
     return display::Display::GetForcedDeviceScaleFactor();
-  float dpi_scale = GetUnforcedDeviceScaleFactor();
-  return (dpi_scale <= 1.25f) ? 1.f : dpi_scale;
+  return GetUnforcedDeviceScaleFactor();
 }
 
 int GetDPIFromScalingFactor(float device_scaling_factor) {

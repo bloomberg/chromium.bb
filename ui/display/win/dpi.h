@@ -18,9 +18,7 @@ namespace win {
 DISPLAY_EXPORT void SetDefaultDeviceScaleFactor(float scale);
 
 // Gets the scale factor of the display. For example, if the display DPI is
-// 96 then the scale factor is 1.0.  This clamps scale factors <= 1.25 to 1.0 to
-// maintain previous (non-DPI-aware) behavior where only the font size was
-// boosted.
+// 96 then the scale factor is 1.0.
 DISPLAY_EXPORT float GetDPIScale();
 
 // Returns the equivalent DPI for |device_scaling_factor|.
