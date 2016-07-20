@@ -93,10 +93,6 @@ bool WebWidgetTestClient::isPointerLocked() {
   return web_test_proxy_base_->view_test_runner()->isPointerLocked();
 }
 
-void WebWidgetTestClient::didFocus() {
-  test_runner_->SetFocus(web_test_proxy_base_->web_view(), true);
-}
-
 void WebWidgetTestClient::setToolTipText(const blink::WebString& text,
                                          blink::WebTextDirection direction) {
   test_runner_->setToolTipText(text);

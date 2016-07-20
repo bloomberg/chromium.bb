@@ -38,7 +38,6 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   bool requestPointerLock() override;
   void requestPointerUnlock() override;
   bool isPointerLocked() override;
-  void didFocus() override;
   void setToolTipText(const blink::WebString& text,
                       blink::WebTextDirection direction) override;
   void resetInputMethod() override;

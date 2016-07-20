@@ -54,6 +54,7 @@ class WebViewTestClient : public blink::WebViewClient {
   void printPage(blink::WebLocalFrame* frame) override;
   blink::WebSpeechRecognizer* speechRecognizer() override;
   blink::WebString acceptLanguages() override;
+  void didFocus() override;
 
  private:
   WebTestDelegate* delegate();

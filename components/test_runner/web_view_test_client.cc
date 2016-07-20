@@ -146,4 +146,8 @@ WebTestDelegate* WebViewTestClient::delegate() {
   return web_test_proxy_base_->delegate();
 }
 
+void WebViewTestClient::didFocus() {
+  test_runner_->SetFocus(web_test_proxy_base_->web_view(), true);
+}
+
 }  // namespace test_runner

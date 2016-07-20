@@ -1220,9 +1220,6 @@ void RenderWidget::show(WebNavigationPolicy) {
   SetPendingWindowRect(initial_rect_);
 }
 
-void RenderWidget::didFocus() {
-}
-
 void RenderWidget::DoDeferredClose() {
   WillCloseLayerTreeView();
   Send(new ViewHostMsg_Close(routing_id_));

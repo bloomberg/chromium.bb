@@ -77,10 +77,6 @@ public:
 
     virtual void didFirstLayoutAfterFinishedParsing() { }
 
-    // Called when the widget acquires or loses focus, respectively.
-    virtual void didFocus() { }
-    virtual void didBlur() { }
-
     // Called when the cursor for the widget changes.
     virtual void didChangeCursor(const WebCursorInfo&) { }
 

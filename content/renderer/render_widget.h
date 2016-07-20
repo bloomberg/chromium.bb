@@ -236,7 +236,6 @@ class CONTENT_EXPORT RenderWidget
   void initializeLayerTreeView() override;
   blink::WebLayerTreeView* layerTreeView() override;
   void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
-  void didFocus() override;
   void didChangeCursor(const blink::WebCursorInfo&) override;
   void closeWidgetSoon() override;
   void show(blink::WebNavigationPolicy) override;

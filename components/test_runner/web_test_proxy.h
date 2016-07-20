@@ -184,7 +184,7 @@ class WebTestProxy : public Base, public WebTestProxyBase {
     return widget_test_client()->isPointerLocked();
   }
   void didFocus() override {
-    widget_test_client()->didFocus();
+    view_test_client()->didFocus();
     Base::didFocus();
   }
   void setToolTipText(const blink::WebString& text,

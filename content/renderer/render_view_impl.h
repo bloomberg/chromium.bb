@@ -288,7 +288,6 @@ class CONTENT_EXPORT RenderViewImpl
   // blink::WebWidgetClient implementation ------------------------------------
 
   // Most methods are handled by RenderWidget.
-  void didFocus() override;
   void show(blink::WebNavigationPolicy policy) override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
@@ -384,6 +383,7 @@ class CONTENT_EXPORT RenderViewImpl
   void pageImportanceSignalsChanged() override;
   void didAutoResize(const blink::WebSize& newSize) override;
   blink::WebRect rootWindowRect() override;
+  void didFocus() override;
 
 #if defined(OS_ANDROID)
   void scheduleContentIntent(const blink::WebURL& intent,
