@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_NOTIFICATION_H_
 
+class Profile;
+
 namespace arc {
 
 // First run notification that can enable Arc.
 class ArcAuthNotification {
  public:
-  static void Show();
+  static void Show(Profile* profile);
   static void Hide();
 };
 

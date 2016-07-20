@@ -9,8 +9,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
@@ -85,9 +88,11 @@ class ArcAuthNotificationDelegate
 namespace arc {
 
 // static
-void ArcAuthNotification::Show() {
+void ArcAuthNotification::Show(Profile* profile) {
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
+  notifier_id.profile_id =
+      multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
 
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
