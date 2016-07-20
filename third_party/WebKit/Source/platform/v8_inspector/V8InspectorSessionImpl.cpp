@@ -139,7 +139,12 @@ InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorStr
     }
 
     const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
-    auto contextsIt = contexts ? contexts->find(contextId) : contexts->end();
+    if (!contexts) {
+        *errorString = "Cannot find context with specified id";
+        return nullptr;
+    }
+
+    auto contextsIt = contexts->find(contextId);
     if (contextsIt == contexts->end()) {
         *errorString = "Cannot find context with specified id";
         return nullptr;
