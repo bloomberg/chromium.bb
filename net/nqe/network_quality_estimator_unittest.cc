@@ -1949,4 +1949,39 @@ TEST(NetworkQualityEstimatorTest, NameConnectionTypeConversion) {
   }
 }
 
+TEST(NetworkQualityEstimatorTest, TestRecordNetworkIDAvailability) {
+  base::HistogramTester histogram_tester;
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  // The NetworkID is recorded as available on Wi-Fi connection.
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
+  histogram_tester.ExpectUniqueSample("NQE.NetworkIdAvailable", 1, 1);
+
+  // The histogram is not recorded on an unknown connection.
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "");
+  histogram_tester.ExpectTotalCount("NQE.NetworkIdAvailable", 1);
+
+  // The NetworkID is recorded as not being available on a Wi-Fi connection
+  // with an empty SSID.
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "");
+  histogram_tester.ExpectBucketCount("NQE.NetworkIdAvailable", 0, 1);
+  histogram_tester.ExpectTotalCount("NQE.NetworkIdAvailable", 2);
+
+  // The NetworkID is recorded as being available on a Wi-Fi connection.
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
+  histogram_tester.ExpectBucketCount("NQE.NetworkIdAvailable", 1, 2);
+  histogram_tester.ExpectTotalCount("NQE.NetworkIdAvailable", 3);
+
+  // The NetworkID is recorded as being available on a cellular connection.
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-1");
+  histogram_tester.ExpectBucketCount("NQE.NetworkIdAvailable", 1, 3);
+  histogram_tester.ExpectTotalCount("NQE.NetworkIdAvailable", 4);
+}
+
 }  // namespace net

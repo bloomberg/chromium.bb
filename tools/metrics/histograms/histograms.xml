@@ -35833,6 +35833,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.NetworkIdAvailable" enum="BooleanAvailable">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Whether the NetworkID (SSID of the Wi-Fi network, or the MCC/MNC operator of
+    the cellular network) was available or not. Recorded only on Wi-Fi and
+    cellular networks. Recorded right after the connection type changes.
+  </summary>
+</histogram>
+
 <histogram name="NQE.PeakKbps" units="Kbps">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>

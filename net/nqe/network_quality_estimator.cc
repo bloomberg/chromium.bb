@@ -781,7 +781,9 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   min_signal_strength_since_connection_change_ = INT32_MAX;
   max_signal_strength_since_connection_change_ = INT32_MIN;
 
+  // Update the local state as part of preparation for the new connection.
   current_network_id_ = GetCurrentNetworkID();
+  RecordNetworkIDAvailability();
 
   // Query the external estimate provider on certain connection types. Once the
   // updated estimates are available, OnUpdatedEstimateAvailable will be called
@@ -888,6 +890,16 @@ void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
           current_network_id_.type, 10 * 1000);  // 10 seconds
       transport_rtt_percentile->Add(rtt.InMilliseconds());
     }
+  }
+}
+
+void NetworkQualityEstimator::RecordNetworkIDAvailability() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (current_network_id_.type ==
+          NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI ||
+      NetworkChangeNotifier::IsConnectionCellular(current_network_id_.type)) {
+    UMA_HISTOGRAM_BOOLEAN("NQE.NetworkIdAvailable",
+                          !current_network_id_.id.empty());
   }
 }
 

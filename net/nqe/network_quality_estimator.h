@@ -428,6 +428,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Records UMA when there is a change in connection type.
   void RecordMetricsOnConnectionTypeChanged() const;
 
+  // Records UMA on whether the NetworkID was available or not. Called right
+  // after a network change event.
+  void RecordNetworkIDAvailability() const;
+
   // Records UMA on main frame requests.
   void RecordMetricsOnMainFrameRequest() const;
 
