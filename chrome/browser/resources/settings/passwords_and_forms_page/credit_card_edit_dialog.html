@@ -38,14 +38,15 @@
       <div class="title">[[title_]]</div>
       <div class="body">
         <paper-input id="nameInput" label="$i18n{creditCardName}"
-            value="{{item.name}}" always-float-label></paper-input>
+            value="{{creditCard.name}}" always-float-label></paper-input>
           <paper-input id="numberInput" label="$i18n{creditCardNumber}"
-              value="{{item.cardNumber}}" always-float-label></paper-input>
+              value="{{creditCard.cardNumber}}" always-float-label>
+          </paper-input>
         <label>$i18n{creditCardExpiration}</label>
         <paper-dropdown-menu class="month-dropdown" no-label-float
             vertical-align="auto" label="$i18n{creditCardExpirationMonth}">
           <paper-listbox class="dropdown-content months"
-              selected="{{item.expirationMonth}}" attr-for-selected="name">
+              selected="{{expirationMonth}}" attr-for-selected="name">
             <template is="dom-repeat" items="[[monthList_]]">
               <button class="dropdown-item" role="option" name="[[item]]">
                 [[item]]
@@ -56,7 +57,7 @@
         <paper-dropdown-menu class="year-dropdown" no-label-float
             vertical-align="auto" label="$i18n{creditCardExpirationYear}">
           <paper-listbox id="yearList" class="dropdown-content years"
-              selected="{{item.expirationYear}}" attr-for-selected="name">
+              selected="{{expirationYear}}" attr-for-selected="name">
             <template is="dom-repeat" items="[[yearList_]]">
               <button class="dropdown-item" role="option" name="[[item]]">
                 [[item]]

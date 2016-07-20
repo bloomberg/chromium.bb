@@ -362,54 +362,10 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       clickRemoveButton();
     });
 
-    test('usePasswordDialogTwice', function() {
-      var BLANK_PASSWORD = '       ';
-      var item = FakeDataMaker.passwordEntry('google.com', 'homer',
-                                          BLANK_PASSWORD.length);
-      var passwordDialog = self.createPasswordDialog_(item);
-
-      passwordDialog.open();
-      Polymer.dom.flush();
-
-      assertEquals(item.loginPair.originUrl,
-                   passwordDialog.$.websiteInput.value);
-      assertEquals(item.loginPair.username,
-                   passwordDialog.$.usernameInput.value);
-      assertEquals(BLANK_PASSWORD,
-                   passwordDialog.$.passwordInput.value);
-      // Password should NOT be visible.
-      assertEquals('password',
-                   passwordDialog.$.passwordInput.type);
-
-      passwordDialog.close();
-      Polymer.dom.flush();
-
-      var blankPassword2 = ' '.repeat(17);
-      var item2 = FakeDataMaker.passwordEntry('drive.google.com', 'marge',
-                                           blankPassword2.length);
-
-      passwordDialog.item = item2;
-      passwordDialog.open();
-      Polymer.dom.flush();
-
-      assertEquals(item2.loginPair.originUrl,
-                   passwordDialog.$.websiteInput.value);
-      assertEquals(item2.loginPair.username,
-                   passwordDialog.$.usernameInput.value);
-      assertEquals(blankPassword2,
-                   passwordDialog.$.passwordInput.value);
-      // Password should NOT be visible.
-      assertEquals('password',
-                   passwordDialog.$.passwordInput.type);
-    });
-
     test('showSavedPassword', function() {
       var PASSWORD = 'bAn@n@5';
       var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
       var passwordDialog = self.createPasswordDialog_(item);
-
-      passwordDialog.open();
-      Polymer.dom.flush();
 
       passwordDialog.password = PASSWORD;
       passwordDialog.showPassword = true;
@@ -427,9 +383,6 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     test('onShowSavedPassword', function(done) {
       var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       var passwordDialog = self.createPasswordDialog_(item);
-
-      passwordDialog.open();
-      Polymer.dom.flush();
 
       passwordDialog.addEventListener('show-password', function(event) {
         assertEquals(item.loginPair.originUrl, event.detail.originUrl);

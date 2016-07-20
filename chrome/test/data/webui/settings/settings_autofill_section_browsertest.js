@@ -164,18 +164,11 @@ SettingsAutofillSectionBrowserTest.prototype = {
   createAddressDialog_: function(address) {
     return new Promise(function(resolve) {
       var section = document.createElement('settings-address-edit-dialog');
+      section.address = address;
       document.body.appendChild(section);
-      var onOpen = function() {
+      section.addEventListener('iron-overlay-opened', function() {
         resolve(section);
-      };
-      section.addEventListener('iron-overlay-opened', onOpen);
-
-      // |setTimeout| allows the dialog to async get the list of countries
-      // before running any tests.
-      window.setTimeout(function() {
-        section.open(address);  // Opening the dialog will add the item.
-        Polymer.dom.flush();
-      }, 0);
+      });
     });
   },
 
@@ -186,8 +179,8 @@ SettingsAutofillSectionBrowserTest.prototype = {
    */
   createCreditCardDialog_: function(creditCardItem) {
     var section = document.createElement('settings-credit-card-edit-dialog');
+    section.creditCard = creditCardItem;
     document.body.appendChild(section);
-    section.open(creditCardItem);  // Opening the dialog will add the item.
     Polymer.dom.flush();
     return section;
   },
@@ -419,13 +412,15 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
         dialog.$.phoneInput.value = phoneNumber;
         dialog.$.emailInput.value = emailAddress;
 
-        Polymer.dom.flush();
+        return expectEvent(dialog, 'save-address', function() {
+          MockInteractions.tap(dialog.$.saveButton);
+        }).then(function() {
+          assertEquals(phoneNumber, dialog.$.phoneInput.value);
+          assertEquals(phoneNumber, address.phoneNumbers[0]);
 
-        assertEquals(phoneNumber, dialog.$.phoneInput.value);
-        assertEquals(phoneNumber, address.phoneNumbers[0]);
-
-        assertEquals(emailAddress, dialog.$.emailInput.value);
-        assertEquals(emailAddress, address.emailAddresses[0]);
+          assertEquals(emailAddress, dialog.$.emailInput.value);
+          assertEquals(emailAddress, address.emailAddresses[0]);
+        });
       });
     });
 
@@ -435,6 +430,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       var phoneNumber = '(555) 555-5555';
       var emailAddress = 'no-reply@chromium.org';
 
+      address.countryCode = 'US';  // Set to allow save to be active.
       address.phoneNumbers = [phoneNumber];
       address.emailAddresses = [emailAddress];
 
@@ -445,10 +441,12 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
         dialog.$.phoneInput.value = '';
         dialog.$.emailInput.value = '';
 
-        Polymer.dom.flush();
-
-        assertEquals(0, address.phoneNumbers.length);
-        assertEquals(0, address.emailAddresses.length);
+        return expectEvent(dialog, 'save-address', function() {
+          MockInteractions.tap(dialog.$.saveButton);
+        }).then(function() {
+          assertEquals(0, address.phoneNumbers.length);
+          assertEquals(0, address.emailAddresses.length);
+        });
       });
     });
 

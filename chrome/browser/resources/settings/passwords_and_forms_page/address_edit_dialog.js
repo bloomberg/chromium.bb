@@ -17,8 +17,8 @@ Polymer({
   ],
 
   properties: {
-    /** @private {!chrome.autofillPrivate.AddressEntry} */
-    address_: Object,
+    /** @type {chrome.autofillPrivate.AddressEntry} */
+    address: Object,
 
     /** @private */
     title_: String,
@@ -26,7 +26,10 @@ Polymer({
     /** @private {!Array<!chrome.autofillPrivate.CountryEntry>} */
     countries_: Array,
 
-    /** @private {string|undefined} */
+    /**
+     * Updates the address wrapper.
+     * @private {string|undefined}
+     */
     countryCode_: {
       type: String,
       observer: 'onUpdateCountryCode_',
@@ -36,49 +39,37 @@ Polymer({
     addressWrapper_: Object,
 
     /** @private */
-    phoneNumber_: {
-      type: String,
-      observer: 'onUpdatePhoneNumber_',
-    },
+    phoneNumber_: String,
 
     /** @private */
-    email_: {
-      type: String,
-      observer: 'onUpdateEmail_',
-    },
+    email_: String,
 
     /** @private */
     canSave_: Boolean,
   },
 
   /** @override */
-  ready: function() {
+  attached: function() {
     this.countryInfo =
         settings.address.CountryDetailManagerImpl.getInstance();
-
     this.countryInfo.getCountryList().then(function(countryList) {
       this.countries_ = countryList;
+
+      this.title_ =
+          this.i18n(this.address.guid ? 'editAddressTitle' : 'addAddressTitle');
+
+      // |phoneNumbers| and |emailAddresses| are a single item array.
+      // See crbug.com/497934 for details.
+      this.phoneNumber_ =
+          this.address.phoneNumbers ? this.address.phoneNumbers[0] : '';
+      this.email_ =
+          this.address.emailAddresses ? this.address.emailAddresses[0] : '';
+
+      if (this.countryCode_ == this.address.countryCode)
+        this.updateAddressWrapper_();
+      else
+        this.countryCode_ = this.address.countryCode;
     }.bind(this));
-  },
-
-  /**
-   * Opens the dialog to edit |address|
-   * @param {!chrome.autofillPrivate.AddressEntry} address
-   */
-  open: function(address) {
-    this.title_ =
-        this.i18n(address.guid ? 'editAddressTitle' : 'addAddressTitle');
-    this.address_ = address;
-
-    // |phoneNumbers| and |emailAddresses| are a single item array.
-    // See crbug.com/497934 for details.
-    this.phoneNumber_ = address.phoneNumbers ? address.phoneNumbers[0] : '';
-    this.email_ = address.emailAddresses ? address.emailAddresses[0] : '';
-
-    if (this.countryCode_ == address.countryCode)
-      this.updateAddressWrapper_();
-    else
-      this.countryCode_ = address.countryCode;  // Updates the address wrapper.
 
     // Open is called on the dialog after the address wrapper has been updated.
   },
@@ -102,19 +93,11 @@ Polymer({
     // Default to the last country used if no country code is provided.
     var countryCode = self.countryCode_ || self.countries_[0].countryCode;
     self.countryInfo.getAddressFormat(countryCode).then(function(format) {
-      /** @type {!Array<!Array<!settings.address.AddressComponentUI>>} */
-      var wrapper = [];
-      format.components.forEach(function(component) {
-        /** @type {!Array<!settings.address.AddressComponentUI>} */
-        var components = [];
-        wrapper.push(components);
-
-        component.row.forEach(function(component) {
-          components.push(new settings.address.AddressComponentUI(
-              self.address_, component));
+      self.addressWrapper_ = format.components.map(function(component) {
+        return component.row.map(function(c) {
+          return new settings.address.AddressComponentUI(self.address, c);
         });
       });
-      self.addressWrapper_ = wrapper;
 
       // Flush dom before resize and savability updates.
       Polymer.dom.flush();
@@ -184,10 +167,13 @@ Polymer({
    */
   onSaveButtonTap_: function() {
     // Set a default country if none is set.
-    if (!this.address_.countryCode)
-      this.address_.countryCode = this.countries_[0].countryCode;
+    if (!this.address.countryCode)
+      this.address.countryCode = this.countries_[0].countryCode;
 
-    this.fire('save-address', this.address_);
+    this.address.phoneNumbers = this.phoneNumber_ ? [this.phoneNumber_] : [];
+    this.address.emailAddresses = this.email_ ? [this.email_] : [];
+
+    this.fire('save-address', this.address);
     this.$.dialog.close();
   },
 
@@ -198,28 +184,8 @@ Polymer({
    * @private
    */
   onUpdateCountryCode_: function(countryCode) {
-    this.address_.countryCode = countryCode;
+    this.address.countryCode = countryCode;
     this.updateAddressWrapper_();
-  },
-
-  /**
-   * Syncs the phone number back to the address. An address can have only one
-   * phone number. Variants are deprecated.
-   * @param {string} phoneNumber
-   */
-  onUpdatePhoneNumber_: function(phoneNumber) {
-    if (this.address_)
-      this.address_.phoneNumbers = phoneNumber ? [phoneNumber] : [];
-  },
-
-  /**
-   * Syncs the email back to the address. An address can have only one email.
-   * Variants are deprecated.
-   * @param {string} email
-   */
-  onUpdateEmail_: function(email) {
-    if (this.address_)
-      this.address_.emailAddresses = email ? [email] : [];
   },
 });
 })();

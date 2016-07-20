@@ -68,8 +68,11 @@
       <button id="menuRemoveAddress" class="list-item menu-item"
           on-tap="onMenuRemoveAddressTap_">$i18n{removeAddress}</button>
     </cr-shared-menu>
-    <settings-address-edit-dialog id="addressEditDialog">
-    </settings-address-edit-dialog>
+    <template is="dom-if" if="[[activeAddress]]" restamp>
+      <settings-address-edit-dialog address="[[activeAddress]]"
+          on-iron-overlay-closed="unstampAddressEditDialog_">
+      </settings-address-edit-dialog>
+    </template>
     <div class="heading">$i18n{creditCards}</div>
     <div class="item-list">
       <div class="list-item column-header">
@@ -116,8 +119,11 @@
       <button id="menuClearCreditCard" class="list-item menu-item"
           on-tap="onMenuClearCreditCardTap_">$i18n{clearCreditCard}</button>
     </cr-shared-menu>
-    <settings-credit-card-edit-dialog id="editCreditCardDialog">
-    </settings-credit-card-edit-dialog>
+    <template is="dom-if" if="[[activeCreditCard]]" restamp>
+      <settings-credit-card-edit-dialog credit-card="[[activeCreditCard]]"
+          on-iron-overlay-closed="unstampCreditCardEditDialog_">
+      </settings-credit-card-edit-dialog>
+    </template>
   </template>
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <script src="/passwords_and_forms_page/autofill_section.js"></script>
