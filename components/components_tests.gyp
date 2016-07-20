@@ -800,7 +800,11 @@
       'subresource_filter/content/browser/content_ruleset_distributor_unittest.cc',
       'subresource_filter/content/browser/content_subresource_filter_driver_factory_unittest.cc',
     ],
-    'subresource_filter_core_browser_unittest_sources': [
+    'subresource_filter_content_renderer_unittest_sources': [
+      'subresource_filter/content/renderer/document_subresource_filter_unittest.cc',
+      'subresource_filter/content/renderer/subresource_filter_agent_unittest.cc',
+    ],
+     'subresource_filter_core_browser_unittest_sources': [
       'subresource_filter/core/browser/ruleset_service_unittest.cc',
       'subresource_filter/core/browser/subresource_filter_features_unittest.cc',
     ],
@@ -1227,6 +1231,7 @@
         'components.gyp:subresource_filter_core_browser_test_support',
         'components.gyp:subresource_filter_core_browser',
         'components.gyp:subresource_filter_core_common',
+        'components.gyp:subresource_filter_core_common_test_support',
         'components.gyp:suggestions',
         'components.gyp:supervised_user_error_page',
         'components.gyp:sync_bookmarks',
@@ -1323,6 +1328,7 @@
             '<@(scheduler_unittest_sources)',
             '<@(storage_monitor_unittest_sources)',
             '<@(subresource_filter_content_browser_unittest_sources)',
+            '<@(subresource_filter_content_renderer_unittest_sources)',
             '<@(tracing_unittest_sources)',
             '<@(visitedlink_unittest_sources)',
             '<@(wallpaper_unittest_sources)',
@@ -1373,6 +1379,7 @@
             'components.gyp:storage_monitor_test_support',
             'components.gyp:subresource_filter_content_browser',
             'components.gyp:subresource_filter_content_common',
+            'components.gyp:subresource_filter_content_renderer',
             'components.gyp:test_database_manager',
             'components.gyp:url_matcher',
             'components.gyp:visitedlink_browser',

@@ -116,6 +116,23 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
+    {
+      # GN version: //components/subresource_filter/core/common:test_support
+      'target_name': 'subresource_filter_core_common_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'subresource_filter/core/common/test_ruleset_creator.cc',
+        'subresource_filter/core/common/test_ruleset_creator.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS != "ios"', {
@@ -156,6 +173,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'subresource_filter/content/renderer/document_subresource_filter.cc',
+            'subresource_filter/content/renderer/document_subresource_filter.h',
             'subresource_filter/content/renderer/ruleset_dealer.cc',
             'subresource_filter/content/renderer/ruleset_dealer.h',
             'subresource_filter/content/renderer/subresource_filter_agent.cc',

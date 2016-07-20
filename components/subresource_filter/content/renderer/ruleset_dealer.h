@@ -28,14 +28,17 @@ class RulesetDealer : public content::RenderThreadObserver {
   RulesetDealer();
   ~RulesetDealer() override;
 
-  const scoped_refptr<MemoryMappedRuleset>& ruleset() { return ruleset_; }
+  // Sets the |ruleset_file| to memory map and distribute from now on.
+  void SetRulesetFile(base::File ruleset_file);
+
+  const scoped_refptr<const MemoryMappedRuleset>& ruleset() { return ruleset_; }
 
  private:
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void OnSetRulesetForProcess(const IPC::PlatformFileForTransit& file);
 
-  scoped_refptr<MemoryMappedRuleset> ruleset_;
+  scoped_refptr<const MemoryMappedRuleset> ruleset_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetDealer);
 };

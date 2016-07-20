@@ -17,6 +17,11 @@ namespace subresource_filter {
 RulesetDealer::RulesetDealer() = default;
 RulesetDealer::~RulesetDealer() = default;
 
+void RulesetDealer::SetRulesetFile(base::File ruleset_file) {
+  DCHECK(ruleset_file.IsValid());
+  ruleset_ = new MemoryMappedRuleset(std::move(ruleset_file));
+}
+
 bool RulesetDealer::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RulesetDealer, message)
@@ -29,9 +34,7 @@ bool RulesetDealer::OnControlMessageReceived(const IPC::Message& message) {
 
 void RulesetDealer::OnSetRulesetForProcess(
     const IPC::PlatformFileForTransit& platform_file) {
-  base::File file = IPC::PlatformFileForTransitToFile(platform_file);
-  DCHECK(file.IsValid());
-  ruleset_ = new MemoryMappedRuleset(std::move(file));
+  SetRulesetFile(IPC::PlatformFileForTransitToFile(platform_file));
 }
 
 }  // namespace subresource_filter

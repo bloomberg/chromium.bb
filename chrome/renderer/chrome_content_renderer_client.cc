@@ -512,8 +512,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent);
 
-  new subresource_filter::SubresourceFilterAgent(
-      render_frame, subresource_filter_ruleset_dealer_.get());
+  // There is no render thread, thus no RulesetDealer in ChromeRenderViewTests.
+  if (subresource_filter_ruleset_dealer_) {
+    new subresource_filter::SubresourceFilterAgent(
+        render_frame, subresource_filter_ruleset_dealer_.get());
+  }
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

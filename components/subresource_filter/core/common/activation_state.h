@@ -16,7 +16,7 @@ enum class ActivationState {
   // allowed to proceed regardless. Used for stability and performance testing.
   DRYRUN,
   ENABLED,
-  LAST = ENABLED
+  LAST = ENABLED,
 };
 
 // For logging use only.

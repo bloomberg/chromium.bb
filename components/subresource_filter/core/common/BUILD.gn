@@ -35,6 +35,18 @@ source_set("common") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_ruleset_creator.cc",
+    "test_ruleset_creator.h",
+  ]
+  deps = [
+    "//base",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
