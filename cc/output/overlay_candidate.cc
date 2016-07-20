@@ -217,9 +217,11 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
 
 // static
 bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
+  float opacity = quad->shared_quad_state->opacity;
+  if (opacity < std::numeric_limits<float>::epsilon())
+    return true;
   if (quad->material == DrawQuad::SOLID_COLOR) {
     SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
-    float opacity = quad->shared_quad_state->opacity;
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
     return quad->ShouldDrawWithBlending() &&
            alpha < std::numeric_limits<float>::epsilon();

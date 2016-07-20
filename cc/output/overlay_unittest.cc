@@ -15,6 +15,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/overlay_processor.h"
+#include "cc/output/overlay_strategy_fullscreen.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "cc/quads/render_pass.h"
@@ -60,6 +61,18 @@ const gfx::Transform kSwapTransform =
 void MailboxReleased(const gpu::SyncToken& sync_token,
                      bool lost_resource,
                      BlockingTaskRunner* main_thread_task_runner) {}
+
+class FullscreenOverlayValidator : public OverlayCandidateValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
+    strategies->push_back(base::WrapUnique(new OverlayStrategyFullscreen()));
+  }
+  bool AllowCALayerOverlays() override { return false; }
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
+    // We're not checking for support.
+    ASSERT_TRUE(false);
+  }
+};
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
@@ -231,7 +244,7 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
   bool flipped = false;
   bool nearest_neighbor = false;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-  gfx::Size resource_size_in_pixels = gfx::Size(64, 64);
+  gfx::Size resource_size_in_pixels = rect.size();
   bool is_overlay_candidate = true;
   ResourceId resource_id = CreateResource(
       resource_provider, resource_size_in_pixels, is_overlay_candidate);
@@ -253,7 +266,7 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     RenderPass* render_pass,
     const gfx::Rect& rect,
     const gfx::Transform& transform) {
-  gfx::Size resource_size_in_pixels = gfx::Size(64, 64);
+  gfx::Size resource_size_in_pixels = rect.size();
   bool is_overlay_candidate = true;
   ResourceId resource_id = CreateResource(
       resource_provider, resource_size_in_pixels, is_overlay_candidate);
@@ -357,6 +370,7 @@ class OverlayTest : public testing::Test {
   gfx::Rect damage_rect_;
 };
 
+typedef OverlayTest<FullscreenOverlayValidator> FullscreenOverlayTest;
 typedef OverlayTest<SingleOnTopOverlayValidator> SingleOverlayOnTopTest;
 typedef OverlayTest<UnderlayOverlayValidator> UnderlayTest;
 typedef OverlayTest<CALayerValidator> CALayerOverlayTest;
@@ -387,6 +401,94 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
       new DefaultOverlayProcessor(&output_surface));
   overlay_processor->Initialize();
   EXPECT_GE(2U, overlay_processor->GetStrategyCount());
+}
+
+TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
+      resource_provider_.get(), pass->shared_quad_state_list.back(),
+      pass.get());
+  unsigned original_resource_id = original_quad->resource_id();
+
+  // Add something behind it.
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
+                                         &candidate_list, nullptr,
+                                         &damage_rect_);
+  ASSERT_EQ(1U, candidate_list.size());
+
+  RenderPass* main_pass = pass.get();
+  // Check that the quad is gone.
+  EXPECT_EQ(1U, main_pass->quad_list.size());
+  // Check that the right resource id got extracted.
+  EXPECT_EQ(original_resource_id, candidate_list.back().resource_id);
+}
+
+TEST_F(FullscreenOverlayTest, ResourceSizeInPixelsFail) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
+      resource_provider_.get(), pass->shared_quad_state_list.back(),
+      pass.get());
+  original_quad->set_resource_size_in_pixels(gfx::Size(64, 64));
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
+                                         &candidate_list, nullptr,
+                                         &damage_rect_);
+  ASSERT_EQ(0U, candidate_list.size());
+
+  RenderPass* main_pass = pass.get();
+  // Check that the quad is not gone.
+  EXPECT_EQ(1U, main_pass->quad_list.size());
+}
+
+TEST_F(FullscreenOverlayTest, OnTopFail) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+  // Add something in front of it.
+  CreateOpaqueQuadAt(resource_provider_.get(),
+                     pass->shared_quad_state_list.back(), pass.get(),
+                     kOverlayTopLeftRect);
+
+  CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                pass->shared_quad_state_list.back(),
+                                pass.get());
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
+                                         &candidate_list, nullptr,
+                                         &damage_rect_);
+  ASSERT_EQ(0U, candidate_list.size());
+
+  RenderPass* main_pass = pass.get();
+  // Check that the 2 quads are not gone.
+  EXPECT_EQ(2U, main_pass->quad_list.size());
+}
+
+TEST_F(FullscreenOverlayTest, NotCoveringFullscreenFail) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  gfx::Rect inset_rect = pass->output_rect;
+  inset_rect.Inset(0, 1, 0, 1);
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        inset_rect);
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
+                                         &candidate_list, nullptr,
+                                         &damage_rect_);
+  ASSERT_EQ(0U, candidate_list.size());
+
+  RenderPass* main_pass = pass.get();
+  // Check that the quad is not gone.
+  EXPECT_EQ(1U, main_pass->quad_list.size());
 }
 
 TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
