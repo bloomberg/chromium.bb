@@ -142,12 +142,13 @@ class CommandBufferSetup {
     // The commands are flushed at a uint32_t granularity. If the data is not
     // a full command, we zero-pad it.
     size_t padded_size = (size + 3) & ~3;
-    CHECK_LE(padded_size, buffer_->size());
+    size_t buffer_size = buffer_->size();
+    CHECK_LE(padded_size, buffer_size);
     command_buffer_->SetGetBuffer(buffer_id_);
     auto* memory = static_cast<char*>(buffer_->memory());
     memcpy(memory, data, size);
-    if (padded_size > size)
-      memset(memory + size, 0, padded_size - size);
+    if (size < buffer_size)
+      memset(memory + size, 0, buffer_size - size);
     command_buffer_->Flush(padded_size / 4);
     ResetDecoder();
   }
@@ -195,6 +196,12 @@ class CommandBufferSetup {
     return false;
   }
 
+  void CreateTransferBuffer(size_t size, int32_t id) {
+    scoped_refptr<Buffer> buffer =
+        command_buffer_->CreateTransferBufferWithId(size, id);
+    memset(buffer->memory(), 0, size);
+  }
+
   void InitializeInitialCommandBuffer() {
     buffer_id_ = 1;
     buffer_ = command_buffer_->CreateTransferBufferWithId(kCommandBufferSize,
@@ -203,10 +210,10 @@ class CommandBufferSetup {
     // Create some transfer buffers. This is somewhat arbitrary, but having a
     // reasonably sized buffer in slot 4 allows us to prime the corpus with data
     // extracted from unit tests.
-    command_buffer_->CreateTransferBufferWithId(kTransferBufferSize, 2);
-    command_buffer_->CreateTransferBufferWithId(kSmallTransferBufferSize, 3);
-    command_buffer_->CreateTransferBufferWithId(kTransferBufferSize, 4);
-    command_buffer_->CreateTransferBufferWithId(kTinyTransferBufferSize, 5);
+    CreateTransferBuffer(kTransferBufferSize, 2);
+    CreateTransferBuffer(kSmallTransferBufferSize, 3);
+    CreateTransferBuffer(kTransferBufferSize, 4);
+    CreateTransferBuffer(kTinyTransferBufferSize, 5);
   }
 
   base::AtExitManager atexit_manager_;
