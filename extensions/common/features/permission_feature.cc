@@ -37,13 +37,13 @@ bool PermissionFeature::Validate(std::string* error) {
   if (!SimpleFeature::Validate(error))
     return false;
 
-  if (extension_types()->empty()) {
+  if (extension_types().empty()) {
     *error = name() + ": Permission features must specify at least one " +
              "value for extension_types.";
     return false;
   }
 
-  if (!contexts()->empty()) {
+  if (!contexts().empty()) {
     *error = name() + ": Permission features do not support contexts.";
     return false;
   }

@@ -45,5 +45,22 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
+    {
+      'target_name': 'feature_compiler_tests',
+      'type': 'static_library',
+      'variables': {
+        'feature_class': 'APIFeature',
+        'provider_class': 'TestAPIFeatureProvider',
+        'out_dir': 'tools/json_schema_compiler/test',
+        'out_base_filename': 'features_test',
+        'in_files': [
+          'tools/json_schema_compiler/test/features_test.json',
+          'tools/json_schema_compiler/test/features_test2.json',
+        ],
+      },
+      'inputs': ['<@(in_files)'],
+      'sources': ['<@(in_files)'],
+      'includes': ['../json_features.gypi'],
+    },
   ],
 }

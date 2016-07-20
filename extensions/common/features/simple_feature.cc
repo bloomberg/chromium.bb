@@ -311,7 +311,7 @@ SimpleFeature::SimpleFeature()
       min_manifest_version_(0),
       max_manifest_version_(0),
       component_extensions_auto_granted_(true),
-      internal_(false) {}
+      is_internal_(false) {}
 
 SimpleFeature::~SimpleFeature() {}
 
@@ -360,7 +360,7 @@ void SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
       ParseEnum<version_info::Channel>(value, channel_.get(),
                                        mappings.Get().channels);
     } else if (key == "internal") {
-      value->GetAsBoolean(&internal_);
+      value->GetAsBoolean(&is_internal_);
     }
   }
 
@@ -591,7 +591,7 @@ Feature::Availability SimpleFeature::CreateAvailability(
 }
 
 bool SimpleFeature::IsInternal() const {
-  return internal_;
+  return is_internal_;
 }
 
 bool SimpleFeature::IsIdInBlacklist(const std::string& extension_id) const {
@@ -665,6 +665,12 @@ bool SimpleFeature::IsValidExtensionId(const std::string& extension_id) {
   // leads to hash collisions.
   // 128 bits / 4 = 32 mpdecimal characters
   return (extension_id.length() == 32);
+}
+
+void SimpleFeature::set_matches(const std::vector<std::string>& matches) {
+  matches_.ClearPatterns();
+  for (const std::string& pattern : matches)
+    matches_.AddPattern(URLPattern(URLPattern::SCHEME_ALL, pattern));
 }
 
 }  // namespace extensions

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
@@ -47,6 +48,8 @@ class ComplexFeature : public Feature {
   bool IsInternal() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FeaturesGenerationTest, FeaturesTest);
+
   FeatureList features_;
 
   DISALLOW_COPY_AND_ASSIGN(ComplexFeature);

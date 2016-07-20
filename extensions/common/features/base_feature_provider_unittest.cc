@@ -27,16 +27,15 @@ TEST(BaseFeatureProviderTest, ManifestFeatureTypes) {
   const SimpleFeature* feature = static_cast<const SimpleFeature*>(
       FeatureProvider::GetManifestFeature("description"));
   ASSERT_TRUE(feature);
-  const std::vector<Manifest::Type>* extension_types =
+  const std::vector<Manifest::Type>& extension_types =
       feature->extension_types();
-  EXPECT_EQ(6u, extension_types->size());
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_EXTENSION));
-  EXPECT_EQ(1,
-            STLCount(*(extension_types), Manifest::TYPE_LEGACY_PACKAGED_APP));
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_PLATFORM_APP));
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_HOSTED_APP));
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_THEME));
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_SHARED_MODULE));
+  EXPECT_EQ(6u, extension_types.size());
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_EXTENSION));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_LEGACY_PACKAGED_APP));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_PLATFORM_APP));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_HOSTED_APP));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_THEME));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_SHARED_MODULE));
 }
 
 // Tests that real manifest features have the correct availability for an
@@ -85,13 +84,12 @@ TEST(BaseFeatureProviderTest, PermissionFeatureTypes) {
   const SimpleFeature* feature = static_cast<const SimpleFeature*>(
       BaseFeatureProvider::GetPermissionFeature("power"));
   ASSERT_TRUE(feature);
-  const std::vector<Manifest::Type>* extension_types =
+  const std::vector<Manifest::Type>& extension_types =
       feature->extension_types();
-  EXPECT_EQ(3u, extension_types->size());
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_EXTENSION));
-  EXPECT_EQ(1,
-            STLCount(*(extension_types), Manifest::TYPE_LEGACY_PACKAGED_APP));
-  EXPECT_EQ(1, STLCount(*(extension_types), Manifest::TYPE_PLATFORM_APP));
+  EXPECT_EQ(3u, extension_types.size());
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_EXTENSION));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_LEGACY_PACKAGED_APP));
+  EXPECT_EQ(1, STLCount(extension_types, Manifest::TYPE_PLATFORM_APP));
 }
 
 // Tests that real permission features have the correct availability for an app.

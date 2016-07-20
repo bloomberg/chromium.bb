@@ -15,7 +15,7 @@ bool APIFeature::Validate(std::string* error) {
   if (!SimpleFeature::Validate(error))
     return false;
 
-  if (contexts()->empty()) {
+  if (contexts().empty()) {
     *error = name() + ": API features must specify at least one context.";
     return false;
   }

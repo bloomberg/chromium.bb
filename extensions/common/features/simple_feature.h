@@ -76,14 +76,11 @@ class SimpleFeature : public Feature {
                                      Manifest::Location location,
                                      int manifest_version,
                                      Platform platform) const override;
-
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context,
                                     const GURL& url,
                                     Platform platform) const override;
-
   bool IsInternal() const override;
-
   bool IsIdInBlacklist(const std::string& extension_id) const override;
   bool IsIdInWhitelist(const std::string& extension_id) const override;
 
@@ -91,10 +88,9 @@ class SimpleFeature : public Feature {
                           const char* const array[],
                           size_t array_length);
 
- protected:
   // Similar to Manifest::Location, these are the classes of locations
-  // supported in feature files. Production code should never directly access
-  // these.
+  // supported in feature files. These should only be used in this class and in
+  // generated files.
   enum Location {
     UNSPECIFIED_LOCATION,
     COMPONENT_LOCATION,
@@ -102,34 +98,66 @@ class SimpleFeature : public Feature {
     POLICY_LOCATION,
   };
 
-  // Accessors defined for testing.
-  std::vector<std::string>* blacklist() { return &blacklist_; }
-  const std::vector<std::string>* blacklist() const { return &blacklist_; }
-  std::vector<std::string>* whitelist() { return &whitelist_; }
-  const std::vector<std::string>* whitelist() const { return &whitelist_; }
-  std::vector<Manifest::Type>* extension_types() { return &extension_types_; }
-  const std::vector<Manifest::Type>* extension_types() const {
-    return &extension_types_;
+  // Setters used by generated code to create the feature.
+  void set_blacklist(const std::vector<std::string>& blacklist) {
+    blacklist_ = blacklist;
   }
-  std::vector<Context>* contexts() { return &contexts_; }
-  const std::vector<Context>* contexts() const { return &contexts_; }
-  std::vector<Platform>* platforms() { return &platforms_; }
-  Location location() const { return location_; }
-  void set_location(Location location) { location_ = location; }
-  int min_manifest_version() const { return min_manifest_version_; }
-  void set_min_manifest_version(int min_manifest_version) {
-    min_manifest_version_ = min_manifest_version;
-  }
-  int max_manifest_version() const { return max_manifest_version_; }
-  void set_max_manifest_version(int max_manifest_version) {
-    max_manifest_version_ = max_manifest_version;
-  }
-  const std::string& command_line_switch() const {
-    return command_line_switch_;
+  void set_channel(version_info::Channel channel) {
+    channel_.reset(new version_info::Channel(channel));
   }
   void set_command_line_switch(const std::string& command_line_switch) {
     command_line_switch_ = command_line_switch;
   }
+  void set_component_extensions_auto_granted(bool granted) {
+    component_extensions_auto_granted_ = granted;
+  }
+  void set_contexts(const std::vector<Context>& contexts) {
+    contexts_ = contexts;
+  }
+  void set_dependencies(const std::vector<std::string>& dependencies) {
+    dependencies_ = dependencies;
+  }
+  void set_extension_types(const std::vector<Manifest::Type> types) {
+    extension_types_ = types;
+  }
+  void set_internal(bool is_internal) { is_internal_ = is_internal; }
+  void set_location(Location location) { location_ = location; }
+  void set_matches(const std::vector<std::string>& matches);
+  void set_max_manifest_version(int max_manifest_version) {
+    max_manifest_version_ = max_manifest_version;
+  }
+  void set_min_manifest_version(int min_manifest_version) {
+    min_manifest_version_ = min_manifest_version;
+  }
+  void set_platforms(const std::vector<Platform>& platforms) {
+    platforms_ = platforms;
+  }
+  void set_whitelist(const std::vector<std::string>& whitelist) {
+    whitelist_ = whitelist;
+  }
+
+ protected:
+  // Accessors used by subclasses in feature verification.
+  const std::vector<std::string>& blacklist() const { return blacklist_; }
+  const std::vector<std::string>& whitelist() const { return whitelist_; }
+  const std::vector<Manifest::Type>& extension_types() const {
+    return extension_types_;
+  }
+  const std::vector<Platform>& platforms() const { return platforms_; }
+  const std::vector<Context>& contexts() const { return contexts_; }
+  const std::vector<std::string>& dependencies() const { return dependencies_; }
+  bool has_channel() const { return channel_.get() != nullptr; }
+  version_info::Channel channel() const { return *channel_; }
+  Location location() const { return location_; }
+  int min_manifest_version() const { return min_manifest_version_; }
+  int max_manifest_version() const { return max_manifest_version_; }
+  const std::string& command_line_switch() const {
+    return command_line_switch_;
+  }
+  bool component_extensions_auto_granted() const {
+    return component_extensions_auto_granted_;
+  }
+  const URLPatternSet& matches() const { return matches_; }
 
   std::string GetAvailabilityMessage(AvailabilityResult result,
                                      Manifest::Type type,
@@ -149,10 +177,12 @@ class SimpleFeature : public Feature {
                                   version_info::Channel channel) const;
 
  private:
+  friend struct FeatureComparator;
   friend class SimpleFeatureTest;
   FRIEND_TEST_ALL_PREFIXES(BaseFeatureProviderTest, ManifestFeatureTypes);
   FRIEND_TEST_ALL_PREFIXES(BaseFeatureProviderTest, PermissionFeatureTypes);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
+  FRIEND_TEST_ALL_PREFIXES(FeaturesGenerationTest, FeaturesTest);
   FRIEND_TEST_ALL_PREFIXES(ManifestUnitTest, Extension);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Blacklist);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, CommandLineSwitch);
@@ -204,9 +234,9 @@ class SimpleFeature : public Feature {
   int min_manifest_version_;
   int max_manifest_version_;
   bool component_extensions_auto_granted_;
+  bool is_internal_;
   std::string command_line_switch_;
   std::unique_ptr<version_info::Channel> channel_;
-  bool internal_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };

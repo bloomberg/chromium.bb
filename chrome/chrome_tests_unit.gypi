@@ -404,6 +404,7 @@
       '../components/drive/event_logger_unittest.cc',
       '../components/drive/service/drive_api_service_unittest.cc',
       '../components/drive/service/fake_drive_service_unittest.cc',
+      '../tools/json_schema_compiler/test/features_generation_unittest.cc',
       'browser/apps/app_shim/app_shim_host_mac_unittest.cc',
       'browser/apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc',
@@ -2413,6 +2414,7 @@
             '../device/hid/hid.gyp:device_hid_mocks',
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../extensions/extensions_strings.gyp:extensions_strings',
+            '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:feature_compiler_tests',
           ],
           'conditions': [
             ['enable_service_discovery==1', {

@@ -1837,7 +1837,7 @@ test("unit_tests") {
       "//third_party/libjingle",
       "//third_party/libphonenumber",
       "//third_party/webrtc/modules/desktop_capture",
-      "//tools/json_schema_compiler/test",
+      "//tools/json_schema_compiler/test:schema_test",
       "//ui/gl",
       "//v8",
     ]
@@ -1939,6 +1939,7 @@ test("unit_tests") {
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/strings",
+      "//tools/json_schema_compiler/test:features_generation_test",
     ]
     if (enable_service_discovery) {
       sources += rebase_path(
