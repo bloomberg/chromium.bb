@@ -28,6 +28,8 @@
 #include <sys/statvfs.h>
 #endif
 
+namespace base {
+
 namespace {
 
 #if !defined(OS_OPENBSD)
@@ -54,8 +56,7 @@ int NumberOfProcessors() {
   return static_cast<int>(res);
 }
 
-base::LazyInstance<
-    base::internal::LazySysInfoValue<int, NumberOfProcessors> >::Leaky
+LazyInstance<internal::LazySysInfoValue<int, NumberOfProcessors>>::Leaky
     g_lazy_number_of_processors = LAZY_INSTANCE_INITIALIZER;
 #endif
 
@@ -69,8 +70,7 @@ int64_t AmountOfVirtualMemory() {
   return limit.rlim_cur == RLIM_INFINITY ? 0 : limit.rlim_cur;
 }
 
-base::LazyInstance<
-    base::internal::LazySysInfoValue<int64_t, AmountOfVirtualMemory>>::Leaky
+LazyInstance<internal::LazySysInfoValue<int64_t, AmountOfVirtualMemory>>::Leaky
     g_lazy_virtual_memory = LAZY_INSTANCE_INITIALIZER;
 
 bool GetDiskSpaceInfo(const base::FilePath& path,
@@ -80,16 +80,34 @@ bool GetDiskSpaceInfo(const base::FilePath& path,
   if (HANDLE_EINTR(statvfs(path.value().c_str(), &stats)) != 0)
     return false;
 
-  if (available_bytes)
-    *available_bytes = static_cast<int64_t>(stats.f_bavail) * stats.f_frsize;
-  if (total_bytes)
-    *total_bytes = static_cast<int64_t>(stats.f_blocks) * stats.f_frsize;
+#if defined(OS_LINUX)
+  // On Linux, stats.f_blocks is 0 when memory based file system (like tmpfs,
+  // ramfs, or hugetlbfs), is mounted without any size limit (i.e. size set to
+  // 0).
+  FileSystemType fs_type;
+  const bool zero_size_means_unlimited = stats.f_blocks == 0 &&
+                                         GetFileSystemType(path, &fs_type) &&
+                                         fs_type == FILE_SYSTEM_MEMORY;
+#else
+  const bool zero_size_means_unlimited = false;
+#endif
+
+  if (available_bytes) {
+    *available_bytes =
+        zero_size_means_unlimited
+            ? std::numeric_limits<int64_t>::max()
+            : static_cast<int64_t>(stats.f_bavail) * stats.f_frsize;
+  }
+
+  if (total_bytes) {
+    *total_bytes = zero_size_means_unlimited
+                       ? std::numeric_limits<int64_t>::max()
+                       : static_cast<int64_t>(stats.f_blocks) * stats.f_frsize;
+  }
   return true;
 }
 
 }  // namespace
-
-namespace base {
 
 #if !defined(OS_OPENBSD)
 int SysInfo::NumberOfProcessors() {
