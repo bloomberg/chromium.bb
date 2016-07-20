@@ -1,37 +1,17 @@
 <!DOCTYPE html>
-<html lang="ja">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test, rendering vertical line-positioned cues with Japanese text.</title>
+<script src="../media-file.js"></script>
+<video>
+    <track src="captions-webvtt/captions-snap-to-lines-set.vtt" kind="captions" default>
+</video>
+<script>
+var video = document.querySelector("video");
+video.src = findMediaFile("video", "../content/test");
 
-        <script src=../media-file.js></script>
+testRunner.waitUntilDone();
+video.onseeked = function() {
+    testRunner.notifyDone();
+}
 
-        <script>
-        var requirePixelDump = true;
-
-        function loaded()
-        {
-            consoleWrite("Rendering vertical line-positioned cues with Japanese text.");
-            findMediaElement();
-
-            testTrack = document.querySelector('track');
-            video.src = findMediaFile('video', '../content/test');
-
-            waitForEvent('seeked', endTest);
-            waitForEvent('canplaythrough', function() {
-                video.currentTime = .75;
-            });
-        }
-
-        </script>
-
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-    </head>
-    <body onload="loaded()">
-        <video>
-            <track src="captions-webvtt/captions-snap-to-lines-set.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+video.currentTime = 0.75;
+</script>
