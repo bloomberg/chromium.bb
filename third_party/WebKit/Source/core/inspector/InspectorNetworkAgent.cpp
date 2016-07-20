@@ -845,9 +845,9 @@ std::unique_ptr<protocol::Network::Initiator> InspectorNetworkAgent::buildInitia
             .setType(protocol::Network::Initiator::TypeEnum::Parser).build();
         initiatorObject->setUrl(urlWithoutFragment(document->url()).getString());
         if (TextPosition::belowRangePosition() != initiatorInfo.position)
-            initiatorObject->setLineNumber(initiatorInfo.position.m_line.oneBasedInt());
+            initiatorObject->setLineNumber(initiatorInfo.position.m_line.zeroBasedInt());
         else
-            initiatorObject->setLineNumber(document->scriptableDocumentParser()->lineNumber().oneBasedInt());
+            initiatorObject->setLineNumber(document->scriptableDocumentParser()->lineNumber().zeroBasedInt());
         return initiatorObject;
     }
 
