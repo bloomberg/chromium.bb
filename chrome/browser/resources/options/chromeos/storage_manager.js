@@ -53,18 +53,28 @@ cr.define('options', function() {
 
       $('storage-manager-label-downloads').onclick = function() {
         chrome.send('openDownloads');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_StorageOpenDownloads']);
       };
       $('storage-manager-label-drive-cache').onclick = function() {
         PageManager.showPageByName('storageClearDriveCache');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_StorageOpenClearDriveCache']);
       };
       $('storage-manager-label-browsing-data').onclick = function() {
         PageManager.showPageByName('clearBrowserData');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_StorageOpenClearBrowsingData']);
       };
       $('storage-manager-label-arc').onclick = function() {
         chrome.send('openArcStorage');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_StorageOpenAndroidStorage']);
       };
       $('storage-manager-label-other-users').onclick = function() {
         PageManager.showPageByName('accounts');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_StorageOpenAccounts']);
       };
 
       $('storage-confirm').onclick = function() {

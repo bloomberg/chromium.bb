@@ -355,6 +355,8 @@ cr.define('options', function() {
           $('storage-manager-button').hidden = false;
           $('storage-manager-button').onclick = function(evt) {
             PageManager.showPageByName('storage');
+            chrome.send('coreOptionsUserMetricsAction',
+                        ['Options_ShowStorageManager']);
           };
         }
       }

@@ -11571,6 +11571,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_ShowStorageManager">
+  <owner>fukino@chromium.org</owner>
+  <description>Settings: Storage management</description>
+</action>
+
 <action name="Options_ShowSyncAdvanced">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Show advanced sync settings</description>
@@ -11634,6 +11639,31 @@ should be able to be added at any place in this file.
 <action name="Options_Startup_NewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_StorageOpenAccounts">
+  <owner>fukino@chromium.org</owner>
+  <description>Settings: Storage management: Other users</description>
+</action>
+
+<action name="Options_StorageOpenAndroidStorage">
+  <owner>fukino@chromium.org</owner>
+  <description>Settings: Storage management: Android storage</description>
+</action>
+
+<action name="Options_StorageOpenClearBrowsingData">
+  <owner>fukino@chromium.org</owner>
+  <description>Settings: Storage management: Browsing data</description>
+</action>
+
+<action name="Options_StorageOpenClearDriveCache">
+  <owner>fukino@chromium.org</owner>
+  <description>Settings: Storage management: Offline files</description>
+</action>
+
+<action name="Options_StorageOpenDownloads">
+  <owner>fukino@chromium.org</owner>
+  <description>Settings: Storage management: Downloads</description>
 </action>
 
 <action name="Options_SupervisedUsers_Disable">
