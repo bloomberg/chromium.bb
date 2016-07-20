@@ -22,7 +22,7 @@ static inline String implicitNamedGridLineForSide(const String& lineName, GridPo
 
 NamedLineCollection::NamedLineCollection(const ComputedStyle& gridContainerStyle, const String& namedLine, GridTrackSizingDirection direction, size_t lastLine, size_t autoRepeatTracksCount)
     : m_lastLine(lastLine)
-    , m_repetitions(autoRepeatTracksCount)
+    , m_autoRepeatTotalTracks(autoRepeatTracksCount)
 {
     bool isRowAxis = direction == ForColumns;
     const NamedGridLinesMap& gridLineNames = isRowAxis ? gridContainerStyle.namedGridColumnLines() : gridContainerStyle.namedGridRowLines();
@@ -39,6 +39,8 @@ NamedLineCollection::NamedLineCollection(const ComputedStyle& gridContainerStyle
     }
 
     m_insertionPoint = isRowAxis ? gridContainerStyle.gridAutoRepeatColumnsInsertionPoint() : gridContainerStyle.gridAutoRepeatRowsInsertionPoint();
+
+    m_autoRepeatTrackListLength = isRowAxis ? gridContainerStyle.gridAutoRepeatColumns().size() : gridContainerStyle.gridAutoRepeatRows().size();
 }
 
 bool NamedLineCollection::isValidNamedLineOrArea(const String& namedLine, const ComputedStyle& gridContainerStyle, GridPositionSide side)
@@ -67,22 +69,24 @@ size_t NamedLineCollection::find(size_t line)
     if (!m_autoRepeatNamedLinesIndexes || line < m_insertionPoint)
         return m_namedLinesIndexes ? m_namedLinesIndexes->find(line) : kNotFound;
 
-    if (line <= (m_insertionPoint + m_repetitions)) {
+    if (line <= (m_insertionPoint + m_autoRepeatTotalTracks)) {
         size_t localIndex = line - m_insertionPoint;
 
+        size_t indexInFirstRepetition = localIndex % m_autoRepeatTrackListLength;
+        if (indexInFirstRepetition)
+            return m_autoRepeatNamedLinesIndexes->find(indexInFirstRepetition);
+
         // The line names defined in the last line are also present in the first line of the next
-        // repetition (if any). Same for the line names defined in the first line.  Note that there
-        // is only one auto-repeated track allowed by the syntax, that's why it's enough to store
-        // indexes 0 and 1 (before and after the track size).
-        if (localIndex == m_repetitions)
-            return m_autoRepeatNamedLinesIndexes->find(static_cast<size_t>(1));
+        // repetition (if any). Same for the line names defined in the first line.
+        if (localIndex == m_autoRepeatTotalTracks)
+            return m_autoRepeatNamedLinesIndexes->find(m_autoRepeatTrackListLength);
         size_t position = m_autoRepeatNamedLinesIndexes->find(static_cast<size_t>(0));
         if (position != kNotFound)
             return position;
-        return localIndex == 0 ? kNotFound : m_autoRepeatNamedLinesIndexes->find(static_cast<size_t>(1));
+        return localIndex == 0 ? kNotFound : m_autoRepeatNamedLinesIndexes->find(m_autoRepeatTrackListLength);
     }
 
-    return m_namedLinesIndexes ? m_namedLinesIndexes->find(line - (m_repetitions - 1)) : kNotFound;
+    return m_namedLinesIndexes ? m_namedLinesIndexes->find(line - (m_autoRepeatTotalTracks - 1)) : kNotFound;
 }
 
 bool NamedLineCollection::contains(size_t line)
@@ -99,7 +103,7 @@ size_t NamedLineCollection::firstPosition()
 
     if (!m_autoRepeatNamedLinesIndexes) {
         if (m_insertionPoint == 0 || m_insertionPoint < m_namedLinesIndexes->at(firstLine))
-            return m_namedLinesIndexes->at(firstLine) + (m_repetitions ? m_repetitions - 1 : 0);
+            return m_namedLinesIndexes->at(firstLine) + (m_autoRepeatTotalTracks ? m_autoRepeatTotalTracks - 1 : 0);
         return m_namedLinesIndexes->at(firstLine);
     }
 
@@ -107,7 +111,7 @@ size_t NamedLineCollection::firstPosition()
         return m_autoRepeatNamedLinesIndexes->at(firstLine) + m_insertionPoint;
 
     if (m_insertionPoint == 0)
-        return m_autoRepeatNamedLinesIndexes->at(firstLine);
+        return std::min(m_namedLinesIndexes->at(firstLine) + m_autoRepeatTotalTracks, m_autoRepeatNamedLinesIndexes->at(firstLine));
 
     return std::min(m_namedLinesIndexes->at(firstLine), m_autoRepeatNamedLinesIndexes->at(firstLine) + m_insertionPoint);
 }

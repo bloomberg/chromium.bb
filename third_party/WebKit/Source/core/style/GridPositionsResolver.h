@@ -44,7 +44,8 @@ private:
 
     size_t m_insertionPoint;
     size_t m_lastLine;
-    size_t m_repetitions;
+    size_t m_autoRepeatTotalTracks;
+    size_t m_autoRepeatTrackListLength;
 };
 
 // This is a utility class with all the code related to grid items positions resolution.

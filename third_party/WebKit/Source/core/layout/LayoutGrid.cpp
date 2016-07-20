@@ -850,12 +850,12 @@ const GridTrackSize& LayoutGrid::rawGridTrackSize(GridTrackSizingDirection direc
     const Vector<GridTrackSize>& autoRepeatTrackStyles = isRowAxis ? styleRef().gridAutoRepeatColumns() : styleRef().gridAutoRepeatRows();
     const GridTrackSize& autoTrackSize = isRowAxis ? styleRef().gridAutoColumns() : styleRef().gridAutoRows();
     size_t insertionPoint = isRowAxis ? styleRef().gridAutoRepeatColumnsInsertionPoint() : styleRef().gridAutoRepeatRowsInsertionPoint();
-    size_t repetitions = autoRepeatCountForDirection(direction);
+    size_t autoRepeatTracksCount = autoRepeatCountForDirection(direction);
 
     // We should not use GridPositionsResolver::explicitGridXXXCount() for this because the
     // explicit grid might be larger than the number of tracks in grid-template-rows|columns (if
     // grid-template-areas is specified for example).
-    size_t explicitTracksCount = trackStyles.size() + repetitions;
+    size_t explicitTracksCount = trackStyles.size() + autoRepeatTracksCount;
 
     int untranslatedIndexAsInt = translatedIndex + (isRowAxis ? m_smallestColumnStart : m_smallestRowStart);
     if (untranslatedIndexAsInt < 0)
@@ -865,13 +865,15 @@ const GridTrackSize& LayoutGrid::rawGridTrackSize(GridTrackSizingDirection direc
     if (untranslatedIndex >= explicitTracksCount)
         return autoTrackSize;
 
-    if (LIKELY(!repetitions) || untranslatedIndex < insertionPoint)
+    if (LIKELY(!autoRepeatTracksCount) || untranslatedIndex < insertionPoint)
         return trackStyles[untranslatedIndex];
 
-    if (untranslatedIndex < (insertionPoint + repetitions))
-        return autoRepeatTrackStyles[0];
+    if (untranslatedIndex < (insertionPoint + autoRepeatTracksCount)) {
+        size_t autoRepeatLocalIndex = untranslatedIndexAsInt - insertionPoint;
+        return autoRepeatTrackStyles[autoRepeatLocalIndex % autoRepeatTrackStyles.size()];
+    }
 
-    return trackStyles[untranslatedIndex - repetitions];
+    return trackStyles[untranslatedIndex - autoRepeatTracksCount];
 }
 
 GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size_t translatedIndex, SizingOperation sizingOperation) const
@@ -1384,14 +1386,10 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
 {
     bool isRowAxis = direction == ForColumns;
     const auto& autoRepeatTracks = isRowAxis ? styleRef().gridAutoRepeatColumns() : styleRef().gridAutoRepeatRows();
+    size_t autoRepeatTrackListLength = autoRepeatTracks.size();
 
-    if (!autoRepeatTracks.size())
+    if (!autoRepeatTrackListLength)
         return 0;
-
-    DCHECK_EQ(autoRepeatTracks.size(), static_cast<size_t>(1));
-    auto autoTrackSize = autoRepeatTracks.at(0);
-    DCHECK(autoTrackSize.minTrackBreadth().isLength());
-    DCHECK(!autoTrackSize.minTrackBreadth().isFlex());
 
     LayoutUnit availableSize = isRowAxis ? availableLogicalWidth() : computeContentLogicalHeight(MainOrPreferredSize, styleRef().logicalHeight(), LayoutUnit(-1));
     if (availableSize == -1) {
@@ -1412,21 +1410,27 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
     if (indefiniteMainAndMaxSizes) {
         const Length& minSize = isRowAxis ? styleRef().logicalMinWidth() : styleRef().logicalMinHeight();
         if (!minSize.isSpecified())
-            return 1;
+            return autoRepeatTrackListLength;
 
         LayoutUnit containingBlockAvailableSize = isRowAxis ? containingBlockLogicalWidthForContent() : containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
         availableSize = valueForLength(minSize, containingBlockAvailableSize);
         needsToFulfillMinimumSize = true;
     }
 
-    bool hasDefiniteMaxTrackSizingFunction = autoTrackSize.maxTrackBreadth().isLength() && !autoTrackSize.maxTrackBreadth().isContentSized();
-    const Length trackLength = hasDefiniteMaxTrackSizingFunction ? autoTrackSize.maxTrackBreadth().length() : autoTrackSize.minTrackBreadth().length();
+    LayoutUnit autoRepeatTracksSize;
+    for (auto autoTrackSize : autoRepeatTracks) {
+        DCHECK(autoTrackSize.minTrackBreadth().isLength());
+        DCHECK(!autoTrackSize.minTrackBreadth().isFlex());
+        bool hasDefiniteMaxTrackSizingFunction = autoTrackSize.maxTrackBreadth().isLength() && !autoTrackSize.maxTrackBreadth().isContentSized();
+        auto trackLength = hasDefiniteMaxTrackSizingFunction ? autoTrackSize.maxTrackBreadth().length() : autoTrackSize.minTrackBreadth().length();
+        autoRepeatTracksSize += valueForLength(trackLength, availableSize);
+    }
     // For the purpose of finding the number of auto-repeated tracks, the UA must floor the track size to a UA-specified
     // value to avoid division by zero. It is suggested that this floor be 1px.
-    LayoutUnit autoRepeatTrackSize = std::max<LayoutUnit>(LayoutUnit(1), valueForLength(trackLength, availableSize));
+    autoRepeatTracksSize = std::max<LayoutUnit>(LayoutUnit(1), autoRepeatTracksSize);
 
     // There will be always at least 1 auto-repeat track, so take it already into account when computing the total track size.
-    LayoutUnit tracksSize = autoRepeatTrackSize;
+    LayoutUnit tracksSize = autoRepeatTracksSize;
     const Vector<GridTrackSize>& trackSizes = isRowAxis ? styleRef().gridTemplateColumns() : styleRef().gridTemplateRows();
 
     for (const auto& track : trackSizes) {
@@ -1442,9 +1446,9 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
 
     LayoutUnit freeSpace = availableSize - tracksSize;
     if (freeSpace <= 0)
-        return 1;
+        return autoRepeatTrackListLength;
 
-    size_t repetitions = 1 + (freeSpace / (autoRepeatTrackSize + gapSize)).toInt();
+    size_t repetitions = 1 + (freeSpace / (autoRepeatTracksSize + gapSize)).toInt();
 
     // Provided the grid container does not have a definite size or max-size in the relevant axis,
     // if the min size is definite then the number of repetitions is the largest possible positive
@@ -1452,7 +1456,7 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
     if (needsToFulfillMinimumSize)
         ++repetitions;
 
-    return repetitions;
+    return repetitions * autoRepeatTrackListLength;
 }
 
 
@@ -1465,9 +1469,8 @@ std::unique_ptr<LayoutGrid::OrderedTrackIndexSet> LayoutGrid::computeEmptyTracks
 
     std::unique_ptr<OrderedTrackIndexSet> emptyTrackIndexes;
     size_t insertionPoint = isRowAxis ? styleRef().gridAutoRepeatColumnsInsertionPoint() : styleRef().gridAutoRepeatRowsInsertionPoint();
-    size_t repetitions = autoRepeatCountForDirection(direction);
     size_t firstAutoRepeatTrack = insertionPoint + std::abs(isRowAxis ? m_smallestColumnStart : m_smallestRowStart);
-    size_t lastAutoRepeatTrack = firstAutoRepeatTrack + repetitions;
+    size_t lastAutoRepeatTrack = firstAutoRepeatTrack + autoRepeatCountForDirection(direction);
 
     if (m_gridItemArea.isEmpty()) {
         emptyTrackIndexes = wrapUnique(new OrderedTrackIndexSet);
@@ -1494,7 +1497,7 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation)
     ASSERT(m_gridItemArea.isEmpty());
 
     if (sizingOperation == IntrinsicSizeComputation)
-        m_autoRepeatColumns = styleRef().gridAutoRepeatColumns().isEmpty() ? 0 : 1;
+        m_autoRepeatColumns = styleRef().gridAutoRepeatColumns().size();
     else
         m_autoRepeatColumns = computeAutoRepeatTracksCount(ForColumns);
     m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows);

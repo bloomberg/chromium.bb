@@ -3448,8 +3448,6 @@ static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParser
 
     size_t numberOfTracks = 0;
     while (!args.atEnd()) {
-        if (isAutoRepeat && numberOfTracks)
-            return false;
         CSSValue* trackSize = consumeGridTrackSize(args, cssParserMode);
         if (!trackSize)
             return false;
