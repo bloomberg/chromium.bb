@@ -103,7 +103,7 @@ TEST_F(AndroidSensorManagerTest, ThreeDeviceMotionSensorsActive) {
   ASSERT_TRUE(motion_buffer_->data.hasRotationRateBeta);
   ASSERT_EQ(9, motion_buffer_->data.rotationRateGamma);
   ASSERT_TRUE(motion_buffer_->data.hasRotationRateGamma);
-  ASSERT_EQ(kInertialSensorIntervalMicroseconds / 1000.,
+  ASSERT_EQ(kDeviceSensorIntervalMicroseconds / 1000.,
             motion_buffer_->data.interval);
 
   sensorManager.StopFetchingDeviceMotionData();
@@ -123,7 +123,7 @@ TEST_F(AndroidSensorManagerTest, TwoDeviceMotionSensorsActive) {
 
   sensorManager.GotAccelerationIncludingGravity(nullptr, nullptr, 1, 2, 3);
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
-  ASSERT_EQ(kInertialSensorIntervalMicroseconds / 1000.,
+  ASSERT_EQ(kDeviceSensorIntervalMicroseconds / 1000.,
             motion_buffer_->data.interval);
 
   sensorManager.StopFetchingDeviceMotionData();
@@ -137,7 +137,7 @@ TEST_F(AndroidSensorManagerTest, ZeroDeviceMotionSensorsActive) {
 
   sensorManager.StartFetchingDeviceMotionData(motion_buffer_.get());
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
-  ASSERT_EQ(kInertialSensorIntervalMicroseconds / 1000.,
+  ASSERT_EQ(kDeviceSensorIntervalMicroseconds / 1000.,
             motion_buffer_->data.interval);
 
   sensorManager.StopFetchingDeviceMotionData();

@@ -43,7 +43,7 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/device_sensors/device_inertial_sensor_service.h"
+#include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
@@ -1132,7 +1132,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:SensorService");
-    DeviceInertialSensorService::GetInstance()->Shutdown();
+    DeviceSensorService::GetInstance()->Shutdown();
   }
 #if !defined(OS_ANDROID)
   {

@@ -4,7 +4,7 @@
 
 #include "content/browser/device_sensors/device_sensor_host.h"
 
-#include "content/browser/device_sensors/device_inertial_sensor_service.h"
+#include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -24,7 +24,7 @@ template <typename MojoInterface, ConsumerType consumer_type>
 DeviceSensorHost<MojoInterface, consumer_type>::~DeviceSensorHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_started_)
-    DeviceInertialSensorService::GetInstance()->RemoveConsumer(consumer_type);
+    DeviceSensorService::GetInstance()->RemoveConsumer(consumer_type);
 }
 
 template <typename MojoInterface, ConsumerType consumer_type>
@@ -35,10 +35,9 @@ void DeviceSensorHost<MojoInterface, consumer_type>::DeviceSensorHost::
   if (is_started_)
     return;
   is_started_ = true;
-  DeviceInertialSensorService::GetInstance()->AddConsumer(consumer_type);
+  DeviceSensorService::GetInstance()->AddConsumer(consumer_type);
   callback.Run(
-      DeviceInertialSensorService::GetInstance()->GetSharedMemoryHandle(
-          consumer_type));
+      DeviceSensorService::GetInstance()->GetSharedMemoryHandle(consumer_type));
 }
 
 template <typename MojoInterface, ConsumerType consumer_type>
@@ -49,7 +48,7 @@ void DeviceSensorHost<MojoInterface,
   if (!is_started_)
     return;
   is_started_ = false;
-  DeviceInertialSensorService::GetInstance()->RemoveConsumer(consumer_type);
+  DeviceSensorService::GetInstance()->RemoveConsumer(consumer_type);
 }
 
 template class DeviceSensorHost<device::mojom::LightSensor,

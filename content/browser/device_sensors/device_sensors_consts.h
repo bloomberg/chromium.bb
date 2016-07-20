@@ -24,9 +24,9 @@ enum ConsumerType {
 // Note that when changing this value it is desirable to have an adequate
 // matching value |DeviceSensorEventPump::kDefaultPumpFrequencyHz| in
 // content/renderer/device_orientation/device_sensor_event_pump.cc.
-const int kInertialSensorSamplingRateHz = 60;
-const int kInertialSensorIntervalMicroseconds =
-    base::Time::kMicrosecondsPerSecond / kInertialSensorSamplingRateHz;
+const int kDeviceSensorSamplingRateHz = 60;
+const int kDeviceSensorIntervalMicroseconds =
+    base::Time::kMicrosecondsPerSecond / kDeviceSensorSamplingRateHz;
 
 // Corresponding |kDefaultLightPumpFrequencyHz| is in
 // content/renderer/device_sensors/device_light_event_pump.cc.

@@ -8,7 +8,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/browser/device_sensors/data_fetcher_shared_memory.h"
-#include "content/browser/device_sensors/device_inertial_sensor_service.h"
+#include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/common/device_sensors/device_orientation_hardware_buffer.h"
@@ -48,37 +48,31 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     EXPECT_TRUE(buffer);
 
     switch (consumer_type) {
-      case CONSUMER_TYPE_MOTION:
-        {
-          DeviceMotionHardwareBuffer* motion_buffer =
-              static_cast<DeviceMotionHardwareBuffer*>(buffer);
-          if (sensor_data_available_)
-            UpdateMotion(motion_buffer);
-          SetMotionBufferReady(motion_buffer);
-          started_motion_.Signal();
-        }
-        break;
-      case CONSUMER_TYPE_ORIENTATION:
-        {
-          DeviceOrientationHardwareBuffer* orientation_buffer =
-              static_cast<DeviceOrientationHardwareBuffer*>(buffer);
-          if (sensor_data_available_)
-            UpdateOrientation(orientation_buffer);
-          SetOrientationBufferReady(orientation_buffer);
-          started_orientation_.Signal();
-        }
-        break;
-      case CONSUMER_TYPE_LIGHT:
-        {
-          DeviceLightHardwareBuffer* light_buffer =
-              static_cast<DeviceLightHardwareBuffer*>(buffer);
-          UpdateLight(light_buffer,
-                      sensor_data_available_
-                          ? 100
-                          : std::numeric_limits<double>::infinity());
-          started_light_.Signal();
-        }
-        break;
+      case CONSUMER_TYPE_MOTION: {
+        DeviceMotionHardwareBuffer* motion_buffer =
+            static_cast<DeviceMotionHardwareBuffer*>(buffer);
+        if (sensor_data_available_)
+          UpdateMotion(motion_buffer);
+        SetMotionBufferReady(motion_buffer);
+        started_motion_.Signal();
+      } break;
+      case CONSUMER_TYPE_ORIENTATION: {
+        DeviceOrientationHardwareBuffer* orientation_buffer =
+            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+        if (sensor_data_available_)
+          UpdateOrientation(orientation_buffer);
+        SetOrientationBufferReady(orientation_buffer);
+        started_orientation_.Signal();
+      } break;
+      case CONSUMER_TYPE_LIGHT: {
+        DeviceLightHardwareBuffer* light_buffer =
+            static_cast<DeviceLightHardwareBuffer*>(buffer);
+        UpdateLight(light_buffer,
+                    sensor_data_available_
+                        ? 100
+                        : std::numeric_limits<double>::infinity());
+        started_light_.Signal();
+      } break;
       default:
         return false;
     }
@@ -182,10 +176,9 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
   DISALLOW_COPY_AND_ASSIGN(FakeDataFetcher);
 };
 
-
-class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
+class DeviceSensorBrowserTest : public ContentBrowserTest {
  public:
-  DeviceInertialSensorBrowserTest()
+  DeviceSensorBrowserTest()
       : fetcher_(nullptr),
         io_loop_finished_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -194,14 +187,13 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DeviceInertialSensorBrowserTest::SetUpOnIOThread, this));
+        base::Bind(&DeviceSensorBrowserTest::SetUpOnIOThread, this));
     io_loop_finished_event_.Wait();
   }
 
   void SetUpOnIOThread() {
     fetcher_ = new FakeDataFetcher();
-    DeviceInertialSensorService::GetInstance()->
-        SetDataFetcherForTesting(fetcher_);
+    DeviceSensorService::GetInstance()->SetDataFetcherForTesting(fetcher_);
     io_loop_finished_event_.Signal();
   }
 
@@ -217,8 +209,7 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
 
     scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
     dialog_manager->set_dialog_request_callback(
-        base::Bind(&DeviceInertialSensorBrowserTest::DelayAndQuit, this,
-            delay));
+        base::Bind(&DeviceSensorBrowserTest::DelayAndQuit, this, delay));
     runner->Run();
   }
 
@@ -241,7 +232,7 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
 #else
 #define MAYBE_OrientationTest OrientationTest
 #endif
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
                        MAYBE_OrientationTest) {
   // The test page will register an event handler for orientation events,
   // expects to get an event with fake values, then removes the event
@@ -255,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
 }
 
 // Flaky test. See http://crbug.com/628527.
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_LightTest) {
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, DISABLED_LightTest) {
   // The test page will register an event handler for light events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
@@ -269,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_LightTest) {
 }
 
 // Flaky test. See http://crbug.com/628527.
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_MotionTest) {
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, DISABLED_MotionTest) {
   // The test page will register an event handler for motion events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
@@ -282,15 +273,15 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_MotionTest) {
 }
 
 // Flaky test. See http://crbug.com/628527.
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
                        DISABLED_LightOneOffInfintyTest) {
   // The test page registers an event handler for light events and expects
   // to get an event with value equal to infinity, because no sensor data can
   // be provided.
   EnableExperimentalFeatures();
   fetcher_->SetSensorDataAvailable(false);
-  GURL test_url = GetTestUrl("device_sensors",
-                             "device_light_infinity_test.html");
+  GURL test_url =
+      GetTestUrl("device_sensors", "device_light_infinity_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
@@ -299,14 +290,13 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
 }
 
 // Flaky test. See http://crbug.com/628527.
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-                       DISABLED_OrientationNullTest) {
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, DISABLED_OrientationNullTest) {
   // The test page registers an event handler for orientation events and
   // expects to get an event with null values, because no sensor data can be
   // provided.
   fetcher_->SetSensorDataAvailable(false);
-  GURL test_url = GetTestUrl("device_sensors",
-                             "device_orientation_null_test.html");
+  GURL test_url =
+      GetTestUrl("device_sensors", "device_orientation_null_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
@@ -315,14 +305,12 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
 }
 
 // Flaky test. See http://crbug.com/628527.
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-                       DISABLED_MotionNullTest) {
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, DISABLED_MotionNullTest) {
   // The test page registers an event handler for motion events and
   // expects to get an event with null values, because no sensor data can be
   // provided.
   fetcher_->SetSensorDataAvailable(false);
-  GURL test_url = GetTestUrl("device_sensors",
-                             "device_motion_null_test.html");
+  GURL test_url = GetTestUrl("device_sensors", "device_motion_null_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
@@ -330,8 +318,7 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   fetcher_->stopped_motion_.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-                       DISABLED_NullTestWithAlert) {
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, DISABLED_NullTestWithAlert) {
   // The test page registers an event handlers for motion/orientation events
   // and expects to get events with null values. The test raises a modal alert
   // dialog with a delay to test that the one-off null-events still propagate
@@ -340,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   fetcher_->SetSensorDataAvailable(false);
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
 
-  GURL test_url = GetTestUrl("device_sensors",
-                             "device_sensors_null_test_with_alert.html");
+  GURL test_url =
+      GetTestUrl("device_sensors", "device_sensors_null_test_with_alert.html");
   shell()->LoadURL(test_url);
 
   // TODO(timvolodine): investigate if it is possible to test this without

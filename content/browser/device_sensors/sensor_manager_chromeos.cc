@@ -35,7 +35,7 @@ void SensorManagerChromeOS::StartFetchingDeviceMotionData(
   // The interval between updates is the longer of the rate set on the buffer,
   // and the rate at which AccelerometerReader polls the sensor.
   motion_buffer_->data.interval =
-      std::max(kInertialSensorIntervalMicroseconds / 1000,
+      std::max(kDeviceSensorIntervalMicroseconds / 1000,
                chromeos::AccelerometerReader::kDelayBetweenReadsMs);
   motion_buffer_->seqlock.WriteEnd();
 

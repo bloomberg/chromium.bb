@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
-#define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
+#ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_SENSOR_SERVICE_H_
+#define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_SENSOR_SERVICE_H_
 
 #include <memory>
 
@@ -23,10 +23,10 @@ class DataFetcherSharedMemory;
 // Owns the data fetcher for Device Motion and Orientation and keeps track of
 // the number of consumers currently using the data. The data fetcher is stopped
 // when there are no consumers.
-class CONTENT_EXPORT DeviceInertialSensorService {
+class CONTENT_EXPORT DeviceSensorService {
  public:
-  // Returns the DeviceInertialSensorService singleton.
-  static DeviceInertialSensorService* GetInstance();
+  // Returns the DeviceSensorService singleton.
+  static DeviceSensorService* GetInstance();
 
   // Increments the number of users of the provider. The Provider is running
   // when there's > 0 users, and is paused when the count drops to 0.
@@ -49,10 +49,10 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   void SetDataFetcherForTesting(DataFetcherSharedMemory* test_data_fetcher);
 
  private:
-  friend struct base::DefaultSingletonTraits<DeviceInertialSensorService>;
+  friend struct base::DefaultSingletonTraits<DeviceSensorService>;
 
-  DeviceInertialSensorService();
-  virtual ~DeviceInertialSensorService();
+  DeviceSensorService();
+  virtual ~DeviceSensorService();
 
   bool ChangeNumberConsumers(ConsumerType consumer_type, int delta);
   int GetNumberConsumers(ConsumerType consumer_type) const;
@@ -65,9 +65,9 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   std::unique_ptr<DataFetcherSharedMemory> data_fetcher_;
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceInertialSensorService);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSensorService);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
+#endif  // CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_SENSOR_SERVICE_H_

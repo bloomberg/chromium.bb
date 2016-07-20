@@ -211,7 +211,7 @@
       'browser/compositor/image_transport_factory_browsertest.cc',
       'browser/cross_site_transfer_browsertest.cc',
       'browser/database_browsertest.cc',
-      'browser/device_sensors/device_inertial_sensor_browsertest.cc',
+      'browser/device_sensors/device_sensor_browsertest.cc',
       'browser/devtools/protocol/devtools_protocol_browsertest.cc',
       'browser/devtools/site_per_process_devtools_browsertest.cc',
       'browser/dom_storage/dom_storage_browsertest.cc',

@@ -191,12 +191,11 @@ bool DataFetcherSharedMemoryBase::InitAndStartPollingThreadIfNecessary() {
   if (polling_thread_)
     return true;
 
-  polling_thread_.reset(
-      new PollingThread("Inertial Device Sensor poller", this));
+  polling_thread_.reset(new PollingThread("Device Sensor poller", this));
 
   if (!polling_thread_->Start()) {
-      LOG(ERROR) << "Failed to start inertial sensor data polling thread";
-      return false;
+    LOG(ERROR) << "Failed to start sensor data polling thread";
+    return false;
   }
   return true;
 }
@@ -211,7 +210,7 @@ DataFetcherSharedMemoryBase::GetType() const {
 }
 
 base::TimeDelta DataFetcherSharedMemoryBase::GetInterval() const {
-  return base::TimeDelta::FromMicroseconds(kInertialSensorIntervalMicroseconds);
+  return base::TimeDelta::FromMicroseconds(kDeviceSensorIntervalMicroseconds);
 }
 
 void* DataFetcherSharedMemoryBase::GetSharedMemoryBuffer(

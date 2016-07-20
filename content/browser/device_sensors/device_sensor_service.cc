@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/device_sensors/device_inertial_sensor_service.h"
+#include "content/browser/device_sensors/device_sensor_service.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -11,24 +11,21 @@
 
 namespace content {
 
-DeviceInertialSensorService::DeviceInertialSensorService()
+DeviceSensorService::DeviceSensorService()
     : num_light_readers_(0),
       num_motion_readers_(0),
       num_orientation_readers_(0),
       num_orientation_absolute_readers_(0),
-      is_shutdown_(false) {
+      is_shutdown_(false) {}
+
+DeviceSensorService::~DeviceSensorService() {}
+
+DeviceSensorService* DeviceSensorService::GetInstance() {
+  return base::Singleton<DeviceSensorService, base::LeakySingletonTraits<
+                                                  DeviceSensorService>>::get();
 }
 
-DeviceInertialSensorService::~DeviceInertialSensorService() {
-}
-
-DeviceInertialSensorService* DeviceInertialSensorService::GetInstance() {
-  return base::Singleton<
-      DeviceInertialSensorService,
-      base::LeakySingletonTraits<DeviceInertialSensorService>>::get();
-}
-
-void DeviceInertialSensorService::AddConsumer(ConsumerType consumer_type) {
+void DeviceSensorService::AddConsumer(ConsumerType consumer_type) {
   if (!ChangeNumberConsumers(consumer_type, 1))
     return;
 
@@ -39,7 +36,7 @@ void DeviceInertialSensorService::AddConsumer(ConsumerType consumer_type) {
   data_fetcher_->StartFetchingDeviceData(consumer_type);
 }
 
-void DeviceInertialSensorService::RemoveConsumer(ConsumerType consumer_type) {
+void DeviceSensorService::RemoveConsumer(ConsumerType consumer_type) {
   if (!ChangeNumberConsumers(consumer_type, -1))
     return;
 
@@ -47,8 +44,8 @@ void DeviceInertialSensorService::RemoveConsumer(ConsumerType consumer_type) {
     data_fetcher_->StopFetchingDeviceData(consumer_type);
 }
 
-bool DeviceInertialSensorService::ChangeNumberConsumers(
-    ConsumerType consumer_type, int delta) {
+bool DeviceSensorService::ChangeNumberConsumers(ConsumerType consumer_type,
+                                                int delta) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (is_shutdown_)
     return false;
@@ -60,11 +57,11 @@ bool DeviceInertialSensorService::ChangeNumberConsumers(
       return true;
     case CONSUMER_TYPE_ORIENTATION:
       num_orientation_readers_ += delta;
-      DCHECK_GE(num_orientation_readers_ , 0);
+      DCHECK_GE(num_orientation_readers_, 0);
       return true;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       num_orientation_absolute_readers_ += delta;
-      DCHECK_GE(num_orientation_absolute_readers_ , 0);
+      DCHECK_GE(num_orientation_absolute_readers_, 0);
       return true;
     case CONSUMER_TYPE_LIGHT:
       num_light_readers_ += delta;
@@ -76,8 +73,7 @@ bool DeviceInertialSensorService::ChangeNumberConsumers(
   return false;
 }
 
-int DeviceInertialSensorService::GetNumberConsumers(
-    ConsumerType consumer_type) const {
+int DeviceSensorService::GetNumberConsumers(ConsumerType consumer_type) const {
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
       return num_motion_readers_;
@@ -93,13 +89,13 @@ int DeviceInertialSensorService::GetNumberConsumers(
   return 0;
 }
 
-mojo::ScopedSharedBufferHandle
-DeviceInertialSensorService::GetSharedMemoryHandle(ConsumerType consumer_type) {
+mojo::ScopedSharedBufferHandle DeviceSensorService::GetSharedMemoryHandle(
+    ConsumerType consumer_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return data_fetcher_->GetSharedMemoryHandle(consumer_type);
 }
 
-void DeviceInertialSensorService::Shutdown() {
+void DeviceSensorService::Shutdown() {
   if (data_fetcher_) {
     data_fetcher_->Shutdown();
     data_fetcher_.reset();
@@ -107,7 +103,7 @@ void DeviceInertialSensorService::Shutdown() {
   is_shutdown_ = true;
 }
 
-void DeviceInertialSensorService::SetDataFetcherForTesting(
+void DeviceSensorService::SetDataFetcherForTesting(
     DataFetcherSharedMemory* test_data_fetcher) {
   if (data_fetcher_)
     data_fetcher_->Shutdown();
