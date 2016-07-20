@@ -902,7 +902,7 @@ autoupdate itself. You can use &#8220;Extract all&#8230;&#8221; from the context
 bundle to <code>C:\workspace\depot_tools</code>:</p></div>
 <div class="dlist"><dl>
 <dt class="hdlist1">
-With Administrator access:
+With Administrator access: 
 </dt>
 <dd>
 <p>
@@ -911,7 +911,7 @@ With Administrator access:
 <div class="paragraph"><p>Modify the PATH system variable to include <code>C:\workspace\depot_tools</code>.</p></div>
 </dd>
 <dt class="hdlist1">
-Without Administrator access:
+Without Administrator access: 
 </dt>
 <dd>
 <p>
@@ -982,7 +982,7 @@ commands:</p></div>
 <div class="content">
 <pre><code><strong><span class="white">$</span></strong> # get the code
 <strong><span class="white">$</span></strong> # In an empty directory:
-<strong><span class="white">$ fetch {chromium,blink,...}</span></strong>
+<strong><span class="white">$ fetch {chromium,...}</span></strong>
 
 <strong><span class="white">$</span></strong> # Update third_party repos and run pre-compile hooks
 <strong><span class="white">$ gclient sync</span></strong>
@@ -1006,7 +1006,6 @@ commands:</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><code><strong><span class="white">$ fetch chromium</span></strong>  # Basic checkout for desktop Chromium
-<strong><span class="white">$ fetch blink</span></strong>     # Chromium code with Blink checked out to tip-of-tree
 <strong><span class="white">$ fetch android</span></strong>   # Chromium checkout for Android platform
 <strong><span class="white">$ fetch ios</span></strong>       # Chromium checkout for iOS platform</code></pre>
 </div></div>
@@ -1245,7 +1244,7 @@ It was a Domo-Kuun.
 [fix_typo 615ffa7] Fix terrible typo.
  1 file changed, 1 insertion(+), 1 deletion(-)
 <span style="font-weight: bold; color: #ffffff">$ git map</span>
-<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">615ffa7	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">fix_typo</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Fix terrible typo.
+* <span style="font-weight: bold; color: #e42e16">615ffa7	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">HEAD -&gt; fix_typo</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Fix terrible typo.
 * <span style="font-weight: bold; color: #e42e16">beec6f4	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">origin/master</span><span style="color: #19c518">, </span><span style="color: #e42e16">origin/HEAD</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Make ReflectorImpl use mailboxes<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(fix_typo)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
 * <span style="font-weight: bold; color: #e42e16">41290e0	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ don't use glibc-specific execinfo.h on uclibc builds
 * <span style="font-weight: bold; color: #e42e16">a76fde7	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ [fsp] Add requestUnmount() method together with the request manager.
@@ -1314,7 +1313,7 @@ It was a Domo-<span style="color: #e42e16">Banana</span><span style="color: #19c
 </code></pre></div></div><p><div class="paragraph"> Since we got lgtm, let the CQ land it.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git cl set_commit</span>
 <span style="font-weight: bold; color: #ffffff">$ git map</span>
 * <span style="font-weight: bold; color: #e42e16">0e2e52e	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">chap2</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ FREEZE.unindexed
-<span style="color: #e42e16">|</span> <span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">2c0ad9c	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">fix_typo</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Fix typo for good!
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">2c0ad9c	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">HEAD -&gt; fix_typo</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Fix typo for good!
 <span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">615ffa7	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Fix terrible typo.
 <span style="color: #e42e16">|</span><span style="color: #e42e16">/</span>
 * <span style="font-weight: bold; color: #e42e16">beec6f4	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">origin/master</span><span style="color: #19c518">, </span><span style="color: #e42e16">origin/HEAD</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Make ReflectorImpl use mailboxes<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(chap2, fix_typo)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
@@ -1338,7 +1337,7 @@ state without impacting any branches by performing another checkout.
 If you want to create a new branch to retain commits you create, you may
 do so (now or later) by using -b with the checkout command again. Example:
 
-  git checkout -b new_branch_name
+  git checkout -b &lt;new-branch-name&gt;
 
 HEAD is now at beec6f4... Make ReflectorImpl use mailboxes
 <span style="font-weight: bold; color: #ffffff">$ git nav-downstream</span>
@@ -1391,7 +1390,7 @@ EOF
 [chap2 ceef712] Finish chapter 2
  1 file changed, 6 insertions(+)
 <span style="font-weight: bold; color: #ffffff">$ git map</span>
-<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">ceef712	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">chap2</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Finish chapter 2
+* <span style="font-weight: bold; color: #e42e16">ceef712	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">HEAD -&gt; chap2</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Finish chapter 2
 <span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">2c0ad9c	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">fix_typo</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Fix typo for good!
 <span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">615ffa7	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Fix terrible typo.
 <span style="color: #e42e16">|</span><span style="color: #e42e16">/</span>
@@ -1416,7 +1415,7 @@ EOF
 [chap3 7d4238a] beginning of chapter 3
  1 file changed, 4 insertions(+)
 <span style="font-weight: bold; color: #ffffff">$ git map</span>
-<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">7d4238a	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">chap3</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ beginning of chapter 3
+* <span style="font-weight: bold; color: #e42e16">7d4238a	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">HEAD -&gt; chap3</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ beginning of chapter 3
 * <span style="font-weight: bold; color: #e42e16">ceef712	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">chap2</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Finish chapter 2<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(chap3)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
 <span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">2c0ad9c	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">fix_typo</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Fix typo for good!
 <span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">615ffa7	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Fix terrible typo.
@@ -1436,13 +1435,13 @@ Rebasing: chap2
 Rebasing: fix_typo
 Failed! Attempting to squash fix_typo ... Success!
 Rebasing: chap3
-Deleted branch fix_typo (was 5d26fec).
 Reparented chap3 to track origin/master (was tracking chap2)
+Deleted branch fix_typo (was 5d26fec).
 Deleted branch chap2 (was 5d26fec).
 </code></pre></div></div><p><div class="paragraph"> Well look at that. The CQ landed our typo and chapter2 branches  already and git rebase-update cleaned them up for us.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ gclient sync</span>
 ... truncated output ...
 <span style="font-weight: bold; color: #ffffff">$ git map</span>
-<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">93fe917	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">chap3</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ beginning of chapter 3
+* <span style="font-weight: bold; color: #e42e16">93fe917	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">HEAD -&gt; chap3</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ beginning of chapter 3
 * <span style="font-weight: bold; color: #e42e16">5d26fec	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">origin/master</span><span style="color: #19c518">, </span><span style="color: #e42e16">origin/HEAD</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Finish chapter 2<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(chap3)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
 * <span style="font-weight: bold; color: #e42e16">df7fefb	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Revert 255617, due to it not tracking use of the link doctor page properly.
 * <span style="font-weight: bold; color: #e42e16">4b39cda	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Fix terrible typo.
@@ -1471,7 +1470,7 @@ Rebasing: chap2
   There was an poignant pause.
 
   CHAPTER 3:
-<span style="color: #19c518">++&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span style="color: #19c518">++&lt;&lt;&lt;&lt;&lt;&lt;&lt; 59cdb7335b1c3a159ecc22214441cbe2194de25c</span>
 <span style="color: #19c518"> +Hilariousness! This chapter is awesome!</span>
 <span style="color: #19c518">++=======</span>
 <span style="color: #19c518">+ Mr. Usagi felt that something wasn't right. Shortly after the Domo-Kun left he</span>
@@ -1500,7 +1499,7 @@ chap3 up-to-date
 <span style="font-weight: bold; color: #ffffff">$ gclient sync</span>
 ... truncated output ...
 <span style="font-weight: bold; color: #ffffff">$ git map</span>
-<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">1cb4f5b	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">chap3</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ beginning of chapter 3
+* <span style="font-weight: bold; color: #e42e16">1cb4f5b	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">HEAD -&gt; chap3</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ beginning of chapter 3
 * <span style="font-weight: bold; color: #e42e16">59cdb73	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">origin/master</span><span style="color: #19c518">, </span><span style="color: #e42e16">origin/HEAD</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Refactor data interchange format.<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(chap3)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
 * <span style="font-weight: bold; color: #e42e16">34676a3	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Ensure FS is exited for all not-in-same-page navigations.
 * <span style="font-weight: bold; color: #e42e16">7d4784e	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Add best chapter2 ever!
@@ -1581,7 +1580,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-04-01 14:13:51 PST
+Last updated 2016-07-20 13:07:26 EDT
 </div>
 </div>
 </body>

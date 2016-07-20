@@ -150,7 +150,7 @@ TL;DR
 ----
 [white]**$** # get the code
 [white]**$** # In an empty directory:
-[white]**$ fetch {chromium,blink,...}**
+[white]**$ fetch {chromium,...}**
 
 [white]**$** # Update third_party repos and run pre-compile hooks
 [white]**$ gclient sync**
@@ -174,7 +174,6 @@ Pick an empty directory and run one of the following:
 [subs="quotes"]
 ----
 [white]**$ fetch chromium**  # Basic checkout for desktop Chromium
-[white]**$ fetch blink**     # Chromium code with Blink checked out to tip-of-tree
 [white]**$ fetch android**   # Chromium checkout for Android platform
 [white]**$ fetch ios**       # Chromium checkout for iOS platform
 ----

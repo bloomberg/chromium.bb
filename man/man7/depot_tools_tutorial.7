@@ -2,12 +2,12 @@
 .\"     Title: depot_tools_tutorial
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 01/13/2015
+.\"      Date: 07/20/2016
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 379a889
+.\"    Source: depot_tools 5ef2ca1
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS_TUTORIAL" "7" "01/13/2015" "depot_tools 379a889" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS_TUTORIAL" "7" "07/20/2016" "depot_tools 5ef2ca1" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -261,7 +261,7 @@ If you have never used git before, you\(cqll need to set some global git configu
 .nf
 \fB$\fR # get the code
 \fB$\fR # In an empty directory:
-\fB$ fetch {chromium,blink,\&.\&.\&.}\fR
+\fB$ fetch {chromium,\&.\&.\&.}\fR
 
 \fB$\fR # Update third_party repos and run pre\-compile hooks
 \fB$ gclient sync\fR
@@ -289,7 +289,6 @@ Pick an empty directory and run one of the following:
 .\}
 .nf
 \fB$ fetch chromium\fR  # Basic checkout for desktop Chromium
-\fB$ fetch blink\fR     # Chromium code with Blink checked out to tip\-of\-tree
 \fB$ fetch android\fR   # Chromium checkout for Android platform
 \fB$ fetch ios\fR       # Chromium checkout for iOS platform
 .fi
@@ -574,7 +573,7 @@ It was a Domo\-Kuun\&.
 [fix_typo 615ffa7] Fix terrible typo\&.
  1 file changed, 1 insertion(+), 1 deletion(\-)
 \fB$ git map\fR
-\fB* 615ffa7	\fR (\fBfix_typo\fR) 2014\-04\-10 ~ Fix terrible typo\&.
+* \fB615ffa7	\fR (HEAD \-> fix_typo) 2014\-04\-10 ~ Fix terrible typo\&.
 * \fBbeec6f4	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(fix_typo)\fR
 * \fB41290e0	\fR 2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
 * \fBa76fde7	\fR 2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
@@ -676,7 +675,7 @@ Since we got lgtm, let the CQ land it\&.
 \fB$ git cl set_commit\fR
 \fB$ git map\fR
 * \fB0e2e52e	\fR (\fBchap2\fR) 2014\-04\-10 ~ FREEZE\&.unindexed
-| \fB* 2c0ad9c	\fR (\fBfix_typo\fR) 2014\-04\-10 ~ Fix typo for good!
+| * \fB2c0ad9c	\fR (HEAD \-> fix_typo) 2014\-04\-10 ~ Fix typo for good!
 | * \fB615ffa7	\fR 2014\-04\-10 ~ Fix terrible typo\&.
 |/
 * \fBbeec6f4	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(chap2, fix_typo)\fR
@@ -711,7 +710,7 @@ state without impacting any branches by performing another checkout\&.
 If you want to create a new branch to retain commits you create, you may
 do so (now or later) by using \-b with the checkout command again\&. Example:
 
-  git checkout \-b new_branch_name
+  git checkout \-b <new\-branch\-name>
 
 HEAD is now at beec6f4\&.\&.\&. Make ReflectorImpl use mailboxes
 \fB$ git nav\-downstream\fR
@@ -775,7 +774,7 @@ EOF
 [chap2 ceef712] Finish chapter 2
  1 file changed, 6 insertions(+)
 \fB$ git map\fR
-\fB* ceef712	\fR (\fBchap2\fR) 2014\-04\-10 ~ Finish chapter 2
+* \fBceef712	\fR (HEAD \-> chap2) 2014\-04\-10 ~ Finish chapter 2
 | * \fB2c0ad9c	\fR (\fBfix_typo\fR) 2014\-04\-10 ~ Fix typo for good!
 | * \fB615ffa7	\fR 2014\-04\-10 ~ Fix terrible typo\&.
 |/
@@ -822,7 +821,7 @@ EOF
 [chap3 7d4238a] beginning of chapter 3
  1 file changed, 4 insertions(+)
 \fB$ git map\fR
-\fB* 7d4238a	\fR (\fBchap3\fR) 2014\-04\-10 ~ beginning of chapter 3
+* \fB7d4238a	\fR (HEAD \-> chap3) 2014\-04\-10 ~ beginning of chapter 3
 * \fBceef712	\fR (\fBchap2\fR) 2014\-04\-10 ~ Finish chapter 2\fB    <(chap3)\fR
 | * \fB2c0ad9c	\fR (\fBfix_typo\fR) 2014\-04\-10 ~ Fix typo for good!
 | * \fB615ffa7	\fR 2014\-04\-10 ~ Fix terrible typo\&.
@@ -853,8 +852,8 @@ Rebasing: chap2
 Rebasing: fix_typo
 Failed! Attempting to squash fix_typo \&.\&.\&. Success!
 Rebasing: chap3
-Deleted branch fix_typo (was 5d26fec)\&.
 Reparented chap3 to track origin/master (was tracking chap2)
+Deleted branch fix_typo (was 5d26fec)\&.
 Deleted branch chap2 (was 5d26fec)\&.
 .fi
 .if n \{\
@@ -870,7 +869,7 @@ Well look at that\&. The CQ landed our typo and chapter2 branches already and gi
 \fB$ gclient sync\fR
 \&.\&.\&. truncated output \&.\&.\&.
 \fB$ git map\fR
-\fB* 93fe917	\fR (\fBchap3\fR) 2014\-04\-10 ~ beginning of chapter 3
+* \fB93fe917	\fR (HEAD \-> chap3) 2014\-04\-10 ~ beginning of chapter 3
 * \fB5d26fec	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Finish chapter 2\fB    <(chap3)\fR
 * \fBdf7fefb	\fR 2014\-04\-10 ~ Revert 255617, due to it not tracking use of the link doctor page properly\&.
 * \fB4b39cda	\fR 2014\-04\-10 ~ Fix terrible typo\&.
@@ -910,7 +909,7 @@ Rebasing: chap2
   There was an poignant pause\&.
 
   CHAPTER 3:
-++<<<<<<< HEAD
+++<<<<<<< 59cdb7335b1c3a159ecc22214441cbe2194de25c
  +Hilariousness! This chapter is awesome!
 ++=======
 + Mr\&. Usagi felt that something wasn\*(Aqt right\&. Shortly after the Domo\-Kun left he
@@ -961,7 +960,7 @@ chap3 up\-to\-date
 \fB$ gclient sync\fR
 \&.\&.\&. truncated output \&.\&.\&.
 \fB$ git map\fR
-\fB* 1cb4f5b	\fR (\fBchap3\fR) 2014\-04\-10 ~ beginning of chapter 3
+* \fB1cb4f5b	\fR (HEAD \-> chap3) 2014\-04\-10 ~ beginning of chapter 3
 * \fB59cdb73	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Refactor data interchange format\&.\fB    <(chap3)\fR
 * \fB34676a3	\fR 2014\-04\-10 ~ Ensure FS is exited for all not\-in\-same\-page navigations\&.
 * \fB7d4784e	\fR 2014\-04\-10 ~ Add best chapter2 ever!
