@@ -313,6 +313,9 @@ void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& base
 
         LinkRelAttribute relAttribute(header.rel());
         KURL url(baseURL, header.url());
+        // Sanity check to avoid re-entrancy here.
+        if (url == baseURL)
+            continue;
         if (canLoadResources != OnlyLoadResources) {
             if (RuntimeEnabledFeatures::linkHeaderEnabled())
                 dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);

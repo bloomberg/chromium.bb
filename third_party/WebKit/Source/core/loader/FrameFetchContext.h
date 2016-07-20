@@ -35,6 +35,7 @@
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/LinkLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 
@@ -124,6 +125,8 @@ private:
     ResourceRequestBlockedReason canRequestInternal(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction, ResourceRequest::RedirectStatus) const;
 
     void prepareRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse&);
+
+    void dispatchDidReceiveResponseInternal(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*, LinkLoader::CanLoadResources);
 
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because ComputedStyle and its data are not on the heap.
