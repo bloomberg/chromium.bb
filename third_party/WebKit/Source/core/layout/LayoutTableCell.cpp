@@ -387,10 +387,25 @@ void LayoutTableCell::styleDidChange(StyleDifference diff, const ComputedStyle* 
         clearIntrinsicPadding();
 
     // If border was changed, notify table.
-    if (parent()) {
-        LayoutTable* table = this->table();
-        if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout()&& oldStyle && oldStyle->border() != style()->border())
-            table->invalidateCollapsedBorders();
+    if (!parent())
+        return;
+    LayoutTable* table = this->table();
+    if (!table)
+        return;
+    if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout()&& oldStyle && oldStyle->border() != style()->border())
+        table->invalidateCollapsedBorders();
+
+    if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff, *oldStyle)) {
+        if (previousCell()) {
+            // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
+            previousCell()->setChildNeedsLayout();
+            previousCell()->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+        }
+        if (nextCell()) {
+            // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
+            nextCell()->setChildNeedsLayout();
+            nextCell()->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+        }
     }
 }
 

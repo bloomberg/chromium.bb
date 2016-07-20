@@ -1,29 +1,31 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 58, 113, 4],
+          "rect": [8, 58, 114, 4],
           "reason": "incremental"
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 60, 113, 2],
+          "rect": [8, 60, 114, 2],
           "reason": "incremental"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [10, 10, 110, 50],
+          "rect": [10, 10, 111, 50],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 110, 50],
+          "rect": [10, 10, 111, 50],
           "reason": "bounds change"
         },
         {
@@ -38,12 +40,12 @@
         },
         {
           "object": "LayoutTableCell TD id='foo'",
-          "rect": [8, 8, 59, 54],
+          "rect": [8, 8, 60, 54],
           "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [63, 8, 58, 54],
+          "rect": [64, 8, 58, 54],
           "reason": "bounds change"
         },
         {
@@ -53,23 +55,45 @@
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [116, 8, 5, 54],
+          "rect": [116, 8, 6, 54],
           "reason": "incremental"
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [117, 8, 4, 54],
+          "rect": [117, 8, 5, 54],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD id='foo'",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD id='foo'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD id='foo'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
     }
   ]
 }
