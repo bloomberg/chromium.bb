@@ -149,8 +149,8 @@ void UsbChooserController::OnDeviceAdded(
     const base::string16& device_name = device->product_string();
     devices_.push_back(std::make_pair(device, device_name));
     ++device_name_map_[device_name];
-    if (observer())
-      observer()->OnOptionAdded(devices_.size() - 1);
+    if (view())
+      view()->OnOptionAdded(devices_.size() - 1);
   }
 }
 
@@ -163,8 +163,8 @@ void UsbChooserController::OnDeviceRemoved(
       if (--device_name_map_[it->second] == 0)
         device_name_map_.erase(it->second);
       devices_.erase(it);
-      if (observer())
-        observer()->OnOptionRemoved(index);
+      if (view())
+        view()->OnOptionRemoved(index);
       return;
     }
   }
@@ -181,8 +181,8 @@ void UsbChooserController::GotUsbDeviceList(
       ++device_name_map_[device_name];
     }
   }
-  if (observer())
-    observer()->OnOptionsInitialized();
+  if (view())
+    view()->OnOptionsInitialized();
 }
 
 bool UsbChooserController::DisplayDevice(

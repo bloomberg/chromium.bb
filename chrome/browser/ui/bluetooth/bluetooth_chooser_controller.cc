@@ -107,18 +107,20 @@ void BluetoothChooserController::OnAdapterPresenceChanged(
       no_devices_text_ =
           l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF);
       status_text_ = base::string16();
-      if (observer())
-        observer()->OnAdapterEnabledChanged(
+      if (view()) {
+        view()->OnAdapterEnabledChanged(
             false /* Bluetooth adapter is turned off */);
+      }
       break;
     case content::BluetoothChooser::AdapterPresence::POWERED_ON:
       no_devices_text_ =
           l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
       status_text_ =
           l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
-      if (observer())
-        observer()->OnAdapterEnabledChanged(
+      if (view()) {
+        view()->OnAdapterEnabledChanged(
             true /* Bluetooth adapter is turned on */);
+      }
       break;
   }
 }
@@ -129,17 +131,19 @@ void BluetoothChooserController::OnDiscoveryStateChanged(
     case content::BluetoothChooser::DiscoveryState::DISCOVERING:
       status_text_ =
           l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING);
-      if (observer())
-        observer()->OnRefreshStateChanged(
+      if (view()) {
+        view()->OnRefreshStateChanged(
             true /* Refreshing options is in progress */);
+      }
       break;
     case content::BluetoothChooser::DiscoveryState::IDLE:
     case content::BluetoothChooser::DiscoveryState::FAILED_TO_START:
       status_text_ =
           l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
-      if (observer())
-        observer()->OnRefreshStateChanged(
+      if (view()) {
+        view()->OnRefreshStateChanged(
             false /* Refreshing options is complete */);
+      }
       break;
   }
 }
@@ -148,8 +152,8 @@ void BluetoothChooserController::AddDevice(const std::string& device_id,
                                            const base::string16& device_name) {
   device_names_and_ids_.push_back(std::make_pair(device_name, device_id));
   ++device_name_map_[device_name];
-  if (observer())
-    observer()->OnOptionAdded(device_names_and_ids_.size() - 1);
+  if (view())
+    view()->OnOptionAdded(device_names_and_ids_.size() - 1);
 }
 
 void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
@@ -161,8 +165,8 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
       if (--device_name_map_[it->first] == 0)
         device_name_map_.erase(it->first);
       device_names_and_ids_.erase(it);
-      if (observer())
-        observer()->OnOptionRemoved(index);
+      if (view())
+        view()->OnOptionRemoved(index);
       return;
     }
   }

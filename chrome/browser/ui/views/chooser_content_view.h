@@ -27,7 +27,7 @@ class Throbber;
 // Used for WebUSB/WebBluetooth device selection for Chrome and extensions.
 class ChooserContentView : public views::View,
                            public ui::TableModel,
-                           public ChooserController::Observer,
+                           public ChooserController::View,
                            public views::LinkListener,
                            public views::StyledLabelListener {
  public:
@@ -43,7 +43,7 @@ class ChooserContentView : public views::View,
   base::string16 GetText(int row, int column_id) override;
   void SetObserver(ui::TableModelObserver* observer) override;
 
-  // ChooserController::Observer:
+  // ChooserController::View:
   void OnOptionsInitialized() override;
   void OnOptionAdded(size_t index) override;
   void OnOptionRemoved(size_t index) override;

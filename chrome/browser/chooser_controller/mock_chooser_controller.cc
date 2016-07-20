@@ -38,8 +38,8 @@ base::string16 MockChooserController::GetStatus() const {
 
 void MockChooserController::OptionAdded(const base::string16 option_name) {
   option_names_.push_back(option_name);
-  if (observer())
-    observer()->OnOptionAdded(option_names_.size() - 1);
+  if (view())
+    view()->OnOptionAdded(option_names_.size() - 1);
 }
 
 void MockChooserController::OptionRemoved(const base::string16 option_name) {
@@ -47,8 +47,8 @@ void MockChooserController::OptionRemoved(const base::string16 option_name) {
     if (*it == option_name) {
       size_t index = it - option_names_.begin();
       option_names_.erase(it);
-      if (observer())
-        observer()->OnOptionRemoved(index);
+      if (view())
+        view()->OnOptionRemoved(index);
       return;
     }
   }

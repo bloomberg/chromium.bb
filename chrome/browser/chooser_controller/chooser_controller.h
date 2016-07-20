@@ -27,8 +27,8 @@ class ChooserController {
   virtual ~ChooserController();
 
   // Since the set of options can change while the UI is visible an
-  // implementation should register an observer.
-  class Observer {
+  // implementation should register a view to observe changes.
+  class View {
    public:
     // Called after the options list is initialized for the first time.
     // OnOptionsInitialized should only be called once.
@@ -53,7 +53,7 @@ class ChooserController {
     virtual void OnRefreshStateChanged(bool refreshing) = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~View() {}
   };
 
   // Returns the text to be displayed in the chooser title.
@@ -94,15 +94,15 @@ class ChooserController {
   // Open help center URL.
   virtual void OpenHelpCenterUrl() const = 0;
 
-  // Only one observer may be registered at a time.
-  void set_observer(Observer* observer) { observer_ = observer; }
-  Observer* observer() const { return observer_; }
+  // Only one view may be registered at a time.
+  void set_view(View* view) { view_ = view; }
+  View* view() const { return view_; }
 
  private:
   content::RenderFrameHost* const owning_frame_;
   const int title_string_id_origin_;
   const int title_string_id_extension_;
-  Observer* observer_ = nullptr;
+  View* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserController);
 };

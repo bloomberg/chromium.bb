@@ -40,13 +40,13 @@ const CGFloat kSeparatorHeight = 1.0f;
 
 }  // namespace
 
-class TableViewController : public ChooserController::Observer {
+class TableViewController : public ChooserController::View {
  public:
   TableViewController(ChooserController* chooser_controller,
                       NSTableView* table_view);
   ~TableViewController() override;
 
-  // ChooserController::Observer:
+  // ChooserController::View:
   void OnOptionsInitialized() override;
   void OnOptionAdded(size_t index) override;
   void OnOptionRemoved(size_t index) override;
@@ -67,11 +67,11 @@ TableViewController::TableViewController(ChooserController* chooser_controller,
     : chooser_controller_(chooser_controller), table_view_(table_view) {
   DCHECK(chooser_controller_);
   DCHECK(table_view_);
-  chooser_controller_->set_observer(this);
+  chooser_controller_->set_view(this);
 }
 
 TableViewController::~TableViewController() {
-  chooser_controller_->set_observer(nullptr);
+  chooser_controller_->set_view(nullptr);
 }
 
 void TableViewController::OnOptionsInitialized() {

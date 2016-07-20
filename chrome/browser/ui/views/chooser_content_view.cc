@@ -26,7 +26,7 @@ ChooserContentView::ChooserContentView(
     views::TableViewObserver* table_view_observer,
     std::unique_ptr<ChooserController> chooser_controller)
     : chooser_controller_(std::move(chooser_controller)) {
-  chooser_controller_->set_observer(this);
+  chooser_controller_->set_view(this);
   std::vector<ui::TableColumn> table_columns;
   table_columns.push_back(ui::TableColumn());
   table_view_ =
@@ -49,7 +49,7 @@ ChooserContentView::ChooserContentView(
 }
 
 ChooserContentView::~ChooserContentView() {
-  chooser_controller_->set_observer(nullptr);
+  chooser_controller_->set_view(nullptr);
   table_view_->SetObserver(nullptr);
   table_view_->SetModel(nullptr);
   if (discovery_state_)
