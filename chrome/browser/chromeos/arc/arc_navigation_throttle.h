@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_NAVIGATION_THROTTLE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_NAVIGATION_THROTTLE_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,6 +22,10 @@ class NavigationHandle;
 }  // namespace content
 
 namespace arc {
+
+// Restricts the amount of apps displayed to the user without the need of a
+// ScrollView.
+constexpr size_t kMaxAppResults = 3;
 
 // A class that allow us to retrieve ARC app's information and handle URL
 // traffic initiated on Chrome browser, either on Chrome or an ARC's app.

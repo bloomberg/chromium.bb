@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -116,6 +118,20 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
                            CloseReason::PREFERRED_ACTIVITY_FOUND);
     return;
   }
+
+  // Swap Chrome app with any app in row |kMaxAppResults-1| iff his index is
+  // bigger, thus ensuring the user can always see Chrome without scrolling.
+  size_t chrome_app_index = 0;
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    if (ArcIntentHelperBridge::IsIntentHelperPackage(
+            handlers[i]->package_name)) {
+      chrome_app_index = i;
+      break;
+    }
+  }
+
+  if (chrome_app_index >= kMaxAppResults)
+    std::swap(handlers[kMaxAppResults - 1], handlers[chrome_app_index]);
 
   scoped_refptr<ActivityIconLoader> icon_loader = GetIconLoader();
   if (!icon_loader) {
