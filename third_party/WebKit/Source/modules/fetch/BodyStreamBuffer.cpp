@@ -271,7 +271,7 @@ ScriptPromise BodyStreamBuffer::cancel(ScriptState* scriptState, ScriptValue rea
 
 void BodyStreamBuffer::didGetReadable()
 {
-    if (!m_reader)
+    if (!m_reader || !getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
     if (!m_streamNeedsMore) {
