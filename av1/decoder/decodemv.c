@@ -922,7 +922,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->mv[1].as_int = mi->bmi[3].as_mv[1].as_int;
   } else {
 #if CONFIG_REF_MV
-    int ref;
     for (ref = 0; ref < 1 + is_compound && mbmi->mode == NEWMV; ++ref) {
       int_mv ref_mv = nearestmv[ref];
       uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);

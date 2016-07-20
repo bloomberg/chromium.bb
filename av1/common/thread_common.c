@@ -649,7 +649,6 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
 #endif
 
   for (i = 0; i < EXT_TX_SIZES; i++) {
-    int j;
     for (j = 0; j < TX_TYPES; ++j)
       for (k = 0; k < TX_TYPES; k++)
         cm->counts.intra_ext_tx[i][j][k] += counts->intra_ext_tx[i][j][k];

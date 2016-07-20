@@ -776,8 +776,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
   if (x->optimize) {
-    const int ctx = combine_entropy_contexts(*a, *l);
-    *a = *l = optimize_b(x, plane, block, tx_size, ctx) > 0;
+    const int combined_ctx = combine_entropy_contexts(*a, *l);
+    *a = *l = optimize_b(x, plane, block, tx_size, combined_ctx) > 0;
   } else {
     *a = *l = p->eobs[block] > 0;
   }
