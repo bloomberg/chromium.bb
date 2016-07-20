@@ -17,6 +17,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 
 namespace cc {
@@ -42,6 +43,13 @@ class FakeOutputSurface : public OutputSurface {
       scoped_refptr<ContextProvider> worker_context_provider) {
     return base::WrapUnique(new FakeOutputSurface(
         context_provider, worker_context_provider, false));
+  }
+
+  static std::unique_ptr<FakeOutputSurface> Create3d(
+      std::unique_ptr<TestGLES2Interface> gl) {
+    return base::WrapUnique(
+        new FakeOutputSurface(TestContextProvider::Create(std::move(gl)),
+                              TestContextProvider::CreateWorker(), false));
   }
 
   static std::unique_ptr<FakeOutputSurface> Create3d(
@@ -145,6 +153,7 @@ class FakeOutputSurface : public OutputSurface {
       std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind);
 
   gfx::Rect last_swap_rect() const {
+    DCHECK(last_swap_rect_valid_);
     return last_swap_rect_;
   }
 
@@ -173,6 +182,7 @@ class FakeOutputSurface : public OutputSurface {
   TransferableResourceArray resources_held_by_parent_;
   std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
+  bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;
 };
 

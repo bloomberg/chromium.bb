@@ -19,15 +19,21 @@
 namespace cc {
 
 class TestDelegatingOutputSurface : public OutputSurface,
-                                    public SurfaceFactoryClient {
+                                    public SurfaceFactoryClient,
+                                    public DisplayClient {
  public:
   TestDelegatingOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
-      std::unique_ptr<Display> display,
-      bool context_shared_with_compositor,
-      bool allow_force_reclaim_resources);
+      std::unique_ptr<OutputSurface> display_output_surface,
+      SharedBitmapManager* shared_bitmap_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const RendererSettings& renderer_settings,
+      base::SingleThreadTaskRunner* task_runner,
+      bool synchronous_composite);
   ~TestDelegatingOutputSurface() override;
+
+  Display* display() const { return display_.get(); }
 
   // OutputSurface implementation.
   bool BindToClient(OutputSurfaceClient* client) override;
@@ -41,13 +47,12 @@ class TestDelegatingOutputSurface : public OutputSurface,
   void ReturnResources(const ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
 
+  // DisplayClient implementation.
+  void DisplayOutputSurfaceLost() override;
+  void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
+
  private:
   void DrawCallback(SurfaceDrawStatus);
-
-  class PixelTestDisplayClient : public DisplayClient {
-    void DisplayOutputSurfaceLost() override {}
-    void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override {}
-  };
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
@@ -58,9 +63,10 @@ class TestDelegatingOutputSurface : public OutputSurface,
   // Uses surface_manager_.
   std::unique_ptr<SurfaceFactory> surface_factory_;
 
-  PixelTestDisplayClient display_client_;
   // Uses surface_manager_.
   std::unique_ptr<Display> display_;
+
+  bool bound_ = false;
 
   base::WeakPtrFactory<TestDelegatingOutputSurface> weak_ptrs_;
 };

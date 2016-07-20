@@ -12,7 +12,7 @@ class TestWebGraphicsContext3D;
 
 class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
  public:
-  explicit TestGLES2Interface(TestWebGraphicsContext3D* test_context);
+  TestGLES2Interface();
   ~TestGLES2Interface() override;
 
   void GenTextures(GLsizei n, GLuint* textures) override;
@@ -162,8 +162,13 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
   GLenum GetGraphicsResetStatusKHR() override;
 
- private:
-  TestWebGraphicsContext3D* test_context_;
+  void set_test_context(TestWebGraphicsContext3D* context);
+
+ protected:
+  virtual void InitializeTestContext(TestWebGraphicsContext3D* context) {}
+
+ protected:
+  TestWebGraphicsContext3D* test_context_ = nullptr;
 };
 
 }  // namespace cc

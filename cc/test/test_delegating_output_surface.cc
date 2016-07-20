@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/test/begin_frame_args_test.h"
 
 static constexpr uint32_t kCompositorClientId = 1;
@@ -17,20 +18,41 @@ namespace cc {
 TestDelegatingOutputSurface::TestDelegatingOutputSurface(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
-    std::unique_ptr<Display> display,
-    bool context_shared_with_compositor,
-    bool allow_force_reclaim_resources)
+    std::unique_ptr<OutputSurface> display_output_surface,
+    SharedBitmapManager* shared_bitmap_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const RendererSettings& renderer_settings,
+    base::SingleThreadTaskRunner* task_runner,
+    bool synchronous_composite)
     : OutputSurface(std::move(compositor_context_provider),
                     std::move(worker_context_provider),
                     nullptr),
       surface_manager_(new SurfaceManager),
       surface_id_allocator_(new SurfaceIdAllocator(kCompositorClientId)),
       surface_factory_(new SurfaceFactory(surface_manager_.get(), this)),
-      display_(std::move(display)),
       weak_ptrs_(this) {
-  CHECK(display_);
+  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
+  std::unique_ptr<DisplayScheduler> scheduler;
+  if (!synchronous_composite) {
+    begin_frame_source.reset(new DelayBasedBeginFrameSource(
+        base::MakeUnique<DelayBasedTimeSource>(task_runner)));
+    scheduler.reset(new DisplayScheduler(
+        begin_frame_source.get(), task_runner,
+        display_output_surface->capabilities().max_frames_pending));
+  }
+  const bool context_shared_with_compositor =
+      display_output_surface->context_provider() == context_provider();
+  display_.reset(
+      new Display(shared_bitmap_manager, gpu_memory_buffer_manager,
+                  renderer_settings, std::move(begin_frame_source),
+                  std::move(display_output_surface), std::move(scheduler),
+                  base::MakeUnique<TextureMailboxDeleter>(task_runner)));
+
   capabilities_.delegated_rendering = true;
-  capabilities_.can_force_reclaim_resources = allow_force_reclaim_resources;
+  // Since this OutputSurface and the Display are tightly coupled and in the
+  // same process/thread, the LayerTreeHostImpl can reclaim resources from
+  // the Display.
+  capabilities_.can_force_reclaim_resources = true;
   capabilities_.delegated_sync_points_required =
       !context_shared_with_compositor;
 
@@ -52,17 +74,21 @@ bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
 
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->client_id(), this);
-  display_->Initialize(&display_client_, surface_manager_.get(),
+  display_->Initialize(this, surface_manager_.get(),
                        surface_id_allocator_->client_id());
+  bound_ = true;
   return true;
 }
 
 void TestDelegatingOutputSurface::DetachFromClient() {
-  if (!delegated_surface_id_.is_null())
-    surface_factory_->Destroy(delegated_surface_id_);
-  surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->client_id());
-
+  // Some tests make BindToClient fail on purpose. ^__^
+  if (bound_) {
+    if (!delegated_surface_id_.is_null())
+      surface_factory_->Destroy(delegated_surface_id_);
+    surface_manager_->UnregisterSurfaceFactoryClient(
+        surface_id_allocator_->client_id());
+    bound_ = false;
+  }
   display_ = nullptr;
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
@@ -124,6 +150,15 @@ void TestDelegatingOutputSurface::ReturnResources(
 void TestDelegatingOutputSurface::SetBeginFrameSource(
     BeginFrameSource* begin_frame_source) {
   client_->SetBeginFrameSource(begin_frame_source);
+}
+
+void TestDelegatingOutputSurface::DisplayOutputSurfaceLost() {
+  DidLoseOutputSurface();
+}
+
+void TestDelegatingOutputSurface::DisplaySetMemoryPolicy(
+    const ManagedMemoryPolicy& policy) {
+  SetMemoryPolicy(policy);
 }
 
 }  // namespace cc

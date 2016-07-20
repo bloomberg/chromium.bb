@@ -14,10 +14,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/resources/texture_mailbox.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -71,31 +68,18 @@ std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   display_output_surface->set_surface_expansion_size(surface_expansion_size);
 
   auto* task_runner = ImplThreadTaskRunner();
-  CHECK(task_runner);
-
-  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
-  std::unique_ptr<DisplayScheduler> scheduler;
-  if (layer_tree_host()->settings().single_thread_proxy_scheduler) {
-    begin_frame_source.reset(new DelayBasedBeginFrameSource(
-        base::MakeUnique<DelayBasedTimeSource>(task_runner)));
-    scheduler.reset(new DisplayScheduler(
-        begin_frame_source.get(), task_runner,
-        display_output_surface->capabilities().max_frames_pending));
-  }
-
-  std::unique_ptr<Display> display(
-      new Display(shared_bitmap_manager(), gpu_memory_buffer_manager(),
-                  RendererSettings(), std::move(begin_frame_source),
-                  std::move(display_output_surface), std::move(scheduler),
-                  base::MakeUnique<TextureMailboxDeleter>(task_runner)));
-  display->SetEnlargePassTextureAmountForTesting(enlarge_texture_amount_);
-
-  const bool context_shared_with_compositor = false;
-  const bool allow_force_reclaim_resources = true;
-  return base::MakeUnique<TestDelegatingOutputSurface>(
-      std::move(compositor_context_provider),
-      std::move(worker_context_provider), std::move(display),
-      context_shared_with_compositor, allow_force_reclaim_resources);
+  bool synchronous_composite =
+      !HasImplThread() &&
+      !layer_tree_host()->settings().single_thread_proxy_scheduler;
+  auto delegating_output_surface =
+      base::MakeUnique<TestDelegatingOutputSurface>(
+          std::move(compositor_context_provider),
+          std::move(worker_context_provider), std::move(display_output_surface),
+          shared_bitmap_manager(), gpu_memory_buffer_manager(),
+          RendererSettings(), task_runner, synchronous_composite);
+  delegating_output_surface->display()->SetEnlargePassTextureAmountForTesting(
+      enlarge_texture_amount_);
+  return std::move(delegating_output_surface);
 }
 
 std::unique_ptr<CopyOutputRequest>

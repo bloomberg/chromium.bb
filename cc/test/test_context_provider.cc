@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -38,20 +39,31 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestWebGraphicsContext3D> context) {
-  if (!context)
-    return NULL;
-  return new TestContextProvider(std::move(context));
+  DCHECK(context);
+  return new TestContextProvider(base::MakeUnique<TestGLES2Interface>(),
+                                 std::move(context));
+}
+
+// static
+scoped_refptr<TestContextProvider> TestContextProvider::Create(
+    std::unique_ptr<TestGLES2Interface> gl) {
+  DCHECK(gl);
+  return new TestContextProvider(std::move(gl),
+                                 TestWebGraphicsContext3D::Create());
 }
 
 TestContextProvider::TestContextProvider(
+    std::unique_ptr<TestGLES2Interface> gl,
     std::unique_ptr<TestWebGraphicsContext3D> context)
     : context3d_(std::move(context)),
-      context_gl_(new TestGLES2Interface(context3d_.get())),
+      context_gl_(std::move(gl)),
       bound_(false),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
+  DCHECK(context_gl_);
   context_thread_checker_.DetachFromThread();
+  context_gl_->set_test_context(context3d_.get());
   context3d_->set_test_support(&support_);
 }
 

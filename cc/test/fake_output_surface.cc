@@ -46,24 +46,31 @@ FakeOutputSurface::~FakeOutputSurface() = default;
 void FakeOutputSurface::SwapBuffers(CompositorFrame frame) {
   ReturnResourcesHeldByParent();
 
-  std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
-  *frame_copy = std::move(frame);
-  if (frame_copy->delegated_frame_data || !context_provider()) {
-    last_sent_frame_ = std::move(frame_copy);
+  last_sent_frame_.reset(new CompositorFrame(std::move(frame)));
+  ++num_sent_frames_;
 
-    if (last_sent_frame_->delegated_frame_data) {
-      resources_held_by_parent_.insert(
-          resources_held_by_parent_.end(),
-          last_sent_frame_->delegated_frame_data->resource_list.begin(),
-          last_sent_frame_->delegated_frame_data->resource_list.end());
-    }
-
-    ++num_sent_frames_;
+  if (last_sent_frame_->delegated_frame_data) {
+    auto* frame_data = last_sent_frame_->delegated_frame_data.get();
+    last_swap_rect_ = frame_data->render_pass_list.back()->damage_rect;
+    last_swap_rect_valid_ = true;
+  } else if (context_provider()) {
+    last_swap_rect_ = last_sent_frame_->gl_frame_data->sub_buffer_rect;
+    last_swap_rect_valid_ = true;
   } else {
-    last_swap_rect_ = frame_copy->gl_frame_data->sub_buffer_rect;
-    last_sent_frame_ = std::move(frame_copy);
-    ++num_sent_frames_;
+    // Unknown for direct software frames.
+    last_swap_rect_ = gfx::Rect();
+    last_swap_rect_valid_ = false;
   }
+
+  if (last_sent_frame_->delegated_frame_data || !context_provider()) {
+    if (last_sent_frame_->delegated_frame_data) {
+      auto* frame_data = last_sent_frame_->delegated_frame_data.get();
+      resources_held_by_parent_.insert(resources_held_by_parent_.end(),
+                                       frame_data->resource_list.begin(),
+                                       frame_data->resource_list.end());
+    }
+  }
+
   PostSwapBuffersComplete();
 }
 

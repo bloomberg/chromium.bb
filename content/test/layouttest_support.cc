@@ -12,9 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "cc/output/texture_mailbox_deleter.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_delegating_output_surface.h"
 #include "components/scheduler/test/renderer_scheduler_test_support.h"
@@ -214,36 +211,19 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
             nullptr, flipped_output_surface));
 
     auto* task_runner = deps->GetCompositorImplThreadTaskRunner().get();
-    bool synchronous_compositor = !task_runner;
+    bool synchronous_composite = !task_runner;
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get().get();
-
-    std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source;
-    std::unique_ptr<cc::DisplayScheduler> scheduler;
-    if (!synchronous_compositor) {
-      begin_frame_source.reset(new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
-      scheduler.reset(new cc::DisplayScheduler(
-          begin_frame_source.get(), task_runner,
-          display_output_surface->capabilities().max_frames_pending));
-    }
 
     cc::LayerTreeSettings settings =
         RenderWidgetCompositor::GenerateLayerTreeSettings(
             *base::CommandLine::ForCurrentProcess(), deps, 1.f);
 
-    std::unique_ptr<cc::Display> display(new cc::Display(
-        deps->GetSharedBitmapManager(), deps->GetGpuMemoryBufferManager(),
-        settings.renderer_settings, std::move(begin_frame_source),
-        std::move(display_output_surface), std::move(scheduler),
-        base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
-
-    const bool context_shared_with_compositor = false;
-    const bool allow_force_reclaim_resources = false;
     return base::MakeUnique<cc::TestDelegatingOutputSurface>(
         std::move(compositor_context_provider),
-        std::move(worker_context_provider), std::move(display),
-        context_shared_with_compositor, allow_force_reclaim_resources);
+        std::move(worker_context_provider), std::move(display_output_surface),
+        deps->GetSharedBitmapManager(), deps->GetGpuMemoryBufferManager(),
+        settings.renderer_settings, task_runner, synchronous_composite);
   }
 };
 

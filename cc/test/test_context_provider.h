@@ -35,6 +35,8 @@ class TestContextProvider : public ContextProvider {
   static scoped_refptr<TestContextProvider> CreateWorker();
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestWebGraphicsContext3D> context);
+  static scoped_refptr<TestContextProvider> Create(
+      std::unique_ptr<TestGLES2Interface> gl);
 
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
@@ -59,6 +61,7 @@ class TestContextProvider : public ContextProvider {
 
  protected:
   explicit TestContextProvider(
+      std::unique_ptr<TestGLES2Interface> gl,
       std::unique_ptr<TestWebGraphicsContext3D> context);
   ~TestContextProvider() override;
 

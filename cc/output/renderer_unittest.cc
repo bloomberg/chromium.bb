@@ -9,6 +9,7 @@
 #include "cc/test/fake_renderer_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +42,8 @@ class MockContextProvider : public TestContextProvider {
  public:
   explicit MockContextProvider(
       std::unique_ptr<TestWebGraphicsContext3D> context)
-      : TestContextProvider(std::move(context)) {}
+      : TestContextProvider(base::MakeUnique<TestGLES2Interface>(),
+                            std::move(context)) {}
   MOCK_METHOD0(DeleteCachedResources, void());
 
  protected:

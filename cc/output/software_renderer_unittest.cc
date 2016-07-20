@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
@@ -393,6 +394,62 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   EXPECT_EQ(SK_ColorMAGENTA,
             output->getColor(interior_visible_rect.right() - 1,
                              interior_visible_rect.bottom() - 1));
+}
+
+class PartialSwapSoftwareOutputDevice : public SoftwareOutputDevice {
+ public:
+  // SoftwareOutputDevice overrides.
+  SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override {
+    damage_rect_at_start_ = damage_rect;
+    canvas_ = SoftwareOutputDevice::BeginPaint(damage_rect);
+    return canvas_;
+  }
+  void EndPaint() override {
+    SkIRect clip_device_bounds;
+    canvas_->getClipDeviceBounds(&clip_device_bounds);
+    clip_rect_at_end_ = gfx::SkIRectToRect(clip_device_bounds);
+    SoftwareOutputDevice::EndPaint();
+  }
+
+  gfx::Rect damage_rect_at_start() const { return damage_rect_at_start_; }
+  gfx::Rect clip_rect_at_end() const { return clip_rect_at_end_; }
+
+ private:
+  SkCanvas* canvas_ = nullptr;
+  gfx::Rect damage_rect_at_start_;
+  gfx::Rect clip_rect_at_end_;
+};
+
+TEST_F(SoftwareRendererTest, PartialSwap) {
+  float device_scale_factor = 1.f;
+  gfx::Rect device_viewport_rect(0, 0, 100, 100);
+
+  auto device_owned = base::MakeUnique<PartialSwapSoftwareOutputDevice>();
+  auto* device = device_owned.get();
+  InitializeRenderer(std::move(device_owned));
+
+  gfx::Rect viewport_rect(100, 100);
+  gfx::Rect clip_rect(100, 100);
+
+  RenderPassList list;
+
+  RenderPassId root_pass_id(1, 0);
+  RenderPass* root_pass =
+      AddRenderPass(&list, root_pass_id, viewport_rect, gfx::Transform());
+  AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+
+  // Partial frame, we should pass this rect to the SoftwareOutputDevice.
+  // partial swap is enabled.
+  root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
+
+  renderer()->DecideRenderPassAllocationsForFrame(list);
+  renderer()->DrawFrame(&list, device_scale_factor, gfx::ColorSpace(),
+                        viewport_rect, clip_rect);
+
+  // The damage rect should be reported to the SoftwareOutputDevice.
+  EXPECT_EQ(gfx::Rect(2, 2, 3, 3), device->damage_rect_at_start());
+  // The SkCanvas should be clipped to the damage rect.
+  EXPECT_EQ(gfx::Rect(2, 2, 3, 3), device->clip_rect_at_end());
 }
 
 }  // namespace
