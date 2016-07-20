@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/win/win_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
@@ -411,6 +412,7 @@ void ScreenWin::Initialize() {
       new gfx::SingletonHwndObserver(
           base::Bind(&ScreenWin::OnWndProc, base::Unretained(this))));
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
+  RecordDisplayScaleFactors();
 }
 
 MONITORINFOEX ScreenWin::MonitorInfoFromScreenPoint(
@@ -546,6 +548,23 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayVia(Getter getter,
     return ScreenWinDisplay();
 
   return (g_screen_win_instance->*getter)(value);
+}
+
+void ScreenWin::RecordDisplayScaleFactors() const {
+  std::vector<int> unique_scale_factors;
+  for (const auto& screen_win_display : screen_win_displays_) {
+    const float scale_factor =
+        screen_win_display.display().device_scale_factor();
+    // Multiply the reported value by 100 to display it as a percentage. Clamp
+    // it so that if it's wildly out-of-band we won't send it to the backend.
+    const int reported_scale = std::min(
+        std::max(base::checked_cast<int>(scale_factor * 100), 0), 1000);
+    if (std::find(unique_scale_factors.begin(), unique_scale_factors.end(),
+                  reported_scale) == unique_scale_factors.end()) {
+      unique_scale_factors.push_back(reported_scale);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("UI.DeviceScale", reported_scale);
+    }
+  }
 }
 
 }  // namespace win

@@ -167,6 +167,8 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   static ScreenWinDisplay GetScreenWinDisplayVia(Getter getter,
                                                  GetterType value);
 
+  void RecordDisplayScaleFactors() const;
+
   // Helper implementing the DisplayObserver handling.
   DisplayChangeNotifier change_notifier_;
 

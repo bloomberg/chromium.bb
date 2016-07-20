@@ -59866,6 +59866,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Whether a scroll is executed on main thread.</summary>
 </histogram>
 
+<histogram name="UI.DeviceScale" units="%">
+  <owner>bsep@chromium.org</owner>
+  <summary>
+    The device scales available on the system at startup. A system may report
+    more than one if it has multiple displays with varying device scales. Only
+    logged on Windows.
+  </summary>
+</histogram>
+
 <histogram name="UMA.ActualLogUploadInterval" units="minutes">
   <owner>asvitkine@chromium.org</owner>
   <summary>
