@@ -107,6 +107,23 @@ class FacebookDesktopStory(_NewsBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
 
 
+class FlipboardMobileStory(_NewsBrowsingStory):
+  NAME = 'browse:news:flipboard'
+  URL = 'https://flipboard.com/explore'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.grad-top'
+  ITEM_SCROLL_REPEAT = 4
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+
+class FlipboardDesktopStory(_NewsBrowsingStory):
+  NAME = 'browse:news:flipboard'
+  URL = 'https://flipboard.com/explore'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.cover-image'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class HackerNewsStory(_NewsBrowsingStory):
   NAME = 'browse:news:hackernews'
   URL = 'https://news.ycombinator.com'

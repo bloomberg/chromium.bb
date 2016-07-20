@@ -122,6 +122,11 @@ class LoadCnnStory(_LoadingStory):
   URL = 'http://edition.cnn.com'
 
 
+class LoadFacebookStory(_LoadingStory):
+  NAME = 'load:news:flipboard'
+  URL = 'https://flipboard.com/explore'
+
+
 class LoadHackerNewsStory(_LoadingStory):
   NAME = 'load:news:hackernews'
   URL = 'https://news.ycombinator.com'

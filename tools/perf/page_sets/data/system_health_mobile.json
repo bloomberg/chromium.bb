@@ -88,6 +88,12 @@
         ],
         "system_health_mobile_023.wpr": [
             "browse:social:twitter"
+        ],
+        "system_health_mobile_024.wpr": [
+            "load:news:flipboard"
+        ],
+        "system_health_mobile_025.wpr": [
+            "browse:news:flipboard"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."
