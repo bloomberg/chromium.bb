@@ -286,7 +286,7 @@ page](https://github.com/quarnster/SublimeClang).
     ```
 
 1.  Edit your project file `Project > Edit Project` to call the script above
-    (replace `out/Debug` with your out directory):
+    (replace `/path/to/depot_tools` with your depot_tools directory):
 
     ```
     {
@@ -300,7 +300,7 @@ page](https://github.com/quarnster/SublimeClang).
         [
           "-Wno-attributes",
         ],
-        "sublimeclang_options_script": "python ${project_path}/src/tools/sublime/ninja_options_script.py ${project_path}/src ${project_path}/src/out/Debug",
+        "sublimeclang_options_script": "python ${project_path}/src/tools/sublime/ninja_options_script.py -d '/path/to/depot_tools'",
       }
     }
     ```
