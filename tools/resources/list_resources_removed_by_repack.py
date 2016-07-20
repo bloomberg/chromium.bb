@@ -56,11 +56,7 @@ def Main():
 
   product = 'chromium' if build_type == 'chromium' else 'google_chrome'
   suffix = product + '_strings.h'
-  excluded_headers = set([s % suffix for s in (
-      '%s',
-      'components_%s',
-      'settings_%s'
-  )])
+  excluded_headers = set([s % suffix for s in ('%s', 'components_%s')])
 
   data_files = []
   for root, dirs, files in os.walk(generated_output_dir):

@@ -115,19 +115,7 @@
     "messages": [12200],
   },
   "content/app/strings/content_strings.grd": {
-    "messages": [18600],
-  },
-  # Settings Chromium strings and Settings Google Chrome strings must start
-  # at the same id.  We only use one file depending on whether we're building
-  # Chromium or Google Chrome.
-  "chrome/app/settings_chromium_strings.grd": {
-    "messages": [19400],
-  },
-  "chrome/app/settings_google_chrome_strings.grd": {
-    "messages": [19400],
-  },
-  "chrome/app/settings_strings.grd": {
-    "messages": [19700],
+    "messages": [19300],
   },
   "components/policy/resources/policy_templates.grd": {
     "structures": [20100],

@@ -201,6 +201,11 @@ are declared in build/common.gypi.
         <part file="media_router_strings.grdp" />
       </if>
 
+      <!-- Settings specific strings -->
+      <if expr="not is_android and not is_ios">
+        <part file="settings_strings.grdp" />
+      </if>
+
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify

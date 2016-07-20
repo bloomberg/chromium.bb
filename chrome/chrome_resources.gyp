@@ -271,30 +271,6 @@
           },
           'includes': [ 'chrome_grit_action.gypi' ],
         },
-        {
-          # GN version: //chrome/app:settings_strings
-          'action_name': 'generate_settings_strings',
-          'variables': {
-            'grit_grd_file': 'app/settings_strings.grd',
-          },
-          'includes': [ 'chrome_grit_action.gypi' ],
-        },
-        {
-          # GN version: //chrome/app:settings_chromium_strings
-          'action_name': 'generate_settings_chromium_strings',
-          'variables': {
-            'grit_grd_file': 'app/settings_chromium_strings.grd',
-          },
-          'includes': [ 'chrome_grit_action.gypi' ],
-        },
-        {
-          # GN version: //chrome/app:settings_google_chrome_strings
-          'action_name': 'generate_settings_google_chrome_strings',
-          'variables': {
-            'grit_grd_file': 'app/settings_google_chrome_strings.grd',
-          },
-          'includes': [ 'chrome_grit_action.gypi' ],
-        },
       ],
     },
 
@@ -370,14 +346,11 @@
           'inputs': [
             '../components/variations/service/generate_ui_string_overrider.py',
             '<(grit_out_dir)/grit/chromium_strings.h',
-	    '<(grit_out_dir)/grit/generated_resources.h',
+            '<(grit_out_dir)/grit/generated_resources.h',
             '<(grit_out_dir)/grit/google_chrome_strings.h',
-            '<(grit_out_dir)/grit/settings_chromium_strings.h',
-            '<(grit_out_dir)/grit/settings_google_chrome_strings.h',
-            '<(grit_out_dir)/grit/settings_strings.h',
             '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_chromium_strings.h',
             '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_google_chrome_strings.h',
-	    '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h'
+            '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h'
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/ui_string_overrider_factory.cc',
@@ -391,14 +364,11 @@
             '-S', 'chrome/browser/metrics/variations/ui_string_overrider_factory.cc',
             '-H', 'chrome/browser/metrics/variations/ui_string_overrider_factory.h',
             '<(grit_out_dir)/grit/chromium_strings.h',
-	    '<(grit_out_dir)/grit/generated_resources.h',
+            '<(grit_out_dir)/grit/generated_resources.h',
             '<(grit_out_dir)/grit/google_chrome_strings.h',
-            '<(grit_out_dir)/grit/settings_chromium_strings.h',
-            '<(grit_out_dir)/grit/settings_google_chrome_strings.h',
-            '<(grit_out_dir)/grit/settings_strings.h',
             '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_chromium_strings.h',
             '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_google_chrome_strings.h',
-	    '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h'
+            '<(SHARED_INTERMEDIATE_DIR)/components/strings/grit/components_strings.h'
           ],
           'message': 'Generating generated resources map.',
         }
