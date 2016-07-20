@@ -36,3 +36,9 @@ PanelMenuItem = function(menuItemTitle, menuItemShortcut, callback) {
   shortcut.textContent = menuItemShortcut;
   this.element.appendChild(shortcut);
 };
+
+PanelMenuItem.prototype = {
+  get text() {
+    return this.element.textContent;
+  }
+};

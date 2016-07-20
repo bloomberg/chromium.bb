@@ -235,20 +235,16 @@ Output.ROLE_INFO_ = {
     msgId: 'role_menubar',
   },
   menuItem: {
-    msgId: 'role_menuitem',
-    ignoreAncestry: true
+    msgId: 'role_menuitem'
   },
   menuItemCheckBox: {
-    msgId: 'role_menuitemcheckbox',
-    ignoreAncestry: true
+    msgId: 'role_menuitemcheckbox'
   },
   menuItemRadio: {
-    msgId: 'role_menuitemradio',
-    ignoreAncestry: true
+    msgId: 'role_menuitemradio'
   },
   menuListOption: {
-    msgId: 'role_menuitem',
-    ignoreAncestry: true
+    msgId: 'role_menuitem'
   },
   menuListPopup: {
     msgId: 'role_menu'

@@ -62,6 +62,9 @@ PanelMenu = function(menuMsg) {
    * @private
    */
   this.activeIndex_ = -1;
+
+  this.menuElement.addEventListener(
+      'keypress', this.onKeyPress_.bind(this), true);
 };
 
 PanelMenu.prototype = {
@@ -187,6 +190,20 @@ PanelMenu.prototype = {
         return this.items_[i].callback;
     }
     return null;
+  },
+
+  /**
+   * Handles key presses for first letter accelerators.
+   */
+  onKeyPress_: function(evt) {
+    var query = String.fromCharCode(evt.charCode).toLowerCase();
+
+    for (var i = this.activeIndex_ + 1; i < this.items_.length; i++) {
+      if (this.items_[i].text.toLowerCase().indexOf(query) == 0) {
+        this.activateItem(i);
+        break;
+      }
+    }
   }
 };
 
