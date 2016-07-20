@@ -61,6 +61,18 @@ test(() => {
 }, 'markers around table');
 
 test(() => {
+    assert_selection(
+        '<div>foo</div>',
+        selection => {
+            let doc = selection.document;
+            doc.documentElement.replaceChild(
+                doc.createTextNode('baz'), doc.body);
+        },
+        '<html><head></head>baz</html>',
+        'Serialize document element instead of document.body when it is null.');
+}, 'result with out body');
+
+test(() => {
     assert_equals(checked_assert_selection('fo|o', 'noop', 'fo|o'),
         'no exception');
 }, 'no marker in output');

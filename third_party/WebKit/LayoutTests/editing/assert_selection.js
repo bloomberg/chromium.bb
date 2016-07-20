@@ -466,7 +466,10 @@ class Serializer {
    * @param {!HTMLDocument} document
    */
   serialize(document) {
-    this.serializeChildren(document.body);
+    if (document.body)
+        this.serializeChildren(document.body);
+    else
+        this.serializeInternal(document.documentElement);
     return this.strings_.join('');
   }
 
