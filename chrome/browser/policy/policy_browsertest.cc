@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/display/display_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -732,17 +733,19 @@ class PolicyTest : public InProcessBrowserTest {
     // ScreenshotGrabber doesn't own this observer, so the observer's lifetime
     // is tied to the test instead.
     chrome_screenshot_grabber->screenshot_grabber()->AddObserver(&observer_);
-    ash::Shell::GetInstance()->accelerator_controller()->SetScreenshotDelegate(
-        std::move(chrome_screenshot_grabber));
+    ash::Shell::GetInstance()
+        ->accelerator_controller_delegate()
+        ->SetScreenshotDelegate(std::move(chrome_screenshot_grabber));
 
     SetScreenshotPolicy(enabled);
     ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
         ash::TAKE_SCREENSHOT);
 
     content::RunMessageLoop();
-    static_cast<ChromeScreenshotGrabber*>(ash::Shell::GetInstance()
-                                              ->accelerator_controller()
-                                              ->screenshot_delegate())
+    static_cast<ChromeScreenshotGrabber*>(
+        ash::Shell::GetInstance()
+            ->accelerator_controller_delegate()
+            ->screenshot_delegate())
         ->screenshot_grabber()
         ->RemoveObserver(&observer_);
   }

@@ -46,9 +46,6 @@ ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 // Returns true if |window|'s location can be controlled by the user.
 ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);
 
-// Moves the window to the center of the display.
-ASH_EXPORT void CenterWindow(aura::Window* window);
-
 // Pins the window on top of other windows.
 ASH_EXPORT void PinWindow(aura::Window* window);
 

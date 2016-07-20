@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_util.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/screen_util.h"
@@ -35,14 +36,14 @@ TEST_F(WindowUtilTest, CenterWindow) {
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_FALSE(window_state->bounds_changed_by_user());
 
-  wm::CenterWindow(window.get());
+  wm::CenterWindow(WmWindowAura::Get(window.get()));
   // Centring window is considered as a user's action.
   EXPECT_TRUE(window_state->bounds_changed_by_user());
   EXPECT_EQ("200,126 100x100", window->bounds().ToString());
   EXPECT_EQ("200,126 100x100", window->GetBoundsInScreen().ToString());
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
                             ScreenUtil::GetSecondaryDisplay());
-  wm::CenterWindow(window.get());
+  wm::CenterWindow(WmWindowAura::Get(window.get()));
   EXPECT_EQ("250,126 100x100", window->bounds().ToString());
   EXPECT_EQ("750,126 100x100", window->GetBoundsInScreen().ToString());
 }

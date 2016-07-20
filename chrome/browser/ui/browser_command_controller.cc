@@ -65,7 +65,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerators/accelerator_commands_aura.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 

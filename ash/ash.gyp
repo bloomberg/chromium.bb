@@ -9,8 +9,13 @@
     'ash_sources': [
       'accelerators/accelerator_commands.cc',
       'accelerators/accelerator_commands.h',
+      'accelerators/accelerator_commands_aura.cc',
+      'accelerators/accelerator_commands_aura.h',
       'accelerators/accelerator_controller.cc',
       'accelerators/accelerator_controller.h',
+      'accelerators/accelerator_controller_delegate.h',
+      'accelerators/accelerator_controller_delegate_aura.cc',
+      'accelerators/accelerator_controller_delegate_aura.h',
       'accelerators/accelerator_delegate.cc',
       'accelerators/accelerator_delegate.h',
       'accelerators/accelerator_table.cc',

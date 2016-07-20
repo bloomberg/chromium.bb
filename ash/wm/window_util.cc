@@ -62,11 +62,6 @@ bool IsWindowUserPositionable(aura::Window* window) {
   return GetWindowState(window)->IsUserPositionable();
 }
 
-void CenterWindow(aura::Window* window) {
-  wm::WMEvent event(wm::WM_EVENT_CENTER);
-  wm::GetWindowState(window)->OnWMEvent(&event);
-}
-
 void PinWindow(aura::Window* window) {
   wm::WMEvent event(wm::WM_EVENT_PIN);
   wm::GetWindowState(window)->OnWMEvent(&event);

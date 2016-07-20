@@ -51,6 +51,9 @@ ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
 ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
     WmWindow* window);
 
+// Moves the window to the center of the display.
+ASH_EXPORT void CenterWindow(WmWindow* window);
+
 }  // namespace wm
 }  // namespace ash
 

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -49,7 +50,8 @@ TEST_F(TouchTest, OnTouchDown) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(bottom_buffer_size)));
   bottom_surface->Attach(bottom_buffer.get());
   bottom_surface->Commit();
-  ash::wm::CenterWindow(bottom_shell_surface->GetWidget()->GetNativeWindow());
+  ash::wm::CenterWindow(ash::WmWindowAura::Get(
+      bottom_shell_surface->GetWidget()->GetNativeWindow()));
 
   std::unique_ptr<Surface> top_surface(new Surface);
   std::unique_ptr<ShellSurface> top_shell_surface(
@@ -59,7 +61,8 @@ TEST_F(TouchTest, OnTouchDown) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(top_buffer_size)));
   top_surface->Attach(top_buffer.get());
   top_surface->Commit();
-  ash::wm::CenterWindow(top_shell_surface->GetWidget()->GetNativeWindow());
+  ash::wm::CenterWindow(ash::WmWindowAura::Get(
+      top_shell_surface->GetWidget()->GetNativeWindow()));
 
   MockTouchDelegate delegate;
   std::unique_ptr<Touch> touch(new Touch(&delegate));
@@ -212,7 +215,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
   surface2->Commit();
-  ash::wm::CenterWindow(surface2->window());
+  ash::wm::CenterWindow(ash::WmWindowAura::Get(surface2->window()));
   gfx::Point location2 = surface2->window()->GetBoundsInScreen().origin();
 
   // Make the window modal.

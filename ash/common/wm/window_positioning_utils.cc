@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -75,6 +77,11 @@ gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(WmWindow* window) {
   int width = GetDefaultSnappedWindowWidth(window);
   return gfx::Rect(work_area_in_parent.right() - width, work_area_in_parent.y(),
                    width, work_area_in_parent.height());
+}
+
+void CenterWindow(WmWindow* window) {
+  WMEvent event(WM_EVENT_CENTER);
+  window->GetWindowState()->OnWMEvent(&event);
 }
 
 }  // namespace wm

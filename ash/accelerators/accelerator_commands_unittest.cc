@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"

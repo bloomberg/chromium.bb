@@ -27,9 +27,9 @@ class AcceleratorManager;
 namespace ash {
 
 struct AcceleratorData;
+class AcceleratorControllerDelegate;
 class ExitWarningHandler;
 class ImeControlDelegate;
-class ScreenshotDelegate;
 class VolumeControlDelegate;
 
 // AcceleratorController provides functions for registering or unregistering
@@ -37,7 +37,7 @@ class VolumeControlDelegate;
 // also implements several handlers as an accelerator target.
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
  public:
-  AcceleratorController();
+  explicit AcceleratorController(AcceleratorControllerDelegate* delegate);
   ~AcceleratorController() override;
 
   // A list of possible ways in which an accelerator should be restricted before
@@ -101,11 +101,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   void SetImeControlDelegate(
       std::unique_ptr<ImeControlDelegate> ime_control_delegate);
-  void SetScreenshotDelegate(
-      std::unique_ptr<ScreenshotDelegate> screenshot_delegate);
-  ScreenshotDelegate* screenshot_delegate() {
-    return screenshot_delegate_.get();
-  }
 
   // Provides access to the ExitWarningHandler for testing.
   ExitWarningHandler* GetExitWarningHandlerForTest() {
@@ -159,13 +154,14 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
       int action);
 
+  AcceleratorControllerDelegate* delegate_;
+
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 
   // A tracker for the current and previous accelerators.
   std::unique_ptr<ui::AcceleratorHistory> accelerator_history_;
 
   std::unique_ptr<ImeControlDelegate> ime_control_delegate_;
-  std::unique_ptr<ScreenshotDelegate> screenshot_delegate_;
 
   // Handles the exit accelerator which requires a double press to exit and
   // shows a popup with an explanation.

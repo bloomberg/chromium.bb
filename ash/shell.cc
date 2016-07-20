@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/focus_manager_factory.h"
 #include "ash/aura/wm_shell_aura.h"
@@ -916,7 +917,9 @@ void Shell::Init(const ShellInitParams& init_params) {
     cursor_manager_->SetDisplay(
         display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_.reset(new AcceleratorController);
+  accelerator_controller_delegate_.reset(new AcceleratorControllerDelegateAura);
+  accelerator_controller_.reset(
+      new AcceleratorController(accelerator_controller_delegate_.get()));
   wm_shell_->CreateMaximizeModeController();
 
   AddPreTargetHandler(window_tree_host_manager_->input_method_event_handler());

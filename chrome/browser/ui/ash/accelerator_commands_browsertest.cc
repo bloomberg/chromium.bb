@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_state.h"

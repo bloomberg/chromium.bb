@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
@@ -71,7 +72,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   shell_init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   ash::Shell* shell = ash::Shell::CreateInstance(shell_init_params);
-  shell->accelerator_controller()->SetScreenshotDelegate(
+  shell->accelerator_controller_delegate()->SetScreenshotDelegate(
       std::unique_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber));
   shell->autoclick_controller()->SetDelegate(
       base::WrapUnique(new chromeos::AutoclickRingHandler()));
