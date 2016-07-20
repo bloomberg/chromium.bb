@@ -31,6 +31,7 @@ class MaximizeModeController;
 class MruWindowTracker;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
+class ShelfModel;
 class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
@@ -92,6 +93,8 @@ class ASH_EXPORT WmShell {
 
   MediaDelegate* media_delegate() { return media_delegate_.get(); }
 
+  ShelfModel* shelf_model() { return shelf_model_.get(); }
+
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
   }
@@ -145,6 +148,22 @@ class ASH_EXPORT WmShell {
   void SimulateModalWindowOpenForTesting(bool modal_window_open) {
     simulate_modal_window_open_for_testing_ = modal_window_open;
   }
+
+  // Shows the app list on the active root window.
+  void ShowAppList();
+
+  // Dismisses the app list.
+  void DismissAppList();
+
+  // Shows the app list if it's not visible. Dismisses it otherwise.
+  void ToggleAppList();
+
+  // Returns app list actual visibility. This might differ from
+  // GetAppListTargetVisibility() when hiding animation is still in flight.
+  bool IsApplistVisible() const;
+
+  // Returns app list target visibility.
+  bool GetAppListTargetVisibility() const;
 
   // Returns true if a window is currently pinned.
   virtual bool IsPinned() = 0;
@@ -277,6 +296,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+  std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;

@@ -34,7 +34,8 @@ AshNativeCursorManager* ShellTestApi::ash_native_cursor_manager() {
 }
 
 ShelfModel* ShellTestApi::shelf_model() {
-  return shell_->shelf_model_.get();
+  // TODO(jamescook): Remove this and access WmShell::shelf_model() directly.
+  return shell_->wm_shell_->shelf_model();
 }
 
 DragDropController* ShellTestApi::drag_drop_controller() {

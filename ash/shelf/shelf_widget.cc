@@ -726,9 +726,9 @@ bool ShelfWidget::GetDimsShelf() const {
 void ShelfWidget::CreateShelf(WmShelfAura* wm_shelf_aura) {
   DCHECK(!shelf_);
 
-  Shell* shell = Shell::GetInstance();
-  ShelfDelegate* delegate = shell->GetShelfDelegate();
-  shelf_.reset(new Shelf(shell->shelf_model(), delegate, wm_shelf_aura, this));
+  ShelfDelegate* delegate = Shell::GetInstance()->GetShelfDelegate();
+  shelf_.reset(
+      new Shelf(WmShell::Get()->shelf_model(), delegate, wm_shelf_aura, this));
   // Must be initialized before the delegate is notified because the delegate
   // may try to access the WmShelf.
   wm_shelf_aura->SetShelf(shelf_.get());

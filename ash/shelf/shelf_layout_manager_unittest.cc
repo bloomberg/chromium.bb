@@ -1320,7 +1320,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrShelfFocused) {
 // SHELF_VISIBLE state,and toggling app list won't change shelf
 // visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
-  Shell* shell = Shell::GetInstance();
+  WmShell* shell = WmShell::Get();
   Shelf* shelf = GetShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   layout_manager->LayoutShelf();
@@ -1334,7 +1334,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Show app list and the shelf stays visible.
-  shell->ShowAppList(nullptr);
+  shell->ShowAppList();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
@@ -1348,7 +1348,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
 // when app list opens as shelf is in SHELF_AUTO_HIDE state, and
 // toggling app list won't change shelf visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
-  Shell* shell = Shell::GetInstance();
+  WmShell* shell = WmShell::Get();
   Shelf* shelf = GetShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   layout_manager->LayoutShelf();
@@ -1365,11 +1365,10 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Show app list.
-  shell->ShowAppList(nullptr);
+  shell->ShowAppList();
   // The shelf's auto hide state won't be changed until the timer fires, so
-  // calling shell->UpdateShelfVisibility() is kind of manually helping it to
-  // update the state.
-  shell->UpdateShelfVisibility();
+  // force it to update now.
+  layout_manager->UpdateVisibilityState();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -1431,26 +1430,26 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   wm::ActivateWindow(window_1);
   shell->UpdateShelfVisibility();
 
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // Show app list.
-  shell->ShowAppList(nullptr);
+  WmShell::Get()->ShowAppList();
   shell->UpdateShelfVisibility();
 
   // Only the shelf in the active display should be shown, the other is hidden.
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // Hide app list, both shelves should be hidden.
-  shell->DismissAppList();
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  WmShell::Get()->DismissAppList();
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
@@ -1460,7 +1459,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
 // Makes sure the shelf will be hidden when we have a fullscreen window, and it
 // will unhide when we open the app list.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
-  Shell* shell = Shell::GetInstance();
+  WmShell* shell = WmShell::Get();
   Shelf* shelf = GetShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   // For shelf to be visible, app list is not open in initial state.
@@ -1478,7 +1477,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // Show app list.
-  shell->ShowAppList(nullptr);
+  shell->ShowAppList();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 

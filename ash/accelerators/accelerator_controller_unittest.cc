@@ -954,18 +954,18 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 
   // The press event should not open the AppList, the release should instead.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_EQ(ui::VKEY_LWIN, GetCurrentAccelerator().key_code());
 
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 
   EXPECT_TRUE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
 
   EXPECT_EQ(ui::VKEY_LWIN, GetPreviousAccelerator().key_code());
 
@@ -976,13 +976,13 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
 
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_TRUE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 
   // When spoken feedback is on, the AppList should not toggle.
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
@@ -991,16 +991,16 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 
 #if defined(OS_CHROMEOS)
   // The press of VKEY_BROWSER_SEARCH should toggle the AppList
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_FALSE(ProcessInController(
       ReleaseAccelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
 #endif
 }
 

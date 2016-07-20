@@ -9,6 +9,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -22,6 +23,8 @@
 #include "ash/common/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/display/display.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
@@ -85,6 +88,7 @@ void WmShell::RemoveShellObserver(ShellObserver* observer) {
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       focus_cycler_(new FocusCycler),
+      shelf_model_(new ShelfModel),
       system_tray_notifier_(new SystemTrayNotifier),
       window_selector_controller_(new WindowSelectorController) {
 #if defined(OS_CHROMEOS)
@@ -114,6 +118,32 @@ bool WmShell::IsSystemModalWindowOpen() {
     }
   }
   return false;
+}
+
+void WmShell::ShowAppList() {
+  // Show the app list on the default display for new windows.
+  int64_t display_id =
+      GetRootWindowForNewWindows()->GetDisplayNearestWindow().id();
+  delegate_->GetAppListPresenter()->Show(display_id);
+}
+
+void WmShell::DismissAppList() {
+  delegate_->GetAppListPresenter()->Dismiss();
+}
+
+void WmShell::ToggleAppList() {
+  // Show the app list on the default display for new windows.
+  int64_t display_id =
+      GetRootWindowForNewWindows()->GetDisplayNearestWindow().id();
+  delegate_->GetAppListPresenter()->ToggleAppList(display_id);
+}
+
+bool WmShell::IsApplistVisible() const {
+  return delegate_->GetAppListPresenter()->IsVisible();
+}
+
+bool WmShell::GetAppListTargetVisibility() const {
+  return delegate_->GetAppListPresenter()->GetTargetVisibility();
 }
 
 void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {

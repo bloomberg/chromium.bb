@@ -8,8 +8,8 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -192,7 +192,7 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   SetUserInActiveDesktopEnvironment(true);
 
   // Make sure the shelf contains the app list launcher button.
-  const ShelfItems& shelf_items = Shell::GetInstance()->shelf_model()->items();
+  const ShelfItems& shelf_items = WmShell::Get()->shelf_model()->items();
   ASSERT_EQ(1u, shelf_items.size());
   ASSERT_EQ(TYPE_APP_LIST, shelf_items[0].type);
 

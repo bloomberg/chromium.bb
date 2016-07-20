@@ -161,8 +161,7 @@ void RecordShelfItemCounts() {
   int pinned_item_count = 0;
   int unpinned_item_count = 0;
 
-  for (const ShelfItem& shelf_item :
-       Shell::GetInstance()->shelf_model()->items()) {
+  for (const ShelfItem& shelf_item : WmShell::Get()->shelf_model()->items()) {
     if (shelf_item.type != TYPE_APP_LIST) {
       // Internal ash apps do not have an app id and thus will always be counted
       // as unpinned.

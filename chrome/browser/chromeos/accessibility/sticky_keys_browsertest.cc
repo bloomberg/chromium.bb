@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
@@ -160,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
 
   // Make sure that the AppList is not erronously displayed and the omnibox
   // doesn't lost focus
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(ash::WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Type 'foo'.
@@ -174,14 +175,14 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
   ASSERT_EQ(3U, start);
   ASSERT_EQ(3U, end);
 
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(ash::WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Hit Home by sequencing Search (left Windows) and Left (arrow).
   SendKeyPress(ui::VKEY_LWIN);
   SendKeyPress(ui::VKEY_LEFT);
 
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(ash::WmShell::Get()->GetAppListTargetVisibility());
   EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Verify caret moved to the beginning.

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/app_list_shelf_item_delegate.h"
+#include "ash/common/shelf/app_list_shelf_item_delegate.h"
 
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "grit/ash_strings.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,7 +15,7 @@ namespace ash {
 AppListShelfItemDelegate::AppListShelfItemDelegate() {
   ShelfItem app_list;
   app_list.type = TYPE_APP_LIST;
-  Shell::GetInstance()->shelf_model()->Add(app_list);
+  WmShell::Get()->shelf_model()->Add(app_list);
 }
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {
@@ -24,13 +24,12 @@ AppListShelfItemDelegate::~AppListShelfItemDelegate() {
 
 ShelfItemDelegate::PerformedAction AppListShelfItemDelegate::ItemSelected(
     const ui::Event& event) {
-  // Pass NULL here to show the app list in the currently active RootWindow.
-  Shell::GetInstance()->ToggleAppList(NULL);
+  WmShell::Get()->ToggleAppList();
   return ShelfItemDelegate::kAppListMenuShown;
 }
 
 base::string16 AppListShelfItemDelegate::GetTitle() {
-  ShelfModel* model = Shell::GetInstance()->shelf_model();
+  ShelfModel* model = WmShell::Get()->shelf_model();
   DCHECK(model);
   int title_id;
   if (app_list::switches::IsExperimentalAppListEnabled()) {

@@ -10,6 +10,7 @@
 #include "ash/accelerators/accelerator_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -151,8 +152,8 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   EXPECT_FALSE(session_state_delegate->IsScreenLocked());
 
   // Search+L is processed when the app_list target visibility is false.
-  Shell::GetInstance()->DismissAppList();
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  WmShell::Get()->DismissAppList();
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(session_state_delegate->IsScreenLocked());

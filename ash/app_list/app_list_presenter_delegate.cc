@@ -5,6 +5,7 @@
 #include "ash/app_list/app_list_presenter_delegate.h"
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -12,7 +13,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"

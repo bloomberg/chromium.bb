@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/app_list_button.h"
+#include "ash/common/shelf/app_list_button.h"
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
@@ -10,11 +10,10 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -32,11 +31,16 @@
 namespace ash {
 
 AppListButton::AppListButton(InkDropButtonListener* listener,
-                             ShelfView* shelf_view)
+                             ShelfView* shelf_view,
+                             WmShelf* wm_shelf)
     : views::ImageButton(nullptr),
       draw_background_as_active_(false),
       listener_(listener),
-      shelf_view_(shelf_view) {
+      shelf_view_(shelf_view),
+      wm_shelf_(wm_shelf) {
+  DCHECK(listener_);
+  DCHECK(shelf_view_);
+  DCHECK(wm_shelf_);
   if (ash::MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
@@ -116,7 +120,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP_DOWN:
       if (touch_feedback)
         SetDrawBackgroundAsActive(true);
-      else if (is_material && !Shell::GetInstance()->IsApplistVisible())
+      else if (is_material && !WmShell::Get()->IsApplistVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       break;
@@ -158,17 +162,15 @@ void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
   background_paint.setFlags(SkPaint::kAntiAlias_Flag);
   background_paint.setStyle(SkPaint::kFill_Style);
 
-  const ShelfWidget* shelf_widget = shelf_view_->shelf()->shelf_widget();
-  if (shelf_widget &&
-      shelf_widget->GetBackgroundType() ==
-          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+  if (wm_shelf_->GetBackgroundType() ==
+      ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
     background_paint.setColor(
         SkColorSetA(kShelfBaseColor, GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
   }
 
   // Paint the circular background of AppList button.
   gfx::Point circle_center = GetContentsBounds().CenterPoint();
-  if (!IsHorizontalAlignment(shelf_view_->shelf()->alignment()))
+  if (!IsHorizontalAlignment(wm_shelf_->GetAlignment()))
     circle_center = gfx::Point(circle_center.y(), circle_center.x());
 
   canvas->DrawCircle(circle_center, kAppListButtonRadius, background_paint);
@@ -179,7 +181,7 @@ void AppListButton::PaintForegroundMD(gfx::Canvas* canvas,
   gfx::Rect foreground_bounds(foreground_image.size());
   gfx::Rect contents_bounds = GetContentsBounds();
 
-  if (IsHorizontalAlignment(shelf_view_->shelf()->alignment())) {
+  if (IsHorizontalAlignment(wm_shelf_->GetAlignment())) {
     foreground_bounds.set_x(
         (contents_bounds.width() - foreground_bounds.width()) / 2);
     foreground_bounds.set_y(
@@ -198,11 +200,11 @@ void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
                                        const gfx::ImageSkia& foreground_image) {
   int background_image_id = 0;
 
-  if (Shell::GetInstance()->GetAppListTargetVisibility() ||
+  if (WmShell::Get()->GetAppListTargetVisibility() ||
       draw_background_as_active_) {
     background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
   } else {
-    if (shelf_view_->shelf()->shelf_widget()->GetDimsShelf()) {
+    if (wm_shelf_->IsDimmed()) {
       background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
     } else {
       background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
@@ -213,7 +215,7 @@ void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
   gfx::ImageSkia background_image =
       *rb.GetImageNamed(background_image_id).ToImageSkia();
   gfx::Rect background_bounds(background_image.size());
-  ShelfAlignment alignment = shelf_view_->shelf()->alignment();
+  ShelfAlignment alignment = wm_shelf_->GetAlignment();
   gfx::Rect contents_bounds = GetContentsBounds();
 
   if (alignment == SHELF_ALIGNMENT_LEFT) {
@@ -275,7 +277,7 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
-  if (Shell::GetInstance()->IsApplistVisible())
+  if (WmShell::Get()->IsApplistVisible())
     return false;
   return views::ImageButton::ShouldEnterPushedState(event);
 }

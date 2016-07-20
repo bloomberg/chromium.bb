@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_APP_LIST_BUTTON_H_
-#define ASH_SHELF_APP_LIST_BUTTON_H_
+#ifndef ASH_COMMON_SHELF_APP_LIST_BUTTON_H_
+#define ASH_COMMON_SHELF_APP_LIST_BUTTON_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -12,12 +12,14 @@
 namespace ash {
 class InkDropButtonListener;
 class ShelfView;
+class WmShelf;
 
 // Button used for the AppList icon on the shelf.
 class ASH_EXPORT AppListButton : public views::ImageButton {
  public:
-  explicit AppListButton(InkDropButtonListener* listener,
-                         ShelfView* shelf_view);
+  AppListButton(InkDropButtonListener* listener,
+                ShelfView* shelf_view,
+                WmShelf* wm_shelf);
   ~AppListButton() override;
 
   void OnAppListShown();
@@ -61,10 +63,11 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
 
   InkDropButtonListener* listener_;
   ShelfView* shelf_view_;
+  WmShelf* wm_shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_APP_LIST_BUTTON_H_
+#endif  // ASH_COMMON_SHELF_APP_LIST_BUTTON_H_

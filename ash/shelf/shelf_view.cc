@@ -10,6 +10,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/overflow_bubble.h"
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/overflow_button.h"
@@ -22,7 +23,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/scoped_target_root_window.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_delegate.h"
@@ -532,7 +532,7 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   if (view == GetAppListButton() &&
-      Shell::GetInstance()->GetAppListTargetVisibility()) {
+      WmShell::Get()->GetAppListTargetVisibility()) {
     return false;
   }
   const ShelfItem* item = ShelfItemForView(view);
@@ -1015,7 +1015,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      view = new AppListButton(this, this);
+      view = new AppListButton(this, this, wm_shelf_);
       break;
     }
 

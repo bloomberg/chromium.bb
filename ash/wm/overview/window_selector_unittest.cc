@@ -1213,10 +1213,10 @@ TEST_P(WindowSelectorTest, SelectingHidesAppList) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  Shell::GetInstance()->ShowAppList(nullptr);
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  WmShell::Get()->ShowAppList();
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
   ToggleOverview();
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
   ToggleOverview();
 }
 

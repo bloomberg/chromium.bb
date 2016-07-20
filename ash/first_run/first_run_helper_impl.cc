@@ -4,9 +4,9 @@
 
 #include "ash/first_run/first_run_helper_impl.h"
 
+#include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/logging.h"

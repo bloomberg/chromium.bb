@@ -4,9 +4,9 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"

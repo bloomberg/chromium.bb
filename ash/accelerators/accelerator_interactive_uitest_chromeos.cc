@@ -198,11 +198,11 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
 
 // Tests the app list accelerator.
 TEST_F(AcceleratorInteractiveUITest, MAYBE_ToggleAppList) {
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 }
 
 }  // namespace test

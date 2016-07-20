@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/overflow_bubble.h"
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -16,8 +17,8 @@
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
@@ -1493,8 +1494,8 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 }
 
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
-  Shell::GetInstance()->ShowAppList(NULL);
-  ASSERT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  WmShell::Get()->ShowAppList();
+  ASSERT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 1; i < test_api_->GetButtonCount(); i++) {
@@ -1845,7 +1846,7 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
 
   generator.ReleaseTouch();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
 }
 
 // Tests that a touch that slides out of the bounds of the AppListButton leads
@@ -1869,7 +1870,7 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
   generator.set_current_location(moved_point);
   generator.ReleaseTouch();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 }
 
 // Verifies that Launcher_ButtonPressed_* UMA user actions are recorded when an

@@ -486,10 +486,10 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  Shell::GetInstance()->ShowAppList(NULL);
-  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  WmShell::Get()->ShowAppList();
+  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 }
 
 // Tests that cycling through windows shows and minimizes windows as they

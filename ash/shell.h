@@ -27,9 +27,6 @@
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-namespace app_list {
-class AppListView;
-}
 namespace aura {
 class EventFilter;
 class RootWindow;
@@ -81,7 +78,6 @@ namespace ash {
 
 class AcceleratorController;
 class AcceleratorControllerDelegateAura;
-class AppListController;
 class AshNativeCursorManager;
 class AutoclickController;
 class BluetoothNotificationController;
@@ -128,7 +124,6 @@ class SessionStateDelegate;
 class Shelf;
 class ShelfDelegate;
 class ShelfItemDelegateManager;
-class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
@@ -229,24 +224,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // |location_in_screen| (in screen coordinates).
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
-
-  // Shows the app list. |window| specifies in which display the app
-  // list should be shown. If this is NULL, the active root window
-  // will be used.
-  void ShowAppList(aura::Window* anchor);
-
-  // Dismisses the app list.
-  void DismissAppList();
-
-  // Shows the app list if it's not visible. Dismisses it otherwise.
-  void ToggleAppList(aura::Window* anchor);
-
-  // Returns app list actual visibility. This might differ from
-  // GetAppListTargetVisibility() when hiding animation is still in flight.
-  bool IsApplistVisible() const;
-
-  // Returns app list target visibility.
-  bool GetAppListTargetVisibility() const;
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -480,8 +457,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 #endif  // defined(OS_CHROMEOS)
 
-  ShelfModel* shelf_model() { return shelf_model_.get(); }
-
   WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
   // Returns the launcher delegate, creating if necesary.
@@ -596,8 +571,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
-
-  std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
   std::unique_ptr<DragDropController> drag_drop_controller_;

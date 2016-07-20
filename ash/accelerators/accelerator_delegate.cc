@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -109,7 +110,7 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
   if (shell->accelerator_controller()->IsPreferred(accelerator))
     return true;
 
-  return shell->GetAppListTargetVisibility();
+  return WmShell::Get()->GetAppListTargetVisibility();
 }
 
 }  // namespace ash

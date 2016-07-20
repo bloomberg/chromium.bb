@@ -21,6 +21,7 @@
 #include "ash/common/login_status.h"
 #include "ash/common/pointer_down_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
@@ -57,7 +58,6 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_widget.h"
@@ -86,7 +86,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -160,14 +159,6 @@ namespace {
 
 using aura::Window;
 using views::Widget;
-
-// Returns the display id corresponding to window, or |GetTargetDisplayId()|
-// if |window| is null.
-int64_t GetDisplayIdForWindow(aura::Window* window) {
-  if (!window)
-    return Shell::GetTargetDisplayId();
-  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
-}
 
 // A Corewm VisibilityController subclass that calls the Ash animation routine
 // so we can pick up our extended animations. See ash/wm/window_animations.h.
@@ -314,30 +305,6 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
       wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size())));
   GetRootWindowController(root)->ShowContextMenu(location_in_screen,
                                                  source_type);
-}
-
-void Shell::ShowAppList(aura::Window* window) {
-  // If the context window is not given, show it on the target root window.
-  wm_shell_->delegate()->GetAppListPresenter()->Show(
-      GetDisplayIdForWindow(window));
-}
-
-void Shell::DismissAppList() {
-  wm_shell_->delegate()->GetAppListPresenter()->Dismiss();
-}
-
-void Shell::ToggleAppList(aura::Window* window) {
-  // If the context window is not given, show it on the target root window.
-  wm_shell_->delegate()->GetAppListPresenter()->ToggleAppList(
-      GetDisplayIdForWindow(window));
-}
-
-bool Shell::IsApplistVisible() const {
-  return wm_shell_->delegate()->GetAppListPresenter()->IsVisible();
-}
-
-bool Shell::GetAppListTargetVisibility() const {
-  return wm_shell_->delegate()->GetAppListPresenter()->GetTargetVisibility();
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -540,24 +507,26 @@ SystemTray* Shell::GetPrimarySystemTray() {
 
 ShelfDelegate* Shell::GetShelfDelegate() {
   if (!shelf_delegate_) {
+    ShelfModel* shelf_model = wm_shell_->shelf_model();
     // Creates ShelfItemDelegateManager before ShelfDelegate.
+    // TODO(jamescook): Move this into WmShell.
     shelf_item_delegate_manager_.reset(
-        new ShelfItemDelegateManager(shelf_model_.get()));
+        new ShelfItemDelegateManager(shelf_model));
 
     shelf_delegate_.reset(
-        wm_shell_->delegate()->CreateShelfDelegate(shelf_model_.get()));
+        wm_shell_->delegate()->CreateShelfDelegate(shelf_model));
     std::unique_ptr<ShelfItemDelegate> controller(new AppListShelfItemDelegate);
 
     // Finding the shelf model's location of the app list and setting its
     // ShelfItemDelegate.
-    int app_list_index = shelf_model_->GetItemIndexForType(TYPE_APP_LIST);
+    int app_list_index = shelf_model->GetItemIndexForType(TYPE_APP_LIST);
     DCHECK_GE(app_list_index, 0);
-    ShelfID app_list_id = shelf_model_->items()[app_list_index].id;
+    ShelfID app_list_id = shelf_model->items()[app_list_index].id;
     DCHECK(app_list_id);
     shelf_item_delegate_manager_->SetShelfItemDelegate(app_list_id,
                                                        std::move(controller));
     shelf_window_watcher_.reset(new ShelfWindowWatcher(
-        shelf_model_.get(), shelf_item_delegate_manager_.get()));
+        shelf_model, shelf_item_delegate_manager_.get()));
   }
   return shelf_delegate_.get();
 }
@@ -596,7 +565,6 @@ Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
     : wm_shell_(new WmShellAura(base::WrapUnique(delegate))),
       target_root_window_(nullptr),
       scoped_target_root_window_(nullptr),
-      shelf_model_(new ShelfModel),
       link_handler_model_factory_(nullptr),
       activation_client_(nullptr),
 #if defined(OS_CHROMEOS)
@@ -707,8 +675,8 @@ Shell::~Shell() {
   wm_shell_->DeleteWindowCycleController();
   wm_shell_->DeleteWindowSelectorController();
 
-  // |shelf_window_watcher_| has a weak pointer to |shelf_Model_|
-  // and has window observers.
+  // |shelf_window_watcher_| has a weak pointer to the shelf model and has
+  // window observers.
   shelf_window_watcher_.reset();
 
   // Destroy all child windows including widgets.
@@ -731,10 +699,8 @@ Shell::~Shell() {
   event_client_.reset();
   toplevel_window_event_handler_.reset();
   visibility_controller_.reset();
-  // |shelf_item_delegate_manager_| observes |shelf_model_|. It must be
-  // destroyed before |shelf_model_| is destroyed.
+  // |shelf_item_delegate_manager_| observes the shelf model.
   shelf_item_delegate_manager_.reset();
-  shelf_model_.reset();
 
   power_button_controller_.reset();
   lock_state_controller_.reset();
