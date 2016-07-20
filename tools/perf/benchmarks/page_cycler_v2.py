@@ -94,6 +94,22 @@ class PageCyclerV2IntlEsFrPtBr(_PageCyclerV2):
           cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
 
 
+class PageCyclerV2IntlHiRu(_PageCyclerV2):
+  """Page load time benchmark for a variety of pages in Hindi and Russian.
+
+  Runs against pages recorded in April, 2013.
+  """
+  page_set = page_sets.IntlHiRuPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_v2.intl_hi_ru'
+
+  def CreateStorySet(self, options):
+    return page_sets.IntlHiRuPageSet(cache_temperatures=[
+          cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
+
+
 class PageCyclerV2IntlJaZh(_PageCyclerV2):
   """Page load time benchmark for a variety of pages in Japanese and Chinese.
 
