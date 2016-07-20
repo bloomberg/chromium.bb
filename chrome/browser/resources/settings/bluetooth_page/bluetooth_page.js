@@ -95,6 +95,12 @@ Polymer({
     /** The translated error message to show when a connect error occurs. */
     errorMessage: String,
 
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * Interface for bluetooth calls. May be overriden by tests.
      * @type {Bluetooth}

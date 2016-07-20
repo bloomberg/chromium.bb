@@ -68,6 +68,7 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefSupervisedUsersEnabled, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
   values_.SetValue(kAccountsPrefUsers, base::WrapUnique(new base::ListValue));
+  values_.SetBoolean(kAllowBluetooth, true);
   values_.SetBoolean(kAttestationForContentProtectionEnabled, true);
   values_.SetBoolean(kStatsReportingPref, true);
   values_.SetValue(kAccountsPrefDeviceLocalAccounts,

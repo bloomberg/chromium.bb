@@ -48,7 +48,8 @@
       <template is="dom-if" if="[[showPage(pageVisibility.bluetooth)]]" restamp>
         <settings-section page-title="$i18n{bluetoothPageTitle}"
             current-route="[[currentRoute]]" section="bluetooth">
-          <settings-bluetooth-page current-route="{{currentRoute}}">
+          <settings-bluetooth-page prefs="{{prefs}}"
+              current-route="{{currentRoute}}">
           </settings-bluetooth-page>
         </settings-section>
       </template>
