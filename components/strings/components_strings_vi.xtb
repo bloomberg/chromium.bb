@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Bạn có chắc chắn muốn xóa những trang này khỏi lịch sử duyệt web của mình không?</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
+<translation id="2704951214193499422">Chromium không thể xác nhận thẻ của bạn tại thời điểm này. Vui lòng thử lại sau.</translation>
 <translation id="2705137772291741111">Không thể đọc được bản sao đã lưu (đã lưu vào bộ nhớ cache) của trang web này.</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2712173769900027643">Xin phép</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Nếu được bật, Chromium sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
 <translation id="2991174974383378012">Chia sẻ với trang web</translation>
 <translation id="3005723025932146533">Hiển thị bản sao đã lưu</translation>
+<translation id="3008447029300691911">Nhập CVC cho <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="3010559122411665027">Mục nhập danh sách "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Loại chính sách sai</translation>
 <translation id="3032412215588512954">Bạn có muốn tải lại trang web này không?</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3041612393474885105">Thông tin Chứng chỉ</translation>
+<translation id="3063697135517575841">Chrome không thể xác nhận thẻ của bạn tại thời điểm này. Vui lòng thử lại sau.</translation>
 <translation id="3093245981617870298">Bạn đang ngoại tuyến.</translation>
 <translation id="3105172416063519923">ID phần tử:</translation>
 <translation id="3109728660330352905">Bạn không có quyền xem trang này.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Máy chủ đưa ra chứng chỉ không khớp với kỳ vọng được tích hợp sẵn. Các kỳ vọng này có trong một số trang web nhất định, có tính bảo mật cao với mục đích bảo vệ bạn.</translation>
 <translation id="3226128629678568754">Nhấn nút tải lại để gửi lại các dữ liệu cần thiết để tải trang.</translation>
 <translation id="3228969707346345236">Dịch thất bại vì trang đã bằng <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Nhập CVC cho <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="3286538390144397061">Khởi động lại Ngay bây giờ</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5710435578057952990">Nhận dạng trang web này chưa được xác minh.</translation>
 <translation id="5720705177508910913">Người dùng hiện tại</translation>
+<translation id="5784606427469807560">Đã xảy ra sự cố khi xác nhận thẻ của bạn. Kiểm tra kết nối Internet và thử lại.</translation>
 <translation id="5785756445106461925">Ngoài ra, trang này bao gồm các tài nguyên khác không an toàn. Những tài nguyên này có thể bị người khác xem khi đang gửi và có thể bị kẻ tấn công sửa đổi nhằm thay đổi giao diện của trang.</translation>
 <translation id="5810442152076338065">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 đã lỗi thời.</translation>
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Khu vực</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
 <translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
+<translation id="6895330447102777224">Thẻ của bạn đã được xác nhận</translation>
 <translation id="6897140037006041989">Tác nhân Người dùng</translation>
 <translation id="6903907808598579934">Bật đồng bộ hóa</translation>
 <translation id="6915804003454593391">Người dùng:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Kết nối sử dụng <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Rất tiếc! Bạn cần phải hỏi cha mẹ mình xem có thể truy cập trang này hay không.</translation>
 <translation id="7246609911581847514">Bạn thấy thông báo này vì người quản lý của bạn cần phải phê duyệt các trang web mới vào lần truy cập đầu tiên của bạn.</translation>
+<translation id="724975217298816891">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật chi tiết thẻ của bạn. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="725866823122871198">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên máy tính của bạn không đúng.</translation>
 <translation id="7265986070661382626">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ do trang web <ph name="BEGIN_LINK" />sử dụng ghim chứng chỉ<ph name="END_LINK" />. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời do đó trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="7269802741830436641">Trang web này lặp lại chuyển hướng</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Không</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Xác nhận thẻ</translation>
 <translation id="7394102162464064926">Bạn có chắc chắn muốn xóa những trang này khỏi lịch sử của mình không?
 
 Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích vào lần sau.</translation>
@@ -529,6 +537,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
 <translation id="7445762425076701745">Không thể xác thực đầy đủ nhận dạng của máy chủ bạn đã kết nối. Bạn đã kết nối vào máy chủ bằng một tên chỉ hợp lệ trong mạng của bạn và đó là tên mà các tổ chức phát hành chứng chỉ bên ngoài không thể xác thực được. Vì một số tổ chức phát hành chứng chỉ sẽ cấp chứng chỉ cho các tên này thay thế, nên không có cách nào đảm bảo bạn được kết nối tới trang web đã chỉ định và không phải là kẻ tấn công.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
+<translation id="7469372306589899959">Xác nhận thẻ</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
 <translation id="7514365320538308">Tải xuống</translation>
@@ -643,6 +652,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8866959479196209191">Trang này cho biết:</translation>
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
 <translation id="8876793034577346603">Không thể phân tích cú pháp cấu hình mạng.</translation>
+<translation id="8877192140621905067">Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này</translation>
 <translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
 <translation id="889901481107108152">Rất tiếc, thử nghiệm này không sẵn có trên nền tảng của bạn.</translation>
 <translation id="8903921497873541725">Phóng to</translation>
@@ -675,6 +685,8 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">XÓA BIỂU MẪU</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
+<translation id="943029900877297437">Để sử dụng thẻ bạn đã lưu vào Tài khoản Google của mình, hãy đăng nhập vào Chrome.</translation>
+<translation id="962701380617707048">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật chi tiết thẻ của bạn</translation>
 <translation id="969892804517981540">Phiên bản Chính thức</translation>
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 </translationbundle>

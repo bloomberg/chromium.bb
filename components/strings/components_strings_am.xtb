@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">እርግጠኛ ነዎት እነዚህን ገጾች ከታሪክዎ መሰረዝ ይፈልጋሉ?</translation>
 <translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
 <translation id="2704283930420550640">ዋጋ ከቅርጸት ጋር አይዛመድም።</translation>
+<translation id="2704951214193499422">Chromium በዚህ ጊዜ የእርስዎን ካርድ ማረጋገጥ አልቻለም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="2705137772291741111">የተቀመጠው (የተሸጎጠ) የዚህ ጣቢያ ቅጂ የሚነበብ አልነበረም።</translation>
 <translation id="2709516037105925701">ራስ-ሙላ</translation>
 <translation id="2712173769900027643">ፍቃድ ጠይቅ</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">ከነቃ Chromium ለተሻለ የቅጽ አሞላል ፍጥነት ሲባል በዚህ መሣሪያ ላይ ያለው የካርድዎን ቅጂ ያከማቻል።</translation>
 <translation id="2991174974383378012">ከድረ ገጾች ጋር ማጋራት</translation>
 <translation id="3005723025932146533">የተቀመጠ ቅጂ አሳይ</translation>
+<translation id="3008447029300691911">የ<ph name="CREDIT_CARD" /> ሲቪሲ ያስገቡ። አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ።</translation>
 <translation id="3010559122411665027">የዝርዝር ግቤት «<ph name="ENTRY_INDEX" />»፦ <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">የተሳሳተ የመምሪያ አይነት</translation>
 <translation id="3032412215588512954">ይህን ጣቢያ ዳግም መጫን ይፈልጋሉ?</translation>
 <translation id="3037605927509011580">ውይ፣ ተሰናከለ!</translation>
 <translation id="3041612393474885105">የሰርቲፊኬት መረጃ</translation>
+<translation id="3063697135517575841">Chrome በዚህ ጊዜ የእርስዎን ካርድ ማረጋገጥ አልቻለም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="3093245981617870298">ከመስመር ውጪ ነዎት።</translation>
 <translation id="3105172416063519923">የእሴት መታወቂያ፦</translation>
 <translation id="3109728660330352905">ይህን ገጽ ለማየት ፍቃድ የለዎትም።</translation>
@@ -204,6 +207,7 @@
 <translation id="3225919329040284222">አገልጋዩ አብረው የተሰሩ የሚጠበቁ ማሟያዎችን የማያሟላ የእውቅና ማረጋገጫ ነው ያቀረበው። እነዚህ የሚጠበቁ ማሟያዎች እርስዎን ለመጠበቅ ለተረጋገጡ ከፍተኛ ደህንነት ላላቸው ድር ጣቢያዎች ተካትተዋል።</translation>
 <translation id="3226128629678568754">ገጹን ለመጫን የሚያስፈልገው ውሂብ ዳግም ለማስገባት የዳግም ጫን አዝራሩን ይጫኑ።</translation>
 <translation id="3228969707346345236">ገጹ አስቀድሞ በ<ph name="LANGUAGE" /> ስለሆነ ትርጉሙ አልተሳካም።</translation>
+<translation id="323107829343500871">የ<ph name="CREDIT_CARD" /> ሲቪሲ ያስገቡ</translation>
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
 <translation id="3286538390144397061">አሁን ዳግም አስጀምር</translation>
@@ -407,6 +411,7 @@ nil</translation>
 <translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5710435578057952990">የዚህ ድረ-ገጽ ማንነት አልተረጋገጠም።</translation>
 <translation id="5720705177508910913">የአሁኑ ተጠቃሚ</translation>
+<translation id="5784606427469807560">የእርስዎን ካርድ ማረጋገጥ ላይ አንድ ችግር ነበር። የበይነመረብ ግንኙነትዎን ይፈትሹት እና እንደገና ይሞክሩ።</translation>
 <translation id="5785756445106461925">በተጨማሪ፣ ይህ ገጽ ደህንነታቸው ያልተጠበቀ ሌሎች ንብረቶችን አካትቷል። እነዚህ ንብረቶች በሽግግር ወቅት በሌሎች ሊታዩ ይችላሉ፣ እናም የገጹን መልክ ለመለወጥ በአጥቂዎች ሊቀየሩ ይችላሉ።</translation>
 <translation id="5810442152076338065">ወደ <ph name="DOMAIN" /> ግንኙነትዎ ፍጹማዊ ስነ መሰውር ጥቅል በመጠቀም የተመሳጠረ ነው።</translation>
 <translation id="5813119285467412249">&amp;አክልን ድገም</translation>
@@ -480,6 +485,7 @@ nil</translation>
 <translation id="6839929833149231406">አካባቢ</translation>
 <translation id="6874604403660855544">&amp;አክልን ድገም</translation>
 <translation id="6891596781022320156">የመመሪያ ደረጃ አይደገፍም።</translation>
+<translation id="6895330447102777224">የእርስዎ ካርድ ተረጋግጧል</translation>
 <translation id="6897140037006041989">የተጠቀሚ ተወካይ</translation>
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
 <translation id="6915804003454593391">ተጠቃሚ፦</translation>
@@ -508,6 +514,7 @@ nil</translation>
 <translation id="7219179957768738017">ግንኙነቱ <ph name="SSL_VERSION" />ን ይጠቀማል።</translation>
 <translation id="7231308970288859235">ውይ! ይህን ገጽ መጎብኘት ችግር ይኑረው ወይም አይኑረው ወላጅዎን መጠየቅ ይኖርብዎታል።</translation>
 <translation id="7246609911581847514">የእርስዎ አስተዳዳሪ በመጀመሪያ ጉብኝትዎ ላይ አዲስ ጣቢያዎችን ማጽደቅ ስላለባቸው ይህን መልእክት እየተመለከቱ ነው።</translation>
+<translation id="724975217298816891">የካርድ ዝርዝሮችዎን ለማዘመን የ<ph name="CREDIT_CARD" /> ጊዜ ማለፊያ ቀን እና ሲቪሲ ያስገቡ። አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ።</translation>
 <translation id="725866823122871198">የእርስዎ የኮምፒዩተር ቀን እና ሰዓት (<ph name="DATE_AND_TIME" />) ልክ ስላልሆኑ የግል ግንኙነት ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ሊመሰረት አይችልም።</translation>
 <translation id="7265986070661382626"><ph name="SITE" /> <ph name="BEGIN_LINK" />የእውቅና ማረጋገጫ መሰካትን ስለሚጠቀም<ph name="END_LINK" /> ድር ጣቢያውን አሁን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች አብዛኛው ጊዜ ጊዜያዊ ናቸው፣ ስለዚህ ይህ ገጽ በኋላ ላይ ሊሰራ ይችላል።</translation>
 <translation id="7269802741830436641">ድረ-ገጹ የአድራሻ ቅየራ ምልልስ አለው</translation>
@@ -521,6 +528,7 @@ nil</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">አይ</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">ካርድ ያረጋግጡ</translation>
 <translation id="7394102162464064926">እርግጠኛ ነዎት እነዚህን ገጾች ከታሪክዎ መሰረዝ ይፈልጋሉ?
 
 አንዴ ያዳምጡንማ! ማንነትን የማያሳውቅ ሁነታ <ph name="SHORTCUT_KEY" /> ሌላ ጊዜ ላይ ሊጠቅም ይችላል።</translation>
@@ -530,6 +538,7 @@ nil</translation>
 <translation id="7441627299479586546">የተሳሳተ የመምሪያ ርዕሰ ጉዳይ</translation>
 <translation id="7445762425076701745">የተገናኙት የአገልጋይ ማንነት ሙሉ ለሙሉ ሊረጋገጥ አልቻለም። ስሙ በአውታረ መረብዎ ውስጥ ብቻ ልክ ከሆነ አገልጋይ ጋር ነው የተገናኙት፣ እና ባለቤትነቱ በውጫዊ የእውቅና ማረጋገጫ ሊረጋገጥ አይችልም። አንዳንድ የእውቅና ማረጋገጫ ባለስልጣናት ይሁን ብለው ለእነዚህ ስሞች የእውቅና ማረጋገጫዎች መስጠታቸው የማይቀር እንደመሆኑ መጠን፣ ከአጥቂ ሳይሆን ከታሰበው ድር ጣቢያ ጋር መገናኘትዎን የሚረጋገጥበት ምንም መንገድ የለም።</translation>
 <translation id="7451311239929941790">ስለዚህ ችግር <ph name="BEGIN_LINK" />ይበልጥ በመረዳት ላይ<ph name="END_LINK" />።</translation>
+<translation id="7469372306589899959">ካርድን በማረጋገጥ ላይ</translation>
 <translation id="7481312909269577407">ወደ ፊት</translation>
 <translation id="7485870689360869515">ምንም ውሂብ አልተገኘም።</translation>
 <translation id="7514365320538308">አውርድ</translation>
@@ -644,6 +653,7 @@ nil</translation>
 <translation id="8866959479196209191">ይህ ገጽ እንዲህ ይላል፦</translation>
 <translation id="8870413625673593573">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="8876793034577346603">የአውታረ መረብ ውቅር ሊተነተን አልቻለም።</translation>
+<translation id="8877192140621905067">አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ</translation>
 <translation id="8891727572606052622">ልክ ያልሆነ የተኪ ሁነታ።</translation>
 <translation id="889901481107108152">ይቅርታ፣ ይህ ሙከራ ለመሣሪያ ስርዓትዎ አይገኝም።</translation>
 <translation id="8903921497873541725">አጉላ</translation>
@@ -676,6 +686,8 @@ nil</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ቅጽን አጽዳ</translation>
 <translation id="939736085109172342">አዲስ ዓቃፊ</translation>
+<translation id="943029900877297437">በእርስዎ የGoogle መለያ ላይ ያስቀመጧቸውን ካርዶች ለመጠቀም በመለያ ወደ Chrome ይግቡ።</translation>
+<translation id="962701380617707048">የካርድ ዝርዝሮችዎን ለማዘመን የ<ph name="CREDIT_CARD" /> ጊዜ ማለፊያ ቀን እና ሲቪሲ ያስገቡ።</translation>
 <translation id="969892804517981540">ይፋ ግንባታ</translation>
 <translation id="988159990683914416">የገንቢዎች ግንባታ</translation>
 </translationbundle>

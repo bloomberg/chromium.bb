@@ -10,6 +10,7 @@
 <translation id="1221340462641866827">Chromium ОС не подржава покретање спољне апликације за обраду <ph name="SCHEME" /> веза. Захтевана веза је <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">У систему је пронађена некомпатибилна инсталација Chromium-а. Деинсталирајте је и покушајте поново.</translation>
 <translation id="1298199220304005244">Пронађи помоћ за коришћење Chromium ОС-а</translation>
+<translation id="1347507563453473396">Chromium не може да се приказује на овом језику.</translation>
 <translation id="1396446129537741364">Chromium покушава да прикаже лозинке.</translation>
 <translation id="1403254041219632970">Будуће верзије Chromium-а више неће подржавати Mac OS X 10.6, 10.7 или 10.8.</translation>
 <translation id="1414495520565016063">Пријављени сте на Chromium!</translation>
@@ -57,10 +58,12 @@
 <translation id="2685838254101182273">Chromium је престао да се ажурира и не подржава више ову верзију оперативног система.</translation>
 <translation id="2705212601509139398">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и преузмите компатибилан прегледач.</translation>
 <translation id="2711502716910134313">Картица Chromium</translation>
+<translation id="2718390899429598676">Chromium ће шифровати податке ради додатне сигурности.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="2801146392936645542">Датотека <ph name="FILE_NAME" /> је злонамерна, па ју је Chromium блокирао.</translation>
 <translation id="2847479871509788944">Уклони из Chromium-а...</translation>
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
+<translation id="2905536371227304018">Chromium ОС се приказује на овом језику.</translation>
 <translation id="2910007522516064972">О &amp;Chromium-у</translation>
 <translation id="2966088006374919794">Chromium мора да покрене спољну апликацију ради обраде <ph name="SCHEME" /> веза. Захтевана веза је <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Додавање у Chromium...</translation>
@@ -123,10 +126,13 @@
 <translation id="5427571867875391349">Подеси Chromium као подразумевани прегледач</translation>
 <translation id="5466153949126434691">Chromium се аутоматски ажурира, па увек имате најновију верзију. Када ово преузимање буде довршено, Chromium ће се поново покренути и бићете спремни.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
+<translation id="556167189552180495">Chromium се приказује на овом језику.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>
 <translation id="5680901439334282664">пријавите се на Chromium</translation>
+<translation id="5698481217667032250">Приказуј Chromium на овом језику</translation>
+<translation id="5768914737813585044">Приказуј Chromium ОС на овом језику</translation>
 <translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chromium-а)</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
@@ -174,6 +180,7 @@
 <translation id="705851970750939768">Ажурирај Chromium</translation>
 <translation id="7064610482057367130">Није пронађена ниједна инсталација Chromium-а за ажурирање.</translation>
 <translation id="7066436765290594559">Chromium ОС не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
+<translation id="7090955637699162649">Chromium може да користи <ph name="BEGIN_LINK" />веб-услуге<ph name="END_LINK" /> да би побољшао искуство прегледања. Ако желите, можете да онемогућите ове услуге у било ком тренутку.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{То ће трајно избрисати $1 ставку са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}one{То ће трајно избрисати $1 ставку са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}few{То ће трајно избрисати $1 ставке са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}other{То ће трајно избрисати $1 ставки са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}}</translation>
 <translation id="7138853919861947730">Chromium може да користи веб услуге да би побољшао доживљај прегледања.</translation>
 <translation id="7162152143154757523">Chromium може да пружи паметнију проверу правописа слањем текста који уносите у прегледач на Google сервере, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
@@ -198,6 +205,7 @@ Chromium не може да врати подешавања.</translation>
 Потражите даља упутства у имејлу на <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Ако желите да постојећи Chromium подаци буду раздвојени, можете да направите новог Chromium корисника за <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
+<translation id="7437562785125777404">Chromium ОС не може да се приказује на овом језику.</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7483335560992089831">Није могуће инсталирати исту верзију Chromium-а која се тренутно користи. Затворите Chromium и покушајте поново.</translation>
 <translation id="750717762378961310">Ова датотека је злонамерна, па ју је Chromium блокирао.</translation>

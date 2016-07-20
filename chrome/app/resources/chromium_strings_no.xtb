@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium OS støtter ikke start av et eksternt program for å håndtere <ph name="SCHEME" />-linker. Den påkrevde linken er <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Det ble funnet en konfliktskapende installasjon av Chromium på systemet. Avinstaller den og prøv på nytt.</translation>
 <translation id="1298199220304005244">Få hjelp med å bruke Chromium OS</translation>
+<translation id="1347507563453473396">Chromium kan ikke vises på dette språket.</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
 <translation id="1403254041219632970">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du er logget på Chromium.</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
 <translation id="2705212601509139398">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og laste ned en kompatibel nettleser.</translation>
 <translation id="2711502716910134313">Chromium-fane</translation>
+<translation id="2718390899429598676">Chromium krypterer dataene dine for å øke sikkerheten.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="2801146392936645542">Filen <ph name="FILE_NAME" /> er skadelig, og Chromium har blokkert den.</translation>
 <translation id="2847479871509788944">Fjern fra Chromium</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
+<translation id="2905536371227304018">Chromium OS vises på dette språket.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME" />-linker. Den påkrevde linken er <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Bruk Chromium som standard nettleser</translation>
 <translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
+<translation id="556167189552180495">Chromium vises på dette språket.</translation>
 <translation id="5563479599352954471">Søk med ett trykk</translation>
 <translation id="5620765574781326016">Finn ut mer om emner på nettsteder uten å forlate siden.</translation>
 <translation id="5634636535844844681">Chromium krever Windows 7 eller nyere.</translation>
 <translation id="5680901439334282664">logg på Chromium</translation>
+<translation id="5698481217667032250">Vis Chromium på dette språket</translation>
+<translation id="5768914737813585044">Vis Chromium OS på dette språket</translation>
 <translation id="5772805321386874569">(krever at Chromium <ph name="BEGIN_BUTTON" />startes på nytt<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium er nesten klar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -172,6 +178,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="705851970750939768">Oppdater Chromium</translation>
 <translation id="7064610482057367130">Finner ingen installasjon av Chromium å oppdatere.</translation>
 <translation id="7066436765290594559">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
+<translation id="7090955637699162649">Chromium kan bruke <ph name="BEGIN_LINK" />nettjenester<ph name="END_LINK" /> for å forbedre surfeopplevelsen din. Du kan når som helst velge å slå av disse tjenestene.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Dette fører til at $1 element slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.}other{Dette fører til at $1 elementer slettes permanent fra denne enheten. For å hente dataene dine igjen senere, logg på Chromium som $2.}}</translation>
 <translation id="7138853919861947730">Chromium kan bruke nett-tjenester for å forbedre surfingen din.</translation>
 <translation id="7162152143154757523">Chromium kan levere bedre stavekontroll ved å sende det du skriver i nettleseren, til Google-tjenerne. Dette gjør at du kan bruke samme teknologi for stavekontroll som det Google Søk bruker.</translation>
@@ -196,6 +203,7 @@ Hvis du vil hindre <ph name="NEW_PROFILE_NAME" /> i å få tilgang til kontoen d
 Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjoner.</translation>
 <translation id="7419987137528340081">Hvis du foretrekker å holde eksisterende Chromium-data separat, kan du opprette en ny Chromium-bruker for <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
+<translation id="7437562785125777404">Chromium OS kan ikke vises på dette språket.</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="750717762378961310">Denne filen er skadelig, og Chromium har blokkert den.</translation>

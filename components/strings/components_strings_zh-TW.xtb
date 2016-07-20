@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">確定要從您的紀錄中刪除這些網頁嗎？</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2704283930420550640">政策值格式不符。</translation>
+<translation id="2704951214193499422">Chromium 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="2705137772291741111">已儲存 (快取) 這個網站的複本，但無法讀取。</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2712173769900027643">要求權限</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">啟用後，Chromium 會將您的信用卡資料儲存在這個裝置上，以加快表單填寫速度。</translation>
 <translation id="2991174974383378012">與網站分享</translation>
 <translation id="3005723025932146533">顯示儲存的複本</translation>
+<translation id="3008447029300691911">請輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
 <translation id="3032412215588512954">您要重新載入這個網站嗎？</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
+<translation id="3063697135517575841">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="3093245981617870298">您處於離線狀態。</translation>
 <translation id="3105172416063519923">資產 ID：</translation>
 <translation id="3109728660330352905">您未獲得授權，無法瀏覽這個網頁。</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">伺服器呈現的憑證與內建的預期條件不符。我們在系統中針對特定高安全性的網站內建了這些預期條件，目的在於保護您的資料安全無虞。</translation>
 <translation id="3226128629678568754">按下重新載入按鈕，重新提交載入網頁所需的資料。</translation>
 <translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE" />，翻譯作業失敗。</translation>
+<translation id="323107829343500871">輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼</translation>
 <translation id="3254409185687681395">把此頁加入書籤</translation>
 <translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
 <translation id="3286538390144397061">立即重新啟動</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
+<translation id="5784606427469807560">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
 <translation id="5785756445106461925">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁外觀。</translation>
 <translation id="5810442152076338065">您的 <ph name="DOMAIN" /> 連線使用過舊的加密套件進行加密。</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">區</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
+<translation id="6895330447102777224">您的信用卡已通過驗證</translation>
 <translation id="6897140037006041989">使用者代理程式</translation>
 <translation id="6903907808598579934">開啟同步處理功能</translation>
 <translation id="6915804003454593391">使用者：</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7231308970288859235">注意：您必須徵求家長同意，才能瀏覽這個網頁。</translation>
 <translation id="7246609911581847514">Chrome 顯示這則訊息是因為您首次瀏覽的新網站需要獲得管理員核准。</translation>
+<translation id="724975217298816891">請輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，更新您的信用卡詳細資訊。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
 <translation id="725866823122871198">您電腦的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="7265986070661382626">您目前無法造訪 <ph name="SITE" />，因為這個網站<ph name="BEGIN_LINK" />使用憑證固定功能<ph name="END_LINK" />。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
 <translation id="7269802741830436641">這個網頁含有重新導向迴圈</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">驗證信用卡</translation>
 <translation id="7394102162464064926">您確定要從紀錄中刪除這些網頁嗎？
 
 提醒您！下次可以試試好用的無痕模式 (<ph name="SHORTCUT_KEY" />)。</translation>
@@ -529,6 +537,7 @@
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7445762425076701745">您所連線的伺服器身分無法完全驗證，該伺服器所使用的名稱僅在您的網路中有效，無法驗證外部憑證授權單位的擁有權。即使某些憑證授權單位會核發這些憑證，不過無法就此確保您所連上的網站是正確的，而不會遭到網路攻擊。</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
+<translation id="7469372306589899959">正在驗證信用卡</translation>
 <translation id="7481312909269577407">往前</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7514365320538308">下載</translation>
@@ -643,6 +652,7 @@
 <translation id="8866959479196209191">這個網頁顯示：</translation>
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
+<translation id="8877192140621905067">完成驗證後，這個網站就會取得您的信用卡詳細資訊</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="889901481107108152">很抱歉，這項實驗功能無法支援您的平台。</translation>
 <translation id="8903921497873541725">放大</translation>
@@ -675,6 +685,8 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表單</translation>
 <translation id="939736085109172342">新增資料夾</translation>
+<translation id="943029900877297437">如要使用您已儲存在 Google 帳戶中的信用卡，請登入 Chrome。</translation>
+<translation id="962701380617707048">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，更新您的信用卡詳細資訊</translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">開發人員版本</translation>
 </translationbundle>

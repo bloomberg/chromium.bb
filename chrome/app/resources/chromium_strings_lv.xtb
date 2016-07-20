@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium OS neatbalsta ārējas lietojumprogrammas palaišanu, lai rīkotos ar <ph name="SCHEME" /> saitēm. Pieprasītā saite ir <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Sistēmā tika konstatēta Chromium instalācija, kas rada konfliktu. Lūdzu, atinstalējiet to un mēģiniet vēlreiz.</translation>
 <translation id="1298199220304005244">Saņemt palīdzību par Chromium OS izmantošanu</translation>
+<translation id="1347507563453473396">Chromium nevar rādīt šajā valodā.</translation>
 <translation id="1396446129537741364">Chromium mēģina rādīt paroles.</translation>
 <translation id="1403254041219632970">Nākamajās Chromium versijās vairs netiks atbalstītas operētājsistēmas Mac OS X 10.6, 10.7 un 10.8.</translation>
 <translation id="1414495520565016063">Esat pierakstījies operētājsistēmā Chromium!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Operētājsistēmas Chromium atjaunināšana ir apturēta, un vairs netiek atbalstīta šī jūsu operētājsistēmas versija.</translation>
 <translation id="2705212601509139398">Šajā vietnē tiek izmantots spraudnis Chromium Frame, kas drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un lejupielādējiet saderīgu pārlūku.</translation>
 <translation id="2711502716910134313">Chromium cilne</translation>
+<translation id="2718390899429598676">Papildu drošības nolūkos Chromium šifrēs jūsu datus.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="2801146392936645542">Fails <ph name="FILE_NAME" /> ir ļaunprātīgs, un Chromium to bloķēja.</translation>
 <translation id="2847479871509788944">Noņemšana no pārlūka Chromium...</translation>
 <translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
+<translation id="2905536371227304018">Chromium OS tiek rādīta šajā valodā.</translation>
 <translation id="2910007522516064972">Par &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium ir jāpalaiž ārēja lietojumprogramma, lai rīkotos ar <ph name="SCHEME" /> saitēm. Pieprasītā saite ir <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Notiek pievienošana pārlūkam Chromium...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Iestatīt Chromium kā noklusējuma pārlūku</translation>
 <translation id="5466153949126434691">Pārlūks Chromium tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija. Kad šī lejupielāde būs pabeigta, pārlūks Chromium tiks restartēts un varēsiet sākt lietot visjaunāko versiju.</translation>
 <translation id="549669000822060376">Lūdzu, uzgaidiet, kamēr Chromium instalē jaunākos sistēmas atjauninājumus.</translation>
+<translation id="556167189552180495">Chromium tiek rādīts šajā valodā.</translation>
 <translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
 <translation id="5620765574781326016">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu.</translation>
 <translation id="5634636535844844681">Pārlūka Chromium izmantošanai nepieciešama operētājsistēma Windows 7 vai jaunāka versija.</translation>
 <translation id="5680901439334282664">pierakstieties pārlūkā Chromium</translation>
+<translation id="5698481217667032250">Rādīt Chromium šajā valodā</translation>
+<translation id="5768914737813585044">Rādīt Chromium OS šajā valodā</translation>
 <translation id="5772805321386874569">(ir <ph name="BEGIN_BUTTON" />jārestartē<ph name="END_BUTTON" /> operētājsistēma Chromium)</translation>
 <translation id="5796460469508169315">Chromium ir gandrīz gatavs!</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -172,6 +178,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="705851970750939768">Atjaunināt Chromium</translation>
 <translation id="7064610482057367130">Netika atrasta neviena Chromium instalācija, kuru varētu atjaunināt.</translation>
 <translation id="7066436765290594559">Chromium OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
+<translation id="7090955637699162649">Lai uzlabotu jūsu pārlūkošanas pieredzi, Chromium var izmantot <ph name="BEGIN_LINK" />tīmekļa pakalpojumus<ph name="END_LINK" />. Šos pakalpojumus varat arī atspējot.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}zero{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}one{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}other{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chromium kā $2.}}</translation>
 <translation id="7138853919861947730">Lai uzlabotu pārlūkošanu, Chromium var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="7162152143154757523">Chromium var efektīvāk labot pareizrakstības kļūdas, nosūtot pārlūkā rakstīto uz Google serveriem un tādējādi ļaujot izmantot to pašu pareizrakstības pārbaudes tehnoloģiju, kas tiek izmantota pakalpojumā Google meklēšana.</translation>
@@ -194,6 +201,7 @@ Lai <ph name="NEW_PROFILE_NAME" /> nevarētu piekļūt jūsu kontam, noteikti bl
 Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Ja vēlaties esošos Chromium datus glabāt atsevišķi, varat izveidot jaunu Chromium lietotāju ar lietotājvārdu <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
+<translation id="7437562785125777404">Chromium OS nevar rādīt šajā valodā.</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7483335560992089831">Nevar instalēt to pašu Chromium versiju, kas jau šobrīd darbojas. Aizveriet Chromium un mēģiniet vēlreiz.</translation>
 <translation id="750717762378961310">Šis fails ir ļaunprātīgs, un Chromium to bloķēja.</translation>

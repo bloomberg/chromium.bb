@@ -678,6 +678,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, 'AllowJavaScript' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="3038323923255997294">Tiếp tục chạy các ứng dụng dưới nền khi <ph name="PRODUCT_NAME" /> bị đóng</translation>
+<translation id="3046192273793919231">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến</translation>
 <translation id="3048744057455266684">Nếu chính sách này được đặt và URL tìm kiếm được đề xuất từ thanh địa chỉ có chứa tham số này trong chuỗi truy vấn hoặc trong số nhận dạng phân đoạn, thì đề xuất sẽ hiển thị cụm từ tìm kiếm và nhà cung cấp dịch vụ tìm kiếm thay vì URL tìm kiếm thô.
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có thay thế cụm từ tìm kiếm nào được thực hiện.
 
@@ -949,6 +950,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không được đặt hoặc được đặt thành False thì người dùng có thể chuyển các tệp đến Google Drive.</translation>
 <translation id="3915395663995367577">URL tới một tệp .pac proxy</translation>
+<translation id="3939893074578116847">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến, để cho phép
+      máy chủ phát hiện xem thiết bị có ngoại tuyến hay không.
+
+      Nếu chính sách này được đặt thành true, thông tin theo dõi gói mạng (được gọi là <ph name="HEARTBEATS_TERM" />) sẽ được gửi.
+      Nếu được đặt thành false hoặc không được đặt, thì sẽ không có gói nào được gửi.</translation>
 <translation id="3964909636571393861">Cho phép truy cập vào danh sách các URL</translation>
 <translation id="3965339130942650562">Thời gian chờ cho tới khi đăng xuất của người dùng không hoạt động được thực thi</translation>
 <translation id="3967075520570946456">Bật hiển thị trang chào mừng vào lần khởi chạy trình duyệt đầu tiên sau khi nâng cấp hệ điều hành.</translation>
@@ -1329,6 +1335,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt, sẽ tự động đăng nhập vào phiên được chỉ định sau khi một khoảng thời gian trôi qua ở màn hình đăng nhập mà không có tương tác của người dùng (xem |DeviceLocalAccounts|).
 
       Nếu chính sách này không được đặt, tự động đăng nhập sẽ không xảy ra.</translation>
+<translation id="5535957389335373033">Tần suất gửi thông tin theo dõi gói mạng, bằng mili giây.
+
+      Nếu chính sách này không được đặt thì tần suất mặc định là 3 phút. Tần suất
+      nhỏ nhất là 30 giây và tần suất lớn nhất là 24 giờ - các giá trị
+      nằm ngoài phạm vi này sẽ được giới hạn trong phạm vi này.</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
 <translation id="5560039246134246593">Thêm thông số cho quá trình tìm nạp khởi đầu Biến thể trong <ph name="PRODUCT_NAME" />.
 
@@ -2532,6 +2543,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="9187743794267626640">Vô hiệu hóa việc lắp bộ nhớ ngoài</translation>
 <translation id="9197740283131855199">Tỷ lệ phần trăm xác định độ trễ mờ màn hình nếu người dùng hoạt động sau khi màn hình bị làm mờ</translation>
 <translation id="9200828125069750521">Tham số cho URL hình ảnh sử dụng POST</translation>
+<translation id="9217154963008402249">Tần suất theo dõi gói mạng</translation>
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích, ứng dụng và tập lệnh người dùng</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="930930237275114205">Thiết lập thư mục dữ liệu người dùng <ph name="PRODUCT_FRAME_NAME" /></translation>

@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">OS Chromium tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Terjadi konflik pemasangan Chromium pada sistem. Copot pemasangan dan coba lagi.</translation>
 <translation id="1298199220304005244">Dapatkan bantuan tentang penggunaan Chromium OS</translation>
+<translation id="1347507563453473396">Chromium tidak dapat ditampilkan dalam bahasa ini.</translation>
 <translation id="1396446129537741364">Chromium mencoba menampilkan sandi.</translation>
 <translation id="1403254041219632970">Versi Chromium berikutnya tidak mendukung lagi Mac OS X 10.6, 10.7, atau 10.8.</translation>
 <translation id="1414495520565016063">Anda sudah masuk ke Chromium!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi ini.</translation>
 <translation id="2705212601509139398">Situs ini menggunakan plugin Chromium Frame yang akan segera tidak didukung. Copot pemasangannya dan unduh browser yang kompatibel.</translation>
 <translation id="2711502716910134313">Tab Chromium</translation>
+<translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> berbahaya dan Chromium memblokirnya.</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
+<translation id="2905536371227304018">Chromium OS ditampilkan dalam bahasa ini.</translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium harus meluncurkan aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Menambahkan Chromium...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Setel Chromium sebagai browser default</translation>
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
+<translation id="556167189552180495">Chromium ditampilkan dalam bahasa ini.</translation>
 <translation id="5563479599352954471">Telusuri dengan satu sentuhan</translation>
 <translation id="5620765574781326016">Pelajari tentang topik di situs web tanpa meninggalkan laman.</translation>
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5680901439334282664">masuk ke Chromium</translation>
+<translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
+<translation id="5768914737813585044">Tampilkan Chromium OS dalam bahasa ini</translation>
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON" />dimulai ulang<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir siap.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -172,6 +178,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="7064610482057367130">Tidak ditemukan pemasangan Chromium untuk diperbarui.</translation>
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
+<translation id="7090955637699162649">Chromium mungkin akan menggunakan <ph name="BEGIN_LINK" />layanan web<ph name="END_LINK" /> untuk meningkatkan pengalaman penjelajahan Anda. Anda dapat menonaktifkan layanan ini kapan saja secara opsional.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}other{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}}</translation>
 <translation id="7138853919861947730">Chromium dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda.</translation>
 <translation id="7162152143154757523">Chromium dapat memberikan pemeriksa ejaan yang lebih pintar dengan mengirimkan apa yang Anda ketik di browser ke server Google, sehingga memungkinkan Anda menggunakan teknologi pemeriksa ejaan yang sama seperti yang digunakan oleh penelusuran Google.</translation>
@@ -196,6 +203,7 @@ Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan pr
 Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
 <translation id="7419987137528340081">Jika Anda memilih untuk menjaga data Chromium yang sudah ada tetap terpisah, Anda dapat membuat pengguna Chromium baru untuk <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
+<translation id="7437562785125777404">Chromium OS tidak dapat ditampilkan dalam bahasa ini.</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7483335560992089831">Tidak dapat memasang Chromium versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium dan coba lagi.</translation>
 <translation id="750717762378961310">File ini berbahaya dan Chromium memblokirnya.</translation>

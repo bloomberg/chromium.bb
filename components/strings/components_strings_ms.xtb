@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Adakah anda pasti anda mahu memadamkan halaman ini daripada sejarah anda?</translation>
 <translation id="2677748264148917807">Tinggalkan</translation>
 <translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
+<translation id="2704951214193499422">Chromium tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi nanti.</translation>
 <translation id="2705137772291741111">Salinan tapak ini yang disimpan (cache) tidak boleh dibaca.</translation>
 <translation id="2709516037105925701">Autoisi</translation>
 <translation id="2712173769900027643">Minta kebenaran</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Jika didayakan, Chromium akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="2991174974383378012">Berkongsi dengan Tapak Web</translation>
 <translation id="3005723025932146533">Paparkan salinan disimpan</translation>
+<translation id="3008447029300691911">Masukkan CVC untuk <ph name="CREDIT_CARD" />. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
 <translation id="3010559122411665027">Masukan senarai "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Jenis dasar salah</translation>
 <translation id="3032412215588512954">Adakah anda ingin memuat semula tapak ini?</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3041612393474885105">Maklumat Sijil</translation>
+<translation id="3063697135517575841">Chrome tidak dapat mengesahkan kad anda pada masa ini. Sila cuba sebentar lagi.</translation>
 <translation id="3093245981617870298">Anda di luar talian.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak mempunyai kebenaran untuk melihat halaman ini.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Pelayan memberikan sijil yang tidak sepadan dengan jangkaan terbina dalam. Jangkaan ini disertakan untuk tapak web dengan keselamatan tinggi tertentu untuk melindungi anda.</translation>
 <translation id="3226128629678568754">Tekan butang muat semula untuk menyerahkan kembali data yang diperlukan untuk memuatkan halaman.</translation>
 <translation id="3228969707346345236">Gagal terjemah kerana halaman sudah dalam <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Masukkan CVC untuk <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Tanda halaman ini</translation>
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
@@ -407,6 +411,7 @@
 <translation id="5677928146339483299">Disekat</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
+<translation id="5784606427469807560">Terdapat masalah mengesahkan kad anda. Semak sambungan Internet anda dan cuba lagi.</translation>
 <translation id="5785756445106461925">Selain itu, halaman ini mengandungi sumber lain yang tidak selamat. Sumber ini boleh dilihat oleh orang lain semasa dalam transit dan boleh diubah oleh penyerang untuk menukar penampilan halaman.</translation>
 <translation id="5810442152076338065">Sambungan anda ke <ph name="DOMAIN" /> disulitkan menggunakan suit sifer yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Buat Semula Tambahkan</translation>
@@ -480,6 +485,7 @@
 <translation id="6839929833149231406">Kawasan</translation>
 <translation id="6874604403660855544">&amp;Buat semula tambahkan</translation>
 <translation id="6891596781022320156">Tahap dasar tidak disokong.</translation>
+<translation id="6895330447102777224">Kad anda telah disahkan</translation>
 <translation id="6897140037006041989">Ejen Pengguna</translation>
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
@@ -508,6 +514,7 @@
 <translation id="7219179957768738017">Sambungan menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Op! Anda perlu bertanya kepada ibu bapa anda sama ada anda boleh melawat halaman ini.</translation>
 <translation id="7246609911581847514">Anda melihat mesej ini kerana pengurus anda perlu meluluskan tapak baharu pada lawatan pertama anda.</translation>
+<translation id="724975217298816891">Masukkan tarikh tamat tempoh dan CVC untuk <ph name="CREDIT_CARD" /> bagi mengemas kini butiran kad anda. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
 <translation id="725866823122871198">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa komputer anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
 <translation id="7265986070661382626">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini <ph name="BEGIN_LINK" />menggunakan penyematan sijil<ph name="END_LINK" />. Ralat rangkaian dan serangan biasanya bersifat sementara oleh itu, halaman ini mungkin akan berfungsi sebentar lagi.</translation>
 <translation id="7269802741830436641">Halaman web ini mempunyai gelung ubah hala</translation>
@@ -521,6 +528,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Tidak</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Sahkan Kad</translation>
 <translation id="7394102162464064926">Anda pasti mahu memadamkan halaman ini daripada sejarah anda?
 
 Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa akan datang.</translation>
@@ -530,6 +538,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7441627299479586546">Subjek dasar salah</translation>
 <translation id="7445762425076701745">Identiti pelayan yang disambungkan kepada anda tidak dapat disahkan sepenuhnya. Anda disambungkan ke pelayan menggunakan nama yang sah dalam rangkaian anda sahaja, apabila pihak berkuasa sijil luaran tiada cara untuk mengesahkan pemilikan. Oleh kerana beberapa pihak berkuasa sijil juga akan terus mengeluarkan sijil untuk nama ini, tiada cara untuk memastikan anda disambungkan ke tapak web yang diingini dan bukannya penyerang.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> tentang masalah ini.</translation>
+<translation id="7469372306589899959">Mengesahkan kad</translation>
 <translation id="7481312909269577407">Majukan</translation>
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
 <translation id="7514365320538308">Muat Turun</translation>
@@ -644,6 +653,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8866959479196209191">Halaman ini menyatakan:</translation>
 <translation id="8870413625673593573">Ditutup Baru-baru Ini</translation>
 <translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>
+<translation id="8877192140621905067">Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini</translation>
 <translation id="8891727572606052622">Mod proksi tidak sah.</translation>
 <translation id="889901481107108152">Maaf, eksperimen ini tidak tersedia pada platform anda.</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
@@ -676,6 +686,8 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">KOSONGKAN BORANG</translation>
 <translation id="939736085109172342">Folder baharu</translation>
+<translation id="943029900877297437">Log masuk ke Chrome untuk menggunakan kad yang disimpan ke Akaun Google anda.</translation>
+<translation id="962701380617707048">Masukkan tarikh tamat tempoh dan CVC untuk <ph name="CREDIT_CARD" /> bagi mengemas kini butiran kad anda</translation>
 <translation id="969892804517981540">Binaan Rasmi</translation>
 <translation id="988159990683914416">Binaan Pemaju</translation>
 </translationbundle>

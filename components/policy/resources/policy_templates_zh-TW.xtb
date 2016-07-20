@@ -645,6 +645,7 @@
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="3034580675120919256">允許您設定是否要讓網站執行 JavaScript。您可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
 <translation id="3038323923255997294">在 <ph name="PRODUCT_NAME" /> 關閉時繼續執行背景應用程式 </translation>
+<translation id="3046192273793919231">將監控線上狀態所需的網路封包傳送到管理伺服器</translation>
 <translation id="3048744057455266684">如果您設定這項政策，且網址列所建議的搜尋網址在查詢字串或片段識別碼中含有這項 參數，則搜尋建議會顯示搜尋字詞和搜尋引擎供應商，而不是顯示原始的搜尋網址。
 
           這個政策為選擇性，如果您並未設定這項政策，系統就不會取代任何搜尋字詞。
@@ -904,6 +905,11 @@
 
           如果您設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
+<translation id="3939893074578116847">將監控線上狀態所需的網路封包傳送到管理伺服器，
+      讓伺服器偵測裝置是否處於離線狀態。
+
+      如果將這項政策設為 true，系統會傳送網路封包 (所謂的「<ph name="HEARTBEATS_TERM" />」)。
+      如果設為 false 或未設定，系統就不會傳送任何封包。</translation>
 <translation id="3964909636571393861">允許存取清單中的網址</translation>
 <translation id="3965339130942650562">逾時直到閒置使用者登出</translation>
 <translation id="3967075520570946456">允許在作業系統升級後首次啟動瀏覽器時顯示歡迎網頁。</translation>
@@ -1230,6 +1236,11 @@
       如果設定這項政策，系統會在使用者於登入畫面停止互動後的一段時間過後，自動登入指定的工作階段。您必須已設定公開工作階段 (請參閱 |DeviceLocalAccounts|)。
 
       如果未設定這項政策，系統不會進行自動登入。</translation>
+<translation id="5535957389335373033">監控網路封包的傳送頻率 (以毫秒為單位)。
+
+      如果未設定這項政策，預設頻率為 3 分鐘。
+      最低頻率為 30 秒，最高頻率為 24 小時。
+      超過範圍的頻率值會被限制在範圍內。</translation>
 <translation id="5535973522252703021">Kerberos 委派伺服器許可清單</translation>
 <translation id="5560039246134246593">在 <ph name="PRODUCT_NAME" /> 中擷取變異版本種子時新增參數。
 
@@ -2311,6 +2322,7 @@
 <translation id="9187743794267626640">停用外部儲存裝置掛載功能</translation>
 <translation id="9197740283131855199">使用者在螢幕調暗後繼續使用裝置時的螢幕調暗時間延長百分比</translation>
 <translation id="9200828125069750521">使用 POST 的圖片網址參數</translation>
+<translation id="9217154963008402249">監控網路封包的傳送頻率</translation>
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
 <translation id="930930237275114205">設定 <ph name="PRODUCT_FRAME_NAME" /> 使用者資料目錄</translation>

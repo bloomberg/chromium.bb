@@ -682,6 +682,7 @@
 
           Nenustačius šios politikos, bus naudojama „Leisti „JavaScript“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="3038323923255997294">Uždarius „<ph name="PRODUCT_NAME" />“ toliau leisti fonines programas</translation>
+<translation id="3046192273793919231">Tinklo paketų siuntimas į valdymo serverį, siekiant stebėti prisijungimo būseną</translation>
 <translation id="3048744057455266684">Jei ši politika yra nustatyta ir paieškos URL, pasiūlyto „Omnibox“, užklausos eilutėje ar fragmento identifikatoriuje yra šis parametras, pasiūlyme bus rodomi paieškos terminai ir paieškos teikėjas, o ne tiesiog paieškos URL.
 
           Ši politika yra pasirenkama. Jei ji nebus nustatyta, paieškos terminas nebus pakeistas.
@@ -961,6 +962,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei nenustatyta arba nustatyta kaip „false“, naudotojai galės perkelti failus į „Google“ diską.</translation>
 <translation id="3915395663995367577">URL, siejantis su tarpinio serverio .pac failu</translation>
+<translation id="3939893074578116847">Siunčiami tinklo paketai į valdymo serverį, siekiant stebėti prisijungimo būseną, kad
+      serveryje būtų aptikta, ar įrenginys prijungtas prie interneto.
+
+      Jei ši politika nustatyta į „true“, bus siunčiami stebėjimo tinklo paketai (<ph name="HEARTBEATS_TERM" />).
+      Jei ji nustatyta į „false“ arba yra nenustatyta, paketai siunčiami nebus.</translation>
 <translation id="3964909636571393861">Suteikiama prieiga prie URL sąrašo</translation>
 <translation id="3965339130942650562">Skirtasis laikas, kol vykdomas neveikos būsenos naudotojo atjungimas</translation>
 <translation id="3967075520570946456">Įgalinkite darbo pradžios puslapio rodymą pirmą kartą paleidus naršyklę po OS naujovinimo.</translation>
@@ -1343,6 +1349,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, prie nurodytos sesijos bus automatiškai prisijungta prisijungimo ekrane praėjus tam tikram laikui be naudotojo sąveikos. Vieša sesija jau turi būti sukonfigūruota (žr. |DeviceLocalAccounts|).
 
       Jei ši politika nenustatyta, nebus automatiškai prijungiama.</translation>
+<translation id="5535957389335373033">Stebėjimo tinklo paketų siuntimo dažnis milisekundėmis.
+
+      Jei ši politika nenustatyta, numatytasis dažnis bus 3 minutės. Minimalus
+      dažnis yra 30 sekundžių, o maksimalus – 24 valandos. Vertės
+      už šio diapazono ribų bus nustatytos į šio diapazono vertę.</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
 <translation id="5560039246134246593">Pridėkite variantų pirminės reikšmės pateikimo apribojimą „<ph name="PRODUCT_NAME" />“.
 
@@ -2569,6 +2580,7 @@ Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesi
 <translation id="9187743794267626640">Neleisti montuoti išorinės atminties</translation>
 <translation id="9197740283131855199">Ekrano užtemdymo delsos mastelio keitimo procentas, naudojamas, jei naudotojas atlieka veiksmų po užtemdymo</translation>
 <translation id="9200828125069750521">Vaizdo URL parametrai, kuriuose naudojama POST</translation>
+<translation id="9217154963008402249">Tinklo paketų stebėjimo dažnis</translation>
 <translation id="922540222991413931">Konfigūruokite plėtinio, programos ir naudotojo scenarijaus įdiegimo šaltinius.</translation>
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="930930237275114205">Nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ naudotojo duomenų katalogą</translation>

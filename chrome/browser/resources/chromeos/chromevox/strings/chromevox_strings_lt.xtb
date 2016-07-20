@@ -297,6 +297,7 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">Sąrašo automatinis užbaigimas</translation>
 <translation id="3810838688059735925">Vaizdo</translation>
+<translation id="3812237531158591503">įklijuoti $1.</translation>
 <translation id="3816633764618089385">Kitas medijų raktas</translation>
 <translation id="3819376190738087562">Nėra perėjimų.</translation>
 <translation id="385383972552776628">Atidaryti parinkčių puslapį</translation>
@@ -553,6 +554,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="6355910664415701303">Nėra ankstesnio sąrašo elemento.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Ankstesnė antraštė</translation>
+<translation id="6378565991815958969">kopijuoti $1.</translation>
 <translation id="6387719785439924554">šalia</translation>
 <translation id="6411426777058107714">Nėra ankstesnės akutės.</translation>
 <translation id="6414968628640960377">Ankstesnis kitoks elementas.</translation>
@@ -779,6 +781,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="9077213568694924680">pašalinta iš pasirinkimo srities</translation>
 <translation id="9082874451376019682">Nėra ankstesnio šliaužiklio.</translation>
 <translation id="9089864840575085222">Ciklo įvedimo aidas</translation>
+<translation id="9105227991373418255">iškirpti $1.</translation>
 <translation id="9107530006868467849">Nėra ankstesnio medijų valdiklio.</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9108589040018540527">scbr</translation>

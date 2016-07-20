@@ -686,6 +686,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 
 Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="3038323923255997294">Poursuivre l'exécution des applications en arrière-plan après la fermeture de <ph name="PRODUCT_NAME" /></translation>
+<translation id="3046192273793919231">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne</translation>
 <translation id="3048744057455266684">Si cette règle est définie et que la chaîne de requête ou l'identifiant du fragment d'une URL de recherche suggérée à partir de l'Omnibox contient ce paramètre, la suggestion affiche les termes et le moteur de recherche, et non l'URL de recherche brute.
 
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
@@ -964,6 +965,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
+<translation id="3939893074578116847">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne, afin de lui permettre
+      de détecter si l'appareil est hors connexion
+
+      Si cette règle est définie sur "True", les paquets réseau de contrôle (appelés "<ph name="HEARTBEATS_TERM" />") seront transmis.
+      Si elle est définie sur "False" ou si elle n'est pas configurée, aucun paquet ne sera transmis.</translation>
 <translation id="3964909636571393861">Permet d'accéder à une liste d'URL.</translation>
 <translation id="3965339130942650562">Délai avant exécution de la déconnexion de l'utilisateur en cas d'inactivité</translation>
 <translation id="3967075520570946456">Activer l'affichage de la page d'accueil à la première exécution du navigateur suivant la mise à jour de l'OS</translation>
@@ -1353,6 +1359,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie, le système se connecte automatiquement à la session spécifiée après expiration du délai d'inactivité. La session publique doit être configurée au préalable (voir |DeviceLocalAccounts|).
 
       Si cette règle n'est pas définie, aucune connexion automatique n'a lieu.</translation>
+<translation id="5535957389335373033">Indiquer la fréquence d'envoi de paquets réseau de contrôle, en millisecondes
+
+      Si cette règle n'est pas définie, le délai par défaut entre deux paquets est de 3 minutes.
+      Le délai minimal entre deux paquets est de 30 secondes, et le délai maximal est de 24 heures. Les valeurs
+      situées en dehors de cette plage seront remplacées par la valeur limite la plus proche.</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="5560039246134246593">Permet d'ajouter un paramètre à la récupération de la valeur de départ des variantes dans <ph name="PRODUCT_NAME" />.
 
@@ -2572,6 +2583,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9187743794267626640">Désactiver le montage de périphériques de stockage externe</translation>
 <translation id="9197740283131855199">Pourcentage d'adaptation du délai d'assombrissement de l'écran si l'utilisateur devient actif après la réduction de la luminosité</translation>
 <translation id="9200828125069750521">Paramètres pour l'URL d'image utilisant POST</translation>
+<translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
 <translation id="930930237275114205">Définir le répertoire de données utilisateur de <ph name="PRODUCT_FRAME_NAME" /></translation>

@@ -65,6 +65,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
 <translation id="2825619548187458965">Hylde</translation>
 <translation id="2844169650293029770">USB-C-enhed (porten foran i venstre side)</translation>
+<translation id="2857608528410806398">Underretningsteksten for QU-funktionen angives her.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
@@ -221,6 +222,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="7957227661277029961">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt. Overvej at bruge den officielle oplader.</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
+<translation id="8077816382010018681">Underretningstitlen for QU-funktionen angives her</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8206859287963243715">Mobil</translation>

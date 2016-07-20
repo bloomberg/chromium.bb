@@ -8,6 +8,7 @@
 <translation id="1221340462641866827"><ph name="SCHEME" /> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಹೆಚ್ಚುವರಿ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸ್ಥಾಪಿಸುವುದಕ್ಕೆ Chromium OS ಬೆಂಬಲ ನೀಡುತ್ತಿಲ್ಲ. <ph name="PROTOLINK" /> ಲಿಂಕ್‌ನ ವಿನಂತಿಯಾಗಿದೆ.</translation>
 <translation id="1293235220023151515">ಸಿಸ್ಟಂ‌ನಲ್ಲಿ Chromium ಅನ್ನು ಸ್ಥಾಪಿಸುವಲ್ಲಿ ಸಂಘರ್ಷಣೆಯೊಂದು ಪತ್ತೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ಮರುಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1298199220304005244">Chromium OS ಅನ್ನು ಬಳಸುತ್ತಿರುವುದರ ಜೊತೆಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
+<translation id="1347507563453473396">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1396446129537741364">Chromium ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="1403254041219632970">Chromium ನ ಪೂರ್ಣ ಆವೃತ್ತಿಗಳು Mac OS X 10.6, 10.7 ಅಥವಾ 10.8 ರಲ್ಲಿ ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="1414495520565016063">ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium ನವೀಕರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿದೆ ಹಾಗೂ ನಿಮ್ಮ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಮ್‌ನ ಈ  ಆವೃತ್ತಿಯನ್ನು ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="2705212601509139398">ಈ ಸೈಟ್ ಶೀಘ್ರದಲ್ಲಿಯೇ ಬೆಂಬಲ ಕಳೆದುಕೊಳ್ಳಲಿರುವ Chromium Frame ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಅದನ್ನು ಅಸ್ಥಾಪಿಸಿ ಮತ್ತು ಹೊಂದಾಣಿಕೆಯ ಬ್ರೌಸರ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="2711502716910134313">Chromium ಟ್ಯಾಬ್</translation>
+<translation id="2718390899429598676">ಹೆಚ್ಚುವರಿ ಭದ್ರತೆಗಾಗಿ, Chromium ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="2770231113462710648">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ಇದ್ಕಕೆ ಬದಲಿಸಿ:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> ದೋಷಪೂರಿತವಾಗಿದೆ, ಮತ್ತು Chromium ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="2847479871509788944">Chromium ನಿಂದ ತೆಗೆದುಹಾಕಿ...</translation>
 <translation id="2886012850691518054">ಐಚ್ಚಿಕ: Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಷ್ ವರದಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವುದರಿಂದ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
+<translation id="2905536371227304018">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ.</translation>
 <translation id="2910007522516064972">&amp;Chromium ಕುರಿತು</translation>
 <translation id="2966088006374919794"><ph name="SCHEME" /> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಹೆಚ್ಚುವರಿ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯ Chromium ಗಿದೆ. <ph name="PROTOLINK" /> ಲಿಂಕ್‌ನ ವಿನಂತಿಯಾಗಿದೆ.</translation>
 <translation id="3032787606318309379">Chromium ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -119,10 +122,13 @@
 <translation id="5427571867875391349">Chromium ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್‌ ರೂಪದಲ್ಲಿ ಹೊಂದಿಸಿ</translation>
 <translation id="5466153949126434691">Chromium ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನವೀಕರಿಸುತ್ತದೆ ಈ ಮೂಲಕ ನೀವು ಯಾವಾಗಲೂ ತಾಜಾ ಆವೃತ್ತಿಯುನ್ನು ಹೊಂದಿರುತ್ತೀರಿ. ಈ ಡೌನ್‌ಲೋಡ್‌ ಪೂರ್ಣಗೊಂಡಾಗ, Chromium ಮರುಪ್ರಾರಂಭಿಸುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಮಾರ್ಗದಲ್ಲಿ ನೀವು ಇರಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="549669000822060376">ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chromium ಸ್ಥಾಪಿಸುವಾಗ ಕಾಯಿರಿ.</translation>
+<translation id="556167189552180495">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="5563479599352954471">ಒಂದು ಸ್ಪರ್ಶದಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="5620765574781326016">ಪುಟವನ್ನು ಉಳಿಸದೆ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ವಿಷಯಗಳ ಕುರಿತು ತಿಳಿಯಿರಿ.</translation>
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
+<translation id="5698481217667032250">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸು</translation>
+<translation id="5768914737813585044">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />ಮರುಪ್ರಾರಂಭ<ph name="END_BUTTON" /> ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="5796460469508169315">Chromium ಬಹುತೇಕ ಸಿದ್ಧಗೊಂಡಿದೆ.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -168,6 +174,7 @@
 <translation id="705851970750939768">Chromium ನವೀಕರಿಸಿ</translation>
 <translation id="7064610482057367130">ನವೀಕರಿಸಲು Chromium ನ ಯಾವುದೇ ಸ್ಥಾಪನೆಯು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="7066436765290594559">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
+<translation id="7090955637699162649">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು Chromium <ph name="BEGIN_LINK" />ವೆಬ್‌ ಸೇವೆಗಳನ್ನು<ph name="END_LINK" /> ಬಳಸಬಹುದು. ನೀವು ಯಾವ ಸಮಯದಲ್ಲಾದರೂ ಐಚ್ಛಿಕವಾಗಿ ಈ ಸೇವೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬಹುದು.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ $1 ಐಟಂ ಅನ್ನು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಿಂಪಡೆಯಲು, $2 ನಂತೆ Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.}one{ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ $1 ಐಟಂಗಳನ್ನು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಿಂಪಡೆಯಲು, $2 ನಂತೆ Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.}other{ಇದು ಈ ಸಾಧನದಿಂದ ಖಾಯಂ ಆಗಿ $1 ಐಟಂಗಳನ್ನು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಿಂಪಡೆಯಲು, $2 ನಂತೆ Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.}}</translation>
 <translation id="7138853919861947730">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು Chromium ವೆಬ್ ಸೇವೆಗಳನ್ನು ಬಳಸಬಹುದು.</translation>
 <translation id="7162152143154757523">Google ಹುಡುಕಾಟ ಬಳಸುವ ಪದ ಪರೀಕ್ಷಕ ತಂತ್ರಜ್ಞಾನವನ್ನು ಬಳಸಲು ನಿಮಗೆ ಅನುಮತಿ ನೀಡಲು, ಬ್ರೌಸರ್‌ನಲ್ಲಿ ನೀವು ಟೈಪ್ ಮಾಡುವುದನ್ನು Google ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವ ಮೂಲಕ Chromium ಒಳ್ಳೆಯ ಪದ ಪರೀಕ್ಷವನ್ನು ಒದಗಿಸಬಹುದಾಗಿದೆ.</translation>
@@ -190,6 +197,7 @@
 ಹೆಚ್ಚಿನ ಸೂಚನೆಗಳಿಗಾಗಿ ದಯವಿಟ್ಟು <ph name="ACCOUNT_EMAIL" /> ಗೆ ಬಂದಿರುವ ಇಮೇಲ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ.</translation>
 <translation id="7419987137528340081">ನಿಮ್ಮ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ Chromium ಡೇಟಾವನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇಟ್ಟುಕೊಳ್ಳಲು ನೀವು ಬಯಸುವುದಾದರೆ, <ph name="USER_NAME" /> ಗಾಗಿ ಹೊಸ Chromium ಬಳಕೆದಾರರನ್ನು ನೀವು ರಚಿಸಬಹುದು.</translation>
 <translation id="7421823331379285070">Chromium ಗೆ Windows XP ಅಥವಾ ನಂತರದ್ದು ಅಗತ್ಯವಿದೆ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಕೆಲಸ ಮಾಡುವುದಿಲ್ಲ.</translation>
+<translation id="7437562785125777404">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="7473891865547856676">ಇಲ್ಲ, ಧನ್ಯವಾದಗಳು</translation>
 <translation id="7483335560992089831">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ Chromium ನ ಅದೇ ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="750717762378961310">ಈ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ, ಮತ್ತು Chromium ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>

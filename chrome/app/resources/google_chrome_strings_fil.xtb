@@ -38,6 +38,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1818142563254268765">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chrome.</translation>
 <translation id="1864458292167284385">Umaalis na ang Chrome App Launcher.</translation>
 <translation id="1877026089748256423">Luma na ang Chrome</translation>
+<translation id="1924381329666691588">Hindi maipapakita ang Google Chrome sa wikang ito.</translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2084710999043359739">Idagdag sa Chrome</translation>
 <translation id="2246246234298806438">Hindi maipapakita ng Google Chrome ang preview sa pag-print kapag nawawala ang built-in na PDF viewer.</translation>
@@ -66,7 +67,9 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2748463065602559597">Tumitingin ka sa isang secure na pahina ng Google Chrome.</translation>
 <translation id="2769762047821873045">Hindi Google Chrome ang iyong default na browser.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
+<translation id="2847461019998147611">Ipakita ang Google Chrome sa wikang ito</translation>
 <translation id="2871893339301912279">Naka-sign in ka sa Chrome!</translation>
+<translation id="2888126860611144412">Tungkol sa Chrome</translation>
 <translation id="2997147809295888909">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Hindi nagbigay ang server ng anumang impormasyon tungkol sa Certificate Transparency.</translation>
 <translation id="3037838751736561277">Nasa background mode ang Google Chrome.</translation>
 <translation id="3047079729301751317">Iki-clear ng pagdiskonekta kay <ph name="USERNAME" /> ang iyong history, mga bookmark, setting at iba pang data ng Chrome na naka-imbak sa device na ito. Hindi iki-clear ang data na naka-imbak sa iyong Google Account at maaaring pamahalaan sa <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -112,6 +115,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4480040274068703980">Hindi ma-sync ng Chrome OS ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
+<translation id="4519152997629025674">Maaaring gumamit ang Google Chrome ng <ph name="BEGIN_LINK" />mga serbisyo sa web<ph name="END_LINK" /> upang mapahusay ang iyong karanasan sa pagba-browse. Maaari mong opsyonal na i-disable ang mga serbisyong ito anumang oras.</translation>
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS" />. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="4631713731678262610">Itago sa menu ng Chrome</translation>
@@ -153,6 +157,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="5563479599352954471">Maghanap sa isang pagpindot lang</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page.</translation>
+<translation id="5637867606963802593">Hindi maipapakita ang Chrome OS sa wikang ito.</translation>
 <translation id="568643307450491754">Hanapin ang iyong mga bookmark sa Chrome menu o sa bookmarks bar.</translation>
 <translation id="573759479754913123">Tungkol sa Chrome OS</translation>
 <translation id="5749068826913805084">Kailangan ng Chrome ng access sa storage upang mag-download ng mga file.</translation>
@@ -172,6 +177,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6235018212288296708">Inbound na panuntunan para sa Google Chrome upang payagan ang trapiko ng mDNS.</translation>
 <translation id="6236285698028833233">Huminto na sa pag-update ang Google Chrome at hindi na nito sinusuportahan ang bersyong ito ng iyong operating system.</translation>
 <translation id="629218512217695915">Gumamit ng password na binuo ng Chrome</translation>
+<translation id="6368805772029492593">Para sa karagdagang seguridad, ie-encrypt ng Google Chrome ang iyong data.</translation>
 <translation id="6368958679917195344">Ginagawang posible ang Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS" />open source na software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Mac OS X 10.6, 10.7 at 10.8.</translation>
 <translation id="6470176598693778404">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Mac OS X 10.6, 10.7 at 10.8.</translation>
@@ -200,6 +206,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7177347454226092725">Permanente nitong ide-delete sa device na ito ang iyong data mula sa pagba-browse. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang $2.</translation>
 <translation id="7185038942300673794">Naidagdag ang <ph name="EXTENSION_NAME" /> sa Chrome.</translation>
 <translation id="7191567847629796517">Hindi sinusuportahan ng Google Chrome OS ang paglulunsad ng external na application upang mangasiwa ng mga link ng <ph name="SCHEME" />. Ang hiniling na link ay <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Ipinapakita ang Google Chrome sa wikang ito.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
 <translation id="7242029209006116544">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. Maaari ka ring gumawa ng bagong profile upang ihiwalay ang iyong umiiral na data sa Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Windows XP at Windows Vista.</translation>
@@ -209,11 +216,13 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7408085963519505752">Mga tuntunin ng Chrome OS</translation>
 <translation id="7419046106786626209">Hindi ma-sync ng Chrome OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="7436949144778751379">Kailangan ng Google Chrome ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
+<translation id="7437998757836447326">Mag-sign out sa Chrome</translation>
 <translation id="7459554271817304652">I-set up ang Pag-sync upang i-save ang iyong personalized na mga tampok sa browser sa web at i-access ang mga iyon mula sa Google Chrome sa anumang computer.</translation>
 <translation id="7473136999113284234">Awtomatikong nag-a-update ang Chrome upang palagi kang may pinakabagong bersyon.</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7494905215383356681">Mga lisensya ng open source ng Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Permanente itong magde-delete ng kahit $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang $2.}one{Permanente itong magde-delete ng hindi bababa sa $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang $2.}other{Permanente itong magde-delete ng hindi bababa sa $1 na item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang $2.}}</translation>
+<translation id="7552219221109926349">Ipakita ang Chrome OS sa wikang ito</translation>
 <translation id="7592736734348559088">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in ng iyong account.</translation>
 <translation id="7626032353295482388">Maligayang pagdating sa Chrome</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
@@ -226,6 +235,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7890208801193284374">Kung nagpapahiram ka ng computer, ang mga kaibigan at kapamilya ay maaaring mag-browse nang hiwalay at i-set up ang Chrome sa paraang gusto nila.</translation>
 <translation id="7908168227788431038">Halos napapanahon na! Muling ilunsad ang Google Chrome upang tapusin ang pag-a-update.</translation>
 <translation id="795025003224538582">Huwag i-restart</translation>
+<translation id="7964230182933713106">Ipinapakita ang Chrome OS sa wikang ito.</translation>
 <translation id="8005540215158006229">Halos handa na ang Chrome.</translation>
 <translation id="8008534537613507642">Muling i-install ang Chrome</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> na channel...</translation>

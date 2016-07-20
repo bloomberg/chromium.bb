@@ -10,6 +10,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1221340462641866827">Systém Chromium OS nepodporuje spustenie externej aplikácie na spracovanie odkazov typu <ph name="SCHEME" />. Typ požadovaného odkazu: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">V systéme sa našla konfliktná inštalácia prehliadača Chromium. Odinštalujte ju a skúste to znova.</translation>
 <translation id="1298199220304005244">Získajte pomoc pri používaní systému Chromium OS</translation>
+<translation id="1347507563453473396">Chromium nie je možné zobraziť v tomto jazyku.</translation>
 <translation id="1396446129537741364">Prehliadač Chromium sa snaží zobraziť heslá.</translation>
 <translation id="1403254041219632970">Budúce verzie prehliadača Chromium už nebudú podporovať systém Mac OS X verzie 10.6, 10.7 alebo 10.8.</translation>
 <translation id="1414495520565016063">Ste prihlásený/-á do prehliadača Chromium.</translation>
@@ -57,10 +58,12 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2685838254101182273">Prehliadač Chromium sa prestal aktualizovať a túto verziu vášho operačného systému už nepodporuje.</translation>
 <translation id="2705212601509139398">Táto stránka používa doplnok Chromium Frame, ktorého podpora sa čoskoro ukončí. Odinštalujte ho a stiahnite si kompatibilný prehliadač.</translation>
 <translation id="2711502716910134313">Karta Chromium</translation>
+<translation id="2718390899429598676">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Chromium šifrované.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2801146392936645542">Súbor <ph name="FILE_NAME" /> je škodlivý, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="2847479871509788944">Odstrániť z prehliadača Chromium...</translation>
 <translation id="2886012850691518054">Voliteľné: Pomôžte vylepšiť služby prehliadača Chromium tým, že nastavíte automatické odosielanie štatistík používania a správ o zlyhaní spoločnosti Google.</translation>
+<translation id="2905536371227304018">Chromium OS sa zobrazuje v tomto jazyku.</translation>
 <translation id="2910007522516064972">Informácie o prehliadači &amp;Chromium</translation>
 <translation id="2966088006374919794">Systém Chromium potrebuje na spracovanie odkazov typu <ph name="SCHEME" /> spustiť externú aplikáciu. Typ požadovaného odkazu: <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Pridáva sa do prehliadača Chromium...</translation>
@@ -123,10 +126,13 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5427571867875391349">Nastaviť Chromium ako predvolený prehliadač</translation>
 <translation id="5466153949126434691">Chromium sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chromium reštartujte a začnete používať aktuálnu verziu.</translation>
 <translation id="549669000822060376">Počkajte, kým Chromium nainštaluje najnovšie aktualizácie systému.</translation>
+<translation id="556167189552180495">Chromium sa zobrazuje v tomto jazyku.</translation>
 <translation id="5563479599352954471">Vyhľadávanie jediným klepnutím</translation>
 <translation id="5620765574781326016">Získajte informácie o témach zmienených na stránke bez toho, aby ste danú stránku museli opustiť.</translation>
 <translation id="5634636535844844681">Chromium vyžaduje Windows 7 alebo vyšší.</translation>
 <translation id="5680901439334282664">prihláste sa do prehliadača Chromium</translation>
+<translation id="5698481217667032250">Zobraziť Chromium v tomto jazyku</translation>
+<translation id="5768914737813585044">Zobraziť Chromium OS v tomto jazyku</translation>
 <translation id="5772805321386874569">(vyžaduje <ph name="BEGIN_BUTTON" />reštartovanie<ph name="END_BUTTON" /> prehliadača Chromium)</translation>
 <translation id="5796460469508169315">Prehliadač Chromium je takmer pripravený</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -174,6 +180,7 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="705851970750939768">Aktualizovať Chromium</translation>
 <translation id="7064610482057367130">Nenašla sa žiadna inštalácia prehliadača Chromium, ktorú by bolo možné aktualizovať.</translation>
 <translation id="7066436765290594559">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
+<translation id="7090955637699162649">Chromium môže používať <ph name="BEGIN_LINK" />webové služby<ph name="END_LINK" />, aby vám spríjemnil prehliadanie. Tieto služby môžete kedykoľvek zakázať.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Táto akcia natrvalo odstráni $1 položku z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do prehliadača Chromium ako $2.}few{Táto akcia natrvalo odstráni $1 položky z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do prehliadača Chromium ako $2.}many{Táto akcia natrvalo odstráni $1 položky z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do prehliadača Chromium ako $2.}other{Táto akcia natrvalo odstráni $1 položiek z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do prehliadača Chromium ako $2.}}</translation>
 <translation id="7138853919861947730">Prehliadač Chromium vám môže spríjemniť prehliadanie pomocou webových služieb.</translation>
 <translation id="7162152143154757523">Prehliadač Chromium vám ponúka inteligentnejšiu kontrolu pravopisu tým, že text zadaný do prehliadača odošle serverom spoločnosti Google. Umožňuje vám tak využiť rovnakú technológiu kontroly pravopisu, aká sa používa vo Vyhľadávaní Google.</translation>
@@ -198,6 +205,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 Ďalšie pokyny si prečítajte v e-mailovej správe odoslanej na adresu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Ak chcete svoje existujúce údaje prehliadača Chromium ponechať oddelené, môžete pre účet <ph name="USER_NAME" /> vytvoriť nového používateľa prehliadača Chromium.</translation>
 <translation id="7421823331379285070">Prehliadač Chromium vyžaduje systém Windows XP alebo novší. Niektoré funkcie nemusia fungovať.</translation>
+<translation id="7437562785125777404">Chromium OS nie je možné zobraziť v tomto jazyku.</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7483335560992089831">Nemôžete nainštalovať rovnakú verziu prehliadača Chromium ako je tá, ktorá je momentálne spustená. Zatvorte prehliadač Chromium a skúste to znova.</translation>
 <translation id="750717762378961310">Tento súbor je škodlivý, a preto ho prehliadač Chromium zablokoval.</translation>

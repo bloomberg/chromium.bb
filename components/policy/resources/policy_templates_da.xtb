@@ -648,6 +648,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3030000825273123558">Aktivér metrics-rapportering</translation>
 <translation id="3034580675120919256">Giver dig mulighed for at angive, om websites må køre JavaScript. Kørsel af JavaScript kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "AllowJavaScript", og brugeren vil kunne ændre det.</translation>
 <translation id="3038323923255997294">Fortsætter med at køre baggrundsapps, når <ph name="PRODUCT_NAME" /> er lukket</translation>
+<translation id="3046192273793919231">Send netværkspakker til administratorserveren for at overvåge onlinestatus</translation>
 <translation id="3048744057455266684">Hvis denne politik er indstillet, og en søgewebadresse foreslået af omnifeltet indeholder denne parameter i forespørgselsstrengen eller i fragment-id'et, vil forslaget vise søgetermerkene og søgemaskinen i stedet for kun søgewebadressen.
 
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
@@ -919,6 +920,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Hvis denne indstilling ikke er konfigureret eller er angivet til Falsk, kan brugerne overføre filer til Google Drev.</translation>
 <translation id="3915395663995367577">Webadresse til en proxyfil af typen .pac</translation>
+<translation id="3939893074578116847">Send netværkspakker til administrationsserveren for at overvåge onlinestatus, så
+      serveren kan registrere, om enheden er offline.
+
+      Hvis denne politik er angivet til sand, sendes der netværkspakker til overvågning (også kaldet <ph name="HEARTBEATS_TERM" />).
+      Hvis den angives til falsk eller ikke angives, sendes der ingen pakker.</translation>
 <translation id="3964909636571393861">Giver adgang til en liste over webadresser</translation>
 <translation id="3965339130942650562">Timeout, indtil brugeren logges ud på grund af inaktivitet</translation>
 <translation id="3967075520570946456">Aktivér visning af velkomstsiden, når browseren genstartes efter opgradering af operativsystemet.</translation>
@@ -1253,6 +1259,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis denne politik er angivet, logges den angivne session automatisk ind efter et stykke tid ved loginskærmen uden brugerinteraktion. Den offentlige session skal i forvejen være konfigureret (se |DeviceLocalAccounts|).
 
       Hvis denne politik ikke er angivet, aktiveres automatisk login ikke.</translation>
+<translation id="5535957389335373033">Hvor ofte netværkspakker til overvågning sendes (angivet i millisekunder).
+
+Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer. Alle værdier uden for dette interval justeres automatisk, så de ligger inden for dette interval.</translation>
 <translation id="5535973522252703021">Hvidliste for Kerberos-delegeringsserver</translation>
 <translation id="5560039246134246593">Tilføj en parameter til hentning af variationbasistal i <ph name="PRODUCT_NAME" />.
 
@@ -2379,6 +2388,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9187743794267626640">Deaktiver isætning af eksternt lager</translation>
 <translation id="9197740283131855199">Den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, hvis brugeren bliver aktiv efter nedtoningen</translation>
 <translation id="9200828125069750521">Parametre for billedets webadresse, som anvender POST</translation>
+<translation id="9217154963008402249">Hyppighed for netværkspakker til overvågning</translation>
 <translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>
 <translation id="930930237275114205">Angiv brugerdatamappe for <ph name="PRODUCT_FRAME_NAME" /></translation>

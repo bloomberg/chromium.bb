@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Ar tikrai norite pašalinti šiuos puslapius iš savo istorijos?</translation>
 <translation id="2677748264148917807">Išeiti</translation>
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
+<translation id="2704951214193499422">Šiuo metu „Chromium“ negali patvirtinti jūsų kortelės. Vėliau bandykite dar kartą.</translation>
 <translation id="2705137772291741111">Išsaugotos (talpykloje esančios) šios svetainės kopijos negalima skaityti.</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
 <translation id="2712173769900027643">Prašyti leidimo</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Jei šis nustatymas įgalintas, „Chromium“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="2991174974383378012">Bendrinimas su svetainėmis</translation>
 <translation id="3005723025932146533">Rodyti išsaugotą kopiją</translation>
+<translation id="3008447029300691911">Įveskite „<ph name="CREDIT_CARD" />“ kortelės saugos kodą (CVC). Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="3010559122411665027">Sąrašo įrašas „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Netinkamas politikos tipas</translation>
 <translation id="3032412215588512954">Ar norite iš naujo įkelti šią svetainę?</translation>
 <translation id="3037605927509011580">Oi!</translation>
 <translation id="3041612393474885105">Sertifikato informacija</translation>
+<translation id="3063697135517575841">Šiuo metu „Chrome“ negali patvirtinti jūsų kortelės. Vėliau bandykite dar kartą.</translation>
 <translation id="3093245981617870298">Esate neprisijungę.</translation>
 <translation id="3105172416063519923">Ištekliaus ID:</translation>
 <translation id="3109728660330352905">Neturite prieigos teisės žiūrėti šį puslapį.</translation>
@@ -206,6 +209,7 @@
 <translation id="3225919329040284222">Serveris pateikė sertifikatą, kuris neatitinka numatytų reikalavimų. Šie reikalavimai taikomi tam tikrose itin saugiose svetainėse, kad jūs būtumėte saugūs.</translation>
 <translation id="3226128629678568754">Spustelėkite įkėlimo iš naujo mygtuką, kad iš naujo pateiktumėte duomenis, reikalingus puslapiui įkelti.</translation>
 <translation id="3228969707346345236">Išversti nepavyko, nes puslapis jau yra <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Įveskite „<ph name="CREDIT_CARD" />“ kortelės saugos kodą (CVC)</translation>
 <translation id="3254409185687681395">Įtraukti šį puslapį į žymes</translation>
 <translation id="3270847123878663523">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
@@ -407,6 +411,7 @@
 <translation id="5677928146339483299">Užblokuota</translation>
 <translation id="5710435578057952990">Šio tinklalapio tapatybė nenustatyta.</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
+<translation id="5784606427469807560">Patvirtinant kortelę kilo problema. Patikrinkite interneto ryšį ir bandykite dar kartą.</translation>
 <translation id="5785756445106461925">Be to, šiame puslapyje yra kitų nesaugių išteklių. Perduodant duomenis šiuos išteklius gali peržiūrėti kiti asmenys ir keisti atakuojanti programa, siekianti pakeisti puslapio išvaizdą.</translation>
 <translation id="5810442152076338065">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant pasenusį šifravimo paketą.</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
@@ -480,6 +485,7 @@
 <translation id="6839929833149231406">Sritis</translation>
 <translation id="6874604403660855544">&amp;Pridėti dar kartą</translation>
 <translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
+<translation id="6895330447102777224">Kortelė patvirtinta</translation>
 <translation id="6897140037006041989">Naudotojo atstovas</translation>
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6915804003454593391">Naudotojas:</translation>
@@ -508,6 +514,7 @@
 <translation id="7219179957768738017">Ryšiui naudojama <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Oi, turite paprašyti vieno iš tėvų leidimo apsilankyti šiame puslapyje.</translation>
 <translation id="7246609911581847514">Matote šį pranešimą, nes valdytojas turi patvirtinti naujas svetaines, kai lankotės pirmą kartą.</translation>
+<translation id="724975217298816891">Jei norite atnaujinti išsamią kortelės informaciją, įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC). Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="725866823122871198">Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes kompiuterio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.</translation>
 <translation id="7265986070661382626">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes joje <ph name="BEGIN_LINK" />naudojamas sertifikato prisegimas<ph name="END_LINK" />. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="7269802741830436641">Šiam tinklalapiui taikomas peradresavimo ciklas</translation>
@@ -521,6 +528,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Kortelės patvirtinimas</translation>
 <translation id="7394102162464064926">Ar tikrai norite ištrinti šiuos puslapius iš savo istorijos?
 
 Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORTCUT_KEY" />).</translation>
@@ -530,6 +538,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7445762425076701745">Nepavyksta visiškai patvirtinti serverio, prie kurio esate prisijungę, tapatybės. Prie serverio esate prisijungę naudodami tik tinklui galiojantį vardą, kurio nuosavybės teisių išorinė sertifikatą išduodanti institucija negali patvirtinti. Nors kai kurios sertifikatus išduodančios institucijos vis tiek išduos sertifikatus pagal šiuos vardus, niekaip nebus galima užtikrinti, kad būsite prisijungę prie numatytos svetainės, o ne prie užpuolėjo.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
+<translation id="7469372306589899959">Kortelė patvirtinama</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
@@ -644,6 +653,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8866959479196209191">Šiame puslapyje sakoma:</translation>
 <translation id="8870413625673593573">Neseniai uždaryta</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>
+<translation id="8877192140621905067">Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine</translation>
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
 <translation id="889901481107108152">Deja, šis eksperimentas negalimas platformoje.</translation>
 <translation id="8903921497873541725">Artinti</translation>
@@ -676,6 +686,8 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">CLEAR FORM</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
+<translation id="943029900877297437">Jei norite naudoti „Google“ paskyroje išsaugotas korteles, prisijunkite prie „Chrome“.</translation>
+<translation id="962701380617707048">Jei norite atnaujinti išsamią kortelės informaciją, įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC)</translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>
 <translation id="988159990683914416">Vykdymo programa sukurta</translation>
 </translationbundle>

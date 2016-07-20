@@ -649,6 +649,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3030000825273123558">Aktifkan pelaporan metrik</translation>
 <translation id="3034580675120919256">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan JavaScript. Menjalankan JavaScript dapat diizinkan atau ditolak untuk semua situs web. Jika kebijakan ini tidak disetel, 'AllowJavaScript' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="3038323923255997294">Terus jalankan aplikasi latar belakang saat <ph name="PRODUCT_NAME" /> ditutup</translation>
+<translation id="3046192273793919231">Kirim paket jaringan ke server pengelolaan untuk memantau status online</translation>
 <translation id="3048744057455266684">Jika kebijakan ini disetel dan URL penelusuran yang disarankan dari omnibox berisi parameter ini dalam string kueri atau dalam pengenal fragmen, maka saran akan menampilkan istilah penelusuran dan penyedia penelusuran dan bukan URL penelusuran mentah.
 
           Kebijakan ini adalah opsional. Jika tidak disetel, penggantian istilah penelusuran tidak akan dilakukan.
@@ -910,6 +911,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
+<translation id="3939893074578116847">Kirimkan paket jaringan ke server pengelolaan untuk memantau status online,
+      untuk memungkinkan server mendeteksi jika perangkat sedang offline.
+
+      Jika kebijakan ini disetel ke true, paket jaringan pemantauan (yang disebut <ph name="HEARTBEATS_TERM" />) akan dikirimkan.
+      Jika disetel ke false atau tidak disetel, tidak ada paket yang akan dikirim.</translation>
 <translation id="3964909636571393861">Memungkinkan akses ke daftar URL</translation>
 <translation id="3965339130942650562">Waktu tunggu sampai proses keluar pengguna nganggur dieksekusi</translation>
 <translation id="3967075520570946456">Mengaktifkan menampilkan laman selamat datang saat peluncuran browser pertama setelah peningkatan versi OS.</translation>
@@ -1236,6 +1242,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini disetel, sesi yang ditentukan akan secara otomatis masuk setelah jangka waktu tersebut berlalu pada layar masuk tanpa interaksi pengguna. Sesi publik harus sudah dikonfigurasi (lihat |DeviceLocalAccounts|).
 
       Jika kebijakan ini tidak disetel, tidak akan ada masuk secara otomatis.</translation>
+<translation id="5535957389335373033">Frekuensi paket jaringan pemantauan dikirim, dalam milidetik. 
+
+      Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 menit.
+      Frekuensi minimum adalah 30 detik dan maksimum 24 jam - nilai
+      di luar rentang ini akan dimasukkan dalam rentang ini.</translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
 <translation id="5560039246134246593">Menambahkan parameter ke pengambilan bibit Variasi di <ph name="PRODUCT_NAME" />.
 
@@ -1280,7 +1291,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika <ph name="PRODUCT_NAME" /> tidak dapat memperoleh informasi status pembatalan, sertifikat tersebut yang akan diperlakukan sebagai dicabut ('kegagalan fatal').
 
       Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan menggunakan setelan pemeriksaan pembatalan online yang ada.</translation>
-<translation id="5732972008943405952">Mengimpor data formulir isiotomatis dari browser default saat pertama kali dijalankan</translation>
+<translation id="5732972008943405952">Mengimpor data formulir isi-otomatis dari browser default saat pertama kali dijalankan</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
 <translation id="5774856474228476867">URL penelusuran penyedia penelusuran default</translation>
@@ -1442,9 +1453,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="6211428344788340116">Laporkan waktu aktivitas perangkat.
 
       Jika pengaturan ini tidak disetel atau disetel ke True, perangkat yang terdaftar akan melaporkan periode waktu saat pengguna aktif di perangkat. Jika setelan disetel ke False, waktu akvititas perangkat tidak akan dicatat atau dilaporkan.</translation>
-<translation id="6219965209794245435">Kebijakan ini memaksa data formulir isiotomatis diimpor dari browser default sebelumnya jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor.
+<translation id="6219965209794245435">Kebijakan ini memaksa data formulir isi-otomatis diimpor dari browser default sebelumnya jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor.
 
-      Jika dinonaktifkan, data formulir isi otomatis tidak akan diimpor.
+      Jika dinonaktifkan, data formulir isi-otomatis tidak akan diimpor.
 
       Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor atau proses impor dapat berlangsung secara otomatis.</translation>
 <translation id="6233173491898450179">Setel direktori unduhan</translation>
@@ -2362,6 +2373,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="9187743794267626640">Menonaktifkan pemasangan penyimpanan eksternal</translation>
 <translation id="9197740283131855199">Persentase yang digunakan untuk menskalakan penundaan layar redup jika pengguna aktif setelah peredupan</translation>
 <translation id="9200828125069750521">Parameter untuk URL gambar yang menggunakan POST</translation>
+<translation id="9217154963008402249">Frekuensi paket jaringan pemantauan</translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>
 <translation id="930930237275114205">Setel direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>

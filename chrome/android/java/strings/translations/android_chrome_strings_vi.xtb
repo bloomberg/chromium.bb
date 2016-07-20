@@ -30,6 +30,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="13410144310025252">Xem các URL trong Chrome</translation>
 <translation id="1369915414381695676">Đã thêm trang web <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Không đủ bộ nhớ để tải xuống nội dung được chọn.</translation>
+<translation id="1376578503827013741">Đang tính toán...</translation>
 <translation id="138361230106469022">Xin chào <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
@@ -46,7 +47,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1477626028522505441">Tải xuống <ph name="FILE_NAME" /> không thành công do sự cố máy chủ.</translation>
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
-<translation id="1517433312004943670">Phải có số điện thoại</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1557201757634521564">Tự động phát hiện mã hóa</translation>
@@ -103,6 +103,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Đang tìm kiếm các trang Web trong cuộc sống lân cận</translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
+<translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="21570240866965662">Kết nối chậm</translation>
 <translation id="219985413780390209">Bảo vệ bạn và thiết bị của bạn khỏi các trang web nguy hiểm</translation>
@@ -173,6 +174,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2932150158123903946">Bộ nhớ Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Tài khoản này do <ph name="PARENT_NAME_1" /> và <ph name="PARENT_NAME_2" /> quản lý.</translation>
 <translation id="2960796085439532066">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
+<translation id="2962095958535813455">Đã chuyển sang tab ẩn danh</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
 <translation id="2979025552038692506">Tab ẩn danh được chọn</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
@@ -201,6 +203,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
 <translation id="326254929494722411">Bạn chưa thiết lập tài khoản Google trên thiết bị này</translation>
 <translation id="3269093882174072735">Tải hình ảnh</translation>
+<translation id="3269956123044984603">Để có các tab từ các thiết bị khác của bạn, hãy bật “Tự động đồng bộ hóa dữ liệu” trong cài đặt tài khoản Android.</translation>
 <translation id="3278850099957560514">Dùng ít dữ liệu hơn bằng cách sử dụng Google để tối ưu hóa các trang bạn truy cập. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh.</translation>
 <translation id="3282568296779691940">Đăng nhập Chrome</translation>
 <translation id="3303414029551471755">Tiếp tục tải xuống nội dung?</translation>
@@ -341,7 +344,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5040262127954254034">Bảo mật</translation>
 <translation id="5056549851600133418">Bài viết dành cho bạn</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
-<translation id="5087580092889165836">Thêm thẻ</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
 <translation id="5107381076085091558">Đã tạm dừng tải xuống.</translation>
@@ -410,6 +412,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
+<translation id="5748802427693696783">Đã chuyển sang tab chuẩn</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="5763382633136178763">Tab ẩn danh</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
@@ -429,7 +432,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5911030830365207728">Google Dịch</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
-<translation id="5950380453936610378">Phải có địa chỉ email</translation>
 <translation id="5961742032223302715">Chọn chi tiết liên hệ</translation>
 <translation id="5968595432776860642">Đang phát “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Đang truy cập thiết bị đầu vào video</translation>
@@ -464,6 +466,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
+<translation id="6383961787135158834">Xóa bộ nhớ trang web...</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
@@ -597,6 +600,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
+<translation id="7781829728241885113">Hôm qua</translation>
 <translation id="7788788617745289808">Chrome cần quyền truy cập máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>

@@ -150,6 +150,7 @@
 <translation id="2674170444375937751">Naozaj chcete odstrániť tieto stránky zo svojej histórie?</translation>
 <translation id="2677748264148917807">Opustiť</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
+<translation id="2704951214193499422">Prehliadaču Chromium sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="2705137772291741111">Uložená kópia tohto webu (vo vyrovnávacej pamäti) bola nečitateľná.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2712173769900027643">Požiadať o povolenie</translation>
@@ -179,11 +180,13 @@
 <translation id="2985306909656435243">Ak túto možnosť povolíte, Chromium uloží na tomto zariadení kópiu karty, aby ste mohli rýchlejšie vypĺňať formuláre.</translation>
 <translation id="2991174974383378012">Zdieľanie s webmi</translation>
 <translation id="3005723025932146533">Zobraziť uloženú kópiu</translation>
+<translation id="3008447029300691911">Zadajte kód CVC karty <ph name="CREDIT_CARD" />. Po potvrdení budú podrobnosti o karte zdieľané s týmto webom.</translation>
 <translation id="3010559122411665027">Položka zoznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Chybný typ pravidla</translation>
 <translation id="3032412215588512954">Chcete tento web načítať znova?</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3041612393474885105">Informácie o certifikáte</translation>
+<translation id="3063697135517575841">Chromu sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="3093245981617870298">Ste v režime offline.</translation>
 <translation id="3105172416063519923">Identifikátor obsahu:</translation>
 <translation id="3109728660330352905">Nemáte povolenie na zobrazenie tejto stránky.</translation>
@@ -200,6 +203,7 @@
 <translation id="3225919329040284222">Server sa preukázal certifikátom, ktorý nezodpovedá integrovaným očakávaniam. Tieto očakávania sú kvôli vašej ochrane zahrnuté pri určitých webových stránkach s vysokou úrovňou zabezpečenia.</translation>
 <translation id="3226128629678568754">Stlačením tlačidla opakovaného spustenia znova odošlete údaje potrebné na načítanie stránky.</translation>
 <translation id="3228969707346345236">Prekladanie zlyhalo, pretože stránka už je v jazyku: <ph name="LANGUAGE" /></translation>
+<translation id="323107829343500871">Zadajte kód CVC karty <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
 <translation id="3270847123878663523">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="3286538390144397061">Reštartovať</translation>
@@ -400,6 +404,7 @@
 <translation id="5677928146339483299">Zablokované</translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
+<translation id="5784606427469807560">Pri overovaní karty sa vyskytol problém. Skontrolujte pripojenie k internetu a skúste to znova.</translation>
 <translation id="5785756445106461925">Táto stránka obsahuje aj iné zdroje, ktoré nie sú zabezpečené. Tieto zdroje môžu pri prenose vidieť ostatní používatelia a útočník ich môže upraviť tak, aby zmenil vzhľad stránky.</translation>
 <translation id="5810442152076338065">Vaše pripojenie k doméne <ph name="DOMAIN" /> je šifrované pomocou zastaranej šifrovacej súpravy.</translation>
 <translation id="5813119285467412249">&amp;Znova pridať</translation>
@@ -472,6 +477,7 @@
 <translation id="6839929833149231406">Oblasť</translation>
 <translation id="6874604403660855544">&amp;Znova pridať</translation>
 <translation id="6891596781022320156">Úroveň pravidla nie je podporovaná.</translation>
+<translation id="6895330447102777224">Vaša karta je overená</translation>
 <translation id="6897140037006041989">Používateľský agent</translation>
 <translation id="6903907808598579934">Zapnúť synchronizáciu</translation>
 <translation id="6915804003454593391">Používateľ:</translation>
@@ -500,6 +506,7 @@
 <translation id="7219179957768738017">Spojenie používa protokol <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Ojoj! Na návštevu tejto stránky potrebujete súhlas rodiča.</translation>
 <translation id="7246609911581847514">Táto správa sa vám zobrazila, pretože nové weby musí pri prvej návšteve schváliť váš správca.</translation>
+<translation id="724975217298816891">Ak chcete aktualizovať podrobnosti o karte <ph name="CREDIT_CARD" />, zadajte dátum vypršania platnosti a kód CVC. Po potvrdení budú podrobnosti o karte zdieľané s týmto webom.</translation>
 <translation id="725866823122871198">Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho počítača sú nesprávne.</translation>
 <translation id="7265986070661382626">Webové stránky <ph name="SITE" /> momentálne nemôžete navštíviť, pretože <ph name="BEGIN_LINK" />používajú pripínanie certifikátov<ph name="END_LINK" />. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="7269802741830436641">Táto webová stránka obsahuje cyklické presmerovanie</translation>
@@ -513,6 +520,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Overenie karty</translation>
 <translation id="7394102162464064926">Naozaj chcete tieto stránky vymazať z histórie?
 
 Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).</translation>
@@ -522,6 +530,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
 <translation id="7445762425076701745">Identita servera, ku ktorému ste pripojení, sa nedá úplne overiť. Ste pripojení k serveru, ktorý používa názov platný iba v rámci vašej siete. Externá certifikačná autorita nemôže vlastníctvo názvu nijakým spôsobom overiť. Niektoré certifikačné autority však vydajú certifikát aj pre takéto názvy, a preto sa nedá zaručiť, že ste pripojení k požadovaným webovým stránkam a nie k stránkam útočníka.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Ďalšie informácie o tomto probléme<ph name="END_LINK" /></translation>
+<translation id="7469372306589899959">Overovanie karty</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7485870689360869515">Nenašli sa žiadne údaje.</translation>
 <translation id="7514365320538308">Stiahnuť</translation>
@@ -636,6 +645,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8866959479196209191">Táto stránka hovorí:</translation>
 <translation id="8870413625673593573">Naposledy zatvorené</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>
+<translation id="8877192140621905067">Po potvrdení budú podrobnosti o karte zdieľané s týmto webom</translation>
 <translation id="8891727572606052622">Neplatný režim proxy.</translation>
 <translation id="889901481107108152">Je nám ľúto, ale tento experiment nie je na vašej platforme k dispozícii.</translation>
 <translation id="8903921497873541725">Priblížiť</translation>
@@ -668,6 +678,8 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">VYMAZAŤ FORMULÁR</translation>
 <translation id="939736085109172342">Nový priečinok</translation>
+<translation id="943029900877297437">Ak chcete používať karty uložené do vášho účtu Google, prihláste sa do Chromu.</translation>
+<translation id="962701380617707048">Ak chcete aktualizovať podrobnosti o karte <ph name="CREDIT_CARD" />, zadajte dátum vypršania platnosti a kód CVC</translation>
 <translation id="969892804517981540">Oficiálne zostavenie</translation>
 <translation id="988159990683914416">Zostavenie pre vývojárov</translation>
 </translationbundle>

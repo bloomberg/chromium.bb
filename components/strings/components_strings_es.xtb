@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">¿Seguro que quieres eliminar estas páginas del historial?</translation>
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2704283930420550640">El valor no coincide con el formato.</translation>
+<translation id="2704951214193499422">Chromium no ha podido confirmar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
 <translation id="2705137772291741111">La copia guardada (almacenada en caché) de este sitio web no se ha podido leer.</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2712173769900027643">Solicitar permiso</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="2991174974383378012">Compartir con otros sitios web</translation>
 <translation id="3005723025932146533">Mostrar copia guardada</translation>
+<translation id="3008447029300691911">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" />. Cuando lo confirmes, la información de la tarjeta se compartirá con este sitio web.</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="3032412215588512954">¿Quieres volver a cargar este sitio web?</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3041612393474885105">Datos del certificado</translation>
+<translation id="3063697135517575841">Chrome no ha podido confirmar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
 <translation id="3093245981617870298">No tienes conexión.</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">El servidor ha mostrado un certificado que no coincide con lo que se esperaba. Algunos sitios web tienen un alto nivel de seguridad para garantizar tu protección y esperan ciertas características de los certificados.</translation>
 <translation id="3226128629678568754">Pulsa el botón de actualización de página para que se vuelvan a enviar los datos necesarios para cargar la página.</translation>
 <translation id="3228969707346345236">La traducción no ha podido realizarse correctamente porque la página ya está en <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Añadir esta página a marcadores</translation>
 <translation id="3270847123878663523">&amp;Deshacer reorganización</translation>
 <translation id="3286538390144397061">Reiniciar ahora</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Con bloqueo</translation>
 <translation id="5710435578057952990">No se ha verificado la identidad de este sitio web.</translation>
 <translation id="5720705177508910913">Usuario actual</translation>
+<translation id="5784606427469807560">Se ha producido un problema al confirmar tu tarjeta. Comprueba tu conexión a Internet y vuelve a intentarlo.</translation>
 <translation id="5785756445106461925">Además, esta página incluye otros recursos que no son seguros. Otros usuarios pueden acceder a estos recursos mientras están en circulación y un atacante puede modificarlos para cambiar el aspecto de la página.</translation>
 <translation id="5810442152076338065">Tu conexión con <ph name="DOMAIN" /> está cifrada con un conjunto de cifrado obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Rehacer acción de añadir</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Área</translation>
 <translation id="6874604403660855544">&amp;Rehacer acción de añadir</translation>
 <translation id="6891596781022320156">No se admite el nivel de la política.</translation>
+<translation id="6895330447102777224">Tu tarjeta se ha confirmado</translation>
 <translation id="6897140037006041989">Agente de usuario</translation>
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6915804003454593391">Usuario:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">La conexión utiliza <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">¡Vaya! Debes pedir permiso a uno de tus padres para poder acceder a esta página.</translation>
 <translation id="7246609911581847514">Este mensaje aparece porque el administrador debe aprobar los sitios web nuevos cuando accedas a ellos por primera vez.</translation>
+<translation id="724975217298816891">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus detalles. Cuando confirmes los datos, la información de la tarjeta se compartirá con este sitio web.</translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu ordenador (<ph name="DATE_AND_TIME" />) no son correctas.</translation>
 <translation id="7265986070661382626">No puedes acceder a <ph name="SITE" /> en este momento porque el sitio web <ph name="BEGIN_LINK" />utiliza la fijación de certificados<ph name="END_LINK" />. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
 <translation id="7269802741830436641">Esta página web tiene un bucle de redireccionamiento</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Confirmar tarjeta</translation>
 <translation id="7394102162464064926">¿Seguro que quieres eliminar estas páginas de tu historial?
 
 ¡Pst! El modo de incógnito <ph name="SHORTCUT_KEY" /> puede serte de utilidad la próxima vez.</translation>
@@ -529,6 +537,7 @@
 <translation id="7441627299479586546">Asunto de política incorrecto</translation>
 <translation id="7445762425076701745">La identidad del servidor al que estás conectado no se puede validar por completo. Estás conectado a un servidor con un nombre que solo es válido en tu red y cuya propiedad no puede validar en modo alguno una entidad emisora de certificados externa. A pesar de ello, algunas entidades emisoras emiten certificados para esos nombres, por lo que no es posible garantizar que estés conectado al sitio web deseado, en lugar de a un atacante.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Consultar más información<ph name="END_LINK" /> sobre este problema</translation>
+<translation id="7469372306589899959">Confirmando tarjeta</translation>
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="7485870689360869515">No se han encontrado datos.</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -643,6 +652,7 @@
 <translation id="8866959479196209191">Esta página dice:</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8876793034577346603">No se ha podido analizar la configuración de red.</translation>
+<translation id="8877192140621905067">Cuando confirmes los datos, la información de la tarjeta se compartirá con este sitio web</translation>
 <translation id="8891727572606052622">El modo de proxy no es válido.</translation>
 <translation id="889901481107108152">Esta función experimental no está disponible en tu plataforma.</translation>
 <translation id="8903921497873541725">Acercar</translation>
@@ -675,6 +685,8 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">BORRAR FORMULARIO</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
+<translation id="943029900877297437">Para utilizar tarjetas que hayas guardado en tu cuenta de Google, inicia sesión en Chrome.</translation>
+<translation id="962701380617707048">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar su información</translation>
 <translation id="969892804517981540">Build oficial</translation>
 <translation id="988159990683914416">Build para desarrolladores</translation>
 </translationbundle>

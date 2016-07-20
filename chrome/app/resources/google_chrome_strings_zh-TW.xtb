@@ -34,6 +34,7 @@
 <translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>
 <translation id="1864458292167284385">Chrome 應用程式啟動器即將停止服務。</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
+<translation id="1924381329666691588">Google Chrome 的介面文字無法設為這種語言。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
 <translation id="2246246234298806438">缺乏內建的 PDF 檢視器時，Google Chrome 無法顯示列印預覽。</translation>
@@ -62,7 +63,9 @@
 <translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
+<translation id="2847461019998147611">將 Google Chrome 的介面文字設為這種語言</translation>
 <translation id="2871893339301912279">您已登入 Chrome！</translation>
+<translation id="2888126860611144412">關於 Chrome</translation>
 <translation id="2997147809295888909">Chrome 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器未提供任何 Certificate Transparency 資訊。</translation>
 <translation id="3037838751736561277">Google Chrome 正在背景模式中執行。</translation>
 <translation id="3047079729301751317">解除與 <ph name="USERNAME" /> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chrome 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK" />Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK" />管理這些資料。</translation>
@@ -108,6 +111,7 @@
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4480040274068703980">登入時發生錯誤，因此 Chrome 作業系統無法同步處理您的資料。</translation>
+<translation id="4519152997629025674">Google Chrome 會使用<ph name="BEGIN_LINK" />網頁服務<ph name="END_LINK" />來改善瀏覽功能，當然您也可以隨時停用這些服務。</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="4631713731678262610">在 Chrome 選單中隱藏</translation>
@@ -147,6 +151,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
+<translation id="5637867606963802593">Chrome 作業系統的介面文字無法設為這種語言。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
@@ -166,6 +171,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6235018212288296708">允許 mDNS 流量的 Google Chrome 輸入規則。</translation>
 <translation id="6236285698028833233">Google Chrome 已停止更新，無法繼續支援這個作業系統版本。</translation>
 <translation id="629218512217695915">使用 Chrome 產生的密碼</translation>
+<translation id="6368805772029492593">為了提升安全性，Google Chrome 會將您的資料加密保護。</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟體<ph name="END_LINK_CROS_OSS" />的相關技術才得以問世。</translation>
 <translation id="6400076122676892962">Google Chrome 將停止支援 Mac OS X 10.6、10.7 和 10.8，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
 <translation id="6470176598693778404">Google Chrome 已停止支援 Mac OS X 10.6、10.7 和 10.8，因此這部電腦不會再收到 Google Chrome 更新。</translation>
@@ -194,6 +200,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7177347454226092725">這會將您的瀏覽資料從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7185038942300673794">已將 <ph name="EXTENSION_NAME" /> 加到 Chrome。</translation>
 <translation id="7191567847629796517">Google Chrome 作業系統不支援啟用外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
+<translation id="7193750696137290001">Google Chrome 的介面文字已設為這種語言。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="7242029209006116544">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，您可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome 將停止支援 Windows XP 和 Windows Vista，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
@@ -203,11 +210,13 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
 <translation id="7419046106786626209">您的網域無法使用「同步功能」，因此 Chrome 作業系統無法同步處理您的資料。</translation>
 <translation id="7436949144778751379">Google Chrome 需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
+<translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7459554271817304652">設定同步處理功能，即可在網路上儲存您的個人化瀏覽器功能，並且透過任何電腦從 Google Chrome 使用這些功能。</translation>
 <translation id="7473136999113284234">Chrome 會自動更新，隨時讓您使用最新版本。</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7494905215383356681">Chrome 開放原始碼授權</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}other{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}}</translation>
+<translation id="7552219221109926349">將 Chrome 作業系統的介面文字設為這種語言</translation>
 <translation id="7592736734348559088">您的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理您的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
@@ -220,6 +229,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
 <translation id="7908168227788431038">即將更新為最新版本！重新啟動 Google Chrome 即可完成更新程序。</translation>
 <translation id="795025003224538582">不要重新啟動</translation>
+<translation id="7964230182933713106">Chrome 作業系統的介面文字已設為這種語言。</translation>
 <translation id="8005540215158006229">Chrome 即將準備就緒。</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
 <translation id="8030318113982266900">正在將裝置更新至「<ph name="CHANNEL_NAME" />」版...</translation>

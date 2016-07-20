@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium OS не поддерживает внешних приложений для обработки ссылок <ph name="SCHEME" />. Запрашиваемая ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">В системе установлена конфликтующая версия Chromium. Удалите ее и повторите попытку.</translation>
 <translation id="1298199220304005244">Помощь по использованию Chromium OS</translation>
+<translation id="1347507563453473396">Интерфейс Chromium невозможно отобразить на этом языке.</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
 <translation id="1403254041219632970">В следующих версиях Chromium будет прекращена поддержка Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium больше не обновляется и не поддерживается для этой версии операционной системы.</translation>
 <translation id="2705212601509139398">Этот сайт использует плагин Chromium Frame, поддержка которого скоро будет прекращена. Установите совместимую версию браузера.</translation>
 <translation id="2711502716910134313">Вкладка Chromium</translation>
+<translation id="2718390899429598676">В целях повышения безопасности Chromium шифрует ваши данные.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="2801146392936645542">Chromium заблокировал файл <ph name="FILE_NAME" /> как вредоносный.</translation>
 <translation id="2847479871509788944">Удалить из Chromium</translation>
 <translation id="2886012850691518054">(Необязательно) Помогите сделать Chromium лучше, автоматически отправляя статистику использования и отчеты об ошибках в Google.</translation>
+<translation id="2905536371227304018">Chromium OS отображается на этом языке.</translation>
 <translation id="2910007522516064972">О &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME" />. Запрашиваемая ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
@@ -119,10 +122,13 @@
 <translation id="5427571867875391349">Сделать Chromium браузером по умолчанию</translation>
 <translation id="5466153949126434691">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
+<translation id="556167189552180495">Chrominum отображается на этом языке.</translation>
 <translation id="5563479599352954471">Поиск в одно касание</translation>
 <translation id="5620765574781326016">Теперь искать информацию в Интернете можно с любой страницы.</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="5680901439334282664">войдите в Chromium</translation>
+<translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
+<translation id="5768914737813585044">Отображать Chromium OS на этом языке</translation>
 <translation id="5772805321386874569">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium почти готов к работе</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -170,6 +176,7 @@
 <translation id="705851970750939768">Обновить Chromium</translation>
 <translation id="7064610482057367130">Невозможно выполнить обновление, так как приложение Chromium не найдено</translation>
 <translation id="7066436765290594559">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
+<translation id="7090955637699162649">Для более качественной работы Google Chrome может использовать <ph name="BEGIN_LINK" />веб-сервисы<ph name="END_LINK" />. При необходимости вы можете отключить их.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{С устройства будет удален $1 объект. Чтобы впоследствии загрузить данные, войдите в Chromium как $2.}one{С устройства будет удален $1 объект. Чтобы впоследствии загрузить данные, войдите в Chromium как $2.}few{С устройства будет удалено $1 объекта. Чтобы впоследствии загрузить данные, войдите в Chromium как $2.}many{С устройства будет удалено $1 объектов. Чтобы впоследствии загрузить данные, войдите в Chromium как $2.}other{С устройства будет удалено $1 объекта. Чтобы впоследствии загрузить данные, войдите в Chromium как $2.}}</translation>
 <translation id="7138853919861947730">Chromium предоставляет новые возможности для работы в  Интернете за счет использования веб-служб.</translation>
 <translation id="7162152143154757523">Chromium предлагает интеллектуальную технологию проверки правописания. Введенный вами текст отправляется на серверы Google, что позволяет использовать механизмы проверки Google Поиска.</translation>
@@ -192,6 +199,7 @@
 Дальнейшие инструкции отправлены на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Чтобы закрыть доступ к уже существующим данным Chromium, создайте новый профиль Chromium для <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Для Chromium требуется ОС Windows XP или более поздней версии. Некоторые функции могут не работать.</translation>
+<translation id="7437562785125777404">Интерфейс Chromium OS невозможно отобразить на этом языке.</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7483335560992089831">Невозможно установить ту же версию Chromium, которая уже присутствует в системе. Закройте Chromium и повторите попытку.</translation>
 <translation id="750717762378961310">Chromium заблокировал этот файл как вредоносный.</translation>

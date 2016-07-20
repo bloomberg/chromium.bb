@@ -648,6 +648,7 @@
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
 <translation id="3034580675120919256">Omogućuje da postavite smiju li web-lokacije pokretati JavaScript. Pokretanje JavaScripta može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AllowJavaScript", a korisnik će to moći promijeniti.</translation>
 <translation id="3038323923255997294">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju usluge <ph name="PRODUCT_NAME" /></translation>
+<translation id="3046192273793919231">Šalji mrežne pakete poslužitelju za upravljanje radi praćenja online statusa</translation>
 <translation id="3048744057455266684">Ako je ovo pravilo postavljeno i ako URL pretraživanja predloženog u višenamjenskom okviru sadrži taj parametar u nizu upita ili identifikatoru fragmenta, prijedlog će prikazati pojmove za pretraživanje i pružatelja usluge pretraživanja umjesto neobrađenog URL-a pretraživanja.
 
           Pravilo nije obavezno. Ako nije postavljeno, neće se vršiti zamjena pojma za pretraživanje.
@@ -906,6 +907,11 @@
 
           Ako nije postavljeno ili je postavljeno na netočno, korisnici će moći prenositi datoteke na Google disk.</translation>
 <translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
+<translation id="3939893074578116847">Slanje mrežnih paketa poslužitelju za upravljanje radi praćenja online statusa kako bi
+      poslužitelj mogao otkriti je li uređaj offline.
+
+      Ako se to pravilo postavi na True, slat će se mrežni paketi za praćenje (takozvani <ph name="HEARTBEATS_TERM" />).
+      Ako se postavi na False ili se ne postavi, paketi se neće slati.</translation>
 <translation id="3964909636571393861">Omogućuje pristup popisu URL-ova</translation>
 <translation id="3965339130942650562">Privremeni prekid do izvršavanja odjave korisnika u stanju mirovanja</translation>
 <translation id="3967075520570946456">Omogućivanje prikazivanja stranice dobrodošlice prilikom prvog pokretanja preglednika nakon nadogradnje OS-a.</translation>
@@ -1236,6 +1242,11 @@
       Ako je ovo pravilo postavljeno, automatski će se prijavljivati u navedenu sesiju nakon isteka vremenskog razdoblja bez interakcije korisnika na zaslonu za prijavu. Javna sesija mora biti već konfigurirana (pogledajte |DeviceLocalAccounts|).
 
       Ako ovo pravilo nije postavljeno, neće biti automatske prijave.</translation>
+<translation id="5535957389335373033">Učestalost slanja mrežnih paketa za praćenje u milisekundama.
+
+      Ako se to pravilo ne postavi, zadana učestalost iznosi 3 minute. Minimalna
+      je učestalost 30 sekundi, a maksimalna 24 sata, a vrijednosti izvan tih
+      svest će se na taj raspon.</translation>
 <translation id="5535973522252703021">Bijela lista Kerberos poslužitelja za ovlašćivanje</translation>
 <translation id="5560039246134246593">Dodavanje parametra dohvaćanju vrijednosti varijacija u proizvodu <ph name="PRODUCT_NAME" />.
 
@@ -2347,6 +2358,7 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
 <translation id="9187743794267626640">Onemogući priključivanje vanjske pohrane</translation>
 <translation id="9197740283131855199">Postotak skaliranja odgode zatamnjivanja zaslona ako korisnik postane aktivan nakon zatamnjivanja</translation>
 <translation id="9200828125069750521">Parametri za URL slike koji upotrebljava POST</translation>
+<translation id="9217154963008402249">Učestalost mrežnih paketa za praćenje</translation>
 <translation id="922540222991413931">Konfiguracija izvora instalacija proširenja, aplikacija i korisničkih skripti</translation>
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="930930237275114205">Postavi direktorij korisničkih podataka za pravilo <ph name="PRODUCT_FRAME_NAME" /></translation>

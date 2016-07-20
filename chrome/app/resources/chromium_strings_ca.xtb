@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium OS no és compatible amb l'inici d'una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">S'ha trobat una instal·lació conflictiva de Chromium al sistema. Desinstal·leu l'aplicació i torneu-ho a provar.</translation>
 <translation id="1298199220304005244">Obtén ajuda per a l'ús de Chromium OS</translation>
+<translation id="1347507563453473396">Chromium no es pot mostrar en aquest idioma.</translation>
 <translation id="1396446129537741364">Chromium està provant de mostrar les contrasenyes.</translation>
 <translation id="1403254041219632970">Les versions futures de Chromium ja no admetran Mac OS X 10.6, 10.7 ni 10.8.</translation>
 <translation id="1414495520565016063">Teniu la sessió iniciada a Chromium.</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium ha deixat d'actualitzar-se i ja no admet aquesta versió del vostre sistema operatiu.</translation>
 <translation id="2705212601509139398">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i baixeu un navegador compatible.</translation>
 <translation id="2711502716910134313">Pestanya de Chromium</translation>
+<translation id="2718390899429598676">Per més seguretat, Chromium encriptarà les vostres dades.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="2847479871509788944">Suprimeix de Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ajudeu a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
+<translation id="2905536371227304018">Chromium OS es mostra en aquest idioma.</translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Defineix Chromium com a navegador predeterminat</translation>
 <translation id="5466153949126434691">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent. Quan es completi aquesta baixada, Chromium es reiniciarà i ja el podreu utilitzar.</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
+<translation id="556167189552180495">Chromium es mostra en aquest idioma.</translation>
 <translation id="5563479599352954471">Cercar amb un toc</translation>
 <translation id="5620765574781326016">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina.</translation>
 <translation id="5634636535844844681">Chromium requereix Windows 7 o una versió posterior.</translation>
 <translation id="5680901439334282664">Inicieu la sessió a Chromium</translation>
+<translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
+<translation id="5768914737813585044">Mostra Chromium OS en aquest idioma</translation>
 <translation id="5772805321386874569">(cal <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -172,6 +178,7 @@
 <translation id="705851970750939768">Actualitza Chromium</translation>
 <translation id="7064610482057367130">No s'ha trobat cap instal·lació de Chromium pendent d'actualització.</translation>
 <translation id="7066436765290594559">Chromium OS no ha pogut sincronitzar les vostres dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
+<translation id="7090955637699162649">Chromium podria utilitzar <ph name="BEGIN_LINK" />serveis web<ph name="END_LINK" /> per millorar la vostra experiència de navegació. Si voleu, podeu desactivar aquests serveis en qualsevol moment.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Amb aquesta acció, se suprimirà $1 element d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chromium com a $2.}other{Amb aquesta acció, se suprimiran $1 elements d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chromium com a $2.}}</translation>
 <translation id="7138853919861947730">Chromium pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
 <translation id="7162152143154757523">Perquè el corrector ortogràfic sigui més útil, Chromium envia als servidors de Google el text que escriviu al navegador i, així, podeu fer servir la mateixa tecnologia de correcció ortogràfica de la Cerca de Google.</translation>
@@ -196,6 +203,7 @@ Per impedir que <ph name="NEW_PROFILE_NAME" /> accedeixi al vostre compte, bloqu
 Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Si preferiu mantenir les dades de Chromium existents per separat, podeu crear un usuari nou de Chromium per a <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
+<translation id="7437562785125777404">Chromium OS no es pot mostrar en aquest idioma.</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7483335560992089831">No es pot instal·lar la mateixa versió de Chromium que s'està executant actualment. Tanqueu Chromium i torneu-ho a provar.</translation>
 <translation id="750717762378961310">Aquest fitxer és maliciós i Chromium l'ha bloquejat.</translation>

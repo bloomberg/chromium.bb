@@ -10,6 +10,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1221340462641866827">Hindi sinusuportahan ng Chromium OS ang paglulunsad ng panlabas na application upang mangasiwa ng mga <ph name="SCHEME" /> na link. Ang hinihiling na link ay <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">May nakitang sumasalungat na pag-install ng Chromium sa system. Paki-uninstall ito at subukang muli.</translation>
 <translation id="1298199220304005244">Kumuha ng tulong sa paggamit ng Chromium OS</translation>
+<translation id="1347507563453473396">Hindi maipapakita ang Chromium sa wikang ito.</translation>
 <translation id="1396446129537741364">Sinusubukan ng Chromium na magpakita ng mga password.</translation>
 <translation id="1403254041219632970">Hindi na susuportahan ng mga bersyon ng Chromium ang Mac OS X 10.6, 10.7 o 10.8 sa hinaharap.</translation>
 <translation id="1414495520565016063">Naka-sign in ka sa Chromium!</translation>
@@ -57,10 +58,12 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2685838254101182273">Huminto na sa pag-update ang Chromium at hindi na nito sinusuportahan ang bersyong ito ng iyong operating system.</translation>
 <translation id="2705212601509139398">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-download ng compatible na browser.</translation>
 <translation id="2711502716910134313">Tab ng Chromium</translation>
+<translation id="2718390899429598676">Para sa karagdagang seguridad, ie-encrypt ng Chromium ang iyong data.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="2801146392936645542">Nakakahamak ang <ph name="FILE_NAME" />, at na-block ito ng Chromium.</translation>
 <translation id="2847479871509788944">Alisin sa Chromium...</translation>
 <translation id="2886012850691518054">Opsyonal: Tumulong na pahusayin ang Chromium sa pamamagitan ng awtomatikong pagpapadala sa Google ng mga istatistika ng paggamit at mga ulat ng pag-crash.</translation>
+<translation id="2905536371227304018">Ipinapakita ang Chromium OS sa wikang ito.</translation>
 <translation id="2910007522516064972">Tungkol sa &amp;Chromium</translation>
 <translation id="2966088006374919794">Kinakailangang maglunsad ng Chromium ng panlabas na application upang mangasiwa ng mga <ph name="SCHEME" /> na link. Ang hiniling na link ay <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
@@ -123,10 +126,13 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5427571867875391349">Itakda ang Chromium bilang iyong default na browser</translation>
 <translation id="5466153949126434691">Awtomatikong nag-a-update ang Chromium upang palagi kang may pinakabagong bersyon. Kapag nakumpleto ang pag-download na ito, magre-restart ang Chromium at makakapagpatuloy ka na.</translation>
 <translation id="549669000822060376">Mangyaring maghintay habang ini-install ng Chromium ang mga pinakabagong update sa system.</translation>
+<translation id="556167189552180495">Ipinapakita ang Chromium sa wikang ito.</translation>
 <translation id="5563479599352954471">Maghanap sa isang pagpindot lang</translation>
 <translation id="5620765574781326016">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page.</translation>
 <translation id="5634636535844844681">Kailangan ng Chromium ng Windows 7 o mas bago.</translation>
 <translation id="5680901439334282664">mag-sign in sa Chromium</translation>
+<translation id="5698481217667032250">Ipakita ang Chromium sa wikang ito</translation>
+<translation id="5768914737813585044">Ipakita ang Chromium OS sa wikang ito</translation>
 <translation id="5772805321386874569">(kinakailangang <ph name="BEGIN_BUTTON" />i-restart<ph name="END_BUTTON" /> ang Chromium)</translation>
 <translation id="5796460469508169315">Halos handa na ang Chromium.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -174,6 +180,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="705851970750939768">I-update ang Chromium</translation>
 <translation id="7064610482057367130">Walang nakitang pag-install ng Chromium upang i-update.</translation>
 <translation id="7066436765290594559">Hindi ma-sync ng Chromium OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
+<translation id="7090955637699162649">Maaaring gumamit ang Chromium <ph name="BEGIN_LINK" />mga serbisyo sa web<ph name="END_LINK" /> upang mahusay ang iyong karanasan sa pagba-browse. Maaari mong opsyonal na i-disable ang mga serbisyong ito anumang oras.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Permanente itong magde-delete ng $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}one{Permanente itong magde-delete ng $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}other{Permanente itong magde-delete ng $1 na item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}}</translation>
 <translation id="7138853919861947730">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pagba-browse.</translation>
 <translation id="7162152143154757523">Maaaring magbigay ang Chromium ng mas pinahusay na pag-i-spell check sa pamamagitan ng pagpapadala sa mga server ng Google ng tina-type mo sa browser, na nagbibigay-daan sa iyo na gamitin ang parehong teknolohiya ng pag-i-spell check na ginamit ng paghahanap sa Google.</translation>
@@ -198,6 +205,7 @@ Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account
 Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdagang tagubilin.</translation>
 <translation id="7419987137528340081">Kung gusto mong ihiwalay ang iyong umiiral nang data sa Chromium, maaari kang lumikha ng bagong user ng Chromium para kay <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Nangangailangan ang Chromium ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
+<translation id="7437562785125777404">Hindi maipapakita ang Chromium OS sa wikang ito.</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7483335560992089831">Hindi ma-install ang parehong Bersyon ng Chromium na kasalukuyang tumatakbo. Pakisara ang Chromium at subukang muli.</translation>
 <translation id="750717762378961310">Nakakahamak ang file na ito, at na-block ito ng Chromium.</translation>

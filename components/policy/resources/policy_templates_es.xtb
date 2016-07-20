@@ -682,6 +682,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
           Si no se establece esta política, se usará la política AllowJavaScript y el usuario podrá modificarla.</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME" /> esté cerrado</translation>
+<translation id="3046192273793919231">Enviar paquetes de red al servidor de gestión para supervisar el estado online</translation>
 <translation id="3048744057455266684">En caso de que se establezca esta política y de que una URL de búsqueda sugerida del omnibox incluya este parámetro en la cadena de consulta o en el identificador de fragmentos, la sugerencia mostrará los términos de búsqueda y el proveedor de búsqueda en lugar de la URL de búsqueda sin procesar.
 
           Esta política es opcional. Si no se establece, no se realizará ninguna sustitución de los términos de búsqueda.
@@ -956,6 +957,10 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL de un archivo .pac de proxy</translation>
+<translation id="3939893074578116847">Envía paquetes de red al servidor de gestión para supervisar el estado online y permitir que el servidor detecte si el dispositivo está sin conexión.
+
+      Si se asigna el valor true a esta política, se enviarán paquetes de red de supervisión (denominados <ph name="HEARTBEATS_TERM" />).
+      Si se asigna el valor false o si esta política no se configura, no se enviarán paquetes.</translation>
 <translation id="3964909636571393861">Permite acceder a una lista de URL.</translation>
 <translation id="3965339130942650562">Tiempo de espera para cerrar sesión cuando el usuario se encuentre inactivo</translation>
 <translation id="3967075520570946456">Habilitar la opción para que aparezca la página de bienvenida al abrir el navegador por primera vez después de actualizar el sistema operativo.</translation>
@@ -1339,6 +1344,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se establece esta política, se iniciará automáticamente la sesión especificada una vez que haya transcurrido un tiempo sin que el usuario haya realizado ninguna acción en la pantalla de inicio de sesión. La sesión pública tendrá que estar configurada previamente (ver | DeviceLocalAccounts|).
 
       Si no se establece esta política, no se realiza el inicio de sesión automático.</translation>
+<translation id="5535957389335373033">Frecuencia con la que se envían paquetes de red de supervisión (en milisegundos).
+
+      Si esta política no se configura, la frecuencia predeterminada es de tres minutos. La frecuencia mínima es de 30 segundos y la máxima de 24 horas (los valores que no se encuentren en este intervalo se redondearán a este).</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="5560039246134246593">Permite añadir un parámetro para la obtención de la base de las variaciones en <ph name="PRODUCT_NAME" />.
 
@@ -2545,6 +2553,7 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>
 <translation id="9197740283131855199">Porcentaje que permite ajustar el tiempo de espera de inactividad de la pantalla si el usuario vuelve a ser activo después de la inactividad</translation>
 <translation id="9200828125069750521">Parámetros para URL de imagen que utiliza POST</translation>
+<translation id="9217154963008402249">Frecuencia de los paquetes de red de supervisión</translation>
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>

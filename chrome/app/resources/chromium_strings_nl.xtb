@@ -10,6 +10,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1221340462641866827">Chromium OS ondersteunt het starten van een externe applicatie voor het verwerken van <ph name="SCHEME" />-links niet. De opgevraagde link is <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Er is een conflicterende installatie van Chromium op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
+<translation id="1347507563453473396">Chromium kan niet worden weergegeven in deze taal.</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
 <translation id="1403254041219632970">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1414495520565016063">U bent ingelogd bij Chromium.</translation>
@@ -57,10 +58,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2685838254101182273">Chromium is gestopt met bijwerken en ondersteunt deze versie van je besturingssysteem niet langer.</translation>
 <translation id="2705212601509139398">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en download een compatibele browser.</translation>
 <translation id="2711502716910134313">Chromium-tabblad</translation>
+<translation id="2718390899429598676">Je gegevens worden voor extra beveiliging door Chromium gecodeerd.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> is schadelijk en is door Chromium geblokkeerd.</translation>
 <translation id="2847479871509788944">Verwijderen uit Chromium…</translation>
 <translation id="2886012850691518054">Optioneel: help Chromium beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>
+<translation id="2905536371227304018">Chromium OS wordt weergegeven in deze taal.</translation>
 <translation id="2910007522516064972">Over &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium moet een externe applicatie starten om <ph name="SCHEME" />-links te kunnen verwerken. De opgevraagde link is <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Toevoegen aan Chromium...</translation>
@@ -123,10 +126,13 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5427571867875391349">Chromium instellen als je standaardbrowser</translation>
 <translation id="5466153949126434691">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chromium opnieuw gestart en kun je doorgaan.</translation>
 <translation id="549669000822060376">Wacht terwijl Chromium de nieuwste systeemupdates installeert.</translation>
+<translation id="556167189552180495">Chromium wordt weergegeven in deze taal.</translation>
 <translation id="5563479599352954471">Zoeken met een aanraking</translation>
 <translation id="5620765574781326016">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten.</translation>
 <translation id="5634636535844844681">Voor Chromium is Windows 7 of hoger vereist.</translation>
 <translation id="5680901439334282664">inloggen bij Chromium</translation>
+<translation id="5698481217667032250">Chromium weergeven in deze taal</translation>
+<translation id="5768914737813585044">Chromium OS weergeven in deze taal</translation>
 <translation id="5772805321386874569">(je moet Chromium <ph name="BEGIN_BUTTON" />opnieuw starten<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is bijna klaar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -174,6 +180,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="705851970750939768">Chromium updaten</translation>
 <translation id="7064610482057367130">Geen installatie van Chromium gevonden om te updaten.</translation>
 <translation id="7066436765290594559">Chromium OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
+<translation id="7090955637699162649">Chromium kan <ph name="BEGIN_LINK" />webservices<ph name="END_LINK" /> gebruiken om je internetervaring te verbeteren. Als je wilt, kun je deze services uitschakelen.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Hiermee wordt $1 item definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.}other{Hiermee worden $1 items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chromium als $2.}}</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
 <translation id="7162152143154757523">Chromium kan een betere spellingcontrole leveren door wat je in de browser typt naar Google-servers te verzenden. Hierdoor kun je profiteren van dezelfde technologie voor spellingcontrole die ook voor Google Zoeken wordt gebruikt.</translation>
@@ -198,6 +205,7 @@ Als je wilt voorkomen dat <ph name="NEW_PROFILE_NAME" /> toegang krijgt tot je a
 Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</translation>
 <translation id="7419987137528340081">Als je je huidige Chromium-gegevens liever gescheiden houdt, kun je een nieuwe Chromium-gebruiker maken voor <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Voor Chromium is Windows XP of hoger vereist. Sommige functies werken mogelijk niet.</translation>
+<translation id="7437562785125777404">Chromium OS kan niet worden weergegeven in deze taal.</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="750717762378961310">Dit bestand is schadelijk en is door Chromium geblokkeerd.</translation>

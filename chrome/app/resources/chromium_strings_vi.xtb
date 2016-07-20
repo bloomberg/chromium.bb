@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium OS không hỗ trợ chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Đã tìm thấy bản cài đặt Chromium xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
 <translation id="1298199220304005244">Nhận trợ giúp về cách sử dụng Chromium OS</translation>
+<translation id="1347507563453473396">Không thể hiển thị Chromium bằng ngôn ngữ này.</translation>
 <translation id="1396446129537741364">Chromium đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="1403254041219632970">Các phiên bản Chromium trong tương lai sẽ không hỗ trợ Mac OS X 10.6, 10.7 hoặc 10.8 nữa.</translation>
 <translation id="1414495520565016063">Bạn đã đăng nhập vào Chromium!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium đã ngừng cập nhật và không còn hỗ trợ phiên bản hệ điều hành này của bạn.</translation>
 <translation id="2705212601509139398">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và tải xuống trình duyệt tương thích.</translation>
 <translation id="2711502716910134313">Tab Chromium</translation>
+<translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> là tệp độc hại và Chromium đã chặn tệp này.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
+<translation id="2905536371227304018">Chromium OS được hiển thị bằng ngôn ngữ này.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium cần chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Đặt Chromium là trình duyệt mặc định của bạn</translation>
 <translation id="5466153949126434691">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất. Khi quá trình tải xuống này hoàn tất, Chromium sẽ khởi động lại và bạn có thể tiếp tục sử dụng.</translation>
 <translation id="549669000822060376">Vui lòng đợi khi Chromium cài đặt các bản cập nhật hệ thống mới nhất.</translation>
+<translation id="556167189552180495">Chromium được hiển thị bằng ngôn ngữ này.</translation>
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
 <translation id="5634636535844844681">Chromium yêu cầu Windows 7 trở lên.</translation>
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
+<translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
+<translation id="5768914737813585044">Hiển thị Chromium OS bằng ngôn ngữ này</translation>
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
@@ -172,6 +178,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="7064610482057367130">Không tìm thấy bản cài đặt Chromium cần cập nhật.</translation>
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
+<translation id="7090955637699162649">Chromium có thể sử dụng <ph name="BEGIN_LINK" />các dịch vụ web<ph name="END_LINK" /> để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tắt các dịch vụ này bất cứ lúc nào, nếu muốn.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Thao tác này sẽ xóa vĩnh viễn $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.}other{Thao tác này sẽ xóa vĩnh viễn $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng $2.}}</translation>
 <translation id="7138853919861947730">Chromium có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7162152143154757523">Chromium có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
@@ -196,6 +203,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được hướng dẫn thêm.</translation>
 <translation id="7419987137528340081">Nếu bạn muốn giữ riêng dữ liệu Chromium hiện có, bạn có thể tạo người dùng Chromium mới cho <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium yêu cầu Windows XP trở lên. Một số tính năng có thể không hoạt động.</translation>
+<translation id="7437562785125777404">Không thể hiển thị Chromium OS bằng ngôn ngữ này.</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
 <translation id="750717762378961310">Đây là tệp độc hại và Chromium đã chặn tệp này.</translation>

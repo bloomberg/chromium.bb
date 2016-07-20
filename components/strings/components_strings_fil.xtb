@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Sigurado ka bang nais mong tanggalin ang mga pahinang ito mula sa iyong history?</translation>
 <translation id="2677748264148917807">Umalis</translation>
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
+<translation id="2704951214193499422">Hindi nakumpirma ng Chromium ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="2705137772291741111">Hindi mabasa ang naka-save (naka-cache) na kopya ng site na ito.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2712173769900027643">Humingi ng pahintulot</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Kung naka-enable, mag-iimbak ang Chromium ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="2991174974383378012">Pagbabahagi sa Mga Website</translation>
 <translation id="3005723025932146533">Ipakita ang naka-save na kopya</translation>
+<translation id="3008447029300691911">Ilagay ang CVC para sa <ph name="CREDIT_CARD" />. Kapag nakumpirma mo na, ibabahagi ang mga detalye ng iyong card sa site na ito.</translation>
 <translation id="3010559122411665027">Listahan ng entry na "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Maling uri ng patakaran</translation>
 <translation id="3032412215588512954">Gusto mo bang i-reload ang site na ito?</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
 <translation id="3041612393474885105">Impormasyon sa Certificate</translation>
+<translation id="3063697135517575841">Hindi nakumpirma ng Chrome ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="3093245981617870298">Offline ka.</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
 <translation id="3109728660330352905">Wala kang pahintulot na tingnan ang page na ito.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Nagpakita ang server ng certificate na hindi tumutugma sa mga built-in na inaasahan. Ang mga inaasahang ito ay isinama para sa ilang partikular na website na may mataas na antas ng seguridad upang maprotektahan ka.</translation>
 <translation id="3226128629678568754">Pindutin ang button na i-reload upang isumiteng muli ang data na kailangan upang ma-load ang pahina.</translation>
 <translation id="3228969707346345236">Nabigo ang pag-translate dahil nasa <ph name="LANGUAGE" /> na ang pahina.</translation>
+<translation id="323107829343500871">Ilagay ang CVC para sa <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">I-bookmark ang page na ito</translation>
 <translation id="3270847123878663523">&amp;I-undo ang Pagbabago sa Ayos</translation>
 <translation id="3286538390144397061">I-restart Ngayon</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Naka-block</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
+<translation id="5784606427469807560">Nagkaroon ng problema sa pagkumpirma ng iyong card. Suriin ang iyong koneksyon sa internet at subukang muli.</translation>
 <translation id="5785756445106461925">Bukod pa rito, ang page na ito ay may iba pang mga mapagkukunang hindi secure. Makikita ng iba ang mga mapagkukunang ito habang ipinadadala, at maaaring baguhin ng isang umaatake upang baguhin ang hitsura ng page.</translation>
 <translation id="5810442152076338065">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang hindi na ginagamit na cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Gawing Muli ang Pagdagdag</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Lugar</translation>
 <translation id="6874604403660855544">&amp;Gawing muli ang pagdagdag</translation>
 <translation id="6891596781022320156">Hindi sinusuportahan ang antas ng patakaran.</translation>
+<translation id="6895330447102777224">Nakumpirma na ang iyong card</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6915804003454593391">User:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Gumagamit ng <ph name="SSL_VERSION" /> ang koneksyon.</translation>
 <translation id="7231308970288859235">Oops! Kailangan mong tanungin ang iyong magulang kung OK lang na bisitahin ang page na ito.</translation>
 <translation id="7246609911581847514">Nakikita mo ang mensaheng ito dahil kailangang aprubahan ng iyong manager ang mga bagong site sa una mong pagbisita.</translation>
+<translation id="724975217298816891">Ilagay ang expiration date at CVC para sa <ph name="CREDIT_CARD" /> upang ma-update ang mga detalye ng iyong card. Kapag nakumpirma mo na, ibabahagi ang mga detalye ng iyong card sa site na ito.</translation>
 <translation id="725866823122871198">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong computer (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7265986070661382626">Hindi mo maaaring bisitahin ang <ph name="SITE" /> sa ngayon dahil ang website ay <ph name="BEGIN_LINK" />gumagamit ng pagpi-pin ng certificate<ph name="END_LINK" />. Kadalasang pansamantala lang ang mga error at atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon.</translation>
 <translation id="7269802741830436641">Ang webpage na ito ay may loop na pag-redirect</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Hindi</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Kumpirmahin ang Card</translation>
 <translation id="7394102162464064926">Sigurado ka bang gusto mong tanggalin ang mga pahinang ito sa iyong kasaysayan?
 
 Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT_KEY" /> sa susunod.</translation>
@@ -529,6 +537,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="7441627299479586546">Maling paksa ng patakaran</translation>
 <translation id="7445762425076701745">Hindi ganap na mapatunayan ang pagkakakilanlan ng server na konektado ka. Konektado ka sa server gamit ang pangalan na angkop lamang sa loob ng iyong network, na walang paraan ang panglabas na certificate authority na patunayan ang pagmamay-ari. Dahil magbibigay ang ilang kinauukulan sa certificate para sa mga pangalang ito, walang paraan upang matiyak na konektado ka sa nilayong website at hindi isang umaatake.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
+<translation id="7469372306589899959">Kinukumpirma ang card</translation>
 <translation id="7481312909269577407">Sumulong</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
 <translation id="7514365320538308">I-download</translation>
@@ -643,6 +652,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8866959479196209191">Isinasaad ng page na ito na:</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8876793034577346603">Nabigong ma-parse ang configuration ng network.</translation>
+<translation id="8877192140621905067">Kapag nakumpirma mo na, ibabahagi ang mga detalye ng iyong card sa site na ito</translation>
 <translation id="8891727572606052622">Di-wastong mode ng proxy.</translation>
 <translation id="889901481107108152">Paumanhin, hindi available ang eksperimentong ito sa iyong platform.</translation>
 <translation id="8903921497873541725">Mag-zoom in</translation>
@@ -675,6 +685,8 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">CLEAR FORM</translation>
 <translation id="939736085109172342">Bagong folder</translation>
+<translation id="943029900877297437">Upang gamitin ang mga card na na-save mo sa iyong Google Account, mag-sign in sa Chrome.</translation>
+<translation id="962701380617707048">Ilagay ang expiration date at CVC para sa <ph name="CREDIT_CARD" /> upang ma-update ang mga detalye ng iyong card</translation>
 <translation id="969892804517981540">Official Build</translation>
 <translation id="988159990683914416">Bumuo ang Developer</translation>
 </translationbundle>

@@ -297,6 +297,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Lista de autocompletados</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3812237531158591503">pegar $1</translation>
 <translation id="3816633764618089385">Archivo multimedia siguiente</translation>
 <translation id="3819376190738087562">No hay saltos.</translation>
 <translation id="385383972552776628">Abrir página de opciones</translation>
@@ -553,6 +554,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="6355910664415701303">No hay ningún elemento de la lista anterior.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Encabezado anterior</translation>
+<translation id="6378565991815958969">copiar $1</translation>
 <translation id="6387719785439924554">lateral</translation>
 <translation id="6411426777058107714">No hay ningún botón de selección anterior.</translation>
 <translation id="6414968628640960377">Elemento anterior distinto</translation>
@@ -779,6 +781,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="9077213568694924680">eliminado de la selección</translation>
 <translation id="9082874451376019682">No hay ningún control deslizante anterior.</translation>
 <translation id="9089864840575085222">Reproducción oral del ciclo de escritura</translation>
+<translation id="9105227991373418255">cortar $1</translation>
 <translation id="9107530006868467849">No hay widgets multimedia anteriores.</translation>
 <translation id="9108370397979208512">expr mtmtc</translation>
 <translation id="9108589040018540527">scbr</translation>

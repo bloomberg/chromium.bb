@@ -36,6 +36,7 @@
 <translation id="1818142563254268765">Chrome নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে Chrome আপডেট করতে হবে।</translation>
 <translation id="1864458292167284385">Chrome অ্যাপ্লিকেশান লঞ্চার চলে যাচ্ছে।</translation>
 <translation id="1877026089748256423">Chrome পুরানো হয়ে গেছে</translation>
+<translation id="1924381329666691588">এই ভাষায় Google Chrome প্রদর্শন করা যাবে না।</translation>
 <translation id="2077129598763517140">যখনই উপলব্ধ তখন হার্ডওয়্যার অ্যাক্সিলারেশন ব্যবহার করুন</translation>
 <translation id="2084710999043359739">Chrome এ জুড়ুন</translation>
 <translation id="2246246234298806438">বিল্ট-ইন PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome মুদ্রণের পূর্বরুপ দেখাতে পারে না৷</translation>
@@ -64,7 +65,9 @@
 <translation id="2748463065602559597">আপনি একটি নিরাপদ Google Chrome পৃষ্ঠা দেখছ্নে৷</translation>
 <translation id="2769762047821873045">Google Chrome আপনার ডিফল্ট ব্রাউসার নয় ৷</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
+<translation id="2847461019998147611">এই ভাষায় Google Chrome প্রদর্শন করুন</translation>
 <translation id="2871893339301912279">আপনি Chrome এ প্রবেশ করুন করেছেন৷</translation>
+<translation id="2888126860611144412">Chrome সম্বন্ধে</translation>
 <translation id="2997147809295888909">Chrome যাচাই করেছে যে <ph name="ISSUER" /> এই ওয়েবসাইটের শংসাপত্র জারি করেছে। সার্ভারটি কোনো শংসাপত্র স্বচ্ছতা তথ্য সরবরাহ করেনি।</translation>
 <translation id="3037838751736561277">Google Chrome পটভূমি মোডে রয়েছে।</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> সংযোগ বিচ্ছিন্ন করলে তা আপনার ইতিহাস, বুকমার্ক, সেটিংস, এবং এই ডিভাইসে সঞ্চিত অন্যান্য Chrome ডেটা মুছে দেবে। আপনার Google অ্যাকাউন্টে সঞ্চিত ডেটা সাফ করা হবে না এবং <ph name="GOOGLE_DASHBOARD_LINK" />Google ড্যাশবোর্ড <ph name="END_GOOGLE_DASHBOARD_LINK" /> এ তা পরিচালনা করা যেতে পারে।</translation>
@@ -110,6 +113,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে প্রস্থান করুন এবং পুনরায় প্রবেশ করুন করুন৷</translation>
 <translation id="4480040274068703980">সাইন ইনে ত্রুটির কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
+<translation id="4519152997629025674">আপনার ব্রাউজিং অভিজ্ঞতা আরো উন্নত করতে Google Chrome <ph name="BEGIN_LINK" />ওয়েব পরিষেবাগুলি<ph name="END_LINK" /> ব্যবহার করতে পারে। আপনি যেকোনো সময় এই পরিষেবাগুলি ঐচ্ছিকভাবে অক্ষম করতে পারেন।</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে প্রবেশ করুন করেছেন৷ এখন আপনি আপনার সমস্ত প্রবেশ করুন করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="4631713731678262610">Chromium মেনুর মধ্যে লুকান</translation>
@@ -149,6 +153,7 @@
 <translation id="5563479599352954471">একবার স্পর্শ করে অনুসন্ধান</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">পৃষ্ঠা থেকে না বেরিয়েই ওয়েবসাইটের বিষয়বস্তুগুলি সম্বন্ধে জানুন৷</translation>
+<translation id="5637867606963802593">এই ভাষায় Chrome OS প্রদর্শন করা যাবে না।</translation>
 <translation id="568643307450491754">Chrome মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
 <translation id="5749068826913805084">ফাইল ডাউনলোড করতে Chrome এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
@@ -168,6 +173,7 @@
 <translation id="6235018212288296708">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6236285698028833233">Google Chrome আপডেট বন্ধ করেছে এবং আপনার অপারেটিং সিস্টেমের এই সংস্করণটিকে আর সমর্থন করে না৷</translation>
 <translation id="629218512217695915">Chrome দ্বারা উৎপন্ন পাসওয়ার্ড ব্যবহার করুন</translation>
+<translation id="6368805772029492593">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে।</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />মুক্ত উৎস সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> দিয়ে তৈরি৷</translation>
 <translation id="6400076122676892962">এই কম্পিউটারটি শীঘ্রই Google Chrome আপডেট গ্রহণ করা বন্ধ করবে কারণ Mac OS X 10.6, 10.7, এবং 10.8 আর সমর্থিত হবে না।</translation>
 <translation id="6470176598693778404">Mac OS X 10.6, 10.7, এবং 10.8 আর সমর্থিত না হওয়ায় এই কম্পিউটারটি আর Google Chrome আপডেট গ্রহণ করবে না।</translation>
@@ -196,6 +202,7 @@
 <translation id="7177347454226092725">এটা স্থায়ীভাবে এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে প্রবেশ করুন।</translation>
 <translation id="7185038942300673794">Chrome-এ <ph name="EXTENSION_NAME" />-টি জোড়া হয়েছে৷</translation>
 <translation id="7191567847629796517">Google Chrome OS <ph name="SCHEME" /> লিঙ্কগুলি নিয়ন্ত্রণ করতে একটি বহিঃস্থ অ্যাপ্লিকেশান চালু করা সমর্থন করে না৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK" />৷</translation>
+<translation id="7193750696137290001">Google Chrome এই ভাষায় প্রদর্শিত হচ্ছে।</translation>
 <translation id="7196020411877309443">আমি এটা কেন দেখছি?</translation>
 <translation id="7242029209006116544">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে প্রবেশ করুন করছেন এবং এর প্রশাসককে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস <ph name="USER_NAME" /> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু অন্য অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ বিকল্প হিসাবে আপনি আপনার বিদ্যমান Chrome ডেটা আলাদা রাখার জন্য একটি নতুন প্রোফাইল তৈরি করতে পারেন৷ <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">এই কম্পিউটারটি শীঘ্রই Google Chrome আপডেট গ্রহণ করা বন্ধ করবে কারণ Windows XP ও Windows Vista আর সমর্থিত হবে না।</translation>
@@ -205,11 +212,13 @@
 <translation id="7408085963519505752">Chrome OS শর্তাবলী</translation>
 <translation id="7419046106786626209">আপনার ডোমেনে সিঙ্ক উপলব্ধ না থাকার কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="7436949144778751379">Google Chrome-এর Windows XP বা পরবর্তী প্রয়োজন৷ কিছু বৈশিষ্ট্য নাও কাজ করতে পারে৷</translation>
+<translation id="7437998757836447326">Chrome থেকে প্রস্থান করুন করুন</translation>
 <translation id="7459554271817304652">ওয়েবে আপনার ব্যক্তিগতকৃত ব্রাউজার বিষয় সংরক্ষণ করতে এবং যেকোন কম্পিউটারে Google Chrome থেকে প্রবেশ করতে সিঙ্ক সেট আপ করুন৷ </translation>
 <translation id="7473136999113284234">Chrome স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনি সবসময় নবীনতম সংস্করণটি পান।</translation>
 <translation id="7473891865547856676">না থাক</translation>
 <translation id="7494905215383356681">Chrome মুক্ত উৎসের লাইসেন্সগুলি</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{এটা স্থায়ীভাবে এই ডিভাইস থেকে অন্তত $1টি আইটেম মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে সাইন ইন করুন।}one{এটা স্থায়ীভাবে এই ডিভাইস থেকে অন্তত $1টি আইটেম মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে সাইন ইন করুন।}other{এটা স্থায়ীভাবে এই ডিভাইস থেকে অন্তত $1টি আইটেম মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ $2 হিসাবে সাইন ইন করুন।}}</translation>
+<translation id="7552219221109926349">এই ভাষায় Chrome OS প্রদর্শন করুন</translation>
 <translation id="7592736734348559088">Google Chrome আপনার অ্যাকাউন্ট প্রবেশ করুন বিশদটি তারিখ সীমার বাইরে হওয়ার কারণে সিঙ্ক করতে পারেনি৷</translation>
 <translation id="7626032353295482388">Chrome এ স্বাগতম</translation>
 <translation id="7747138024166251722">ইনস্টলারটি অস্থায়ী ডাইরেক্টরি তৈরি করতে পারে নি৷ দয়া করে মুক্ত ডিস্ক স্থান এবং সফ্টওয়্যারটি ইনস্টল করার অনুমতি যাচাই করে নিন৷</translation>
@@ -222,6 +231,7 @@
 <translation id="7890208801193284374">যদি আপনি একটি কম্পিউটার ভাগ করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chrome এর সেটআপ করতে পারবেন৷</translation>
 <translation id="7908168227788431038">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে Google Chrome পুনরায় চালু করুন।</translation>
 <translation id="795025003224538582">পুর্নসূচনা করবেন না</translation>
+<translation id="7964230182933713106">Chrome OS এই ভাষায় প্রদর্শিত হচ্ছে।</translation>
 <translation id="8005540215158006229">Chrome প্রায় প্রস্তুত৷</translation>
 <translation id="8008534537613507642">Chrome পুনরায় ইন্সটল করুন</translation>
 <translation id="8030318113982266900">আপনার ডিভাইস <ph name="CHANNEL_NAME" /> চ্যানেলে আপডেট করা হচ্ছে...</translation>

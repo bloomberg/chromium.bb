@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Er du sikker på at du vil slette disse sidene fra loggen?</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
+<translation id="2704951214193499422">Chromium kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="2705137772291741111">Den lagrede (bufrede) kopien av dette nettstedet kunne ikke leses.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2712173769900027643">Be om tillatelse</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Hvis du slår på dette alternativet, lagrer Chromium en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
 <translation id="2991174974383378012">Deling med nettsteder</translation>
 <translation id="3005723025932146533">Vis lagret kopi</translation>
+<translation id="3008447029300691911">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" />. Når du bekrefter, deles kortinformasjonen din med dette nettstedet.</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
 <translation id="3032412215588512954">Vil du laste inn dette nettstedet på nytt?</translation>
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
+<translation id="3063697135517575841">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="3093245981617870298">Du er ikke tilkoblet Internett.</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="3109728660330352905">Du har ikke autorisasjon til å se denne siden.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
 <translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
 <translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
 <translation id="3286538390144397061">Start på nytt nå</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
+<translation id="5784606427469807560">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
 <translation id="5785756445106461925">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på utseendet til siden.</translation>
 <translation id="5810442152076338065">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en foreldet chifferserie.</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Område</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
 <translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
+<translation id="6895330447102777224">Kortet ditt er bekreftet</translation>
 <translation id="6897140037006041989">Brukeragent</translation>
 <translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6915804003454593391">Bruker:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Tilkoblingen bruker <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Beklager, du må spørre en av foreldrene dine om det er greit at du besøker denne siden.</translation>
 <translation id="7246609911581847514">Du ser denne meldingen fordi administratoren din må godkjenne nye nettsteder den første gangen du åpner dem.</translation>
+<translation id="724975217298816891">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /> for å oppdatere kortinformasjonen din. Når du bekrefter, deles denne informasjonen med dette nettstedet.</translation>
 <translation id="725866823122871198">En privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan ikke opprettes fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på datamaskinen er feil.</translation>
 <translation id="7265986070661382626">Du kan ikke gå til <ph name="SITE" /> akkurat nå, fordi nettstedet <ph name="BEGIN_LINK" />bruker sertifikatfesting<ph name="END_LINK" />. Nettverksfeil og -angrep er som regel kortvarige, så denne siden fungerer nok igjen senere.</translation>
 <translation id="7269802741830436641">Denne nettsiden har en omdirigeringsloop</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Bekreft kortet</translation>
 <translation id="7394102162464064926">Er du sikker på at du vil slette disse sidene fra loggen din?
 
 Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gang.</translation>
@@ -529,6 +537,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
 <translation id="7445762425076701745">Identiteten til tjernen du er tilkoblet kan ikke valideres. Du er tilkoblet en tjener som bruker et navn som kun er gyldig i ditt nettverk, som en ekstern sertifiseringsinstans ikke har noen mulighet til å validere eierskap for. Siden enkelte sertifiseringsinstanser likevel utsteder sertifikater for disse navnene, er det umulig å sikre at du er tilkoblet ønsket nettsted og ikke en angriper.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om dette problemet.</translation>
+<translation id="7469372306589899959">Bekrefter kortet</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="7514365320538308">Last ned</translation>
@@ -643,6 +652,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8866959479196209191">Denne siden sier:</translation>
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
+<translation id="8877192140621905067">Når du bekrefter, deles kortinformasjonen din med dette nettstedet</translation>
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
 <translation id="889901481107108152">Beklager, dette eksperimentet er ikke er tilgjengelig på plattformen din.</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
@@ -675,6 +685,8 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
 <translation id="939736085109172342">Ny mappe</translation>
+<translation id="943029900877297437">For å bruke kort du har lagret i Google-kontoen din, logg på Chrome.</translation>
+<translation id="962701380617707048">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /> for å oppdatere kortinformasjonen din</translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>
 <translation id="988159990683914416">Utviklerversjon</translation>
 </translationbundle>

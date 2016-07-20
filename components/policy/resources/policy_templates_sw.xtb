@@ -667,6 +667,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
           Ikiwa sera hii itasalia kama haijawekwa, 'AllowJavaScript' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="3038323923255997294">Endelea kuendesha programu za mandharinyuma wakati <ph name="PRODUCT_NAME" /> imefungwa</translation>
+<translation id="3046192273793919231">Tuma vifurushi vya mtandao kwenye seva ya udhibiti ili kufuatilia hali ya mtandao</translation>
 <translation id="3048744057455266684">Sera hii ikiwekwa na URL ya utafutaji inayopendekezwa kutoka kwenye sandukuu iwe na kigezo hiki katika mtiririko wa hoja au katika kitambulishi cha kipande, basi pendekezo litaonyesha maneno ya utafutaji na mtoa huduma ya utafutaji badala ya URL ya utafutaji ghafi.
 
           Sera hii ni ya hiari. Isipowekwa, mabadiliko ya hoja ya utafutaji hayatatekelezwa.
@@ -942,6 +943,11 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Isipowekwa au ikiwekwa kuwa Sivyo, basi watumiaji wataweza kuhamisha faili kwenye Hifadhi ya Google.</translation>
 <translation id="3915395663995367577">URL hadi proksi ya faili ya .pac</translation>
+<translation id="3939893074578116847">Tuma vifurushi vya mtandao kwenye seva ya udhibiti ili kufuatilia hali ya mtandaoni, ili kuruhusu
+      seva igundue kama kifaa kiko nje ya mtandao.
+
+      Sera hii ikiwekwa kuwa ndivyo, ufuatiliaji wa vifurushi vya mtandao (maarufu kama <ph name="HEARTBEATS_TERM" />) utatumwa.
+      Ikiwekwa kuwa sivyo au isipowekwa, hakuna vifurushi vitakavyotumwa.</translation>
 <translation id="3964909636571393861">Inaruhusu kufikia orodha ya URL</translation>
 <translation id="3965339130942650562">Muda umekwisha mpaka uondokaji wa kuingia kusikotumika kutekelezwe</translation>
 <translation id="3967075520570946456">Washa kipengee cha kuonyesha ukurasa wa kukaribisha unapofungua kivinjari kwa mara ya kwanza baada ya kupata toleo jipya la Mfumo wa Uendeshaji.</translation>
@@ -1315,6 +1321,10 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Endapo sera imewekwa, kipindi kilichobainishwa kitawekewa kumbukumbu kiotomatiki baada ya kipindi cha muda kupita katika skrini ya kuingia bila muingiliano wa mtumiaji. Kipindi cha umma lazima kiwe kimesanidiwa tayari (tazama |DeviceLocalAccounts|).
 
       Endapo sera hii haijawekwa, hakutakuwa na kuingia kiotomatiki.</translation>
+<translation id="5535957389335373033">Mara ambazo vifurushi vya mtandao vya ufuatiliaji hutumwa, katika milisekunde.
+
+     Sera hii isipowekwa, idadi chaguo-msingi ni dakika 3. Idadi ya chini
+      ni sekunde 30 na idadi ya juu ni saa 24 - thamani nje ya mfululizo huu itaunganishwa kwenye masafa haya.</translation>
 <translation id="5535973522252703021">Orodha iliyoidhinishwa ya ukaumu wa seva ya Kerberos</translation>
 <translation id="5560039246134246593">Ongeza kigezo kwa uletaji wa mbegu Tofauti katika <ph name="PRODUCT_NAME" />.
 
@@ -2503,6 +2513,7 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="9187743794267626640">Lemaza uangikaji wa hifadhi ya nje</translation>
 <translation id="9197740283131855199">Asilimia ambayo mwangaza wa skrini utaongezwa uchelewaji iwapo mtumiaji anaanza kutumia baada ya kupunguza mwangaza</translation>
 <translation id="9200828125069750521">Vigezo vya URL ya picha inayotumia POST</translation>
+<translation id="9217154963008402249">Idadi ya kufuatilia vifurushi vya mtandao</translation>
 <translation id="922540222991413931">Sanidi viendelezi, programu, na vyanzo vya kusakinisha hati</translation>
 <translation id="924557436754151212">Leta manenosiri yaliyohifadhiwa kutoka kwenye kivinjari chaguo-msingi kwenye uendeshaji wa kwanza</translation>
 <translation id="930930237275114205">Weka saraka ya data ya mtumiaji wa <ph name="PRODUCT_FRAME_NAME" /></translation>

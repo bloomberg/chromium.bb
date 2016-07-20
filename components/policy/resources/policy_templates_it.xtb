@@ -627,6 +627,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
 <translation id="3034580675120919256">Permette di stabilire se consentire o meno l'esecuzione di JavaScript nei siti web. L'esecuzione di JavaScript può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "AllowJavaScript", che potrà essere modificato dagli utenti.</translation>
 <translation id="3038323923255997294">Continua a eseguire applicazioni in background dopo la chiusura di <ph name="PRODUCT_NAME" /></translation>
+<translation id="3046192273793919231">Invia pacchetti di rete al server di gestione per monitorare lo stato online</translation>
 <translation id="3048744057455266684">Se questa norma viene impostata e un URL di ricerca suggerito dalla omnibox contiene questo parametro nella stringa di ricerca o nell'identificatore del frammento, il suggerimento visualizzerà i termini di ricerca e il fornitore del servizio di ricerca anziché l'URL di ricerca non elaborato.
 
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
@@ -889,6 +890,11 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
           Se questa norma non viene impostata o è impostata su False, gli utenti potranno trasferire file in Google Drive.</translation>
 <translation id="3915395663995367577">URL di un file proxy .pac</translation>
+<translation id="3939893074578116847">Invia pacchetti di rete al server di gestione per monitorare lo stato online, per consentire
+      al server di rilevare se il dispositivo è offline.
+
+      Se la norma è impostata su true, i pacchetti di rete di monitoraggio (chiamati <ph name="HEARTBEATS_TERM" />) verranno inviati.
+      Se la norma è impostata su false, i pacchetti non verranno inviati.</translation>
 <translation id="3964909636571393861">Consente l'accesso a un elenco di URL</translation>
 <translation id="3965339130942650562">Timeout fino a esecuzione uscita utente non attivo</translation>
 <translation id="3967075520570946456">Attiva la visualizzazione della pagina di benvenuto al primo avvio del browser successivo all'upgrade del sistema operativo.</translation>
@@ -1201,6 +1207,9 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. La sessione pubblica deve essere già configurata (vedi |DeviceLocalAccounts|).
 
       Se questa norma non è impostata, non avverrà l'accesso automatico.</translation>
+<translation id="5535957389335373033">Consente di stabilire la frequenza di invio, in millisecondi, dei pacchetti di rete di monitoraggio.
+
+      Se la norma non viene impostata, la frequenza predefinita è pari a tre minuti. La frequenza minima è pari a 30 secondi, la massima a 24 ore. I valori che non rientrano in questo intervallo verranno fatti rientrare.</translation>
 <translation id="5535973522252703021">Whitelist server di delega Kerberos</translation>
 <translation id="5560039246134246593">Aggiungi un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_NAME" />.
 
@@ -2267,6 +2276,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9187743794267626640">Disabilita il montaggio di una memoria esterna</translation>
 <translation id="9197740283131855199">Percentuale di regolazione del ritardo di oscuramento dello schermo se l'utente diventa attivo dopo l'oscuramento</translation>
 <translation id="9200828125069750521">Parametri per l'URL dell'immagine che utilizza POST</translation>
+<translation id="9217154963008402249">Frequenza dei pacchetti di rete di monitoraggio</translation>
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>
 <translation id="930930237275114205">Imposta la directory dei dati utente di <ph name="PRODUCT_FRAME_NAME" /></translation>

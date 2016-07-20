@@ -10,6 +10,7 @@
 <translation id="1221340462641866827">Chromium ስርዓተ ክወና የ<ph name="SCHEME" /> አገናኞችን ለማስተናገድ የውጫዊ መተግበሪያዎችን ማስጀመር አይደግፍም። የተጠየቀው አገናኝ <ph name="PROTOLINK" /> ነው።</translation>
 <translation id="1293235220023151515">በስርዓቱ ላይ የሚጋጭ የChromium ጭነት ተገኝቷል። እባክዎ ያራግፉት እና እንደገና ይሞክሩ።</translation>
 <translation id="1298199220304005244">Chromium ስርዓተ ክወና መጠቀም ላይ እገዛ ያግኙ</translation>
+<translation id="1347507563453473396">Chromium በዚህ ቋንቋ እንዲታይ ሊደረግ አይችልም።</translation>
 <translation id="1396446129537741364">Chromium የይለፍ ቃላትን ለማሳየት እየሞከረ ነው።</translation>
 <translation id="1403254041219632970">የወደፊት የChromium ስሪቶች ከአሁን በኋላ Mac OS X 10.6፣ 10.7 ወይም 10.8 አይደግፉም።</translation>
 <translation id="1414495520565016063">ወደ Chromium ገብተዋል!</translation>
@@ -57,10 +58,12 @@
 <translation id="2685838254101182273">Chromium ማዘመን አቁሟል፣ እና ከአሁን በኋላ ይህን የስርዓተ ክወናዎን ስሪት አይደግፍም።</translation>
 <translation id="2705212601509139398">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChromium ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ተኳሃኝ አሳሽ ያውርዱ።</translation>
 <translation id="2711502716910134313">የChromium ትር</translation>
+<translation id="2718390899429598676">ለተጨማሪ ደህንነት ሲባል Chromium ውሂብዎን ያመሰጥረዋል።</translation>
 <translation id="2770231113462710648">ነባሪ አሳሽን ወደዚህ ቀይር፦</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> ተንኮል-አዘል ነው፣ እና Chromium አግዶታል።</translation>
 <translation id="2847479871509788944">ከChromium አስወግድ...</translation>
 <translation id="2886012850691518054">ከተፈለገ፦ የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን ወደ Google በራስ-ሰር በመላክ Chromium የተሻለ እንዲሆን ያግዙ።</translation>
+<translation id="2905536371227304018">Chromium OS በዚህ ቋንቋ እየታየ ነው።</translation>
 <translation id="2910007522516064972">ስለ &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium የ<ph name="SCHEME" /> አገናኞችን ለማስተናገድ አንድ ውጫዊ መተግበሪያ ማስጀመር አለበት። የተጠየቀው አገናኝ <ph name="PROTOLINK" /> ነው።</translation>
 <translation id="3032787606318309379">ወደ Chromium በማከል ላይ...</translation>
@@ -123,10 +126,13 @@
 <translation id="5427571867875391349">Chromium እንደ ነባሪ አሳሽዎ አድርገው ያዋቅሩት</translation>
 <translation id="5466153949126434691">Chromium በራስ-ሰር ስለሚዘምን ሁልጊዜ ትኩሱ ስሪት ነው የሚኖርዎ። ይህ ውርድ ሲጠናቀቅ Chromium ዳግም ይጀምርና እርስዎም ስራዎን ይቀጥላሉ።</translation>
 <translation id="549669000822060376">Chromium የቅርብ ጊዜዎቹ የስርዓቱ ዝማኔዎችን እስኪጭን ድረስ እባክዎ ይጠብቁ።</translation>
+<translation id="556167189552180495">Chromium በዚህ ቋንቋ እየታየ ነው።</translation>
 <translation id="5563479599352954471">በአንዲ ንክኪ ይፈልጉ</translation>
 <translation id="5620765574781326016">ከገጹ ሳይወጡ በድር ጣቢያዎች ላይ ስላሉ ስለርዕሶች ይወቁ</translation>
 <translation id="5634636535844844681">Chromium Windows 7 ወይም ከዚያ በላይ ያስፈልገዋል።</translation>
 <translation id="5680901439334282664">ወደ Chromium ይግቡ</translation>
+<translation id="5698481217667032250">Chromiumን በዚህ ቋንቋ አሳይ</translation>
+<translation id="5768914737813585044">Chromium OS በዚህ ቋንቋ አሳይ</translation>
 <translation id="5772805321386874569">(የChromium <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
@@ -174,6 +180,7 @@
 <translation id="705851970750939768">Chromiumን አዘምን</translation>
 <translation id="7064610482057367130">ምንም የሚዘምን የChromium ጭነት አልተገኘም።</translation>
 <translation id="7066436765290594559">Chromium OS የእርስዎን ውሂብ ማመሳሰል አልቻለም። የእርስዎን የማመሳሰያ የይለፍ ሐረግ እባክዎ ያዘምኑ።</translation>
+<translation id="7090955637699162649">Chromium የአሰሳ ተሞክሮዎን ለማሻሻል <ph name="BEGIN_LINK" />የድር አገልግሎቶች<ph name="END_LINK" />ን ሊጠቀም ይችላል። በማንኛውም ጊዜ እነዚህን አገልግሎቶች በአማራጭነት ማሰናከል ይችላሉ።</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{ይሄ $1 ንጥል እስከመጨረሻው ከዚህ መሣሪያ ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}one{ይሄ $1 ንጥሎችን እስከመጨረሻው ከዚህ መሣሪያ ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}other{ይሄ $1 ንጥሎችን እስከመጨረሻው ከዚህ መሣሪያ ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}}</translation>
 <translation id="7138853919861947730">Chromium የማሰስ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል።</translation>
 <translation id="7162152143154757523">Chromium አሳሹ ላይ የሚተይቡትን ለGoogle አገልጋዮች በመላክ ይበልጥ አዋቂ የሆነ ፊደል አራሚ ሊያቀርብልዎት ይችላል፣ ይህም Google ፍለጋ የሚጠቀመውን ተመሳሳዩ የፊደል አራሚ ቴክኖሎጂ እንዲጠቀሙ ያስችልዎታል።</translation>
@@ -198,6 +205,7 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 ለተጨማሪ መመሪያዎች እባክዎ በ<ph name="ACCOUNT_EMAIL" /> ላይ የእርስዎን ኢሜይል ይፈትሹ።</translation>
 <translation id="7419987137528340081">ነባሩ የChromium ውሂብዎን ለይተው ማስቀመጥ ከፈለጉ ለ<ph name="USER_NAME" /> አዲስ የChromium ተጠቃሚ መፍጠር ይችላሉ።</translation>
 <translation id="7421823331379285070">Chromium Windows XP ወይም ከዚያ በኋላ ይፈልጋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
+<translation id="7437562785125777404">Chromium OS በዚህ ቋንቋ እንዲታይ ሊደረግ አይችልም።</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7483335560992089831">እየሄደ ያለውን ተመሳሳዩን የChromium ስሪት መጫን አይቻልም። እባክዎ Chromiumን ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="750717762378961310">ይህ ፋይል ተንኮል-አዘል ነው፣ እና Chromium አግዶታል።</translation>

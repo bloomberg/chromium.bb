@@ -150,6 +150,7 @@
 <translation id="2674170444375937751">Estàs segur que vols suprimir aquestes pàgines de l'historial?</translation>
 <translation id="2677748264148917807">Surt</translation>
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
+<translation id="2704951214193499422">En aquest moment Chromium no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
 <translation id="2705137772291741111">La còpia desada (a la memòria cau) d'aquest lloc no s'ha pogut llegir.</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
 <translation id="2712173769900027643">Demana permís</translation>
@@ -179,11 +180,13 @@
 <translation id="2985306909656435243">Si s'activa aquesta opció, Chromium desa una còpia de la vostra targeta en aquest dispositiu per agilitzar l'emplenament de formularis.</translation>
 <translation id="2991174974383378012">Comparteix informació amb llocs web</translation>
 <translation id="3005723025932146533">Mostra la còpia desada</translation>
+<translation id="3008447029300691911">Introdueix el CVC de la targeta <ph name="CREDIT_CARD" />. Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc.</translation>
 <translation id="3010559122411665027">Entrada de llista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
 <translation id="3032412215588512954">Voleu tornar a carregar aquest lloc?</translation>
 <translation id="3037605927509011580">Oh, no!</translation>
 <translation id="3041612393474885105">Informació del certificat</translation>
+<translation id="3063697135517575841">Chrome no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
 <translation id="3093245981617870298">Esteu fora de línia.</translation>
 <translation id="3105172416063519923">Identificador de l'element:</translation>
 <translation id="3109728660330352905">No teniu permís per veure aquesta pàgina.</translation>
@@ -203,6 +206,7 @@
 <translation id="3225919329040284222">El servidor ha presentat un certificat que no coincideix amb les expectatives integrades. Les expectatives s'inclouen perquè determinats llocs web d'alta seguretat us protegeixin.</translation>
 <translation id="3226128629678568754">Premeu el botó de tornar a carregar per tornar a enviar les dades necessàries per carregar la pàgina.</translation>
 <translation id="3228969707346345236">S'ha produït un error en fer la traducció perquè la pàgina ja està en <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Introdueix el CVC de la targeta <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Afegeix aquesta pàgina a les adreces d'interès</translation>
 <translation id="3270847123878663523">&amp;Desfés el canvi d'ordre</translation>
 <translation id="3286538390144397061">Reinicia ara</translation>
@@ -404,6 +408,7 @@
 <translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
+<translation id="5784606427469807560">S'ha produït un problema en confirmar la targeta. Comprova la connexió a Internet i torna-ho a provar.</translation>
 <translation id="5785756445106461925">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar l'aparença de la pàgina.</translation>
 <translation id="5810442152076338065">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge obsolet.</translation>
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
@@ -477,6 +482,7 @@
 <translation id="6839929833149231406">Àrea</translation>
 <translation id="6874604403660855544">&amp;Refés l'addició</translation>
 <translation id="6891596781022320156">No s'admet el nivell de la política.</translation>
+<translation id="6895330447102777224">La teva targeta s'ha confirmat</translation>
 <translation id="6897140037006041989">Agent d'usuari</translation>
 <translation id="6903907808598579934">Activa la sincronització</translation>
 <translation id="6915804003454593391">Usuari:</translation>
@@ -505,6 +511,7 @@
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">S'ha de demanar permís als pares per poder visitar aquesta pàgina.</translation>
 <translation id="7246609911581847514">Veieu aquest missatge perquè el gestor ha d'aprovar els llocs que visiteu per primera vegada.</translation>
+<translation id="724975217298816891">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /> per actualitzar-ne els detalls. Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc.</translation>
 <translation id="725866823122871198">No s'ha pogut establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) de l'ordinador no són correctes.</translation>
 <translation id="7265986070661382626">En aquest moment no podeu visitar <ph name="SITE" /> perquè el lloc web <ph name="BEGIN_LINK" />fa servir una fixació de certificat<ph name="END_LINK" />. Els errors de la xarxa i els atacs solen ser temporals, de manera que és probable que aquesta pàgina torni a funcionar més tard.</translation>
 <translation id="7269802741830436641">Aquesta pàgina web té un bucle de redirecció</translation>
@@ -518,6 +525,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Confirma la targeta</translation>
 <translation id="7394102162464064926">Confirmeu que voleu suprimir  aquestes pàgines de l'historial?
 
 El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la propera vegada.</translation>
@@ -527,6 +535,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
 <translation id="7445762425076701745">La identitat del servidor al qual esteu connectat no es pot acabar de validar. Esteu connectat a un servidor que utilitza un nom que només és vàlid dins la vostra xarxa, de manera que una autoritat de certificació externa no en pot validar la propietat. Com que de tota manera algunes autoritats de certificació emetran certificats per a aquests noms, no es pot assegurar que estigueu connectat al lloc web previst i no a un atacant.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Obtenir més informació<ph name="END_LINK" /> sobre aquest problema</translation>
+<translation id="7469372306589899959">S'està confirmant la targeta</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
 <translation id="7514365320538308">Baixa</translation>
@@ -641,6 +650,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8866959479196209191">Aquesta pàgina diu:</translation>
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
+<translation id="8877192140621905067">Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="889901481107108152">Aquest experiment no està disponible a la vostra plataforma.</translation>
 <translation id="8903921497873541725">Amplia</translation>
@@ -673,6 +683,8 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ESBORRA EL FORMULARI</translation>
 <translation id="939736085109172342">Carpeta nova</translation>
+<translation id="943029900877297437">Per poder utilitzar les targetes que has desat al teu compte de Google, inicia la sessió a Chrome.</translation>
+<translation id="962701380617707048">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /> per actualitzar-ne els detalls</translation>
 <translation id="969892804517981540">Muntatge oficial</translation>
 <translation id="988159990683914416">Muntatge del desenvolupador</translation>
 </translationbundle>

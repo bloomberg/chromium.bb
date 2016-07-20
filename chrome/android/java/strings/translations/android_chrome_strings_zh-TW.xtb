@@ -30,6 +30,7 @@
 <translation id="13410144310025252">您可以使用 Chrome 瀏覽這些網址</translation>
 <translation id="1369915414381695676">已新增 <ph name="SITE_NAME" /> 網站</translation>
 <translation id="1373696734384179344">記憶體不足，無法下載您選取的這項內容。</translation>
+<translation id="1376578503827013741">計算中…</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好：</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
@@ -46,7 +47,6 @@
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="1513352483775369820">書籤與網頁紀錄</translation>
-<translation id="1517433312004943670">必須輸入電話號碼</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自動偵測編碼</translation>
@@ -103,6 +103,7 @@
 <translation id="213279576345780926">已關閉的「<ph name="TAB_TITLE" />」</translation>
 <translation id="2138201775715568214">正在尋找附近的實體化網路網頁</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
+<translation id="2148716181193084225">今天</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="21570240866965662">連線速度緩慢</translation>
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
@@ -173,6 +174,7 @@
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 儲存資料量</translation>
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
+<translation id="2962095958535813455">已切換成無痕式分頁</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
 <translation id="2979025552038692506">選取的無痕式分頁</translation>
 <translation id="2996291259634659425">建立通關密語</translation>
@@ -201,6 +203,7 @@
 <translation id="3254409185687681395">把此頁加入書籤</translation>
 <translation id="326254929494722411">您尚未在這個裝置上設定 Google 帳戶</translation>
 <translation id="3269093882174072735">載入圖片</translation>
+<translation id="3269956123044984603">如要存取您在其他裝置上開啟的分頁，請前往 Android 帳戶設定開啟 [自動同步處理資料]。</translation>
 <translation id="3278850099957560514">讓 Google 對您要造訪的網頁進行最佳化處理，進而減少數據用量。使用私人連線 (HTTPS) 或無痕式分頁存取網頁時，Google 不會對這些網頁進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
@@ -341,7 +344,6 @@
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5056549851600133418">為您推薦的文章</translation>
 <translation id="5063480226653192405">用量</translation>
-<translation id="5087580092889165836">新增信用卡</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="510275257476243843">還剩 1 小時</translation>
 <translation id="5107381076085091558">已暫停下載。</translation>
@@ -410,6 +412,7 @@
 
 然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
+<translation id="5748802427693696783">已切換成標準分頁</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5765780083710877561">說明：</translation>
@@ -429,7 +432,6 @@
 <translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5939518447894949180">重設</translation>
-<translation id="5950380453936610378">必須輸入電子郵件地址</translation>
 <translation id="5961742032223302715">選取詳細聯絡資訊</translation>
 <translation id="5968595432776860642">正在播放「<ph name="VIDEO_TITLE" />」</translation>
 <translation id="6010869025736512584">正在存取視訊輸入</translation>
@@ -464,6 +466,7 @@
 <translation id="6333140779060797560">透過 <ph name="APPLICATION" /> 分享</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="6364438453358674297">從歷史紀錄中移除建議項目？</translation>
+<translation id="6383961787135158834">清除網站儲存的資料…</translation>
 <translation id="6388207532828177975">清除並重設</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6406506848690869874">同步</translation>
@@ -597,6 +600,7 @@
 <translation id="7765158879357617694">移動</translation>
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
+<translation id="7781829728241885113">昨天</translation>
 <translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>

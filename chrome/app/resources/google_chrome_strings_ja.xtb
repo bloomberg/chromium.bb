@@ -34,6 +34,7 @@
 <translation id="1818142563254268765">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を更新する必要があります。</translation>
 <translation id="1864458292167284385">Chrome アプリ ランチャーを非表示にします。</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
+<translation id="1924381329666691588">Google Chrome をこの言語で表示することはできません。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
 <translation id="2246246234298806438">Google Chrome では、組み込みの PDF ビューアがない場合、印刷プレビューを表示できません。</translation>
@@ -62,7 +63,9 @@
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
+<translation id="2847461019998147611">Google Chrome をこの言語で表示</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
+<translation id="2888126860611144412">Chrome について</translation>
 <translation id="2997147809295888909">Chrome で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報はサーバーから提供されませんでした。</translation>
 <translation id="3037838751736561277">Google Chrome はバックグラウンド モードです。</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chrome データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK" />Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK" />で管理できます。</translation>
@@ -108,6 +111,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4480040274068703980">ログイン時にエラーが発生したため、Chrome OS はデータを同期できませんでした。</translation>
+<translation id="4519152997629025674">Google Chrome では、より快適なブラウジングを提供する目的で<ph name="BEGIN_LINK" />ウェブサービス<ph name="END_LINK" />が使用されることがあります。これらのサービスはいつでも無効にできます。</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="4631713731678262610">Chrome メニューで非表示</translation>
@@ -145,6 +149,7 @@
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
+<translation id="5637867606963802593">Chrome OS をこの言語で表示することはできません。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
 <translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
@@ -164,6 +169,7 @@
 <translation id="6235018212288296708">mDNS トラフィックを許可する Google Chrome のインバウンド ルールです。</translation>
 <translation id="6236285698028833233">Google Chrome はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="629218512217695915">Chrome で生成されたパスワードを使用する</translation>
+<translation id="6368805772029492593">セキュリティ強化のため、Google Chrome ではデータが暗号化されます。</translation>
 <translation id="6368958679917195344">Chrome OS は、<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />が追加されて実現しました。</translation>
 <translation id="6400076122676892962">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="6470176598693778404">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
@@ -192,6 +198,7 @@
 <translation id="7177347454226092725">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>
 <translation id="7191567847629796517">Google Chrome OS では、<ph name="SCHEME" /> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
+<translation id="7193750696137290001">Google Chrome はこの言語で表示されています。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
@@ -201,11 +208,13 @@
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>
 <translation id="7419046106786626209">お使いのドメインでは同期を利用できないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
+<translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="7459554271817304652">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Google Chrome からでも使用できるようになります。</translation>
 <translation id="7473136999113284234">Chrome は自動的に更新されるため、常に最新版をご利用になれます。</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7494905215383356681">Chrome オープンソース ライセンス</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。}other{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。}}</translation>
+<translation id="7552219221109926349">Chrome OS をこの言語で表示</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome にようこそ</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
@@ -218,6 +227,7 @@
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7908168227788431038">Google Chrome を再起動して更新を完了してください。</translation>
 <translation id="795025003224538582">再起動しない</translation>
+<translation id="7964230182933713106">Chrome OS はこの言語で表示されています。</translation>
 <translation id="8005540215158006229">Chrome はすぐに利用できるようになります。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>

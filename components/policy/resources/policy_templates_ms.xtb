@@ -684,6 +684,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowJavaScript' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="3038323923255997294">Terus jalankan apl latar belakang apabila <ph name="PRODUCT_NAME" /> ditutup</translation>
+<translation id="3046192273793919231">Hantar bingkisan rangkaian ke pelayan pengurusan untuk memantau status dalam talian</translation>
 <translation id="3048744057455266684">Jika dasar ini ditetapkan dan URL carian yang dicadangkan dari kotak omni mengandungi parameter ini dalam rentetan pertanyaan atau dalam pengecam serpihan, maka cadangan akan memaparkan istilah carian dan penyedia carian, bukannya URL carian mentah.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada penggantian istilah carian akan dilaksanakan.
@@ -964,6 +965,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika tidak ditetapkan atau ditetapkan kepada Palsu, maka pengguna akan dapat memindahkan fail ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk fail .pac proksi</translation>
+<translation id="3939893074578116847">Hantar bingkisan rangkaian ke pelayan pengurusan untuk memantau status dalam talian, untuk membenarkan
+      pelayan mengesan jika peranti berada di luar talian.
+
+      Jika dasar ditetapkan kepada benar, pemantauan bingkisan rangkaian (yang dipanggil <ph name="HEARTBEATS_TERM" />) akan dihantar.
+      Jika ditetapkan kepada palsu atau tidak ditetapkan, bingkisan tidak akan dihantar.</translation>
 <translation id="3964909636571393861">Membenarkan akses kepada senarai URL</translation>
 <translation id="3965339130942650562">Tamat masa sehingga log keluar pengguna melahu dilaksanakan</translation>
 <translation id="3967075520570946456">Dayakan pemaparan halaman aluan semasa pelancaran penyemak imbas yang pertama sesudah peningkatan OS.</translation>
@@ -1343,6 +1349,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika dasar ini ditetapkan, sesi yang dinyatakan akan log masuk secara automatik selepas berlalunya suatu tempoh pada skrin log masuk tanpa interaksi pengguna. Sesi terbuka hendaklah telah dikonfigurasi (lihat |DeviceLocalAccounts|).
 
       Jika dasar ini tidak ditetapkan, log masuk automatik tidak akan berlaku.</translation>
+<translation id="5535957389335373033">Kekerapan pemantauan bingkisan rangkaian dihantar, dalam milisaat.
+
+      Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 minit. Kekerapan minimum
+      ialah 30 saat dan kekerapan maksimum ialah 24 jam - nilai
+      di luar julat ini akan diapit menurut julat ini.</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
 <translation id="5560039246134246593">Tambahkan parameter kepada pengambilan benih Variasi dalam <ph name="PRODUCT_NAME" />.
 
@@ -2462,7 +2473,7 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 
       Setiap item senarai dasar ialah rentetan yang mengandungi ID sambungan
       dan URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf
-      yang boleh ditmui misalnya pada <ph name="CHROME_EXTENSIONS_LINK" /> semasa berada dalam
+      yang boleh ditemui misalnya pada <ph name="CHROME_EXTENSIONS_LINK" /> semasa berada dalam
       mod pembangun. URL "kemas kini" hendaklah menunjukkan ke arah
       dokumen XML Manifes Kemas Kini seperti yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />. Ambil
       perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ni hanya digunakan untuk
@@ -2566,6 +2577,7 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="9187743794267626640">Lumpuhkan pelekapan storan luaran</translation>
 <translation id="9197740283131855199">Peratusan yang digunakan untuk menskala kelewatan pemalapan skrin jika pengguna menjadi aktif selepas pemalapan</translation>
 <translation id="9200828125069750521">Parameter untuk URL imej yang menggunakan POST</translation>
+<translation id="9217154963008402249">Kekerapan pemantauan bingkisan rangkaian</translation>
 <translation id="922540222991413931">Konfigurasi sambungan, apl dan sumber pemasangan skrip pengguna</translation>
 <translation id="924557436754151212">Import kata laluan yang disimpan daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="930930237275114205">Tetapkan direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>

@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">ОС Chromium не підтримує запуск зовнішньої програми обробки посилань типу <ph name="SCHEME" />. Потрібний тип посилання: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">У системі знайдено конфліктуючу встановлену версію Chromium. Видаліть її та повторіть спробу.</translation>
 <translation id="1298199220304005244">Отримати довідку щодо користування ОС Chromium</translation>
+<translation id="1347507563453473396">Не можна вибрати цю мову для Chromium.</translation>
 <translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
 <translation id="1403254041219632970">Наступні версії Chromium не підтримуватимуть Mac OS X версій 10.6, 10.7 і 10.8.</translation>
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Оновлення Chromium припинилось. Ця версія вашої операційної системи більше не підтримується.</translation>
 <translation id="2705212601509139398">Цей сайт використовує Chromium Frame. Ми припиняємо підтримку цього плагіна. Видаліть його та встановіть сумісний веб-переглядач.</translation>
 <translation id="2711502716910134313">Вкладка Chromium</translation>
+<translation id="2718390899429598676">Задля підвищення безпеки Chromium шифруватиме ваші дані.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
 <translation id="2801146392936645542">Файл <ph name="FILE_NAME" /> шкідливий, тому Chromium заблокував його.</translation>
 <translation id="2847479871509788944">Видалити з Chromium…</translation>
 <translation id="2886012850691518054">Додатково: допоможіть покращити Chromium,  автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи в Google.</translation>
+<translation id="2905536371227304018">Для ОС Chromium вибрано цю мову.</translation>
 <translation id="2910007522516064972">Про &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium потребує запуску зовнішньої програми обробки посилань типу <ph name="SCHEME" />. Потрібний тип посилання: <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Додавання в Chromium...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Зробити Chromium веб-переглядачем за умовчанням</translation>
 <translation id="5466153949126434691">Chromium оновлюється автоматично, щоб у вас завжди була найновіша версія. Щойно це завантаження завершиться, Chromium перезапуститься й ви зможете продовжувати роботу.</translation>
 <translation id="549669000822060376">Зачекайте, доки Chromium установить найновіші оновлення системи.</translation>
+<translation id="556167189552180495">Для Chromium вибрано цю мову.</translation>
 <translation id="5563479599352954471">Пошук одним дотиком</translation>
 <translation id="5620765574781326016">Дізнавайтеся про теми на веб-сайтах, залишаючись на сторінці.</translation>
 <translation id="5634636535844844681">Для роботи Chromium потрібно мати ОС Windows 7 або новішої версії.</translation>
 <translation id="5680901439334282664">увійдіть в обліковий запис Chromium</translation>
+<translation id="5698481217667032250">Вибрати цю мову для Chromium</translation>
+<translation id="5768914737813585044">Вибрати цю мову для ОС Chromium</translation>
 <translation id="5772805321386874569">(потрібно <ph name="BEGIN_BUTTON" />перезапустити<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
@@ -172,6 +178,7 @@
 <translation id="705851970750939768">Оновити Chromium</translation>
 <translation id="7064610482057367130">Не вдалося виконати оновлення, оскільки не знайдено встановленої версії Chromium.</translation>
 <translation id="7066436765290594559">ОС Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
+<translation id="7090955637699162649">Chromium може покращувати веб-перегляд за допомогою <ph name="BEGIN_LINK" />веб-служб<ph name="END_LINK" />. Ви можете будь-коли вимкнути ці служби.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 елемент буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як $2.}one{$1 елемент буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як $2.}few{$1 елементи буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як $2.}many{$1 елементів буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як $2.}other{$1 елемента буде видалено з цього пристрою назавжди. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як $2.}}</translation>
 <translation id="7138853919861947730">Chromium може використовувати веб-служби для покращення умов перегляду.</translation>
 <translation id="7162152143154757523">Chromium може точніше перевіряти правопис, надсилаючи текст, який ви вводите у веб-переглядачі, на сервери Google. Це дозволяє використовувати ту саму технологію перевірки правопису, що й у Пошуку Google.</translation>
@@ -196,6 +203,7 @@ Chromium не може відновити ваші налаштування.</tr
 Подальші вказівки надійдуть на електронну адресу <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Якщо ви хочете зберігати існуючі дані Chromium окремо, можна створити нового користувача Chromium для облікового запису <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium потребує ОС Windows XP або новішої версії. Деякі функції можуть не працювати.</translation>
+<translation id="7437562785125777404">Не можна вибрати цю мову для ОС Chromium.</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7483335560992089831">Неможливо встановити версію Chromium, аналогічну запущеній зараз. Закрийте Chromium і повторіть спробу.</translation>
 <translation id="750717762378961310">Цей файл шкідливий, тому Chromium заблокував його.</translation>

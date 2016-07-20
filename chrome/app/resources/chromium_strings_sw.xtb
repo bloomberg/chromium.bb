@@ -10,6 +10,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1221340462641866827">Chromium OS haihimili kuzindua programu ya nje ili kushughulikia viungo vya <ph name="SCHEME" />. Kiungo kilichoombwa ni <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Usakinishi tatanishi wa Chromium ulipatikana kwenye mfumo. Tafadhali uondoe na ujaribu tena.</translation>
 <translation id="1298199220304005244">Pata msaada unapotumia Chromium OS</translation>
+<translation id="1347507563453473396">Chromium haiwezi kuonyeshwa katika lugha hii.</translation>
 <translation id="1396446129537741364">Chromium inajaribu kuonyesha manenosiri.</translation>
 <translation id="1403254041219632970">Matoleo ya siku za usoni ya Chromium hayatatumia tena Mac OS X 10.6, 10.7, au 10.8.</translation>
 <translation id="1414495520565016063">Umeingia kwenye Chromium!</translation>
@@ -57,10 +58,12 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2685838254101182273">Chromium imekoma kusasisha na haiwezi kutumiwa tena na toleo hili la mfumo wako wa uendeshaji.</translation>
 <translation id="2705212601509139398">Tovuti hii inatumia programu-jalizi ya Fremu ya Chromium ambayo haitaweza kutumika hivi karibuni. Tafadhali iondoe na upakue kivinjari kinachooana.</translation>
 <translation id="2711502716910134313">Kichupo cha Chromium</translation>
+<translation id="2718390899429598676">Kwa usalama ulioongezwa, Chromium itasimba data yako kwa njia fiche.</translation>
 <translation id="2770231113462710648">Badilisha kivinjari chaguo msingi kiwe:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> ni hasidi, na Chromium imeizuia.</translation>
 <translation id="2847479871509788944">Ondoa kwenye Chromium...</translation>
 <translation id="2886012850691518054">Si lazima: Saidia kuboresha Chromium kwa kutumia Google takwimu za matumizi na ripoti wakati wowote huduma hii inapoacha kufanya kazi.</translation>
+<translation id="2905536371227304018">Mfumo wa Uendeshaji wa Chromium unaonyeshwa katika lugha hii.</translation>
 <translation id="2910007522516064972">Kuhusu Chromium</translation>
 <translation id="2966088006374919794">Chromium inahitaji kuzindua programu ya nje ili kushughulikia viungo vya <ph name="SCHEME" />. Kiungo kilichoombwa ni <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Inaongeza kwenye Chromium...</translation>
@@ -123,10 +126,13 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="5427571867875391349">Weka Chromium kuwa kivinjari chako chaguo-msingi</translation>
 <translation id="5466153949126434691">Chromium husasisha kiotomatiki ili uwe na toleo jipya zaidi wakati wowote. Upakuaji huu unapokamilika, Chromium itajizima na kuwaka tena na utaanza kutumia.</translation>
 <translation id="549669000822060376">Tafadhali subiri Chromium inaposakinisha sasisho mpya ya mfumo.</translation>
+<translation id="556167189552180495">Chromium inaonyeshwa katika lugha hii.</translation>
 <translation id="5563479599352954471">Tafuta kwa mguso mmoja tu</translation>
 <translation id="5620765574781326016">Pata maelezo kuhusu mada zilizo kwenye tovuti bila kuondoka kwenye ukurasa.</translation>
 <translation id="5634636535844844681">Chromium inahitaji Windows 7 au toleo jipya zaidi.</translation>
 <translation id="5680901439334282664">ingia katika Chromium</translation>
+<translation id="5698481217667032250">Onyesha Chromium katika lugha hii</translation>
+<translation id="5768914737813585044">Onyesha Mfumo wa Uendeshaji wa Chromium katika lugha hii</translation>
 <translation id="5772805321386874569">(inahitaji uanzishaji upya wa  <ph name="BEGIN_BUTTON" />Chromium<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium inakaribia kuwa tayari.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -174,6 +180,7 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="705851970750939768">Sasisha Chromium</translation>
 <translation id="7064610482057367130">Hakuna usakinishi wa Chromium uliopatikana kusasishwa.</translation>
 <translation id="7066436765290594559">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako. Tafadhali sasisha kauli ya siri unayotumia kusawazisha.</translation>
+<translation id="7090955637699162649">Chromium inaweza kutumia <ph name="BEGIN_LINK" />huduma za wavuti<ph name="END_LINK" /> kuimarisha hali yako ya kuvinjari. Unaweza kuzima huduma hizi kwa hiari wakati wowote.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Hatua hii itafuta kabisa kipengee $1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.}other{Hii itafuta kabisa vipengee $1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chromium ukitumia $2.}}</translation>
 <translation id="7138853919861947730">Huenda Chromium ikatumia huduma za wavuti kuboresha utumizi wako wa kuvinjari.</translation>
 <translation id="7162152143154757523">Chromium inaweza kutoa ukaguzi bora wa tahajia kwa kutuma unachocharaza katika kivinjari hadi kwenye seva za Google, ikikuruhusu kutumia teknolojia hiyo hiyo ya kukagua tahajia inayotumiwa na utafutaji wa Google.</translation>
@@ -197,6 +204,7 @@ Ili umzuie <ph name="NEW_PROFILE_NAME" /> asifikie akaunti yako, hakikisha kuwa 
 Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagizo zaidi.</translation>
 <translation id="7419987137528340081">Iwapo unapendelea kutenganisha data yako iliyopo ya Chromium, unaweza kuingiza mtumiaji mpya wa Chromium kwa <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium inahitaji Windows XP au toleo la awali. Huenda vipengele vingine visifanye kazi.</translation>
+<translation id="7437562785125777404">Mfumo wa Uendeshaji wa Chromium hauwezi kuonyeshwa katika lugha hii.</translation>
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="7483335560992089831">Haiwezi kusakinisha toleo sawia la Chromium ambalo linaendeshwa hivi sasa. Tafadhali funga Chromium na ujaribu tena.</translation>
 <translation id="750717762378961310">Faili hili ni hasidi, na Chromium imeizuia.</translation>

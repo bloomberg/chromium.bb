@@ -44,7 +44,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, पासवर्ड लेख बॉक्‍स</translation>
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1474557363159888097">कोई पिछला एंकर नहीं.</translation>
-<translation id="1487494366197411587">Chromebook पर Search कुंजी, बाईं Shift कुंजी के ठीक ऊपर होती है.</translation>
+<translation id="1487494366197411587">Chromebook पर Search की, बाईं Shift की के ठीक ऊपर होती है.</translation>
 <translation id="1499041187027566160">वॉल्‍यूम बढ़ाएं</translation>
 <translation id="1502086903961450562">पिछला ग्राफ़‍िक</translation>
 <translation id="1506187449813838456">पिच बढ़ाएं</translation>
@@ -213,7 +213,7 @@
 <translation id="3307886118343381874">तालिका के अंत में जाएं</translation>
 <translation id="3311969765485641742">नोटिफिकेशन की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
-<translation id="3313245066383501820">ChromeVox संशोधक कुंजी</translation>
+<translation id="3313245066383501820">ChromeVox बदलने वाली की</translation>
 <translation id="3321460131042519426">शब्द लपेटना सक्षम करें</translation>
 <translation id="3322936298410871309">पिछले स्‍तर 1 का शीर्षक</translation>
 <translation id="3323447499041942178">टेक्स्ट बॉक्‍स</translation>
@@ -297,6 +297,7 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">स्वत: पूर्णता सूची</translation>
 <translation id="3810838688059735925">वीडियो</translation>
+<translation id="3812237531158591503">$1 चिपकाएं.</translation>
 <translation id="3816633764618089385">अगला मीडिया</translation>
 <translation id="3819376190738087562">कोई जंप नहीं.</translation>
 <translation id="385383972552776628">विकल्प पृष्ठ खोलें</translation>
@@ -388,7 +389,7 @@
 <translation id="4842108708071771135">कोई अगला ब्लॉककोट नहीं.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">पिछला समान तत्व.</translation>
-<translation id="485011152882364255">ChromeVox Next में Search कुंजी, संशोधक कुंजी होती है. अधिकांश ChromeVox शॉर्टकट Search कुंजी से प्रारंभ होते हैं. आप नेविगेशन के लिए तीर कुंजियों का भी उपयोग कर सकते हैं.</translation>
+<translation id="485011152882364255">ChromeVox Next में Search की, बदलने के साधन वाली की होती है. अधिकांश ChromeVox शॉर्टकट Search की से प्रारंभ होते हैं. आप नेविगेशन के लिए तीर की का भी उपयोग कर सकते हैं.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS लॉगिंग सक्षम करें</translation>
 <translation id="4877261390094455813">खोज क्वेरी डालें.</translation>
@@ -491,8 +492,8 @@
 <translation id="5684905390246898631">ChromeVox Next में आपका स्वागत है!</translation>
 <translation id="5695831708991916435">अगले कुछ शॉर्टकट ChromeVox आदेश नहीं हैं, लेकिन फिर भी Chrome का अधिकतम लाभ प्राप्त करने के लिए वे बहुत उपयोगी हैं.
 बटन और लिंक जैसे कार्रवाई योग्य आइटम के माध्यम से आगे नेविगेट करने के लिए, Tab कुंजी दबाएं. पीछे नेविगेट करने के लिए, Shift+Tab दबाएं. 
-Chrome ब्राउज़र पता बॉक्स डालने के लिए, जिसे omnibox भी कहा जाता है, Control + L दबाएं. 
-अपने आप नया टैब खोलने और उस पर जाने के लिए, Control+T दबाएं. आपका कर्सर omnibox में होगा. 
+Chrome ब्राउज़र पता बॉक्स डालने के लिए, जिसे खोज वाली पट्टी भी कहा जाता है, Control + L दबाएं. 
+अपने आप नया टैब खोलने और उस पर जाने के लिए, Control+T दबाएं. आपका कर्सर खोज वाली पट्टी में होगा. 
 कोई टैब बंद करने के लिए, Control+W दबाएं. 
 खुले टैब में आगे जाने के लिए, Control+Tab का उपयोग करें. 
 Chrome ब्राउज़र मेनू खोलने के लिए, Alt+F दबाएं.</translation>
@@ -553,6 +554,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6355910664415701303">कोई पिछला सूची आइटम नहीं.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">पिछला शीर्षक</translation>
+<translation id="6378565991815958969">$1 कॉपी करें.</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">कोई पिछला रेडियो बटन नहीं.</translation>
 <translation id="6414968628640960377">पिछला भिन्न तत्व.</translation>
@@ -599,7 +601,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6964088412282673743">कोई पिछला नियंत्रण नहीं.</translation>
 <translation id="6996566555547746822">अगला कॉम्बो बॉक्स</translation>
 <translation id="7005146664810010831">कोई URL नहीं मिला</translation>
-<translation id="7010712454773919705">ChromeVox संशोधक कुंजी</translation>
+<translation id="7010712454773919705">ChromeVox बदलने वाली की</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="7041173719775863268">चयन समाप्त करें</translation>
@@ -740,7 +742,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="8631359288236106450">चयनित <ph name="COUNT" /> आइटम</translation>
 <translation id="8638532244051952400">वर्तमान सेल निर्देशांक बताएं</translation>
 <translation id="8650576015643545550">कोई पिछली सूची नहीं.</translation>
-<translation id="8651481478098336970">वॉल्‍यूम म्‍यूट करें</translation>
+<translation id="8651481478098336970">आवाज़ बंद करें</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">लिंक सूची दिखाएं</translation>
 <translation id="8664519043722036194">सेकंड</translation>
@@ -779,6 +781,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="9077213568694924680">चयन से निकाले गए</translation>
 <translation id="9082874451376019682">कोई पिछला स्लाइडर नहीं.</translation>
 <translation id="9089864840575085222">टाइपिंग इको को चक्रित करें</translation>
+<translation id="9105227991373418255">$1 काटें.</translation>
 <translation id="9107530006868467849">कोई पिछला मीडिया विजेट नहीं.</translation>
 <translation id="9108370397979208512">गणित</translation>
 <translation id="9108589040018540527">scbr</translation>

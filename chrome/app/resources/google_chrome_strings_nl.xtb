@@ -38,6 +38,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1818142563254268765">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome updaten.</translation>
 <translation id="1864458292167284385">De Chrome App Launcher gaat verdwijnen.</translation>
 <translation id="1877026089748256423">Chrome is verouderd</translation>
+<translation id="1924381329666691588">Google Chrome kan niet worden weergegeven in deze taal.</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2084710999043359739">Toevoegen aan Chrome</translation>
 <translation id="2246246234298806438">Google Chrome kan het afdrukvoorbeeld niet weergeven wanneer de ingebouwde pdf-viewer ontbreekt.</translation>
@@ -66,7 +67,9 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="2748463065602559597">Je bekijkt een veilige Google Chrome-pagina.</translation>
 <translation id="2769762047821873045">Google Chrome is niet je standaardbrowser.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
+<translation id="2847461019998147611">Google Chrome weergegeven in deze taal</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
+<translation id="2888126860611144412">Over Chrome</translation>
 <translation id="2997147809295888909">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geen certificaattransparantiegegevens geleverd.</translation>
 <translation id="3037838751736561277">Google Chrome bevindt zich in de achtergrondmodus.</translation>
 <translation id="3047079729301751317">Als je de verbinding met <ph name="USERNAME" /> verbreekt, worden je geschiedenis, bladwijzers, instellingen en andere Chrome-gegevens op dit apparaat opgeslagen. De gegevens die in je Google-account zijn opgeslagen, worden niet gewist en kunnen worden beheerd via <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -112,6 +115,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4480040274068703980">Chrome OS kan je gegevens niet synchroniseren door een fout tijdens het inloggen.</translation>
+<translation id="4519152997629025674">Google Chrome kan <ph name="BEGIN_LINK" />webservices<ph name="END_LINK" /> gebruiken om je internetervaring te verbeteren. Als je wilt, kun je deze services uitschakelen.</translation>
 <translation id="4561051373932531560">Met Google Chrome kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS" />. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="4631713731678262610">Verbergen in Chrome-menu</translation>
@@ -151,6 +155,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5563479599352954471">Zoeken met een aanraking</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten.</translation>
+<translation id="5637867606963802593">Chrome OS kan niet worden weergegeven in deze taal.</translation>
 <translation id="568643307450491754">Je vindt je bladwijzers in het menu 'Chrome' of in de bladwijzerbalk.</translation>
 <translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
@@ -170,6 +175,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6235018212288296708">Inkomende regel zodat Google Chrome mDNS-verkeer toestaat.</translation>
 <translation id="6236285698028833233">Google Chrome is gestopt met bijwerken en ondersteunt deze versie van je besturingssysteem niet meer.</translation>
 <translation id="629218512217695915">Wachtwoord gebruiken dat is gegenereerd door Chrome</translation>
+<translation id="6368805772029492593">Je gegevens worden voor extra beveiliging door Google Chrome gecodeerd.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Mac OS X 10.6, 10.7 en 10.8 niet meer worden ondersteund.</translation>
 <translation id="6470176598693778404">Deze computer ontvangt geen Google Chrome-updates meer, omdat Mac OS X 10.6, 10.7 en 10.8 niet meer worden ondersteund.</translation>
@@ -198,6 +204,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7177347454226092725">Hiermee worden je browsergegevens definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS biedt geen ondersteuning voor het starten van een externe applicatie voor het verwerken van <ph name="SCHEME" />-links. De opgevraagde link is <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome wordt weergegeven in deze taal.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="7242029209006116544">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt ook een nieuw profiel maken om je bestaande Chrome-gegevens gescheiden te houden. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund.</translation>
@@ -207,11 +214,13 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7408085963519505752">Voorwaarden van Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
+<translation id="7437998757836447326">Uitloggen bij Chrome</translation>
 <translation id="7459554271817304652">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te krijgen tot deze functies via Google Chrome, vanaf elke computer.</translation>
 <translation id="7473136999113284234">Chrome wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie.</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7494905215383356681">Open-sourcelicenties van Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Hiermee wordt ten minste $1 item definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.}other{Hiermee worden ten minste $1 items definitief van dit apparaat verwijderd. Als je je gegevens later wilt terughalen, log je in bij Chrome als $2.}}</translation>
+<translation id="7552219221109926349">Chrome OS weergeven in deze taal</translation>
 <translation id="7592736734348559088">Google Chrome kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="7626032353295482388">Welkom bij Chrome</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
@@ -224,6 +233,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7890208801193284374">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chrome configureren zoals zij dat willen.</translation>
 <translation id="7908168227788431038">Updaten bijna voltooid. Start Google Chrome opnieuw op om de update te voltooien.</translation>
 <translation id="795025003224538582">Niet opnieuw starten</translation>
+<translation id="7964230182933713106">Chrome OS wordt weergegeven in deze taal.</translation>
 <translation id="8005540215158006229">Chrome is bijna klaar.</translation>
 <translation id="8008534537613507642">Chrome opnieuw installeren</translation>
 <translation id="8030318113982266900">Je apparaat bijwerken naar <ph name="CHANNEL_NAME" /> kanaal...</translation>

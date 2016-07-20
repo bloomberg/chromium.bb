@@ -623,6 +623,7 @@
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME" />关闭后继续运行后台应用</translation>
+<translation id="3046192273793919231">将网络数据包发送到管理服务器以监控联网状态</translation>
 <translation id="3048744057455266684">如果设置了此政策，且多功能框建议的搜索网址在查询字符串或片段标识符中包含此参数，则该建议将显示搜索字词和搜索服务提供商，而不是原始的搜索网址。
 
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
@@ -882,6 +883,10 @@
 
           如果此政策未设置或设为 False，用户可以将文件传输到 Google 云端硬盘。</translation>
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
+<translation id="3939893074578116847">将网络数据包发送到管理服务器以监控联网状态，从而使得服务器能够判断设备有没有联网。
+
+      如果此政策设为 true，系统将发送监控网络数据包（所谓的“<ph name="HEARTBEATS_TERM" />”）。
+      如果此政策设为 false 或未设置，系统将不会发送任何网络数据包。</translation>
 <translation id="3964909636571393861">允许访问网址列表</translation>
 <translation id="3965339130942650562">对待机用户执行退出操作前的超时时间</translation>
 <translation id="3967075520570946456">在操作系统升级后，允许该浏览器首次启动时显示欢迎页面。</translation>
@@ -1199,6 +1204,9 @@
       如果设置了此政策，则用户未与登录屏幕互动的时间达到指定的时长后，将会自动登录指定的会话。此公用自助终端必须已配置（参阅 |DeviceLocalAccounts|）。
 
       如果未设置此政策，则不会自动登录。</translation>
+<translation id="5535957389335373033">发送监控网络数据包的频率（以毫秒为单位）。
+
+      如果此政策未设置，频率的默认间隔为 3 分钟。允许的最短间隔为 30 秒，最长间隔为 24 小时（低于 30 秒的值将被视为 30 秒，高于 24 小时的值将被视为 24 小时）。</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME" /> 中的变体种子的方法中添加参数。
 
@@ -2262,6 +2270,7 @@
 <translation id="9187743794267626640">禁止装载外部存储设备</translation>
 <translation id="9197740283131855199">系统在屏幕变暗后察觉到用户活动时，屏幕变暗延迟时间的调整幅度（百分比）</translation>
 <translation id="9200828125069750521">在使用 POST 的图片网址中所需的参数</translation>
+<translation id="9217154963008402249">发送监控网络数据包的频率</translation>
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>
 <translation id="930930237275114205">设置 <ph name="PRODUCT_FRAME_NAME" />用户数据目录</translation>

@@ -10,6 +10,7 @@
 <translation id="1221340462641866827">Chromium OS <ph name="SCHEME" /> લિંક્સને હેન્ડલ કરવા માટે કોઈ બાહ્ય ઍપ્લિકેશન શરૂ કરવાને સપોર્ટ કરતું નથી. વિનંતી કરેલી લિંક <ph name="PROTOLINK" /> છે.</translation>
 <translation id="1293235220023151515">સિસ્ટમ પર Chromium નું એક વિરોધાભાસી ઇન્સ્ટોલેશન મળ્યું. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1298199220304005244">Chromium OS નો ઉપયોગ કરવા સહાય મેળવો</translation>
+<translation id="1347507563453473396">આ ભાષામાં Chromium પ્રદર્શિત કરી શકાતું નથી.</translation>
 <translation id="1396446129537741364">Chromium પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે.</translation>
 <translation id="1403254041219632970">Chromium ના ભાવિ સંસ્કરણો હવેથી Mac OS X 10.6, 10.7 અથવા 10.8 ને સમર્થિત કરશે નહિ.</translation>
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
@@ -57,10 +58,12 @@
 <translation id="2685838254101182273">Chromium એ અપડેટ કરવાનું બંધ કરી દીધું છે અને હવે તમારી ઓપરેટિંગ સિસ્ટમના આ સંસ્કરણનું સમર્થન કરતું નથી.</translation>
 <translation id="2705212601509139398">આ સાઇટ જે Chromium ફ્રેમ પ્લગિનનો ઉપયોગ કરી રહી છે તે ટૂંક સમયમાં અસમર્થિત હશે. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને સંગત બ્રાઉઝર ડાઉનલોડ કરો.</translation>
 <translation id="2711502716910134313">Chromium ટૅબ</translation>
+<translation id="2718390899429598676">ઉમેરેલી સુરક્ષા માટે, Chromium તમારા ડેટાને એન્ક્રિપ્ટ કરશે.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> દૂષિત છે અને Chromium એ તેને અવરોધિત કરી છે.</translation>
 <translation id="2847479871509788944">Chromium માંથી દૂર કરો...</translation>
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રેશ રીપોર્ટ્સ આપમેળે Google ને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
+<translation id="2905536371227304018">આ ભાષામાં Chromium OS પ્રદર્શિત થાય છે.</translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
 <translation id="2966088006374919794">Chromium <ph name="SCHEME" /> લિંક્સને હેન્ડલ કરવા માટે કોઈ બાહ્ય ઍપ્લિકેશન શરૂ કરવાની જરૂર છે. વિનંતી કરેલી લિંક <ph name="PROTOLINK" /> છે.</translation>
 <translation id="3032787606318309379">Chromium માં ઉમેરી રહ્યું છે...</translation>
@@ -124,10 +127,13 @@
 <translation id="5427571867875391349">Chromium ને તમારા ડિફોલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="5466153949126434691">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chromium પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
+<translation id="556167189552180495">આ ભાષામાં Chromium પ્રદર્શિત થાય છે.</translation>
 <translation id="5563479599352954471">એક ટચ વડે શોધ કરો</translation>
 <translation id="5620765574781326016">પૃષ્ઠને છોડ્યાં વિના વેબસાઇટ્સ પરના મુદ્દાઓ વિશે જાણો.</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
+<translation id="5698481217667032250">આ ભાષામાં Chromium પ્રદર્શિત કરો</translation>
+<translation id="5768914737813585044">આ ભાષામાં Chromium OS પ્રદર્શિત કરો</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />પુનઃપ્રારંભ કરવું<ph name="END_BUTTON" /> આવશ્યક છે)</translation>
 <translation id="5796460469508169315">Chromium લગભગ તૈયાર છે.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -175,6 +181,7 @@
 <translation id="705851970750939768">Chromium ને અપડેટ કરો</translation>
 <translation id="7064610482057367130">અપડેટ કરવા માટે Chromium નું ઇન્સ્ટોલેશન મળ્યું નથી.</translation>
 <translation id="7066436765290594559">Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી. કૃપા કરીને તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
+<translation id="7090955637699162649">Chromium તમારા બ્રાઉઝિંગ અનુભવને બહેતર બનાવવા માટે <ph name="BEGIN_LINK" />વેબ સેવાઓ<ph name="END_LINK" />નો ઉપયોગ કરી શકે છે. તમે કોઈપણ સમયે વૈકલ્પિક રૂપે આ સેવાઓને અક્ષમ કરી શકો છો.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{આ $1 આઇટમને આ ઉપકરણમાંથી સ્થાયી રૂપે કાઢી નાખશે. પછીથી તમારા ડેટાને પુનઃપ્રાપ્ત કરવા માટે, $2 તરીકે Chromium માં સાઇન ઇન કરો.}one{આ $1 આઇટમ્સને આ ઉપકરણમાંથી સ્થાયી રૂપે કાઢી નાખશે. પછીથી તમારા ડેટાને પુનઃપ્રાપ્ત કરવા માટે, $2 તરીકે Chromium માં સાઇન ઇન કરો.}other{આ $1 આઇટમ્સને આ ઉપકરણમાંથી સ્થાયી રૂપે કાઢી નાખશે. પછીથી તમારા ડેટાને પુનઃપ્રાપ્ત કરવા માટે, $2 તરીકે Chromium માં સાઇન ઇન કરો.}}</translation>
 <translation id="7138853919861947730">Chromium તમારા બ્રાઉઝિંગ અનુભવને સુધારવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="7162152143154757523">તમે બ્રાઉઝરમાં જે કંઈ પણ લખો છો તે Google સર્વર્સ પર મોકલીને, Google શોધ દ્વારા ઉપયોગમાં લેવાતી સમાન જોડણી-પરીક્ષક તકનીકીનો ઉપયોગ કરવાની પરવાનગી આપતું, Chromium સ્માર્ટ જોડણી-પરીક્ષક પ્રદાન કરી શકે છે.</translation>
@@ -199,6 +206,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 વધુ સૂચનો માટે કૃપા કરીને <ph name="ACCOUNT_EMAIL" /> પર તમારી ઇમેઇલને તપાસો.</translation>
 <translation id="7419987137528340081">જો તમે તમારા હાલનાં Chromium ડેટાને અલગ રાખવા ઇચ્છો છો, તો તમે <ph name="USER_NAME" /> માટે એક નવો Chromium વપરાશકર્તા બનાવી શકો છો.</translation>
 <translation id="7421823331379285070">Chromium ને Windows XP અથવા તે પછીનાની આવશ્યકતા છે. કેટલીક સુવિધાઓ કામ કરશે નહીં.</translation>
+<translation id="7437562785125777404">આ ભાષામાં Chromium OS પ્રદર્શિત કરી શકાતું નથી.</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7483335560992089831">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium સંસ્કરણ ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Chromium ને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="750717762378961310">આ ફાઇલ દૂષિત છે અને Chromium એ તેને અવરોધિત કરી છે.</translation>

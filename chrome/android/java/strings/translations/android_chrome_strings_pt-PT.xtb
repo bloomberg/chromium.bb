@@ -30,6 +30,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="13410144310025252">Vê-los no Chrome</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1373696734384179344">Memória insuficiente para transferir o conteúdo selecionado.</translation>
+<translation id="1376578503827013741">A calcular…</translation>
 <translation id="138361230106469022">Olá, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1389974829397082527">Nenhum marcador aqui</translation>
@@ -46,7 +47,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1477626028522505441">A transferência de <ph name="FILE_NAME" /> falhou devido a problemas do servidor.</translation>
 <translation id="1506061864768559482">Motor de pesquisa</translation>
 <translation id="1513352483775369820">Marcadores e histórico da Web</translation>
-<translation id="1517433312004943670">Número de telefone obrigatório</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
 <translation id="1557201757634521564">Deteção automática de codificação</translation>
@@ -103,6 +103,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechado</translation>
 <translation id="2138201775715568214">A procurar páginas da Web física próximas</translation>
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
+<translation id="2148716181193084225">Hoje</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="21570240866965662">Ligação lenta</translation>
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
@@ -173,6 +174,7 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="2932150158123903946">Armazenamento do Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Esta conta é gerida por <ph name="PARENT_NAME_1" /> e por <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
+<translation id="2962095958535813455">Mudado para separadores de navegação anónima</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2979025552038692506">Separador de navegação anónima selecionado</translation>
 <translation id="2996291259634659425">Criar frase de acesso</translation>
@@ -201,6 +203,7 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="3254409185687681395">Marcar esta página</translation>
 <translation id="326254929494722411">Ainda não configurou uma Conta Google neste dispositivo</translation>
 <translation id="3269093882174072735">Carregar imagem</translation>
+<translation id="3269956123044984603">Para obter os separadores dos seus outros dispositivos, ative a opção "Sincronizar automaticamente os dados" nas definições da conta do Android.</translation>
 <translation id="3278850099957560514">Gaste menos em dados ao utilizar o Google para otimizar as páginas que visitar. As páginas acedidas através de ligações privadas (HTTPS) ou em separadores de navegação anónima não são otimizadas ou vistas pela Google.</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
@@ -341,7 +344,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5063480226653192405">Utilização</translation>
-<translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="510275257476243843">Falta 1 hora</translation>
 <translation id="5107381076085091558">Transferência interrompida.</translation>
@@ -410,6 +412,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Websites que visitar.</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
+<translation id="5748802427693696783">Mudado para separadores padrão</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="5763382633136178763">Separadores de navegação anónima</translation>
 <translation id="5765780083710877561">Descrição:</translation>
@@ -429,7 +432,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Repor</translation>
-<translation id="5950380453936610378">Endereço de email obrigatório</translation>
 <translation id="5961742032223302715">Selecionar detalhes de contacto</translation>
 <translation id="5968595432776860642">A reproduzir "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">A aceder à entrada de vídeo</translation>
@@ -464,6 +466,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6333140779060797560">Partilhar através de <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encriptação</translation>
 <translation id="6364438453358674297">Pretende remover a sugestão do histórico?</translation>
+<translation id="6383961787135158834">Limpar armazen. do site…</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronização</translation>
@@ -597,6 +600,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceitar e terminar sessão</translation>
 <translation id="7772032839648071052">Confirmar frase de acesso</translation>
+<translation id="7781829728241885113">Ontem</translation>
 <translation id="7788788617745289808">O Chrome necessita de acesso à câmara para a partilhar com este site.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não, obrigado</translation>

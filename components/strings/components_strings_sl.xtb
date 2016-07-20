@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Ali ste prepričani, da želite te strani izbrisati iz svoje zgodovine?</translation>
 <translation id="2677748264148917807">Zapusti</translation>
 <translation id="2704283930420550640">Vrednost se ne ujema z obliko.</translation>
+<translation id="2704951214193499422">Chromium trenutno ni mogel potrditi vaše kartice. Poskusite znova pozneje.</translation>
 <translation id="2705137772291741111">Shranjena (predpomnjena) kopija tega spletnega mesta je bila neberljiva.</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="2712173769900027643">Zahtevaj dovoljenje</translation>
@@ -182,11 +183,13 @@
 <translation id="2985306909656435243">Če je to omogočeno, Chromium shrani kopijo kartice v tej napravi zaradi hitrejšega izpolnjevanja obrazcev.</translation>
 <translation id="2991174974383378012">Deljenje s spletnimi mesti</translation>
 <translation id="3005723025932146533">Pokaži shranjeno kopijo</translation>
+<translation id="3008447029300691911">Vnesite CVC za <ph name="CREDIT_CARD" />. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o vaši kartici.</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX" />«: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
 <translation id="3032412215588512954">Ali želite znova naložiti to spletno mesto?</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
 <translation id="3041612393474885105">Informacije o potrdilu</translation>
+<translation id="3063697135517575841">Chrome trenutno ni mogel potrditi vaše kartice. Poskusite znova pozneje.</translation>
 <translation id="3093245981617870298">Povezava ni vzpostavljena.</translation>
 <translation id="3105172416063519923">ID sredstva:</translation>
 <translation id="3109728660330352905">Nimate dovoljenja za ogled te strani.</translation>
@@ -206,6 +209,7 @@
 <translation id="3225919329040284222">Strežnik je poslal potrdilo, ki se ne ujema z vgrajenimi pričakovanji. Ta pričakovanja so zaradi vaše varnosti vključena za nekatera strogo zavarovana spletna mesta.</translation>
 <translation id="3226128629678568754">Pritisnite gumb za vnovično nalaganje, da znova pošljete podatke za nalaganje strani.</translation>
 <translation id="3228969707346345236">Prevod ni uspel, ker je stran že v jeziku <ph name="LANGUAGE" /></translation>
+<translation id="323107829343500871">Vnesite CVC za <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Zaznamujte to stran</translation>
 <translation id="3270847123878663523">&amp;Razveljavi razvrstitev</translation>
 <translation id="3286538390144397061">Znova zaženi</translation>
@@ -407,6 +411,7 @@
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5710435578057952990">Identiteta tega spletnega mesta ni bila potrjena.</translation>
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
+<translation id="5784606427469807560">Težava pri potrditvi kartice. Preverite internetno povezavo in poskusite znova.</translation>
 <translation id="5785756445106461925">Poleg tega so na tej strani druga sredstva, ki niso varna. Ta sredstva lahko med prenosom pregledujejo drugi, morebitni napadalec pa jih lahko spremeni, tako da se spremeni videz strani.</translation>
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
@@ -480,6 +485,7 @@
 <translation id="6839929833149231406">Območje</translation>
 <translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
+<translation id="6895330447102777224">Kartica je potrjena.</translation>
 <translation id="6897140037006041989">Uporabnikov posrednik</translation>
 <translation id="6903907808598579934">Vklopi sinhronizacijo</translation>
 <translation id="6915804003454593391">Uporabnik:</translation>
@@ -508,6 +514,7 @@
 <translation id="7219179957768738017">Povezava uporablja <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Ojoj! Vprašaj starše, ali smeš obiskati to stran.</translation>
 <translation id="7246609911581847514">To sporočilo je prikazano, ker mora skrbnik odobriti nova spletna mesta ob prvem obisku.</translation>
+<translation id="724975217298816891">Vnesite datum poteka in CVC za <ph name="CREDIT_CARD" />, da posodobite podatke o kartici. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kartici.</translation>
 <translation id="725866823122871198">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v računalniku nepravilna.</translation>
 <translation id="7265986070661382626">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, ker <ph name="BEGIN_LINK" />uporablja pripenjanje potrdil<ph name="END_LINK" />. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="7269802741830436641">Ta spletna stran ima preusmeritveno zanko</translation>
@@ -521,6 +528,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Potrditev kartice</translation>
 <translation id="7394102162464064926">Ali ste prepričani, da želite te strani izbrisati iz zgodovine?
 
 Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za način brez beleženja zgodovine.</translation>
@@ -530,6 +538,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7441627299479586546">Napačen subjekt pravilnika</translation>
 <translation id="7445762425076701745">Identitete strežnika, s katerim ste povezani, ni mogoče v celoti preveriti. S strežnikom ste povezani z uporabo imena, ki je veljavno samo v vašem omrežju, zato zunanji overitelj potrdil ne more preveriti njegovega lastništva. Ker nekateri overitelji potrdil kljub temu izdajajo potrdila za takšna imena, ni mogoče zagotoviti, da ste povezani z želenim spletnim mestom in ne z napadalcem.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> o tej težavi.</translation>
+<translation id="7469372306589899959">Potrjevanje kartice</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7485870689360869515">Ni podatkov.</translation>
 <translation id="7514365320538308">Prenos</translation>
@@ -644,6 +653,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8866959479196209191">Ta stran sporoča:</translation>
 <translation id="8870413625673593573">Nedavno zaprto</translation>
 <translation id="8876793034577346603">Omrežne konfiguracije ni bilo mogoče razčleniti.</translation>
+<translation id="8877192140621905067">Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kartici.</translation>
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="889901481107108152">Oprostite, ta poskus ni na voljo za vaše okolje.</translation>
 <translation id="8903921497873541725">Povečaj</translation>
@@ -676,6 +686,8 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">POČISTI OBRAZEC</translation>
 <translation id="939736085109172342">Nova mapa</translation>
+<translation id="943029900877297437">Če želite uporabiti kartice, ki ste jih shranili v Google Račun, se prijavite v Chrome.</translation>
+<translation id="962701380617707048">Vnesite datum poteka in CVC za <ph name="CREDIT_CARD" />, da posodobite podatke o kartici.</translation>
 <translation id="969892804517981540">Uradna različica</translation>
 <translation id="988159990683914416">Različica za razvijalce</translation>
 </translationbundle>

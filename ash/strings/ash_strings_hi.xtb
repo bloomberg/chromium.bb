@@ -4,7 +4,7 @@
 <translation id="1012876632442809908">USB-C डिवाइस (सामने वाला पोर्ट)</translation>
 <translation id="1013923882670373915">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया उस डिवाइस पर यह पिन कोड डालें: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">अगली इनपुट विधि में स्‍विच करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
-<translation id="112308213915226829">शेल्फ़ को स्वत: छिपाएं</translation>
+<translation id="112308213915226829">अलमारी को स्वत: छिपाएं</translation>
 <translation id="1195412055398077112">ओवरस्कैन</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
 <translation id="1270290102613614947">ऑन-स्‍क्रीन कीबोर्ड अक्षम है</translation>
@@ -34,14 +34,14 @@
 स्विच करने के लिए Shift + Alt दबाएं.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
-<translation id="1919743966458266018">कार्य प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
+<translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="1923539912171292317">स्वत: क्‍लिक</translation>
 <translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="2204305834655267233">नेटवर्क जानकारी</translation>
-<translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
+<translation id="2208323208084708176">संयुक्त डेस्कटॉप मोड</translation>
 <translation id="225680501294068881">डिवाइस स्कैन किए जा रहे हैं...</translation>
 <translation id="2268130516524549846">ब्लूटूथ अक्षम किया गया</translation>
 <translation id="2268813581635650749">सभी प्रस्थान करें</translation>
@@ -63,10 +63,11 @@
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">ऐप्स</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
-<translation id="2825619548187458965">शेल्फ़</translation>
+<translation id="2825619548187458965">अलमारी</translation>
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
+<translation id="2857608528410806398">QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा.</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
-<translation id="2942516765047364088">शेल्फ़ की स्थिति</translation>
+<translation id="2942516765047364088">अलमारी की स्थिति</translation>
 <translation id="2946640296642327832">ब्लूटूथ सक्षम करें</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">वाई-फ़ाई  अक्षम करें</translation>
@@ -154,7 +155,7 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">वापस लाएं</translation>
 <translation id="595202126637698455">निष्पादन ट्रेसिंग सक्षम है</translation>
-<translation id="5958529069007801266">पर्यवेक्षित उपयोगकर्ता</translation>
+<translation id="5958529069007801266">निगरानी में रखा गया उपयोगकर्ता</translation>
 <translation id="5977415296283489383">हेडफ़ोन</translation>
 <translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा साझा किया जा रहा है.</translation>
 <translation id="5980301590375426705">अतिथि सत्र से बाहर निकलें</translation>
@@ -220,6 +221,7 @@
 <translation id="7957227661277029961">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो. अधिकृत चार्जर का उपयोग करने पर विचार करें.</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
+<translation id="8077816382010018681">QU सुविधा नोटिफ़िकेशन का शीर्षक यहां आएगा</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
 <translation id="8206859287963243715">सेलुलर</translation>

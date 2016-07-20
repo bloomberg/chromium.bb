@@ -675,6 +675,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo „AllowJavaScript“ a používateľ to bude môcť zmeniť.</translation>
 <translation id="3038323923255997294">Po uzavretí prehliadača <ph name="PRODUCT_NAME" /> ponechať aplikácie na pozadí spustené</translation>
+<translation id="3046192273793919231">Odosielať sieťové pakety na správcovský server s cieľom sledovania online stavu</translation>
 <translation id="3048744057455266684">Ak je toto pravidlo nastavené a webová adresa vyhľadávania navrhnutá vo všeobecnom poli obsahuje tento parameter v reťazci dopytu alebo v identifikátore fragmentu, potom odporúčanie zobrazí hľadané výrazy a poskytovateľa vyhľadávania namiesto nespracovanej webovej adresy vyhľadávania.
 
           Toto pravidlo je voliteľné. Ak nie je nastavené, nedôjde k žiadnej výmene hľadaných výrazov.
@@ -947,6 +948,11 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak toto pravidlo nie je nastavené alebo ak je nastavené na hodnotu False, používatelia budú môcť prenášať súbory na Disk Google.</translation>
 <translation id="3915395663995367577">Webová adresa súboru PAC servera proxy</translation>
+<translation id="3939893074578116847">Odosielanie sieťových paketov na správcovský server s cieľom sledovania online stavu, ktoré umožní
+       serveru zistiť, či je zariadenie v režime offline.
+
+      Ak je toto pravidlo nastavené na hodnotu True, budú sa odosielať sledovacie sieťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
+      Ak je nastavené na hodnotu False alebo nie je nastavené, pakety sa odosielať nebudú.</translation>
 <translation id="3964909636571393861">Umožňuje prístup k zoznamu webových adries</translation>
 <translation id="3965339130942650562">Časový limit pred odhlásením nečinného používateľa</translation>
 <translation id="3967075520570946456">Aktivovať zobrazenie uvítacej stránky pri prvom spustení prehliadača po prechode na vyššiu verziu OS</translation>
@@ -1328,6 +1334,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak je pravidlo nastavené, zariadenie sa po uplynutí určitého časového obdobia nečinnosti používateľa na prihlasovacej obrazovke automaticky prihlási do určenej relácie. Verejná relácia už musí byť nakonfigurovaná (prečítajte si časť |DeviceLocalAccounts|).
 
       Ak pravidlo nastavené nie je, automatické prihlásenie nenastane.</translation>
+<translation id="5535957389335373033">Ako často sa odosielajú sledovacie sieťové pakety (v milisekundách).
+
+      Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia tri minúty. Minimálna frekvencia je 30 sekúnd a maximálna 24 hodín – hodnoty mimo tohto rozsahu budú prispôsobené na príslušnú hranicu.</translation>
 <translation id="5535973522252703021">Zoznam povolených serverov delegovania protokolu Kerberos</translation>
 <translation id="5560039246134246593">Pridá parameter k načítaniu počiatočnej hodnoty variácie v prehliadači <ph name="PRODUCT_NAME" />.
 
@@ -2516,6 +2525,7 @@ Každá položka zoznamu v pravidlách predstavuje reťazec, ktorý obsahuje ID
 <translation id="9187743794267626640">Zákaz pripojenia externého ukladacieho priestoru</translation>
 <translation id="9197740283131855199">Percentuálna hodnota, o ktorú sa predĺži oneskorenie stmavenia obrazovky, keď sa zaznamená aktivita používateľa po stmavení obrazovky</translation>
 <translation id="9200828125069750521">Parametre pre webovú adresu obrázkov, ktorá používa metódu POST</translation>
+<translation id="9217154963008402249">Frekvencia odosielania sledovacích sieťových paketov</translation>
 <translation id="922540222991413931">Konfigurácia zdrojov inštalácie rozšírenia, aplikácie a skriptov používateľa</translation>
 <translation id="924557436754151212">Import uložených hesiel z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="930930237275114205">Nastaviť adresár na údaje používateľov pre aplikáciu <ph name="PRODUCT_FRAME_NAME" /></translation>

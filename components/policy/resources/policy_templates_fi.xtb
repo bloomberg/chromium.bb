@@ -644,6 +644,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3030000825273123558">Ota tilastoraportit käyttöön</translation>
 <translation id="3034580675120919256">Voit määrittää, saavatko sivustot suorittaa JavaScriptiä. JavaScriptin suorittaminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole asetettu, käytetään AllowJavaScript-määritystä, ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="3038323923255997294">Jätä taustasovellukset käyntiin, kun <ph name="PRODUCT_NAME" /> suljetaan</translation>
+<translation id="3046192273793919231">Lähetä hallintapalvelimelle verkkopaketteja verkkotilan valvontaa varten</translation>
 <translation id="3048744057455266684">Jos tämä käytäntö on määritetty ja jos omniboxin kautta ehdotettu hakuosoite sisältää tämän parametrin kyselymerkkijonossa tai osatunnisteessa, ehdotus näyttää hakutermit ja hakupalvelun tarjoajan eikä raakamuotoista hakuosoitetta.
 
           Tämä on valinnainen käytäntö. Jos sitä ei määritetä, hakutermejä ei korvata.
@@ -906,6 +907,11 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos arvoa ei ole asetettu tai se on epätosi, käyttäjät voivat siirtää tiedostoja Google Driveen.</translation>
 <translation id="3915395663995367577">Välityspalvelimen .pac-tiedoston URL-osoite</translation>
+<translation id="3939893074578116847">Lähetä hallintapalvelimelle verkkopaketteja verkkotilan valvontaa varten,
+      jotta palvelin voi havaita laitteen siirtymisen offline-tilaan.
+
+      Jos tämän käytännön arvo on tosi, verkon valvontapakettien (”<ph name="HEARTBEATS_TERM" />”) lähettäminen on käytössä.
+      Jos käytännön arvo on epätosi tai sitä ei ole määritetty, paketteja ei lähetetä.</translation>
 <translation id="3964909636571393861">Sallii URL-osoiteluettelon käytön</translation>
 <translation id="3965339130942650562">Käyttämättömän käyttökerran uloskirjausaika</translation>
 <translation id="3967075520570946456">Määritä tervetulosivun näyttäminen, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.</translation>
@@ -1233,6 +1239,11 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos käytäntö asetetaan, määritettyyn istuntoon kirjaudutaan automaattisesti, kun kirjautumisruudulla ei ole havaittu käyttäjän toimia tietyn ajan kuluessa. Julkinen istunto täytyy määrittää ensin (katso |DeviceLocalAccounts|).
 
       Jos käytäntöä ei aseteta, automaattista kirjautumista ei suoriteta.</translation>
+<translation id="5535957389335373033">Valvontapakettien lähetystiheys millisekunteina.
+
+      Jos tätä käytäntöä ei ole määritetty, käytetään oletustiheyttä 3 minuuttia. Pienin sallittu
+      arvo on 30 sekuntia ja suurin sallittu arvo on 24 tuntia.
+      Tämän välin ulkopuolella olevat arvot pyöristetään lähimpään sallittuun arvoon.</translation>
 <translation id="5535973522252703021">Sallitut Kerberos-delegaatiopalvelimet</translation>
 <translation id="5560039246134246593">Lisää tuotteelle <ph name="PRODUCT_NAME" /> parametri Variations-siemenarvon hakemiselle.
 
@@ -2357,6 +2368,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="9187743794267626640">Estä ulkoisen tallennustilan käyttöönotto</translation>
 <translation id="9197740283131855199">Prosenttimäärä, jonka mukaan näytön himmennys skaalataan, jos käyttäjä on aktiivinen himmennyksen jälkeen</translation>
 <translation id="9200828125069750521">POST-metodia käyttävän kuvahaun URL-osoitteen parametrit</translation>
+<translation id="9217154963008402249">Verkon valvontapakettien lähetystiheys</translation>
 <translation id="922540222991413931">Määritä laajennusten, sovellusten ja käyttäjien komentosarjojen asennuslähteet</translation>
 <translation id="924557436754151212">Tuo tallennetut salasanat oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="930930237275114205">Määritä tuotteen <ph name="PRODUCT_FRAME_NAME" /> käyttäjätietohakemisto</translation>

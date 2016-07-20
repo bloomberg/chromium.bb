@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">履歴からこれらのページを削除してもよろしいですか？</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
+<translation id="2704951214193499422">Chromium でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="2705137772291741111">このサイトの保存（キャッシュ）されたコピーを読み取れませんでした。</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2712173769900027643">権限をリクエスト</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">有効にすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
 <translation id="2991174974383378012">ウェブサイトとの共有</translation>
 <translation id="3005723025932146533">保存済みのコピーを表示</translation>
+<translation id="3008447029300691911"><ph name="CREDIT_CARD" /> の CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="3032412215588512954">このサイトを再読み込みしますか？</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3041612393474885105">証明書情報</translation>
+<translation id="3063697135517575841">Chrome でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="3093245981617870298">現在オフラインです。</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。</translation>
 <translation id="3226128629678568754">ページの読み込みに必要なデータを再送信するには、再読み込みボタンを押してください。</translation>
 <translation id="3228969707346345236">このページは既に<ph name="LANGUAGE" />なので、翻訳できません。</translation>
+<translation id="323107829343500871"><ph name="CREDIT_CARD" /> の CVC を入力</translation>
 <translation id="3254409185687681395">このページをブックマークに追加します</translation>
 <translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
 <translation id="3286538390144397061">今すぐ再起動</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">ブロック</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
+<translation id="5784606427469807560">カードの確認中に問題が発生しました。インターネット接続を確認してもう一度お試しください。</translation>
 <translation id="5785756445106461925">加えて、このページには安全でない他のリソースが含まれています。このリソースは送信中に他のユーザーから見られる可能性があります。また、悪意のあるユーザーによって改変されページの見た目が変わる可能性もあります。</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">地域</translation>
 <translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
+<translation id="6895330447102777224">カードを確認しました</translation>
 <translation id="6897140037006041989">ユーザー エージェント</translation>
 <translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6915804003454593391">ユーザー:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
 <translation id="7231308970288859235">このページを開いてもよいか保護者にたずねる必要があります。</translation>
 <translation id="7246609911581847514">新しいサイトに初めて訪問する際は管理者の承認が必要です。</translation>
+<translation id="724975217298816891">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="725866823122871198">パソコンの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="7265986070661382626"><ph name="SITE" /> では<ph name="BEGIN_LINK" />証明書のピン留めが使用されている<ph name="END_LINK" />ため、現在このサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、またページにアクセスできるようになる可能性があります。</translation>
 <translation id="7269802741830436641">このウェブページにはリダイレクト ループが含まれています</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">いいえ</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">カードの確認</translation>
 <translation id="7394102162464064926">履歴からこれらのページを削除してもよろしいですか？
 
 次回からシークレット モード（<ph name="SHORTCUT_KEY" />）をおすすめします。</translation>
@@ -529,6 +537,7 @@
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="7445762425076701745">接続してるサーバーの身元について、十分な検証ができません。接続しているサーバーは、そのネットワーク内でのみ有効な名前を使用しており、外部認証局がその所有権を検証する方法はありません。こうした名前で証明書を発行する認証局もあるので、接続先が意図したウェブサイトか、悪意のあるユーザーのサイトかは確認できません。</translation>
 <translation id="7451311239929941790">この問題について<ph name="BEGIN_LINK" />詳細を確認<ph name="END_LINK" />する</translation>
+<translation id="7469372306589899959">カードを確認中です</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="7514365320538308">ダウンロード</translation>
@@ -643,6 +652,7 @@
 <translation id="8866959479196209191">このページの内容:</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
+<translation id="8877192140621905067">確認を行うと、カードの詳細がこのサイトと共有されます</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="889901481107108152">この試験運用機能は、お使いのプラットフォームでは利用できません。</translation>
 <translation id="8903921497873541725">拡大する</translation>
@@ -675,6 +685,8 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">フォームをクリア</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>
+<translation id="943029900877297437">Google アカウントに保存したカードを使用するには、Chrome にログインしてください。</translation>
+<translation id="962701380617707048">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します</translation>
 <translation id="969892804517981540">Official Build</translation>
 <translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

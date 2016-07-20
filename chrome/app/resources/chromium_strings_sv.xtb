@@ -10,6 +10,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1221340462641866827">Chromium OS stöder inte att ett externt program startas för att hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Det finns en annan installation av Chromium på datorn. Avinstallera den och försök igen.</translation>
 <translation id="1298199220304005244">Få hjälp med att använda Chromium OS</translation>
+<translation id="1347507563453473396">Det går inte att visa Chromium på det här språket.</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
 <translation id="1403254041219632970">Framtida versioner av Chromium kommer inte att ha stöd för Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
@@ -57,10 +58,12 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2685838254101182273">Chromium uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
 <translation id="2705212601509139398">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och ladda ned en kompatibel webbläsare.</translation>
 <translation id="2711502716910134313">Chromium-flik</translation>
+<translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
 <translation id="2847479871509788944">Ta bort från Chromium …</translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
+<translation id="2905536371227304018">Chromium OS visas på det här språket.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
@@ -123,10 +126,13 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
+<translation id="556167189552180495">Chromium visas på det här språket.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>
 <translation id="5680901439334282664">Logga in i Chromium</translation>
+<translation id="5698481217667032250">Visa Chromium på det här språket</translation>
+<translation id="5768914737813585044">Visa Chromium OS på det här språket</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -174,6 +180,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="7064610482057367130">Det finns ingen installation av Chromium att uppdatera.</translation>
 <translation id="7066436765290594559">Det gick inte att synkronisera data med Chromium. Uppdatera lösenfrasen för synkronisering.</translation>
+<translation id="7090955637699162649"><ph name="BEGIN_LINK" />Webbtjänster<ph name="END_LINK" /> kan användas i Chromium för att förbättra din upplevelse när du surfar. Om du vill kan du inaktivera sådana tjänster.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Det här innebär att minst $1 objekt raderas permanent från enheten. Logga in i Chromium som $2 om du vill kunna återställa data senare.}other{Det här innebär att minst $1 objekt raderas permanent från enheten. Logga in i Chromium som $2 om du vill kunna återställa data senare.}}</translation>
 <translation id="7138853919861947730">Chromium kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
@@ -198,6 +205,7 @@ Kom ihåg att låsa din profil när du inte använder Chromium om <ph name="NEW_
 Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Om du vill behålla dina befintliga uppgifter för Chromium privata kan du skapa en ny Chromium-användare för <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">För Chromium krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
+<translation id="7437562785125777404">Det går inte att visa Chromium OS på det här språket.</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
 <translation id="750717762378961310">Filen är skadlig och har blockerats av Chromium.</translation>

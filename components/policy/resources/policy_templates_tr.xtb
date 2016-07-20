@@ -687,6 +687,7 @@
 
           Bu politika ayarlanmadan bırakılırsa, 'AllowJavaScript' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME" /> kapandığında arka plan uygulamalarını çalıştırmaya devam et</translation>
+<translation id="3046192273793919231">Çevrimiçi durumu izlemek için ağ paketlerini yönetim sunucusuna gönder</translation>
 <translation id="3048744057455266684">Bu politika ayarlanırsa ve çok amaçlı adres çubuğundan önerilen bir arama URL'sinde, sorgu dizesinde veya parça tanımlayıcısında bu parametre bulunursa, öneri, ham arama URL'si yerine arama terimlerini ve arama sağlayıcısını gösterir.
 
           Bu politika isteğe bağlıdır. Ayarlanmadan bırakılırsa, hiçbir arama terimi değişikliği yapılmaz.
@@ -959,6 +960,11 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
           Ayarlanmazsa veya Yanlış değerine ayarlanırsa kullanıcılar Google Drive'a dosya aktarabilirler.</translation>
 <translation id="3915395663995367577">Proxy .pac dosyası için URL</translation>
+<translation id="3939893074578116847">Çevrimiçi durumu izlemek, yönetim sunucusunun cihazın çevrimdışı olup olmadığını
+      belirlemesini sağlamak için ağ paketlerini yönetim sunucusuna gönderin.
+
+      Bu politika true (doğru) değerine ayarlanırsa izleme amaçlı ağ paketleri (<ph name="HEARTBEATS_TERM" /> olarak adlandırılır) gönderilir.
+      False (yanlış) değerine ayarlanır veya ayarlanmadan bırakılırsa hiçbir paket gönderilmez.</translation>
 <translation id="3964909636571393861">URL listesine erişim izni verir</translation>
 <translation id="3965339130942650562">Boştaki kullanıcının çıkış yapması için geçecek zaman aşımı süresi</translation>
 <translation id="3967075520570946456">OS yeni sürüme geçirildikten sonra, tarayıcı ilk başlatıldığında karşılama sayfasının gösterilmesini etkinleştir.</translation>
@@ -1339,6 +1345,12 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanırsa, giriş ekranında kullanıcı etkileşimi olmadan bir süre geçtikten sonra, belirlenen oturuma otomatik olarak giriş yapılır. Herkese açık oturumun önceden yapılandırılmış olması gerekir (Bkz. |DeviceLocalAccounts|).
 
       Bu politika ayarlanmazsa, otomatik giriş yapılmaz.</translation>
+<translation id="5535957389335373033">İzleme amaçlı ağ paketlerinin ne kadar sık gönderileceğini (milisaniye olarak) belirtir.
+
+      Bu politika ayarlanmazsa, varsayılan sıklık 3 dakikadır. Minimum
+      sıklık 30 saniye, maksimum sıklık ise 24 saattir - bu aralığın dışındaki
+      değerler
+      aralık içine kaydırılır.</translation>
 <translation id="5535973522252703021">Kerberos yetki sunucusu beyaz listesi</translation>
 <translation id="5560039246134246593"><ph name="PRODUCT_NAME" /> ürününde Varyasyon temelini almaya parametre ekle.
 
@@ -2539,6 +2551,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="9187743794267626640">Harici depolama birimi eklemeyi devre dışı bırak</translation>
 <translation id="9197740283131855199">Kullanıcı, ekran kararmasından sonra etkin duruma gelirse ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
 <translation id="9200828125069750521">POST kullanan resim URL'si için parametreler</translation>
+<translation id="9217154963008402249">İzleme amaçlı ağ paketlerinin sıklığı</translation>
 <translation id="922540222991413931">Uzantı, uygulama ve kullanıcı komut dosyası yükleme kaynaklarını yapılandır</translation>
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> kullanıcı verileri dizinini ayarla</translation>

@@ -150,6 +150,7 @@
 <translation id="2674170444375937751">Weet je zeker dat u deze pagina's uit je geschiedenis wilt verwijderen?</translation>
 <translation id="2677748264148917807">Verlaten</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
+<translation id="2704951214193499422">Chromium kan je creditcard momenteel niet bevestigen. Probeer het later opnieuw.</translation>
 <translation id="2705137772291741111">De in het cachegeheugen opgeslagen versie van deze site is niet bereikbaar.</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
 <translation id="2712173769900027643">Toestemming vragen</translation>
@@ -179,11 +180,13 @@
 <translation id="2985306909656435243">Als deze instelling is ingeschakeld, slaat Chromium een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
 <translation id="2991174974383378012">Delen met websites</translation>
 <translation id="3005723025932146533">Opgeslagen kopie weergeven</translation>
+<translation id="3008447029300691911">Geef de CVC-code voor <ph name="CREDIT_CARD" /> op. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="3010559122411665027">Lijstitem '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Onjuist beleidstype</translation>
 <translation id="3032412215588512954">Wil je deze site opnieuw laden?</translation>
 <translation id="3037605927509011580">Helaas.</translation>
 <translation id="3041612393474885105">Certificaatgegevens</translation>
+<translation id="3063697135517575841">Chrome kan je creditcard momenteel niet bevestigen. Probeer het later opnieuw.</translation>
 <translation id="3093245981617870298">Je bent offline.</translation>
 <translation id="3105172416063519923">Item-ID:</translation>
 <translation id="3109728660330352905">Je hebt geen toestemming om deze pagina te bekijken.</translation>
@@ -200,6 +203,7 @@
 <translation id="3225919329040284222">De server heeft een certificaat gepresenteerd dat niet overeenkomt met de ingebouwde verwachtingen. Deze verwachtingen zijn opgenomen voor bepaalde websites om je te beschermen.</translation>
 <translation id="3226128629678568754">Klik op de knop 'Opnieuw laden' om de gegevens opnieuw te verzenden die nodig zijn om de pagina te laden.</translation>
 <translation id="3228969707346345236">De vertaling is mislukt omdat de pagina al in het <ph name="LANGUAGE" /> is.</translation>
+<translation id="323107829343500871">De CVC-code voor <ph name="CREDIT_CARD" /> opgeven</translation>
 <translation id="3254409185687681395">Bladwijzer instellen voor deze pagina</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="3286538390144397061">Nu herstarten</translation>
@@ -400,6 +404,7 @@
 <translation id="5677928146339483299">Geblokkeerd</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
+<translation id="5784606427469807560">Er is een probleem opgetreden bij het bevestigen van je creditcard. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="5785756445106461925">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het uiterlijk van de pagina aan te passen.</translation>
 <translation id="5810442152076338065">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een verouderde Cipher Suite.</translation>
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
@@ -472,6 +477,7 @@
 <translation id="6839929833149231406">Gebied</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
 <translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
+<translation id="6895330447102777224">Je creditcard is bevestigd</translation>
 <translation id="6897140037006041989">User-agent</translation>
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6915804003454593391">Gebruiker:</translation>
@@ -500,6 +506,7 @@
 <translation id="7219179957768738017">De verbinding maakt gebruik van <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Je moet je vader of moeder vragen of je deze pagina mag bezoeken.</translation>
 <translation id="7246609911581847514">Dit bericht wordt weergegeven omdat je beheerder nieuwe sites moet goedkeuren wanneer je ze voor het eerst bezoekt.</translation>
+<translation id="724975217298816891">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="7265986070661382626">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website <ph name="BEGIN_LINK" />gebruikmaakt van certificaatpinning<ph name="END_LINK" />. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="7269802741830436641">Deze webpagina bevat een omleidingslus</translation>
@@ -513,6 +520,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Creditcard bevestigen</translation>
 <translation id="7394102162464064926">Weet je zeker dat je deze pagina's wilt verwijderen uit je geschiedenis?
 
 De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /> te gebruiken.</translation>
@@ -522,6 +530,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="7445762425076701745">De identiteit van de server waarmee je verbinding maakt, kan niet volledig worden geverifieerd. Je hebt verbinding gemaakt met een server die een naam gebruikt die alleen binnen je netwerk geldig is. Een externe certificeringsinstantie kan hiervoor nooit het eigendom verifiëren. Aangezien sommige certificeringsinstanties toch certificaten voor deze namen verlenen, kun je nooit zeker weten of je verbinding hebt met de bedoelde website en niet met een aanvaller.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
+<translation id="7469372306589899959">Creditcard bevestigen</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7514365320538308">Downloaden</translation>
@@ -636,6 +645,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8866959479196209191">Deze pagina meldt het volgende:</translation>
 <translation id="8870413625673593573">Recent gesloten</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>
+<translation id="8877192140621905067">Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site</translation>
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="889901481107108152">Dit experiment is niet beschikbaar op je platform.</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
@@ -668,6 +678,8 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FORMULIER LEEGMAKEN</translation>
 <translation id="939736085109172342">Nieuwe map</translation>
+<translation id="943029900877297437">Log in bij Chrome om creditcards te gebruiken die je hebt opgeslagen in je Google-account.</translation>
+<translation id="962701380617707048">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten</translation>
 <translation id="969892804517981540">Officiële build</translation>
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 </translationbundle>

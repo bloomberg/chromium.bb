@@ -649,6 +649,7 @@ Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověř
 
          Pokud zásadu nenastavíte, použije se zásada AllowJavaScript a uživatelé ji budou moci změnit.</translation>
 <translation id="3038323923255997294">Po ukončení prohlížeče <ph name="PRODUCT_NAME" /> nechat aplikace na pozadí spuštěné</translation>
+<translation id="3046192273793919231">Odesílat na server správy síťové pakety ke sledování stavu online</translation>
 <translation id="3048744057455266684">Pokud je tato zásada nastavena a adresa URL pro vyhledávání navržená v omniboxu obsahuje tento parametr v řetězci dotazu nebo v identifikátoru fragmentu, jako návrh budou namísto samotné adresy URL zobrazeny vyhledávací dotazy a poskytovatel vyhledávání.
 
           Tato zásada je volitelná. Pokud není nastavena, nebudou prováděna žádná nahrazení vyhledávacích dotazů.
@@ -925,6 +926,10 @@ Tato zásada ovlivňuje kromě integrovaného mikrofonu i všechny ostatní zvu
 
           Pokud má tato zásada hodnotu False nebo není nastavena, uživatelé budou moci přenášet soubory na Disk Google.</translation>
 <translation id="3915395663995367577">Adresa URL souboru PAC proxy serveru</translation>
+<translation id="3939893074578116847">Odesílá na server správy síťové pakety ke sledování stavu online, což serveru umožňuje zjistit, zda zařízení není offline.
+
+      Je-li tato zásada nastavena na hodnotu True, budou se odesílat sledovací síťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
+      Pokud je nastavena na hodnotu False nebo není nastavena, pakety se odesílat nebudou.</translation>
 <translation id="3964909636571393861">Umožňuje přístup do seznamu adres URL</translation>
 <translation id="3965339130942650562">Časový limit před odhlášením nečinného uživatele</translation>
 <translation id="3967075520570946456">Aktivovat při prvním spuštění prohlížeče po přechodu na vyšší verzi OS zobrazení uvítací stránky</translation>
@@ -1296,6 +1301,9 @@ Až bude okamžité přihlašování podporovat všechny přihlašovací procesy
       Pokud je zásada nastavena, zařízení se po uplynutí určité doby nečinnosti uživatele na přihlašovací obrazovce automaticky přihlásí do určené relace. Veřejná relace již musí být nakonfigurována (viz |DeviceLocalAccounts|).
 
       Pokud zásada nastavena není, k automatickému přihlášení nedojde.</translation>
+<translation id="5535957389335373033">Frekvence odesílání sledovacích síťových paketů (v ms).
+
+      Je-li tato zásada ponechána nenastavená, výchozí frekvence je tři minuty. Minimální frekvence je 30 sekund a maximální 24 hodin – hodnoty mimo tento rozsah budou přizpůsobeny příslušné hranici.</translation>
 <translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
 <translation id="5560039246134246593">Přidá parametr k načítání počáteční hodnoty variace v prohlížeči <ph name="PRODUCT_NAME" />.
 
@@ -2447,6 +2455,7 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
 <translation id="9187743794267626640">Zakázat připojení externího úložiště</translation>
 <translation id="9197740283131855199">Procento, o které bude prodloužena prodleva ztmavení obrazovky, pokud uživatel po ztmavení provedete nějakou činnost</translation>
 <translation id="9200828125069750521">Parametry pro adresu URL obrázku používající metodu POST</translation>
+<translation id="9217154963008402249">Frekvence odesílání sledovacích síťových paketů</translation>
 <translation id="922540222991413931">Konfigurovat zdroje instalací rozšíření, aplikací a uživatelských skriptů</translation>
 <translation id="924557436754151212">Importování uložených hesel z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="930930237275114205">Nastavit adresář uživatelských dat pluginu <ph name="PRODUCT_FRAME_NAME" /> </translation>

@@ -150,6 +150,7 @@
 <translation id="2674170444375937751">Eliminare le pagine dalla cronologia?</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
+<translation id="2704951214193499422">Al momento non è possibile confermare la carta in Chromium. Riprova più tardi.</translation>
 <translation id="2705137772291741111">La copia del sito salvata (nella cache) era illeggibile.</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
 <translation id="2712173769900027643">Chiedi autorizzazione</translation>
@@ -179,11 +180,13 @@
 <translation id="2985306909656435243">Se questa opzione viene attivata, Chromium memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="2991174974383378012">Condivisione con i siti web</translation>
 <translation id="3005723025932146533">Mostra copia salvata</translation>
+<translation id="3008447029300691911">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito.</translation>
 <translation id="3010559122411665027">Voce "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
 <translation id="3032412215588512954">Vuoi ricaricare questo sito?</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
+<translation id="3063697135517575841">Al momento non è possibile confermare la carta in Chrome. Riprova più tardi.</translation>
 <translation id="3093245981617870298">Sei offline.</translation>
 <translation id="3105172416063519923">ID asset:</translation>
 <translation id="3109728660330352905">Non sei autorizzato a visualizzare questa pagina.</translation>
@@ -200,6 +203,7 @@
 <translation id="3225919329040284222">Il server ha presentato un certificato che non corrisponde alle previsioni integrate. Queste previsioni sono incluse per determinati siti web con protezione elevata allo scopo di proteggerti.</translation>
 <translation id="3226128629678568754">Premi il pulsante Ricarica per inviare di nuovo i dati necessari per caricare la pagina.</translation>
 <translation id="3228969707346345236">La traduzione non è riuscita perché la pagina è già in <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="3270847123878663523">&amp;Annulla ridisposizione</translation>
 <translation id="3286538390144397061">Riavvia adesso</translation>
@@ -401,6 +405,7 @@
 <translation id="5677928146339483299">Bloccati</translation>
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verificata.</translation>
 <translation id="5720705177508910913">Utente corrente</translation>
+<translation id="5784606427469807560">Si è verificato un problema durante la conferma della carta. Controlla la connessione Internet e riprova.</translation>
 <translation id="5785756445106461925">Inoltre, questa pagina include altre risorse che non sono sicure. Tali risorse possono essere visualizzate da altri durante il transito dei dati e possono essere modificate da un utente malintenzionato al fine di modificare l'aspetto della pagina.</translation>
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è crittografata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
@@ -473,6 +478,7 @@
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
 <translation id="6891596781022320156">Il livello della norma non è supportato.</translation>
+<translation id="6895330447102777224">La carta è stata confermata</translation>
 <translation id="6897140037006041989">User-agent</translation>
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6915804003454593391">Utente:</translation>
@@ -501,6 +507,7 @@
 <translation id="7219179957768738017">La connessione utilizza <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Spiacenti. Devi chiedere al tuo genitore se puoi visitare la pagina.</translation>
 <translation id="7246609911581847514">Visualizzi questo messaggio perché il gestore deve approvare i nuovi siti alla tua prima visita.</translation>
+<translation id="724975217298816891">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /> per aggiornare i relativi dettagli. Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito.</translation>
 <translation id="725866823122871198">Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del computer (<ph name="DATE_AND_TIME" />) sono sbagliate.</translation>
 <translation id="7265986070661382626">Al momento non puoi visitare il sito web <ph name="SITE" /> perché <ph name="BEGIN_LINK" />utilizza il blocco dei certificati<ph name="END_LINK" />. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="7269802741830436641">La pagina web ha generato un loop di reindirizzamento</translation>
@@ -514,6 +521,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Conferma della carta</translation>
 <translation id="7394102162464064926">Vuoi eliminare queste pagine dalla tua cronologia?
 
 Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in incognito (<ph name="SHORTCUT_KEY" />).</translation>
@@ -523,6 +531,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
 <translation id="7445762425076701745">Impossibile convalidare completamente l'identità del server a cui sei collegato. Sei collegato a un server con un nome valido soltanto nella tua rete, di cui un'autorità di certificazione esterna non può convalidare in alcun modo la proprietà. Poiché alcune autorità di certificazione emettono comunque certificati per questi nomi, non è in alcun modo possibile garantire che tu sia collegato al sito web desiderato anziché a un sito dannoso.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Leggere ulteriori informazioni<ph name="END_LINK" /> sul problema.</translation>
+<translation id="7469372306589899959">Conferma della carta…</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
 <translation id="7514365320538308">Scarica</translation>
@@ -637,6 +646,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8866959479196209191">Questa pagina dice:</translation>
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
+<translation id="8877192140621905067">Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="889901481107108152">Spiacenti, questo esperimento non è disponibile sulla tua piattaforma.</translation>
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
@@ -669,6 +679,8 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">CANCELLA MODULO</translation>
 <translation id="939736085109172342">Nuova cartella</translation>
+<translation id="943029900877297437">Accedi a Chrome per utilizzare le schede salvate nel tuo account Google.</translation>
+<translation id="962701380617707048">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /> per aggiornare i relativi dettagli</translation>
 <translation id="969892804517981540">Build ufficiale</translation>
 <translation id="988159990683914416">Build</translation>
 </translationbundle>

@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">O SO Chromium não suporta a abertura de uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Foi encontrada uma instalação do Chromium em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="1298199220304005244">Obter ajuda para utilizar o SO Chromium</translation>
+<translation id="1347507563453473396">Não é possível apresentar o Chromium neste idioma.</translation>
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
 <translation id="1403254041219632970">As versões futuras do Chromium não suportarão o Mac OS X 10.6, o Mac OS X 10.7 ou o Mac OS X 10.8.</translation>
 <translation id="1414495520565016063">Tem sessão iniciada no Chromium!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">O Chromium já não se atualiza nem suporta mais esta versão do seu sistema operativo.</translation>
 <translation id="2705212601509139398">Este site está a utilizar o plug-in Chromium Frame, que em breve deixará de ser suportado. Desinstale-o e transfira um navegador compatível.</translation>
 <translation id="2711502716910134313">Separador do Chromium</translation>
+<translation id="2718390899429598676">Para uma segurança adicional, o Chromium encripta os seus dados.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="2801146392936645542">O ficheiro <ph name="FILE_NAME" /> é malicioso e o Chromium bloqueou-o.</translation>
 <translation id="2847479871509788944">Remover do Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ajude a melhorar o Chromium enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
+<translation id="2905536371227304018">O SO Chromium é apresentado neste idioma.</translation>
 <translation id="2910007522516064972">Acerca do &amp;Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa de iniciar uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">A adicionar ao Chromium...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Definir o Chromium como o seu navegador predefinido</translation>
 <translation id="5466153949126434691">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chromium irá reiniciar e o processo estará terminado.</translation>
 <translation id="549669000822060376">Aguarde até que o Chromium instale as atualizações do sistema mais recentes.</translation>
+<translation id="556167189552180495">O Chromium é apresentado neste idioma.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou superior.</translation>
 <translation id="5680901439334282664">inicie sessão no Chromium</translation>
+<translation id="5698481217667032250">Apresentar o Chromium neste idioma</translation>
+<translation id="5768914737813585044">Apresentar o SO Chromium neste idioma</translation>
 <translation id="5772805321386874569">(é necessário <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> o Chromium)</translation>
 <translation id="5796460469508169315">O Chromium está quase pronto.</translation>
 <translation id="5820394555380036790">SO Chromium</translation>
@@ -172,6 +178,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7064610482057367130">Não foi encontrada qualquer instalação do Chromium para atualização.</translation>
 <translation id="7066436765290594559">O SO Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso de sincronização.</translation>
+<translation id="7090955637699162649">O Chromium pode utilizar <ph name="BEGIN_LINK" />serviços Web<ph name="END_LINK" /> para melhorar a sua experiência de navegação. Se pretender, pode desativar estes serviços a qualquer momento.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}other{Esta ação elimina permanentemente $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="7138853919861947730">O Chromium pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode disponibilizar uma verificação ortográfica mais inteligente ao enviar o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da Pesquisa Google.</translation>
@@ -196,6 +203,7 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> aceda à sua conta, certifique-se
 Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Se preferir manter os dados do Chromium existentes em separado, pode criar um novo utilizador do Chromium para <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">O Chromium necessita do Windows XP ou posterior. Algumas funcionalidades podem não funcionar.</translation>
+<translation id="7437562785125777404">Não é possível apresentar o SO Chromium neste idioma.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está atualmente em execução. Feche o Chromium e tente novamente.</translation>
 <translation id="750717762378961310">Este ficheiro é malicioso e o Chromium bloqueou-o.</translation>

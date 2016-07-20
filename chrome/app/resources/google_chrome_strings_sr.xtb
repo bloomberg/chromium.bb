@@ -38,6 +38,7 @@
 <translation id="1818142563254268765">Chrome не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба да ажурирате Chrome.</translation>
 <translation id="1864458292167284385">Покретач Chrome апликација се укида.</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
+<translation id="1924381329666691588">Google Chrome не може да се приказује на овом језику.</translation>
 <translation id="2077129598763517140">Користи хардверско убрзање када је доступно</translation>
 <translation id="2084710999043359739">Додавање у Chrome</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже приказ пре штампања када недостаје уграђени PDF приказивач.</translation>
@@ -66,7 +67,9 @@
 <translation id="2748463065602559597">Прегледате безбедну Google Chrome страницу.</translation>
 <translation id="2769762047821873045">Google Chrome није ваш подразумевани прегледач.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
+<translation id="2847461019998147611">Приказуј Google Chrome на овом језику</translation>
 <translation id="2871893339301912279">Пријављени сте у Chrome!</translation>
+<translation id="2888126860611144412">О Chrome прегледачу</translation>
 <translation id="2997147809295888909">Chrome је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер није послао ниједну информацију о транспарентности сертификата.</translation>
 <translation id="3037838751736561277">Google Chrome је у позадинском режиму.</translation>
 <translation id="3047079729301751317">Ако прекинете везу са <ph name="USERNAME" />, обрисаћете историју, обележиваче, подешавања и друге Chrome податке ускладиштене на овом уређају. Подаци сачувани на Google налогу неће бити обрисани и можете њима да управљате на <ph name="GOOGLE_DASHBOARD_LINK" />Google контролној табли<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -112,6 +115,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4480040274068703980">Chrome ОС не може да синхронизује податке због грешке при пријављивању.</translation>
+<translation id="4519152997629025674">Google Chrome може да користи <ph name="BEGIN_LINK" />веб-услуге<ph name="END_LINK" /> да би побољшао искуство прегледања. Ако желите, можете да онемогућите ове услуге у било ком тренутку.</translation>
 <translation id="4561051373932531560">Google Chrome вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="4631713731678262610">Сакриј у Chrome менију</translation>
@@ -153,6 +157,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
+<translation id="5637867606963802593">Chrome ОС не може да се приказује на овом језику.</translation>
 <translation id="568643307450491754">Пронађите обележиваче у Chrome менију или на траци са обележивачима.</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
 <translation id="5749068826913805084">Chrome-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
@@ -172,6 +177,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6235018212288296708">Правило за долазни саобраћај за Google Chrome да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6236285698028833233">Google Chrome је престао да се ажурира и не подржава више ову верзију оперативног система.</translation>
 <translation id="629218512217695915">Користите лозинку коју је Chrome генерисао</translation>
+<translation id="6368805772029492593">Google Chrome ће шифровати податке ради додатне сигурности.</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер Mac OS X 10.6, 10.7 и 10.8 више неће бити подржани.</translation>
 <translation id="6470176598693778404">Овај рачунар више неће добијати ажурирања за Google Chrome јер Mac OS X 10.6, 10.7 и 10.8 више нису подржани.</translation>
@@ -200,6 +206,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7177347454226092725">Овим ћете трајно избрисати податке прегледања са овог уређаја. Да бисте вратили податке касније, пријавите се у Chrome као $2.</translation>
 <translation id="7185038942300673794">Додатак <ph name="EXTENSION_NAME" /> је додат у Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome ОС не подржава покретање спољне апликације за обраду <ph name="SCHEME" /> линкова. Захтевани линк је <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome се приказује на овом језику.</translation>
 <translation id="7196020411877309443">Зашто видим ово?</translation>
 <translation id="7242029209006116544">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Google Chrome профилом. Chrome подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. Можете опционално да направите нови профил да би постојећи Chrome подаци остали одвојени. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер Windows XP и Windows Vista више неће бити подржани.</translation>
@@ -209,11 +216,13 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7408085963519505752">Chrome ОС услови</translation>
 <translation id="7419046106786626209">Chrome ОС не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="7436949144778751379">Google Chrome захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
+<translation id="7437998757836447326">Одјављивање из Chrome-а</translation>
 <translation id="7459554271817304652">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Google Chrome-а на било ком рачунару.</translation>
 <translation id="7473136999113284234">Chrome се аутоматски ажурира, па увек имате најновију верзију.</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7494905215383356681">Лиценце отвореног кода за Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{То ће трајно избрисати бар $1 ставку са овог уређаја. Да бисте вратили податке касније, пријавите се у Chrome као $2.}one{То ће трајно избрисати бар $1 ставку са овог уређаја. Да бисте вратили податке касније, пријавите се у Chrome као $2.}few{То ће трајно избрисати бар $1 ставке са овог уређаја. Да бисте вратили податке касније, пријавите се у Chrome као $2.}other{То ће трајно избрисати бар $1 ставки са овог уређаја. Да бисте вратили податке касније, пријавите се у Chrome као $2.}}</translation>
+<translation id="7552219221109926349">Приказуј Chrome ОС на овом језику</translation>
 <translation id="7592736734348559088">Google Chrome не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="7626032353295482388">Добро дошли у Chrome</translation>
 <translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>
@@ -226,6 +235,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7890208801193284374">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chrome баш онако како желе.</translation>
 <translation id="7908168227788431038">Ажурирање је скоро готово! Поново покрените Google Chrome да бисте довршили ажурирање.</translation>
 <translation id="795025003224538582">Не покрећи поново</translation>
+<translation id="7964230182933713106">Chrome ОС се приказује на овом језику.</translation>
 <translation id="8005540215158006229">Chrome је скоро спреман.</translation>
 <translation id="8008534537613507642">Поново инсталирај Chrome</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" />...</translation>

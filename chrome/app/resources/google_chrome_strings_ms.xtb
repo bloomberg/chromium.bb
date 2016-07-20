@@ -34,6 +34,7 @@
 <translation id="1818142563254268765">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu mengemas kini Chrome.</translation>
 <translation id="1864458292167284385">Pelancar Apl Chrome akan ditamatkan.</translation>
 <translation id="1877026089748256423">Chrome sudah usang</translation>
+<translation id="1924381329666691588">Google Chrome tidak boleh dipaparkan dalam bahasa ini.</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="2084710999043359739">Tambahkan pada Chrome</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat memaparkan pratonton cetakan apabila pemapar PDF terbina dalam tiada.</translation>
@@ -62,7 +63,9 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2748463065602559597">Anda melihat halaman Google Chrome yang selamat.</translation>
 <translation id="2769762047821873045">Google Chrome adalah bukan penyemak imbas lalai anda.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
+<translation id="2847461019998147611">Paparkan Google Chrome dalam bahasa ini</translation>
 <translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
+<translation id="2888126860611144412">Perihal Chrome</translation>
 <translation id="2997147809295888909">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan tidak membekalkan sebarang maklumat Ketelusan Sijil.</translation>
 <translation id="3037838751736561277">Google Chrome dalam mod latar belakang.</translation>
 <translation id="3047079729301751317">Memutuskan sambungan <ph name="USERNAME" /> akan mengosongkan sejarah anda, penanda halaman, tetapan dan data Chrome lain yang tersimpan pada peranti ini. Data yang disimpan dalam Akaun Google anda tidak akan dikosongkan dan boleh diurus pada <ph name="GOOGLE_DASHBOARD_LINK" />Papan Pemuka Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -108,6 +111,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4480040274068703980">OS Chrome tidak dapat menyegerakkan data anda disebabkan oleh ralat melog masuk.</translation>
+<translation id="4519152997629025674">Google Chrome mungkin menggunakan <ph name="BEGIN_LINK" />perkhidmatan web<ph name="END_LINK" />untuk meningkatkan pengalaman penyemakan imbas anda. Anda boleh memilih untuk melumpuhkan perkhidmatan ini pada bila-bila masa.</translation>
 <translation id="4561051373932531560">Google Chrome membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
 <translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="4631713731678262610">Sembunyikan dalam menu Chrome</translation>
@@ -145,6 +149,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="5563479599352954471">Carian dengan satu sentuhan</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Ketahui tentang topik di tapak web tanpa meninggalkan halaman.</translation>
+<translation id="5637867606963802593">OS Chrome tidak boleh dipaparkan dalam bahasa ini.</translation>
 <translation id="568643307450491754">Cari penanda halaman anda dalam menu Chrome atau pada bar penanda halaman.</translation>
 <translation id="573759479754913123">Mengenai Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
@@ -164,6 +169,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="6235018212288296708">Peraturan masuk bagi Google Chrome untuk membenarkan trafik mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome telah berhenti mengemas kini dan tidak lagi menyokong versi sistem pengendalian anda ini.</translation>
 <translation id="629218512217695915">Gunakan kata laluan yang dijana oleh Chrome</translation>
+<translation id="6368805772029492593">Untuk keselamatan tambahan, Google Chrome akan menyulitkan data anda.</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="6400076122676892962">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Mac OS X 10.6, 10.7 dan 10.8 tidak lagi akan disokong.</translation>
 <translation id="6470176598693778404">Komputer ini tidak lagi akan menerima kemas kini Google Chrome kerana Mac OS X 10.6, 10.7 dan 10.8 sudah tidak disokong.</translation>
@@ -192,6 +198,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7177347454226092725">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> telah ditambahkan pada Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS tidak menyokong pelancaran aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME" />. Pautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome dipaparkan dalam bahasa ini.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Windows XP dan Windows Vista tidak lagi akan disokong.</translation>
@@ -201,11 +208,13 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7408085963519505752">Syarat Chrome OS</translation>
 <translation id="7419046106786626209">OS Chrome tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau seterusnya. Beberapa ciri mungkin tidak berfungsi.</translation>
+<translation id="7437998757836447326">Log keluar dari Chrome</translation>
 <translation id="7459554271817304652">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas anda yang diperibadikan ke web dan mengaksesnya dari Google Chrome pada mana-mana komputer.</translation>
 <translation id="7473136999113284234">Chrome dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu.</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7494905215383356681">Lesen sumber terbuka Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Tindakan ini akan memadamkan sekurang-kurangnya $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.}other{Tindakan ini akan memadamkan sekurang-kurangnya $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.}}</translation>
+<translation id="7552219221109926349">Paparkan OS Chrome dalam bahasa ini</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="7626032353295482388">Selamat Datang ke Chrome</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
@@ -218,6 +227,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
 <translation id="7908168227788431038">Hampir terkini! Lancarkan semula Google Chrome untuk menyelesaikan kemas kini.</translation>
 <translation id="795025003224538582">Jangan mulakan semula</translation>
+<translation id="7964230182933713106">OS Chrome dipaparkan dalam bahasa ini.</translation>
 <translation id="8005540215158006229">Chrome hampir sedia.</translation>
 <translation id="8008534537613507642">Pasang Semula Chrome</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>

@@ -30,6 +30,7 @@
 <translation id="13410144310025252">‏הצג אותם ב-Chrome</translation>
 <translation id="1369915414381695676">האתר <ph name="SITE_NAME" /> נוסף</translation>
 <translation id="1373696734384179344">אין מספיק זיכרון להורדת התוכן הנבחר.</translation>
+<translation id="1376578503827013741">מחשב...</translation>
 <translation id="138361230106469022">שלום <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1389974829397082527">אין כאן סימניות</translation>
@@ -46,7 +47,6 @@
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1506061864768559482">מנוע חיפוש</translation>
 <translation id="1513352483775369820">סימניות והיסטוריית אתרים</translation>
-<translation id="1517433312004943670">יש צורך במספר טלפון</translation>
 <translation id="1549000191223877751">העבר לחלון האחר</translation>
 <translation id="1553358976309200471">‏עדכן את Chrome</translation>
 <translation id="1557201757634521564">זיהוי אוטומטי של קידוד</translation>
@@ -103,6 +103,7 @@
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
 <translation id="2138201775715568214">מחפש דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="2139186145475833000">הוסף למסך דף הבית</translation>
+<translation id="2148716181193084225">היום</translation>
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="21570240866965662">חיבור איטי</translation>
 <translation id="219985413780390209">הגן על עצמך ועל המכשיר מפני אתרים מסוכנים</translation>
@@ -173,6 +174,7 @@
 <translation id="2932150158123903946">‏נפח אחסון של <ph name="APP_NAME" />‏ Google</translation>
 <translation id="2956410042958133412">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME_1" /> ו-<ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">‏זכויות יוצרים <ph name="YEAR" /> Google Inc. כל הזכויות שמורות.</translation>
+<translation id="2962095958535813455">הוחלף לכרטיסיות גלישה בסתר</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
 <translation id="2979025552038692506">כרטיסיית הגלישה בסתר שנבחרה</translation>
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
@@ -201,6 +203,7 @@
 <translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
 <translation id="326254929494722411">‏עדיין לא הגדרת חשבון Google במכשיר הזה</translation>
 <translation id="3269093882174072735">טען תמונה</translation>
+<translation id="3269956123044984603">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
 <translation id="3278850099957560514">‏צמצם את ההוצאה על תקשורת נתונים על ידי שימוש באופטימיזציה של Google לדפים שבהם אתה מבקר. Google לא תראה דפים שהגישה אליהם בוצעה בחיבור פרטי (HTTPS) או בכרטיסיות גלישה בסתר, וגם לא תבצע אופטימיזציה שלהם.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
@@ -341,7 +344,6 @@
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5056549851600133418">מאמרים שעשויים לעניין אותך</translation>
 <translation id="5063480226653192405">שימוש</translation>
-<translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5107381076085091558">ההורדה הושהתה.</translation>
@@ -410,6 +412,7 @@
 
 עם זאת, אינך בלתי נראה. מעבר למצב גלישה בסתר אינו מסתיר את הגלישה שלך מהמעסיק, ספק שירות האינטרנט או האתרים שבהם אתה מבקר.</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
+<translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
 <translation id="5763382633136178763">כרטיסיות גלישה בסתר</translation>
 <translation id="5765780083710877561">תיאור:</translation>
@@ -429,7 +432,6 @@
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5939518447894949180">אפס</translation>
-<translation id="5950380453936610378">יש צורך בכתובת אימייל</translation>
 <translation id="5961742032223302715">בחר פרטים ליצירת קשר</translation>
 <translation id="5968595432776860642">מפעיל את "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">גישה לפלט אודיו</translation>
@@ -464,6 +466,7 @@
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">הצפנה</translation>
 <translation id="6364438453358674297">האם להסיר את ההצעה מההיסטוריה?</translation>
+<translation id="6383961787135158834">מחיקת נתוני אתר מהאחסון...</translation>
 <translation id="6388207532828177975">נקה ואפס</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6406506848690869874">סנכרן</translation>
@@ -597,6 +600,7 @@
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
+<translation id="7781829728241885113">אתמול</translation>
 <translation id="7788788617745289808">‏Chrome זקוק לגישה למצלמה כדי לשתף אותה עם האתר הזה.</translation>
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="780301667611848630">לא תודה</translation>

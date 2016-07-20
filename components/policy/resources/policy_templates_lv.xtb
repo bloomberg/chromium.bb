@@ -683,6 +683,7 @@
 
           Ja šī politika nav iestatīta, tiks lietota politika AllowJavaScript un lietotājs to varēs mainīt.</translation>
 <translation id="3038323923255997294">Turpināt lietotņu izpildi fonā, kad produkts <ph name="PRODUCT_NAME" /> ir aizvērts</translation>
+<translation id="3046192273793919231">Tīkla pakešu sūtīšana uz pārvaldības serveri, lai pārraudzītu tiešsaistes statusu</translation>
 <translation id="3048744057455266684">Ja šī politika ir iestatīta un universālajā lodziņā ieteiktā URL vaicājuma virkne vai fragmenta identifikators satur šo parametru, kā ieteikums tiks rādīti meklēšanas vienumi un meklētājprogramma, nevis neapstrādāts meklēšanas URL.
 
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
@@ -961,6 +962,11 @@
 
           Ja šis iestatījums nav iestatīts vai ir iestatīta vērtība Nepatiesa, lietotāji varēs pārsūtīt failus uz Google disku.</translation>
 <translation id="3915395663995367577">URL uz starpniekservera .pac failu</translation>
+<translation id="3939893074578116847">Pārvaldības serverim tiek nosūtītas tīkla paketes tiešsaistes statusa pārraudzībai, lai
+      serverī varētu noteikt, vai ierīce ir bezsaistē.
+
+      Ja politikai ir iestatīta vērtība “Patiesa”, pārraudzības tīkla paketes (tā saucamie <ph name="HEARTBEATS_TERM" />) tiek sūtītas.
+      Ja ir iestatīta vērtība “Nepatiesa” vai nav iestatīta nekāda vērtība, tīkla paketes netiek sūtītas.</translation>
 <translation id="3964909636571393861">Ļauj piekļūt vietrāžu URL sarakstam</translation>
 <translation id="3965339130942650562">Noildze, līdz dīkstāves lietotāja atteikšanās tiek izpildīta</translation>
 <translation id="3967075520570946456">Sveiciena lapas rādīšanas iespējošana pirmajā pārlūka palaišanas reizē pēc operētājsistēmas jaunināšanas</translation>
@@ -1335,6 +1341,11 @@
       Ja šī politika ir iestatīta, pēc tam, kad noteiktu laika periodu lietotājs pieteikšanās ekrānā nebūs veicis nekādas darbības, notiks automātiska pieteikšanās norādītajā sesijā. Publiskajai sesijai jau ir jābūt konfigurētai (skatiet politiku |DeviceLocalAccounts|).
 
       Ja šī politika nav iestatīta, automātiska pieteikšanās netiks veikta.</translation>
+<translation id="5535957389335373033">Pārraudzības tīkla pakešu sūtīšanas biežums (milisekundēs).
+
+      Ja šī politika netiek iestatīta, noklusējuma biežums ir 3 minūtes.
+      Minimālais biežums ir 30 sekundes, maksimālais — 24 stundas.
+      Vērtības ārpus šī diapazona tiks pieskaņotas diapazonam.</translation>
 <translation id="5535973522252703021">Kerberos deleģējamo serveru baltais saraksts</translation>
 <translation id="5560039246134246593">Pievienot parametru attiecībā uz variantu sākotnējās vērtības iegūšanu pārlūkā <ph name="PRODUCT_NAME" />.
 
@@ -2560,6 +2571,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9187743794267626640">Ārējas krātuves uzstādīšanas atspējošana</translation>
 <translation id="9197740283131855199">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos, ja lietotājs ir aktīvs pēc aptumšošanas</translation>
 <translation id="9200828125069750521">Tā attēla URL parametri, kurā tiek izmantota metode POST</translation>
+<translation id="9217154963008402249">Pārraudzības tīkla pakešu biežums</translation>
 <translation id="922540222991413931">Konfigurē paplašinājumu, lietotņu un lietotāja skriptu instalēšanas avotus</translation>
 <translation id="924557436754151212">Saglabāto paroļu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="930930237275114205">Iestatīt <ph name="PRODUCT_FRAME_NAME" /> lietotāja datu direktoriju</translation>

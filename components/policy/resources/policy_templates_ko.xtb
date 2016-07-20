@@ -680,6 +680,7 @@
 
           이 정책을 설정하지 않은 경우 'AllowJavaScript' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME" /> 종료 후에도 백그라운드 앱을 계속 실행</translation>
+<translation id="3046192273793919231">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송합니다.</translation>
 <translation id="3048744057455266684">이 정책이 설정되어 있고 검색주소창에서 제안된 검색 URL의 검색 문자열 또는 일부 식별자에 이 매개변수가 포함되어 있으면 추천 검색어가 원시 검색 URL 대신 검색어 및 검색 공급자를 표시합니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 검색어가 대체됩니다.
@@ -950,6 +951,11 @@
 
           설정하지 않거나 False로 설정하면 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
+<translation id="3939893074578116847">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송하여
+      기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
+
+      이 정책이 'true'로 설정된 경우 모니터링 네트워크 패킷(소위 <ph name="HEARTBEATS_TERM" />)이 전송되며
+      'false'로 설정되거나 설정되지 않으면 패킷이 전송되지 않습니다.</translation>
 <translation id="3964909636571393861">URL 목록에 대한 액세스 허용</translation>
 <translation id="3965339130942650562">유휴 상태인 사용자의 로그아웃이 실행되기까지 시간 제한</translation>
 <translation id="3967075520570946456">OS 업그레이드 후 처음 브라우저를 실행하면 시작 페이지가 표시되도록 합니다.</translation>
@@ -1330,6 +1336,11 @@
       이 정책이 설정되어 있으면, 로그인 화면에서 사용자 활동 없이 일정 시간이 경과한 뒤에 지정된 세션이 자동으로 로그인됩니다. 공개 세션은 이미 구성되어 있어야 합니다(|DeviceLocalAccounts| 참조).
 
       이 정책이 설정되어 있지 않으면 자동 로그인할 수 없습니다.</translation>
+<translation id="5535957389335373033">네트워크 패킷 모니터링이 전송되는 빈도를 밀리초로 나타냅니다.
+
+      이 정책이 설정되지 않으면 기본 주기는 3분입니다.
+      최소 주기는 30초이며 최대 주기는 24시간입니다.
+      이 범위를 벗어나는 값은 범위에 맞게 잘립니다.</translation>
 <translation id="5535973522252703021">Kerberos 위임 서버 허용목록</translation>
 <translation id="5560039246134246593"><ph name="PRODUCT_NAME" />에서 버전 시드 가져오기에 대한 매개변수를 추가합니다.
 
@@ -2546,6 +2557,7 @@
 <translation id="9187743794267626640">외부 저장소 마운트 사용 중지</translation>
 <translation id="9197740283131855199">화면이 어두워진 후 사용자의 활동이 감지될 때 화면 어둡게 하기 지연 시간이 조정되는 비율</translation>
 <translation id="9200828125069750521">POST를 사용하는 이미지 URL용 매개변수</translation>
+<translation id="9217154963008402249">네트워크 패킷 모니터링 빈도</translation>
 <translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉토리 설정</translation>

@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium OS では、<ph name="SCHEME" /> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
 <translation id="1293235220023151515">競合する Chromium のインストールがシステムに見つかりました。アンインストールして、もう一度お試しください。</translation>
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
+<translation id="1347507563453473396">Chromium をこの言語で表示することはできません。</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
 <translation id="1403254041219632970">Chromium の今後のバージョンでは Mac OS X 10.6、10.7、10.8 はサポートされなくなります。</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="2705212601509139398">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、互換性のあるブラウザをダウンロードしてください。</translation>
 <translation id="2711502716910134313">Chromium タブ</translation>
+<translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="2847479871509788944">Chromium から削除...</translation>
 <translation id="2886012850691518054">オプション: 使用状況データと障害レポートを Google に自動送信して Chromium の機能向上に役立てる。</translation>
+<translation id="2905536371227304018">Chromium OS はこの言語で表示されています。</translation>
 <translation id="2910007522516064972">Chromium について(&amp;C)</translation>
 <translation id="2966088006374919794">Chromium では、<ph name="SCHEME" /> リンクを処理する際に外部アプリケーションの起動が必要になります。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
 <translation id="3032787606318309379">Chromium に追加...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
+<translation id="556167189552180495">Chromium はこの言語で表示されています。</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
 <translation id="5634636535844844681">Chromium のご利用には Windows 7 以上が必要です。</translation>
 <translation id="5680901439334282664">Chromium にログイン</translation>
+<translation id="5698481217667032250">Chromium をこの言語で表示</translation>
+<translation id="5768914737813585044">Chromium OS をこの言語で表示</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
 <translation id="5796460469508169315">もうすぐ Chromium を使用できます。</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -172,6 +178,7 @@
 <translation id="705851970750939768">Chromium を更新</translation>
 <translation id="7064610482057367130">更新対象の Chromium のインストールは見つかりませんでした。</translation>
 <translation id="7066436765290594559">Chromium OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
+<translation id="7090955637699162649">Chromium では、より快適なブラウジングを提供する目的で<ph name="BEGIN_LINK" />ウェブサービス<ph name="END_LINK" />が使用されることがあります。これらのサービスはいつでも無効にできます。</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
 <translation id="7162152143154757523">Chromium ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されるスペルチェック テクノロジーを活用できます。</translation>
@@ -196,6 +203,7 @@
 詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
 <translation id="7419987137528340081">既存の Chromium データを個別に保持したい場合は、<ph name="USER_NAME" /> 用の新しい Chromium ユーザーを作成できます。</translation>
 <translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
+<translation id="7437562785125777404">Chromium OS をこの言語で表示することはできません。</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="750717762378961310">不正なファイルです。Chromium はこのファイルをブロックしました。</translation>

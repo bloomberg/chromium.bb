@@ -38,6 +38,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1818142563254268765">Prohlížeč Chrome se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chrome je potřeba aktualizovat.</translation>
 <translation id="1864458292167284385">Spouštěč aplikací Chrome již nebude podporován</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
+<translation id="1924381329666691588">Google Chrome v tomto jazyce nelze zobrazit.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2084710999043359739">Přidat do prohlížeče Chrome</translation>
 <translation id="2246246234298806438">Pokud chybí integrovaný program k zobrazení souborů PDF, nemůže Google Chrome zobrazit náhled tisku.</translation>
@@ -66,7 +67,9 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2748463065602559597">Zobrazujete zabezpečenou stránku Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome není vaším výchozím prohlížečem.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
+<translation id="2847461019998147611">Zobrazit Google Chrome v tomto jazyce</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
+<translation id="2888126860611144412">O aplikaci Chrome</translation>
 <translation id="2997147809295888909">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server neposkytl žádné údaje Certificate Transparency.</translation>
 <translation id="3037838751736561277">Google Chrome je v režimu na pozadí.</translation>
 <translation id="3047079729301751317">Odpojení uživatele <ph name="USERNAME" /> smaže také historii, záložky, nastavení a další data Chromu uložená v tomto zařízení. Data uložená ve vašem účtu Google nebudou vymazána a lze je spravovat na <ph name="GOOGLE_DASHBOARD_LINK" />Hlavním panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -112,6 +115,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4480040274068703980">Chrome OS vaše data nemohl synchronizovat z důvodu chyby při přihlášení.</translation>
+<translation id="4519152997629025674">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí <ph name="BEGIN_LINK" />webových služeb<ph name="END_LINK" />. Tyto služby můžete kdykoli zakázat.</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="4631713731678262610">Skrýt v nabídce Chrome</translation>
@@ -153,6 +157,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="5563479599352954471">Vyhledávání jedním klepnutím</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit.</translation>
+<translation id="5637867606963802593">Chrome OS v tomto jazyce nelze zobrazit.</translation>
 <translation id="568643307450491754">Záložky naleznete v nabídce Chromu nebo na liště záložek.</translation>
 <translation id="573759479754913123">O operačním systému Chrome OS</translation>
 <translation id="5749068826913805084">Aby bylo možné stahovat soubory, Chrome potřebuje přístup k úložišti.</translation>
@@ -172,6 +177,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6235018212288296708">Pravidlo příchozího provozu pro aplikaci Google Chrome, které povolí provoz mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome již nepodporuje verzi operačního systému, kterou používáte, a nebude možné jej aktualizovat.</translation>
 <translation id="629218512217695915">Použít heslo vygenerované prohlížečem Chrome</translation>
+<translation id="6368805772029492593">V zájmu lepšího zabezpečení bude Google Chrome šifrovat vaše data.</translation>
 <translation id="6368958679917195344">Chrome OS by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS" />softwaru s otevřeným zdrojovým kódem<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Google Chrome se v tomto počítači brzy přestane aktualizovat, protože systémy Mac OS X 10.6, 10.7 a 10.8 již nebudou podporovány.</translation>
 <translation id="6470176598693778404">Google Chrome se v tomto počítači již nebude aktualizovat, protože systémy Mac OS X 10.6, 10.7 a 10.8 již nejsou podporovány.</translation>
@@ -200,6 +206,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7177347454226092725">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.</translation>
 <translation id="7185038942300673794">Do prohlížeče Chrome bylo přidáno rozšíření <ph name="EXTENSION_NAME" />.</translation>
 <translation id="7191567847629796517">Chrome OS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome se zobrazuje v tomto jazyce.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="7242029209006116544">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME" />. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje Chrome odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome se v tomto počítači již brzy přestane aktualizovat, protože systémy Windows XP a Windows Vista již nejsou podporovány.</translation>
@@ -209,11 +216,13 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7408085963519505752">Smluvní podmínky systému Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS nemohl synchronizovat vaše data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
 <translation id="7436949144778751379">Google Chrome vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
+<translation id="7437998757836447326">Odhlášení z Chromu</translation>
 <translation id="7459554271817304652">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Google Chrome v libovolném prohlížeči, nastavte synchronizaci.</translation>
 <translation id="7473136999113284234">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi.</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7494905215383356681">Chrome – licence open source</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položku. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}few{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}many{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}other{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položek. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}}</translation>
+<translation id="7552219221109926349">Zobrazit Chrome OS v tomto jazyce</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
@@ -226,6 +235,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7890208801193284374">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chrome podle svých požadavků.</translation>
 <translation id="7908168227788431038">Aktualizace je téměř hotova. Dokončíte ji restartováním prohlížeče Google Chrome.</translation>
 <translation id="795025003224538582">Nerestartovat</translation>
+<translation id="7964230182933713106">Chrome OS se zobrazuje v tomto jazyce.</translation>
 <translation id="8005540215158006229">Chrome je téměř připraven.</translation>
 <translation id="8008534537613507642">Přeinstalovat Chrome</translation>
 <translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME" />...</translation>

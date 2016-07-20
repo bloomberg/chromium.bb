@@ -36,6 +36,7 @@
 <translation id="1818142563254268765">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cập nhật Chrome.</translation>
 <translation id="1864458292167284385">Trình chạy ứng dụng Chrome sắp ngừng hoạt động.</translation>
 <translation id="1877026089748256423">Chrome đã lỗi thời</translation>
+<translation id="1924381329666691588">Không thể hiển thị Google Chrome bằng ngôn ngữ này.</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2084710999043359739">Thêm vào Chrome</translation>
 <translation id="2246246234298806438">Google Chrome không thể hiển thị xem trước bản in khi thiếu trình xem PDF được cài sẵn.</translation>
@@ -64,7 +65,9 @@
 <translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
+<translation id="2847461019998147611">Hiển thị Google Chrome bằng ngôn ngữ này</translation>
 <translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
+<translation id="2888126860611144412">Giới thiệu Chrome</translation>
 <translation id="2997147809295888909">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ không cung cấp bất kỳ thông tin nào về Tính minh mạch của chứng chỉ.</translation>
 <translation id="3037838751736561277">Google Chrome đang chạy trong nền.</translation>
 <translation id="3047079729301751317">Ngắt kết nối <ph name="USERNAME" /> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chrome khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK" />Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -111,6 +114,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="4480040274068703980">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
+<translation id="4519152997629025674">Google Chrome có thể sử dụng <ph name="BEGIN_LINK" />các dịch vụ web<ph name="END_LINK" /> để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tắt các dịch vụ này bất cứ lúc nào, nếu muốn.</translation>
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="4631713731678262610">Ẩn trong menu Chrome</translation>
@@ -150,6 +154,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
+<translation id="5637867606963802593">Không thể hiển thị Chrome OS bằng ngôn ngữ này.</translation>
 <translation id="568643307450491754">Tìm dấu trang của bạn trong menu Chrome hoặc trên thanh dấu trang.</translation>
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
@@ -169,6 +174,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6235018212288296708">Quy tắc kết nối để Google Chrome cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome đã ngừng cập nhật và không còn hỗ trợ phiên bản này của hệ điều hành của bạn.</translation>
 <translation id="629218512217695915">Sử dụng mật khẩu do Chrome tạo</translation>
+<translation id="6368805772029492593">Để bảo mật hơn, Google Chrome sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung.</translation>
 <translation id="6400076122676892962">Máy tính này sắp dừng nhận bản cập nhật Google Chrome do Mac OS X 10.6, 10.7 và 10.8 sẽ không được hỗ trợ nữa.</translation>
 <translation id="6470176598693778404">Máy tính này sẽ không nhận bản cập nhật Google Chrome do Mac OS X 10.6, 10.7 và 10.8 không được hỗ trợ nữa.</translation>
@@ -197,6 +203,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7177347454226092725">Thao tác này sẽ xóa vĩnh viễn dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> đã được thêm vào Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS không hỗ trợ chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome được hiển thị bằng ngôn ngữ này.</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="7242029209006116544">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo một cấu hình mới để giữ cho dữ liệu Chrome hiện có của bạn riêng biệt. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Máy tính này sắp dừng nhận bản cập nhật Google Chrome do Windows XP và Windows Vista sẽ không được hỗ trợ nữa.</translation>
@@ -206,11 +213,13 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7408085963519505752">Điều khoản của Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
+<translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="7459554271817304652">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Google Chrome trên bất kỳ máy tính nào.</translation>
 <translation id="7473136999113284234">Chrome tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7494905215383356681">Giấy phép nguồn mở Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Thao tác này sẽ xóa vĩnh viễn ít nhất $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng $2.}other{Thao tác này sẽ xóa vĩnh viễn ít nhất $1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng $2.}}</translation>
+<translation id="7552219221109926349">Hiển thị Chrome OS bằng ngôn ngữ này</translation>
 <translation id="7592736734348559088">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
@@ -223,6 +232,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
 <translation id="7908168227788431038">Gần được cập nhật! Hãy khởi chạy lại Google Chrome để hoàn tất cập nhật.</translation>
 <translation id="795025003224538582">Không khởi động lại</translation>
+<translation id="7964230182933713106">Chrome OS được hiển thị bằng ngôn ngữ này.</translation>
 <translation id="8005540215158006229">Chrome sắp sẵn sàng.</translation>
 <translation id="8008534537613507642">Cài đặt lại Chrome</translation>
 <translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME" />...</translation>

@@ -38,6 +38,7 @@
 <translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
 <translation id="1864458292167284385">Chrome 앱 런처 서비스 중단 예정</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
+<translation id="1924381329666691588">Chrome을 이 언어로 표시할 수 없습니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
 <translation id="2246246234298806438">기본 제공되는 PDF 뷰어가 없는 경우 Chrome에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
@@ -66,7 +67,9 @@
 <translation id="2748463065602559597">지금 안전한 Chrome 페이지를 보고 계십니다.</translation>
 <translation id="2769762047821873045">Chrome이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
+<translation id="2847461019998147611">이 언어로 Chrome 표시</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
+<translation id="2888126860611144412">크롬 정보</translation>
 <translation id="2997147809295888909">Chrome에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공하지 않았습니다.</translation>
 <translation id="3037838751736561277">Chrome이 백그라운드 모드로 실행 중입니다.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" />의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 기타 Chrome 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK" />Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK" />에서 관리될 수 있습니다.</translation>
@@ -112,6 +115,7 @@
 <translation id="4407807842708586359">Chrome OS</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="4480040274068703980">로그인 중 오류가 발생하여 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
+<translation id="4519152997629025674">Chrome은 브라우저 사용 환경을 개선하기 위해 <ph name="BEGIN_LINK" />웹 서비스<ph name="END_LINK" />를 이용할 수 있습니다. 원하는 경우 언제든지 서비스를 사용 중지하실 수 있습니다.</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="4631713731678262610">Chrome 메뉴에서 숨기기</translation>
@@ -153,6 +157,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
+<translation id="5637867606963802593">Chrome OS를 이 언어로 표시할 수 없습니다.</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
@@ -172,6 +177,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6235018212288296708">Chrome이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="6236285698028833233">Chrome에서 업데이트를 중단했으며 이 버전의 운영체제를 더 이상 지원하지 않습니다.</translation>
 <translation id="629218512217695915">Chrome에서 생성한 비밀번호 사용</translation>
+<translation id="6368805772029492593">보안 강화를 위해 Chrome에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용했습니다.</translation>
 <translation id="6400076122676892962">Mac OS X 10.6, 10.7, 10.8이 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="6470176598693778404">Mac OS X 10.6, 10.7, 10.8이 더 이상 지원되지 않아 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
@@ -200,6 +206,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7177347454226092725">인터넷 사용 기록이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />이(가) Chrome에 추가되었습니다.</translation>
 <translation id="7191567847629796517">Chrome OS는 외부 애플리케이션 실행을 통한 <ph name="SCHEME" /> 링크 처리를 지원하지 않습니다. 요청된 링크는 <ph name="PROTOLINK" />입니다.</translation>
+<translation id="7193750696137290001">Chrome이 이 언어로 표시됩니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP 및 Windows Vista가 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
@@ -209,11 +216,13 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
 <translation id="7419046106786626209">내 도메인에서 동기화를 사용할 수 없으므로 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7436949144778751379">Chrome에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
+<translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7459554271817304652">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chrome에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="7473136999113284234">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7494905215383356681">Chrome 오픈소스 라이선스</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{이 기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}other{이 기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}}</translation>
+<translation id="7552219221109926349">이 언어로 Chrome OS 표시</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
@@ -226,6 +235,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="7908168227788431038">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="795025003224538582">다시 시작 안함</translation>
+<translation id="7964230182933713106">Chrome OS가 이 언어로 표시됩니다.</translation>
 <translation id="8005540215158006229">Chrome을 사용할 준비가 되었습니다.</translation>
 <translation id="8008534537613507642">Chrome 재설치</translation>
 <translation id="8030318113982266900">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트하는 중...</translation>

@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">O Chromium OS não suporta a inicialização de um aplicativo externo para lidar com links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Foi encontrada uma instalação conflituosa do Chromium no sistema. Desinstale e tente novamente.</translation>
 <translation id="1298199220304005244">Obter ajuda para usar o Chromium OS</translation>
+<translation id="1347507563453473396">Não é possível exibir o Chromium neste idioma.</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
 <translation id="1403254041219632970">As futuras versões do Chromium não serão mais compatíveis com Mac OS X 10.6, 10.7 ou 10.8.</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">O Chromium parou de ser atualizado e não oferece mais suporte para esta versão do seu sistema operacional.</translation>
 <translation id="2705212601509139398">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça o download de um navegador compatível.</translation>
 <translation id="2711502716910134313">Guia do Chromium</translation>
+<translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> é malicioso e foi bloqueado pelo Chromium.</translation>
 <translation id="2847479871509788944">Remover do Chromium</translation>
 <translation id="2886012850691518054">Opcional: Ajude a tornar o Chromium melhor enviando automaticamente as estatísticas de uso e os relatórios de erros ao Google.</translation>
+<translation id="2905536371227304018">O Chromium OS é exibido neste idioma.</translation>
 <translation id="2910007522516064972">Sobre o &amp;Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa iniciar um aplicativo externo para lidar com os links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Adicionando ao Chromium...</translation>
@@ -119,10 +122,13 @@
 <translation id="5427571867875391349">Definir o Chromium como seu navegador padrão</translation>
 <translation id="5466153949126434691">O Chromium é atualizado automaticamente para que você sempre tenha a versão mais recente. Quando o download estiver concluído, o Chromium será reiniciado e você estará pronto.</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
+<translation id="556167189552180495">O Chromium é exibido neste idioma.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5620765574781326016">Saiba mais sobre tópicos em websites sem sair da página.</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou versão superior.</translation>
 <translation id="5680901439334282664">fazer login no Chromium</translation>
+<translation id="5698481217667032250">Exibir Chromium neste idioma</translation>
+<translation id="5768914737813585044">Exibir o Chromium OS neste idioma</translation>
 <translation id="5772805321386874569">(requer a <ph name="BEGIN_BUTTON" />reinicialização<ph name="END_BUTTON" /> do Chromium)</translation>
 <translation id="5796460469508169315">O Chromium está quase pronto.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -168,6 +174,7 @@
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7064610482057367130">Nenhuma instalação do Chromium foi encontrada para atualização.</translation>
 <translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
+<translation id="7090955637699162649">O Chromium pode usar <ph name="BEGIN_LINK" />serviços da Web<ph name="END_LINK" /> para melhorar a qualidade da sua navegação. Você pode desativar esses serviços a qualquer momento.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Isso excluirá permanentemente $1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}one{Isso excluirá permanentemente $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}other{Isso excluirá permanentemente $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como $2.}}</translation>
 <translation id="7138853919861947730">O Chromium pode usar os serviços da web para melhorar sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode oferecer uma verificação ortográfica mais inteligente, enviando as informações que você digita no navegador para os servidores do Google. Isso permite que você utilize a mesma tecnologia de verificação ortográfica utilizada pela Pesquisa Google.</translation>
@@ -191,6 +198,7 @@ perfil no canto superior direito do navegador e selecione "Sair e bloquear".
 Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.</translation>
 <translation id="7419987137528340081">Se você preferir manter seus dados existentes do Chromium separadamente, pode criar um novo usuário do Chromium para <ph name="USER_NAME" /> .</translation>
 <translation id="7421823331379285070">O Chromium requer Windows XP ou posterior. Alguns recursos podem não funcionar.</translation>
+<translation id="7437562785125777404">Não é possível exibir o Chromium OS neste idioma.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está sendo executada. Feche o Chromium e tente novamente.</translation>
 <translation id="750717762378961310">Este arquivo é malicioso e foi bloqueado pelo Chromium.</translation>

@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">방문 기록에서 이 페이지를 삭제하시겠습니까?</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
+<translation id="2704951214193499422">현재 Chromium에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
 <translation id="2709516037105925701">자동완성</translation>
 <translation id="2712173769900027643">권한 요청</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">선택하면 이 기기에 카드 사본이 저장되어 Chromium에서 양식을 더 빠르게 작성할 수 있습니다.</translation>
 <translation id="2991174974383378012">웹사이트와 공유</translation>
 <translation id="3005723025932146533">저장된 사본 표시</translation>
+<translation id="3008447029300691911"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
 <translation id="3032412215588512954">이 사이트를 새로고침하시겠습니까?</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
+<translation id="3063697135517575841">현재 Chrome에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3093245981617870298">오프라인 상태입니다.</translation>
 <translation id="3105172416063519923">애셋 ID:</translation>
 <translation id="3109728660330352905">이 페이지를 볼 수 있는 권한이 없습니다.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
 <translation id="3228969707346345236">페이지가 <ph name="LANGUAGE" />(으)로 되어 있으므로 번역하지 못했습니다.</translation>
+<translation id="323107829343500871"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요.</translation>
 <translation id="3254409185687681395">페이지 북마크</translation>
 <translation id="3270847123878663523">재정렬 실행 취소(&amp;U)</translation>
 <translation id="3286538390144397061">지금 다시 시작</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
+<translation id="5784606427469807560">카드 확인 중에 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="5785756445106461925">또한 이 페이지에는 안전하지 않은 다른 리소스가 포함되어 있습니다. 이러한 리소스는 전송 중에 다른 사람이 볼 수 있으며 페이지의 모양을 변경하기 위해 공격자가 수정할 수 있습니다.</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />에 대한 연결이 더 이상 사용되지 않는 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="5813119285467412249">추가 다시 실행(&amp;R)</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">지역</translation>
 <translation id="6874604403660855544">추가 다시 실행(&amp;R)</translation>
 <translation id="6891596781022320156">정책 수준이 지원되지 않습니다.</translation>
+<translation id="6895330447102777224">카드가 확인되었습니다.</translation>
 <translation id="6897140037006041989">사용자 에이전트</translation>
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6915804003454593391">사용자:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7231308970288859235">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="7246609911581847514">이 알림은 새로운 사이트를 처음으로 방문할 때 관리자의 승인이 필요하므로 표시되었습니다.</translation>
+<translation id="724975217298816891">카드 세부정보를 업데이트하려면 <ph name="CREDIT_CARD" /> 카드의 만료일과 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="725866823122871198">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="7265986070661382626">현재 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />인증서 고정을 사용<ph name="END_LINK" />하기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 정상화될 것입니다.</translation>
 <translation id="7269802741830436641">이 웹페이지에 리디렉션 순환 오류가 있습니다</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">안함</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">카드 확인</translation>
 <translation id="7394102162464064926">이 페이지를 방문 기록에서 삭제하시겠습니까?
 
 다음에는 시크릿 모드(<ph name="SHORTCUT_KEY" />)를 사용해 보세요.</translation>
@@ -529,6 +537,7 @@
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
 <translation id="7445762425076701745">연결하려는 서버 ID를 확인할 수 없습니다. 외부 인증 기관에서 소유권을 확인할 수 없으므로 네트워크에서 유효한 이름을 사용하여 서버에 연결됩니다. 일부 인증 기관에서는 이러한 이름에 대해 관계없이 인증서를 발급하기 때문에 공격자가 아니라 의도한 웹사이트에 연결되어 있는지 확인할 수 없습니다.</translation>
 <translation id="7451311239929941790">이 문제를 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
+<translation id="7469372306589899959">카드 확인 중</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="7514365320538308">다운로드</translation>
@@ -643,6 +652,7 @@
 <translation id="8866959479196209191">이 페이지 내용:</translation>
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8876793034577346603">네트워크 설정을 파싱하지 못했습니다.</translation>
+<translation id="8877192140621905067">카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="8891727572606052622">프록시 모드가 잘못되었습니다.</translation>
 <translation id="889901481107108152">죄송합니다. 현재 플랫폼에서 사용할 수 없는 실험실 기능입니다.</translation>
 <translation id="8903921497873541725">확대</translation>
@@ -675,6 +685,8 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">양식 지우기</translation>
 <translation id="939736085109172342">새 폴더</translation>
+<translation id="943029900877297437">Google 계정에 저장한 카드를 사용하려면 Chrome에 로그인하세요.</translation>
+<translation id="962701380617707048">카드 세부정보를 업데이트하려면 <ph name="CREDIT_CARD" /> 카드의 만료일과 CVC를 입력하세요.</translation>
 <translation id="969892804517981540">공식 빌드</translation>
 <translation id="988159990683914416">개발자 빌드</translation>
 </translationbundle>

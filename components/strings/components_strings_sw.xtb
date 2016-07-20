@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Je, una hakika kuwa ungependa kufuta kurasa hizi kutoka historia yako?</translation>
 <translation id="2677748264148917807">Ondoka</translation>
 <translation id="2704283930420550640">Thamani haioani na umbizo.</translation>
+<translation id="2704951214193499422">Chromium haikuweza kuthibitisha kadi yako wakati huu. Tafadhali jaribu tena baadaye.</translation>
 <translation id="2705137772291741111">Nakala iliyohifadhiwa (iliyowekwa katika akiba) ya tovuti hii haikusomeka.</translation>
 <translation id="2709516037105925701">Kujaza Kiotomatiki</translation>
 <translation id="2712173769900027643">Omba ruhusa</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Ikiwashwa, Chromium itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
 <translation id="2991174974383378012">Kushiriki kwenye Tovuti</translation>
 <translation id="3005723025932146533">Onyesha nakala iliyohifadhiwa</translation>
+<translation id="3008447029300691911">Weka CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi yako yatashirikiwa na tovuti hii.</translation>
 <translation id="3010559122411665027">Ingizo orodha "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Aina mbaya ya sera</translation>
 <translation id="3032412215588512954">Ungependa kupakia upya tovuti hii?</translation>
 <translation id="3037605927509011580">Lo!</translation>
 <translation id="3041612393474885105">Maelezo ya Cheti</translation>
+<translation id="3063697135517575841">Chrome haikuweza kuthibitisha kadi yako wakati huu. Tafadhali jaribu tena baadaye.</translation>
 <translation id="3093245981617870298">Uko nje ya mtandao.</translation>
 <translation id="3105172416063519923">Kitambulisho cha Kipengee:</translation>
 <translation id="3109728660330352905">Huna idhini ya kuona ukurasa huu.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Seva imewasilisha cheti kisicholingana na matarajio ya kijenzi cha ndani. Matarajio haya yanajumlishwa kwa baadhi ya tovuti za usalama wa juu ili kukulinda.</translation>
 <translation id="3226128629678568754">Bonyeza kitufe cha kupakia upya ili kuwasilisha upya data inayohitajika kupakia ukurasa.</translation>
 <translation id="3228969707346345236">Tafsiri ilishindikana kwa sababu ukurasa tayari upo katika <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Weka CVC ya <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Alamisha ukurasa huu</translation>
 <translation id="3270847123878663523">Tendua Kupanga upya</translation>
 <translation id="3286538390144397061">Zima na uwashe sasa</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Vilivyozuiwa</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
+<translation id="5784606427469807560">Kulikuwa na tatizo wakati wa kuthibitisha kadi yako. Angalia muunganisho wako wa intaneti kisha ujaribu tena.</translation>
 <translation id="5785756445106461925">Mbali na hayo, ukurasa huu una rasilimali nyingine zisizo salama. Rasilimali hizi zinaweza kuangaliwa na watu wengine wanaosafiri, na zinaweza kurekebishwa na mvamizi kubadilisha mwonekano wa ukurasa.</translation>
 <translation id="5810442152076338065">Muunganisho wako kwenye <ph name="DOMAIN" /> umesimbwa kwa njia fiche kwa kutumia mipangilio ya kriptografia ya zamani.</translation>
 <translation id="5813119285467412249">Rudia Kuongeza</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Eneo</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
 <translation id="6891596781022320156">Kiwango cha sera hakitumiki.</translation>
+<translation id="6895330447102777224">Kadi yako imethibitishwa</translation>
 <translation id="6897140037006041989">Programu ya Mtumiaji</translation>
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6915804003454593391">Mtumiaji:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Muunganisho unatumia <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Lo! Unahitaji kumwuliza mzazi wako ikiwa ni sawa kuutembelea ukurasa huu.</translation>
 <translation id="7246609911581847514">Unaona ujumbe huu kwa sababu msimamizi wako anahitaji kuidhinisha tovuti mpya unapotembelea kwa mara ya kwanza.</translation>
+<translation id="724975217298816891">Weka tarehe ya kuisha kwa muda wa matumizi na CVC ya <ph name="CREDIT_CARD" /> ili usasishe maelezo ya kadi yako. Baada ya kuthibitisha, maelezo ya kadi yako yatashirikiwa na tovuti hii.</translation>
 <translation id="725866823122871198">Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kutambuliwa kwa sababu tarehe na wakati wa kompyuta yako (<ph name="DATE_AND_TIME" />) si sahihi.</translation>
 <translation id="7265986070661382626">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu tovuti <ph name="BEGIN_LINK" />hutumia ubandikaji wa cheti<ph name="END_LINK" />. Hitilafu na uvamizi wa mtandao kwa kawaida huwa wa muda, kwa hivyo ukurasa huu huenda utafanya kazi baadaye.</translation>
 <translation id="7269802741830436641">Ukurasa huu wa wavuti una kitanzi cha kuelekeza upya</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">La</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Thibitisha Kadi</translation>
 <translation id="7394102162464064926">Je, una uhakika unataka kufuta kurasa hizi kutoka kwenye historia yako?
 
 Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</translation>
@@ -529,6 +537,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7445762425076701745">Utambulisho wa seva ambayo umejiunga kwayo hauwezi kuhalalishwa kikamilifu. Umeunganishwa kwenye seva kwa kutumia jina ambalo ni halali tu katika mtandao wako, ambalo mamlaka ya cheti cha nje hayana njia ya kuhalalisha umiliki wake. Kama baadhi ya mamlaka ya cheti yatatoa vyeti vya majina haya bila kujali, hakuna njia ya kuhakikisha umeunganishwa kwenye tovuti inayohitajika na sio mshambulizi.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /> kuhusu hitilafu hii.</translation>
+<translation id="7469372306589899959">Inathibitisha kadi</translation>
 <translation id="7481312909269577407">Mbele</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
 <translation id="7514365320538308">Pakua</translation>
@@ -643,6 +652,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8866959479196209191">Ukurasa huu unasema:</translation>
 <translation id="8870413625673593573">Zilizofungwa Hivi Karibuni</translation>
 <translation id="8876793034577346603">Usanidi wa mtandao umekosa kuchanganuliwa.</translation>
+<translation id="8877192140621905067">Baada ya kuthibitisha, maelezo ya kadi yako yatashirikiwa na tovuti hii</translation>
 <translation id="8891727572606052622">Modi batili ya proksi.</translation>
 <translation id="889901481107108152">Samahani, jaribio hili halipatikani kwenye mfumo wako wa uendeshaji.</translation>
 <translation id="8903921497873541725">Kuza karibu</translation>
@@ -675,6 +685,8 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FUTA FOMU</translation>
 <translation id="939736085109172342">Folda mpya</translation>
+<translation id="943029900877297437">Ingia katika Chrome ili utumie kadi ulizohifadhi kwenye Akaunti yako ya Google.</translation>
+<translation id="962701380617707048">Weka tarehe ya kuisha kwa muda wa matumizi na CVC ya <ph name="CREDIT_CARD" /> ili usasishe maelezo ya kadi yako</translation>
 <translation id="969892804517981540">Muundo Rasmi</translation>
 <translation id="988159990683914416">Muundo wa Wasanidi Programu</translation>
 </translationbundle>

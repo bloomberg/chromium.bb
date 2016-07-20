@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Sigur doriți să ștergeți aceste pagini din istoric?</translation>
 <translation id="2677748264148917807">Ieși</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
+<translation id="2704951214193499422">Momentan, Chromium nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="2705137772291741111">Copia salvată (în memoria cache) a acestui site nu a putut fi citită.</translation>
 <translation id="2709516037105925701">Completare automată</translation>
 <translation id="2712173769900027643">Solicită permisiunea</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Dacă opțiunea este activată, Chromium va stoca o copie a cardului pe dispozitiv pentru a completa formularul mai rapid.</translation>
 <translation id="2991174974383378012">Permiterea accesului pentru site-uri</translation>
 <translation id="3005723025932146533">Afișați o copie salvată</translation>
+<translation id="3008447029300691911">Introdu codul CVC pentru <ph name="CREDIT_CARD" />. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3032412215588512954">Dorești să reîncarci acest site?</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
+<translation id="3063697135517575841">Momentan, Chrome nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="3093245981617870298">Sunteți offline.</translation>
 <translation id="3105172416063519923">ID articol:</translation>
 <translation id="3109728660330352905">Nu ești autorizat(ă) să vezi această pagină.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
 <translation id="3226128629678568754">Apăsați butonul de reîncărcare pentru a retrimite datele necesare pentru încărcarea paginii.</translation>
 <translation id="3228969707346345236">Pagina nu a fost tradusă, deoarece aceasta este deja în <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Introdu codul CVC pentru <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Marcați această pagină</translation>
 <translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
 <translation id="3286538390144397061">Repornește acum</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
 <translation id="5720705177508910913">Utilizator curent</translation>
+<translation id="5784606427469807560">A apărut o eroare la confirmarea cardului. Verifică-ți conexiunea la internet și încearcă din nou.</translation>
 <translation id="5785756445106461925">În plus, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba aspectul paginii.</translation>
 <translation id="5810442152076338065">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare învechită.</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Zonă</translation>
 <translation id="6874604403660855544">&amp;Repetați adăugarea</translation>
 <translation id="6891596781022320156">Nivelul politicii nu este acceptat.</translation>
+<translation id="6895330447102777224">Cardul tău este confirmat</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6903907808598579934">Activează sincronizarea</translation>
 <translation id="6915804003454593391">Utilizator:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Hopa! Trebuie să-ți întrebi părintele dacă poți accesa această pagină.</translation>
 <translation id="7246609911581847514">Ai primit acest mesaj deoarece este necesar ca administratorul să aprobe site-urile noi la prima accesare.</translation>
+<translation id="724975217298816891">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
 <translation id="725866823122871198">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora computerului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="7265986070661382626">Nu puteți accesa acum site-ul <ph name="SITE" />, deoarece acesta <ph name="BEGIN_LINK" />folosește fixarea certificatelor<ph name="END_LINK" />. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="7269802741830436641">Această pagină web are o buclă de redirecționare</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Confirmă cardul</translation>
 <translation id="7394102162464064926">Sigur doriți să ștergeți aceste pagini din istoric?
 
 Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a naviga în modul incognito.</translation>
@@ -529,6 +537,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7441627299479586546">Subiectul politicii este greșit</translation>
 <translation id="7445762425076701745">Identitatea serverului la care te-ai conectat nu poate fi validată complet. Ești conectat(ă) la un server folosind un nume valid numai în rețeaua ta, pentru care o autoritate de certificare externă nu are nici o modalitate de a-l valida. Deoarece unele autorități de certificare vor emite certificate pentru aceste nume oricum, nu există nicio modalitate de a te asigura că ești conectat(ă) la site-ul corect și nu la un atacator.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />să afli mai multe<ph name="END_LINK" /> despre această problemă.</translation>
+<translation id="7469372306589899959">Se confirmă cardul</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="7514365320538308">Descarcă</translation>
@@ -643,6 +652,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8866959479196209191">Această pagină afișează mesajul:</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
+<translation id="8877192140621905067">După ce confirmi, acest site va avea acces la detaliile cardului tău</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="889901481107108152">Ne pare rău, acest experiment nu este disponibil pe platforma dvs.</translation>
 <translation id="8903921497873541725">Mărește</translation>
@@ -675,6 +685,8 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">GOLEȘTE FORMULARUL</translation>
 <translation id="939736085109172342">Dosar nou</translation>
+<translation id="943029900877297437">Pentru a folosi cardurile salvate în Contul Google, conectează-te la Chrome.</translation>
+<translation id="962701380617707048">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului</translation>
 <translation id="969892804517981540">Versiune oficială</translation>
 <translation id="988159990683914416">Versiune de programare</translation>
 </translationbundle>

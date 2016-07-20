@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Haluatko varmasti poistaa nämä sivut historiastasi?</translation>
 <translation id="2677748264148917807">Poistu</translation>
 <translation id="2704283930420550640">Arvo ei vastaa muotoa.</translation>
+<translation id="2704951214193499422">Chromium ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="2705137772291741111">Tämän sivuston välimuistiin tallennettu kopio oli lukukelvoton.</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="2712173769900027643">Pyydä käyttölupaa</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Jos tämä on käytössä, Chromium tallentaa kortin kopion tälle laitteelle nopeuttaakseen lomakkeiden täyttöä.</translation>
 <translation id="2991174974383378012">Jakaminen verkkosivustojen kanssa</translation>
 <translation id="3005723025932146533">Näytä tallennettu kopio</translation>
+<translation id="3008447029300691911">Anna kortin <ph name="CREDIT_CARD" /> CVC. Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="3010559122411665027">Luettelokohde "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Väärä käytäntötyyppi</translation>
 <translation id="3032412215588512954">Haluatko päivittää tämän sivuston?</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
 <translation id="3041612393474885105">Varmenteen tiedot</translation>
+<translation id="3063697135517575841">Chrome ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="3093245981617870298">Olet offline-tilassa.</translation>
 <translation id="3105172416063519923">Laitteen tunnus:</translation>
 <translation id="3109728660330352905">Sinulla ei ole oikeutta tarkastella tätä sivua.</translation>
@@ -206,6 +209,7 @@
 <translation id="3225919329040284222">Palvelin esitti varmenteen, joka ei vastaa sisäänrakennettuja odotuksia. Tietyillä tehokkaasti suojatuilla sivustoilla on odotuksia, joilla suojataan käyttäjiä.</translation>
 <translation id="3226128629678568754">Paina päivityspainiketta, niin sivun lataukseen tarvittavat tiedot lähetetään uudelleen.</translation>
 <translation id="3228969707346345236">Käännös epäonnistui, koska sivun kieli on jo <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Anna kortin <ph name="CREDIT_CARD" /> CVC</translation>
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="3270847123878663523">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="3286538390144397061">Käynnistä uudelleen</translation>
@@ -407,6 +411,7 @@
 <translation id="5677928146339483299">Estetty</translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
+<translation id="5784606427469807560">Korttia vahvistettaessa tapahtui virhe. Tarkista internetyhteys ja yritä uudelleen.</translation>
 <translation id="5785756445106461925">Tällä sivulla on kuitenkin muita osia, jotka eivät ole suojattuja. Muut voivat tarkastella näitä osia siirron aikana, ja hyökkääjä voi muuttaa sivun ulkoasua muokkaamalla näitä osia.</translation>
 <translation id="5810442152076338065">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu vanhentuneella salaustekniikalla.</translation>
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
@@ -480,6 +485,7 @@
 <translation id="6839929833149231406">Alue</translation>
 <translation id="6874604403660855544">&amp;Toista lisäys</translation>
 <translation id="6891596781022320156">Käytännön tasoa ei tueta.</translation>
+<translation id="6895330447102777224">Korttisi vahvistettiin.</translation>
 <translation id="6897140037006041989">User agent</translation>
 <translation id="6903907808598579934">Ota synkronointi käyttöön</translation>
 <translation id="6915804003454593391">Käyttäjä:</translation>
@@ -508,6 +514,7 @@
 <translation id="7219179957768738017">Yhteys käyttää protokollaa <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Hups! Sinun on pyydettävä vanhemmaltasi lupa tällä sivulla käymiseen.</translation>
 <translation id="7246609911581847514">Tämä viesti näytetään, koska ylläpitäjän täytyy hyväksyä uudet sivustot ennen ensimmäistä lataamista.</translation>
+<translation id="724975217298816891">Päivitä kortin <ph name="CREDIT_CARD" /> tiedot antamalla sen CVC ja vanhenemispäivämäärä. Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="725866823122871198">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska tietokoneesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
 <translation id="7265986070661382626">Et voi siirtyä sivustoon <ph name="SITE" /> juuri nyt, koska sivusto <ph name="BEGIN_LINK" />käyttää varmenteiden kiinnittämistä<ph name="END_LINK" />. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu luultavasti toimii myöhemmin.</translation>
 <translation id="7269802741830436641">Tällä verkkosivulla on uudelleenohjaussilmukka</translation>
@@ -521,6 +528,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Vahvista kortti</translation>
 <translation id="7394102162464064926">Haluatko varmasti poistaa nämä sivut historiastasi?
 
 Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORTCUT_KEY" />.</translation>
@@ -530,6 +538,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7445762425076701745">Palvelimen, johon olet muodostanut yhteyden, identiteettiä ei voi täysin todentaa. Tietokoneesi on yhdistetty palvelimeen sellaisen nimen avulla, joka on kelvollinen vain verkkosi sisällä ja jonka omistajaa ulkopuolinen varmenteen myöntäjä ei pysty todentamaan. Koska jotkin varmenteen myöntäjät kuitenkin myöntävät varmenteita tällaisille nimille, et voi varmistaa, että olet muodostanut yhteyden haluamaasi verkkosivustoon etkä hakkeriin.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />tiedonhakua<ph name="END_LINK" /> ongelmaan liittyen</translation>
+<translation id="7469372306589899959">Vahvistetaan korttia</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
 <translation id="7514365320538308">Lataa</translation>
@@ -644,6 +653,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8866959479196209191">Viesti tältä sivulta:</translation>
 <translation id="8870413625673593573">Hiljattain suljetut</translation>
 <translation id="8876793034577346603">Verkkoasetuksia ei voitu jäsentää.</translation>
+<translation id="8877192140621905067">Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="8891727572606052622">Virheellinen välityspalvelimen tila.</translation>
 <translation id="889901481107108152">Tämä kokeilu ei ole käytettävissä käyttöympäristössäsi.</translation>
 <translation id="8903921497873541725">Lähennä</translation>
@@ -676,6 +686,8 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">TYHJENNÄ LOMAKE</translation>
 <translation id="939736085109172342">Uusi kansio</translation>
+<translation id="943029900877297437">Voit käyttää Google-tilillesi tallentamiasi kortteja kirjautumalla Chromeen.</translation>
+<translation id="962701380617707048">Päivitä kortin <ph name="CREDIT_CARD" /> tiedot antamalla sen CVC ja vanhenemispäivämäärä.</translation>
 <translation id="969892804517981540">Virallinen koontiversio</translation>
 <translation id="988159990683914416">Kehittäjän koontiversio</translation>
 </translationbundle>

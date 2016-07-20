@@ -645,6 +645,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
 <translation id="3034580675120919256">Us permet definir si els llocs web poden executar JavaScript. L'execució de JavaScript es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AllowJavaScript" i l'usuari podrà canviar-lo.</translation>
 <translation id="3038323923255997294">Continua executant les aplicacions en segon pla quan es tanqui <ph name="PRODUCT_NAME" /></translation>
+<translation id="3046192273793919231">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia</translation>
 <translation id="3048744057455266684">Si es defineix aquesta política i un URL de cerca suggerit a l'omnibox conté aquest paràmetre a la cadena de consulta o a l'identificador de fragment, el suggeriment mostra els termes de cerca i el proveïdor de cerca en comptes de l'URL de cerca sense processar.
 
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
@@ -908,6 +909,10 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si no s'estableix o s'estableix en False, els usuaris poden transferir els fitxers a Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
+<translation id="3939893074578116847">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia, de manera que el servidor pugui detectar si el dispositiu no té connexió.
+
+      Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
+      Si s'estableix en "false" o no s'estableix, no s'envien paquets.</translation>
 <translation id="3964909636571393861">Permet l'accés a una llista d'URL</translation>
 <translation id="3965339130942650562">Temps d'espera fins que s'executi el tancament de sessió de l'usuari inactiu</translation>
 <translation id="3967075520570946456">Activa que es mostri la pàgina de benvinguda la primera vegada que s'inicia el navegador després d'actualitzar el sistema operatiu.</translation>
@@ -1235,6 +1240,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si aquesta política es defineix, s'iniciarà automàticament la sessió especificada després d'un període de temps a la pantalla d'inici de sessió sense interacció de l'usuari. La sessió pública ja ha d'estar configurada (consulteu |DeviceLocalAccounts|).
 
       Si aquesta política no es defineix, no hi haurà cap inici de sessió automàtic.</translation>
+<translation id="5535957389335373033">La freqüència, en mil·lisegons, amb què s'envien paquets de xarxa de supervisió.
+
+      Si aquesta política no s'estableix, s'envien cada 3 minuts de manera predeterminada. La freqüència màxima és de 30 segons i la mínima de 24 hores. Tots els valors que no es trobin dins d'aquest interval es restringiran igualment al límit de l'interval.</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME" />.
 
@@ -2268,13 +2276,13 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
 <translation id="88890388118515381">
-      Especifica una llista d'aplicacions que no es poden desinstal·lar i que s'instal·len a la pantalla d'inici de sessió sense que us n'adoneu, sense cap interacció de l'usuari. Tots els permisos que les aplicacions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari, inclosos els permisos addicionals que se sol·licitin per a versions futures de l'aplicació.
+      Especifica una llista d'aplicacions que no es poden desinstal·lar i que s'instal·len a la pantalla d'inici de sessió sense que l'usuari se n'adoni (sense cap interacció de l'usuari). Tots els permisos que les aplicacions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari, inclosos els permisos addicionals que se sol·licitin per a versions futures de l'aplicació.
 
       Si se suprimeix de la llista una aplicació que anteriorment s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·la automàticament.
 
       Cada element de la llista de la política és una cadena que conté un identificador d'extensió i un URL d'actualització separats per un punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode desenvolupador està activat. L'URL d'actualització ha de dirigir a un document XML de manifest d'actualització segons es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. Tingueu en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al manifest de l'extensió.
 
-      Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització estàndard de Chrome Web Store. Per obtenir més informació sobre com allotjar extensions, consulteu: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
+      Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització estàndard de Chrome Web Store. Per obtenir més informació sobre com allotjar extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server proporciona fitxers de configuració específics de cada maquinari, com ara perfils de visualització ICC per ajustar el calibratge del monitor.
 
       Si aquesta política s'estableix en "false", el dispositiu no prova de contactar amb Quirks Server per baixar els fitxers de configuració.
@@ -2356,6 +2364,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9187743794267626640">Desactivació del muntatge d'emmagatzematge extern</translation>
 <translation id="9197740283131855199">Percentatge que permet ajustar el temps d'espera d'inactivitat de la pantalla si l'usuari passa a estar actiu després de la inactivitat.</translation>
 <translation id="9200828125069750521">Paràmetres de l'URL de la imatge que utilitza POST</translation>
+<translation id="9217154963008402249">Freqüència dels paquets de xarxa de supervisió</translation>
 <translation id="922540222991413931">Configura fonts d'instal·lació d'extensions, d'aplicacions i de scripts d'usuari</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME" /></translation>

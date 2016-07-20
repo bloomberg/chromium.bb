@@ -646,6 +646,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
+<translation id="3046192273793919231">Netzwerkpakete zur Überwachung des Onlinestatus an den Verwaltungsserver senden</translation>
 <translation id="3048744057455266684">Falls diese Richtlinie festgelegt ist und eine Such-URL-Vervollständigung aus der Omnibox diesen Parameter im Suchanfragen-String oder der Fragment-ID enthält, werden die Suchbegriffe und Suchanbieter anstelle der Such-URL angezeigt.
 
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
@@ -907,6 +908,13 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
+<translation id="3939893074578116847">Es werden Netzwerkpakete zur Überwachung des Onlinestatus an den 
+      Verwaltungsserver gesendet, damit er erkennt, wenn das Gerät offline ist.
+
+      Wenn für die Richtlinie "true" festgelegt ist, werden Kontrollnetzwerkpakete,
+      sogenannte "<ph name="HEARTBEATS_TERM" />", gesendet.
+      Wird "false" festgelegt oder die Richtlinie nicht konfiguriert, werden keine
+      Pakete gesendet.</translation>
 <translation id="3964909636571393861">Zugriff auf aufgelistete URLs gewähren</translation>
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3967075520570946456">Einblendung der Begrüßungsseite beim ersten Start des Browsers nach einer Aktualisierung des Betriebssystems aktivieren</translation>
@@ -1234,6 +1242,12 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Ist diese Richtlinie festgelegt, wird der Nutzer nach Ablauf einer bestimmten Zeitspanne der Inaktivität beim Anmeldebildschirm automatisch in der angegebenen Sitzung angemeldet. Die öffentliche Sitzung muss vorher konfiguriert werden, siehe |DeviceLocalAccounts|.
 
       Ist die Richtlinie nicht festgelegt, wird der Nutzer nicht automatisch angemeldet.</translation>
+<translation id="5535957389335373033">Durch diese Richtlinie wird festgelegt, wie oft Kontrollnetzwerkpakete gesendet werden (in Millisekunden).
+
+      Wenn die Richtlinie nicht konfiguriert ist, beträgt die standardmäßige
+      Häufigkeit 3 Minuten. Der Mindestwert beträgt 30 Sekunden und der
+      höchstmögliche Wert 24 Stunden. Werte, die außerhalb dieses Bereichs
+      liegen, werden auf den jeweiligen Mindest- oder Maximalwert angepasst.</translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="5560039246134246593">Hiermit fügen Sie beim Abrufen des Varianten-Seeds in <ph name="PRODUCT_NAME" /> einen Parameter hinzu.
 
@@ -2343,6 +2357,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9187743794267626640">Bereitstellen von externem Speicher deaktivieren</translation>
 <translation id="9197740283131855199">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung, wenn der Nutzer nach der Abdunkelung aktiv wird</translation>
 <translation id="9200828125069750521">Parameter für URL der Bildsuche, die POST verwendet</translation>
+<translation id="9217154963008402249">Häufigkeit von Kontrollnetzwerkpaketen</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="930930237275114205">Verzeichnis für <ph name="PRODUCT_FRAME_NAME" />-Nutzerdaten festlegen</translation>

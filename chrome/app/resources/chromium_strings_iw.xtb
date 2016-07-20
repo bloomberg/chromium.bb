@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">‏מערכת ההפעלה של Chromium אינה תומכת בהפעלת יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME" />. הקישור הנדרש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">‏נמצאה במערכת התקנה מתנגשת של Chromium. הסר את ההתקנה ונסה שוב.</translation>
 <translation id="1298199220304005244">‏עזרה באמצעות מערכת ההפעלה של Chromium</translation>
+<translation id="1347507563453473396">‏לא ניתן להציג את Chromium בשפה זו.</translation>
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
 <translation id="1403254041219632970">‏גרסאות עתידיות של Chromium כבר לא יתמכו במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">‏Chromium הפסיק לעדכן את הגרסה הזו של מערכת ההפעלה שלך וכבר אינו תומך בה.</translation>
 <translation id="2705212601509139398">‏האתר הזה משתמש בפלאגין Chromium Frame. התמיכה בפלאגין הזה תסתיים בקרוב. הסר את ההתקנה שלו והורד דפדפן תואם.</translation>
 <translation id="2711502716910134313">‏כרטיסייה של Chromium</translation>
+<translation id="2718390899429598676">‏לשיפור האבטחה, Chromium יצפין את הנתונים.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="2801146392936645542">‏<ph name="FILE_NAME" /> הוא קובץ זדוני, ו-Chromium חסם אותו.</translation>
 <translation id="2847479871509788944">‏הסר מ-Chromium...</translation>
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
+<translation id="2905536371227304018">‏Chromium OS מוצג בשפה זו.</translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
 <translation id="2966088006374919794">‏Chromium צריך להפעיל יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME" />. הקישור הנדרש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">‏הוספה ל-Chromium</translation>
@@ -119,10 +122,13 @@
 <translation id="5427571867875391349">‏הגדר את Chromium כדפדפן ברירת המחדל שלך</translation>
 <translation id="5466153949126434691">‏Chromium מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chromium יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="549669000822060376">‏המתן בזמן ש-Chromium מתקין את עדכוני המערכת האחרונים.</translation>
+<translation id="556167189552180495">‏Chromium מוצג בשפה זו.</translation>
 <translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
+<translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
+<translation id="5768914737813585044">‏הצג את Chromium OS בשפה זו</translation>
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chromium)</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
@@ -170,6 +176,7 @@
 <translation id="705851970750939768">‏עדכן את Chromium‏</translation>
 <translation id="7064610482057367130">‏לא נמצאה התקנה של Chromium שיש לעדכן.</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
+<translation id="7090955637699162649">‏Chromium יכול להשתמש ב<ph name="BEGIN_LINK" />שירותי האינטרנט<ph name="END_LINK" /> לשיפור חוויית הגלישה. תוכל להשבית את השירותים האלו בכל עת.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{‏הפעולה תמחק לצמיתות פריט אחד מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}two{‏הפעולה תמחק לצמיתות שני פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}many{‏הפעולה תמחק לצמיתות $1 פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}other{‏הפעולה תמחק לצמיתות $1 פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}}</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7162152143154757523">‏Chromium יכול לספק בדיקת איות חכמה יותר על ידי שליחת הטקסט שאתה מקליד בדפדפן אל שרתי Google. כך אתה יכול להשתמש באותה טכנולוגיה של בדיקת איות שבה נעשה שימוש בחיפוש Google.</translation>
@@ -194,6 +201,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
 <translation id="7419987137528340081">‏אם אתה מעדיף לשמור את נתוני Chromium הקיימים שלך בנפרד, תוכל ליצור משתמש Chromium חדש עבור <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">‏Chromium דורש גרסת Windows XP או מאוחרת יותר. תכונות מסוימות עלולות שלא לפעול.</translation>
+<translation id="7437562785125777404">‏לא ניתן להציג את Chromium OS בשפה זו.</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7483335560992089831">‏לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="750717762378961310">‏הקובץ הזה זדוני, ו-Chromium חסם אותו.</translation>

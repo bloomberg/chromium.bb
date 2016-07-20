@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Czy na pewno chcesz usunąć te strony z historii?</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
+<translation id="2704951214193499422">Chromium nie może obecnie potwierdzić karty. Spróbuj ponownie później.</translation>
 <translation id="2705137772291741111">Zapisana w pamięci podręcznej kopia tej strony jest uszkodzona.</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="2712173769900027643">Poproś o pozwolenie</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Jeśli włączysz tę opcję, Chromium zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
 <translation id="2991174974383378012">Udostępnianie stronom internetowym</translation>
 <translation id="3005723025932146533">Pokaż zapisaną kopię</translation>
+<translation id="3008447029300691911">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie.</translation>
 <translation id="3010559122411665027">Pozycja listy „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
 <translation id="3032412215588512954">Chcesz ponownie załadować tę stronę?</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
 <translation id="3041612393474885105">Informacje o certyfikacie</translation>
+<translation id="3063697135517575841">Chrome nie może obecnie potwierdzić karty. Spróbuj ponownie później.</translation>
 <translation id="3093245981617870298">Jesteś offline.</translation>
 <translation id="3105172416063519923">Identyfikator zasobu:</translation>
 <translation id="3109728660330352905">Nie masz autoryzacji do wyświetlania tej strony.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Serwer przedstawił certyfikat, który nie pasuje do zaprogramowanych oczekiwań. Oczekiwania mają chronić Cię w określonych witrynach o wysokim poziomie zabezpieczeń.</translation>
 <translation id="3226128629678568754">Naciśnij przycisk ponownego załadowania, by przesłać dane wymagane do wczytania strony.</translation>
 <translation id="3228969707346345236">Tłumaczenie nie powiodło się, ponieważ strona jest już w języku: <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Wpisz kod CVC karty <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
 <translation id="3270847123878663523">&amp;Cofnij zmianę kolejności</translation>
 <translation id="3286538390144397061">Uruchom ponownie teraz</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5710435578057952990">Tożsamość witryny nie została zweryfikowana.</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
+<translation id="5784606427469807560">Podczas potwierdzania karty wystąpił problem. Sprawdź połączenie internetowe i spróbuj ponownie.</translation>
 <translation id="5785756445106461925">Ta strona zawiera także niezabezpieczone zasoby. Podczas przesyłania mogą je wyświetlić inni użytkownicy, a osoby atakujące mogą je zmodyfikować, by zmienić wygląd strony.</translation>
 <translation id="5810442152076338065">Połączenie z <ph name="DOMAIN" /> jest szyfrowane przy użyciu przestarzałego zestawu szyfrów.</translation>
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Dzielnica</translation>
 <translation id="6874604403660855544">&amp;Ponów dodanie</translation>
 <translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
+<translation id="6895330447102777224">Karta została potwierdzona</translation>
 <translation id="6897140037006041989">Klient</translation>
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6915804003454593391">Użytkownik:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Połączenie z szyfrowaniem <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Ups! Musisz spytać rodzica, czy możesz wejść na tę stronę.</translation>
 <translation id="7246609911581847514">Ten komunikat pojawia się, ponieważ Twój menedżer musi zatwierdzić nowe strony, zanim po raz pierwszy je otworzysz.</translation>
+<translation id="724975217298816891">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane. Po potwierdzeniu zostaną one udostępnione tej stronie.</translation>
 <translation id="725866823122871198">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na komputerze są nieprawidłowe.</translation>
 <translation id="7265986070661382626">Nie możesz teraz odwiedzić strony <ph name="SITE" />, bo <ph name="BEGIN_LINK" />stosuje ona przypinanie certyfikatów<ph name="END_LINK" />. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie strona będzie wkrótce działać.</translation>
 <translation id="7269802741830436641">Ta strona internetowa zawiera pętlę przekierowań</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Potwierdź kartę</translation>
 <translation id="7394102162464064926">Czy na pewno chcesz usunąć te strony ze swojej historii?
 
 Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />.</translation>
@@ -529,6 +537,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="7445762425076701745">Nie można w pełni zweryfikować tożsamości serwera, z którym nawiązano połączenie. Nawiązano połączenie z serwerem przy użyciu nazwy obowiązującej jedynie w Twojej sieci i której własności zewnętrzny urząd certyfikacji nie jest w stanie zweryfikować. Niektóre urzędy certyfikacji wydają certyfikaty dla takich nazw bez względu na to, że nie można upewnić się, iż nawiązano połączenie z witryną, z którą zamierzano, a nie z intruzem.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o tym problemie.</translation>
+<translation id="7469372306589899959">Potwierdzam kartę</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -643,6 +652,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8866959479196209191">Komunikat z bieżącej strony:</translation>
 <translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
+<translation id="8877192140621905067">Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="889901481107108152">Eksperyment jest niedostępny na Twojej platformie.</translation>
 <translation id="8903921497873541725">Powiększ</translation>
@@ -675,6 +685,8 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">WYCZYŚĆ FORMULARZ</translation>
 <translation id="939736085109172342">Nowy folder</translation>
+<translation id="943029900877297437">Aby użyć kart zapisanych na koncie Google, zaloguj się w Chrome.</translation>
+<translation id="962701380617707048">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane</translation>
 <translation id="969892804517981540">Oficjalna wersja</translation>
 <translation id="988159990683914416">Build</translation>
 </translationbundle>

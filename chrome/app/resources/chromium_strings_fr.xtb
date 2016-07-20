@@ -9,6 +9,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1221340462641866827">Chromium OS ne permet pas le lancement d'une application externe pour gérer les liens <ph name="SCHEME" />. Le lien requis est <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Une installation de Chromium incompatible a été détectée sur le système. Veuillez la désinstaller, puis réessayer.</translation>
 <translation id="1298199220304005244">Obtenir de l'aide sur l'utilisation de Chromium OS</translation>
+<translation id="1347507563453473396">Chromium ne peut pas être affiché dans cette langue.</translation>
 <translation id="1396446129537741364">Tentative d'affichage des mots de passe dans Chromium</translation>
 <translation id="1403254041219632970">Les futures versions de Chromium ne seront plus compatibles avec les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
 <translation id="1414495520565016063">Vous êtes connecté à Chromium.</translation>
@@ -56,10 +57,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2685838254101182273">Chromium n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
 <translation id="2705212601509139398">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis télécharger un navigateur compatible.</translation>
 <translation id="2711502716910134313">Onglet Chromium</translation>
+<translation id="2718390899429598676">Pour plus de sécurité, vos données seront chiffrées dans Chromium.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2801146392936645542">Le fichier "<ph name="FILE_NAME" />" a été bloqué dans Chromium, car son contenu est malveillant.</translation>
 <translation id="2847479871509788944">Supprimer de Chromium</translation>
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
+<translation id="2905536371227304018">Chromium OS est affiché dans cette langue.</translation>
 <translation id="2910007522516064972">À propos de &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium nécessite le lancement d'une application externe pour gérer les liens <ph name="SCHEME" />. Le lien demandé est <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
@@ -122,10 +125,13 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5427571867875391349">Définir Chromium comme navigateur par défaut</translation>
 <translation id="5466153949126434691">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version. Une fois le téléchargement terminé, Chromium redémarre et vous pouvez de nouveau l'utiliser.</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour du système.</translation>
+<translation id="556167189552180495">Chromium est affiché dans cette langue.</translation>
 <translation id="5563479599352954471">Rechercher en un clic</translation>
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
 <translation id="5634636535844844681">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Chromium.</translation>
 <translation id="5680901439334282664">connectez-vous à Chromium</translation>
+<translation id="5698481217667032250">Afficher Chromium dans cette langue</translation>
+<translation id="5768914737813585044">Afficher Chromium OS dans cette langue</translation>
 <translation id="5772805321386874569">(nécessite le <ph name="BEGIN_BUTTON" />redémarrage<ph name="END_BUTTON" /> de Chromium)</translation>
 <translation id="5796460469508169315">Chromium est presque prêt</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -173,6 +179,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="705851970750939768">Mettre à jour Chromium</translation>
 <translation id="7064610482057367130">Aucune installation de Chromium à mettre à jour.</translation>
 <translation id="7066436765290594559">Impossible de synchroniser vos données dans Chromium OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
+<translation id="7090955637699162649">Des <ph name="BEGIN_LINK" />services Web<ph name="END_LINK" /> sont parfois utilisés dans Chromium pour améliorer votre confort de navigation. Vous pouvoir choisir de désactiver ces services à tout moment.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}one{Cette action aura pour effet de supprimer définitivement $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}other{Cette action aura pour effet de supprimer définitivement $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}}</translation>
 <translation id="7138853919861947730">Chromium utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="7162152143154757523">Chromium peut vous proposer une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
@@ -197,6 +204,7 @@ Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assure
 Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
 <translation id="7419987137528340081">Si vous préférez conserver vos données Chromium à part, vous pouvez créer un utilisateur Chromium pour <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
+<translation id="7437562785125777404">Chromium OS ne peut pas être affiché dans cette langue.</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="750717762378961310">Ce fichier est malveillant. Il a donc été bloqué dans Chromium.</translation>

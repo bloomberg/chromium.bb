@@ -297,6 +297,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Listahan ng autocompletion</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3812237531158591503">i-paste ang $1.</translation>
 <translation id="3816633764618089385">Susunod na media</translation>
 <translation id="3819376190738087562">Walang mga jump.</translation>
 <translation id="385383972552776628">Buksan ang page ng mga opsyon</translation>
@@ -553,6 +554,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="6355910664415701303">Walang nakaraang item sa listahan.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Nakaraang heading</translation>
+<translation id="6378565991815958969">kopyahin ang $1.</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Walang nakaraang radio button.</translation>
 <translation id="6414968628640960377">Nakaraang naiibang elemento.</translation>
@@ -779,6 +781,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="9077213568694924680">inalis sa pagpili</translation>
 <translation id="9082874451376019682">Walang nakaraang slider.</translation>
 <translation id="9089864840575085222">Echo ng cycle typing</translation>
+<translation id="9105227991373418255">i-cut ang $1.</translation>
 <translation id="9107530006868467849">Walang nakaraang widget ng media.</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>

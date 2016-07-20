@@ -30,6 +30,7 @@
 <translation id="13410144310025252">您可以在 Chrome 中浏览这些网页</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
+<translation id="1376578503827013741">正在计算…</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
@@ -46,7 +47,6 @@
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="1513352483775369820">书签和网络历史记录</translation>
-<translation id="1517433312004943670">必须提供电话号码</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自动检测编码</translation>
@@ -103,6 +103,7 @@
 <translation id="213279576345780926">已关闭<ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">正在查找附近的“实物网”网页</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
+<translation id="2148716181193084225">今天</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="21570240866965662">网速很慢</translation>
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
@@ -173,6 +174,7 @@
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 存储数据</translation>
 <translation id="2956410042958133412">该帐户由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
+<translation id="2962095958535813455">已切换到隐身标签页</translation>
 <translation id="2968755619301702150">证书查看器</translation>
 <translation id="2979025552038692506">所选的隐身标签页</translation>
 <translation id="2996291259634659425">创建密码</translation>
@@ -201,6 +203,7 @@
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="326254929494722411">您尚未在此设备上设置 Google 帐户</translation>
 <translation id="3269093882174072735">加载图片</translation>
+<translation id="3269956123044984603">要获取您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
 <translation id="3278850099957560514">只需使用 Google 优化您所访问的网页，即可节省数据流量。Google 既不会优化也不会看到您通过私密连接 (HTTPS) 或在隐身标签页中访问的网页。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
@@ -341,7 +344,6 @@
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5056549851600133418">为您推荐的文章</translation>
 <translation id="5063480226653192405">使用情况</translation>
-<translation id="5087580092889165836">添加新卡</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5107381076085091558">已暂停下载。</translation>
@@ -410,6 +412,7 @@
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
+<translation id="5748802427693696783">已切换到标准标签页</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5763382633136178763">隐身标签页</translation>
 <translation id="5765780083710877561">说明：</translation>
@@ -429,7 +432,6 @@
 <translation id="5911030830365207728">Google 翻译</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="5939518447894949180">重置</translation>
-<translation id="5950380453936610378">必须提供电子邮件地址</translation>
 <translation id="5961742032223302715">选择详细联系信息</translation>
 <translation id="5968595432776860642">正在播放“<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">正在存取视频输入</translation>
@@ -464,6 +466,7 @@
 <translation id="6333140779060797560">通过<ph name="APPLICATION" />分享</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
+<translation id="6383961787135158834">清除网站存储数据…</translation>
 <translation id="6388207532828177975">清除并重置</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406506848690869874">同步</translation>
@@ -597,6 +600,7 @@
 <translation id="7765158879357617694">移动</translation>
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
+<translation id="7781829728241885113">昨天</translation>
 <translation id="7788788617745289808">Chrome 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>

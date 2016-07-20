@@ -297,6 +297,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}other{#}}</translation>
 <translation id="3801735343383419236">Popis automatskog dovršavanja</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3812237531158591503">Zalijepi $1.</translation>
 <translation id="3816633764618089385">Sljedeći medij</translation>
 <translation id="3819376190738087562">Nema skokova.</translation>
 <translation id="385383972552776628">Otvaranje stranice s opcijama</translation>
@@ -553,6 +554,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="6355910664415701303">Nema prethodne stavke popisa.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Prethodni naslov</translation>
+<translation id="6378565991815958969">Kopiraj $1.</translation>
 <translation id="6387719785439924554">pored</translation>
 <translation id="6411426777058107714">Nema prethodnog izbornog gumba.</translation>
 <translation id="6414968628640960377">Prethodni drugačiji element.</translation>
@@ -779,6 +781,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="9077213568694924680">uklonjeno iz odabira</translation>
 <translation id="9082874451376019682">Nema prethodnog klizača.</translation>
 <translation id="9089864840575085222">Kružna izmjena odjeka tipkanja</translation>
+<translation id="9105227991373418255">Izreži $1.</translation>
 <translation id="9107530006868467849">Nema widgeta za prethodni medij.</translation>
 <translation id="9108370397979208512">mat</translation>
 <translation id="9108589040018540527">klzč</translation>

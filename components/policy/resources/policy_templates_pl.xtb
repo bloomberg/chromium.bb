@@ -646,6 +646,7 @@
 <translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3038323923255997294">Kontynuuj działanie aplikacji w tle po zamknięciu <ph name="PRODUCT_NAME" /></translation>
+<translation id="3046192273793919231">Wysyłaj pakiety sieciowe na serwer zarządzania w celu monitorowania stanu online</translation>
 <translation id="3048744057455266684">Jeśli ta zasada jest ustawiona, a URL wyszukiwania zaproponowany przez omnibox zawiera ten parametr w ciągu zapytania lub identyfikatorze fragmentu, wtedy sugestia zamiast nieprzetworzonego adresu URL wyszukiwania pokaże wyszukiwane hasła i dostawcę wyszukiwania.
 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, nie zachodzi zamiana wyszukiwanego hasła.
@@ -908,6 +909,11 @@
 
           Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, użytkownicy mogą przesyłać pliki na Dysk Google.</translation>
 <translation id="3915395663995367577">Adres URL pliku PAC serwera proxy</translation>
+<translation id="3939893074578116847">Wysyłaj pakiety sieciowe do serwera zarządzania w celu monitorowania stanu online,
+      by serwer mógł sprawdzić, czy urządzenie jest offline.
+
+      Jeśli ta zasada jest włączona, pakiety sieciowe monitorowania (<ph name="HEARTBEATS_TERM" />) będą wysyłane.
+      Jeśli jest wyłączona lub nieskonfigurowana, pakiety nie będą wysyłane.</translation>
 <translation id="3964909636571393861">Zezwalaj na dostęp do listy adresów URL</translation>
 <translation id="3965339130942650562">Limit czasu bezczynności, po którym następuje wylogowanie</translation>
 <translation id="3967075520570946456">Włącz wyświetlanie strony powitalnej przy pierwszym uruchomieniu przeglądarki po uaktualnieniu systemu operacyjnego.</translation>
@@ -1236,6 +1242,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada jest ustawiona, użytkownik zostanie automatycznie zalogowany do określonej sesji po upływie określonego czasu nieaktywności na ekranie logowania. Sesja publiczna musi zostać wcześniej skonfigurowana (zobacz zasadę |DeviceLocalAccounts|).
 
       Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
+<translation id="5535957389335373033">Częstotliwość wysyłania pakietów sieciowych monitorowania (w milisekundach).
+
+      Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy minuty.
+      Minimalna częstotliwość to 30 s, a maksymalna – 24 godz.
+      Wartości spoza tego zakresu zostaną zmienione na wartości graniczne.</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME" />.
 
@@ -2353,6 +2364,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="9187743794267626640">Wyłącz podłączanie pamięci zewnętrznych</translation>
 <translation id="9197740283131855199">Wartość procentowa skalowania opóźnienia przyciemnienia ekranu, jeśli użytkownik stanie się aktywny po przyciemnieniu</translation>
 <translation id="9200828125069750521">Parametry dla adresów URL obrazów używających POST</translation>
+<translation id="9217154963008402249">Częstotliwość pakietów sieciowych monitorowania</translation>
 <translation id="922540222991413931">Konfiguruj źródła instalacji rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="930930237275114205">Ustaw katalog danych użytkownika <ph name="PRODUCT_FRAME_NAME" /></translation>

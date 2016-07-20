@@ -670,6 +670,7 @@
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
           Hvis denne retningslinjen ikke angis, brukes AllowJavaScript, og brukeren kan endre på dette.</translation>
 <translation id="3038323923255997294">Fortsett å kjøre bakgrunnsprogrammer når <ph name="PRODUCT_NAME" /> er lukket</translation>
+<translation id="3046192273793919231">Send nettverkspakker til administreringstjeneren for å overvåke nettstatusen</translation>
 <translation id="3048744057455266684">Hvis denne innstillingen er angitt og en nettadresse som blir foreslått av søkefeltet inneholder denne parameteren i søkestrengen eller fragmentidentifikatoren, viser forslaget søkeordene og søkeleverandøren i stedet for søkenettadressen.
 
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
@@ -928,6 +929,12 @@
 
           Hvis den ikke er spesifisert eller har verdien false (usann), kan brukere overføre filer til Google Disk.</translation>
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for proxy-tjener</translation>
+<translation id="3939893074578116847">Send nettverkspakker til administreringstjeneren for å overvåke nettstatusen, slik at
+      tjeneren kan oppdage om enheten er uten nett.
+
+      Hvis denne regelen er satt til true (sann), sendes nettverkspakker for
+      overvåking (såkalte <ph name="HEARTBEATS_TERM" />).
+      Hvis den settes til false (usann) eller ikke angis, sendes det ingen pakker.</translation>
 <translation id="3964909636571393861">Gir tilgang til en liste over nettadresser</translation>
 <translation id="3965339130942650562">Tidsavbrudd før inaktiv brukeravlogging utføres</translation>
 <translation id="3967075520570946456">Slå på visning av velkomstsiden ved den første oppstarten av nettleseren etter at operativsystemet er oppgradert.</translation>
@@ -1295,6 +1302,11 @@
       Hvis denne innstillingen angis, skjer det en automatisk pålogging etter en gitt periode av brukerinaktivitet. Den offentlige økten må allerede være konfigurert (se |DeviceLocalAccounts|).
 
      Hvis denne innstillingen ikke angis, skjer det ingen automatisk pålogging.</translation>
+<translation id="5535957389335373033">Hvor ofte (i millisekunder) nettverkspakker for overvåking sendes.
+
+      Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 minutter.
+      Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer.
+      Verdier utenfor dette området blir begrenset til dette området.</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="5560039246134246593">Legg til et parameter for hentingen av startverdien for variasjoner i <ph name="PRODUCT_NAME" />.
 
@@ -2505,6 +2517,7 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="9187743794267626640">Deaktiver bruk av ekstern lagring</translation>
 <translation id="9197740283131855199">Prosentandelen det skaleres etter for å justere forsinkelse i skjermdemping, hvis brukeren har blitt aktiv igjen etter demping</translation>
 <translation id="9200828125069750521">Parametere for bildenettadresser som bruker POST</translation>
+<translation id="9217154963008402249">Frekvensen for nettverkspakker for overvåking</translation>
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>

@@ -38,6 +38,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1818142563254268765">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia atnaujinti „Chrome“.</translation>
 <translation id="1864458292167284385">Nutraukiamas „Chrome“ programų paleidimo priemonės teikimas.</translation>
 <translation id="1877026089748256423">„Chrome“ versija yra pasenusi</translation>
+<translation id="1924381329666691588">„Google Chrome“ negalima pateikti šia kalba.</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2084710999043359739">Pridėti į „Chrome“</translation>
 <translation id="2246246234298806438">„Google Chrome“ negali rodyti spaudinio peržiūros, kai nėra integruotos PDF žiūryklės.</translation>
@@ -66,7 +67,9 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2748463065602559597">Žiūrite saugų „Google Chrome“ puslapį.</translation>
 <translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
+<translation id="2847461019998147611">Pateikti „Google Chrome“ šia kalba</translation>
 <translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
+<translation id="2888126860611144412">Apie „Chrome“</translation>
 <translation id="2997147809295888909">„Chrome“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris nepateikė jokios sertifikato skaidrumo informacijos.</translation>
 <translation id="3037838751736561277">„Google Chrome“ veikia fono režimu.</translation>
 <translation id="3047079729301751317">Atjungus <ph name="USERNAME" />, bus išvalyta jūsų istorija, žymės, nustatymai ir kiti „Chrome“ duomenys, saugomi šiame įrenginyje. „Google“ paskyroje saugomi duomenys nebus išvalyti. Juos galite tvarkyti <ph name="GOOGLE_DASHBOARD_LINK" />„Google“ informacijos suvestinėje<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -113,6 +116,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4480040274068703980">„Chrome“ OS negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
+<translation id="4519152997629025674">„Google Chrome“ gali naudoti <ph name="BEGIN_LINK" />žiniatinklio paslaugas<ph name="END_LINK" />, kad būtų pagerintas naršymas. Pasirinktinai galite bet kada neleisti teikti šių paslaugų.</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS" />. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="4631713731678262610">Paslėpti „Chrome“ meniu elementą</translation>
@@ -154,6 +158,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="5563479599352954471">Paieška vienu palietimu</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
+<translation id="5637867606963802593">„Chrome“ OS negalima pateikti šia kalba.</translation>
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="573759479754913123">Apie „Chrome“ OS</translation>
 <translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
@@ -173,6 +178,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6235018212288296708">„Google Chrome“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
 <translation id="6236285698028833233">„Google Chrome“ nebeatsinaujina ir nebepalaiko šios operacinės sistemos versijos.</translation>
 <translation id="629218512217695915">Naudokite „Chrome“ sugeneruotą slaptažodį</translation>
+<translation id="6368805772029492593">Kad būtų papildomai užtikrintas saugumas, „Google Chrome“ užšifruos jūsų duomenis.</translation>
 <translation id="6368958679917195344">„Chrome“ OS galima naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Netrukus šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma 10.6, 10.7 ir 10.8 versijų „Mac OS X“.</translation>
 <translation id="6470176598693778404">Šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma 10.6, 10.7 ir 10.8 versijų „Mac OS X“.</translation>
@@ -201,6 +207,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7177347454226092725">Atlikus šį veiksmą bus visam laikui ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip $2.</translation>
 <translation id="7185038942300673794">„<ph name="EXTENSION_NAME" />“ pridėtas į „Chrome“.</translation>
 <translation id="7191567847629796517">„Google Chrome“ OS negalima paleisti išorinės programos, skirtos „<ph name="SCHEME" />“ nuorodoms tvarkyti. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">„Google Chrome“ pateikiama šia kalba.</translation>
 <translation id="7196020411877309443">Kodėl tai matau?</translation>
 <translation id="7242029209006116544">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chrome“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Netrukus šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma „Windows XP“ ir „Windows Vista“.</translation>
@@ -210,11 +217,13 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7408085963519505752">„Chrome“ OS sąlygos</translation>
 <translation id="7419046106786626209">„Chrome“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="7436949144778751379">„Google Chrome“ reikia „Windows XP“ ar naujesnės versijos. Gali neveikti kai kurios funkcijos.</translation>
+<translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
 <translation id="7459554271817304652">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Google Chrome“ bet kuriuo kompiuteriu.</translation>
 <translation id="7473136999113284234">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7494905215383356681">„Chrome“ atvirojo šaltinio licencijos</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip $2.}one{Atlikus šį veiksmą bus visam laikui ištrintas mažiausiai $1 elementas iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip $2.}few{Atlikus šį veiksmą bus visam laikui ištrinti mažiausiai $1 elementai iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip $2.}many{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elemento iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip $2.}other{Atlikus šį veiksmą bus visam laikui ištrinta mažiausiai $1 elementų iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip $2.}}</translation>
+<translation id="7552219221109926349">Pateikti „Chrome“ OS šia kalba</translation>
 <translation id="7592736734348559088">„Google Chrome“ negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="7626032353295482388">Sveiki, tai „Chrome“</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
@@ -227,6 +236,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7908168227788431038">Beveik atnaujinta! Paleiskite „Google Chrome“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="795025003224538582">Nepaleisti iš naujo</translation>
+<translation id="7964230182933713106">„Chrome“ OS pateikiama šia kalba.</translation>
 <translation id="8005540215158006229">„Chrome“ beveik paruošta.</translation>
 <translation id="8008534537613507642">Iš naujo įdiegti „Chrome“</translation>
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME" />“ kanalą...</translation>

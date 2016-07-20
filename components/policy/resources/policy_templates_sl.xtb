@@ -682,6 +682,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta pravilnik ni nastavljen, bo omogočen pravilnik »AllowJavaScript«, uporabnik pa ga bo lahko spremenil.</translation>
 <translation id="3038323923255997294">Nadaljuj izvajanje programov v ozadju, ko je <ph name="PRODUCT_NAME" /> zaprt</translation>
+<translation id="3046192273793919231">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave</translation>
 <translation id="3048744057455266684">Če je pravilnik nastavljen in predlagani iskalni URL iz naslovne vrstice vsebuje ta parameter v poizvedbi ali identifikatorju delov, predlog prikaže iskalne izraze in ponudnika iskanja namesto neobdelanega iskalnega URL-ja.
 
           Pravilnik je izbiren. Če ga ne nastavite, iskalni izrazi ne bodo nadomeščeni.
@@ -960,6 +961,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
 Če ta možnost ni nastavljena ali je nastavljena na »False«, bodo uporabniki lahko prenesli datoteke v Google Drive.</translation>
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
+<translation id="3939893074578116847">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave, tako da lahko
+      strežnik zazna, ali ima naprava povezavo.
+
+      Če je pravilnik omogočen, se pošiljajo omrežni paketi za spremljanje (t.i. <ph name="HEARTBEATS_TERM" />).
+      Če je onemogočen ali ni nastavljen, se paketi ne pošiljajo.</translation>
 <translation id="3964909636571393861">Omogoča dostop do seznama spletnih naslovov</translation>
 <translation id="3965339130942650562">Časovna omejitev za odjavo nedejavnega uporabnika</translation>
 <translation id="3967075520570946456">Omogočanje prikaza pozdravne strani ob prvem zagonu brskalnika po nadgradnji operacijskega sistema</translation>
@@ -1341,6 +1347,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik nastavljen, bo po preteku določenega časa nedejavnosti uporabnika na zaslonu za prijavo določena seja prijavljena samodejno. Javna seja mora biti pred tem konfigurirana (glejte |DeviceLocalAccounts|).
 
       Če ta pravilnik ni nastavljen, ni samodejne prijave.</translation>
+<translation id="5535957389335373033">Kako pogosto se pošiljajo omrežni paketi za spremljanje (v milisekundah).
+
+      Če ta pravilnik ni nastavljen, je privzeta pogostost 3 minute. Najmanjša
+      vrednost za pogostost je 30 sekund, največja pa 24 ur – vrednosti
+      zunaj tega obsega bodo omejene na ta obseg.</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
 <translation id="5560039246134246593">Dodajanje parametra prejemanju semen različic v izdelku <ph name="PRODUCT_NAME" />.
 
@@ -2566,6 +2577,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="9187743794267626640">Onemogoči vpenjanje zunanjega pomnilnika</translation>
 <translation id="9197740283131855199">Odstotek prilagoditve zakasnitve zatemnitve zaslona, če je uporabnik dejaven po zatemnitvi</translation>
 <translation id="9200828125069750521">Parametri za slikovni URL, ki uporablja POST</translation>
+<translation id="9217154963008402249">Pogostost omrežnih paketov za spremljanje</translation>
 <translation id="922540222991413931">Konfiguriranje virov za namestitev razširitev, aplikacij in uporabniških skriptov</translation>
 <translation id="924557436754151212">Uvoz shranjenih gesel privzetega brskalnika pri prvem zagonu</translation>
 <translation id="930930237275114205">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_FRAME_NAME" /></translation>

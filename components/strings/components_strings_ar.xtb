@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">هل تريد بالتأكيد حذف هذه الصفحات من السجل؟</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
+<translation id="2704951214193499422">‏لم يتمكن Chromium من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="2705137772291741111">تعذر قراءة النسخة المحفوظة (المخزنة في ذاكرة التخزين المؤقت) لموقع الويب هذا.</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2712173769900027643">طلب إذن</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">‏عند التمكين، سيُخزن Chromium نسخة من بطاقتك على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="2991174974383378012">المشاركة مع مواقع الويب</translation>
 <translation id="3005723025932146533">عرض نسخة محفوظة</translation>
+<translation id="3008447029300691911">‏أدخل رمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" />. بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع.</translation>
 <translation id="3010559122411665027">إدخال القائمة "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
 <translation id="3032412215588512954">هل تريد إعادة تحميل هذا الموقع؟</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
+<translation id="3063697135517575841">‏لم يتمكن Chrome من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="3093245981617870298">أنت غير متصل.</translation>
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="3109728660330352905">ليس لديك إذن بعرض هذه الصفحة.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع ويب موثوقة وآمنة جدًا لتوفير الحماية لك.</translation>
 <translation id="3226128629678568754">اضغط على زر إعادة التحميل لإعادة إرسال البيانات المطلوبة لتحميل الصفحة.</translation>
 <translation id="3228969707346345236">أخفقت الترجمة لأن الصفحة باللغة <ph name="LANGUAGE" /> فعلاً.</translation>
+<translation id="323107829343500871">‏أدخل رمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
 <translation id="3270847123878663523">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="3286538390144397061">إعادة التشغيل الآن</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">تم المنع</translation>
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
+<translation id="5784606427469807560">حدثت مشكلة أثناء التأكد من بطاقتك. تحقق من اتصالك بالإنترنت وأعد المحاولة.</translation>
 <translation id="5785756445106461925">إضافة إلى ذلك، تتضمن هذه الصفحة موارد أخرى غير آمنة. ويستطيع الآخرون مشاهدة هذه الموارد أثناء نقلها، كما يستطيع أي مهاجم تعديلها لتغيير مظهر الصفحة.</translation>
 <translation id="5810442152076338065">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير قديمة.</translation>
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">المنطقة</translation>
 <translation id="6874604403660855544">إعا&amp;دة الإضافة</translation>
 <translation id="6891596781022320156">مستوى السياسة غير مدعوم.</translation>
+<translation id="6895330447102777224">تم التأكد من بطاقتك</translation>
 <translation id="6897140037006041989">وكيل المستخدم</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6915804003454593391">المستخدم:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">الاتصال يستخدم <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">عفوًا! عليك أن تسأل والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
 <translation id="7246609911581847514">ظهرت لك هذه الرسالة نظرًا لحاجة مديرك للموافقة على المواقع الجديدة عند زيارتك الأولى.</translation>
+<translation id="724975217298816891">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع.</translation>
 <translation id="725866823122871198">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت لجهاز الكمبيوتر (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
 <translation id="7265986070661382626">لا يمكنك زيارة <ph name="SITE" /> لأن موقع الويب <ph name="BEGIN_LINK" />يستخدم أداة التحقق من صحة الشهادات<ph name="END_LINK" />. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح.</translation>
 <translation id="7269802741830436641">تحتوي صفحة الويب هذه على حلقة إعادة توجيه</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" />‏ - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">لا</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">التأكد من البطاقة</translation>
 <translation id="7394102162464064926">هل تريد بالتأكيد حذف هذه الصفحات من السجل؟
 
 اعلم أنه يمكن الاستفادة من وضع التصفح المتخفي <ph name="SHORTCUT_KEY" /> في المرة التالية.</translation>
@@ -529,6 +537,7 @@
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
 <translation id="7445762425076701745">لا يمكن التحقق بصورة كاملة من صحة هوية الخادم الذي تتصل به. فأنت متصل بخادم باستخدام اسم صالح فقط ضمن شبكتك، والذي لن يتمكن المرجع المصدق الخارجي من التحقق من ملكيته. وحيث إن بعض المراجع المصدقة تُصدر الشهادات لهذه الأسماء على أي حال، فليست هناك طريقة للتأكد من أنك متصل بموقع الويب المقصود وليس بأحد المهاجمين.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
+<translation id="7469372306589899959">جارٍ التاكد من البطاقة</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7485870689360869515">لم يتم العثور على بيانات.</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -643,6 +652,7 @@
 <translation id="8866959479196209191">تعرض هذه الصفحة:</translation>
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
+<translation id="8877192140621905067">بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="889901481107108152">عذرًا، هذه التجربة غير متاحة على نظامك الأساسي.</translation>
 <translation id="8903921497873541725">تكبير</translation>
@@ -675,6 +685,8 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">محو النموذج</translation>
 <translation id="939736085109172342">مجلد جديد</translation>
+<translation id="943029900877297437">‏لاستخدام البطاقات التي حفظتها في حسابك في Google، سجّل الدخول إلى Chrome.</translation>
+<translation id="962701380617707048">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك</translation>
 <translation id="969892804517981540">البنية الرسمية</translation>
 <translation id="988159990683914416">بنية المطوِّر</translation>
 </translationbundle>

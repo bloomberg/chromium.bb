@@ -37,6 +37,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1818142563254268765">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez mettre Chrome à jour.</translation>
 <translation id="1864458292167284385">Le lanceur d'applications Chrome ne sera bientôt plus disponible</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
+<translation id="1924381329666691588">Google Chrome ne peut pas être affiché dans cette langue.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2084710999043359739">Ajouter à Chrome</translation>
 <translation id="2246246234298806438">Impossible d'afficher l'aperçu d'impression dans Google Chrome, car la visionneuse de documents PDF intégrée est absente.</translation>
@@ -65,7 +66,9 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
 <translation id="2769762047821873045">Google Chrome n'est pas votre navigateur par défaut.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
+<translation id="2847461019998147611">Afficher Google Chrome dans cette langue</translation>
 <translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
+<translation id="2888126860611144412">À propos de Chrome</translation>
 <translation id="2997147809295888909">Il a été confirmé dans Chrome que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Aucune information relative à la transparence du certificat n'a été fournie via le serveur.</translation>
 <translation id="3037838751736561277">Google Chrome est exécuté en mode arrière-plan.</translation>
 <translation id="3047079729301751317">La déconnexion de <ph name="USERNAME" /> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chrome stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -112,6 +115,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="4480040274068703980">Impossible de synchroniser vos données dans Chrome OS, car une erreur s'est produite lors de la connexion.</translation>
+<translation id="4519152997629025674">Des <ph name="BEGIN_LINK" />services Web<ph name="END_LINK" /> sont parfois utilisés dans Google Chrome pour améliorer votre confort de navigation. Vous pouvoir choisir de désactiver ces services à tout moment.</translation>
 <translation id="4561051373932531560">Avec Google Chrome, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="4567424176335768812">Vous êtes connecté avec l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" />. Vous pouvez maintenant accéder à vos favoris, à l'historique et aux autres paramètres sur tous les appareils sur lesquels vous êtes connecté.</translation>
 <translation id="4631713731678262610">Masquer dans le menu Chrome</translation>
@@ -153,6 +157,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5563479599352954471">Rechercher en un clic</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
+<translation id="5637867606963802593">Chrome OS ne peut pas être affiché dans cette langue.</translation>
 <translation id="568643307450491754">Retrouvez vos favoris dans le menu Chrome ou dans la barre de favoris.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
@@ -172,6 +177,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS</translation>
 <translation id="6236285698028833233">Google Chrome n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
 <translation id="629218512217695915">Utiliser le mot de passe généré par Chrome</translation>
+<translation id="6368805772029492593">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome.</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
 <translation id="6470176598693778404">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
@@ -200,6 +206,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7177347454226092725">Cette action aura pour effet de supprimer définitivement vos données de navigation de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.</translation>
 <translation id="7185038942300673794">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée à Google Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS ne permet pas le lancement d'une application externe pour gérer les liens <ph name="SCHEME" />. Le lien demandé est <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome est affiché dans cette langue.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur Windows XP et Windows Vista.</translation>
@@ -209,11 +216,13 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7408085963519505752">Conditions d'utilisation de Chrome OS</translation>
 <translation id="7419046106786626209">Impossible de synchroniser vos données dans Chrome OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="7436949144778751379">Google Chrome requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
+<translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="7459554271817304652">Configurez la synchronisation pour enregistrer sur le Web les fonctionnalités personnalisées de votre navigateur et y accéder à partir de Google Chrome sur n'importe quel ordinateur.</translation>
 <translation id="7473136999113284234">Chrome est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7494905215383356681">Licences Chrome Open Source</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}one{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}other{Cette action aura pour effet de supprimer définitivement au moins $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que $2.}}</translation>
+<translation id="7552219221109926349">Afficher Chrome OS dans cette langue</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="7626032353295482388">Bienvenue dans Chrome</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
@@ -226,6 +235,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7908168227788431038">Mise à jour presque terminée. Relancez Google Chrome pour la finaliser.</translation>
 <translation id="795025003224538582">Ne pas redémarrer</translation>
+<translation id="7964230182933713106">Chrome OS est affiché dans cette langue.</translation>
 <translation id="8005540215158006229">Google Chrome est presque prêt</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>

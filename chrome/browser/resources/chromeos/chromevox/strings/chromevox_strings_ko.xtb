@@ -297,6 +297,7 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">자동완성 목록</translation>
 <translation id="3810838688059735925">동영상</translation>
+<translation id="3812237531158591503">$1 항목을 붙여넣습니다.</translation>
 <translation id="3816633764618089385">다음 미디어</translation>
 <translation id="3819376190738087562">점프가 없습니다.</translation>
 <translation id="385383972552776628">옵션 페이지 열기</translation>
@@ -553,6 +554,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="6355910664415701303">이전 목록 항목이 없습니다.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">이전 제목</translation>
+<translation id="6378565991815958969">$1 항목을 복사합니다.</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">이전 라디오 버튼이 없습니다.</translation>
 <translation id="6414968628640960377">이전 다른 요소</translation>
@@ -779,6 +781,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="9077213568694924680">선택 항목에서 삭제</translation>
 <translation id="9082874451376019682">이전 슬라이더가 없습니다.</translation>
 <translation id="9089864840575085222">순환 입력 에코</translation>
+<translation id="9105227991373418255">$1 항목을 잘라냅니다.</translation>
 <translation id="9107530006868467849">이전 미디어 위젯이 없습니다.</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>

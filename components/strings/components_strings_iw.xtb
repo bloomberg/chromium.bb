@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
 <translation id="2677748264148917807">צא</translation>
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
+<translation id="2704951214193499422">‏ל-Chromium אין כרגע אפשרות לאשר את הכרטיס. נסה שוב מאוחר יותר.</translation>
 <translation id="2705137772291741111">העותק השמור (בקובץ השמור) של האתר הזה היה בלתי קריא.</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2712173769900027643">בקש רשות</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">‏אם האפשרות תופעל, Chromium יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="2991174974383378012">שיתוף עם אתרים</translation>
 <translation id="3005723025932146533">הצג עותק שמור</translation>
+<translation id="3008447029300691911">הזן את קוד האימות של הכרטיס <ph name="CREDIT_CARD" />. ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
 <translation id="3010559122411665027">רשומה ברשימה "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
 <translation id="3032412215588512954">האם ברצונך לטעון מחדש את האתר?</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3041612393474885105">פרטי אישור</translation>
+<translation id="3063697135517575841">‏Chrome לא הצליח לאשר את הכרטיס שלך הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="3093245981617870298">אתה במצב לא מקוון.</translation>
 <translation id="3105172416063519923">מזהה נכס:</translation>
 <translation id="3109728660330352905">אין לך הרשאה להציג את הדף הזה.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">השרת הציג אישור שאינו תואם את הציפיות המובנות. ציפיות אלה נכללות עבור אתרי אינטרנט מסוימים בעלי אבטחה גבוהה כדי להגן עליך.</translation>
 <translation id="3226128629678568754">לחץ על לחצן הטעינה מחדש כדי לשלוח מחדש את הנתונים הדרושים לטעינת הדף.</translation>
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">הזן את קוד האימות של הכרטיס <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
 <translation id="3286538390144397061">הפעל מחדש כעת</translation>
@@ -411,6 +415,7 @@ Del</translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5710435578057952990">הזהות של אתר זה לא אומתה.</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
+<translation id="5784606427469807560">הייתה בעיה באישור הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
 <translation id="5785756445106461925">כמו כן, דף זה כולל משאבים נוספים שאינם מאובטחים. גורמים אחרים עלולים לראות את המשאבים האלה במהלך העברתם, ותוקף עלול לשנות אותם באופן שישנה את מראה הדף.</translation>
 <translation id="5810442152076338065">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מיושנת.</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
@@ -484,6 +489,7 @@ Del</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="6874604403660855544">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="6891596781022320156">רמת המדיניות אינה נתמכת.</translation>
+<translation id="6895330447102777224">הכרטיס שלך מאושר</translation>
 <translation id="6897140037006041989">User agent</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6915804003454593391">משתמש:</translation>
@@ -512,6 +518,7 @@ Del</translation>
 <translation id="7219179957768738017">החיבור משתמש ב-<ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">אופס! עליך לשאול את ההורה שלך אם אתה יכול להיכנס לדף הזה.</translation>
 <translation id="7246609911581847514">אתה רואה את ההודעה הזו מפני שהמנהל שלך צריך לאשר אתרים חדשים עם הביקור הראשון שלך.</translation>
+<translation id="724975217298816891">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /> כדי לעדכן את פרטי הכרטיס. ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
 <translation id="725866823122871198">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במחשב שלך שגויים.</translation>
 <translation id="7265986070661382626">לא ניתן לבקר כעת ב-<ph name="SITE" /> מכיוון שהאתר <ph name="BEGIN_LINK" />משתמש בהצמדת אישורים<ph name="END_LINK" />. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שהדף יפעל מאוחר יותר.</translation>
 <translation id="7269802741830436641">דף אינטרנט זה מכיל לולאת כתובת אתר להפניה מחדש</translation>
@@ -525,6 +532,7 @@ Del</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">לא</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">אשר את הכרטיס</translation>
 <translation id="7394102162464064926">האם אתה בטוח שברצונך למחוק את הדפים האלה מההיסטוריה?
 
 שששש...! מצב גלישה בסתר <ph name="SHORTCUT_KEY" /> עשוי להיות שימושי בפעם הבאה.</translation>
@@ -534,6 +542,7 @@ Del</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="7445762425076701745">לא ניתן לאמת לגמרי את הזהות של השרת שאליו אתה מחובר. אתה מחובר לשרת באמצעות שם שקיים רק ברשת שלך, ושלרשות אישורים חיצונית אין דרך לאמת את בעלותך עליו. מכיוון שחלק מרשויות האישורים ינפיקו אישורים לשמות אלה ללא קשר, אין דרך להבטיח שאתה מחובר לאתר המיועד ואינך גורם תוקף.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /> על בעיה זו.</translation>
+<translation id="7469372306589899959">מאשר את הכרטיס</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="7514365320538308">הורד</translation>
@@ -648,6 +657,7 @@ Del</translation>
 <translation id="8866959479196209191">דף זה אומר:</translation>
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
+<translation id="8877192140621905067">ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="889901481107108152">מצטערים, ניסוי זה אינו זמין בפלטפורמה שלך.</translation>
 <translation id="8903921497873541725">התקרב</translation>
@@ -680,6 +690,8 @@ Del</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">נקה את הטופס</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
+<translation id="943029900877297437">‏היכנס ל-Chrome כדי להשתמש בכרטיסים ששמרת בחשבון Google.</translation>
+<translation id="962701380617707048">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /> כדי לעדכן את פרטי הכרטיס</translation>
 <translation id="969892804517981540">גירסה רשמית</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 </translationbundle>

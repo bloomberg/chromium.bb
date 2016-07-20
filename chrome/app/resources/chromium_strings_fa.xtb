@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">‏سیستم عامل Chromium از راه‌اندازی یک برنامه خارجی برای کار با پیوندهای <ph name="SCHEME" /> پشتیبانی نمی‌کند. پیوند موردنیاز، <ph name="PROTOLINK" /> است.</translation>
 <translation id="1293235220023151515">‏یک مورد نصب شده متناقض از Chromium در سیستم یافت شد. لطفاً آنرا حذف نصب کنید و دوباره امتحان کنید.</translation>
 <translation id="1298199220304005244">‏دریافت راهنمایی برای استفاده از سیستم عامل Chromium </translation>
+<translation id="1347507563453473396">‏Chromium نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="1396446129537741364">‏Chromium می‌خواهد گذرواژه‌ها را نشان دهد.</translation>
 <translation id="1403254041219632970">‏نسخه‌های آینده Chromium دیگر از Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ یا ۱۰٫۸ پشتیبانی نمی‌کند.</translation>
 <translation id="1414495520565016063">‏شما وارد سیستم Chromium شدید!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">‏Chromium دیگر به‌روزرسانی نمی‌شود ودیگر از این نسخه سیستم عامل پشتیبانی نمی‌کند.</translation>
 <translation id="2705212601509139398">‏این سایت از افزایه Chromium Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده و یک مرورگر سازگار بارگیری کنید.</translation>
 <translation id="2711502716910134313">‏برگه Chromium</translation>
+<translation id="2718390899429598676">‏برای امنیت بیشتر، Chromium داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
 <translation id="2801146392936645542">‏<ph name="FILE_NAME" /> مخرب است، و Chromium آن را مسدود کرده است.</translation>
 <translation id="2847479871509788944">‏حذف از Chromium...</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
+<translation id="2905536371227304018">‏سیستم عامل Chromium به این زبان نشان داده می‌شود.</translation>
 <translation id="2910007522516064972">‏درباره &amp;Chromium</translation>
 <translation id="2966088006374919794">‏برای کار با پیوندهای <ph name="SCHEME" />، Chromium باید برنامه خارجی را راه‌اندازی کند. پیوند <ph name="PROTOLINK" /> مورد نیاز است.</translation>
 <translation id="3032787606318309379">‏افزودن به Chromium…</translation>
@@ -120,10 +123,13 @@
 <translation id="5427571867875391349">‏تنظیم Chromium به عنوان مرورگر پیش‌فرضتان</translation>
 <translation id="5466153949126434691">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید. وقتی این دانلود تمام شد، Chromium دوباره شروع به کار می‌کند و می‌توانید کارتان را ادامه دهید.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
+<translation id="556167189552180495">‏Chromium به این زبان نشان داده می‌شود.</translation>
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
+<translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
+<translation id="5768914737813585044">‏نمایش سیستم عامل Chromium به این زبان</translation>
 <translation id="5772805321386874569">‏(Chromium باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
 <translation id="5796460469508169315">‏Chromium تقریباً آماده است.</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
@@ -171,6 +177,7 @@
 <translation id="705851970750939768">‏به‌روزرسانی Chromium</translation>
 <translation id="7064610482057367130">‏هیچ مورد نصب شده‌ای از Chromium برای به‌روزرسانی یافت نشد.</translation>
 <translation id="7066436765290594559">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود. لطفاً رمز عبارتی همگام‌سازی خود را به‌روز کنید.</translation>
+<translation id="7090955637699162649">‏ممکن است Chromium برای بهبود تجربه مرورتان از <ph name="BEGIN_LINK" />سرویس‌های وب<ph name="END_LINK" /> استفاده کند. می‌توانید در هر زمانی این سرویس‌ها را به‌صورت اختیاری غیرفعال کنید.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{‏این کار $1 مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chromium شوید.}one{‏این کار $1 مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chromium شوید.}other{‏این کار $1 مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chromium شوید.}}</translation>
 <translation id="7138853919861947730">‏Chromium ممکن است از سرویس‌های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="7162152143154757523">‏Chromium می‌تواند با ارسال مواردی که در مرورگر تایپ‌ می‌کنید به سرورهای Google، غلط گیر املایی هوشمندانه‌تری به شما ارائه دهد و به شما امکان دهد از همان فناوری غلط گیر املایی استفاده شده در جستجوی Google استفاده کنید.</translation>
@@ -194,6 +201,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 برای دستورالعمل‌های بیشتر، لطفاً رایانامه‌تان (<ph name="ACCOUNT_EMAIL" />) را بررسی کنید.</translation>
 <translation id="7419987137528340081">‏اگر ترجیح می‌دهید داده‌های Chromium خود را جدا نگهدارید، می‌توانید برای <ph name="USER_NAME" />، کاربر Chromium جدیدی ایجاد کنید.</translation>
 <translation id="7421823331379285070">‏Chromium به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
+<translation id="7437562785125777404">‏سیستم عامل Chromium نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="750717762378961310">‏این فایل مخرب است و Chromium آن را مسدود کرده است.</translation>

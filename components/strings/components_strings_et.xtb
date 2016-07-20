@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Olete kindel, et soovite need leheküljed oma ajaloost kustutada?</translation>
 <translation id="2677748264148917807">Lahku</translation>
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
+<translation id="2704951214193499422">Chromium ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
 <translation id="2705137772291741111">Selle saidi (vahemällu) salvestatud koopia oli loetamatu.</translation>
 <translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="2712173769900027643">Küsi luba</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Kui see on lubatud, salvestab Chromium teie kaardi koopia vormide kiiremaks täitmiseks sellesse seadmesse.</translation>
 <translation id="2991174974383378012">Veebisaitidega jagamine</translation>
 <translation id="3005723025932146533">Kuva salvestatud koopia</translation>
+<translation id="3008447029300691911">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> CVC. Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga.</translation>
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
 <translation id="3032412215588512954">Kas soovite selle saidi uuesti laadida?</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
 <translation id="3041612393474885105">Sertifikaadi andmed</translation>
+<translation id="3063697135517575841">Chrome ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
 <translation id="3093245981617870298">Olete võrguühenduseta.</translation>
 <translation id="3105172416063519923">Vara ID:</translation>
 <translation id="3109728660330352905">Teil pole volitust selle lehe vaatamiseks.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Serveri esitatud sertifikaat ei vasta sisseehitatud ootustele. Ootused on teie kaitsmiseks kaasatud kindlate kõrge turvalisusega veebisaitide jaoks.</translation>
 <translation id="3226128629678568754">Lehe laadimiseks vajalike andmete uuesti esitamiseks vajutage uuesti laadimise nuppu.</translation>
 <translation id="3228969707346345236">Tõlkimine nurjus, kuna lehe keel on juba <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Krediitkaardi <ph name="CREDIT_CARD" /> CVC sisestamine</translation>
 <translation id="3254409185687681395">Lisa see lehekülg järjehoidjatesse</translation>
 <translation id="3270847123878663523">&amp;Võta korrastamine tagasi</translation>
 <translation id="3286538390144397061">Taaskäivitada kohe</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Blokeeritud</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
+<translation id="5784606427469807560">Kaardi kinnitamisel tekkis probleem. Kontrollige Interneti-ühendust ja proovige uuesti.</translation>
 <translation id="5785756445106461925">Lisaks sisaldab see leht teisi ressursse, mis pole turvalised. Edastamise ajal võivad ressursse vaadata ka teised ja ründajad saavad lehe välimuse muutmiseks ressursse muuta.</translation>
 <translation id="5810442152076338065">Teie ühendus domeeniga <ph name="DOMAIN" /> on krüpteeritud aegunud šifreerimiskomplektiga.</translation>
 <translation id="5813119285467412249">&amp;Lisa uuesti</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Piirkond</translation>
 <translation id="6874604403660855544">&amp;Lisa uuesti</translation>
 <translation id="6891596781022320156">Reegli taset ei toetata.</translation>
+<translation id="6895330447102777224">Teie kaart on kinnitatud</translation>
 <translation id="6897140037006041989">Kasutajaagent</translation>
 <translation id="6903907808598579934">Lülita sünkroonimine sisse</translation>
 <translation id="6915804003454593391">Kasutaja:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Ühendus kasutab protokolli <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Vabandust! Peate küsima oma vanemalt, kas võite seda lehte külastada.</translation>
 <translation id="7246609911581847514">Näete seda sõnumit, kuna teie haldur peab uued saidid esmakordsel külastusel kinnitama.</translation>
+<translation id="724975217298816891">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC. Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga.</translation>
 <translation id="725866823122871198">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna arvuti kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
 <translation id="7265986070661382626">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait <ph name="BEGIN_LINK" />kasutab sertifikaadi kinnitamist<ph name="END_LINK" />. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="7269802741830436641">Sellel veebilehel on ümbersuunamissilmus</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Kaardi kinnitamine</translation>
 <translation id="7394102162464064926">Kas soovite kindlasti need lehed ajaloost kustutada?
 
 Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks osutuda.</translation>
@@ -529,6 +537,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="7445762425076701745">Serveri identiteeti, millega olete ühenduses, ei saa täielikult valideerida. Olete ühenduses serveriga nime abil, mis kehtib ainult teie võrgus, mistõttu ei saa väline sertifitseerimisorgan selle omandiõigust valideerida. Kuna mõni sertifitseerimisorgan väljastab sertifikaate hoolimata nende nimedest, puudub igasugune võimalus tagada, et olete ühenduses soovitud veebisaidi, mitte ründajaga.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Vaadake lisateavet<ph name="END_LINK" /> probleemi kohta.</translation>
+<translation id="7469372306589899959">Kaarti kinnitatakse</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
 <translation id="7514365320538308">Laadi alla</translation>
@@ -643,6 +652,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8866959479196209191">Leht ütleb:</translation>
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8876793034577346603">Võrgu seadistust ei õnnestunud sõeluda.</translation>
+<translation id="8877192140621905067">Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="889901481107108152">Kahjuks ei ole see eksperiment teie platvormil saadaval.</translation>
 <translation id="8903921497873541725">Suurendab</translation>
@@ -675,6 +685,8 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">TÜHJENDA VORM</translation>
 <translation id="939736085109172342">Uus kaust</translation>
+<translation id="943029900877297437">Google'i kontole salvestatud kaartide kasutamiseks logige Chrome'i sisse.</translation>
+<translation id="962701380617707048">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC</translation>
 <translation id="969892804517981540">Ametlik järk</translation>
 <translation id="988159990683914416">Arendaja järk</translation>
 </translationbundle>

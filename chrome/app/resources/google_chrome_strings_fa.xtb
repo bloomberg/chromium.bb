@@ -34,6 +34,7 @@
 <translation id="1818142563254268765">‏Chrome به‌طور خودکار به جدیدترین نسخه به‌روزرسانی نشد، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست خواهید داد. باید Chrome را به‌روزرسانی کنید.</translation>
 <translation id="1864458292167284385">‏راه‌انداز برنامه Chrome از دور خارج می‌شود.</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
+<translation id="1924381329666691588">‏Google Chrome نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="2077129598763517140">در صورت امکان از شتاب سخت‌افزاری استفاده شود</translation>
 <translation id="2084710999043359739">‏افزودن به Chrome</translation>
 <translation id="2246246234298806438">‏زمانی که نمایش دهنده داخلی PDF وجود نداشته باشد، Google Chrome نمی‌تواند پیش‌نمایش چاپ را نشان دهد.</translation>
@@ -62,7 +63,9 @@
 <translation id="2748463065602559597">‏شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="2769762047821873045">‏Google Chrome مرورگر پیش‌فرض شما نیست.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
+<translation id="2847461019998147611">‏نمایش Google Chrome به این زبان</translation>
 <translation id="2871893339301912279">‏شما در حال حاضر وارد سیستم Chrome شده‌اید!</translation>
+<translation id="2888126860611144412">‏درباره Chrome</translation>
 <translation id="2997147809295888909">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور هیچ اطلاعات «شفافیت گواهی‌نامه» معتبری ارائه نکرد.</translation>
 <translation id="3037838751736561277">‏Google Chrome در حالت پس‌زمینه است.</translation>
 <translation id="3047079729301751317">‏با قطع اتصال <ph name="USERNAME" />، سابقه، نشانک‌ها، تنظیمات و سایر داده‌های Chrome شما که در این دستگاه ذخیره شده‌اند، پاک می‌شود. داده‌های ذخیره شده در حساب Google شما پاک نمی‌شوند و در <ph name="GOOGLE_DASHBOARD_LINK" />داشبورد Google<ph name="END_GOOGLE_DASHBOARD_LINK" /> قابل مدیریت هستند.</translation>
@@ -109,6 +112,7 @@
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
+<translation id="4519152997629025674">‏ممکن است Google Chrome برای بهبود تجربه مرورتان، از <ph name="BEGIN_LINK" />سرویس‌های وب<ph name="END_LINK" /> استفاده کند. می‌توانید در هر زمانی این سرویس‌ها را به‌صورت اختیاری غیرفعال کنید.</translation>
 <translation id="4561051373932531560">‏Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="4631713731678262610">‏پنهان در منوی Chrome</translation>
@@ -146,6 +150,7 @@
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
+<translation id="5637867606963802593">‏سیستم عامل Chrome نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="568643307450491754">‏نشانک‌های خود را در منوی Chrome یا از نوار نشانک‌ها پیدا کنید.</translation>
 <translation id="573759479754913123">‏درباره سیستم عامل Chrome</translation>
 <translation id="5749068826913805084">‏Chrome برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
@@ -165,6 +170,7 @@
 <translation id="6235018212288296708">‏قانون ورودی برای Google Chrome به منظور اجازه به ترافیک mDNS.</translation>
 <translation id="6236285698028833233">‏Google Chrome به‌روزرسانی را متوقف کرده است و دیگر از این نسخه سیستم عامل پشتیبانی نمی‌کند.</translation>
 <translation id="629218512217695915">‏استفاده از گذرواژه ایجاد شده توسط Chrome</translation>
+<translation id="6368805772029492593">‏برای امنیت بیشتر، Google Chrome داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="6368958679917195344">‏Chrome OS با یک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگر امکان‌پذیر است.</translation>
 <translation id="6400076122676892962">‏دریافت به‌روزرسانی‌های Google Chrome به زودی در این رایانه متوقف خواهد شد زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="6470176598693778404">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
@@ -193,6 +199,7 @@
 <translation id="7177347454226092725">‏این کار داده‌های محصول مرورتان را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chrome شوید.</translation>
 <translation id="7185038942300673794">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شد.</translation>
 <translation id="7191567847629796517">‏Google Chrome OS از راه‌اندازی برنامه خارجی برای کار با پیوندهای <ph name="SCHEME" /> پشتیبانی نمی‌کند. پیوند درخواستی <ph name="PROTOLINK" /> است.</translation>
+<translation id="7193750696137290001">‏Google Chrome به این زبان نشان داده می‌شود.</translation>
 <translation id="7196020411877309443">چرا من این را می‌بینم؟</translation>
 <translation id="7242029209006116544">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. در صورت تمایل برای ذخیره داده‌های Chrome موجود به صورت جداگانه می‌توانید نمایه جدیدی ایجاد کنید. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏دریافت به‌روزرسانی‌های Google Chrome به‌زودی در این رایانه متوقف می‌شود، زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند.</translation>
@@ -202,11 +209,13 @@
 <translation id="7408085963519505752">‏شرایط Chrome OS</translation>
 <translation id="7419046106786626209">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="7436949144778751379">‏Google Chrome به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
+<translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
 <translation id="7459554271817304652">‏برای ذخیره ویژگی‌های مرورگر سفارشی شده خود در وب و دسترسی به آن‌ها از Google Chrome از هر رایانه دیگری، همگام‌سازی را راه‌اندازی کنید.</translation>
 <translation id="7473136999113284234">‏Chrome به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید.</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7494905215383356681">‏مجوزهای منبع باز Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{‏این کار حداقل $1 مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chrome شوید.}one{‏این کار حداقل $1 مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chrome شوید.}other{‏این کار حداقل $1 مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chrome شوید.}}</translation>
+<translation id="7552219221109926349">‏سیستم عامل Chrome به این زبان نشان داده می‌شود</translation>
 <translation id="7592736734348559088">‏Google Chrome قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>
 <translation id="7626032353295482388">‏به Chrome خوش آمدید</translation>
 <translation id="7747138024166251722">نصب کننده نتوانست دایرکتوری موقت ایجاد کند. لطفاً فضای خالی دیسک و اجازه نصب نرم‌افزار را بررسی کنید.</translation>
@@ -219,6 +228,7 @@
 <translation id="7890208801193284374">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chrome را به صورتی که مایلند تنظیم کنند.</translation>
 <translation id="7908168227788431038">‏تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، Google Chrome را راه‌اندازی مجدد کنید.</translation>
 <translation id="795025003224538582">راه‌اندازی مجدد نشود</translation>
+<translation id="7964230182933713106">‏سیستم عامل Chrome به این زبان نشان داده می‌شود.</translation>
 <translation id="8005540215158006229">‏Chrome تقریباً آماده است.</translation>
 <translation id="8008534537613507642">‏نصب مجدد Chrome</translation>
 <translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>

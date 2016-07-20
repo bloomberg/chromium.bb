@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2704283930420550640">Value doesn't match format.</translation>
+<translation id="2704951214193499422">Chromium was unable to confirm your card at this time. Please try again later.</translation>
 <translation id="2705137772291741111">The saved (cached) copy of this site was unreadable.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="2712173769900027643">Ask permission</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">If enabled, Chromium will store a copy of your card on this device for faster form filling.</translation>
 <translation id="2991174974383378012">Sharing with Websites</translation>
 <translation id="3005723025932146533">Show saved copy</translation>
+<translation id="3008447029300691911">Enter the CVC for <ph name="CREDIT_CARD" />. Once you confirm, your card details will be shared with this site.</translation>
 <translation id="3010559122411665027">List entry "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Wrong policy type</translation>
 <translation id="3032412215588512954">Do you want to reload this site?</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
+<translation id="3063697135517575841">Chrome was unable to confirm your card at this time. Please try again later.</translation>
 <translation id="3093245981617870298">You are offline</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
 <translation id="3109728660330352905">You don't have authorisation to view this page.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">The server presented a certificate that doesn't match built-in expectations. These expectations are included for certain, high-security websites in order to protect you.</translation>
 <translation id="3226128629678568754">Press the reload button to resubmit the data needed to load the page.</translation>
 <translation id="3228969707346345236">The translation failed because the page is already in <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Enter the CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
 <translation id="3270847123878663523">&amp;Undo Reorder</translation>
 <translation id="3286538390144397061">Restart Now</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5720705177508910913">Current user</translation>
+<translation id="5784606427469807560">There was a problem confirming your card. Check your Internet connection and try again.</translation>
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>
 <translation id="5810442152076338065">Your connection to <ph name="DOMAIN" /> is encrypted using an obsolete cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Redo add</translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
+<translation id="6895330447102777224">Your card is confirmed</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6915804003454593391">User:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Oops! You need to ask your parent if it's OK to visit this page.</translation>
 <translation id="7246609911581847514">You're seeing this message because your manager needs to approve new sites on your first visit.</translation>
+<translation id="724975217298816891">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. Once you've confirmed, your card details will be shared with this site.</translation>
 <translation id="725866823122871198">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your computer's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="7265986070661382626">You cannot visit <ph name="SITE" /> at the moment because the website <ph name="BEGIN_LINK" />uses certificate pinning<ph name="END_LINK" />. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="7269802741830436641">This web page has a redirect loop</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nope</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Confirm Card</translation>
 <translation id="7394102162464064926">Are you sure that you want to delete these pages from your history?
 
 Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</translation>
@@ -529,6 +537,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7441627299479586546">Wrong policy subject</translation>
 <translation id="7445762425076701745">The identity of the server to which you are connected cannot be fully validated. You are connected to a server using a name valid only within your network, and an external certificate authority has no way to validate ownership. As some certificate authorities will issue certificates for these names regardless, there is no way to ensure that you are connected to the intended website and not to an attacker.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about this problem.</translation>
+<translation id="7469372306589899959">Confirming card</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7485870689360869515">No data found.</translation>
 <translation id="7514365320538308">Download</translation>
@@ -643,6 +652,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8866959479196209191">This page says:</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
+<translation id="8877192140621905067">Once you've confirm, your card details will be shared with this site</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>
 <translation id="8903921497873541725">Zoom in</translation>
@@ -675,6 +685,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">CLEAR FORM</translation>
 <translation id="939736085109172342">New folder</translation>
+<translation id="943029900877297437">To use cards that you saved to your Google account, sign in to Chrome.</translation>
+<translation id="962701380617707048">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details</translation>
 <translation id="969892804517981540">Official Build</translation>
 <translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

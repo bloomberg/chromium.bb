@@ -34,6 +34,7 @@
 <translation id="1818142563254268765">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Aktualisieren Sie Chrome manuell.</translation>
 <translation id="1864458292167284385">Der Chrome App Launcher wird eingestellt.</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
+<translation id="1924381329666691588">Google Chrome kann in dieser Sprache nicht angezeigt werden.</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2084710999043359739">Zu Chrome hinzufügen</translation>
 <translation id="2246246234298806438">Google Chrome kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
@@ -62,7 +63,9 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
 <translation id="2769762047821873045">Google Chrome ist nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
+<translation id="2847461019998147611">Google Chrome in dieser Sprache anzeigen</translation>
 <translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
+<translation id="2888126860611144412">Info zu Chrome</translation>
 <translation id="2997147809295888909">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Der Server hat keine Informationen zur Zertifikatstransparenz bereitgestellt.</translation>
 <translation id="3037838751736561277">Google Chrome wird im Hintergrundmodus ausgeführt.</translation>
 <translation id="3047079729301751317">Wenn Sie die Verbindung zu <ph name="USERNAME" /> trennen, werden Ihr Verlauf sowie Ihre Lesezeichen, Einstellungen und sonstigen auf diesem Gerät gespeicherten Chrome-Daten gelöscht. In Ihrem Google-Konto gespeicherte Daten bleiben erhalten und können über das <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" /> verwaltet werden.</translation>
@@ -108,6 +111,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Melden Sie sich ab und wieder an, damit diese Änderung wirksam wird.</translation>
 <translation id="4480040274068703980">Chrome OS konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
+<translation id="4519152997629025674">Google Chrome nutzt möglicherweise <ph name="BEGIN_LINK" />Webdienste<ph name="END_LINK" /> zur Verbesserung Ihrer Browsererfahrung. Sie können diese Dienste jederzeit deaktivieren.</translation>
 <translation id="4561051373932531560">In Google Chrome können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="4631713731678262610">Im Chrome-Menü ausblenden</translation>
@@ -145,6 +149,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Erfahren Sie mehr über Website-Themen, ohne die Seite zu verlassen.</translation>
+<translation id="5637867606963802593">Chrome OS kann in dieser Sprache nicht angezeigt werden.</translation>
 <translation id="568643307450491754">Ihre Lesezeichen finden Sie im Chrome-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
@@ -164,6 +169,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6235018212288296708">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome</translation>
 <translation id="6236285698028833233">Chrome wird nicht mehr aktualisiert und unterstützt Ihre Betriebssystemversion nicht länger.</translation>
 <translation id="629218512217695915">Von Chrome generiertes Passwort verwenden</translation>
+<translation id="6368805772029492593">Google Chrome verschlüsselt Ihre Daten zur Erhöhung der Sicherheit.</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
 <translation id="6400076122676892962">Dieser Computer erhält demnächst keine Google Chrome-Updates mehr, da Mac OS X 10.6, 10.7 und 10.8 nicht mehr unterstützt werden.</translation>
 <translation id="6470176598693778404">Dieser Computer erhält keine Google Chrome-Updates mehr, da Mac OS X 10.6, 10.7 und 10.8 nicht mehr unterstützt werden.</translation>
@@ -192,6 +198,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7177347454226092725">Dadurch werden Ihre Browserdaten dauerhaft von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als $2 in Chrome an.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> wurde zu Chrome hinzugefügt.</translation>
 <translation id="7191567847629796517">Google Chrome OS unterstützt keine externe Anwendung zur Verarbeitung von <ph name="SCHEME" />-Links. Der angeforderte Link ist <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome wird in dieser Sprache angezeigt.</translation>
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>
 <translation id="7242029209006116544">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chrome-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Dieser Computer erhält demnächst keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden.</translation>
@@ -201,11 +208,13 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>
 <translation id="7419046106786626209">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>
 <translation id="7436949144778751379">Für Google Chrome ist Windows XP oder höher erforderlich. Einige Funktionen sind möglicherweise nicht verfügbar.</translation>
+<translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7459554271817304652">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Google Chrome auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="7473136999113284234">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7494905215383356681">Open-Source-Lizenzen für Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Dadurch wird mindestens $1 Element dauerhaft von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als $2 in Chrome an.}other{Dadurch werden mindestens $1 Elemente dauerhaft von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als $2 in Chrome an.}}</translation>
+<translation id="7552219221109926349">Chrome OS in dieser Sprache anzeigen</translation>
 <translation id="7592736734348559088">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
@@ -218,6 +227,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="7908168227788431038">Fast fertig! Starten Sie Google Chrome neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="795025003224538582">Nicht neu starten</translation>
+<translation id="7964230182933713106">Chrome OS wird in dieser Sprache angezeigt.</translation>
 <translation id="8005540215158006229">Chrome ist gleich bereit.</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>

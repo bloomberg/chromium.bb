@@ -8,6 +8,7 @@
 <translation id="1221340462641866827">Chromium-käyttöjärjestelmä ei tue ulkopuolisten sovellusten käynnistämistä <ph name="SCHEME" />-linkkien käsittelyä varten. Pyyntöön liittyvä linkki on <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Järjestelmästä löytyi ristiriidan aiheuttava toinen Chromium-asennus. Poista tuote ja yritä uudelleen.</translation>
 <translation id="1298199220304005244">Hanki apua Chromium-käyttöjärjestelmän käytössä</translation>
+<translation id="1347507563453473396">Chromiumia ei voi näyttää tällä kielellä.</translation>
 <translation id="1396446129537741364">Chromium yrittää näyttää salasanat.</translation>
 <translation id="1403254041219632970">Chromiumin tulevat versiot eivät enää tue Mac OS X -versioita 10.6, 10.7 tai 10.8.</translation>
 <translation id="1414495520565016063">Olet kirjautunut Chromiumiin!</translation>
@@ -55,10 +56,12 @@
 <translation id="2685838254101182273">Chromium on lakannut päivittymästä, eikä se enää tue käyttöjärjestelmäsi tätä versiota.</translation>
 <translation id="2705212601509139398">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja lataa yhteensopiva selain.</translation>
 <translation id="2711502716910134313">Chromium-välilehti</translation>
+<translation id="2718390899429598676">Chromium lisää suojausta salaamalla tietosi.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> on haitallinen, ja Chromium on estänyt sen.</translation>
 <translation id="2847479871509788944">Poista Chromiumista…</translation>
 <translation id="2886012850691518054">Valinnainen: Lähetä Googlelle automaattisesti käyttötilastoja ja virheraportteja Chromiumin kehittämiseksi.</translation>
+<translation id="2905536371227304018">Chromium-käyttöjärjestelmä näytetään tällä kielellä.</translation>
 <translation id="2910007522516064972">Tietoja &amp;Chromiumista</translation>
 <translation id="2966088006374919794">Chromiumin täytyy käynnistää ulkopuolinen sovellus <ph name="SCHEME" />-linkkien käsittelyä varten. Pyyntöön liittyvä linkki on <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Lisätään Chromiumiin...</translation>
@@ -121,10 +124,13 @@
 <translation id="5427571867875391349">Aseta Chromium oletusselaimeksi</translation>
 <translation id="5466153949126434691">Chromium päivittyy automaattisesti, joten käytössäsi on aina uusin versio. Kun lataus on valmis, Chromium käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
+<translation id="556167189552180495">Chromium näytetään tällä kielellä.</translation>
 <translation id="5563479599352954471">Etsi yhdellä kosketuksella</translation>
 <translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
 <translation id="5634636535844844681">Chromium edellyttää Windows 7:ää tai uudempaa versiota.</translation>
 <translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
+<translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
+<translation id="5768914737813585044">Näytä Chromium-käyttöjärjestelmä tällä kielellä</translation>
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON" />uudelleenkäynnistyksen<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on lähes valmis.</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
@@ -172,6 +178,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="7064610482057367130">Päivitettävää Chromium-asennusta ei löytynyt.</translation>
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
+<translation id="7090955637699162649">Chromium voi käyttää <ph name="BEGIN_LINK" />verkkopalveluita<ph name="END_LINK" /> selauskokemuksen parantamiseen. Voit halutessasi poistaa palvelut käytöstä.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}other{$1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}}</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="7162152143154757523">Chromium voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksen tarkistustekniikkaa.</translation>
@@ -196,6 +203,7 @@ Jotta <ph name="NEW_PROFILE_NAME" /> ei voi käyttää tiliäsi, lukitse profiil
 Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Jos haluat pitää nykyiset Chromium-tietosi erillään, voit luoda käyttäjälle <ph name="USER_NAME" /> uuden Chromium-tunnuksen.</translation>
 <translation id="7421823331379285070">Chromium vaatii Windows XP:n tai uudemman version. Kaikki ominaisuudet eivät välttämättä toimi.</translation>
+<translation id="7437562785125777404">Chromium-käyttöjärjestelmää ei voi näyttää tällä kielellä.</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7483335560992089831">Chromiumista ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium ja yritä uudelleen.</translation>
 <translation id="750717762378961310">Tämä tiedosto on haitallinen, ja Chromium on estänyt sen.</translation>

@@ -36,6 +36,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1818142563254268765">Prehliadač Chrome sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chrome je potrebné aktualizovať.</translation>
 <translation id="1864458292167284385">Čoskoro ukončíme používanie Spúšťača aplikácií Chrome.</translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
+<translation id="1924381329666691588">Google Chrome nie je možné zobraziť v tomto jazyku.</translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2084710999043359739">Pridať do prehliadača Chrome</translation>
 <translation id="2246246234298806438">Ak vstavaný zobrazovač súborov PDF chýba, prehliadač Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
@@ -64,7 +65,9 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2748463065602559597">Práve si prezeráte zabezpečenú stránku prehliadača Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
+<translation id="2847461019998147611">Zobraziť Google Chrome v tomto jazyku</translation>
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
+<translation id="2888126860611144412">Informácie o Google Chrome</translation>
 <translation id="2997147809295888909">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server neposkytol žiadne informácie o transparentnosti certifikátu.</translation>
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
 <translation id="3047079729301751317">Ak odpojíte účet <ph name="USERNAME" />, vymaže sa história, záložky, nastavenia a všetky ďalšie údaje prehliadača Chrome uložené na vašom zariadení. Údaje uložené v účte Google sa nevymažú a môžete ich spravovať v službe <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -110,6 +113,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
 <translation id="4480040274068703980">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
+<translation id="4519152997629025674">Google Chrome môže používať <ph name="BEGIN_LINK" />webové služby<ph name="END_LINK" />, aby vám spríjemnil prehliadanie. Tieto služby môžete kedykoľvek zakázať.</translation>
 <translation id="4561051373932531560">Prehliadač Google Chrome vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
 <translation id="4567424176335768812">Ste prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Teraz môžete na všetkých zariadeniach, kde ste prihlásený/-á, pristupovať k svojim záložkám, histórii a ďalším nastaveniam.</translation>
 <translation id="4631713731678262610">Skryť v Ponuke Chrome</translation>
@@ -151,6 +155,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5563479599352954471">Vyhľadávanie jediným klepnutím</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Získajte informácie o témach zmienených na stránke bez toho, aby ste danú stránku museli opustiť.</translation>
+<translation id="5637867606963802593">Chrome OS nie je možné zobraziť v tomto jazyku.</translation>
 <translation id="568643307450491754">Záložky nájdete v ponuke Chrome alebo na paneli so záložkami.</translation>
 <translation id="573759479754913123">Informácie o systéme Chrome OS</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
@@ -170,6 +175,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6235018212288296708">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="6236285698028833233">Prehliadač Google Chrome sa prestal aktualizovať a túto verziu vášho operačného systému už nepodporuje.</translation>
 <translation id="629218512217695915">Použite heslo generované prehliadačom Chrome</translation>
+<translation id="6368805772029492593">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Google Chrome šifrované.</translation>
 <translation id="6368958679917195344">Chrome OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru s otvoreným zdrojom<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Google Chrome, pretože systém Mac OS X verzií 10.6, 10.7 a 10.8 už nebude ďalej podporovaný.</translation>
 <translation id="6470176598693778404">Tento počítač už nebude dostávať aktualizácie prehliadača Google Chrome, pretože systém Mac OS X verzií 10.6, 10.7 a 10.8 už nie je podporovaný.</translation>
@@ -198,6 +204,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7177347454226092725">Táto akcia natrvalo odstráni vaše dáta prehliadania z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.</translation>
 <translation id="7185038942300673794">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chrome.</translation>
 <translation id="7191567847629796517">OS Google Chrome nepodporuje spúšťanie externých aplikácií na spracovanie odkazov <ph name="SCHEME" />. Požadovaný odkaz: <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome sa zobrazuje v tomto jazyku.</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>
 <translation id="7242029209006116544">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. Ak chcete, aby boli existujúce údaje prehliadača Chrome oddelené, môžete vytvoriť nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Tento počítač čoskoro prestane dostávať aktualizácie prehliadača Google Chrome, pretože systémy Windows XP a Windows Vista už nebudú ďalej podporované.</translation>
@@ -207,11 +214,13 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7408085963519505752">Zmluvné podmienky systému OS Chrome</translation>
 <translation id="7419046106786626209">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="7436949144778751379">Prehliadač Google Chrome vyžaduje systém Windows XP alebo novší. Niektoré funkcie nemusia fungovať.</translation>
+<translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>
 <translation id="7459554271817304652">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Google Chrome v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
 <translation id="7473136999113284234">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu.</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7494905215383356681">Licencie open source prehliadača Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Táto akcia natrvalo odstráni minimálne $1 položku z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}few{Táto akcia natrvalo odstráni minimálne $1 položky z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}many{Táto akcia natrvalo odstráni minimálne $1 položky z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}other{Táto akcia natrvalo odstráni minimálne $1 položiek z tohto zariadenia. Ak budete chcieť tieto dáta neskôr opäť načítať, prihláste sa do Chromu ako $2.}}</translation>
+<translation id="7552219221109926349">Zobraziť Chrome OS v tomto jazyku</translation>
 <translation id="7592736734348559088">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
 <translation id="7747138024166251722">Inštalátor nemohol vytvoriť dočasný priečinok. Skontrolujte úroveň zaplnenia disku a povolenie na inštaláciu softvéru.</translation>
@@ -224,6 +233,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7890208801193284374">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chrome prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
 <translation id="7908168227788431038">Aktualizácia je takmer hotová! Dokončite ju reštartovaním prehliadača Google Chrome.</translation>
 <translation id="795025003224538582">Nereštartovať</translation>
+<translation id="7964230182933713106">Chrome OS sa zobrazuje v tomto jazyku.</translation>
 <translation id="8005540215158006229">Prehliadač Chrome je takmer pripravený.</translation>
 <translation id="8008534537613507642">Preinštalovať prehliadač Chrome</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>

@@ -297,6 +297,7 @@ Ja esat pabeidzis pamācības skatīšanu, izmantojiet ChromeVox, lai pārietu u
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}zero{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Automātiskā pabeigšana: saraksts</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="3812237531158591503">ielīmēt $1.</translation>
 <translation id="3816633764618089385">Nākamais multivides vienums</translation>
 <translation id="3819376190738087562">Nav pārejas punktu.</translation>
 <translation id="385383972552776628">Atvērt opciju lapu</translation>
@@ -553,6 +554,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="6355910664415701303">Iepriekš nav neviena saraksta vienuma.</translation>
 <translation id="6364795331201459219">6. līmeņa virsraksts</translation>
 <translation id="6368143427468974988">Iepriekšējais virsraksts</translation>
+<translation id="6378565991815958969">kopēt $1.</translation>
 <translation id="6387719785439924554">malā novietots saturs</translation>
 <translation id="6411426777058107714">Iepriekš nav nevienas radiopogas.</translation>
 <translation id="6414968628640960377">Iepriekšējais atšķirīgais elements.</translation>
@@ -779,6 +781,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="9077213568694924680">noņemti no atlases</translation>
 <translation id="9082874451376019682">Iepriekš nav neviena slīdņa.</translation>
 <translation id="9089864840575085222">Cikliska rakstīšanas atbalss</translation>
+<translation id="9105227991373418255">izgriezt $1.</translation>
 <translation id="9107530006868467849">Iepriekš nav neviena multivides logrīka.</translation>
 <translation id="9108370397979208512">matemātiska izteiksme</translation>
 <translation id="9108589040018540527">ritjosla</translation>

@@ -34,6 +34,7 @@
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
 <translation id="1864458292167284385">O Iniciador de Aplicações do Chrome será descontinuado.</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
+<translation id="1924381329666691588">Não é possível apresentar o Google Chrome neste idioma.</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
 <translation id="2246246234298806438">O Google Chrome não pode mostrar a pré-visualização de impressão quando o visualizador de PDF incorporado está em falta.</translation>
@@ -62,7 +63,9 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2748463065602559597">Está a ver uma página segura do Google Chrome.</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador predefinido.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
+<translation id="2847461019998147611">Apresentar o Google Chrome neste idioma</translation>
 <translation id="2871893339301912279">Tem sessão iniciada no Chrome!</translation>
+<translation id="2888126860611144412">Acerca do Chrome</translation>
 <translation id="2997147809295888909">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor não forneceu quaisquer informações de Transparência do certificado.</translation>
 <translation id="3037838751736561277">O Google Chrome está no modo em segundo plano.</translation>
 <translation id="3047079729301751317">Desligar <ph name="USERNAME" /> irá limpar o seu histórico, os marcadores, as definições e outros dados do Chrome armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK" />Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -108,6 +111,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="4407807842708586359">SO do Google Chrome</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>
 <translation id="4480040274068703980">O SO Chrome não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
+<translation id="4519152997629025674">O Google Chrome pode utilizar <ph name="BEGIN_LINK" />serviços Web<ph name="END_LINK" /> para melhorar a sua experiência de navegação. Se pretender, pode desativar estes serviços a qualquer momento.</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4631713731678262610">Ocultar no menu do Chrome</translation>
@@ -145,6 +149,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
+<translation id="5637867606963802593">Não é possível apresentar o SO Chrome neste idioma.</translation>
 <translation id="568643307450491754">Encontre os seus marcadores no menu Chrome ou na barra de marcadores.</translation>
 <translation id="573759479754913123">Acerca do SO Chrome</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
@@ -164,6 +169,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6235018212288296708">Regra de importação para o Google Chrome permitir o tráfego mDNS.</translation>
 <translation id="6236285698028833233">O Google Chrome já não se atualiza nem suporta mais esta versão do seu sistema operativo.</translation>
 <translation id="629218512217695915">Utilizar palavra-passe gerada pelo Chrome</translation>
+<translation id="6368805772029492593">Para uma segurança adicional, o Google Chrome encripta os seus dados.</translation>
 <translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6400076122676892962">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.6, o Mac OS X 10.7 e o Mac OS X 10.8 já não serão suportados.</translation>
 <translation id="6470176598693778404">Este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.6, o Mac OS X 10.7 e Mac OS X 10.8 já não são suportados.</translation>
@@ -192,6 +198,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7177347454226092725">Esta ação elimina permanentemente os seus dados de navegação deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> foi adicionado ao Chrome.</translation>
 <translation id="7191567847629796517">O SO Google Chrome não suporta iniciar uma aplicação externa para processar links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">O Google Chrome é apresentado neste idioma.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não serão suportados.</translation>
@@ -201,11 +208,13 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7408085963519505752">Termos do SO Chrome</translation>
 <translation id="7419046106786626209">O SO Chrome não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
 <translation id="7436949144778751379">O Google Chrome requer o Windows XP ou mais recente. Algumas funcionalidades poderão não funcionar.</translation>
+<translation id="7437998757836447326">Terminar sessão no Chrome</translation>
 <translation id="7459554271817304652">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Google Chrome em qualquer computador.</translation>
 <translation id="7473136999113284234">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7494905215383356681">Licenças de código aberto do Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente, no mínimo, $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como $2.}other{Esta ação elimina permanentemente, no mínimo, $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como $2.}}</translation>
+<translation id="7552219221109926349">Apresentar o SO Chrome neste idioma</translation>
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
@@ -218,6 +227,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7890208801193284374">Se partilhar um computador, os amigos e os familiares podem navegar separadamente e configurar o Chrome da forma que quiserem.</translation>
 <translation id="7908168227788431038">Quase atualizado! Reinicie o Google Chrome para concluir a atualização.</translation>
 <translation id="795025003224538582">Não reiniciar</translation>
+<translation id="7964230182933713106">O SO Chrome é apresentado neste idioma.</translation>
 <translation id="8005540215158006229">O Chrome está quase pronto.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8030318113982266900">A atualizar o dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>

@@ -38,6 +38,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1818142563254268765">Chrome no ha podido actualizarse automáticamente a la última versión, por lo que te estás perdiendo algunos magníficos parches de seguridad y fantásticas funciones nuevas. Tendrás que actualizar Chrome.</translation>
 <translation id="1864458292167284385">El menú de aplicaciones de Chrome va a desaparecer.</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
+<translation id="1924381329666691588">Google Chrome no se puede mostrar en este idioma.</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2084710999043359739">Añadir a Chrome</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDF integrado.</translation>
@@ -66,7 +67,9 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="2748463065602559597">Estás viendo una página de Google Chrome segura.</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
+<translation id="2847461019998147611">Mostrar Google Chrome en este idioma</translation>
 <translation id="2871893339301912279">Has iniciado sesión en Chrome</translation>
+<translation id="2888126860611144412">Información de Chrome</translation>
 <translation id="2997147809295888909">Chrome ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor no ha proporcionado ninguna información de Transparencia de certificados.</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano.</translation>
 <translation id="3047079729301751317">Si desvinculas a <ph name="USERNAME" />, se borrarán tu historial, tus marcadores, tu configuración y otros datos de Chrome almacenados en este dispositivo. No obstante, no se borrarán los datos almacenados en tu cuenta de Google y se podrán administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -112,6 +115,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="4480040274068703980">Chrome OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
+<translation id="4519152997629025674">Google Chrome puede utilizar <ph name="BEGIN_LINK" />servicios web<ph name="END_LINK" /> para mejorar la experiencia de navegación de los usuarios. Puedes inhabilitar estos servicios en cualquier momento.</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
@@ -153,6 +157,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
+<translation id="5637867606963802593">Chrome OS no se puede mostrar en este idioma.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="573759479754913123">Información de Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necesita acceso de almacenamiento para descargar archivos.</translation>
@@ -172,6 +177,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6235018212288296708">Regla entrante para que Google Chrome permita tráfico mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
 <translation id="629218512217695915">Utilizar contraseña generada por Chrome</translation>
+<translation id="6368805772029492593">Para mayor seguridad, Google Chrome cifrará tus datos.</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6400076122676892962">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 dejarán de ser compatibles.</translation>
 <translation id="6470176598693778404">Este ordenador no volverá a recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 dejarán de ser compatibles.</translation>
@@ -200,6 +206,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7177347454226092725">Se eliminarán permanentemente tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> se ha añadido a Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS no puede ejecutar una aplicación externa para procesar enlaces <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
+<translation id="7193750696137290001">Google Chrome se muestra en este idioma.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="7242029209006116544">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista dejarán de ser compatibles.</translation>
@@ -209,11 +216,13 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7408085963519505752">Condiciones de Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
 <translation id="7436949144778751379">Google Chrome requiere Windows XP o una versión posterior. Es posible que algunas características no funcionen.</translation>
+<translation id="7437998757836447326">Cerrar sesión en Chrome</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier ordenador.</translation>
 <translation id="7473136999113284234">Chrome se actualiza automáticamente para que siempre dispongas de la última versión.</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7494905215383356681">Licencias de código abierto de Chrome</translation>
 <translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Se eliminará permanentemente al menos $1 elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como $2.}other{Se eliminarán de forma permanente al menos $1 elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como $2.}}</translation>
+<translation id="7552219221109926349">Mostrar Chrome OS en este idioma</translation>
 <translation id="7592736734348559088">Google Chrome no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
@@ -226,6 +235,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7890208801193284374">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome a su gusto.</translation>
 <translation id="7908168227788431038">Google Chrome casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
+<translation id="7964230182933713106">Chrome OS se muestra en este idioma.</translation>
 <translation id="8005540215158006229">Chrome está casi listo</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8030318113982266900">Actualizando el canal del dispositivo a <ph name="CHANNEL_NAME" />...</translation>

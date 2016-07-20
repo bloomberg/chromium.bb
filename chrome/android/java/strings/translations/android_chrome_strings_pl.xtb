@@ -30,6 +30,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="13410144310025252">Zobacz je w Chrome</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
+<translation id="1376578503827013741">Obliczam…</translation>
 <translation id="138361230106469022">Witamy, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1389974829397082527">Tu nie ma zakładek</translation>
@@ -46,11 +47,10 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1477626028522505441">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z serwerem.</translation>
 <translation id="1506061864768559482">Wyszukiwarka</translation>
 <translation id="1513352483775369820">Zakładki i historia online</translation>
-<translation id="1517433312004943670">Numer telefonu jest wymagany</translation>
 <translation id="1549000191223877751">Przenieś do innego okna</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1557201757634521564">Automatycznie wykrywaj kodowanie</translation>
-<translation id="1612196535745283361">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji, a jest on <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
+<translation id="1612196535745283361">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. Dostęp jest <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1639239467298939599">Wczytywanie</translation>
@@ -103,6 +103,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="213279576345780926">Zamknięto <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Szukam stron internetu rzeczy w pobliżu</translation>
 <translation id="2139186145475833000">Dodaj do ekranu głównego</translation>
+<translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="21570240866965662">Wolne połączenie</translation>
 <translation id="219985413780390209">Chroń siebie i swoje urządzenie przed niebezpiecznymi witrynami</translation>
@@ -173,6 +174,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="2932150158123903946">Dane aplikacji Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
+<translation id="2962095958535813455">Przełączono na karty incognito</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
 <translation id="2979025552038692506">Wybrana karta incognito</translation>
 <translation id="2996291259634659425">Utwórz hasło</translation>
@@ -201,6 +203,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
 <translation id="326254929494722411">Konto Google nie zostało jeszcze skonfigurowane na tym urządzeniu</translation>
 <translation id="3269093882174072735">Wczytaj obraz</translation>
+<translation id="3269956123044984603">Aby korzystać z kart ze swoich pozostałych urządzeń, włącz „Autosynchronizację danych” w ustawieniach konta na urządzeniu z Androidem.</translation>
 <translation id="3278850099957560514">Zaoszczędź na transmisji danych dzięki optymalizacji stron przez Google. Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz na kartach incognito.</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3303414029551471755">Przejść do pobrania treści?</translation>
@@ -341,7 +344,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5040262127954254034">Prywatność</translation>
 <translation id="5056549851600133418">Artykuły dla Ciebie</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
-<translation id="5087580092889165836">Dodaj kartę</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
 <translation id="5107381076085091558">Pobieranie zostało wstrzymane.</translation>
@@ -410,6 +412,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
+<translation id="5748802427693696783">Przełączono na karty standardowe</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5763382633136178763">Karty incognito</translation>
 <translation id="5765780083710877561">Opis:</translation>
@@ -429,7 +432,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5939518447894949180">Resetuj</translation>
-<translation id="5950380453936610378">Adres e-mail jest wymagany</translation>
 <translation id="5961742032223302715">Wybierz dane kontaktowe</translation>
 <translation id="5968595432776860642">Odtwarzam „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Otwieram wejście wideo</translation>
@@ -464,6 +466,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Szyfrowanie</translation>
 <translation id="6364438453358674297">Usunąć sugestię z historii?</translation>
+<translation id="6383961787135158834">Wyczyść dane witryn…</translation>
 <translation id="6388207532828177975">Wyczyść i zresetuj</translation>
 <translation id="6404511346730675251">Edytuj zakładkę</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
@@ -597,6 +600,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7769602470925380267">Zaakceptuj i wyloguj się</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
+<translation id="7781829728241885113">Wczoraj</translation>
 <translation id="7788788617745289808">Aby zezwolić stronie na wykorzystanie aparatu, Chrome musi mieć do niego dostęp.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>

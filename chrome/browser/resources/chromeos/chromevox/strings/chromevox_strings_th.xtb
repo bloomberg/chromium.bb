@@ -296,6 +296,7 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">รายการเติมข้อความอัตโนมัติ</translation>
 <translation id="3810838688059735925">วิดีโอ</translation>
+<translation id="3812237531158591503">วาง $1</translation>
 <translation id="3816633764618089385">สื่อถัดไป</translation>
 <translation id="3819376190738087562">ไม่มีการข้าม</translation>
 <translation id="385383972552776628">เปิดหน้าตัวเลือก</translation>
@@ -552,6 +553,7 @@
 <translation id="6355910664415701303">ไม่มีรายการก่อนหน้า</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ส่วนหัวก่อนหน้า</translation>
+<translation id="6378565991815958969">คัดลอก $1</translation>
 <translation id="6387719785439924554">ส่วนที่ไม่เกี่ยวข้อง</translation>
 <translation id="6411426777058107714">ไม่มีปุ่มตัวเลือกก่อนหน้า</translation>
 <translation id="6414968628640960377">เอลิเมนต์ที่ต่างกันก่อนหน้า</translation>
@@ -778,6 +780,7 @@
 <translation id="9077213568694924680">ลบออกจากการเลือกแล้ว</translation>
 <translation id="9082874451376019682">ไม่มีแถบเลื่อนก่อนหน้า</translation>
 <translation id="9089864840575085222">พูดรอบการพิมพ์</translation>
+<translation id="9105227991373418255">ตัด $1</translation>
 <translation id="9107530006868467849">ไม่มีวิดเจ็ตสื่อก่อนหน้า</translation>
 <translation id="9108370397979208512">คณิตศาสตร์</translation>
 <translation id="9108589040018540527">scbr</translation>

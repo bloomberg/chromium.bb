@@ -30,6 +30,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="13410144310025252">Visualizzali in Chrome</translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1373696734384179344">Memoria non sufficiente per scaricare i contenuti selezionati.</translation>
+<translation id="1376578503827013741">Elaborazione...</translation>
 <translation id="138361230106469022">Ciao <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1389974829397082527">Nessun Preferito qui</translation>
@@ -46,7 +47,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1477626028522505441">Download di <ph name="FILE_NAME" /> non riuscito a causa di problemi del server.</translation>
 <translation id="1506061864768559482">Motore di ricerca</translation>
 <translation id="1513352483775369820">Preferiti e cronologia web</translation>
-<translation id="1517433312004943670">Numero di telefono obbligatorio</translation>
 <translation id="1549000191223877751">Passa a un'altra finestra</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1557201757634521564">Rileva automaticamente la codifica</translation>
@@ -103,6 +103,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
 <translation id="2138201775715568214">Ricerca di pagine Physical Web nelle vicinanze in corso</translation>
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
+<translation id="2148716181193084225">Oggi</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="21570240866965662">Connessione lenta</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
@@ -173,6 +174,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2932150158123903946">Spazio di archiviazione di Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Questo account è gestito da <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" /></translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
+<translation id="2962095958535813455">Schede in incognito attivate</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
 <translation id="2979025552038692506">Scheda in incognito selezionata</translation>
 <translation id="2996291259634659425">Crea passphrase</translation>
@@ -201,6 +203,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="326254929494722411">Non hai ancora configurato un account Google sul dispositivo</translation>
 <translation id="3269093882174072735">Carica immagine</translation>
+<translation id="3269956123044984603">Attiva la funzione "Sincronizzazione automatica dei dati" nelle impostazioni dell'account Android per trovare le tue schede sugli altri tuoi dispositivi.</translation>
 <translation id="3278850099957560514">Consuma meno dati utilizzando Google per ottimizzare le pagine che visiti. Le pagine visitate utilizzando connessioni private (HTTPS) o in schede di navigazione in incognito non vengono ottimizzate o viste da Google.</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3303414029551471755">Procedere al download dei contenuti?</translation>
@@ -341,7 +344,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5056549851600133418">Articoli per te</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
-<translation id="5087580092889165836">Aggiungi carta</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="510275257476243843">1 ora rimanente</translation>
 <translation id="5107381076085091558">Download sospeso.</translation>
@@ -410,6 +412,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 
 Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione in incognito non consente di nascondere la navigazione al tuo datore di lavoro, al tuo provider di servizi Internet o ai siti web da te visitati.</translation>
 <translation id="572328651809341494">Schede recenti</translation>
+<translation id="5748802427693696783">Schede standard attivate</translation>
 <translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
 <translation id="5763382633136178763">Schede in incognito</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
@@ -429,7 +432,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5911030830365207728">Google Traduttore</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5939518447894949180">Ripristina</translation>
-<translation id="5950380453936610378">Indirizzo email obbligatorio</translation>
 <translation id="5961742032223302715">Seleziona le informazioni di contatto</translation>
 <translation id="5968595432776860642">"<ph name="VIDEO_TITLE" />" in riproduzione</translation>
 <translation id="6010869025736512584">Accesso all'input video in corso</translation>
@@ -464,6 +466,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6333140779060797560">Condividi tramite <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Crittografia</translation>
 <translation id="6364438453358674297">Rimuovere il suggerimento dalla cronologia?</translation>
+<translation id="6383961787135158834">Elimina memoria siti…</translation>
 <translation id="6388207532828177975">Cancella e reimposta</translation>
 <translation id="6404511346730675251">Modifica preferito</translation>
 <translation id="6406506848690869874">Sincronizzazione</translation>
@@ -597,6 +600,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
+<translation id="7781829728241885113">Ieri</translation>
 <translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="780301667611848630">No grazie</translation>

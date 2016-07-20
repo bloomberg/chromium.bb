@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Vill du ta bort de här sidorna från historiken?</translation>
 <translation id="2677748264148917807">Lämna</translation>
 <translation id="2704283930420550640">Värdet matchar inte formatet.</translation>
+<translation id="2704951214193499422">Chromium kunde inte bekräfta kortet. Försök igen senare.</translation>
 <translation id="2705137772291741111">Det gick inte att läsa den sparade (cachelagrade) kopian av webbplatsen.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2712173769900027643">Begär behörighet</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Om alternativet är aktiverat sparar Chromium en kopia av kortet på enheten så att det går snabbare att fylla i formulär.</translation>
 <translation id="2991174974383378012">Dela med webbplatsen</translation>
 <translation id="3005723025932146533">Visa sparad kopia</translation>
+<translation id="3008447029300691911">Ange CVC-koden för <ph name="CREDIT_CARD" />. När du bekräftar delas kortinformationen med den här webbplatsen.</translation>
 <translation id="3010559122411665027">Listposten <ph name="ENTRY_INDEX" />: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Felaktig policytyp</translation>
 <translation id="3032412215588512954">Vill du läsa in den här webbplatsen igen?</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3041612393474885105">Certifikatinformation</translation>
+<translation id="3063697135517575841">Det gick inte att bekräfta kortet. Försök igen senare.</translation>
 <translation id="3093245981617870298">Du är offline.</translation>
 <translation id="3105172416063519923">Tillgångs-id:</translation>
 <translation id="3109728660330352905">Du är inte behörig att se den här sidan.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Ett certifikat som inte överensstämmer med inbyggda förväntningar presenterades på servern. Förväntningarna gäller för webbplatser med hög säkerhet för att skydda dig.</translation>
 <translation id="3226128629678568754">Om du på nytt vill skicka datan som behövs för att läsa in sidan trycker du på knappen Läs in igen.</translation>
 <translation id="3228969707346345236">Det gick inte att översätta eftersom sidan redan är på <ph name="LANGUAGE" />.</translation>
+<translation id="323107829343500871">Ange CVC-koden för <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Bokmärk sidan</translation>
 <translation id="3270847123878663523">&amp;Ångra Ändra ordning</translation>
 <translation id="3286538390144397061">Starta om nu</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Blockerad</translation>
 <translation id="5710435578057952990">Webbplatsens identitet har inte verifierats.</translation>
 <translation id="5720705177508910913">Aktuell användare</translation>
+<translation id="5784606427469807560">Det gick inte att bekräfta kortet. Kontrollera internetanslutningen och försök igen.</translation>
 <translation id="5785756445106461925">Den här sidan innehåller emellertid andra resurser som inte är säkra. Andra kan se resurserna när de överförs och hackare kan ändra resurserna så att sidan får ett annat utseende.</translation>
 <translation id="5810442152076338065">Anslutningen till <ph name="DOMAIN" /> är krypterad med en gammal krypteringssvit.</translation>
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Huvudområde</translation>
 <translation id="6874604403660855544">&amp;Gör om Lägg till</translation>
 <translation id="6891596781022320156">Policynivån stöds inte.</translation>
+<translation id="6895330447102777224">Kortet har bekräftats</translation>
 <translation id="6897140037006041989">Användaragent</translation>
 <translation id="6903907808598579934">Aktivera synkronisering</translation>
 <translation id="6915804003454593391">Användare:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">För anslutningen används <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Du måste fråga en förälder om du får besöka sidan.</translation>
 <translation id="7246609911581847514">Det här meddelandet visas eftersom din chef måste godkänna nya webbplatser första gången du besöker dem.</translation>
+<translation id="724975217298816891">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /> om du vill uppdatera kortinformationen. När du bekräftar delas kortinformationen med den här webbplatsen.</translation>
 <translation id="725866823122871198">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom datorns datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
 <translation id="7265986070661382626">Det går inte att besöka <ph name="SITE" /> just nu på grund av att <ph name="BEGIN_LINK" />fäste av certifikat<ph name="END_LINK" /> förekommer på webbplatsen. Nätverksfel och attacker är vanligtvis tillfälliga, så den här sidan fungerar troligen senare.</translation>
 <translation id="7269802741830436641">Den här webbsidan innehåller en omdirigeringsslinga</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Bekräfta kort</translation>
 <translation id="7394102162464064926">Vill du ta bort dessa sidor från historiken?
 
 Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara något.</translation>
@@ -529,6 +537,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7441627299479586546">Felaktigt policyämne</translation>
 <translation id="7445762425076701745">Det går inte att fastställa identiteten hos servern som du är ansluten till. Servernamnet som du angav vid anslutningen är bara giltigt inom ditt nätverk och externa certifikatutfärdare kan inte fastställa dess ägarskap. Vissa certifikatutfärdare utfärdar certifikat oavsett namn och därför går det inte att säkerställa att du är ansluten till den avsedda webbplatsen och inte till en skadlig server.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />att läsa mer<ph name="END_LINK" /> om det här problemet.</translation>
+<translation id="7469372306589899959">Kortet bekräftas</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7485870689360869515">Ingen data hittades.</translation>
 <translation id="7514365320538308">Ladda ned</translation>
@@ -643,6 +652,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8866959479196209191">På den här sidan står det:</translation>
 <translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8876793034577346603">Det gick inte att tolka nätverkskonfigurationen.</translation>
+<translation id="8877192140621905067">När du bekräftar delas kortinformationen med den här webbplatsen</translation>
 <translation id="8891727572606052622">Ogiltigt proxyläge.</translation>
 <translation id="889901481107108152">Experimentet finns tyvärr inte på din plattform.</translation>
 <translation id="8903921497873541725">Zooma in</translation>
@@ -675,6 +685,8 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">RENSA FORMULÄRET</translation>
 <translation id="939736085109172342">Ny mapp</translation>
+<translation id="943029900877297437">Logga in i Chrome om du vill använda kort som du har sparat i Google-kontot.</translation>
+<translation id="962701380617707048">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /> om du vill uppdatera kortinformationen</translation>
 <translation id="969892804517981540">Officiell version</translation>
 <translation id="988159990683914416">Utvecklarversion</translation>
 </translationbundle>

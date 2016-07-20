@@ -647,6 +647,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="3038323923255997294">A háttéralkalmazások továbbfuttatása a(z) <ph name="PRODUCT_NAME" /> alkalmazás bezárása esetén</translation>
+<translation id="3046192273793919231">Hálózati csomagok küldése a kezelőszerverre az online állapot ellenőrzésének céljából</translation>
 <translation id="3048744057455266684">Ha ez a házirend be van állítva, és egy, a cím- és keresősávban javasolt keresési URL tartalmazza ezt a paramétert a lekérdezési karakterláncban vagy a töredékazonosítóban, akkor a javaslat a keresési kifejezéseket és a keresőszolgáltatót fogja mutatni a nyers keresési URL helyett.
 
           Ez a házirend opcionális. Ha nincs beállítva, a keresési kifejezéseket a rendszer nem cseréli le.
@@ -908,6 +909,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha nincs beállítva, vagy ha az értéke hamis, akkor a felhasználók átvihetnek fájlokat a Google Drive-ra.</translation>
 <translation id="3915395663995367577">URL egy proxy .pac fájlhoz</translation>
+<translation id="3939893074578116847">Hálózati csomagok küldése a kezelőszervernek az online állapot ellenőrzése céljából;
+      ezáltal a szerver észleli, ha az eszköz offline állapotban van.
+
+      Ha az irányelvet igaz értékre állítja, a rendszer ellenőrző hálózati csomagokat (úgynevezett <ph name="HEARTBEATS_TERM" />) fog küldeni.
+      Ha hamis értékre állítja vagy nem állít be értéket, akkor a rendszer nem küld csomagokat.</translation>
 <translation id="3964909636571393861">Engedélyezi a hozzáférést az URL-ek egy listájához</translation>
 <translation id="3965339130942650562">Időtúllépés, amely után a felhasználót a rendszer tétlenség esetén kijelentkezteti.</translation>
 <translation id="3967075520570946456">Az üdvözlőoldal megjelenítésének engedélyezése az operációs rendszer frissítését követő első böngészőindításkor.</translation>
@@ -1234,6 +1240,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend be van állítva, a meghatározott munkamenetet a rendszer automatikusan bejelentkezteti, ha felhasználói interakció nélkül telik el a megadott időtartam a bejelentkezési képernyőn. A nyilvános munkamenetet előre be kell állítani (tekintse meg a következőt: |DeviceLocalAccounts|).
 
       Ha nincs beállítva a házirend, nem lesz automatikus bejelentkezés.</translation>
+<translation id="5535957389335373033">A böngésző által küldött ellenőrző hálózati csomagok gyakorisága (ezredmásodpercben).
+
+      Ha nem állítja be az irányelvet, az alapértelmezett gyakoriság három perc.
+      A minimális érték 30 másodperc, a maximális 24 óra. A
+      tartományon kívüli értékek ebbe a tartományba lesznek beszorítva.</translation>
 <translation id="5535973522252703021">Kerberos felhatalmazási szerver kivétellistája</translation>
 <translation id="5560039246134246593">Paraméter hozzáadása a Variations seed lekéréséhez a(z) <ph name="PRODUCT_NAME" /> termékben.
 
@@ -2362,6 +2373,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="9187743794267626640">Külső tárhely csatlakoztatásának letiltása</translation>
 <translation id="9197740283131855199">Az a százalék, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés után a felhasználó aktív lesz</translation>
 <translation id="9200828125069750521">Paraméterek POST metódust használó kép-URL-hez</translation>
+<translation id="9217154963008402249">Az ellenőrző hálózati csomagok gyakorisága</translation>
 <translation id="922540222991413931">Bővítmény-, alkalmazás- és felhasználói szkripttelepítési források konfigurálása</translation>
 <translation id="924557436754151212">Mentett jelszavak importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="930930237275114205">A(z) <ph name="PRODUCT_FRAME_NAME" /> felhasználói adatokat tartalmazó könyvtárának beállítása</translation>

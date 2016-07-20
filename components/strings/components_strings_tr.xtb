@@ -152,6 +152,7 @@
 <translation id="2674170444375937751">Bu sayfaları geçmişinizden silmek istediğinizden emin misiniz?</translation>
 <translation id="2677748264148917807">Çık</translation>
 <translation id="2704283930420550640">Değer, biçimle eşleşmiyor.</translation>
+<translation id="2704951214193499422">Chromium, şu anda kartınızı onaylayamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="2705137772291741111">Bu sitenin kaydedilen (önbelleğe alınan) kopyası okunamadı.</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="2712173769900027643">İzin iste</translation>
@@ -181,11 +182,13 @@
 <translation id="2985306909656435243">Bu seçenek etkinleştirildiğinde Chromium, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
 <translation id="2991174974383378012">Web Siteleriyle Paylaşma</translation>
 <translation id="3005723025932146533">Kaydedilen kopyayı göster</translation>
+<translation id="3008447029300691911"><ph name="CREDIT_CARD" /> numaralı kartın CVC kodunu girin. Onayladığınızda kart ayrıntılarınız bu siteyle paylaşılacaktır.</translation>
 <translation id="3010559122411665027">Liste girişi "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Yanlış politika türü</translation>
 <translation id="3032412215588512954">Bu siteyi yeniden yüklemek istiyor musunuz?</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3041612393474885105">Sertifika Bilgileri</translation>
+<translation id="3063697135517575841">Chrome şu anda kartınızı onaylayamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="3093245981617870298">Çevrimdışısınız.</translation>
 <translation id="3105172416063519923">Öğe Kimliği:</translation>
 <translation id="3109728660330352905">Bu sayfayı görüntüleme yetkiniz yok.</translation>
@@ -205,6 +208,7 @@
 <translation id="3225919329040284222">Sunucu, yerleşik beklentilerle eşleşmeyen bir sertifika sundu. Bu beklentiler sizi korumak amacıyla bazı yüksek güvenlikli web sitelerinde bulunur.</translation>
 <translation id="3226128629678568754">Sayfayı yüklemek üzere gereken verileri tekrar göndermek için yeniden yükle düğmesine basın.</translation>
 <translation id="3228969707346345236">Sayfa zaten <ph name="LANGUAGE" /> dilinde olduğundan çeviri işlemi başarısız oldu.</translation>
+<translation id="323107829343500871"><ph name="CREDIT_CARD" /> numaralı kartın CVC kodunu girin</translation>
 <translation id="3254409185687681395">Bu sayfaya yer işareti koy</translation>
 <translation id="3270847123878663523">Sıralama Değişikliğini &amp;Geri Al</translation>
 <translation id="3286538390144397061">Şimdi yeniden başlat</translation>
@@ -406,6 +410,7 @@
 <translation id="5677928146339483299">Engellenenler</translation>
 <translation id="5710435578057952990">Bu web sitesinin kimliği doğrulanmadı.</translation>
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
+<translation id="5784606427469807560">Kartınız onaylanırken bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyin.</translation>
 <translation id="5785756445106461925">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın görünüşünü değiştirmek üzere kullanılabilir.</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> ile olan bağlantınız eski bir şifre seti kullanılarak şifrelendi.</translation>
 <translation id="5813119285467412249">Eklemeyi &amp;Yeniden Yap</translation>
@@ -479,6 +484,7 @@
 <translation id="6839929833149231406">Bölge</translation>
 <translation id="6874604403660855544">Eklemeyi &amp;yeniden yap</translation>
 <translation id="6891596781022320156">Politika düzeyi desteklenmiyor.</translation>
+<translation id="6895330447102777224">Kartınız onaylandı</translation>
 <translation id="6897140037006041989">Kullanıcı Aracısı</translation>
 <translation id="6903907808598579934">Senkronizasyonu aç</translation>
 <translation id="6915804003454593391">Kullanıcı:</translation>
@@ -507,6 +513,7 @@
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> kullanıyor.</translation>
 <translation id="7231308970288859235">Hata! Bu sayfayı ziyaret etmenizin uygun olup olmadığını ebeveyninize sormanız gerekiyor.</translation>
 <translation id="7246609911581847514">İlk kez ziyaret ettiğiniz yeni siteleri önce yöneticinizin onaylaması gerektiği için bu iletiyi görüyorsunuz.</translation>
+<translation id="724975217298816891">Kart ayrıntılarınızı güncellemek için <ph name="CREDIT_CARD" /> numaralı karta ilişkin son kullanma tarihini ve CVC kodunu girin. Onayladığınızda kart ayrıntılarınız bu siteyle paylaşılacaktır.</translation>
 <translation id="725866823122871198">Bilgisayarınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
 <translation id="7265986070661382626"><ph name="SITE" /> web sitesi <ph name="BEGIN_LINK" />sertifika sabitleme yöntemini kullandığı<ph name="END_LINK" /> için web sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="7269802741830436641">Bu web sayfasında yönlendirme döngüsü var</translation>
@@ -520,6 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Hayır</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7390545607259442187">Kartı Onayla</translation>
 <translation id="7394102162464064926">Bu sayfaları geçmişinizden silmek istediğinizden emin misiniz?
 
 Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışlı olabilir.</translation>
@@ -529,6 +537,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
 <translation id="7445762425076701745">Bağlı olduğunuz sunucunun kimliği tam olarak doğrulanamıyor. Sunucuya yalnızca ağınızın içinde geçerli olan ve dış sertifika yetkilisi tarafından hiçbir şekilde sahipliği doğrulanamayacak bir ad kullanarak bağlandınız. Bazı sertifika yetkilileri bu adlar için sertifikalar yayınlasa da, bir saldırgana değil, hedeflenen web sitesine bağlandığınızdan emin olmanın herhangi bir yolu yoktur.</translation>
 <translation id="7451311239929941790">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinme.</translation>
+<translation id="7469372306589899959">Kart onaylanıyor</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
 <translation id="7514365320538308">İndir</translation>
@@ -643,6 +652,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8866959479196209191">Bu sayfanın mesajı:</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8876793034577346603">Ağ yapılandırması ayrıştırılamadı.</translation>
+<translation id="8877192140621905067">Onayladığınızda kart ayrıntılarınız bu siteyle paylaşılacaktır</translation>
 <translation id="8891727572606052622">Geçersiz proxy modu.</translation>
 <translation id="889901481107108152">Maalesef bu deney platformunuzda kullanılamıyor.</translation>
 <translation id="8903921497873541725">Yakınlaştır</translation>
@@ -675,6 +685,8 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FORMU TEMİZLE</translation>
 <translation id="939736085109172342">Yeni klasör</translation>
+<translation id="943029900877297437">Google Hesabınıza kaydettiğiniz kartları kullanmak için Chrome'da oturum açın.</translation>
+<translation id="962701380617707048">Kart ayrıntılarınızı güncellemek için <ph name="CREDIT_CARD" /> numaralı karta ilişkin son kullanma tarihini ve CVC kodunu girin</translation>
 <translation id="969892804517981540">Resmi Derleme</translation>
 <translation id="988159990683914416">Geliştirici Derlemesi</translation>
 </translationbundle>
