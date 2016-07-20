@@ -270,7 +270,6 @@ public:
     WebLayerTreeView* layerTreeView() override { return 0; }
     void onMouseDown(const WebNode& mouseDownNode) override {}
     void resetInputMethod() override {}
-    void scheduleAnimation() override {}
     WebScreenInfo screenInfo() override { return WebScreenInfo(); }
     void setToolTipText(const WebString&, WebTextDirection hint) override {}
     void setTouchAction(WebTouchAction touchAction) override {}

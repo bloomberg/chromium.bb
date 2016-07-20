@@ -259,7 +259,7 @@ void WebViewFrameWidget::setBaseBackgroundColor(WebColor color)
 
 void WebViewFrameWidget::scheduleAnimation()
 {
-    m_webView->scheduleAnimation();
+    m_webView->scheduleAnimationForWidget();
 }
 
 CompositorProxyClient* WebViewFrameWidget::createCompositorProxyClient()

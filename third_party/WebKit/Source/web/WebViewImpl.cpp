@@ -743,7 +743,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(const WebGestureEvent& event
         std::unique_ptr<WebGestureCurve> flingCurve = wrapUnique(Platform::current()->createFlingAnimationCurve(event.sourceDevice, WebFloatPoint(event.data.flingStart.velocityX, event.data.flingStart.velocityY), WebSize()));
         DCHECK(flingCurve);
         m_gestureAnimation = WebActiveGestureAnimation::createAtAnimationStart(std::move(flingCurve), this);
-        scheduleAnimation();
+        mainFrameImpl()->frameWidget()->scheduleAnimation();
         eventResult = WebInputEventResult::HandledSystem;
 
         // Plugins may need to see GestureFlingStart to balance
@@ -966,7 +966,7 @@ void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingPar
     m_gestureAnimation = WebActiveGestureAnimation::createWithTimeOffset(std::move(curve), this, parameters.startTime);
     DCHECK_NE(parameters.sourceDevice, WebGestureDeviceUninitialized);
     m_flingSourceDevice = parameters.sourceDevice;
-    scheduleAnimation();
+    mainFrameImpl()->frameWidget()->scheduleAnimation();
 }
 
 bool WebViewImpl::endActiveFlingAnimation()
@@ -1975,7 +1975,7 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
     // Create synthetic wheel events as necessary for fling.
     if (m_gestureAnimation) {
         if (m_gestureAnimation->animate(lastFrameTimeMonotonic))
-            scheduleAnimation();
+            mainFrameImpl()->frameWidget()->scheduleAnimation();
         else {
             DCHECK_NE(m_flingSourceDevice, WebGestureDeviceUninitialized);
             WebGestureDevice lastFlingSourceDevice = m_flingSourceDevice;
@@ -3421,7 +3421,7 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
     // caller of this method.
     // TODO(chrishtr): clean all this up. All layout should happen in one lifecycle run (crbug.com/578239).
     if (mainFrameImpl()->frameView()->needsLayout())
-        scheduleAnimation();
+        mainFrameImpl()->frameWidget()->scheduleAnimation();
 }
 
 void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
@@ -4320,14 +4320,14 @@ GraphicsLayer* WebViewImpl::rootGraphicsLayer()
     return m_rootGraphicsLayer;
 }
 
-void WebViewImpl::scheduleAnimation()
+void WebViewImpl::scheduleAnimationForWidget()
 {
     if (m_layerTreeView) {
         m_layerTreeView->setNeedsBeginFrame();
         return;
     }
     if (m_client)
-        m_client->scheduleAnimation();
+        m_client->widgetClient()->scheduleAnimation();
 }
 
 void WebViewImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline)

@@ -425,7 +425,6 @@ public:
     GraphicsLayer* rootGraphicsLayer();
     void registerViewportLayersWithCompositor();
     PaintLayerCompositor* compositor() const;
-    void scheduleAnimation();
     CompositorAnimationTimeline* linkHighlightsTimeline() const { return m_linkHighlightsTimeline.get(); }
 
     WebViewScheduler* scheduler() const override;
@@ -538,6 +537,9 @@ private:
     // Overrides the compositor visibility. See the description of
     // m_overrideCompositorVisibility for more details.
     void setCompositorVisibility(bool);
+
+    // TODO(lfg): Remove once WebViewFrameWidget is deleted.
+    void scheduleAnimationForWidget();
 
     friend class WebView;  // So WebView::Create can call our constructor
     friend class WebViewFrameWidget;

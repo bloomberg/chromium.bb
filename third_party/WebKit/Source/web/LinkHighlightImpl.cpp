@@ -327,7 +327,7 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
     m_compositorPlayer->addAnimation(animation.release());
 
     invalidate();
-    m_owningWebViewImpl->scheduleAnimation();
+    m_owningWebViewImpl->mainFrameImpl()->frameWidget()->scheduleAnimation();
 }
 
 void LinkHighlightImpl::clearGraphicsLayerLinkHighlightPointer()

@@ -123,7 +123,7 @@ private:
     {
         // Calling scheduleAnimation on m_webView so WebTestProxy will call beginFrame.
         if (LayoutTestSupport::isRunningLayoutTest())
-            m_popup->m_webView->scheduleAnimation();
+            m_popup->m_webView->mainFrameImpl()->frameWidget()->scheduleAnimation();
 
         if (m_popup->isAcceleratedCompositingActive()) {
             DCHECK(m_popup->m_layerTreeView);

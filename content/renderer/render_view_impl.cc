@@ -2050,10 +2050,6 @@ blink::WebRect RenderViewImpl::rootWindowRect() {
   return RenderWidget::RootWindowRect();
 }
 
-void RenderViewImpl::scheduleAnimation() {
-  RenderWidget::scheduleAnimation();
-}
-
 blink::WebScreenInfo RenderViewImpl::screenInfo() {
   return RenderWidget::screenInfo();
 }

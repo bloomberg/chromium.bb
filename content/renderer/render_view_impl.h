@@ -309,7 +309,6 @@ class CONTENT_EXPORT RenderViewImpl
   void hasTouchEventHandlers(bool has_handlers) override;
   blink::WebLayerTreeView* layerTreeView() override;
   void resetInputMethod() override;
-  void scheduleAnimation() override;
   blink::WebScreenInfo screenInfo() override;
   void setToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
