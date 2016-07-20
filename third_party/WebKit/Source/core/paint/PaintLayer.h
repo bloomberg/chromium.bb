@@ -241,10 +241,6 @@ public:
     // FIXME: Many people call this function while it has out-of-date information.
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
-    // PaintLayers which represent LayoutParts may become self-painting due to being composited.
-    // If this is the case, this method returns true.
-    bool isSelfPaintingOnlyBecauseIsCompositedPart() const;
-
     bool isTransparent() const { return layoutObject()->isTransparent() || layoutObject()->style()->hasBlendMode() || layoutObject()->hasMask(); }
 
     bool isReflection() const { return layoutObject()->isReplica(); }
@@ -793,8 +789,6 @@ private:
         m_needsPaintPhaseFloat |= layer.m_needsPaintPhaseFloat;
         m_needsPaintPhaseDescendantBlockBackgrounds |= layer.m_needsPaintPhaseDescendantBlockBackgrounds;
     }
-
-    bool isSelfPaintingLayerForIntrinsicOrScrollingReasons() const;
 
     bool shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const;
 

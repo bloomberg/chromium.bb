@@ -3303,7 +3303,7 @@ bool LayoutBlockFlow::hitTestFloats(HitTestResult& result, const HitTestLocation
     for (FloatingObjectSetIterator it = floatingObjectSet.end(); it != begin;) {
         --it;
         const FloatingObject& floatingObject = *it->get();
-        if (floatingObject.shouldPaint()) {
+        if (floatingObject.shouldPaint() && !floatingObject.layoutObject()->hasSelfPaintingLayer()) {
             LayoutUnit xOffset = xPositionForFloatIncludingMargin(floatingObject) - floatingObject.layoutObject()->location().x();
             LayoutUnit yOffset = yPositionForFloatIncludingMargin(floatingObject) - floatingObject.layoutObject()->location().y();
             LayoutPoint childPoint = flipFloatForWritingModeForChild(floatingObject, adjustedLocation + LayoutSize(xOffset, yOffset));
