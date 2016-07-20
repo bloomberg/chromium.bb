@@ -71,7 +71,7 @@ static String serializePositionOffset(const CSSValuePair& offset, const CSSValue
 static CSSValuePair* buildSerializablePositionOffset(CSSValue* offset, CSSValueID defaultSide)
 {
     CSSValueID side = defaultSide;
-    CSSPrimitiveValue* amount = nullptr;
+    const CSSPrimitiveValue* amount = nullptr;
 
     if (!offset) {
         side = CSSValueCenter;

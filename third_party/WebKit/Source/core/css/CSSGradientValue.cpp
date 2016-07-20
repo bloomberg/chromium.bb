@@ -481,7 +481,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
     }
 }
 
-static float positionFromValue(CSSValue* value, const CSSToLengthConversionData& conversionData, const IntSize& size, bool isHorizontal)
+static float positionFromValue(const CSSValue* value, const CSSToLengthConversionData& conversionData, const IntSize& size, bool isHorizontal)
 {
     int origin = 0;
     int sign = 1;
@@ -490,7 +490,7 @@ static float positionFromValue(CSSValue* value, const CSSToLengthConversionData&
     // In this case the center of the gradient is given relative to an edge in the form of:
     // [ top | bottom | right | left ] [ <percentage> | <length> ].
     if (value->isValuePair()) {
-        CSSValuePair& pair = toCSSValuePair(*value);
+        const CSSValuePair& pair = toCSSValuePair(*value);
         CSSValueID originID = toCSSPrimitiveValue(pair.first()).getValueID();
         value = &pair.second();
 
@@ -501,7 +501,7 @@ static float positionFromValue(CSSValue* value, const CSSToLengthConversionData&
         }
     }
 
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->isNumber())
         return origin + sign * primitiveValue->getFloatValue() * conversionData.zoom();

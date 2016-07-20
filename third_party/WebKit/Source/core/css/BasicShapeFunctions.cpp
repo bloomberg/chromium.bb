@@ -117,14 +117,14 @@ CSSValue* valueForBasicShape(const ComputedStyle& style, const BasicShape* basic
     }
 }
 
-static Length convertToLength(const StyleResolverState& state, CSSPrimitiveValue* value)
+static Length convertToLength(const StyleResolverState& state, const CSSPrimitiveValue* value)
 {
     if (!value)
         return Length(0, Fixed);
     return value->convertToLength(state.cssToLengthConversionData());
 }
 
-static LengthSize convertToLengthSize(const StyleResolverState& state, CSSValuePair* value)
+static LengthSize convertToLengthSize(const StyleResolverState& state, const CSSValuePair* value)
 {
     if (!value)
         return LengthSize(Length(0, Fixed), Length(0, Fixed));
@@ -171,7 +171,7 @@ static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverS
     return BasicShapeCenterCoordinate(direction, offset);
 }
 
-static BasicShapeRadius cssValueToBasicShapeRadius(const StyleResolverState& state, CSSPrimitiveValue* radius)
+static BasicShapeRadius cssValueToBasicShapeRadius(const StyleResolverState& state, const CSSPrimitiveValue* radius)
 {
     if (!radius)
         return BasicShapeRadius(BasicShapeRadius::ClosestSide);
