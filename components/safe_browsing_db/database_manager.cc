@@ -166,6 +166,7 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   api_checks_.insert(check);
 
   if (prefixes_needing_reqs.empty()) {
+    check->set_start_time(base::TimeTicks::Now());
     // We can call the callback immediately if no prefixes require a request.
     // The |full_hash_results| representing the results fromt eh SB server will
     // be empty.
@@ -288,6 +289,12 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
     const base::Time& negative_cache_expire) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
+
+  // Record the network time.
+  if (!check->start_time().is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES("SafeBrowsing.GetV4HashNetwork",
+                             base::TimeTicks::Now() - check->start_time());
+  }
 
   // If the time is uninitialized, don't cache the results.
   if (!negative_cache_expire.is_null()) {

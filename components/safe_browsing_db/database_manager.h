@@ -191,6 +191,9 @@ class SafeBrowsingDatabaseManager
         return cached_results_;
     }
     SafeBrowsingDatabaseManager::Client* client() {return client_;}
+    base::TimeTicks start_time() {return start_time_;}
+
+    void set_start_time(base::TimeTicks start) {start_time_ = start;}
 
    private:
     GURL url_;
@@ -206,6 +209,9 @@ class SafeBrowsingDatabaseManager
 
     // Not owned.
     SafeBrowsingDatabaseManager::Client* client_;
+
+    // When the check was sent to the Safe Browsing service.
+    base::TimeTicks start_time_;
 
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingApiCheck);
   };

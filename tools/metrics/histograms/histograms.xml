@@ -47272,6 +47272,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.GetV4HashNetwork" units="ms">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The time that it took to receive a response from the Safe Browsing servers
+    for a V4 GetHash request.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.GetV4HashResult"
     enum="SafeBrowsingV4OperationResult">
   <owner>kcarattini@chromium.org</owner>
