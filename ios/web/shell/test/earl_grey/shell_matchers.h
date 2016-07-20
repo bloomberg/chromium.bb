@@ -11,6 +11,9 @@ namespace web {
 // Shorthand for GREYMatchers::matcherForWebViewContainingText.
 id<GREYMatcher> webViewContainingText(const std::string& text);
 
+// Shorthand for GREYMatchers::matcherForWebViewScrollView.
+id<GREYMatcher> webViewScrollView();
+
 // Shorthand for GREYMatchers::matcherForAddressFieldEqualToText.
 id<GREYMatcher> addressFieldText(const std::string& text);
 
@@ -29,6 +32,9 @@ id<GREYMatcher> addressField();
 
 // Matcher for WKWebView containing |text|.
 + (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text;
+
+// Matcher for WKWebView's scroll view.
++ (id<GREYMatcher>)matcherForWebViewScrollView;
 
 // Matcher for web shell address field text property equal to |text|.
 + (id<GREYMatcher>)matcherForAddressFieldEqualToText:(const std::string&)text;

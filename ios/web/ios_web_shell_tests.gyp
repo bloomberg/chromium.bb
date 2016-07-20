@@ -62,6 +62,7 @@
       ],
       'sources': [
         'shell/test/web_shell_navigation_egtest.mm',
+        'shell/test/web_shell_page_state_egtest.mm',
       ],
       'actions': [{
         'action_name': 'copy_test_data',

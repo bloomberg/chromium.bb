@@ -28,6 +28,10 @@ id<GREYMatcher> webViewContainingText(const std::string& text,
       [GREYMatchers matcherForWebViewContainingText:text inWebState:webState];
 }
 
+id<GREYMatcher> webViewScrollView(web::WebState* webState) {
+  return [GREYMatchers matcherForWebViewScrollViewInWebState:webState];
+}
+
 }  // namespace web
 
 @implementation GREYMatchers (WebViewAdditions)
@@ -65,6 +69,23 @@ id<GREYMatcher> webViewContainingText(const std::string& text,
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"web view containing "];
     [description appendText:base::SysUTF8ToNSString(text)];
+  };
+
+  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                               descriptionBlock:describe]
+      autorelease];
+}
+
++ (id<GREYMatcher>)matcherForWebViewScrollViewInWebState:
+    (web::WebState*)webState {
+  MatchesBlock matches = ^BOOL(UIView* view) {
+    return [view isKindOfClass:[UIScrollView class]] &&
+           [view.superview isKindOfClass:[WKWebView class]] &&
+           [view isDescendantOfView:webState->GetView()];
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"web view scroll view"];
   };
 
   return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
