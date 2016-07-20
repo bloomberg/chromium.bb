@@ -333,9 +333,14 @@ void GestureInterpreterLibevdevCros::OnGestureFling(const Gesture* gesture,
   if (!cursor_)
     return;  // No cursor!
 
+  // We may receive a request for a GESTURE_FLING_START with zero velocity; in
+  // this case send a ET_SCROLL_FLING_CANCEL in case it's needed to stop a
+  // fling in progress.
+  // TODO(wjmaclean): is it possible to get consecutive GESTURE_FLING_STARTs?
+  bool should_fling_start = fling->fling_state == GESTURES_FLING_START &&
+                            (fling->vx != 0 || fling->vy != 0);
   EventType type =
-      (fling->fling_state == GESTURES_FLING_START ? ET_SCROLL_FLING_START
-                                                  : ET_SCROLL_FLING_CANCEL);
+      (should_fling_start ? ET_SCROLL_FLING_START : ET_SCROLL_FLING_CANCEL);
 
   // Fling is like 2-finger scrolling but with velocity instead of displacement.
   dispatcher_->DispatchScrollEvent(ScrollEventParams(
