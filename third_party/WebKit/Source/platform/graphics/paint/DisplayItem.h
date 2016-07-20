@@ -215,7 +215,7 @@ public:
 
     // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+        STACK_ALLOCATED();
         Id(const DisplayItemClient& client, const Type type)
             : client(client)
             , type(type) { }

@@ -133,7 +133,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext& context, cons
             if (objectProperties && objectProperties->scrollbarPaintOffset()) {
                 PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
                 properties.transform = objectProperties->scrollbarPaintOffset();
-                scopedTransformProperty.emplace(context.getPaintController(), getScrollableArea().box(), DisplayItem::ScrollOverflowControls, properties);
+                scopedTransformProperty.emplace(context.getPaintController(), properties);
             }
         }
         if (getScrollableArea().horizontalScrollbar() && !getScrollableArea().layerForHorizontalScrollbar()) {

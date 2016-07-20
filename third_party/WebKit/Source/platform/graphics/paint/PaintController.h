@@ -60,7 +60,7 @@ public:
 
     // Provide a new set of paint chunk properties to apply to recorded display
     // items, for Slimming Paint v2.
-    void updateCurrentPaintChunkProperties(const PaintChunk::Id*, const PaintChunkProperties&);
+    void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
 
     // Retrieve the current paint properties.
     const PaintChunkProperties& currentPaintChunkProperties() const;
@@ -111,7 +111,7 @@ public:
 
     void beginSkippingCache() { ++m_skippingCacheCount; }
     void endSkippingCache() { DCHECK(m_skippingCacheCount > 0); --m_skippingCacheCount; }
-    bool isSkippingCache() const { return m_skippingCacheCount; }
+    bool skippingCache() const { return m_skippingCacheCount; }
 
     // Must be called when a painting is finished.
     // offsetFromLayoutObject is the offset between the space of the GraphicsLayer which owns this

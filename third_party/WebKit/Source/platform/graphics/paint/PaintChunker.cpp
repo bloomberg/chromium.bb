@@ -16,41 +16,19 @@ PaintChunker::~PaintChunker()
 {
 }
 
-void PaintChunker::updateCurrentPaintChunkProperties(const PaintChunk::Id* chunkId, const PaintChunkProperties& properties)
+void PaintChunker::updateCurrentPaintChunkProperties(const PaintChunkProperties& properties)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    m_currentChunkId = WTF::nullopt;
-    if (chunkId)
-        m_currentChunkId.emplace(*chunkId);
     m_currentProperties = properties;
 }
 
-void PaintChunker::incrementDisplayItemIndex(const DisplayItem& item)
+void PaintChunker::incrementDisplayItemIndex(ItemBehavior behavior)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    ItemBehavior behavior;
-    Optional<PaintChunk::Id> newChunkId;
-    if (DisplayItem::isForeignLayerType(item.getType())) {
-        behavior = RequiresSeparateChunk;
-        // Use null chunkId if we are skipping cache, so that the chunk will not
-        // match any old chunk and will be treated as brand new.
-        if (!item.skippedCache())
-            newChunkId.emplace(item.getId());
-
-        // Clear m_currentChunkId so that any display items after the foreign layer
-        // without a new chunk id will be treated as having no id to avoid the chunk
-        // from using the same id as the chunk before the foreign layer chunk.
-        m_currentChunkId = WTF::nullopt;
-    } else {
-        behavior = DefaultBehavior;
-        if (!item.skippedCache() && m_currentChunkId)
-            newChunkId.emplace(*m_currentChunkId);
-    }
-
     if (m_chunks.isEmpty()) {
-        PaintChunk newChunk(0, 1, newChunkId ? &*newChunkId : nullptr, m_currentProperties);
+        PaintChunk newChunk(0, 1, m_currentProperties);
         m_chunks.append(newChunk);
         m_chunkBehavior.append(behavior);
         return;
@@ -65,7 +43,7 @@ void PaintChunker::incrementDisplayItemIndex(const DisplayItem& item)
         return;
     }
 
-    PaintChunk newChunk(lastChunk.endIndex, lastChunk.endIndex + 1, newChunkId ? &*newChunkId : nullptr, m_currentProperties);
+    PaintChunk newChunk(lastChunk.endIndex, lastChunk.endIndex + 1, m_currentProperties);
     m_chunks.append(newChunk);
     m_chunkBehavior.append(behavior);
 }
@@ -88,7 +66,6 @@ void PaintChunker::clear()
 {
     m_chunks.clear();
     m_chunkBehavior.clear();
-    m_currentChunkId = WTF::nullopt;
     m_currentProperties = PaintChunkProperties();
 }
 
@@ -97,7 +74,6 @@ Vector<PaintChunk> PaintChunker::releasePaintChunks()
     Vector<PaintChunk> chunks;
     chunks.swap(m_chunks);
     m_chunkBehavior.clear();
-    m_currentChunkId = WTF::nullopt;
     m_currentProperties = PaintChunkProperties();
     return chunks;
 }

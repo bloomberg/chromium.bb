@@ -378,7 +378,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             properties.clip = localBorderBoxProperties.propertyTreeState.clip;
             properties.effect = localBorderBoxProperties.propertyTreeState.effect;
             properties.backfaceHidden = m_paintLayer.layoutObject()->hasHiddenBackface();
-            scopedPaintChunkProperties.emplace(context.getPaintController(), m_paintLayer, properties);
+            scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
         }
 
         bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;

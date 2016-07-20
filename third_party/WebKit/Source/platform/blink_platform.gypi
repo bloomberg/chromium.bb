@@ -1216,7 +1216,6 @@
       'graphics/paint/DisplayItemTest.cpp',
       'graphics/paint/GeometryMapperTest.cpp',
       'graphics/paint/PaintArtifactToSkCanvasTest.cpp',
-      'graphics/paint/PaintChunkTest.cpp',
       'graphics/paint/PaintChunkerTest.cpp',
       'graphics/paint/PaintControllerTest.cpp',
       'graphics/paint/PropertyTreeStateTest.cpp',

@@ -65,7 +65,7 @@ public:
                     auto& paintController = context.getPaintController();
                     PaintChunkProperties properties(paintController.currentPaintChunkProperties());
                     properties.transform = objectProperties->svgLocalToBorderBoxTransform();
-                    m_transformPropertyScope.emplace(paintController, object, properties);
+                    m_transformPropertyScope.emplace(paintController, properties);
                 }
             } else {
                 DCHECK(object.isSVG());
@@ -77,7 +77,7 @@ public:
                     auto& paintController = context.getPaintController();
                     PaintChunkProperties properties(paintController.currentPaintChunkProperties());
                     properties.transform = objectProperties->transform();
-                    m_transformPropertyScope.emplace(paintController, object, properties);
+                    m_transformPropertyScope.emplace(paintController, properties);
                 }
             }
         }

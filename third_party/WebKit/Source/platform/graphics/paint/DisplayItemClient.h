@@ -63,11 +63,7 @@ public:
 
     PaintInvalidationReason getPaintInvalidationReason() const { return m_cacheGenerationOrInvalidationReason.getPaintInvalidationReason(); }
 
-    // A client is considered "just created" if its display items have never been committed.
-    bool isJustCreated() const { return m_cacheGenerationOrInvalidationReason.isJustCreated(); }
-
 private:
-    friend class FakeDisplayItemClient;
     friend class PaintController;
 
     // Holds a unique cache generation id of DisplayItemClients and PaintControllers,
@@ -85,16 +81,12 @@ private:
     // only. The client will be treated as invalid on other paint controllers regardless if
     // it's validly cached by these paint controllers. The situation is very rare (about 0.07%
     // clients were painted on multiple paint controllers) so the performance penalty is trivial.
-    class PLATFORM_EXPORT CacheGenerationOrInvalidationReason {
+    class CacheGenerationOrInvalidationReason {
         DISALLOW_NEW();
     public:
-        CacheGenerationOrInvalidationReason() : m_value(kJustCreated) { }
+        CacheGenerationOrInvalidationReason() { invalidate(); }
 
-        void invalidate(PaintInvalidationReason reason = PaintInvalidationFull)
-        {
-            if (m_value != kJustCreated)
-                m_value = static_cast<ValueType>(reason);
-        }
+        void invalidate(PaintInvalidationReason reason = PaintInvalidationFull) { m_value = static_cast<ValueType>(reason); }
 
         static CacheGenerationOrInvalidationReason next()
         {
@@ -111,17 +103,14 @@ private:
 
         PaintInvalidationReason getPaintInvalidationReason() const
         {
-            return m_value < kJustCreated ? static_cast<PaintInvalidationReason>(m_value) : PaintInvalidationNone;
+            return m_value < kFirstValidGeneration ? static_cast<PaintInvalidationReason>(m_value) : PaintInvalidationNone;
         }
-
-        bool isJustCreated() const { return m_value == kJustCreated; }
 
     private:
         typedef uint32_t ValueType;
         explicit CacheGenerationOrInvalidationReason(ValueType value) : m_value(value) { }
 
-        static const ValueType kJustCreated = static_cast<ValueType>(PaintInvalidationReasonMax) + 1;
-        static const ValueType kFirstValidGeneration = static_cast<ValueType>(PaintInvalidationReasonMax) + 2;
+        static const ValueType kFirstValidGeneration = static_cast<ValueType>(PaintInvalidationReasonMax) + 1;
         static ValueType s_nextGeneration;
         ValueType m_value;
     };
