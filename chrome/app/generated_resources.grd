@@ -454,7 +454,7 @@ are declared in build/common.gypi.
         <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
       </message>
       <message name="IDS_MD_HISTORY_HISTORY_MENU_ITEM" desc="Label displayed in history sidebar button to display history.">
-        History
+        Chrome history
       </message>
       <message name="IDS_MD_HISTORY_NO_SYNCED_RESULTS" desc="Text indicating that there are no synced tabs from other devices.">
         No synced tabs
