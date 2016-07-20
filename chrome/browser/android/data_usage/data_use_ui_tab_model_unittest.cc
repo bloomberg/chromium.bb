@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -66,8 +67,16 @@ class MockTabDataUseObserver : public DataUseTabModel::TabDataUseObserver {
 
 class TestDataUseTabModel : public DataUseTabModel {
  public:
-  TestDataUseTabModel() {}
+  TestDataUseTabModel()
+      : DataUseTabModel(base::Bind(&TestDataUseTabModel::FetchMatchingRules,
+                                   base::Unretained(this)),
+                        base::Bind(&TestDataUseTabModel::OnMatchingRulesFetched,
+                                   base::Unretained(this))) {}
   ~TestDataUseTabModel() override {}
+
+  void FetchMatchingRules() {}
+
+  void OnMatchingRulesFetched(bool is_valid) {}
 
   using DataUseTabModel::NotifyObserversOfTrackingStarting;
   using DataUseTabModel::NotifyObserversOfTrackingEnding;
@@ -120,8 +129,6 @@ class DataUseUITabModelTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     data_use_tab_model_.reset(new TestDataUseTabModel());
-    data_use_tab_model_->InitOnUIThread(
-        external_data_use_observer_->external_data_use_observer_bridge_);
   }
 
   void SetUpDataUseUITabModel() {

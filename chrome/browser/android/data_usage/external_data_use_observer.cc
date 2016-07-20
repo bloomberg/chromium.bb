@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -51,7 +53,16 @@ ExternalDataUseObserver::ExternalDataUseObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_use_aggregator_(data_use_aggregator),
       external_data_use_observer_bridge_(new ExternalDataUseObserverBridge()),
-      data_use_tab_model_(new DataUseTabModel()),
+      // It is okay to use  base::Unretained for the callbacks, since
+      // |external_data_use_observer_bridge_| is owned by |this|, and is
+      // destroyed on UI thread after |this| and |data_use_tab_model_| are
+      // destroyed.
+      data_use_tab_model_(new DataUseTabModel(
+          base::Bind(&ExternalDataUseObserverBridge::FetchMatchingRules,
+                     base::Unretained(external_data_use_observer_bridge_)),
+          base::Bind(
+              &ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver,
+              base::Unretained(external_data_use_observer_bridge_)))),
       external_data_use_reporter_(
           new ExternalDataUseReporter(kExternalDataUseObserverFieldTrial,
                                       data_use_tab_model_,
@@ -73,11 +84,6 @@ ExternalDataUseObserver::ExternalDataUseObserver(
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ExternalDataUseReporter::InitOnUIThread,
                             base::Unretained(external_data_use_reporter_)));
-
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DataUseTabModel::InitOnUIThread,
-                                       base::Unretained(data_use_tab_model_),
-                                       external_data_use_observer_bridge_));
 
   // Initialize the ExternalDataUseObserverBridge object. It is okay to use
   // base::Unretained here since |external_data_use_observer_bridge_| is owned

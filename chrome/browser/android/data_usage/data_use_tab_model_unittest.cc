@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -115,9 +117,12 @@ class DataUseTabModelTest : public testing::Test {
  protected:
   void SetUp() override {
     base::RunLoop().RunUntilIdle();
-    data_use_tab_model_.reset(new DataUseTabModel());
-    data_use_tab_model_->InitOnUIThread(
-        external_data_use_observer_bridge_.get());
+    data_use_tab_model_.reset(new DataUseTabModel(
+        base::Bind(&ExternalDataUseObserverBridge::FetchMatchingRules,
+                   base::Unretained(external_data_use_observer_bridge_.get())),
+        base::Bind(
+            &ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver,
+            base::Unretained(external_data_use_observer_bridge_.get()))));
 
     tick_clock_ = new base::SimpleTestTickClock();
 

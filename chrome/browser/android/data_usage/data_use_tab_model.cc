@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,7 +17,6 @@
 #include "chrome/browser/android/data_usage/data_use_matcher.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "url/gurl.h"
 
@@ -137,14 +136,24 @@ namespace android {
 const char DataUseTabModel::kDefaultTag[] = "ChromeTab";
 const char DataUseTabModel::kCustomTabTag[] = "ChromeCustomTab";
 
-DataUseTabModel::DataUseTabModel()
+DataUseTabModel::DataUseTabModel(
+    const base::Closure& force_fetch_matching_rules_callback,
+    const base::Callback<void(bool)>& on_matching_rules_fetched_callback)
     : max_tab_entries_(GetMaxTabEntries()),
       max_sessions_per_tab_(GetMaxSessionsPerTab()),
       closed_tab_expiration_duration_(GetClosedTabExpirationDuration()),
       open_tab_expiration_duration_(GetOpenTabExpirationDuration()),
+      tick_clock_(new base::DefaultTickClock()),
+      force_fetch_matching_rules_callback_(force_fetch_matching_rules_callback),
       is_ready_for_navigation_event_(false),
       is_control_app_installed_(false),
       weak_factory_(this) {
+  DCHECK(force_fetch_matching_rules_callback_);
+  DCHECK(on_matching_rules_fetched_callback);
+  data_use_matcher_.reset(new DataUseMatcher(
+      base::Bind(&DataUseTabModel::OnTrackingLabelRemoved, GetWeakPtr()),
+      on_matching_rules_fetched_callback,
+      GetDefaultMatchingRuleExpirationDuration()));
   // Detach from current thread since rest of DataUseTabModel lives on the UI
   // thread and the current thread may not be UI thread..
   thread_checker_.DetachFromThread();
@@ -157,18 +166,6 @@ DataUseTabModel::~DataUseTabModel() {
 base::WeakPtr<DataUseTabModel> DataUseTabModel::GetWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_factory_.GetWeakPtr();
-}
-
-void DataUseTabModel::InitOnUIThread(
-    const ExternalDataUseObserverBridge* external_data_use_observer_bridge) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(external_data_use_observer_bridge);
-
-  tick_clock_.reset(new base::DefaultTickClock());
-  data_use_matcher_.reset(
-      new DataUseMatcher(GetWeakPtr(), external_data_use_observer_bridge,
-                         GetDefaultMatchingRuleExpirationDuration()));
 }
 
 void DataUseTabModel::OnNavigationEvent(
@@ -185,7 +182,7 @@ void DataUseTabModel::OnNavigationEvent(
   bool is_package_match;
 
   if (is_control_app_installed_ && !data_use_matcher_->HasRules())
-    data_use_matcher_->FetchMatchingRules();
+    force_fetch_matching_rules_callback_.Run();
 
   GetCurrentAndNewLabelForNavigationEvent(tab_id, transition, url, package,
                                           navigation_entry, &current_label,
@@ -218,7 +215,7 @@ void DataUseTabModel::OnTabCloseEvent(SessionID::id_type tab_id) {
   tab_entry.OnTabCloseEvent();
 }
 
-void DataUseTabModel::OnTrackingLabelRemoved(std::string label) {
+void DataUseTabModel::OnTrackingLabelRemoved(const std::string& label) {
   for (auto& tab_entry : active_tabs_)
     tab_entry.second.EndTrackingWithLabel(label);
 }
@@ -311,7 +308,7 @@ void DataUseTabModel::OnControlAppInstallStateChange(
     }
   } else {
     // Fetch the matching rules when the app is installed.
-    data_use_matcher_->FetchMatchingRules();
+    force_fetch_matching_rules_callback_.Run();
   }
 }
 

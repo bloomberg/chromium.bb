@@ -10,12 +10,15 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -78,10 +81,14 @@ class DataUseMatcherTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         external_data_use_observer_bridge_(
             new TestExternalDataUseObserverBridge()),
-        data_use_matcher_(base::WeakPtr<DataUseTabModel>(),
-                          external_data_use_observer_bridge_.get(),
-                          base::TimeDelta::FromSeconds(
-                              kDefaultMatchingRuleExpirationDurationSeconds)) {}
+        data_use_matcher_(
+            base::Bind(&DataUseTabModel::OnTrackingLabelRemoved,
+                       base::WeakPtr<DataUseTabModel>()),
+            base::Bind(
+                &ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver,
+                base::Unretained(external_data_use_observer_bridge_.get())),
+            base::TimeDelta::FromSeconds(
+                kDefaultMatchingRuleExpirationDurationSeconds)) {}
 
   DataUseMatcher* data_use_matcher() { return &data_use_matcher_; }
 
