@@ -305,6 +305,8 @@ class TestCacheStorageCache : public CacheStorageCache {
     return delayable_backend;
   }
 
+  void Init() { InitBackend(); }
+
  private:
   std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle() override {
     // Returns an empty handle. There is no need for CacheStorage and its
@@ -361,6 +363,7 @@ class CacheStorageCacheTest : public testing::Test {
         BrowserContext::GetDefaultStoragePartition(&browser_context_)
             ->GetURLRequestContext(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
+    cache_->Init();
   }
 
   void TearDown() override {
@@ -1318,13 +1321,6 @@ TEST_P(CacheStorageCacheTestP, GetSizeThenClose) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   int64_t cache_size = Size();
   EXPECT_EQ(cache_size, GetSizeThenClose());
-  VerifyAllOpsFail();
-}
-
-TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackendNeverCreated) {
-  cache_->set_delay_backend_creation(
-      true);  // Will hang the test if a backend is created.
-  EXPECT_TRUE(Close());
   VerifyAllOpsFail();
 }
 

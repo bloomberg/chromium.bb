@@ -186,9 +186,6 @@ class CONTENT_EXPORT CacheStorageCache {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
-  // Returns true if the backend is ready to operate.
-  bool LazyInitialize();
-
   // Returns all entries in this cache.
   void OpenAllEntries(const OpenAllEntriesCallback& callback);
   void DidOpenNextEntry(std::unique_ptr<OpenAllEntriesContext> entries_context,
@@ -333,8 +330,11 @@ class CONTENT_EXPORT CacheStorageCache {
                               int rv);
 
   void InitBackend();
-  void InitDidCreateBackend(CacheStorageError cache_create_error);
-  void InitGotCacheSize(CacheStorageError cache_create_error, int cache_size);
+  void InitDidCreateBackend(const base::Closure& callback,
+                            CacheStorageError cache_create_error);
+  void InitGotCacheSize(const base::Closure& callback,
+                        CacheStorageError cache_create_error,
+                        int cache_size);
 
   void PendingClosure(const base::Closure& callback);
   void PendingErrorCallback(const ErrorCallback& callback,

@@ -650,6 +650,11 @@ TEST_F(CacheStorageManagerTest, DropReference) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   base::WeakPtr<CacheStorageCache> cache =
       callback_cache_handle_->value()->AsWeakPtr();
+  // Run a cache operation to ensure that the cache has finished initializing so
+  // that when the handle is dropped it can close immediately.
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(),
+                          GURL("http://example.com/foo")));
+
   callback_cache_handle_ = nullptr;
   EXPECT_FALSE(cache);
 }
@@ -894,6 +899,10 @@ class CacheStorageMigrationTest : public CacheStorageManagerTest {
     ASSERT_TRUE(Open(origin1_, cache1_));
     ASSERT_TRUE(Open(origin1_, cache2_));
     callback_cache_handle_.reset();
+
+    // Let the caches shut down.
+    base::RunLoop().RunUntilIdle();
+
     ASSERT_FALSE(base::DirectoryExists(legacy_path_));
     ASSERT_TRUE(base::DirectoryExists(new_path_));
 
