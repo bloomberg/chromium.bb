@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
+#include <dwmapi.h>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -28,6 +29,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -70,6 +72,9 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // TODO(bsep): Windows 10 caption buttons look very different and we would like
 // the profile switcher button to match on that platform.
 const int kProfileSwitcherButtonHeight = 20;
+// There is a small one-pixel strip right above the caption buttons in which the
+// resize border "peeks" through.
+const int kCaptionButtonTopInset = 1;
 
 // Converts the |image| to a Windows icon and returns the corresponding HICON
 // handle. |image| is resized to desired |width| and |height| if needed.
@@ -244,6 +249,31 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   if (frame_component != HTNOWHERE)
     return frame_component;
+
+  // On Windows 8+, the caption buttons are almost butted up to the top right
+  // corner of the window. This code ensures the mouse isn't set to a size
+  // cursor while hovering over the caption buttons, thus giving the incorrect
+  // impression that the user can resize the window.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    RECT button_bounds = {0};
+    if (SUCCEEDED(DwmGetWindowAttribute(views::HWNDForWidget(frame()),
+                                        DWMWA_CAPTION_BUTTON_BOUNDS,
+                                        &button_bounds,
+                                        sizeof(button_bounds)))) {
+      gfx::Rect buttons = gfx::ConvertRectToDIP(display::win::GetDPIScale(),
+                                                gfx::Rect(button_bounds));
+      // The sizing region at the window edge above the caption buttons is
+      // 1 px regardless of scale factor. If we inset by 1 before converting
+      // to DIPs, the precision loss might eliminate this region entirely. The
+      // best we can do is to inset after conversion. This guarantees we'll
+      // show the resize cursor when resizing is possible. The cost of which
+      // is also maybe showing it over the portion of the DIP that isn't the
+      // outermost pixel.
+      buttons.Inset(0, kCaptionButtonTopInset, 0, 0);
+      if (buttons.Contains(point))
+        return HTNOWHERE;
+    }
+  }
 
   int top_border_thickness = FrameTopBorderThickness(false);
   // We want the resize corner behavior to apply to the kResizeCornerWidth
