@@ -1,11 +1,13 @@
-<!--
-@MAC-ALLOW:AXRole*
-@WIN-ALLOW:xml-roles:*
--->
-<html>
-<body>
-  <div role="tree">
-  </div>
-</table> 
-</body>
-</html>
+<!DOCTYPE html>
+<ul role="tree">
+  <li role="treeitem"><a href="#animals">Animals</a></li>
+  <ul role="group">
+    <li role="treeitem"><a href="#domesticated">Domesticated</a></li>
+    <ul role="group">
+      <li><a href="#dog">Dog</a></li>
+      <li><a href="#cat">Cat</a></li>
+    </ul>
+    <li role="treeitem"><a href="#wild">Wild</a></li>
+  </ul>
+  <li role="treeitem"><a href="#plants">Plants</a></li>
+</ul>

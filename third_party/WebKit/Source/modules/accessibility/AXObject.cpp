@@ -1712,6 +1712,7 @@ bool AXObject::nameFromContents() const
     case SwitchRole:
     case TabRole:
     case ToggleButtonRole:
+    case TreeItemRole:
         return true;
     default:
         return false;

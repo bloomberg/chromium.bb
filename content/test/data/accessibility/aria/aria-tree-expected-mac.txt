@@ -1,2 +1,12 @@
-AXWebArea AXRoleDescription='HTML content'
-++AXOutline AXRoleDescription='outline'
+AXWebArea
+++AXOutline
+++++AXRow AXTitle='Animals'
+++++++AXStaticText AXValue='Animals'
+++++AXRow AXTitle='Domesticated'
+++++++AXStaticText AXValue='Domesticated'
+++++AXStaticText AXValue='Dog'
+++++AXStaticText AXValue='Cat'
+++++AXRow AXTitle='Wild'
+++++++AXStaticText AXValue='Wild'
+++++AXRow AXTitle='Plants'
+++++++AXStaticText AXValue='Plants'
