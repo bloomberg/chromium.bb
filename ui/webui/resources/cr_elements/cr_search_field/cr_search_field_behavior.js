@@ -100,4 +100,9 @@ var CrSearchFieldBehavior = {
   toggleShowingSearch_: function() {
     this.showingSearch = !this.showingSearch;
   },
+
+  /** @return {boolean} */
+  isSearchFocused: function() {
+    return this.$.searchTerm.focused;
+  }
 };

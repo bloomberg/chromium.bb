@@ -96,6 +96,10 @@ Polymer({
     this.fire('delete-selected');
   },
 
+  get searchBar() {
+    return this.$['main-toolbar'].getSearchField();
+  },
+
   showSearchField: function() {
     /** @type {!CrToolbarElement} */(this.$['main-toolbar'])
         .getSearchField()

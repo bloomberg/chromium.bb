@@ -126,7 +126,7 @@
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]"
         tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>
-    <paper-input-container on-search="onSearchTermSearch"
+    <paper-input-container id="searchTerm" on-search="onSearchTermSearch"
         on-keydown="onSearchTermKeydown" no-label-float>
       <label id="prompt" for="searchInput">[[label]]</label>
       <input is="iron-input" id="searchInput" type="search"

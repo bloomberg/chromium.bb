@@ -125,7 +125,17 @@ Polymer({
    * @private
    */
   onCanExecute_: function(e) {
-    e.canExecute = true;
+    e = /** @type {cr.ui.CanExecuteEvent} */(e);
+    switch (e.command.id) {
+      case 'find-command':
+        e.canExecute = true;
+        break;
+      case 'slash-command':
+        e.canExecute =
+            !(this.$.toolbar.searchBar.showingSearch &&
+              this.$.toolbar.searchBar.isSearchFocused());
+        break;
+    }
   },
 
   /**
@@ -133,7 +143,7 @@ Polymer({
    * @private
    */
   onCommand_: function(e) {
-    if (e.command.id == 'find-command')
+    if (e.command.id == 'find-command' || e.command.id == 'slash-command')
       this.$.toolbar.showSearchField();
   },
 
