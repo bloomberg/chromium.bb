@@ -28,9 +28,10 @@ function test()
         InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "paint invalidations");
 
         var linkifier = new WebInspector.Linkifier();
-        var target = InspectorTest.timelineModel().target();
+        var event = record.traceEvent();
+        var target = InspectorTest.timelineModel().targetByEvent(event);
         var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, true);
-        WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), target, null, contentHelper);
+        WebInspector.TimelineUIUtils._generateCauses(event, target, null, contentHelper);
         var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
         var invalidations = invalidationsTree.shadowRoot.textContent;
         checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
