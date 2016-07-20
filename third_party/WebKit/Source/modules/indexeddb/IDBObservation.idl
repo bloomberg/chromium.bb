@@ -4,7 +4,7 @@
 
 // https://github.com/WICG/indexed-db-observers/blob/gh-pages/EXPLAINER.md#records
 
-enum IDBObserverChangesRecordType {
+enum IDBObservationType {
     "add",
     "put",
     "delete",
@@ -14,8 +14,8 @@ enum IDBObserverChangesRecordType {
    Exposed=(Window,Worker),
    RuntimeEnabled=IDBObserver
 ]
- interface IDBObserverChangesRecord {
-   readonly attribute  IDBObserverChangesRecordType type;
+ interface IDBObservation {
+   readonly attribute  IDBObservationType type;
    // When the record is a "delete" type, this is an IDBKeyRange.
    [CallWith=ScriptState] readonly attribute any key;
    [CallWith=ScriptState] readonly attribute any value;

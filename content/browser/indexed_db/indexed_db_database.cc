@@ -29,6 +29,8 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
+#include "content/browser/indexed_db/indexed_db_observation.h"
+#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_return_value.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
@@ -760,12 +762,14 @@ void IndexedDBDatabase::Abort(int64_t transaction_id,
     transaction->Abort(error);
 }
 
-void IndexedDBDatabase::AddPendingObserver(int64_t transaction_id,
-                                           int32_t observer_id) {
+void IndexedDBDatabase::AddPendingObserver(
+    int64_t transaction_id,
+    int32_t observer_id,
+    const IndexedDBObserver::Options& options) {
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
     return;
-  transaction->AddPendingObserver(observer_id);
+  transaction->AddPendingObserver(observer_id, options);
 }
 
 void IndexedDBDatabase::RemovePendingObservers(
@@ -776,6 +780,45 @@ void IndexedDBDatabase::RemovePendingObservers(
     // connections.
     if (it.second->connection() == connection)
       it.second->RemovePendingObservers(pending_observer_ids);
+  }
+}
+
+// TODO(palakj): Augment the function with IDBValue later. Issue
+// crbug.com/609934.
+void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
+                                          int64_t object_store_id,
+                                          blink::WebIDBOperationType type,
+                                          const IndexedDBKeyRange& key_range) {
+  for (const auto& connection : connections_) {
+    bool recorded = false;
+    for (const auto& observer : connection->active_observers()) {
+      if (!observer->IsRecordingType(type) ||
+          !observer->IsRecordingObjectStore(object_store_id))
+        continue;
+      if (!recorded) {
+        if (type == blink::WebIDBClear) {
+          transaction->AddObservation(connection->id(),
+                                      base::WrapUnique(new IndexedDBObservation(
+                                          object_store_id, type)));
+        } else {
+          transaction->AddObservation(connection->id(),
+                                      base::WrapUnique(new IndexedDBObservation(
+                                          object_store_id, type, key_range)));
+        }
+        recorded = true;
+      }
+      transaction->RecordObserverForLastObservation(connection->id(),
+                                                    observer->id());
+    }
+  }
+}
+
+void IndexedDBDatabase::SendObservations(
+    std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>> changes_map) {
+  for (const auto& conn : connections_) {
+    auto it = changes_map.find(conn->id());
+    if (it != changes_map.end())
+      conn->callbacks()->OnDatabaseChange(it->first, std::move(it->second));
   }
 }
 
@@ -1333,6 +1376,11 @@ void IndexedDBDatabase::PutOperation(std::unique_ptr<PutOperationParams> params,
                transaction->id());
     params->callbacks->OnSuccess(*key);
   }
+  FilterObservation(transaction, params->object_store_id,
+                    params->put_mode == blink::WebIDBPutModeAddOnly
+                        ? blink::WebIDBAdd
+                        : blink::WebIDBPut,
+                    IndexedDBKeyRange(*key));
 }
 
 void IndexedDBDatabase::SetIndexKeys(int64_t transaction_id,
@@ -1676,6 +1724,8 @@ void IndexedDBDatabase::DeleteRangeOperation(
   } else {
     callbacks->OnSuccess();
   }
+  FilterObservation(transaction, object_store_id, blink::WebIDBDelete,
+                    *key_range);
 }
 
 void IndexedDBDatabase::Clear(int64_t transaction_id,
@@ -1711,6 +1761,9 @@ void IndexedDBDatabase::ClearOperation(
     return;
   }
   callbacks->OnSuccess();
+
+  FilterObservation(transaction, object_store_id, blink::WebIDBClear,
+                    IndexedDBKeyRange());
 }
 
 void IndexedDBDatabase::DeleteObjectStoreOperation(

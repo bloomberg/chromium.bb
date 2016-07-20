@@ -22,6 +22,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
+#include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "content/browser/indexed_db/list_set.h"
@@ -40,6 +41,8 @@ class IndexedDBFactory;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
+class IndexedDBObservation;
+class IndexedDBObserverChanges;
 class IndexedDBTransaction;
 struct IndexedDBValue;
 
@@ -127,9 +130,18 @@ class CONTENT_EXPORT IndexedDBDatabase
   // Called by transactions to report failure committing to the backing store.
   void TransactionCommitFailed(const leveldb::Status& status);
 
-  void AddPendingObserver(int64_t transaction_id, int32_t observer_id);
+  void AddPendingObserver(int64_t transaction_id,
+                          int32_t observer_id,
+                          const IndexedDBObserver::Options& options);
   void RemovePendingObservers(IndexedDBConnection* connection,
                               const std::vector<int32_t>& pending_observer_ids);
+
+  void FilterObservation(IndexedDBTransaction*,
+                         int64_t object_store_id,
+                         blink::WebIDBOperationType type,
+                         const IndexedDBKeyRange& key_range);
+  void SendObservations(
+      std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>> change_map);
 
   void Get(int64_t transaction_id,
            int64_t object_store_id,

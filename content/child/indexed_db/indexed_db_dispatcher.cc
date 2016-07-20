@@ -173,8 +173,12 @@ int32_t IndexedDBDispatcher::AddIDBObserver(
     int64_t transaction_id,
     std::unique_ptr<WebIDBObserver> observer) {
   int32_t observer_id = observers_.Add(observer.release());
-  Send(new IndexedDBHostMsg_DatabaseObserve(ipc_database_id, transaction_id,
-                                            observer_id));
+  IndexedDBHostMsg_DatabaseObserve_Params params;
+  // TODO(palakj): Other params are assigned values as a part of next cl.
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.observer_id = observer_id;
+  Send(new IndexedDBHostMsg_DatabaseObserve(params));
   return observer_id;
 }
 

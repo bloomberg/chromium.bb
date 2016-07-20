@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +15,10 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/common/indexed_db/indexed_db_param_traits.h"
+#include "content/public/common/common_param_traits.h"
+#include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "url/origin.h"
@@ -24,7 +28,12 @@
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_MESSAGES_H_
 
 // An index id, and corresponding set of keys to insert.
+
 typedef std::pair<int64_t, std::vector<content::IndexedDBKey>> IndexKeys;
+// IPC_MESSAGE macros fail on the std::map, when expanding. We need to define
+// a type to avoid that.
+// Map observer_id to corresponding set of indices in observations.
+typedef std::map<int32_t, std::vector<int32_t>> ObservationIndex;
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_MESSAGES_H_
 
@@ -42,6 +51,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBTransactionMode,
                           blink::WebIDBTransactionModeLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDataLoss, blink::WebIDBDataLossTotal)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBOperationType,
+                          blink::WebIDBOperationTypeLast)
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
@@ -171,6 +182,19 @@ IPC_STRUCT_BEGIN_WITH_PARENT(IndexedDBMsg_ReturnValue, IndexedDBMsg_Value)
   // Optional primary key & path used only when key generator specified.
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
+IPC_STRUCT_END()
+
+// WebIDBDatabase::observe() message.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseObserve_Params)
+  // The database the observer observers on.
+  IPC_STRUCT_MEMBER(int32_t, ipc_database_id)
+  // The transaction it's associated with.
+  IPC_STRUCT_MEMBER(int32_t, transaction_id)
+  IPC_STRUCT_MEMBER(int32_t, observer_id)
+  IPC_STRUCT_MEMBER(bool, include_transaction)
+  IPC_STRUCT_MEMBER(bool, no_records)
+  IPC_STRUCT_MEMBER(bool, values)
+  IPC_STRUCT_MEMBER(unsigned short, operation_types)
 IPC_STRUCT_END()
 
 // Used to set a value in an object store.
@@ -358,6 +382,17 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksUpgradeNeeded_Params)
   IPC_STRUCT_MEMBER(IndexedDBDatabaseMetadata, idb_metadata)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_Observation)
+  IPC_STRUCT_MEMBER(int64_t, object_store_id)
+  IPC_STRUCT_MEMBER(blink::WebIDBOperationType, type)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_ObserverChanges)
+  IPC_STRUCT_MEMBER(ObservationIndex, observation_index)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_Observation>, observations)
+IPC_STRUCT_END()
+
 // Indexed DB messages sent from the browser to the renderer.
 
 // The thread_id needs to be the first parameter in these messages.  In the IO
@@ -439,6 +474,10 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksComplete,
                      int32_t, /* ipc_thread_id */
                      int32_t, /* ipc_database_callbacks_id */
                      int64_t) /* transaction_id */
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksChanges,
+                     int32_t, /* ipc_thread_id */
+                     int32_t, /* ipc_database_id */
+                     IndexedDBMsg_ObserverChanges)
 
 // Indexed DB messages sent from the renderer to the browser.
 
@@ -485,12 +524,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_AckReceivedBlobs,
                      std::vector<std::string>) /* uuids */
 
-// WebIDBDatabase::observe() message.
-IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseObserve,
-                     int32_t, /* ipc_database_id */
-                     int64_t, /* transaction_id */
-                     int32_t) /* observer_id */
-
 // WebIDBDatabase::unobserve() message.
 IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseUnobserve,
                      int32_t,              /* ipc_database_id */
@@ -529,6 +562,10 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseGet,
 // WebIDBDatabase::getAll() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseGetAll,
                      IndexedDBHostMsg_DatabaseGetAll_Params)
+
+// WebIDBDatabase::observe() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseObserve,
+                     IndexedDBHostMsg_DatabaseObserve_Params)
 
 // WebIDBDatabase::put() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabasePut,

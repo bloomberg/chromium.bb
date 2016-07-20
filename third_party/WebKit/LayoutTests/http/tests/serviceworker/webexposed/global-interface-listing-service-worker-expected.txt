@@ -352,15 +352,15 @@ interface IDBObjectStore
     method openCursor
     method openKeyCursor
     method put
-interface IDBObserver
-    method constructor
-    method observe
-    method unobserve
-interface IDBObserverChangesRecord
+interface IDBObservation
     getter key
     getter type
     getter value
     method constructor
+interface IDBObserver
+    method constructor
+    method observe
+    method unobserve
 interface IDBOpenDBRequest : IDBRequest
     getter onblocked
     getter onupgradeneeded

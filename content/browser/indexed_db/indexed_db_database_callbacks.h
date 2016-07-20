@@ -14,6 +14,7 @@
 namespace content {
 class IndexedDBDatabaseError;
 class IndexedDBDispatcherHost;
+class IndexedDBObserverChanges;
 
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
@@ -28,6 +29,9 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   virtual void OnAbort(int64_t host_transaction_id,
                        const IndexedDBDatabaseError& error);
   virtual void OnComplete(int64_t host_transaction_id);
+  virtual void OnDatabaseChange(
+      int32_t ipc_database_id,
+      std::unique_ptr<IndexedDBObserverChanges> changes);
 
  protected:
   virtual ~IndexedDBDatabaseCallbacks();

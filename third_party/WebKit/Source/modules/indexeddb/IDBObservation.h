@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.+
 
-#ifndef IDBObserverChangesRecord_h
-#define IDBObserverChangesRecord_h
+#ifndef IDBObservation_h
+#define IDBObservation_h
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -17,13 +17,13 @@ class IDBKey;
 class IDBValue;
 class ScriptState;
 
-class IDBObserverChangesRecord final : public GarbageCollectedFinalized<IDBObserverChangesRecord>, public ScriptWrappable {
+class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
     static WebIDBOperationType stringToOperationType(const String&);
-    static IDBObserverChangesRecord* create(IDBKey*, PassRefPtr<IDBValue>, WebIDBOperationType);
-    ~IDBObserverChangesRecord();
+    static IDBObservation* create(IDBKey*, PassRefPtr<IDBValue>, WebIDBOperationType);
+    ~IDBObservation();
 
     DECLARE_TRACE();
 
@@ -33,7 +33,7 @@ public:
     const String& type() const;
 
 private:
-    IDBObserverChangesRecord(IDBKey*, PassRefPtr<IDBValue>, WebIDBOperationType);
+    IDBObservation(IDBKey*, PassRefPtr<IDBValue>, WebIDBOperationType);
     Member<IDBKey> m_key;
     RefPtr<IDBValue> m_value;
     const WebIDBOperationType m_operationType;
@@ -41,4 +41,4 @@ private:
 
 } // namespace blink
 
-#endif // IDBObserverChangesRecord_h
+#endif // IDBObservation_h

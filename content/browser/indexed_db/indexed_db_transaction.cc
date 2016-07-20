@@ -16,7 +16,8 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
-#include "content/browser/indexed_db/indexed_db_observer.h"
+#include "content/browser/indexed_db/indexed_db_observation.h"
+#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
@@ -346,16 +347,25 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   database_->transaction_coordinator().DidFinishTransaction(this);
 
   if (committed) {
-    // TODO (palakj) : Send Observations to observers
-    if (!pending_observers_.empty() && connection_)
-      connection_->ActivatePendingObservers(std::move(pending_observers_));
     abort_task_stack_.clear();
+
+    // SendObservations must be called before OnComplete to ensure consistency
+    // of callbacks at renderer.
+    if (!connection_changes_map_.empty()) {
+      database_->SendObservations(std::move(connection_changes_map_));
+      connection_changes_map_.clear();
+    }
     {
       IDB_TRACE1(
           "IndexedDBTransaction::CommitPhaseTwo.TransactionCompleteCallbacks",
           "txn.id", id());
       callbacks_->OnComplete(id_);
     }
+    if (!pending_observers_.empty() && connection_) {
+      connection_->ActivatePendingObservers(std::move(pending_observers_));
+      pending_observers_.clear();
+    }
+
     database_->TransactionFinished(this, true);
   } else {
     while (!abort_task_stack_.empty())
@@ -455,9 +465,11 @@ void IndexedDBTransaction::CloseOpenCursors() {
   open_cursors_.clear();
 }
 
-void IndexedDBTransaction::AddPendingObserver(int32_t observer_id) {
-  pending_observers_.push_back(
-      base::WrapUnique(new IndexedDBObserver(observer_id)));
+void IndexedDBTransaction::AddPendingObserver(
+    int32_t observer_id,
+    const IndexedDBObserver::Options& options) {
+  pending_observers_.push_back(base::WrapUnique(
+      new IndexedDBObserver(observer_id, object_store_ids_, options)));
 }
 
 void IndexedDBTransaction::RemovePendingObservers(
@@ -469,6 +481,28 @@ void IndexedDBTransaction::RemovePendingObservers(
       });
   if (it != pending_observers_.end())
     pending_observers_.erase(it, pending_observers_.end());
+}
+
+void IndexedDBTransaction::AddObservation(
+    int32_t connection_id,
+    std::unique_ptr<IndexedDBObservation> observation) {
+  auto it = connection_changes_map_.find(connection_id);
+  if (it == connection_changes_map_.end()) {
+    it = connection_changes_map_
+             .insert(std::make_pair(
+                 connection_id,
+                 base::WrapUnique(new IndexedDBObserverChanges())))
+             .first;
+  }
+  it->second->AddObservation(std::move(observation));
+}
+
+void IndexedDBTransaction::RecordObserverForLastObservation(
+    int32_t connection_id,
+    int32_t observer_id) {
+  auto it = connection_changes_map_.find(connection_id);
+  DCHECK(it != connection_changes_map_.end());
+  it->second->RecordObserverForLastObservation(observer_id);
 }
 
 }  // namespace content

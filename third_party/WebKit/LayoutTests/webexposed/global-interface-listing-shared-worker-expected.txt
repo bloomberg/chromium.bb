@@ -357,17 +357,17 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
-[Worker] interface IDBObserver
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method observe
-[Worker]     method unobserve
-[Worker] interface IDBObserverChangesRecord
+[Worker] interface IDBObservation
 [Worker]     attribute @@toStringTag
 [Worker]     getter key
 [Worker]     getter type
 [Worker]     getter value
 [Worker]     method constructor
+[Worker] interface IDBObserver
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method observe
+[Worker]     method unobserve
 [Worker] interface IDBOpenDBRequest : IDBRequest
 [Worker]     attribute @@toStringTag
 [Worker]     getter onblocked

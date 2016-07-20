@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -370,8 +371,9 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
 
   // Add observers to pending observer list.
   const int32_t observer_id1 = 1, observer_id2 = 2;
-  transaction->AddPendingObserver(observer_id1);
-  transaction->AddPendingObserver(observer_id2);
+  IndexedDBObserver::Options options(false, false, false, 0U);
+  transaction->AddPendingObserver(observer_id1, options);
+  transaction->AddPendingObserver(observer_id2, options);
   EXPECT_EQ(2UL, transaction->pending_observers_.size());
   EXPECT_EQ(0UL, connection->active_observers().size());
 

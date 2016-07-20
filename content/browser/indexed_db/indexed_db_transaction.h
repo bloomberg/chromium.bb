@@ -21,6 +21,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/browser/indexed_db/indexed_db_observer.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace content {
@@ -28,7 +29,8 @@ namespace content {
 class BlobWriteCallbackImpl;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBObserver;
+class IndexedDBObservation;
+class IndexedDBObserverChanges;
 
 class CONTENT_EXPORT IndexedDBTransaction
     : public NON_EXPORTED_BASE(base::RefCounted<IndexedDBTransaction>) {
@@ -65,9 +67,18 @@ class CONTENT_EXPORT IndexedDBTransaction
     pending_preemptive_events_--;
     DCHECK_GE(pending_preemptive_events_, 0);
   }
-  void AddPendingObserver(int32_t observer_id);
+  void AddPendingObserver(int32_t observer_id,
+                          const IndexedDBObserver::Options& options);
   // Delete pending observers with ID's listed in |pending_observer_ids|.
   void RemovePendingObservers(const std::vector<int32_t>& pending_observer_ids);
+
+  // Adds observation for the connection.
+  void AddObservation(int32_t connection_id,
+                      std::unique_ptr<IndexedDBObservation>);
+  // Adds the last observation index to observer_id's list of recorded
+  // observation indices.
+  void RecordObserverForLastObservation(int32_t connection_id,
+                                        int32_t observer_id);
 
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
     return transaction_.get();
@@ -143,6 +154,8 @@ class CONTENT_EXPORT IndexedDBTransaction
 
   // Observers in pending queue do not listen to changes until activated.
   std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers_;
+  std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>>
+      connection_changes_map_;
 
   class TaskQueue {
    public:

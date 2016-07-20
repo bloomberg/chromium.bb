@@ -8,20 +8,58 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <bitset>
+#include <set>
+
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace content {
 
 class CONTENT_EXPORT IndexedDBObserver {
  public:
-  IndexedDBObserver(int32_t observer_id);
+  struct CONTENT_EXPORT Options {
+    explicit Options(bool include_transaction,
+                     bool no_records,
+                     bool values,
+                     unsigned short types);
+    Options(const Options&);
+    ~Options();
+
+    bool include_transaction;
+    bool no_records;
+    bool values;
+    // Each bit in operation type corresponds to blink::WebIDBOperationType
+    // values.
+    std::bitset<blink::WebIDBOperationTypeCount> operation_types;
+  };
+  IndexedDBObserver(int32_t observer_id,
+                    std::set<int64_t> object_store_ids,
+                    const Options& options);
   ~IndexedDBObserver();
 
-  int32_t id() const { return observer_id_; }
+  int32_t id() const { return id_; }
+  const std::set<int64_t>& object_store_ids() const {
+    return object_store_ids_;
+  }
+
+  bool IsRecordingType(blink::WebIDBOperationType type) const {
+    DCHECK_NE(type, blink::WebIDBOperationTypeCount);
+    return options_.operation_types[type];
+  }
+  bool IsRecordingObjectStore(int64_t object_store_id) const {
+    return ContainsValue(object_store_ids_, object_store_id);
+  }
+  bool include_transaction() const { return options_.include_transaction; }
+  bool no_records() const { return options_.no_records; }
+  bool values() const { return options_.values; }
 
  private:
-  int32_t observer_id_;
+  int32_t id_;
+  std::set<int64_t> object_store_ids_;
+  Options options_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBObserver);
 };

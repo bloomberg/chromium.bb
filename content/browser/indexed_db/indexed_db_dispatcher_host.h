@@ -32,12 +32,15 @@ struct IndexedDBHostMsg_DatabaseCreateTransaction_Params;
 struct IndexedDBHostMsg_DatabaseDeleteRange_Params;
 struct IndexedDBHostMsg_DatabaseGet_Params;
 struct IndexedDBHostMsg_DatabaseGetAll_Params;
+struct IndexedDBHostMsg_DatabaseObserve_Params;
 struct IndexedDBHostMsg_DatabaseOpenCursor_Params;
 struct IndexedDBHostMsg_DatabasePut_Params;
 struct IndexedDBHostMsg_DatabaseSetIndexKeys_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
+struct IndexedDBMsg_Observation;
+struct IndexedDBMsg_ObserverChanges;
 
 namespace url {
 class Origin;
@@ -51,6 +54,8 @@ class IndexedDBCursor;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
+class IndexedDBObservation;
+class IndexedDBObserverChanges;
 struct IndexedDBDatabaseMetadata;
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -68,6 +73,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   static ::IndexedDBDatabaseMetadata ConvertMetadata(
       const content::IndexedDBDatabaseMetadata& metadata);
+  static IndexedDBMsg_ObserverChanges ConvertObserverChanges(
+      std::unique_ptr<IndexedDBObserverChanges> changes);
+  static IndexedDBMsg_Observation ConvertObservation(
+      const IndexedDBObservation* observation);
 
   // BrowserMessageFilter implementation.
   void OnChannelConnected(int32_t peer_pid) override;
@@ -174,9 +183,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnVersionChangeIgnored(int32_t ipc_database_id);
     void OnDestroyed(int32_t ipc_database_id);
 
-    void OnObserve(int32_t ipc_database_id,
-                   int64_t transaction_id,
-                   int32_t observer_id);
+    void OnObserve(const IndexedDBHostMsg_DatabaseObserve_Params&);
     void OnUnobserve(int32_t ipc_database_id,
                      const std::vector<int32_t>& observer_ids_to_remove);
 

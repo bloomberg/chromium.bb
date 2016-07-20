@@ -6,6 +6,7 @@
 
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 
 namespace content {
@@ -62,6 +63,14 @@ void IndexedDBDatabaseCallbacks::OnComplete(int64_t host_transaction_id) {
       ipc_thread_id_,
       ipc_database_callbacks_id_,
       dispatcher_host_->RendererTransactionId(host_transaction_id)));
+}
+
+void IndexedDBDatabaseCallbacks::OnDatabaseChange(
+    int32_t ipc_database_id,
+    std::unique_ptr<IndexedDBObserverChanges> changes) {
+  dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksChanges(
+      ipc_thread_id_, ipc_database_id,
+      IndexedDBDispatcherHost::ConvertObserverChanges(std::move(changes))));
 }
 
 }  // namespace content

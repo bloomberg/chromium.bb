@@ -16,6 +16,11 @@ IndexedDBConnection::IndexedDBConnection(
 
 IndexedDBConnection::~IndexedDBConnection() {}
 
+void IndexedDBConnection::set_id(int32_t id) {
+  DCHECK_EQ(id_, kInvalidId);
+  id_ = id;
+}
+
 void IndexedDBConnection::Close() {
   if (!callbacks_.get())
     return;

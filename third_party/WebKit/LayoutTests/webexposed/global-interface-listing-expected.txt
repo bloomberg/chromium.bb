@@ -3458,6 +3458,12 @@ interface IDBObjectStore
     method openCursor
     method openKeyCursor
     method put
+interface IDBObservation
+    attribute @@toStringTag
+    getter key
+    getter type
+    getter value
+    method constructor
 interface IDBObserver
     attribute @@toStringTag
     method constructor
@@ -3468,12 +3474,6 @@ interface IDBObserverChanges
     getter database
     getter records
     getter transaction
-    method constructor
-interface IDBObserverChangesRecord
-    attribute @@toStringTag
-    getter key
-    getter type
-    getter value
     method constructor
 interface IDBOpenDBRequest : IDBRequest
     attribute @@toStringTag

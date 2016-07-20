@@ -23,6 +23,9 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
+#include "content/browser/indexed_db/indexed_db_observation.h"
+#include "content/browser/indexed_db/indexed_db_observation.h"
+#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -188,6 +191,7 @@ int32_t IndexedDBDispatcherHost::Add(IndexedDBConnection* connection,
     return -1;
   }
   int32_t ipc_database_id = database_dispatcher_host_->map_.Add(connection);
+  connection->set_id(ipc_database_id);
   context()->ConnectionOpened(origin, connection);
   database_dispatcher_host_->database_origin_map_[ipc_database_id] = origin;
   return ipc_database_id;
@@ -315,6 +319,25 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
     metadata.object_stores.push_back(idb_store_metadata);
   }
   return metadata;
+}
+
+IndexedDBMsg_ObserverChanges IndexedDBDispatcherHost::ConvertObserverChanges(
+    std::unique_ptr<IndexedDBObserverChanges> changes) {
+  IndexedDBMsg_ObserverChanges idb_changes;
+  idb_changes.observation_index = changes->release_observation_indices_map();
+  for (const auto& observation : changes->release_observations())
+    idb_changes.observations.push_back(ConvertObservation(observation.get()));
+  return idb_changes;
+}
+
+IndexedDBMsg_Observation IndexedDBDispatcherHost::ConvertObservation(
+    const IndexedDBObservation* observation) {
+  // TODO(palakj): Modify function for indexed_db_value. Issue crbug.com/609934.
+  IndexedDBMsg_Observation idb_observation;
+  idb_observation.object_store_id = observation->object_store_id();
+  idb_observation.type = observation->type();
+  idb_observation.key_range = observation->key_range();
+  return idb_observation;
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
@@ -632,16 +655,18 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObserve(
-    int32_t ipc_database_id,
-    int64_t transaction_id,
-    int32_t observer_id) {
+    const IndexedDBHostMsg_DatabaseObserve_Params& params) {
   DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
-      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!connection || !connection->IsConnected())
     return;
+  IndexedDBObserver::Options options(params.include_transaction,
+                                     params.no_records, params.values,
+                                     params.operation_types);
   connection->database()->AddPendingObserver(
-      parent_->HostTransactionId(transaction_id), observer_id);
+      parent_->HostTransactionId(params.transaction_id), params.observer_id,
+      options);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnUnobserve(

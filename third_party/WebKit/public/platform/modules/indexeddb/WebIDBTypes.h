@@ -75,7 +75,9 @@ enum WebIDBOperationType {
     WebIDBAdd = 0,
     WebIDBPut,
     WebIDBDelete,
-    WebIDBClear
+    WebIDBClear,
+    WebIDBOperationTypeCount,
+    WebIDBOperationTypeLast = WebIDBClear
 };
 
 enum WebIDBTransactionMode {
