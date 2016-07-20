@@ -125,14 +125,6 @@ IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
   EXPECT_EQ(base::k24HourClock, GetHourType());
 }
 
-// Test that checking bluetooth status early on doesn't cause a crash.
-IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest, BluetoothStatus) {
-  SystemTrayDelegateChromeOS delegate;
-  EXPECT_FALSE(delegate.GetBluetoothAvailable());
-  EXPECT_FALSE(delegate.GetBluetoothEnabled());
-  EXPECT_FALSE(delegate.IsBluetoothDiscovering());
-}
-
 // Makes sure that no notifications are shown when rotating the
 // display on display settings URLs.
 IN_PROC_BROWSER_TEST_F(DisplayNotificationsTest,
