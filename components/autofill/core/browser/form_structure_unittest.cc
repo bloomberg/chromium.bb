@@ -2207,10 +2207,16 @@ TEST_F(FormStructureTest,
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
-    if (form_structure->field(i)->name == ASCIIToUTF16("password"))
+    if (form_structure->field(i)->name == ASCIIToUTF16("password")) {
       form_structure->field(i)->set_generation_type(
-          autofill::AutofillUploadContents::Field::
+          AutofillUploadContents::Field::
               MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
+      form_structure->field(i)->set_form_classifier_outcome(
+          AutofillUploadContents::Field::GENERATION_ELEMENT);
+    } else {
+      form_structure->field(i)->set_form_classifier_outcome(
+          AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+    }
   }
 
   ServerFieldTypeSet available_field_types;
@@ -2230,19 +2236,37 @@ TEST_F(FormStructureTest,
   upload.set_action_signature(15724779818122431245U);
   upload.set_login_form_signature(42);
 
-  test::FillUploadField(upload.add_field(), 4224610201U, "firstname", "",
+  AutofillUploadContents::Field* upload_firstname_field = upload.add_field();
+  test::FillUploadField(upload_firstname_field, 4224610201U, "firstname", "",
                         "given-name", 3U, nullptr);
-  test::FillUploadField(upload.add_field(), 2786066110U, "lastname", "",
+  upload_firstname_field->set_form_classifier_outcome(
+      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+
+  AutofillUploadContents::Field* upload_lastname_field = upload.add_field();
+  test::FillUploadField(upload_lastname_field, 2786066110U, "lastname", "",
                         "family-name", 5U, nullptr);
-  test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
+  upload_lastname_field->set_form_classifier_outcome(
+      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+
+  AutofillUploadContents::Field* upload_email_field = upload.add_field();
+  test::FillUploadField(upload_email_field, 1029417091U, "email", "email",
                         "email", 9U, nullptr);
-  test::FillUploadField(upload.add_field(), 239111655U, "username", "text",
+  upload_email_field->set_form_classifier_outcome(
+      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+
+  AutofillUploadContents::Field* upload_username_field = upload.add_field();
+  test::FillUploadField(upload_username_field, 239111655U, "username", "text",
                         "email", 86U, nullptr);
-  auto* upload_password_field = upload.add_field();
+  upload_username_field->set_form_classifier_outcome(
+      AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+
+  AutofillUploadContents::Field* upload_password_field = upload.add_field();
   test::FillUploadField(upload_password_field, 2051817934U, "password",
                         "password", "email", 76U, nullptr);
+  upload_password_field->set_form_classifier_outcome(
+      AutofillUploadContents::Field::GENERATION_ELEMENT);
   upload_password_field->set_generation_type(
-      autofill::AutofillUploadContents::Field::
+      AutofillUploadContents::Field::
           MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
 
   std::string expected_upload_string;

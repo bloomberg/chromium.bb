@@ -1147,6 +1147,11 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
       if (field->generation_type())
         added_field->set_generation_type(field->generation_type());
 
+      if (field->form_classifier_outcome()) {
+        added_field->set_form_classifier_outcome(
+            field->form_classifier_outcome());
+      }
+
       unsigned sig = 0;
       // The signature is a required field. If it can't be parsed, the proto
       // would not serialize.
