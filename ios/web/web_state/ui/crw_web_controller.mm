@@ -3436,6 +3436,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!inMainFrame && !userInteracted)
     return;
 
+  // Reset SSL status to default.
+  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  if (navManager->GetLastCommittedItem())
+    navManager->GetLastCommittedItem()->GetSSL() = web::SSLStatus();
+
   NSURL* errorURL = [NSURL
       URLWithString:[userInfo objectForKey:NSURLErrorFailingURLStringErrorKey]];
   const GURL errorGURL = net::GURLWithNSURL(errorURL);
