@@ -10,6 +10,7 @@ from telemetry.page import legacy_page_test
 from telemetry.value import scalar
 from telemetry.value import improvement_direction
 from telemetry.timeline import chrome_trace_category_filter
+from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import v8_gc_latency
 from telemetry.web_perf.metrics import smoothness
@@ -59,13 +60,6 @@ class OortOnlineTBM(perf_benchmark.PerfBenchmark):
   Info: http://v8project.blogspot.de/2015/10/jank-busters-part-one.html
   """
 
-  def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs([
-        # TODO(perezju): Temporary workaround to disable periodic memory dumps.
-        # See: http://crbug.com/513692
-        '--enable-memory-benchmarking',
-    ])
-
   def CreateStorySet(self, options):
     return page_sets.OortOnlineTBMPageSet()
 
@@ -84,6 +78,9 @@ class OortOnlineTBM(perf_benchmark.PerfBenchmark):
     options.SetLegacyTimelineBasedMetrics([v8_gc_latency.V8GCLatency(),
                                      smoothness.SmoothnessMetric(),
                                      memory_timeline.MemoryTimelineMetric()])
+    # Setting an empty memory dump config disables periodic dumps.
+    options.config.chrome_trace_config.SetMemoryDumpConfig(
+        chrome_trace_config.MemoryDumpConfig())
     return options
 
   @classmethod
