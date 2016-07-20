@@ -939,6 +939,7 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   }
 
   const bool allow_overlay = strategy_->ArePicturesOverlayable();
+  UMA_HISTOGRAM_BOOLEAN("Media.AVDA.FrameSentAsOverlay", allow_overlay);
   Picture picture(picture_buffer_id, bitstream_id, gfx::Rect(size_),
                   allow_overlay);
   picture.set_size_changed(size_changed);

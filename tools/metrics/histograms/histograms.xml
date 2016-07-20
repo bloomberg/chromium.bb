@@ -21682,6 +21682,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AVDA.FrameSentAsOverlay" enum="BooleanFrameAsOverlay">
+  <owner>liberato@chromium.org</owner>
+  <summary>
+    Record a count for each frame sent to the client by AVDA.  True counts
+    indicate that the frame was an overlay (SurfaceView).  False counts are for
+    SurfaceTexture frames.
+  </summary>
+</histogram>
+
 <histogram name="Media.AVDA.InputQueueTime" units="ms">
   <owner>watk@chromium.org</owner>
   <obsolete>
@@ -67710,6 +67719,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanFormManager" type="int">
   <int value="0" label="Has Form Manager"/>
   <int value="1" label="Lacks Form Manager"/>
+</enum>
+
+<enum name="BooleanFrameAsOverlay" type="int">
+  <int value="0" label="Frame was not allow_overlay"/>
+  <int value="1" label="Frame was allow_overlay"/>
 </enum>
 
 <enum name="BooleanFromAddressBook" type="int">
