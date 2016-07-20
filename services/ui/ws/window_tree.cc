@@ -1016,9 +1016,9 @@ void WindowTree::NewTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
-  DCHECK(!waiting_for_top_level_window_info_);
   // TODO(sky): rather than DCHECK, have this kill connection.
   DCHECK(!window_manager_internal_);  // Not valid for the windowmanager.
+  DCHECK(!waiting_for_top_level_window_info_);
   const ClientWindowId client_window_id(transport_window_id);
   // TODO(sky): need a way for client to provide context to figure out display.
   Display* display = display_manager()->displays().empty()
