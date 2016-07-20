@@ -44,8 +44,18 @@ Polymer({
         };
       }
     },
+
+    // Route data for the current page.
+    routeData_: Object,
   },
 
+  observers: [
+    // routeData_.page <=> selectedPage
+    'routeDataChanged_(routeData_.page)',
+    'selectedPageChanged_(selectedPage_)',
+  ],
+
+  // TODO(calamity): Replace these event listeners with data bound properties.
   listeners: {
     'cr-menu-tap': 'onMenuTap_',
     'history-checkbox-select': 'checkboxSelected',
@@ -176,7 +186,7 @@ Polymer({
    * @private
    */
   syncedTabsSelected_: function(selectedPage) {
-    return selectedPage == 'synced-devices';
+    return selectedPage == 'syncedTabs';
   },
 
   /**
@@ -189,5 +199,35 @@ Polymer({
    */
   shouldShowSpinner_: function(querying, incremental, searchTerm) {
     return querying && !incremental && searchTerm != '';
+  },
+
+  /**
+   * @param {string} page
+   * @private
+   */
+  routeDataChanged_: function(page) {
+    this.selectedPage_ = page;
+  },
+
+  /**
+   * @param {string} selectedPage
+   * @private
+   */
+  selectedPageChanged_: function(selectedPage) {
+    this.set('routeData_.page', selectedPage);
+  },
+
+  /**
+   * This computed binding is needed to make the iron-pages selector update when
+   * the synced-device-manager is instantiated for the first time. Otherwise the
+   * fallback selection will continue to be used after the corresponding item is
+   * added as a child of iron-pages.
+   * @param {string} selectedPage
+   * @param {Array} items
+   * @return {string}
+   * @private
+   */
+  getSelectedPage_(selectedPage, items) {
+    return selectedPage;
   },
 });

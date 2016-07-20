@@ -20,8 +20,6 @@ class UnusedElementsDetector(object):
 
   # Unused elements to ignore because we plan to use them soon.
   __WHITELIST = (
-    # TODO(dschuyler): Use element or remove from whitelist.
-    'app-route',
     # Necessary for closure.
     'polymer-externs',
   )

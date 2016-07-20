@@ -1,8 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/typography.html">
 <link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
@@ -41,14 +42,43 @@
         text-transform: uppercase;
       }
 
-      paper-item {
-        -webkit-padding-start: 24px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
+      iron-selector {
+        -webkit-user-select: none;
+        background-color: transparent;
+        color: #5a5a5a;
       }
 
-      paper-item.iron-selected {
+      iron-selector a {
+        @apply(--paper-font-subhead);
+        -webkit-padding-start: 24px;
+        align-items: center;
+        box-sizing: border-box;
+        color: inherit;
+        cursor: pointer;
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        min-height: 48px;
+        outline: none;
+        position: relative;
+        text-decoration: none;
+      }
+
+      iron-selector a:focus {
+        outline: 0;
+        position: relative;
+      }
+
+      iron-selector a:focus::before {
+        @apply(--layout-fit);
+
+        background: currentColor;
+        content: '';
+        opacity: var(--dark-divider-opacity);
+        pointer-events: none;
+      }
+
+      iron-selector a.iron-selected {
         color: var(--google-blue-500);
         font-weight: 500;
       }
@@ -85,18 +115,20 @@
         <h1>$i18n{title}</h1>
       </div>
       <iron-selector id="menu" selected="{{selectedPage}}"
-          selectable=".page-item" attr-for-selected="view-id"
+          selectable=".page-item" attr-for-selected="path"
+          fallback-selection="history"
           on-iron-activate="onSelectorActivate_">
-        <paper-item view-id="history" class="page-item">
+        <a href="/" class="page-item" path="history">
           $i18n{historyMenuItem}
-        </paper-item>
-        <paper-item view-id="synced-devices" class="page-item">
+        </a>
+        <a href="/syncedTabs" class="page-item" path="syncedTabs">
           $i18n{openTabsMenuItem}
-        </paper-item>
+        </a>
         <div class="separator"></div>
-        <paper-item on-tap="onClearBrowsingDataTap_" id="clear-browsing-data">
+        <a href="chrome://settings/clearBrowserData"
+            on-tap="onClearBrowsingDataTap_" id="clear-browsing-data">
           $i18n{clearBrowsingData}
-        </paper-item>
+        </a>
         <div id="footer" hidden="[[!showFooter]]">
           <div class="separator"></div>
           <div id="footer-text">$i18nRaw{sidebarFooter}</div>

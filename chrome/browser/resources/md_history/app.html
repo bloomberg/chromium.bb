@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-location.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-route.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
 <link rel="import" href="chrome://history/list_container.html">
@@ -38,6 +40,9 @@
         height: 100%;
       }
     </style>
+    <app-location route="{{route_}}"></app-location>
+    <app-route route="{{route_}}" pattern="/:page" data="{{routeData_}}">
+    </app-route>
     <history-toolbar id="toolbar"
         spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
@@ -50,21 +55,25 @@
     </history-toolbar>
 
     <div id="main-container">
-      <iron-pages id="content" attr-for-selected="id"
-          selected="[[selectedPage_]]">
+      <iron-pages id="content" attr-for-selected="path"
+          fallback-selection="history"
+          selected="[[getSelectedPage_(selectedPage_, items)]]"
+          items="{{items}}">
         <history-list-container id="history" query-state="{{queryState_}}"
-            query-result="[[queryResult_]]" grouped="[[grouped_]]">
+            query-result="[[queryResult_]]" grouped="[[grouped_]]"
+            path="history">
         </history-list-container>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="synced-devices"
               session-list="[[queryResult_.sessionList]]"
-              searched-term=[[queryState_.searchTerm]]>
+              searched-term=[[queryState_.searchTerm]]
+              path="syncedTabs">
           </history-synced-device-manager>
         </template>
       </iron-pages>
     </div>
 
-    <history-side-bar id="side-bar" selected-page="{{selectedPage_}}">
+    <history-side-bar id="side-bar" selected-page="[[selectedPage_]]">
     </history-side-bar>
   </template>
   <script src="chrome://history/app.js"></script>

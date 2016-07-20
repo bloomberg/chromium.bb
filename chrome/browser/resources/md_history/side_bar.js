@@ -35,9 +35,11 @@ Polymer({
 
   /**
    * Relocates the user to the clear browsing data section of the settings page.
+   * @param {Event} e
    * @private
    */
-  onClearBrowsingDataTap_: function() {
+  onClearBrowsingDataTap_: function(e) {
     md_history.BrowserService.getInstance().openClearBrowsingData();
+    e.preventDefault();
   },
 });
