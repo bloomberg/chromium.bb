@@ -2110,10 +2110,9 @@ CGFloat BookmarkRightMargin() {
       NSTimeInterval thisTime = [event timestamp];
       if (lastKeyDownEventTime != thisTime) {
         lastKeyDownEventTime = thisTime;
-        if ([event modifierFlags] & NSCommandKeyMask)
-          return YES;
-        else if (folderController_)
-          return [folderController_ handleInputText:[event characters]];
+        // Ignore all modifiers like Cmd - keyboard shortcuts should not work
+        // while a bookmark folder window (essentially a menu) is open.
+        return [folderController_ handleInputText:[event characters]];
       }
       return NO;
     }
