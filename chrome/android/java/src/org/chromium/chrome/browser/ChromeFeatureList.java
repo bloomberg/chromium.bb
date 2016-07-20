@@ -36,6 +36,7 @@ public abstract class ChromeFeatureList {
     public static final String NTP_MATERIAL_DESIGN = "NTPMaterialDesign";
     public static final String NTP_SNIPPETS = "NTPSnippets";
     public static final String NTP_TOOLBAR = "NTPToolbar";
+    public static final String WEB_PAYMENTS = "WebPayments";
     public static final String SYSTEM_DOWNLOAD_MANAGER = "SystemDownloadManager";
     public static final String TAB_REPARENTING = "TabReparenting";
 

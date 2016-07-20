@@ -2013,7 +2013,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"multi-instance-merge-tabs", IDS_FLAGS_MULTI_INSTANCE_MERGE_TABS_NAME,
      IDS_FLAGS_MULTI_INSTANCE_MERGE_TABS_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kMultiInstanceMergeTabs)},
-#endif
+    {"enable-web-payments", IDS_FLAGS_ENABLE_WEB_PAYMENTS_NAME,
+     IDS_FLAGS_ENABLE_WEB_PAYMENTS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebPayments)},
+#endif  // defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -100,10 +100,6 @@ public abstract class ChromeSwitches {
     /** Enable the DOM Distiller. */
     public static final String ENABLE_DOM_DISTILLER = "enable-dom-distiller";
 
-    /** Enable experimental web-platform features, such as Push Messaging. */
-    public static final String EXPERIMENTAL_WEB_PLAFTORM_FEATURES =
-            "enable-experimental-web-platform-features";
-
     /**
      * Use sandbox Wallet environment for requestAutocomplete.
      * Native switch - autofill::switches::kWalletServiceUseSandbox.

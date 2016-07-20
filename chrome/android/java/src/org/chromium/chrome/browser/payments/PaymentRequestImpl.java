@@ -13,6 +13,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -199,6 +200,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (mContext == null) {
             disconnectFromClientWithDebugMessage("Web contents don't have associated activity");
+            return;
+        }
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS)) {
+            disconnectFromClientWithDebugMessage(
+                    "Web payments API is disabled", PaymentErrorReason.NOT_SUPPORTED);
         }
     }
 

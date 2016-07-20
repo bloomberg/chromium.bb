@@ -48,6 +48,7 @@ CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kAutoplayMutedVideos;
 CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kSeccompSandboxAndroid;
+CONTENT_EXPORT extern const base::Feature kWebPayments;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

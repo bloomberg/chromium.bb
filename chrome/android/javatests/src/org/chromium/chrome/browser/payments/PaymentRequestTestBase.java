@@ -12,11 +12,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
@@ -41,7 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * A base integration test for payments.
  */
-@CommandLineFlags.Add({ChromeSwitches.EXPERIMENTAL_WEB_PLAFTORM_FEATURES})
 abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
         implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
         CardUnmaskObserverForTest {

@@ -30,6 +30,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kAutoplayMutedVideos,
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,
+    &features::kWebPayments,
     &kAndroidPayIntegrationV1,
     &kImportantSitesInCBD,
     &kNTPFakeOmniboxTextFeature,

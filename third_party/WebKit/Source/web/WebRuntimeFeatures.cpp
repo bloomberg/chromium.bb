@@ -205,6 +205,11 @@ void WebRuntimeFeatures::enablePassiveDocumentEventListeners(bool enable)
     RuntimeEnabledFeatures::setPassiveDocumentEventListenersEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePaymentRequest(bool enable)
+{
+    RuntimeEnabledFeatures::setPaymentRequestEnabled(enable);
+}
+
 void WebRuntimeFeatures::enablePermissionsAPI(bool enable)
 {
     RuntimeEnabledFeatures::setPermissionsEnabled(enable);

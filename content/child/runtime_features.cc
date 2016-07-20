@@ -252,6 +252,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableRenderingPipelineThrottling(
     base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
 
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::enablePaymentRequest(
+      base::FeatureList::IsEnabled(features::kWebPayments));
+#endif
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

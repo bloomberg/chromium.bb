@@ -81728,6 +81728,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
+  <int value="-1473136627" label="enable-web-payments"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
