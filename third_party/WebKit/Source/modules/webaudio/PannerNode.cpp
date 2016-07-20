@@ -134,8 +134,10 @@ void PannerHandler::process(size_t framesToProcess)
         // HRTFDatabase should be loaded before proceeding when the panning model is HRTF.
         if (m_panningModel == Panner::PanningModelHRTF && !listener()->isHRTFDatabaseLoaded()) {
             if (context()->hasRealtimeConstraint()) {
-                // Some BaseAudioContexts cannot block on the HRTFDatabase loader.
-                destination->zero();
+                // Realtime AudioContext's cannot block on the HRTFDatabase
+                // loader.  Instead, copy the input to the output so we can at
+                // least hear something until the database is ready.
+                destination->copyFrom(*source, m_channelInterpretation);
                 return;
             }
 
