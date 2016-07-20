@@ -179,8 +179,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_suspend_resume_cycle_(false),
       ended_(false),
       should_notify_time_changed_(false),
-      fullscreen_(false),
-      decoder_requires_restart_for_fullscreen_(false),
+      overlay_enabled_(false),
+      decoder_requires_restart_for_overlay_(false),
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
@@ -205,12 +205,15 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       volume_multiplier_(1.0),
       renderer_factory_(std::move(renderer_factory)),
       surface_manager_(params.surface_manager()),
-      fullscreen_surface_id_(SurfaceManager::kNoSurfaceID),
+      overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
       can_suspend_state_(CanSuspendState::UNKNOWN) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
+
+  force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceVideoOverlays);
 
   if (delegate_)
     delegate_id_ = delegate_->AddObserver(this);
@@ -283,24 +286,36 @@ bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
 #endif
 }
 
-void WebMediaPlayerImpl::enteredFullscreen() {
-  fullscreen_ = true;
+void WebMediaPlayerImpl::EnableOverlay() {
+  overlay_enabled_ = true;
   if (surface_manager_) {
     surface_created_cb_.Reset(
         base::Bind(&WebMediaPlayerImpl::OnSurfaceCreated, AsWeakPtr()));
     surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
                                               surface_created_cb_.callback());
   }
-  if (decoder_requires_restart_for_fullscreen_)
+
+  if (decoder_requires_restart_for_overlay_)
     ScheduleRestart();
 }
 
-void WebMediaPlayerImpl::exitedFullscreen() {
-  fullscreen_ = false;
+void WebMediaPlayerImpl::DisableOverlay() {
+  overlay_enabled_ = false;
   surface_created_cb_.Cancel();
-  fullscreen_surface_id_ = SurfaceManager::kNoSurfaceID;
-  if (decoder_requires_restart_for_fullscreen_)
+  overlay_surface_id_ = SurfaceManager::kNoSurfaceID;
+
+  if (decoder_requires_restart_for_overlay_)
     ScheduleRestart();
+}
+
+void WebMediaPlayerImpl::enteredFullscreen() {
+  if (!force_video_overlays_)
+    EnableOverlay();
+}
+
+void WebMediaPlayerImpl::exitedFullscreen() {
+  if (!force_video_overlays_)
+    DisableOverlay();
 }
 
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
@@ -1012,7 +1027,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       pipeline_metadata_.natural_size = gfx::Size(size.height(), size.width());
     }
 
-    if (fullscreen_ && surface_manager_)
+    if (overlay_enabled_ && surface_manager_)
       surface_manager_->NaturalSizeChanged(pipeline_metadata_.natural_size);
 
     DCHECK(!video_weblayer_);
@@ -1118,7 +1133,7 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   media_log_->AddEvent(
       media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
 
-  if (fullscreen_ && surface_manager_)
+  if (overlay_enabled_ && surface_manager_)
     surface_manager_->NaturalSizeChanged(size);
 
   pipeline_metadata_.natural_size = size;
@@ -1299,7 +1314,10 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 }
 
 void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
-  fullscreen_surface_id_ = surface_id;
+  if (force_video_overlays_ && surface_id == SurfaceManager::kNoSurfaceID)
+    LOG(ERROR) << "Create surface failed.";
+
+  overlay_surface_id_ = surface_id;
   if (!pending_surface_request_cb_.is_null())
     base::ResetAndReturn(&pending_surface_request_cb_).Run(surface_id);
 }
@@ -1312,7 +1330,7 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
 
   // A null callback indicates that the decoder is going away.
   if (surface_created_cb.is_null()) {
-    decoder_requires_restart_for_fullscreen_ = false;
+    decoder_requires_restart_for_overlay_ = false;
     pending_surface_request_cb_.Reset();
     return;
   }
@@ -1324,10 +1342,10 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
   // of surface for the fullscreen state.
   // TODO(watk): Don't require a pipeline restart to switch surfaces for
   // cases where it isn't necessary.
-  decoder_requires_restart_for_fullscreen_ = true;
-  if (fullscreen_) {
-    if (fullscreen_surface_id_ != SurfaceManager::kNoSurfaceID)
-      surface_created_cb.Run(fullscreen_surface_id_);
+  decoder_requires_restart_for_overlay_ = true;
+  if (overlay_enabled_) {
+    if (overlay_surface_id_ != SurfaceManager::kNoSurfaceID)
+      surface_created_cb.Run(overlay_surface_id_);
     else
       pending_surface_request_cb_ = surface_created_cb;
   } else {
@@ -1337,6 +1355,9 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
+  if (force_video_overlays_)
+    EnableOverlay();
+
   RequestSurfaceCB request_surface_cb;
 #if defined(OS_ANDROID)
   request_surface_cb =
@@ -1627,7 +1648,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   if (!has_session) {
     result.delegate_state = DelegateState::GONE;
   } else if (paused_) {
-    if (seeking() || fullscreen_) {
+    if (seeking() || overlay_enabled_) {
       result.delegate_state = DelegateState::PAUSED_BUT_NOT_IDLE;
     } else if (ended_) {
       result.delegate_state = DelegateState::ENDED;

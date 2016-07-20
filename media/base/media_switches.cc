@@ -123,6 +123,9 @@ const char kDisableRTCSmoothnessAlgorithm[] =
 // if MP4 demuxing is not enabled in the build.
 const char kEnableVp9InMp4[] = "enable-vp9-in-mp4";
 
+// Force media player using SurfaceView instead of SurfaceTexture on Android.
+const char kForceVideoOverlays[] = "force-video-overlays";
+
 }  // namespace switches
 
 namespace media {

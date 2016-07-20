@@ -232,6 +232,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
  private:
   friend class WebMediaPlayerImplTest;
 
+  void EnableOverlay();
+  void DisableOverlay();
+
   void OnPipelineSuspended();
   void OnDemuxerOpened();
 
@@ -429,10 +432,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // changes.
   bool should_notify_time_changed_;
 
-  bool fullscreen_;
+  bool overlay_enabled_;
 
-  // Whether the current decoder requires a restart on fullscreen transitions.
-  bool decoder_requires_restart_for_fullscreen_;
+  // Whether the current decoder requires a restart on overlay transitions.
+  bool decoder_requires_restart_for_overlay_;
 
   blink::WebMediaPlayerClient* client_;
   blink::WebMediaPlayerEncryptedMediaClient* encrypted_client_;
@@ -505,13 +508,16 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // For canceling ongoing surface creation requests when exiting fullscreen.
   base::CancelableCallback<void(int)> surface_created_cb_;
 
-  // The current fullscreen surface id. Populated while in fullscreen once the
+  // The current overlay surface id. Populated while in fullscreen once the
   // surface is created.
-  int fullscreen_surface_id_;
+  int overlay_surface_id_;
 
   // If a surface is requested before it's finished being created, the request
   // is saved and satisfied once the surface is available.
   SurfaceCreatedCB pending_surface_request_cb_;
+
+  // Force to use SurfaceView instead of SurfaceTexture on Android.
+  bool force_video_overlays_;
 
   // Suppresses calls to OnPipelineError() after destruction / shutdown has been
   // started; prevents us from spuriously logging errors that are transient or
