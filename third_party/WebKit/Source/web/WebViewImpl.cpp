@@ -1126,16 +1126,18 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     }
 
 #if !OS(MACOSX)
-    const WebInputEvent::Type contextMenuTriggeringEventType =
+    const WebInputEvent::Type contextMenuKeyTriggeringEventType =
 #if OS(WIN)
         WebInputEvent::KeyUp;
 #else
         WebInputEvent::RawKeyDown;
 #endif
+    const WebInputEvent::Type shiftF10TriggeringEventType = WebInputEvent::RawKeyDown;
 
     bool isUnmodifiedMenuKey = !(event.modifiers & WebInputEvent::InputModifiers) && event.windowsKeyCode == VKEY_APPS;
     bool isShiftF10 = (event.modifiers & WebInputEvent::InputModifiers) == WebInputEvent::ShiftKey && event.windowsKeyCode == VKEY_F10;
-    if ((isUnmodifiedMenuKey || isShiftF10) && event.type == contextMenuTriggeringEventType) {
+    if ((isUnmodifiedMenuKey && event.type == contextMenuKeyTriggeringEventType)
+        || (isShiftF10 && event.type == shiftF10TriggeringEventType)) {
         sendContextMenuEvent(event);
         return WebInputEventResult::HandledSystem;
     }

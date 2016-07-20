@@ -63,6 +63,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Mac does not have menu key.
 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ WontFix ]
 [ Mac ] fast/events/context-menu-key-shift-f10-modifiers.html [ WontFix ]
+[ Mac ] fast/events/context-menu-key-shift-f10-prevent-default.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu-document.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu-position.html [ WontFix ]
