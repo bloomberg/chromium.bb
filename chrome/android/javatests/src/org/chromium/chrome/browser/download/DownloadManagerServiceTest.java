@@ -331,7 +331,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
     @MediumTest
     @Feature({"Download"})
-    public void testDownloadProgressIsCalled() throws InterruptedException {
+    public void testAllDownloadProgressIsCalledForSlowUpdates() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
@@ -362,7 +362,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
     @MediumTest
     @Feature({"Download"})
-    public void testOnlyOneProgressForFastUpdates() throws InterruptedException {
+    public void testOnlyTwoProgressForFastUpdates() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, LONG_UPDATE_DELAY_FOR_TEST);
@@ -370,12 +370,14 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         DownloadInfo update1 = Builder.fromDownloadInfo(downloadInfo)
                 .setPercentCompleted(10).build();
         DownloadInfo update2 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(30).build();
+                .setPercentCompleted(20).build();
         DownloadInfo update3 = Builder.fromDownloadInfo(downloadInfo)
                 .setPercentCompleted(30).build();
 
-        // Should only get one update call, the last update.
-        notifier.expect(MethodID.DOWNLOAD_PROGRESS, update3);
+        // Should get 2 update calls, the first and the last. The 2nd update will be merged into
+        // the last one.
+        notifier.expect(MethodID.DOWNLOAD_PROGRESS, update1)
+                .andThen(MethodID.DOWNLOAD_PROGRESS, update3);
         dService.onDownloadUpdated(update1);
         Thread.sleep(DELAY_BETWEEN_CALLS);
         dService.onDownloadUpdated(update2);
