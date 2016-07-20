@@ -73,7 +73,9 @@ static const char kWEBPHeaderResponse[] =
 class ImageFetcherTest : public PlatformTest {
  protected:
   ImageFetcherTest()
-      : pool_(new base::SequencedWorkerPool(1, "TestPool")),
+      : pool_(new base::SequencedWorkerPool(1,
+                                            "TestPool",
+                                            base::TaskPriority::USER_VISIBLE)),
         image_fetcher_(new ImageFetcher(pool_)),
         result_(nil),
         called_(false) {

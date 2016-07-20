@@ -78,7 +78,8 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   PathService::Get(base::DIR_MODULE, &shell_dir);
   base::MessageLoop message_loop;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool(
-      new base::SequencedWorkerPool(3, "blocking_pool"));
+      new base::SequencedWorkerPool(3, "blocking_pool",
+                                    base::TaskPriority::USER_VISIBLE));
 
   base::Thread io_thread("io_thread");
   base::Thread::Options options;

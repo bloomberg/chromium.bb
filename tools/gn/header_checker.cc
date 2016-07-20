@@ -154,8 +154,8 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
   if (files.empty())
     return;
 
-  scoped_refptr<base::SequencedWorkerPool> pool(
-      new base::SequencedWorkerPool(16, "HeaderChecker"));
+  scoped_refptr<base::SequencedWorkerPool> pool(new base::SequencedWorkerPool(
+      16, "HeaderChecker", base::TaskPriority::USER_VISIBLE));
   for (const auto& file : files) {
     // Only check C-like source files (RC files also have includes).
     SourceFileType type = GetSourceFileType(file.first);

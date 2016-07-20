@@ -101,7 +101,10 @@ base::LazyInstance<BrowserThreadTaskRunners>::Leaky g_task_runners =
 
 struct BrowserThreadGlobals {
   BrowserThreadGlobals()
-      : blocking_pool(new base::SequencedWorkerPool(3, "BrowserBlocking")) {
+      : blocking_pool(
+            new base::SequencedWorkerPool(3,
+                                          "BrowserBlocking",
+                                          base::TaskPriority::USER_VISIBLE)) {
     memset(threads, 0, BrowserThread::ID_COUNT * sizeof(threads[0]));
     memset(thread_delegates, 0,
            BrowserThread::ID_COUNT * sizeof(thread_delegates[0]));

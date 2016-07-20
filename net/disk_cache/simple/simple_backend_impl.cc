@@ -65,7 +65,9 @@ class LeakySequencedWorkerPool {
  public:
   LeakySequencedWorkerPool()
       : sequenced_worker_pool_(
-            new SequencedWorkerPool(kMaxWorkerThreads, kThreadNamePrefix)) {}
+            new SequencedWorkerPool(kMaxWorkerThreads,
+                                    kThreadNamePrefix,
+                                    base::TaskPriority::USER_BLOCKING)) {}
 
   void FlushForTesting() { sequenced_worker_pool_->FlushForTesting(); }
 

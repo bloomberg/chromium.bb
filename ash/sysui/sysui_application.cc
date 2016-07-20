@@ -204,7 +204,11 @@ class NativeWidgetFactory {
 
 class AshInit {
  public:
-  AshInit() : worker_pool_(new base::SequencedWorkerPool(2, "AshWorkerPool")) {
+  AshInit()
+      : worker_pool_(
+            new base::SequencedWorkerPool(2,
+                                          "AshWorkerPool",
+                                          base::TaskPriority::USER_BLOCKING)) {
     ui::RegisterPathProvider();
   }
 

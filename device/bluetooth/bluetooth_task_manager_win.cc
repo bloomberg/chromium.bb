@@ -257,8 +257,9 @@ void BluetoothTaskManagerWin::RemoveObserver(Observer* observer) {
 
 void BluetoothTaskManagerWin::Initialize() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  worker_pool_ = new base::SequencedWorkerPool(kNumThreadsInWorkerPool,
-                                               kBluetoothThreadName);
+  worker_pool_ = new base::SequencedWorkerPool(
+      kNumThreadsInWorkerPool, kBluetoothThreadName,
+      base::TaskPriority::USER_VISIBLE);
   InitializeWithBluetoothTaskRunner(
       worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool_->GetSequenceToken(),

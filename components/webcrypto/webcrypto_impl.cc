@@ -72,7 +72,10 @@ namespace {
 class CryptoThreadPool {
  public:
   CryptoThreadPool()
-      : worker_pool_(new base::SequencedWorkerPool(1, "WebCrypto")),
+      : worker_pool_(
+            new base::SequencedWorkerPool(1,
+                                          "WebCrypto",
+                                          base::TaskPriority::USER_BLOCKING)),
         task_runner_(worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
             worker_pool_->GetSequenceToken(),
             base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {}

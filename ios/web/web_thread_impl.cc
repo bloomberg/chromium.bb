@@ -88,7 +88,10 @@ base::LazyInstance<WebThreadTaskRunners>::Leaky g_task_runners =
 
 struct WebThreadGlobals {
   WebThreadGlobals()
-      : blocking_pool(new base::SequencedWorkerPool(3, "WebBlocking")) {
+      : blocking_pool(
+            new base::SequencedWorkerPool(3,
+                                          "WebBlocking",
+                                          base::TaskPriority::USER_VISIBLE)) {
     memset(threads, 0, WebThread::ID_COUNT * sizeof(threads[0]));
     memset(thread_delegates, 0,
            WebThread::ID_COUNT * sizeof(thread_delegates[0]));

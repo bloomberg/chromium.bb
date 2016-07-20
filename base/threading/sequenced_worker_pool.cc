@@ -300,8 +300,10 @@ class SequencedWorkerPool::Inner {
  public:
   // Take a raw pointer to |worker| to avoid cycles (since we're owned
   // by it).
-  Inner(SequencedWorkerPool* worker_pool, size_t max_threads,
+  Inner(SequencedWorkerPool* worker_pool,
+        size_t max_threads,
         const std::string& thread_name_prefix,
+        base::TaskPriority task_priority,
         TestingObserver* observer);
 
   ~Inner();
@@ -505,6 +507,10 @@ class SequencedWorkerPool::Inner {
 
   TestingObserver* const testing_observer_;
 
+  // The TaskPriority to be used for SequencedWorkerPool tasks redirected to the
+  // TaskScheduler as an experiment (unused otherwise).
+  const base::TaskPriority task_priority_;
+
   DISALLOW_COPY_AND_ASSIGN(Inner);
 };
 
@@ -560,11 +566,11 @@ LazyInstance<ThreadLocalPointer<SequencedWorkerPool::Worker>>::Leaky
 
 // Inner definitions ---------------------------------------------------------
 
-SequencedWorkerPool::Inner::Inner(
-    SequencedWorkerPool* worker_pool,
-    size_t max_threads,
-    const std::string& thread_name_prefix,
-    TestingObserver* observer)
+SequencedWorkerPool::Inner::Inner(SequencedWorkerPool* worker_pool,
+                                  size_t max_threads,
+                                  const std::string& thread_name_prefix,
+                                  base::TaskPriority task_priority,
+                                  TestingObserver* observer)
     : worker_pool_(worker_pool),
       lock_(),
       has_work_cv_(&lock_),
@@ -582,7 +588,8 @@ SequencedWorkerPool::Inner::Inner(
       cleanup_state_(CLEANUP_DONE),
       cleanup_idlers_(0),
       cleanup_cv_(&lock_),
-      testing_observer_(observer) {}
+      testing_observer_(observer),
+      task_priority_(task_priority) {}
 
 SequencedWorkerPool::Inner::~Inner() {
   // You must call Shutdown() before destroying the pool.
@@ -1262,17 +1269,31 @@ SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread() {
 }
 
 SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
-                                         const std::string& thread_name_prefix)
+                                         const std::string& thread_name_prefix,
+                                         base::TaskPriority task_priority)
     : constructor_task_runner_(ThreadTaskRunnerHandle::Get()),
-      inner_(new Inner(this, max_threads, thread_name_prefix, NULL)) {
-}
+      inner_(new Inner(this,
+                       max_threads,
+                       thread_name_prefix,
+                       task_priority,
+                       NULL)) {}
+
+SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
+                                         const std::string& thread_name_prefix)
+    : SequencedWorkerPool(max_threads,
+                          thread_name_prefix,
+                          base::TaskPriority::USER_VISIBLE) {}
 
 SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
                                          const std::string& thread_name_prefix,
+                                         base::TaskPriority task_priority,
                                          TestingObserver* observer)
     : constructor_task_runner_(ThreadTaskRunnerHandle::Get()),
-      inner_(new Inner(this, max_threads, thread_name_prefix, observer)) {
-}
+      inner_(new Inner(this,
+                       max_threads,
+                       thread_name_prefix,
+                       task_priority,
+                       observer)) {}
 
 SequencedWorkerPool::~SequencedWorkerPool() {}
 

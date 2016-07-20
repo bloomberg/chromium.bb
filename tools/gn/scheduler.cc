@@ -67,7 +67,9 @@ int GetThreadCount() {
 }  // namespace
 
 Scheduler::Scheduler()
-    : pool_(new base::SequencedWorkerPool(GetThreadCount(), "worker_")),
+    : pool_(new base::SequencedWorkerPool(GetThreadCount(),
+                                          "worker_",
+                                          base::TaskPriority::USER_VISIBLE)),
       input_file_manager_(new InputFileManager),
       verbose_logging_(false),
       work_count_(0),

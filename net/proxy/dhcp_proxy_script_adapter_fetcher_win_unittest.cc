@@ -144,12 +144,13 @@ class FetcherClient {
   FetcherClient()
       : url_request_context_(new TestURLRequestContext()),
         worker_pool_(
-            new base::SequencedWorkerPool(4, "DhcpAdapterFetcherTest")),
+            new base::SequencedWorkerPool(4,
+                                          "DhcpAdapterFetcherTest",
+                                          base::TaskPriority::USER_VISIBLE)),
         fetcher_(new MockDhcpProxyScriptAdapterFetcher(
             url_request_context_.get(),
             worker_pool_->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN))) {
-  }
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN))) {}
 
   ~FetcherClient() {
     worker_pool_->Shutdown();

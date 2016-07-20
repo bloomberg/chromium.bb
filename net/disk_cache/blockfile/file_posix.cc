@@ -25,7 +25,10 @@ const int kMaxThreads = 5;
 
 class FileWorkerPool : public base::SequencedWorkerPool {
  public:
-  FileWorkerPool() : base::SequencedWorkerPool(kMaxThreads, "CachePool") {}
+  FileWorkerPool()
+      : base::SequencedWorkerPool(kMaxThreads,
+                                  "CachePool",
+                                  base::TaskPriority::USER_BLOCKING) {}
 
  protected:
   ~FileWorkerPool() override {}

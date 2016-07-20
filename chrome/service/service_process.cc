@@ -154,7 +154,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
     Teardown();
     return false;
   }
-  blocking_pool_ = new base::SequencedWorkerPool(3, "ServiceBlocking");
+  blocking_pool_ = new base::SequencedWorkerPool(
+      3, "ServiceBlocking", base::TaskPriority::USER_VISIBLE);
 
   // Initialize Mojo early so things can use it.
   mojo::edk::Init();

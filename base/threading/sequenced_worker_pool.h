@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/task_traits.h"
 
 namespace tracked_objects {
 class Location;
@@ -186,7 +187,18 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // deliberately leak it.
 
   // Pass the maximum number of threads (they will be lazily created as needed)
-  // and a prefix for the thread name to aid in debugging.
+  // and a prefix for the thread name to aid in debugging. |task_priority| will
+  // be used to hint base::TaskScheduler for an experiment in which all
+  // SequencedWorkerPool tasks will be redirected to it in processes where a
+  // base::TaskScheduler was instantiated.
+  SequencedWorkerPool(size_t max_threads,
+                      const std::string& thread_name_prefix,
+                      base::TaskPriority task_priority);
+
+  // Deprecated, use the above constructor with |task_priority| instead.
+  // TODO(gab): Cleanup last few use cases of this before running the
+  // aforementioned base::TaskScheduler experiment (or make sure this
+  // constructor results in callers being opted out of the experiment).
   SequencedWorkerPool(size_t max_threads,
                       const std::string& thread_name_prefix);
 
@@ -194,6 +206,7 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // |observer|.
   SequencedWorkerPool(size_t max_threads,
                       const std::string& thread_name_prefix,
+                      base::TaskPriority task_priority,
                       TestingObserver* observer);
 
   // Returns the sequence token associated with the given name. Calling this

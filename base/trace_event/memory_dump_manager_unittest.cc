@@ -147,8 +147,9 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
 class TestSequencedTaskRunner : public SequencedTaskRunner {
  public:
   TestSequencedTaskRunner()
-      : worker_pool_(
-            new SequencedWorkerPool(2 /* max_threads */, "Test Task Runner")),
+      : worker_pool_(new SequencedWorkerPool(2 /* max_threads */,
+                                             "Test Task Runner",
+                                             base::TaskPriority::USER_VISIBLE)),
         enabled_(true),
         num_of_post_tasks_(0) {}
 

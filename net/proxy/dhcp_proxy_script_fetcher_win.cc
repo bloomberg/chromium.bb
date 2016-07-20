@@ -58,8 +58,8 @@ DhcpProxyScriptFetcherWin::DhcpProxyScriptFetcherWin(
       url_request_context_(url_request_context) {
   DCHECK(url_request_context_);
 
-  worker_pool_ = new base::SequencedWorkerPool(kMaxDhcpLookupThreads,
-                                               "PacDhcpLookup");
+  worker_pool_ = new base::SequencedWorkerPool(
+      kMaxDhcpLookupThreads, "PacDhcpLookup", base::TaskPriority::USER_VISIBLE);
 }
 
 DhcpProxyScriptFetcherWin::~DhcpProxyScriptFetcherWin() {
