@@ -115,6 +115,12 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
 }
 
 void WindowTree::ConfigureWindowManager() {
+  // ConfigureWindowManager() should be called early on, before anything
+  // else. |waiting_for_top_level_window_info_| must be null as if
+  // |waiting_for_top_level_window_info_| is non-null it means we're about to
+  // create an associated interface, which doesn't work with pause/resume.
+  // TODO(sky): DCHECK temporary until 626869 is sorted out.
+  DCHECK(!waiting_for_top_level_window_info_);
   DCHECK(!window_manager_internal_);
   window_manager_internal_ = binding_->GetWindowManager();
   window_manager_internal_->OnConnect(id_);
@@ -1011,6 +1017,8 @@ void WindowTree::NewTopLevelWindow(
     Id transport_window_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
   DCHECK(!waiting_for_top_level_window_info_);
+  // TODO(sky): rather than DCHECK, have this kill connection.
+  DCHECK(!window_manager_internal_);  // Not valid for the windowmanager.
   const ClientWindowId client_window_id(transport_window_id);
   // TODO(sky): need a way for client to provide context to figure out display.
   Display* display = display_manager()->displays().empty()
