@@ -89,16 +89,6 @@ Polymer({
         section: '',
         subpage: [],
       };
-      if (this.showAdvancedPage_) {
-        doWhenReady(
-            function() {
-              var advancedPage = this.$$('settings-advanced-page');
-              return !!advancedPage && advancedPage.scrollHeight > 0;
-            }.bind(this),
-            function() {
-              this.$$('#toggleContainer').scrollIntoView();
-            }.bind(this));
-      }
     }.bind(this));
 
     doWhenReady(
