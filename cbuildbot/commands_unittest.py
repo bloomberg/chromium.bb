@@ -889,12 +889,12 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             'reef_v1.1.5909-bd1f0c9'))
 
   def testGetModels(self):
-    self.rc.SetDefaultCmdResult(output='reef\npyro\nsnappy\n')
+    self.rc.SetDefaultCmdResult(output='pyro\nreef\nsnappy\n')
     build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                              'usr', 'bin')
-    osutils.Touch(os.path.join(build_bin, 'fdtget'), makedirs=True)
+    osutils.Touch(os.path.join(build_bin, 'cros_config_host_py'), makedirs=True)
     result = commands.GetModels(self._buildroot, self._board)
-    self.assertEquals(result, ['reef', 'pyro', 'snappy'])
+    self.assertEquals(result, ['pyro', 'reef', 'snappy'])
 
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_env)."""
