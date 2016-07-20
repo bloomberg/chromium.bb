@@ -47380,6 +47380,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4FullHashCacheResult"
+    enum="SafeBrowsingV4FullHashCacheResult">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>Track cache hits for V4 full hashes.</summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4GetHashCheckResult"
+    enum="SafeBrowsingV4GetHashCheckResult">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>Track get hash response hits for V4 full hash requests.</summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4StoreReadResult"
     enum="SafeBrowsingStoreReadResult">
   <owner>vakh@chromium.org</owner>
@@ -88810,6 +88822,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="ADDITIONS_SIZE_UNEXPECTED_FAILURE"/>
   <int value="5" label="ADDITIONS_HAS_EXISTING_PREFIX_FAILURE"/>
   <int value="6" label="UNEXPECTED_RESPONSE_TYPE_FAILURE"/>
+</enum>
+
+<enum name="SafeBrowsingV4FullHashCacheResult" type="int">
+  <int value="0" label="FULL_HASH_CACHE_MISS"/>
+  <int value="1" label="FULL_HASH_CACHE_HIT"/>
+  <int value="2" label="FULL_HASH_NEGATIVE_CACHE_HIT"/>
+</enum>
+
+<enum name="SafeBrowsingV4GetHashCheckResult" type="int">
+  <int value="0" label="GET_HASH_CHECK_EMPTY"/>
+  <int value="1" label="GET_HASH_CHECK_HIT"/>
+  <int value="2" label="GET_HASH_CHECK_MISS"/>
 </enum>
 
 <enum name="SafeBrowsingV4OperationResult" type="int">

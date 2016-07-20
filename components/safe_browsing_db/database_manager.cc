@@ -4,12 +4,65 @@
 
 #include "components/safe_browsing_db/database_manager.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
+
+namespace {
+
+// Enumerate full hash cache hits/misses for histogramming purposes.
+// DO NOT CHANGE THE ORDERING OF THESE VALUES.
+enum V4FullHashCacheResultType {
+  // Full hashes for which there is no cache hit.
+  FULL_HASH_CACHE_MISS = 0,
+
+  // Full hashes with a cache hit.
+  FULL_HASH_CACHE_HIT = 1,
+
+  // Full hashes with a negative cache hit.
+  FULL_HASH_NEGATIVE_CACHE_HIT = 2,
+
+  // Memory space for histograms is determined by the max. ALWAYS
+  // ADD NEW VALUES BEFORE THIS ONE.
+  FULL_HASH_CACHE_RESULT_MAX
+};
+
+// Enumerate GetHash hits/misses for histogramming purposes. DO NOT CHANGE THE
+// ORDERING OF THESE VALUES.
+enum V4GetHashCheckResultType {
+  // Successful responses which returned no full hashes.
+  GET_HASH_CHECK_EMPTY = 0,
+
+  // Successful responses for which one or more of the full hashes matched.
+  GET_HASH_CHECK_HIT = 1,
+
+  // Successful responses which weren't empty but have no matches.
+  GET_HASH_CHECK_MISS = 2,
+
+  // Memory space for histograms is determined by the max. ALWAYS
+  // ADD NEW VALUES BEFORE THIS ONE.
+  GET_HASH_CHECK_RESULT_MAX
+};
+
+// Record a full hash cache hit result.
+void RecordV4FullHashCacheResult(
+    V4FullHashCacheResultType result_type) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4FullHashCacheResult", result_type,
+                            FULL_HASH_CACHE_RESULT_MAX);
+}
+
+// Record a GetHash hit result.
+void RecordV4GetHashCheckResult(
+    V4GetHashCheckResultType result_type) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4GetHashCheckResult", result_type,
+                            GET_HASH_CHECK_RESULT_MAX);
+}
+
+}  // namespace
 
 namespace safe_browsing {
 
@@ -188,9 +241,11 @@ void SafeBrowsingDatabaseManager::GetFullHashCachedResults(
         if (found_full_hash->cache_expire_after > now) {
           // Case i.
           cached_results->push_back(*found_full_hash);
+          RecordV4FullHashCacheResult(FULL_HASH_CACHE_HIT);
         } else {
           // Case ii.
           prefixes_needing_reqs->push_back(full_hash.prefix);
+          RecordV4FullHashCacheResult(FULL_HASH_CACHE_MISS);
           // If the negative cache expire time has passed, evict this full hash
           // result from the cache.
           if (cache_result.expire_after <= now) {
@@ -206,14 +261,17 @@ void SafeBrowsingDatabaseManager::GetFullHashCachedResults(
         // Case b.
         if (cache_result.expire_after > now) {
           // Case i.
+          RecordV4FullHashCacheResult(FULL_HASH_NEGATIVE_CACHE_HIT);
         } else {
           // Case ii.
           prefixes_needing_reqs->push_back(full_hash.prefix);
+          RecordV4FullHashCacheResult(FULL_HASH_CACHE_MISS);
         }
       }
     } else {
       // Case 2.
       prefixes_needing_reqs->push_back(full_hash.prefix);
+      RecordV4FullHashCacheResult(FULL_HASH_CACHE_MISS);
     }
   }
 
@@ -259,8 +317,17 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
   // its own cache lookup) and in the server results (if another full hash
   // with the same prefix needed to request results from the server). In this
   // unlikely case, the two results' metadata will be merged.
-  PopulateApiMetadataResult(full_hash_results, check->full_hashes(), &md);
+  bool get_hash_hit =
+      PopulateApiMetadataResult(full_hash_results, check->full_hashes(), &md);
   PopulateApiMetadataResult(check->cached_results(), check->full_hashes(), &md);
+
+  if (get_hash_hit) {
+    RecordV4GetHashCheckResult(GET_HASH_CHECK_HIT);
+  } else if (full_hash_results.empty()) {
+    RecordV4GetHashCheckResult(GET_HASH_CHECK_EMPTY);
+  } else {
+    RecordV4GetHashCheckResult(GET_HASH_CHECK_MISS);
+  }
 
   check->client()->OnCheckApiBlacklistUrlResult(check->url(), md);
   api_checks_.erase(it);
@@ -269,20 +336,23 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
 
 // TODO(kcarattini): This is O(N^2). Look at improving performance by
 // using a map, sorting or doing binary search etc..
-void SafeBrowsingDatabaseManager::PopulateApiMetadataResult(
+bool SafeBrowsingDatabaseManager::PopulateApiMetadataResult(
     const std::vector<SBFullHashResult>& results,
     const std::vector<SBFullHash>& full_hashes,
     ThreatMetadata* md) {
   DCHECK(md);
+  bool hit = false;
   for (const SBFullHashResult& result : results) {
     for (const SBFullHash& full_hash : full_hashes) {
       if (SBFullHashEqual(full_hash, result.hash)) {
         md->api_permissions.insert(result.metadata.api_permissions.begin(),
                                    result.metadata.api_permissions.end());
+        hit = true;
         break;
       }
     }
   }
+  return hit;
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(

@@ -260,8 +260,9 @@ class SafeBrowsingDatabaseManager
                                 std::vector<SBFullHashResult>* cached_results);
 
   // Populates |md| with permission api metadata from all results that have a
-  // match in |full_hashes|.
-  void PopulateApiMetadataResult(const std::vector<SBFullHashResult>& results,
+  // match in |full_hashes|. Returns |true| if any of the results have a match
+  // in |full_hashes|.
+  bool PopulateApiMetadataResult(const std::vector<SBFullHashResult>& results,
                                  const std::vector<SBFullHash>& full_hashes,
                                  ThreatMetadata* md);
 
