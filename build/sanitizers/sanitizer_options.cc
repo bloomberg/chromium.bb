@@ -177,7 +177,8 @@ SANITIZER_HOOK_ATTRIBUTE const char *__lsan_default_suppressions() {
 #if defined(UNDEFINED_SANITIZER)
 // Default options for UndefinedBehaviorSanitizer:
 //   print_stacktrace=1 - print the stacktrace when UBSan reports an error.
-const char kUbsanDefaultOptions[] = "print_stacktrace=1";
+const char kUbsanDefaultOptions[] =
+    "print_stacktrace=1 strip_path_prefix=/../../ ";
 
 SANITIZER_HOOK_ATTRIBUTE const char* __ubsan_default_options() {
   return kUbsanDefaultOptions;
