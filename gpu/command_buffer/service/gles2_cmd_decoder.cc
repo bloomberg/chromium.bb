@@ -5926,7 +5926,13 @@ bool GLES2DecoderImpl::GetHelper(
         ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
                                            GetErrorState());
         glGetIntegerv(pname, params);
-        if (glGetError() != GL_NO_ERROR) {
+        bool is_valid = glGetError() == GL_NO_ERROR;
+        if (is_valid) {
+          is_valid = pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT ?
+              validators_->read_pixel_format.IsValid(*params) :
+              validators_->read_pixel_type.IsValid(*params);
+        }
+        if (!is_valid) {
           if (pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT) {
             *params = GLES2Util::GetGLReadPixelsImplementationFormat(
                 GetBoundReadFrameBufferInternalFormat(),
