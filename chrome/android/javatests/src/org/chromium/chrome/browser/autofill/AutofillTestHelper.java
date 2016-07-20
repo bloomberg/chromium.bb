@@ -8,20 +8,21 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.PersonalDataManagerObserver;
+import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Helper class for testing AutofillProfiles.
  */
 public class AutofillTestHelper {
 
-    private final Object mObserverNotified;
+    private final CallbackHelper mOnPersonalDataChangedHelper = new CallbackHelper();
 
     public AutofillTestHelper() {
-        mObserverNotified = new Object();
         registerDataObserver();
     }
 
@@ -61,25 +62,27 @@ public class AutofillTestHelper {
     }
 
     public String setProfile(final AutofillProfile profile) throws InterruptedException,
-            ExecutionException {
+            ExecutionException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
                 return PersonalDataManager.getInstance().setProfile(profile);
             }
         });
-        waitForDataChanged();
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
     }
 
-    void deleteProfile(final String guid) throws InterruptedException {
+    void deleteProfile(final String guid) throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 PersonalDataManager.getInstance().deleteProfile(guid);
             }
         });
-        waitForDataChanged();
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
     CreditCard getCreditCard(final String guid) throws ExecutionException {
@@ -118,41 +121,63 @@ public class AutofillTestHelper {
     }
 
     public String setCreditCard(final CreditCard card) throws InterruptedException,
-            ExecutionException {
+            ExecutionException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         String guid = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() {
                 return PersonalDataManager.getInstance().setCreditCard(card);
             }
         });
-        waitForDataChanged();
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
         return guid;
     }
 
     public void addServerCreditCard(final CreditCard card)
-            throws InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 PersonalDataManager.getInstance().addServerCreditCardForTest(card);
             }
         });
-        waitForDataChanged();
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
-    void deleteCreditCard(final String guid) throws InterruptedException {
+    void deleteCreditCard(final String guid) throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 PersonalDataManager.getInstance().deleteCreditCard(guid);
             }
         });
-        waitForDataChanged();
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
     /**
-     * Sets the use |count| and use |date| of the test profile associated with the |guid|. This
-     * update is not saved to disk.
+     * Records the use of the profile associated with the specified {@code guid}.. Effectively
+     * increments the use count of the profile and set its use date to the current time. Also logs
+     * usage metrics.
+     *
+     * @param guid The GUID of the profile.
+     */
+    void recordAndLogProfileUse(final String guid) throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.getInstance().recordAndLogProfileUse(guid);
+            }
+        });
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+    }
+
+    /**
+     * Sets the use {@code count} and use {@code date} of the test profile associated with the
+     * {@code guid}. This update is not saved to disk.
+     *
      * @param guid The GUID of the profile to modify.
      * @param count The use count to assign to the profile. It should be non-negative.
      * @param date The use date to assign to the profile. It represents an absolute point in
@@ -161,18 +186,74 @@ public class AutofillTestHelper {
      *             positive number.
      */
     public void setProfileUseStatsForTesting(final String guid, final int count, final long date)
-            throws InterruptedException {
+            throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 PersonalDataManager.getInstance().setProfileUseStatsForTesting(guid, count, date);
             }
         });
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
     /**
-     * Sets the use |count| and use |date| of the test credit card associated with the |guid|. This
-     * update is not saved to disk.
+     * Get the use count of the test profile associated with the {@code guid}.
+     *
+     * @param guid The GUID of the profile to query.
+     * @return The non-negative use count of the profile.
+     */
+    public int getProfileUseCountForTesting(final String guid) throws InterruptedException,
+            ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return PersonalDataManager.getInstance().getProfileUseCountForTesting(guid);
+            }
+        });
+    }
+
+    /**
+     * Get the use date of the test profile associated with the {@code guid}.
+     *
+     * @param guid The GUID of the profile to query.
+     * @return A non-negative long representing the last use date of the profile. It represents an
+     *         absolute point in coordinated universal time (UTC) represented as microseconds since
+     *         the Windows epoch. For more details see the comment header in time.h.
+     */
+    public long getProfileUseDateForTesting(final String guid) throws InterruptedException,
+            ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return PersonalDataManager.getInstance().getProfileUseDateForTesting(guid);
+            }
+        });
+    }
+
+    /**
+     * Records the use of the credit card associated with the specified {@code guid}. Effectively
+     * increments the use count of the credit card and sets its use date to the current time. Also
+     * logs usage metrics.
+     *
+     * @param guid The GUID of the credit card.
+     */
+    public void recordAndLogCreditCardUse(final String guid) throws InterruptedException,
+            TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.getInstance().recordAndLogCreditCardUse(guid);
+            }
+        });
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+    }
+
+    /**
+     * Sets the use {@code count} and use {@code date} of the test credit card associated with the
+     * {@code guid}. This update is not saved to disk.
+     *
      * @param guid The GUID of the credit card to modify.
      * @param count The use count to assign to the credit card. It should be non-negative.
      * @param date The use date to assign to the credit card. It represents an absolute point in
@@ -180,13 +261,65 @@ public class AutofillTestHelper {
      *             epoch. For more details see the comment header in time.h. It should always be a
      *             positive number.
      */
-    void setCreditCardUseStatsForTesting(final String guid, final int count, final long date)
-            throws InterruptedException {
+    public void setCreditCardUseStatsForTesting(final String guid, final int count, final long date)
+            throws InterruptedException, TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 PersonalDataManager.getInstance().setCreditCardUseStatsForTesting(
                         guid, count, date);
+            }
+        });
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+    }
+
+    /**
+     * Get the use count of the test credit card associated with the {@code guid}.
+     *
+     * @param guid The GUID of the credit card to query.
+     * @return The non-negative use count of the credit card.
+     */
+    public int getCreditCardUseCountForTesting(final String guid) throws InterruptedException,
+            ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return PersonalDataManager.getInstance().getCreditCardUseCountForTesting(guid);
+            }
+        });
+    }
+
+    /**
+     * Get the use date of the test credit card associated with the {@code guid}.
+     *
+     * @param guid The GUID of the credit card to query.
+     * @return A non-negative long representing the last use date of the credit card. It represents
+     *         an absolute point in coordinated universal time (UTC) represented as microseconds
+     *         since the Windows epoch. For more details see the comment header in time.h.
+     */
+    public long getCreditCardUseDateForTesting(final String guid) throws InterruptedException,
+            ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return PersonalDataManager.getInstance().getCreditCardUseDateForTesting(guid);
+            }
+        });
+    }
+
+    /**
+     * Get the current use date to be used in test to compare with credit card or profile use dates.
+     *
+     * @return A non-negative long representing the current date. It represents an absolute point in
+     *         coordinated universal time (UTC) represented as microseconds since the Windows epoch.
+     *         For more details see the comment header in time.h.
+     */
+    public long getCurrentDateForTesting() throws InterruptedException, ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return PersonalDataManager.getInstance().getCurrentDateForTesting();
             }
         });
     }
@@ -199,20 +332,11 @@ public class AutofillTestHelper {
                         new PersonalDataManagerObserver() {
                             @Override
                             public void onPersonalDataChanged() {
-                                synchronized (mObserverNotified) {
-                                    mObserverNotified.notifyAll();
-                                }
+                                mOnPersonalDataChangedHelper.notifyCalled();
                             }
                         }
                 );
             }
         });
-    }
-
-    @SuppressWarnings("WaitNotInLoop")
-    public void waitForDataChanged() throws InterruptedException {
-        synchronized (mObserverNotified) {
-            mObserverNotified.wait(3000);
-        }
     }
 }

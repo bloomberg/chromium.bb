@@ -179,6 +179,17 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);
 
+  // These functions act on the usage stats of local profiles and credit cards.
+  // --------------------
+
+  // Records the use and log usage metrics for the profile associated with the
+  // |jguid|. Increments the use count of the profile and sets its use date to
+  // the current time.
+  void RecordAndLogProfileUse(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
   // Sets the use count and use date of the profile associated to the |jguid|.
   // Both |count| and |date| should be non-negative. |date| represents an
   // absolute point in coordinated universal time (UTC) represented as
@@ -191,6 +202,29 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       jint count,
       jint date);
 
+  // Returns the use count of the profile associated to the |jguid|.
+  jint GetProfileUseCountForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
+  // Returns the use date of the profile associated to the |jguid|. It
+  // represents an absolute point in coordinated universal time (UTC)
+  // represented as microseconds since the Windows epoch. For more details see
+  // the comment header in time.h.
+  jlong GetProfileUseDateForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
+  // Records the use and log usage metrics for the credit card associated with
+  // the |jguid|. Increments the use count of the credit card and sets its use
+  // date to the current time.
+  void RecordAndLogCreditCardUse(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
   // Sets the use count and use date of the credit card associated to the
   // |jguid|. Both |count| and |date| should be non-negative. |date| represents
   // an absolute point in coordinated universal time (UTC) represented as
@@ -202,6 +236,28 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jstring>& jguid,
       jint count,
       jint date);
+
+  // Returns the use count of the credit card associated to the |jguid|.
+  jint GetCreditCardUseCountForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
+  // Returns the use date of the credit card associated to the |jguid|. It
+  // represents an absolute point in coordinated universal time (UTC)
+  // represented as microseconds since the Windows epoch. For more details see
+  // the comment header in time.h.
+  jlong GetCreditCardUseDateForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jguid);
+
+  // Returns the current date represented as an absolute point in coordinated
+  // universal time (UTC) represented as microseconds since the Unix epoch. For
+  // more details see the comment header in time.h
+  jlong GetCurrentDateForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj);
 
  private:
   ~PersonalDataManagerAndroid() override;

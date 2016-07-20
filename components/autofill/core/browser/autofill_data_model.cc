@@ -24,6 +24,7 @@ bool AutofillDataModel::IsVerified() const {
   return !origin_.empty() && !GURL(origin_).is_valid();
 }
 
+// TODO(crbug.com/629507): Add support for injected mock clock for testing.
 void AutofillDataModel::RecordUse() {
   ++use_count_;
   use_date_ = base::Time::Now();

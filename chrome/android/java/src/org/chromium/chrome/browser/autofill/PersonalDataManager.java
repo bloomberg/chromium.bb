@@ -637,6 +637,18 @@ public class PersonalDataManager {
                 cardNumber, nameOnCard, expirationMonth, expirationYear, delegate);
     }
 
+    /**
+     * Records the use of the profile associated with the specified {@code guid}. Effectively
+     * increments the use count of the profile and sets its use date to the current time. Also logs
+     * usage metrics.
+     *
+     * @param guid The GUID of the profile.
+     */
+    public void recordAndLogProfileUse(String guid) {
+        ThreadUtils.assertOnUiThread();
+        nativeRecordAndLogProfileUse(mPersonalDataManagerAndroid, guid);
+    }
+
     @VisibleForTesting
     protected void setProfileUseStatsForTesting(String guid, int count, long date) {
         ThreadUtils.assertOnUiThread();
@@ -644,9 +656,51 @@ public class PersonalDataManager {
     }
 
     @VisibleForTesting
+    int getProfileUseCountForTesting(String guid) {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetProfileUseCountForTesting(mPersonalDataManagerAndroid, guid);
+    }
+
+    @VisibleForTesting
+    long getProfileUseDateForTesting(String guid) {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetProfileUseDateForTesting(mPersonalDataManagerAndroid, guid);
+    }
+
+    /**
+     * Records the use of the credit card associated with the specified {@code guid}. Effectively
+     * increments the use count of the credit card and set its use date to the current time. Also
+     * logs usage metrics.
+     *
+     * @param guid The GUID of the credit card.
+     */
+    public void recordAndLogCreditCardUse(String guid) {
+        ThreadUtils.assertOnUiThread();
+        nativeRecordAndLogCreditCardUse(mPersonalDataManagerAndroid, guid);
+    }
+
+    @VisibleForTesting
     protected void setCreditCardUseStatsForTesting(String guid, int count, long date) {
         ThreadUtils.assertOnUiThread();
         nativeSetCreditCardUseStatsForTesting(mPersonalDataManagerAndroid, guid, count, date);
+    }
+
+    @VisibleForTesting
+    int getCreditCardUseCountForTesting(String guid) {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetCreditCardUseCountForTesting(mPersonalDataManagerAndroid, guid);
+    }
+
+    @VisibleForTesting
+    long getCreditCardUseDateForTesting(String guid) {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetCreditCardUseDateForTesting(mPersonalDataManagerAndroid, guid);
+    }
+
+    @VisibleForTesting
+    long getCurrentDateForTesting() {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetCurrentDateForTesting(mPersonalDataManagerAndroid);
     }
 
     /**
@@ -715,10 +769,23 @@ public class PersonalDataManager {
     private native void nativeAddServerCreditCardForTest(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(long nativePersonalDataManagerAndroid, String guid);
+    private native void nativeRecordAndLogProfileUse(long nativePersonalDataManagerAndroid,
+            String guid);
     private native void nativeSetProfileUseStatsForTesting(
             long nativePersonalDataManagerAndroid, String guid, int count, long date);
+    private native int nativeGetProfileUseCountForTesting(long nativePersonalDataManagerAndroid,
+            String guid);
+    private native long nativeGetProfileUseDateForTesting(long nativePersonalDataManagerAndroid,
+            String guid);
+    private native void nativeRecordAndLogCreditCardUse(long nativePersonalDataManagerAndroid,
+            String guid);
     private native void nativeSetCreditCardUseStatsForTesting(
             long nativePersonalDataManagerAndroid, String guid, int count, long date);
+    private native int nativeGetCreditCardUseCountForTesting(long nativePersonalDataManagerAndroid,
+            String guid);
+    private native long nativeGetCreditCardUseDateForTesting(long nativePersonalDataManagerAndroid,
+            String guid);
+    private native long nativeGetCurrentDateForTesting(long nativePersonalDataManagerAndroid);
     private native void nativeClearUnmaskedCache(
             long nativePersonalDataManagerAndroid, String guid);
     private native void nativeGetFullCardForPaymentRequest(long nativePersonalDataManagerAndroid,

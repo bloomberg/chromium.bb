@@ -15,6 +15,7 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for Chrome on Android's usage of the PersonalDataManager API.
@@ -34,7 +35,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testAddAndEditProfiles() throws InterruptedException, ExecutionException {
+    public void testAddAndEditProfiles() throws InterruptedException, ExecutionException,
+            TimeoutException {
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */,
                 "John Smith", "Acme Inc.",
@@ -69,7 +71,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testUpdateLanguageCodeInProfile() throws InterruptedException, ExecutionException {
+    public void testUpdateLanguageCodeInProfile() throws InterruptedException, ExecutionException,
+            TimeoutException {
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */,
                 "John Smith", "Acme Inc.",
@@ -99,7 +102,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testAddAndDeleteProfile() throws InterruptedException, ExecutionException {
+    public void testAddAndDeleteProfile() throws InterruptedException, ExecutionException,
+            TimeoutException {
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, "Chrome settings" /* origin */,
                 "John Smith", "Acme Inc.",
@@ -115,7 +119,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testAddAndEditCreditCards() throws InterruptedException, ExecutionException {
+    public void testAddAndEditCreditCards() throws InterruptedException, ExecutionException,
+            TimeoutException {
         CreditCard card = new CreditCard(
                 "" /* guid */, "https://www.example.com" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
@@ -147,7 +152,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testAddAndDeleteCreditCard() throws InterruptedException, ExecutionException {
+    public void testAddAndDeleteCreditCard() throws InterruptedException, ExecutionException,
+            TimeoutException {
         CreditCard card = new CreditCard(
                 "" /* guid */, "Chrome settings" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
@@ -160,7 +166,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testRespectCountryCodes() throws InterruptedException, ExecutionException {
+    public void testRespectCountryCodes() throws InterruptedException, ExecutionException,
+            TimeoutException {
         // The constructor should accept country names and ISO 3166-1-alpha-2 country codes.
         // getCountryCode() should return a country code.
         AutofillProfile profile1 = new AutofillProfile(
@@ -190,7 +197,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testMultilineStreetAddress() throws InterruptedException, ExecutionException {
+    public void testMultilineStreetAddress() throws InterruptedException, ExecutionException,
+            TimeoutException {
         final String streetAddress1 = "Chez Mireille COPEAU Appartment. 2\n"
                 + "Entree A Batiment Jonquille\n"
                 + "25 RUE DE L'EGLISE";
@@ -227,7 +235,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testLabels()  throws InterruptedException, ExecutionException {
+    public void testLabels()  throws InterruptedException, ExecutionException,
+            TimeoutException {
         AutofillProfile profile1 = new AutofillProfile(
                  "" /* guid */, "https://www.example.com" /* origin */,
                  "John Major", "Acme Inc.",
@@ -279,7 +288,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testProfilesFrecency() throws InterruptedException, ExecutionException {
+    public void testProfilesFrecency() throws InterruptedException, ExecutionException,
+            TimeoutException {
         // Create 3 profiles.
         AutofillProfile profile1 =
                 new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
@@ -317,7 +327,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testCreditCardsFrecency() throws InterruptedException, ExecutionException {
+    public void testCreditCardsFrecency() throws InterruptedException, ExecutionException,
+            TimeoutException {
         // Create 3 credit cards.
         CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
@@ -351,7 +362,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Autofill"})
-    public void testCreditCardsDeduping() throws InterruptedException, ExecutionException {
+    public void testCreditCardsDeduping() throws InterruptedException, ExecutionException,
+            TimeoutException {
         // Create a local card and an identical server card.
         CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                 true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
@@ -369,5 +381,104 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
         // Both cards should be seen in the settings even if they are identical.
         assertEquals(2, mHelper.getNumberOfCreditCardsForSettings());
+    }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testProfileUseStatsSettingAndGetting() throws InterruptedException,
+            ExecutionException, TimeoutException {
+        String guid = mHelper.setProfile(
+                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                        "Jasper Lundgren", "", "1500 Second Ave", "California", "Hollywood", "",
+                        "90068", "", "US", "555 123-9876", "jasperl@example.com", ""));
+
+        // Make sure the profile does not have the specific use stats form the start.
+        assertTrue(1234 != mHelper.getProfileUseCountForTesting(guid));
+        assertTrue(1234 != mHelper.getProfileUseDateForTesting(guid));
+
+        // Set specific use stats for the profile.
+        mHelper.setProfileUseStatsForTesting(guid, 1234, 1234);
+
+        // Make sure the specific use stats were set for the profile.
+        assertEquals(1234, mHelper.getProfileUseCountForTesting(guid));
+        assertEquals(1234, mHelper.getProfileUseDateForTesting(guid));
+    }
+
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testCreditCardUseStatsSettingAndGetting() throws InterruptedException,
+            ExecutionException, TimeoutException {
+        String guid = mHelper.setCreditCard(
+                new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
+                    true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "",
+                    "5", "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */));
+
+        // Make sure the credit card does not have the specific use stats form the start.
+        assertTrue(1234 != mHelper.getCreditCardUseCountForTesting(guid));
+        assertTrue(1234 != mHelper.getCreditCardUseDateForTesting(guid));
+
+        // Set specific use stats for the credit card.
+        mHelper.setCreditCardUseStatsForTesting(guid, 1234, 1234);
+
+        // Make sure the specific use stats were set for the credit card.
+        assertEquals(1234, mHelper.getCreditCardUseCountForTesting(guid));
+        assertEquals(1234, mHelper.getCreditCardUseDateForTesting(guid));
+    }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testRecordAndLogProfileUse() throws InterruptedException, ExecutionException,
+            TimeoutException {
+        String guid = mHelper.setProfile(
+                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                        "Jasper Lundgren", "", "1500 Second Ave", "California", "Hollywood", "",
+                        "90068", "", "US", "555 123-9876", "jasperl@example.com", ""));
+
+        // Set specific use stats for the profile.
+        mHelper.setProfileUseStatsForTesting(guid, 1234, 1234);
+
+        // Get the current date value just before the call to record and log.
+        long timeBeforeRecord = mHelper.getCurrentDateForTesting();
+
+        // Record and log use of the profile.
+        mHelper.recordAndLogProfileUse(guid);
+
+        // Get the current date value just after the call to record and log.
+        long timeAfterRecord = mHelper.getCurrentDateForTesting();
+
+        // Make sure the use stats of the profile were updated.
+        assertEquals(1235, mHelper.getProfileUseCountForTesting(guid));
+        assertTrue(timeBeforeRecord <= mHelper.getProfileUseDateForTesting(guid));
+        assertTrue(timeAfterRecord >= mHelper.getProfileUseDateForTesting(guid));
+    }
+
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testRecordAndLogCreditCardUse() throws InterruptedException, ExecutionException,
+            TimeoutException {
+        String guid = mHelper.setCreditCard(
+                    new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
+                            true /* isLocal */, false /* isCached */, "John Doe",
+                            "1234123412341234", "", "5", "2020", "Visa",
+                            0 /* issuerIconDrawableId */, "" /* billingAddressId */));
+
+        // Set specific use stats for the credit card.
+        mHelper.setCreditCardUseStatsForTesting(guid, 1234, 1234);
+
+        // Get the current date value just before the call to record and log.
+        long timeBeforeRecord = mHelper.getCurrentDateForTesting();
+
+        // Record and log use of the credit card.
+        mHelper.recordAndLogCreditCardUse(guid);
+
+        // Get the current date value just after the call to record and log.
+        long timeAfterRecord = mHelper.getCurrentDateForTesting();
+
+        // Make sure the use stats of the credit card were updated.
+        assertEquals(1235, mHelper.getCreditCardUseCountForTesting(guid));
+        assertTrue(timeBeforeRecord <= mHelper.getCreditCardUseDateForTesting(guid));
+        assertTrue(timeAfterRecord >= mHelper.getCreditCardUseDateForTesting(guid));
     }
 }

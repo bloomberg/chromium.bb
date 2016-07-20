@@ -485,6 +485,7 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTest(
   PopulateNativeCreditCardFromJava(jcard, env, card.get());
   card->set_record_type(CreditCard::MASKED_SERVER_CARD);
   personal_data_manager_->AddServerCreditCardForTest(std::move(card));
+  personal_data_manager_->NotifyPersonalDataChangedForTest();
 }
 
 void PersonalDataManagerAndroid::RemoveByGUID(
@@ -557,6 +558,15 @@ bool PersonalDataManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+void PersonalDataManagerAndroid::RecordAndLogProfileUse(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid) {
+  AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  personal_data_manager_->RecordUseOf(*profile);
+}
+
 void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
@@ -567,11 +577,36 @@ void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
 
   AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
       ConvertJavaStringToUTF8(env, jguid));
-  if (!profile)
-    return;
-
   profile->set_use_count(static_cast<size_t>(count));
   profile->set_use_date(base::Time::FromTimeT(date));
+  personal_data_manager_->NotifyPersonalDataChangedForTest();
+}
+
+jint PersonalDataManagerAndroid::GetProfileUseCountForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jstring>& jguid) {
+  AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  return profile->use_count();
+}
+
+jlong PersonalDataManagerAndroid::GetProfileUseDateForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jstring>& jguid) {
+  AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  return profile->use_date().ToTimeT();
+}
+
+void PersonalDataManagerAndroid::RecordAndLogCreditCardUse(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid) {
+  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  personal_data_manager_->RecordUseOf(*card);
 }
 
 void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
@@ -584,11 +619,34 @@ void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
 
   CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
       ConvertJavaStringToUTF8(env, jguid));
-  if (!card)
-    return;
-
   card->set_use_count(static_cast<size_t>(count));
   card->set_use_date(base::Time::FromTimeT(date));
+  personal_data_manager_->NotifyPersonalDataChangedForTest();
+}
+
+jint PersonalDataManagerAndroid::GetCreditCardUseCountForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jstring>& jguid) {
+  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  return card->use_count();
+}
+
+jlong PersonalDataManagerAndroid::GetCreditCardUseDateForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jstring>& jguid){
+  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  return card->use_date().ToTimeT();
+}
+
+// TODO(crbug.com/629507): Use a mock clock for testing.
+jlong PersonalDataManagerAndroid::GetCurrentDateForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  return base::Time::Now().ToTimeT();
 }
 
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(

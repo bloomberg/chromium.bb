@@ -49,7 +49,8 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     @Override
     public void startMainActivity() throws InterruptedException {}
 
-    private void loadTestPage(boolean isRtl) throws InterruptedException, ExecutionException {
+    private void loadTestPage(boolean isRtl) throws InterruptedException, ExecutionException,
+            TimeoutException {
         startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html"
                 + (isRtl ? " dir=\"rtl\"" : "")
                 + "><head>"
@@ -101,7 +102,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     @MediumTest
     @Feature({"keyboard-accessory"})
     public void testAutofocusedFieldDoesNotShowKeyboardAccessory() throws InterruptedException,
-           ExecutionException {
+           ExecutionException, TimeoutException {
         loadTestPage(false);
         assertTrue("Keyboard accessory should be hidden.",
                 ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {

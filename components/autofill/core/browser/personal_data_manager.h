@@ -260,6 +260,11 @@ class PersonalDataManager : public KeyedService,
   static void DedupeCreditCardToSuggest(
       std::list<CreditCard*>* cards_to_suggest);
 
+  // Notifies test observers that personal data has changed.
+  void NotifyPersonalDataChangedForTest() {
+    NotifyPersonalDataChanged();
+  }
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.

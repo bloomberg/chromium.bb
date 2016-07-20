@@ -940,8 +940,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 // Shipping addresses are created in show(). These should all be instances of
                 // AutofillAddress.
                 assert selectedShippingAddress instanceof AutofillAddress;
-                response.shippingAddress =
-                        ((AutofillAddress) selectedShippingAddress).toPaymentAddress();
+                AutofillAddress selectedAutofillAddress = (AutofillAddress) selectedShippingAddress;
+
+                // Record the use of the profile.
+                PersonalDataManager.getInstance().recordAndLogProfileUse(
+                        selectedAutofillAddress.getProfile().getGUID());
+
+                response.shippingAddress = selectedAutofillAddress.toPaymentAddress();
             }
         }
 
@@ -950,6 +955,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
                 response.shippingOption = selectedShippingOption.getIdentifier();
             }
+        }
+
+        // If the payment method was an Autofill credit card with an identifier, record its use.
+        if (mPaymentMethodsSection.getSelectedItem() instanceof AutofillPaymentInstrument
+                && !mPaymentMethodsSection.getSelectedItem().getIdentifier().isEmpty()) {
+            PersonalDataManager.getInstance().recordAndLogCreditCardUse(
+                    mPaymentMethodsSection.getSelectedItem().getIdentifier());
         }
 
         mUI.showProcessingMessage();
