@@ -115,18 +115,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
               ['win'], bug=483282)
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
-    self.Fail('deqp/functional/gles3/shaderloop_for.html',
-        ['win'], bug=617817)
-    self.Fail('deqp/functional/gles3/shaderloop_while.html',
-        ['win'], bug=617817)
-    self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
-        ['win'], bug=617817)
 
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
-        ['win'], bug=626068)
 
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['win'], bug=624506)
@@ -142,10 +133,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
 
     # Win / NVidia
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
-        ['win', 'nvidia'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
-        ['win', 'nvidia'], bug=483282)
+    # La la la la la la la la la la ...
 
     # Win / AMD
     self.Fail('deqp/functional/gles3/texturespecification/' +
@@ -168,6 +156,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/cube*',
         ['win', ('amd', 0x6779)], bug=483282)
+
+    self.Fail('deqp/functional/gles3/transformfeedback/*',
+        ['win', ('amd', 0x6779)], bug=626068)
 
     # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
