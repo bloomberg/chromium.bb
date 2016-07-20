@@ -262,6 +262,9 @@ private:
 
     // Used for OffscreenCanvas that controls this HTML canvas element
     std::unique_ptr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;
+
+    int m_numFramesSinceLastRenderingModeSwitch;
+    bool m_pendingRenderingModeSwitch;
 };
 
 } // namespace blink

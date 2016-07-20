@@ -361,6 +361,11 @@ const char kEnableDisplayList2dCanvas[]     = "enable-display-list-2d-canvas";
 const char kForceDisplayList2dCanvas[]      = "force-display-list-2d-canvas";
 const char kDisableDisplayList2dCanvas[]    = "disable-display-list-2d-canvas";
 
+// Enables dynamic rendering pipeline switching to optimize the
+// performance of 2d canvas
+const char kEnableCanvas2dDynamicRenderingModeSwitching[] =
+    "enable-canvas-2d-dynamic-rendering-mode-switching";
+
 // Enable experimental canvas features, e.g. canvas 2D context attributes
 const char kEnableExperimentalCanvasFeatures[] =
     "enable-experimental-canvas-features";

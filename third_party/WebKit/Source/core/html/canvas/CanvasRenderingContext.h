@@ -109,6 +109,7 @@ public:
     virtual void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) { }
     virtual std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) { NOTREACHED(); return std::make_pair(nullptr, String()); }
     virtual String getIdFromControl(const Element* element) { return String(); }
+    virtual bool isAccelerationOptimalForCanvasContent() const { return true; }
 
     // WebGL-specific interface
     virtual bool is3d() const { return false; }

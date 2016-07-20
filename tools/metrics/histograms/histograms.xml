@@ -81996,6 +81996,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
+  <int value="805567148"
+      label="enable-canvas-2d-dynamic-rendering-mode-switching"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="820650704" label="disable-ntp-popular-sites"/>

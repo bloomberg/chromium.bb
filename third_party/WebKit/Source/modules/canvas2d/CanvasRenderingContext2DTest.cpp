@@ -801,4 +801,56 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration)
     RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(savedFixedRenderingMode);
 }
 
+TEST_F(CanvasRenderingContext2DTest, IsAccelerationOptimalForCanvasContentHeuristic)
+{
+    createContext(NonOpaque);
+
+    std::unique_ptr<FakeAcceleratedImageBufferSurfaceForTesting> fakeAccelerateSurface = wrapUnique(new FakeAcceleratedImageBufferSurfaceForTesting(IntSize(10, 10), NonOpaque));
+    canvasElement().createImageBufferUsingSurfaceForTesting(std::move(fakeAccelerateSurface));
+
+    NonThrowableExceptionState exceptionState;
+
+    CanvasRenderingContext2D* context = context2d();
+    EXPECT_TRUE(context->isAccelerationOptimalForCanvasContent());
+
+    context->fillRect(10, 10, 100, 100);
+    EXPECT_FALSE(context->isAccelerationOptimalForCanvasContent());
+
+    context->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState);
+    EXPECT_TRUE(context->isAccelerationOptimalForCanvasContent());
+
+    int numReps = 100;
+    for (int i = 0; i < numReps; i++) {
+        context->fillRect(10, 10, 100, 100);
+    }
+    EXPECT_FALSE(context->isAccelerationOptimalForCanvasContent());
+}
+
+TEST_F(CanvasRenderingContext2DTest, DisableAcceleration)
+{
+    createContext(NonOpaque);
+
+    std::unique_ptr<FakeAcceleratedImageBufferSurfaceForTesting> fakeAccelerateSurface = wrapUnique(new FakeAcceleratedImageBufferSurfaceForTesting(IntSize(10, 10), NonOpaque));
+    canvasElement().createImageBufferUsingSurfaceForTesting(std::move(fakeAccelerateSurface));
+    CanvasRenderingContext2D* context = context2d();
+
+    // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per pixel per buffer,
+    // and 2 is an estimate of num of gpu buffers required
+    EXPECT_EQ(800, getCurrentGPUMemoryUsage());
+    EXPECT_EQ(800, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
+
+    context->fillRect(10, 10, 100, 100);
+    EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
+
+    canvasElement().buffer()->disableAcceleration();
+    EXPECT_FALSE(canvasElement().buffer()->isAccelerated());
+
+    context->fillRect(10, 10, 100, 100);
+
+    EXPECT_EQ(0, getCurrentGPUMemoryUsage());
+    EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+    EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
+}
+
 } // namespace blink

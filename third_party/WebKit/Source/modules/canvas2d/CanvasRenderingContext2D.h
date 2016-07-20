@@ -166,6 +166,8 @@ public:
 
     void validateStateStack() final;
 
+    bool isAccelerationOptimalForCanvasContent() const;
+
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 

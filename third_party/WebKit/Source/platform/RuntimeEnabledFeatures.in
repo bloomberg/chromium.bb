@@ -35,6 +35,7 @@ BackspaceDefaultHandler status=test
 BroadcastChannel status=stable
 CacheIgnoreSearchOption status=experimental
 Canvas2dFixedRenderingMode status=test
+EnableCanvas2dDynamicRenderingModeSwitching status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
 CompositedSelectionUpdate

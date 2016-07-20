@@ -148,6 +148,8 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_originClean(true)
     , m_didFailToCreateImageBuffer(false)
     , m_imageBufferIsClear(false)
+    , m_numFramesSinceLastRenderingModeSwitch(0)
+    , m_pendingRenderingModeSwitch(false)
 {
     CanvasMetrics::countCanvasContextUsage(CanvasMetrics::CanvasCreated);
 }
@@ -316,6 +318,32 @@ void HTMLCanvasElement::didFinalizeFrame()
         ro->invalidatePaintRectangle(mappedDirtyRect);
     }
     m_dirtyRect = FloatRect();
+
+    m_numFramesSinceLastRenderingModeSwitch++;
+    if (RuntimeEnabledFeatures::enableCanvas2dDynamicRenderingModeSwitchingEnabled()
+        && !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
+        if (m_context->is2d() && buffer()->isAccelerated()
+            && m_numFramesSinceLastRenderingModeSwitch >= ExpensiveCanvasHeuristicParameters::MinFramesBeforeSwitch
+            && !m_pendingRenderingModeSwitch) {
+            if (!m_context->isAccelerationOptimalForCanvasContent()) {
+                // The switch must be done asynchronously in order to avoid switching during the paint invalidation step.
+                Platform::current()->currentThread()->getWebTaskRunner()->postTask(
+                    BLINK_FROM_HERE,
+                    WTF::bind([](WeakPtr<ImageBuffer> buffer) {
+                        if (buffer) {
+                            buffer->disableAcceleration();
+                        }
+                    },
+                    m_imageBuffer->m_weakPtrFactory.createWeakPtr()));
+                m_numFramesSinceLastRenderingModeSwitch = 0;
+                m_pendingRenderingModeSwitch = true;
+            }
+        }
+    }
+
+    if (m_pendingRenderingModeSwitch && !buffer()->isAccelerated()) {
+        m_pendingRenderingModeSwitch = false;
+    }
 }
 
 void HTMLCanvasElement::didDisableAcceleration()

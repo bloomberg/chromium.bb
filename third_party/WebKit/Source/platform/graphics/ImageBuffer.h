@@ -146,6 +146,10 @@ public:
     static unsigned getGlobalAcceleratedImageBufferCount() { return s_globalAcceleratedImageBufferCount; }
     intptr_t getGPUMemoryUsage() { return m_gpuMemoryUsage; }
 
+    void disableAcceleration();
+
+    WeakPtrFactory<ImageBuffer> m_weakPtrFactory;
+
 protected:
     ImageBuffer(std::unique_ptr<ImageBufferSurface>);
 

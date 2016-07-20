@@ -1068,4 +1068,33 @@ unsigned CanvasRenderingContext2D::hitRegionsCount() const
     return 0;
 }
 
+bool CanvasRenderingContext2D::isAccelerationOptimalForCanvasContent() const
+{
+    // Simple heuristic to determine if the GPU accelerated pipeline should be
+    // used to maximize performance of 2D canvas based on past usage.
+
+    int numDrawPathCalls =
+        m_usageCounters.numDrawCalls[StrokePath] +
+        m_usageCounters.numDrawCalls[FillPath] +
+        m_usageCounters.numDrawCalls[FillText] +
+        m_usageCounters.numDrawCalls[StrokeText] +
+        m_usageCounters.numDrawCalls[FillRect] +
+        m_usageCounters.numDrawCalls[StrokeRect];
+
+    double acceleratedCost =
+        numDrawPathCalls * ExpensiveCanvasHeuristicParameters::AcceleratedDrawPathApproximateCost +
+        m_usageCounters.numGetImageDataCalls * ExpensiveCanvasHeuristicParameters::AcceleratedGetImageDataApproximateCost+
+        m_usageCounters.numDrawCalls[DrawImage] * ExpensiveCanvasHeuristicParameters::AcceleratedDrawImageApproximateCost;
+
+    double recordingCost =
+        numDrawPathCalls * ExpensiveCanvasHeuristicParameters::RecordingDrawPathApproximateCost +
+        m_usageCounters.numGetImageDataCalls * ExpensiveCanvasHeuristicParameters::UnacceleratedGetImageDataApproximateCost +
+        m_usageCounters.numDrawCalls[DrawImage] * ExpensiveCanvasHeuristicParameters::RecordingDrawImageApproximateCost;
+
+    if (recordingCost * ExpensiveCanvasHeuristicParameters::AcceleratedHeuristicBias < acceleratedCost) {
+        return false;
+    }
+    return true;
+}
+
 } // namespace blink

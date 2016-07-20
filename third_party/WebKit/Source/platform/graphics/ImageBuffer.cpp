@@ -38,6 +38,7 @@
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBufferClient.h"
+#include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
@@ -80,7 +81,8 @@ std::unique_ptr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMod
 }
 
 ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
-    : m_snapshotState(InitialSnapshotState)
+    : m_weakPtrFactory(this)
+    , m_snapshotState(InitialSnapshotState)
     , m_surface(std::move(surface))
     , m_client(0)
     , m_gpuMemoryUsage(0)
@@ -398,6 +400,37 @@ void ImageBuffer::updateGPUMemoryUsage() const
         s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
         m_gpuMemoryUsage = 0;
     }
+}
+
+class UnacceleratedSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
+public:
+    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    {
+        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode));
+    }
+
+    virtual ~UnacceleratedSurfaceFactory() { }
+};
+
+void ImageBuffer::disableAcceleration()
+{
+    if (!isAccelerated()) {
+        return;
+    }
+
+    // Get current frame.
+    SkImage* image = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint).get();
+
+    // Create and configure a recording (unaccelerated) surface.
+    std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
+    std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(m_surface->size(), std::move(surfaceFactory), m_surface->getOpacityMode()));
+    surface->canvas()->drawImage(image, 0, 0);
+    surface->setImageBuffer(this);
+
+    // Replace the current surface with the new surface.
+    m_surface = std::move(surface);
+
+    didDisableAcceleration();
 }
 
 bool ImageDataBuffer::encodeImage(const String& mimeType, const double& quality, Vector<unsigned char>* encodedImage) const

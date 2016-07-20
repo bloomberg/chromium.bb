@@ -69,6 +69,47 @@ enum {
 
 }; // enum
 
+
+// Constants and Coefficients for 2D Canvas Dynamic Rendering Mode Switching
+// =========================================================================
+
+// Approximate relative costs of different types of operations for the
+// accelerated rendering pipeline and the recording rendering pipeline.
+// These costs were estimated experimentally based on the performance
+// of each pipeline in the animometer benchmark. Multiple factors influence
+// the true cost of each type of operation, including:
+// - The hardware configuration
+// - Version of the project
+// - Additional details about the operation:
+//   - Subtype of operation (png vs svg image, arc vs line...)
+//   - Scale
+//   - Associated effects (patterns, gradients...)
+// The coefficients are equal to 1/n, where n is equal to the number of calls
+// of a type that can be performed in each frame while maintaining
+// 50 frames per second. They were estimated using the animometer benchmark.
+
+const double AcceleratedDrawPathApproximateCost     = 0.004;
+const double AcceleratedGetImageDataApproximateCost = 0.1;
+const double AcceleratedDrawImageApproximateCost    = 0.002;
+
+const double RecordingDrawPathApproximateCost           = 0.0014;
+const double UnacceleratedGetImageDataApproximateCost   = 0.001; // This cost is for non-display-list mode after fallback.
+const double RecordingDrawImageApproximateCost          = 0.004;
+
+// Coefficient used in the isAccelerationOptimalForCanvasContent
+// heuristic to create a bias in the output.
+// If set to a value greater than 1, it creates a bias towards suggesting acceleration.
+// If set to a value smaller than 1, it creates a bias towards not suggesting acceleration
+// For example, if its value is 1.5, then disabling gpu acceleration will only be suggested if
+// recordingCost * 1.5 < acceleratedCost.
+const double AcceleratedHeuristicBias = 1.5;
+
+// Minimum number of frames that need to be rendered
+// before the rendering pipeline may be switched. Having this set
+// to more than 1 increases the sample size of usage data before a
+// decision is made, improving the accuracy of heuristics.
+const int MinFramesBeforeSwitch = 3;
+
 } // namespace ExpensiveCanvasHeuristicParameters
 
 } // namespace blink
