@@ -391,6 +391,8 @@ def SetupBuild(options):
 
   if options.verbose < 2:
     base.append('-s')
+  elif options.verbose > 2:
+    base.append('V=1')
 
   if options.ro and options.rw:
     cros_build_lib.Die('Cannot specify both --ro and --rw options')
