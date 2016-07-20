@@ -88,15 +88,21 @@ public:
         m_timerTasks->push(DelayedTask(task, delayMs * 0.001));
     }
 
+    bool runsTasksOnCurrentThread() override
+    {
+        NOTREACHED();
+        return true;
+    }
+
     WebTaskRunner* clone() override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
     double virtualTimeSeconds() const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0.0;
     }
 
@@ -142,7 +148,7 @@ public:
 
     WebTaskRunner* loadingTaskRunner() override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -207,19 +213,19 @@ public:
 
     virtual bool isCurrentThread() const
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return true;
     }
 
     virtual PlatformThreadId threadId() const
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0;
     }
 
     WebTaskRunner* getWebTaskRunner() override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -230,12 +236,12 @@ public:
 
     virtual void enterRunLoop()
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     virtual void exitRunLoop()
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
 private:

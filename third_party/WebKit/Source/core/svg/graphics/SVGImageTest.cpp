@@ -38,6 +38,7 @@ private:
         m_currentTask = task;
 
     }
+    bool runsTasksOnCurrentThread() override { return true; }
     WebTaskRunner* clone() override { return nullptr; }
     double virtualTimeSeconds() const override { return 0.0; }
     double monotonicallyIncreasingVirtualTimeSeconds() const override { return m_time; }

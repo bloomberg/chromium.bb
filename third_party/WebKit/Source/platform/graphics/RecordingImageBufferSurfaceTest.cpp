@@ -49,7 +49,7 @@ public:
     }
 
     // TaskObserver implementation
-    void willProcessTask() override { ASSERT_NOT_REACHED(); }
+    void willProcessTask() override { NOTREACHED(); }
     void didProcessTask() override
     {
         ASSERT_TRUE(m_isDirty);
@@ -256,23 +256,29 @@ private:
             m_task = task;
         }
 
-        void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override { ASSERT_NOT_REACHED(); };
+        void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override { NOTREACHED(); };
+
+        bool runsTasksOnCurrentThread() override
+        {
+            NOTREACHED();
+            return true;
+        }
 
         WebTaskRunner* clone() override
         {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return nullptr;
         }
 
         double virtualTimeSeconds() const override
         {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return 0.0;
         }
 
         double monotonicallyIncreasingVirtualTimeSeconds() const override
         {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return 0.0;
         }
 
@@ -297,7 +303,7 @@ private:
 
         PlatformThreadId threadId() const override
         {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return 0;
         }
 
@@ -315,7 +321,7 @@ private:
 
         WebScheduler* scheduler() const override
         {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return nullptr;
         }
 

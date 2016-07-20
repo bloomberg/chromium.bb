@@ -81,7 +81,13 @@ public:
 
     void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
+    }
+
+    bool runsTasksOnCurrentThread() override
+    {
+        NOTREACHED();
+        return true;
     }
 
     WebTaskRunner* clone() override
@@ -91,13 +97,13 @@ public:
 
     double virtualTimeSeconds() const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0.0;
     }
 
     double monotonicallyIncreasingVirtualTimeSeconds() const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return 0.0;
     }
 
@@ -148,7 +154,7 @@ public:
 
     bool isCurrentThread() const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return true;
     }
 

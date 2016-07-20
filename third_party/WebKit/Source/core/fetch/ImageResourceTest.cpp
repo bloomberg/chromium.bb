@@ -155,6 +155,7 @@ void receiveResponse(ImageResource* imageResource, const KURL& url, const Atomic
 class MockTaskRunner : public blink::WebTaskRunner {
     void postTask(const WebTraceLocation&, Task*) override { }
     void postDelayedTask(const WebTraceLocation&, Task*, double) override { }
+    bool runsTasksOnCurrentThread() override { return true; }
     WebTaskRunner* clone() override { return nullptr; }
     double virtualTimeSeconds() const override { return 0.0; }
     double monotonicallyIncreasingVirtualTimeSeconds() const override { return 0.0; }

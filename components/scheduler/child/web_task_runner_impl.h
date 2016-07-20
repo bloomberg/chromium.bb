@@ -28,6 +28,7 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   void postDelayedTask(const blink::WebTraceLocation& web_location,
                        blink::WebTaskRunner::Task* task,
                        double delayMs) override;
+  bool runsTasksOnCurrentThread() override;
   double virtualTimeSeconds() const override;
   double monotonicallyIncreasingVirtualTimeSeconds() const override;
   blink::WebTaskRunner* clone() override;

@@ -38,6 +38,10 @@ void WebTaskRunnerImpl::postDelayedTask(
       base::TimeDelta::FromMillisecondsD(delayMs));
 }
 
+bool WebTaskRunnerImpl::runsTasksOnCurrentThread() {
+  return task_queue_->RunsTasksOnCurrentThread();
+}
+
 double WebTaskRunnerImpl::virtualTimeSeconds() const {
   return (Now() - base::TimeTicks::UnixEpoch()).InSecondsF();
 }
