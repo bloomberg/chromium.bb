@@ -4,7 +4,6 @@
 <link rel="import" href="/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-omnibox-extension-entry">
@@ -32,10 +31,14 @@
       <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
           vertical-align="auto">
         <div class="dropdown-content">
-          <paper-item on-tap="onManageTap_" id="manage">
-              $i18n{searchEnginesManageExtension}</paper-item>
-          <paper-item on-tap="onDisableTap_" id="disable">
-              $i18n{disable}</paper-item>
+          <button class="dropdown-item" role="option" on-tap="onManageTap_"
+              id="manage">
+            $i18n{searchEnginesManageExtension}
+          </button>
+          <button class="dropdown-item" role="option" on-tap="onDisableTap_"
+              id="disable">
+            $i18n{disable}
+          </button>
         <div>
       </iron-dropdown>
     </div>

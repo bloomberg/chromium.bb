@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="/search_engines_page/search_engine_dialog.html">
 <link rel="import" href="/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -48,14 +47,16 @@
       <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
           vertical-align="auto">
         <div class="dropdown-content">
-          <paper-item on-tap="onMakeDefaultTap_"
+          <button class="dropdown-item" role="option" on-tap="onMakeDefaultTap_"
               hidden$="[[!engine.canBeDefault]]" id="makeDefault">
             $i18n{searchEnginesMakeDefault}
-          </paper-item>
-          <paper-item on-tap="onEditTap_" hidden$="[[!engine.canBeEdited]]"
-              id="edit">$i18n{searchEnginesEdit}</paper-item>
-          <paper-item on-tap="onDeleteTap_" hidden$="[[!engine.canBeRemoved]]"
-              id="delete">$i18n{searchEnginesRemoveFromList}</paper-item>
+          </button>
+          <button class="dropdown-item" role="option" on-tap="onEditTap_"
+              hidden$="[[!engine.canBeEdited]]"
+              id="edit">$i18n{searchEnginesEdit}</button>
+          <button class="dropdown-item" role="option" on-tap="onDeleteTap_"
+              hidden$="[[!engine.canBeRemoved]]"
+              id="delete">$i18n{searchEnginesRemoveFromList}</button>
         <div>
       </iron-dropdown>
     </div>

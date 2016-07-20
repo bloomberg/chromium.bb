@@ -84,7 +84,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     test('language detail', function() {
       var languagesCollapse = languagesPage.$.languagesCollapse;
       var languageDetailMenuItem = languagesCollapse.querySelectorAll(
-          '.dropdown-content .language-detail-item')[0];
+          '.dropdown-content .dropdown-item')[2];
       assertTrue(!!languageDetailMenuItem);
       MockInteractions.tap(languageDetailMenuItem);
 

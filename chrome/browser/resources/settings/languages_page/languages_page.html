@@ -83,20 +83,22 @@
                 <iron-dropdown opened="{{item.optionsMenuOpened}}"
                     horizontal-align="right" vertical-align="auto">
                   <div class="dropdown-content">
-                    <paper-item on-tap="onMoveUpTap_"
+                    <button class="dropdown-item" role="option"
+                        on-tap="onMoveUpTap_"
                         hidden="[[isFirstLanguage_(index,
                                                    languages.enabled.*)]]">
                       $i18n{moveUp}
-                    </paper-item>
-                    <paper-item on-tap="onMoveDownTap_"
+                    </button>
+                    <button class="dropdown-item" role="option"
+                        on-tap="onMoveDownTap_"
                         hidden="[[isLastLanguage_(index,
                                                   languages.enabled.*)]]">
                       $i18n{moveDown}
-                    </paper-item>
-                    <paper-item class="language-detail-item"
+                    </button>
+                    <button class="dropdown-item" role="option"
                         on-tap="onShowLanguageDetailTap_">
                       $i18n{languageDetail}
-                    </paper-item>
+                    </button>
                   </div>
                 </iron-dropdown>
               </div>

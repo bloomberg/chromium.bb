@@ -27,10 +27,6 @@
   box-shadow: 0 2px 6px grey;
 }
 
-paper-item:hover {
-  background-color: var(--settings-hover-color);
-}
-
 paper-icon-button {
   -webkit-padding-end: 0;
   padding-bottom: var(--search-engines-list-item-vertical-space);
