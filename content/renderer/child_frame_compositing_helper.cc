@@ -205,7 +205,11 @@ void ChildFrameCompositingHelper::OnSetSurface(
 
   surface_layer->SetSurfaceId(surface_id, scale_factor, frame_size);
   surface_layer->SetMasksToBounds(true);
-  blink::WebLayer* layer = new cc_blink::WebLayerImpl(surface_layer);
+  cc_blink::WebLayerImpl* layer = new cc_blink::WebLayerImpl(surface_layer);
+  // TODO(lfg): Investigate if it's possible to propagate the information about
+  // the child surface's opacity. https://crbug.com/629851.
+  layer->setOpaque(false);
+  layer->SetContentsOpaqueIsFixed(true);
   UpdateWebLayer(layer);
 
   UpdateVisibility(true);
