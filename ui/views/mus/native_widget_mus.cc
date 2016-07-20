@@ -9,8 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/bitmap_uploader/bitmap_uploader.h"
 #include "services/ui/common/gpu_service.h"
+#include "services/ui/public/cpp/bitmap_uploader.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_observer.h"
@@ -545,11 +545,11 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
 
   window_tree_host_.reset(new WindowTreeHostMus(this, window_));
   if (needs_bitmap_uploader) {
-    bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(window));
+    bitmap_uploader_.reset(new ui::BitmapUploader(window));
     bitmap_uploader_->Init(connector);
     prop_ = base::MakeUnique<ui::ViewProp>(
         window_tree_host_->GetAcceleratedWidget(),
-        bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
+        ui::kBitmapUploaderForAcceleratedWidget,
         bitmap_uploader_.get());
   }
 

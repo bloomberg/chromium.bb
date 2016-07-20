@@ -1,9 +1,0 @@
-include_rules = [
-  "+cc/ipc",
-  "+cc/quads",
-  "+gpu/GLES2",
-  "+mojo/common",
-  "+mojo/public",
-  "+services/ui/public",
-  "+ui/gfx/geometry",
-]

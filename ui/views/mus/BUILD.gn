@@ -58,7 +58,6 @@ component("mus") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
-    "//components/bitmap_uploader",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/cpp",

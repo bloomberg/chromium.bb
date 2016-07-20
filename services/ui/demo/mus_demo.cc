@@ -5,9 +5,9 @@
 #include "services/ui/demo/mus_demo.h"
 
 #include "base/time/time.h"
-#include "components/bitmap_uploader/bitmap_uploader.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/common/gpu_service.h"
+#include "services/ui/public/cpp/bitmap_uploader.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -117,7 +117,7 @@ void MusDemo::OnWmNewDisplay(Window* window, const display::Display& display) {
   window_ = window;
 
   // Initialize bitmap uploader for sending frames to MUS.
-  uploader_.reset(new bitmap_uploader::BitmapUploader(window_));
+  uploader_.reset(new ui::BitmapUploader(window_));
   uploader_->Init(connector_);
 
   // Draw initial frame and start the timer to regularly draw frames.
@@ -178,7 +178,7 @@ void MusDemo::DrawFrame() {
 
   // Send frame to MUS via BitmapUploader.
   uploader_->SetBitmap(bounds.width(), bounds.height(), std::move(data),
-                       bitmap_uploader::BitmapUploader::BGRA);
+                       ui::BitmapUploader::BGRA);
 }
 
 }  // namespace demo

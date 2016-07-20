@@ -19,11 +19,8 @@
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace bitmap_uploader {
-class BitmapUploader;
-}
-
 namespace ui {
+class BitmapUploader;
 namespace demo {
 
 // A simple MUS Demo mojo app. This app connects to the mojo:ui, creates a new
@@ -78,7 +75,7 @@ class MusDemo : public shell::Service,
   WindowTreeClient* window_tree_client_ = nullptr;
 
   // Used to send frames to mus.
-  std::unique_ptr<bitmap_uploader::BitmapUploader> uploader_;
+  std::unique_ptr<ui::BitmapUploader> uploader_;
 
   // Bitmap that is the same size as our client window area.
   SkBitmap bitmap_;

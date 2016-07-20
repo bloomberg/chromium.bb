@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/bitmap_uploader/bitmap_uploader.h"
+#include "services/ui/public/cpp/bitmap_uploader.h"
 
 #include <stddef.h>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_surface.h"
 
-namespace bitmap_uploader {
+namespace ui {
 namespace {
 
 const uint32_t g_transparent_color = 0x00000000;
@@ -27,7 +27,7 @@ const uint32_t g_transparent_color = 0x00000000;
 const char kBitmapUploaderForAcceleratedWidget[] =
     "__BITMAP_UPLOADER_ACCELERATED_WIDGET__";
 
-BitmapUploader::BitmapUploader(ui::Window* window)
+BitmapUploader::BitmapUploader(Window* window)
     : window_(window),
       color_(g_transparent_color),
       width_(0),
@@ -40,11 +40,11 @@ BitmapUploader::~BitmapUploader() {
 }
 
 void BitmapUploader::Init(shell::Connector* connector) {
-  surface_ = window_->RequestSurface(ui::mojom::SurfaceType::DEFAULT);
+  surface_ = window_->RequestSurface(mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
   surface_->set_client(this);
 
-  gles2_context_ = ui::GLES2Context::CreateOffscreenContext(
+  gles2_context_ = GLES2Context::CreateOffscreenContext(
       std::vector<int32_t>(), connector);
   // CreateOffscreenContext() may return null.
 }
@@ -192,7 +192,7 @@ void BitmapUploader::SetIdNamespace(uint32_t id_namespace) {
 }
 
 void BitmapUploader::OnResourcesReturned(
-    ui::WindowSurface* surface,
+    WindowSurface* surface,
     mojo::Array<cc::ReturnedResource> resources) {
   gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
   // TODO(jamesr): Recycle.
@@ -207,4 +207,4 @@ void BitmapUploader::OnResourcesReturned(
   }
 }
 
-}  // namespace bitmap_uploader
+}  // namespace ui

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BITMAP_UPLOADER_BITMAP_UPLOADER_H_
-#define COMPONENTS_BITMAP_UPLOADER_BITMAP_UPLOADER_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_BITMAP_UPLOADER_H_
+#define SERVICES_UI_PUBLIC_CPP_BITMAP_UPLOADER_H_
 
 #include <stdint.h>
 
@@ -12,31 +12,26 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "components/bitmap_uploader/bitmap_uploader_export.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "services/ui/public/cpp/window_surface.h"
 #include "services/ui/public/cpp/window_surface_client.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 
-namespace ui {
-class GLES2Context;
-}
-
 namespace shell {
 class Connector;
 }
 
-namespace bitmap_uploader {
+namespace ui {
+class GLES2Context;
 
-BITMAP_UPLOADER_EXPORT extern const char kBitmapUploaderForAcceleratedWidget[];
+extern const char kBitmapUploaderForAcceleratedWidget[];
 
 // BitmapUploader is useful if you want to draw a bitmap or color in a
-// ui::Window.
-class BITMAP_UPLOADER_EXPORT BitmapUploader
-    : public NON_EXPORTED_BASE(ui::WindowSurfaceClient) {
+// Window.
+class BitmapUploader : public WindowSurfaceClient {
  public:
-  explicit BitmapUploader(ui::Window* window);
+  explicit BitmapUploader(Window* window);
   ~BitmapUploader() override;
 
   void Init(shell::Connector* connector);
@@ -68,7 +63,7 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
 
   // WindowSurfaceClient implementation.
   void OnResourcesReturned(
-      ui::WindowSurface* surface,
+      WindowSurface* surface,
       mojo::Array<cc::ReturnedResource> resources) override;
 
   ui::Window* window_;
@@ -89,6 +84,6 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   DISALLOW_COPY_AND_ASSIGN(BitmapUploader);
 };
 
-}  // namespace bitmap_uploader
+}  // namespace ui
 
-#endif  // COMPONENTS_BITMAP_UPLOADER_BITMAP_UPLAODER_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_BITMAP_UPLOADER_H_

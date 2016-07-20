@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
-#include "components/bitmap_uploader/bitmap_uploader.h"
+#include "services/ui/public/cpp/bitmap_uploader.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/compositor.h"
@@ -37,9 +37,9 @@ void SoftwareOutputDeviceMus::EndPaint() {
     return;
 
   gfx::AcceleratedWidget widget = compositor_->widget();
-  bitmap_uploader::BitmapUploader* uploader =
-      reinterpret_cast<bitmap_uploader::BitmapUploader*>(ui::ViewProp::GetValue(
-          widget, bitmap_uploader::kBitmapUploaderForAcceleratedWidget));
+  ui::BitmapUploader* uploader =
+      reinterpret_cast<ui::BitmapUploader*>(ui::ViewProp::GetValue(
+          widget, ui::kBitmapUploaderForAcceleratedWidget));
   DCHECK(uploader);
 
   SkPixmap pixmap;
@@ -61,7 +61,7 @@ void SoftwareOutputDeviceMus::EndPaint() {
           pixels, pixels + pixmap.rowBytes() * viewport_pixel_size_.height()));
   uploader->SetBitmap(viewport_pixel_size_.width(),
                       viewport_pixel_size_.height(), std::move(data),
-                      bitmap_uploader::BitmapUploader::BGRA);
+                      ui::BitmapUploader::BGRA);
 }
 
 }  // namespace content

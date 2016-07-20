@@ -15,7 +15,6 @@ mojo_native_application("mus_demo") {
 
   deps = [
     "//base",
-    "//components/bitmap_uploader",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/shell/public/cpp:sources",

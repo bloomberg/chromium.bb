@@ -32,11 +32,8 @@ class WindowTreeClient;
 class Window;
 }
 
-namespace bitmap_uploader {
-class BitmapUploader;
-}
-
 namespace ui {
+class BitmapUploader;
 class Window;
 class WindowTreeClient;
 namespace mojom {
@@ -284,7 +281,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   std::unique_ptr<wm::CursorManager> cursor_manager_;
 
   // Bitmap management.
-  std::unique_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
+  std::unique_ptr<ui::BitmapUploader> bitmap_uploader_;
   std::unique_ptr<ui::ViewProp> prop_;
 
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
