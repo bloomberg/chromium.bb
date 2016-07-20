@@ -10635,6 +10635,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.DangerousFile.Reason" enum="DangerousFile.Reason">
+  <owner>jialiul@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Indicates why a download is marked as DANGEROUS_FILE. Grouped by reason,
+    such as Safe Browsing (SB) service is not available, and SB returns UNKOWN
+    or SAFE verdict. The sum of all reasons should roughly equal to the
+    DANGEROUS_FILE bucket count in Download.DownloadWarningShown.
+  </summary>
+</histogram>
+
 <histogram name="Download.DangerousFile.UserDiscard"
     enum="DownloadItem.DangerousFileType">
   <owner>asanka@chromium.org</owner>
@@ -70550,6 +70561,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="First Run"/>
   <int value="1" label="Day Elapsed"/>
   <int value="2" label="Clock Changed"/>
+</enum>
+
+<enum name="DangerousFile.Reason" type="int">
+  <int value="0" label="Safe Browsing is not available"/>
+  <int value="1" label="Safe Browsing returns UNKOWN"/>
+  <int value="2" label="Safe Browsing returns SAFE"/>
 </enum>
 
 <enum name="DarkResumeScanRetryResult" type="int">
