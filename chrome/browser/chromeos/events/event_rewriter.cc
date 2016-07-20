@@ -10,7 +10,6 @@
 
 #include "ash/common/wm/window_state.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -425,12 +424,8 @@ bool EventRewriter::IsLastKeyboardOfType(DeviceType device_type) const {
 
 bool EventRewriter::TopRowKeysAreFunctionKeys(const ui::KeyEvent& event) const {
   const PrefService* prefs = GetPrefService();
-  if (prefs && prefs->FindPreference(prefs::kLanguageSendFunctionKeys) &&
-      prefs->GetBoolean(prefs::kLanguageSendFunctionKeys))
-    return true;
-
-  ash::wm::WindowState* state = ash::wm::GetActiveWindowState();
-  return state ? state->top_row_keys_are_function_keys() : false;
+  return prefs && prefs->FindPreference(prefs::kLanguageSendFunctionKeys) &&
+         prefs->GetBoolean(prefs::kLanguageSendFunctionKeys);
 }
 
 int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,

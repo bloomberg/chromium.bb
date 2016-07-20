@@ -1996,25 +1996,12 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   ui::KeyEvent press_f1(ui::ET_KEY_PRESSED, ui::VKEY_F1, ui::DomCode::F1,
                         ui::EF_NONE, ui::DomKey::F1, ui::EventTimeForNow());
 
-  // Simulate an apps v2 window that has requested top row keys as function
-  // keys. The event should not be rewritten.
-  window_state->set_top_row_keys_are_function_keys(true);
-  ui::EventDispatchDetails details = Send(&press_f1);
-  ASSERT_FALSE(details.dispatcher_destroyed);
-  PopEvents(&events);
-  EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(
-      GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_F1,
-                                ui::DomCode::F1, ui::EF_NONE, ui::DomKey::F1),
-      GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0])));
-
   // The event should also not be rewritten if the send-function-keys pref is
   // additionally set, for both apps v2 and regular windows.
   BooleanPrefMember send_function_keys_pref;
   send_function_keys_pref.Init(prefs::kLanguageSendFunctionKeys, prefs());
   send_function_keys_pref.SetValue(true);
-  window_state->set_top_row_keys_are_function_keys(false);
-  details = Send(&press_f1);
+  ui::EventDispatchDetails details = Send(&press_f1);
   ASSERT_FALSE(details.dispatcher_destroyed);
   PopEvents(&events);
   EXPECT_EQ(1u, events.size());

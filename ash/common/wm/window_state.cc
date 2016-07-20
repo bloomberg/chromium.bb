@@ -305,7 +305,6 @@ WindowState::WindowState(WmWindow* window)
       panel_attached_(true),
       ignored_by_shelf_(false),
       can_consume_system_keys_(false),
-      top_row_keys_are_function_keys_(false),
       unminimize_to_restore_bounds_(false),
       in_immersive_fullscreen_(false),
       hide_shelf_when_fullscreen_(true),
