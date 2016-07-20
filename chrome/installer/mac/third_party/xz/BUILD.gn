@@ -123,7 +123,11 @@ config("compress_config") {
 
 source_set("common") {
   visibility = [ ":*" ]
-  configs += [ ":common_config" ]
+  configs += [
+    ":common_config",
+    ":compress_config",
+    ":decompress_config",
+  ]
 
   sources = [
     "xz/src/common/tuklib_physmem.c",
