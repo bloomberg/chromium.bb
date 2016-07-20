@@ -162,7 +162,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           // Ensure separators between windows are added appropriately.
           assertEquals(1, numWindowSeparators(cards[0]));
           assertEquals(3, numWindowSeparators(cards[1]));
-          element.searchedTerm = 'g';
+          element.searchTerm = 'g';
 
           return flush();
         }).then(function() {
@@ -255,7 +255,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
       teardown(function() {
         element.syncedDevices = [];
-        element.searchedTerm = '';
+        element.searchTerm = '';
       });
     });
   }

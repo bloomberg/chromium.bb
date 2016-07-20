@@ -233,8 +233,11 @@ cr.define('md_history.history_list_test', function() {
 
       teardown(function() {
         element.historyData_ = [];
-        element.searchedTerm = '';
         registerMessageCallback('removeVisits', this, undefined);
+        registerMessageCallback('queryHistory', this, undefined);
+        app.queryState_.queryingDisabled = true;
+        app.set('queryState_.searchTerm', '');
+        return flush();
       });
     });
   }

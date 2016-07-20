@@ -24,7 +24,7 @@ Polymer({
       observer: 'updateSyncedDevices'
     },
 
-    searchedTerm: {
+    searchTerm: {
       type: String,
       observer: 'searchTermChanged'
     },
@@ -64,12 +64,12 @@ Polymer({
         continue;
 
 
-      if (!this.searchedTerm) {
+      if (!this.searchTerm) {
         // Add all the tabs if there is no search term.
         tabs = tabs.concat(newTabs);
         separatorIndexes.push(tabs.length - 1);
       } else {
-        var searchText = this.searchedTerm.toLowerCase();
+        var searchText = this.searchTerm.toLowerCase();
         var windowAdded = false;
         for (var j = 0; j < newTabs.length; j++) {
           var tab = newTabs[j];
@@ -180,7 +180,7 @@ Polymer({
     this.fetchingSyncedTabs_ = true;
   },
 
-  searchTermChanged: function(searchedTerm) {
+  searchTermChanged: function(searchTerm) {
     this.clearDisplayedSyncedDevices_();
     this.updateSyncedDevices(this.sessionList);
   }

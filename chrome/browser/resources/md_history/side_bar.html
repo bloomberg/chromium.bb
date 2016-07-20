@@ -118,10 +118,11 @@
           selectable=".page-item" attr-for-selected="path"
           fallback-selection="history"
           on-iron-activate="onSelectorActivate_">
-        <a href="/" class="page-item" path="history">
+        <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
           $i18n{historyMenuItem}
         </a>
-        <a href="/syncedTabs" class="page-item" path="syncedTabs">
+        <a href="/syncedTabs[[getQueryString_(route)]]" class="page-item"
+            path="syncedTabs">
           $i18n{openTabsMenuItem}
         </a>
         <div class="separator"></div>

@@ -47,12 +47,20 @@ Polymer({
 
     // Route data for the current page.
     routeData_: Object,
+
+    // The query params for the page.
+    queryParams_: Object,
   },
 
   observers: [
     // routeData_.page <=> selectedPage
     'routeDataChanged_(routeData_.page)',
     'selectedPageChanged_(selectedPage_)',
+
+    // queryParams_.q <=> queryState.searchTerm
+    'searchTermChanged_(queryState_.searchTerm)',
+    'searchQueryParamChanged_(queryParams_.q)',
+
   ],
 
   // TODO(calamity): Replace these event listeners with data bound properties.
@@ -71,6 +79,12 @@ Polymer({
     cr.ui.decorate('command', cr.ui.Command);
     document.addEventListener('canExecute', this.onCanExecute_.bind(this));
     document.addEventListener('command', this.onCommand_.bind(this));
+
+    // Redirect legacy search URLs to URLs compatible with material history.
+    if (window.location.hash) {
+      window.location.href = window.location.href.split('#')[0] + '?' +
+          window.location.hash.substr(1);
+    }
   },
 
   /** @private */
@@ -146,6 +160,23 @@ Polymer({
               this.$.toolbar.searchBar.isSearchFocused());
         break;
     }
+  },
+
+  /**
+   * @param {string} searchTerm
+   * @private
+   */
+  searchTermChanged_: function(searchTerm) {
+    this.set('queryParams_.q', searchTerm || null);
+    this.$['history'].queryHistory(false);
+  },
+
+  /**
+   * @param {string} searchQuery
+   * @private
+   */
+  searchQueryParamChanged_: function(searchQuery) {
+    this.$.toolbar.setSearchTerm(searchQuery || '');
   },
 
   /**

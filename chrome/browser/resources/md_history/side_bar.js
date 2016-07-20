@@ -11,6 +11,8 @@ Polymer({
       notify: true
     },
 
+    route: Object,
+
     showFooter: Boolean,
   },
 
@@ -42,4 +44,12 @@ Polymer({
     md_history.BrowserService.getInstance().openClearBrowsingData();
     e.preventDefault();
   },
+
+  /**
+   * @param {Object} route
+   * @private
+   */
+  getQueryString_: function(route) {
+    return window.location.search;
+  }
 });

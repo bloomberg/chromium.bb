@@ -33,7 +33,7 @@ Polymer({
     // Whether the card is open.
     cardOpen_: {type: Boolean, value: true},
 
-    searchedTerm: String,
+    searchTerm: String,
   },
 
   /**

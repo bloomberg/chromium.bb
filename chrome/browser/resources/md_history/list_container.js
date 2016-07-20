@@ -20,7 +20,6 @@ Polymer({
   },
 
   observers: [
-    'searchTermChanged_(queryState.searchTerm)',
     'groupedRangeChanged_(queryState.range)',
   ],
 
@@ -54,9 +53,12 @@ Polymer({
    */
   queryHistory: function(incremental) {
     var queryState = this.queryState;
-    // Disable querying until the first set of results have been returned.
-    if (!this.queryResult || this.queryResult.results == null ||
-        queryState.queryingDisabled) {
+    // Disable querying until the first set of results have been returned. If
+    // there is a search, query immediately to support search query params from
+    // the URL.
+    var noResults = !this.queryResult || this.queryResult.results == null;
+    if (queryState.queryingDisabled ||
+        (!this.queryState.searchTerm && noResults)) {
       return;
     }
 
@@ -93,12 +95,6 @@ Polymer({
 
     this.$.dialog.open();
   },
-
-  /**
-   * @param {string} searchTerm
-   * @private
-   */
-  searchTermChanged_: function(searchTerm) { this.queryHistory(false); },
 
   /**
    * @param {HistoryRange} range

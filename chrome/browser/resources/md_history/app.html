@@ -41,7 +41,8 @@
       }
     </style>
     <app-location route="{{route_}}"></app-location>
-    <app-route route="{{route_}}" pattern="/:page" data="{{routeData_}}">
+    <app-route route="{{route_}}" pattern="/:page" data="{{routeData_}}"
+        query-params="{{queryParams_}}">
     </app-route>
     <history-toolbar id="toolbar"
         spinner-active="[[shouldShowSpinner_(queryState_.querying,
@@ -66,14 +67,15 @@
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="synced-devices"
               session-list="[[queryResult_.sessionList]]"
-              searched-term=[[queryState_.searchTerm]]
+              search-term=[[queryState_.searchTerm]]
               path="syncedTabs">
           </history-synced-device-manager>
         </template>
       </iron-pages>
     </div>
 
-    <history-side-bar id="side-bar" selected-page="[[selectedPage_]]">
+    <history-side-bar id="side-bar" selected-page="[[selectedPage_]]"
+        route="[[route_]]">
     </history-side-bar>
   </template>
   <script src="chrome://history/app.js"></script>
