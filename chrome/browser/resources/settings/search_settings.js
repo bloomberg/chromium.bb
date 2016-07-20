@@ -98,23 +98,6 @@ cr.define('settings', function() {
   }
 
   /**
-   * Checks whether the given |node| requires force rendering.
-   *
-   * @param {!SearchContext} context
-   * @param {!Node} node
-   * @return {boolean} Whether a forced rendering task was scheduled.
-   * @private
-   */
-  function forceRenderNeeded_(context, node) {
-    if (node.nodeName != 'TEMPLATE' || !node.hasAttribute('name') || node.if)
-      return false;
-
-    // TODO(dpapad): Temporarily ignore site-settings because it throws an
-    // assertion error during force-rendering.
-    return node.getAttribute('name').indexOf('site-') != 0;
-  }
-
-  /**
    * Traverses the entire DOM (including Shadow DOM), finds text nodes that
    * match the given regular expression and applies the highlight UI. It also
    * ensures that <settings-section> instances become visible if any matches
@@ -126,7 +109,8 @@ cr.define('settings', function() {
    */
   function findAndHighlightMatches_(context, root) {
     function doSearch(node) {
-      if (forceRenderNeeded_(context, node)) {
+      if (node.nodeName == 'TEMPLATE' && node.hasAttribute('name') &&
+          !node.if) {
         getSearchManager().queue_.addRenderTask(
             new RenderTask(context, node));
         return;

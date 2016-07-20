@@ -166,8 +166,6 @@ cr.define('settings', function() {
       'camera', 'site-settings-category-camera');
   r.SITE_SETTINGS_COOKIES = r.SITE_SETTINGS.createChild(
       'cookies', 'site-settings-category-cookies');
-  r.SITE_SETTINGS_FULLSCREEN = r.SITE_SETTINGS.createChild(
-      'fullscreen', 'site-settings-category-fullscreen');
   r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild(
       'images', 'site-settings-category-images');
   r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild(
@@ -196,8 +194,6 @@ cr.define('settings', function() {
       r.SITE_SETTINGS_CAMERA.createChild('details', 'site-details');
   r.SITE_SETTINGS_COOKIES_DETAILS =
       r.SITE_SETTINGS_COOKIES.createChild('details', 'site-details');
-  r.SITE_SETTINGS_FULLSCREEN_DETAILS =
-      r.SITE_SETTINGS_FULLSCREEN.createChild('details', 'site-details');
   r.SITE_SETTINGS_IMAGES_DETAILS =
       r.SITE_SETTINGS_IMAGES.createChild('details', 'site-details');
   r.SITE_SETTINGS_JAVASCRIPT_DETAILS =

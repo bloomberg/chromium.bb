@@ -1095,7 +1095,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsCategoryAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},
       {"siteSettingsCategoryCamera", IDS_SETTINGS_SITE_SETTINGS_CAMERA},
       {"siteSettingsCategoryCookies", IDS_SETTINGS_SITE_SETTINGS_COOKIES},
-      {"siteSettingsCategoryFullscreen", IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN},
       {"siteSettingsCategoryHandlers", IDS_SETTINGS_SITE_SETTINGS_HANDLERS},
       {"siteSettingsCategoryImages", IDS_SETTINGS_SITE_SETTINGS_IMAGES},
       {"siteSettingsCategoryLocation", IDS_SETTINGS_SITE_SETTINGS_LOCATION},
