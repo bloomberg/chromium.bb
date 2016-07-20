@@ -45,7 +45,8 @@ class GitApi(recipe_api.RecipeApi):
         'ensure git tooling on windows',
         [self.package_repo_resource('bootstrap', 'win', 'win_tools.bat')],
         infra_step=True,
-        cwd=self.package_repo_resource())
+        cwd=self.package_repo_resource(),
+        timeout=300)
     self.initialized_win_git = True
 
   def fetch_tags(self, remote_name=None, **kwargs):
