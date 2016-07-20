@@ -38,7 +38,7 @@ TabRestoreService::Tab::Tab()
 }
 
 TabRestoreService::Tab::Tab(const TabRestoreService::Tab& tab)
-    : Entry(TAB),
+    : Entry(tab),
       navigations(tab.navigations),
       current_navigation_index(tab.current_navigation_index),
       browser_id(tab.browser_id),
@@ -55,6 +55,10 @@ TabRestoreService::Tab::~Tab() {
 
 TabRestoreService::Tab& TabRestoreService::Tab::operator=(
     const TabRestoreService::Tab& tab) {
+  id = tab.id;
+  type = tab.type;
+  timestamp = tab.timestamp;
+  from_last_session = tab.from_last_session;
   navigations = tab.navigations;
   current_navigation_index = tab.current_navigation_index;
   browser_id = tab.browser_id;

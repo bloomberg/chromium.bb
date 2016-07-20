@@ -762,6 +762,7 @@
       'sessions/core/serialized_navigation_entry_unittest.cc',
       'sessions/core/session_backend_unittest.cc',
       'sessions/core/session_types_unittest.cc',
+      'sessions/core/tab_restore_service_unittest.cc',
       'sessions/ios/ios_serialized_navigation_builder_unittest.mm',
       'sessions/ios/ios_serialized_navigation_driver_unittest.cc',
     ],
