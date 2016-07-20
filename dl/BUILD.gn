@@ -38,7 +38,7 @@ config("dl_config") {
 }
 
 # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl
-source_set("dl") {
+static_library("dl") {
   public_configs = [ ":dl_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -176,7 +176,7 @@ if (current_cpu == "arm") {
   # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl_armv7
   # Non-NEON implementation of FFT. This library is NOT
   # standalone. Applications must link with openmax_dl.
-  source_set("openmax_dl_armv7") {
+  static_library("openmax_dl_armv7") {
     configs += [ ":dl_config" ]
     visibility = [ ":*" ]
 
@@ -207,7 +207,7 @@ if (current_cpu == "arm") {
   # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl_neon
   # NEON implementation of FFT. This library is NOT
   # standalone. Applications must link with openmax_dl.
-  source_set("openmax_dl_neon") {
+  static_library("openmax_dl_neon") {
     configs += [ ":dl_config" ]
     visibility = [ ":*" ]
 
