@@ -4,71 +4,73 @@
 
 #include "chrome/browser/ui/views/chooser_content_view.h"
 
-#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/table_model.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
-#include "ui/views/controls/table/table_view_observer.h"
-#include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
+#include "ui/views/controls/throbber.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
-const int kChooserWidth = 300;
+const int kChooserWidth = 330;
 
-const int kChooserHeight = 200;
+const int kChooserHeight = 220;
+
+const int kThrobberDiameter = 50;
 
 }  // namespace
 
-class ChooserTableModel : public ui::TableModel,
-                          public ChooserController::Observer {
- public:
-  explicit ChooserTableModel(ChooserController* chooser_controller);
-  ~ChooserTableModel() override;
-
-  // ui::TableModel:
-  int RowCount() override;
-  base::string16 GetText(int row, int column_id) override;
-  void SetObserver(ui::TableModelObserver* observer) override;
-
-  // ChooserController::Observer:
-  void OnOptionsInitialized() override;
-  void OnOptionAdded(size_t index) override;
-  void OnOptionRemoved(size_t index) override;
-
-  void Update();
-  void ChooserControllerDestroying();
-
- private:
-  ui::TableModelObserver* observer_;
-  ChooserController* chooser_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChooserTableModel);
-};
-
-ChooserTableModel::ChooserTableModel(ChooserController* chooser_controller)
-    : observer_(nullptr), chooser_controller_(chooser_controller) {
+ChooserContentView::ChooserContentView(
+    views::TableViewObserver* table_view_observer,
+    std::unique_ptr<ChooserController> chooser_controller)
+    : chooser_controller_(std::move(chooser_controller)) {
   chooser_controller_->set_observer(this);
+  std::vector<ui::TableColumn> table_columns;
+  table_columns.push_back(ui::TableColumn());
+  table_view_ =
+      new views::TableView(this, table_columns, views::TEXT_ONLY, true);
+  table_view_->set_select_on_remove(false);
+  table_view_->SetObserver(table_view_observer);
+  table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
+
+  SetLayoutManager(new views::FillLayout());
+  views::View* table_parent = table_view_->CreateParentIfNecessary();
+  AddChildView(table_parent);
+
+  throbber_ = new views::Throbber();
+  // Set the throbber in the center of the chooser.
+  throbber_->SetBounds((kChooserWidth - kThrobberDiameter) / 2,
+                       (kChooserHeight - kThrobberDiameter) / 2,
+                       kThrobberDiameter, kThrobberDiameter);
+  throbber_->SetVisible(false);
+  AddChildView(throbber_);
 }
 
-ChooserTableModel::~ChooserTableModel() {
+ChooserContentView::~ChooserContentView() {
   chooser_controller_->set_observer(nullptr);
+  table_view_->SetObserver(nullptr);
+  table_view_->SetModel(nullptr);
+  if (discovery_state_)
+    discovery_state_->set_listener(nullptr);
 }
 
-int ChooserTableModel::RowCount() {
+gfx::Size ChooserContentView::GetPreferredSize() const {
+  return gfx::Size(kChooserWidth, kChooserHeight);
+}
+
+int ChooserContentView::RowCount() {
   // When there are no devices, the table contains a message saying there
   // are no devices, so the number of rows is always at least 1.
   return std::max(static_cast<int>(chooser_controller_->NumOptions()), 1);
 }
 
-base::string16 ChooserTableModel::GetText(int row, int column_id) {
+base::string16 ChooserContentView::GetText(int row, int column_id) {
   int num_options = static_cast<int>(chooser_controller_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, row);
-    return l10n_util::GetStringUTF16(
-        IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+    return chooser_controller_->GetNoOptionsText();
   }
 
   DCHECK_GE(row, 0);
@@ -76,71 +78,68 @@ base::string16 ChooserTableModel::GetText(int row, int column_id) {
   return chooser_controller_->GetOption(static_cast<size_t>(row));
 }
 
-void ChooserTableModel::SetObserver(ui::TableModelObserver* observer) {
-  observer_ = observer;
+void ChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
+
+void ChooserContentView::OnOptionsInitialized() {
+  table_view_->OnModelChanged();
+  UpdateTableView();
 }
 
-void ChooserTableModel::OnOptionsInitialized() {
-  if (observer_) {
-    observer_->OnModelChanged();
-    Update();
-  }
+void ChooserContentView::OnOptionAdded(size_t index) {
+  table_view_->OnItemsAdded(static_cast<int>(index), 1);
+  UpdateTableView();
 }
 
-void ChooserTableModel::OnOptionAdded(size_t index) {
-  if (observer_) {
-    observer_->OnItemsAdded(static_cast<int>(index), 1);
-    Update();
-  }
+void ChooserContentView::OnOptionRemoved(size_t index) {
+  table_view_->OnItemsRemoved(static_cast<int>(index), 1);
+  UpdateTableView();
 }
 
-void ChooserTableModel::OnOptionRemoved(size_t index) {
-  if (observer_) {
-    observer_->OnItemsRemoved(static_cast<int>(index), 1);
-    Update();
-  }
+void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
+  // No row is selected since the adapter status has changed.
+  // This will also disable the OK button if it was enabled because
+  // of a previously selected row.
+  table_view_->Select(-1);
+  UpdateTableView();
+  table_view_->SetVisible(true);
+
+  throbber_->Stop();
+  throbber_->SetVisible(false);
+
+  discovery_state_->SetText(chooser_controller_->GetStatus());
+  discovery_state_->SetEnabled(enabled);
 }
 
-void ChooserTableModel::Update() {
-  views::TableView* table_view = static_cast<views::TableView*>(observer_);
+void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
+  // No row is selected since the chooser is refreshing or just refreshed.
+  // This will also disable the OK button if it was enabled because
+  // of a previously selected row.
+  table_view_->Select(-1);
+  UpdateTableView();
+  // When refreshing, hide |table_view_|. When complete, show |table_view_|.
+  table_view_->SetVisible(!refreshing);
 
-  if (chooser_controller_->NumOptions() == 0) {
-    observer_->OnModelChanged();
-    table_view->SetEnabled(false);
-  } else {
-    table_view->SetEnabled(true);
-  }
+  if (refreshing)
+    throbber_->Start();
+  else
+    throbber_->Stop();
+  // When refreshing, show |throbber_|. When complete, hide |throbber_|.
+  throbber_->SetVisible(refreshing);
+
+  discovery_state_->SetText(chooser_controller_->GetStatus());
+  // When refreshing, disable |discovery_state_| to show it as a text label.
+  // When complete, enable |discovery_state_| to show it as a link.
+  discovery_state_->SetEnabled(!refreshing);
 }
 
-ChooserContentView::ChooserContentView(
-    views::TableViewObserver* observer,
-    std::unique_ptr<ChooserController> chooser_controller)
-    : chooser_controller_(std::move(chooser_controller)), table_view_(nullptr) {
-  std::vector<ui::TableColumn> table_columns;
-  table_columns.push_back(ui::TableColumn());
-  chooser_table_model_.reset(new ChooserTableModel(chooser_controller_.get()));
-  table_view_ = new views::TableView(chooser_table_model_.get(), table_columns,
-                                     views::TEXT_ONLY, true);
-  table_view_->set_select_on_remove(false);
-  chooser_table_model_->SetObserver(table_view_);
-  table_view_->SetObserver(observer);
-  table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
-
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, views::kRelatedControlVerticalSpacing);
-  SetLayoutManager(layout);
-  views::View* table_parent = table_view_->CreateParentIfNecessary();
-  AddChildView(table_parent);
-  layout->SetFlexForView(table_parent, 1);
+void ChooserContentView::LinkClicked(views::Link* source, int event_flags) {
+  chooser_controller_->RefreshOptions();
 }
 
-ChooserContentView::~ChooserContentView() {
-  table_view_->SetModel(nullptr);
-  chooser_table_model_->SetObserver(nullptr);
-}
-
-gfx::Size ChooserContentView::GetPreferredSize() const {
-  return gfx::Size(kChooserWidth, kChooserHeight);
+void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                const gfx::Range& range,
+                                                int event_flags) {
+  chooser_controller_->OpenHelpCenterUrl();
 }
 
 base::string16 ChooserContentView::GetWindowTitle() const {
@@ -159,18 +158,25 @@ bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
          !table_view_->selection_model().empty();
 }
 
-views::StyledLabel* ChooserContentView::CreateFootnoteView(
-    views::StyledLabelListener* listener) const {
+views::View* ChooserContentView::CreateExtraView() {
+  discovery_state_ = new views::Link(chooser_controller_->GetStatus());
+  discovery_state_->SetHandlesTooltips(false);
+  discovery_state_->SetUnderline(false);
+  discovery_state_->set_listener(this);
+  return discovery_state_;
+}
+
+views::StyledLabel* ChooserContentView::CreateFootnoteView() {
   base::string16 link =
       l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT);
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT, link, &offset);
-  views::StyledLabel* styled_label = new views::StyledLabel(text, listener);
-  styled_label->AddStyleRange(
+  styled_label_ = new views::StyledLabel(text, this);
+  styled_label_->AddStyleRange(
       gfx::Range(offset, offset + link.length()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
-  return styled_label;
+  return styled_label_;
 }
 
 void ChooserContentView::Accept() {
@@ -185,10 +191,11 @@ void ChooserContentView::Close() {
   chooser_controller_->Close();
 }
 
-void ChooserContentView::StyledLabelLinkClicked() {
-  chooser_controller_->OpenHelpCenterUrl();
-}
-
-void ChooserContentView::UpdateTableModel() {
-  chooser_table_model_->Update();
+void ChooserContentView::UpdateTableView() {
+  if (chooser_controller_->NumOptions() == 0) {
+    table_view_->OnModelChanged();
+    table_view_->SetEnabled(false);
+  } else {
+    table_view_->SetEnabled(true);
+  }
 }

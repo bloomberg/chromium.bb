@@ -46,12 +46,21 @@ class ChooserController {
     // since the options have already been updated.
     virtual void OnOptionRemoved(size_t index) = 0;
 
+    // Called when the device adapter is turned on or off.
+    virtual void OnAdapterEnabledChanged(bool enabled) = 0;
+
+    // Called when refreshing options is in progress or complete.
+    virtual void OnRefreshStateChanged(bool refreshing) = 0;
+
    protected:
     virtual ~Observer() {}
   };
 
   // Returns the text to be displayed in the chooser title.
   base::string16 GetTitle() const;
+
+  // Returns the text to be displayed in the chooser when there are no options.
+  virtual base::string16 GetNoOptionsText() const = 0;
 
   // Returns the label for OK button.
   virtual base::string16 GetOkButtonLabel() const = 0;
@@ -63,6 +72,12 @@ class ChooserController {
 
   // The |index|th option string which is listed in the chooser.
   virtual base::string16 GetOption(size_t index) const = 0;
+
+  // Refresh the list of options.
+  virtual void RefreshOptions() = 0;
+
+  // Returns the status text to be shown in the chooser.
+  virtual base::string16 GetStatus() const = 0;
 
   // These three functions are called just before this object is destroyed:
 

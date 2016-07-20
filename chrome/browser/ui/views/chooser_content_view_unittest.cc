@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 
@@ -24,15 +23,6 @@ class MockTableViewObserver : public views::TableViewObserver {
  public:
   // views::TableViewObserver:
   MOCK_METHOD0(OnSelectionChanged, void());
-};
-
-class MockStyledLabelListener : public views::StyledLabelListener {
- public:
-  // views::StyledLabelListener:
-  MOCK_METHOD3(StyledLabelLinkClicked,
-               void(views::StyledLabel* label,
-                    const gfx::Range& range,
-                    int event_flags));
 };
 
 }  // namespace
@@ -53,9 +43,7 @@ class ChooserContentViewTest : public testing::Test {
     ASSERT_TRUE(table_view_);
     table_model_ = table_view_->model();
     ASSERT_TRUE(table_model_);
-    mock_styled_label_listener_.reset(new MockStyledLabelListener());
-    styled_label_.reset(chooser_content_view_->CreateFootnoteView(
-        mock_styled_label_listener_.get()));
+    styled_label_.reset(chooser_content_view_->CreateFootnoteView());
     ASSERT_TRUE(styled_label_);
   }
 
@@ -65,7 +53,6 @@ class ChooserContentViewTest : public testing::Test {
   MockChooserController* mock_chooser_controller_;
   views::TableView* table_view_;
   ui::TableModel* table_model_;
-  std::unique_ptr<MockStyledLabelListener> mock_styled_label_listener_;
   std::unique_ptr<views::StyledLabel> styled_label_;
 
  private:
@@ -307,8 +294,6 @@ TEST_F(ChooserContentViewTest,
 }
 
 TEST_F(ChooserContentViewTest, ClickStyledLabelLink) {
-  EXPECT_CALL(*mock_styled_label_listener_,
-              StyledLabelLinkClicked(styled_label_.get(), testing::_, 0))
-      .Times(1);
+  EXPECT_CALL(*mock_chooser_controller_, OpenHelpCenterUrl()).Times(1);
   styled_label_->LinkClicked(nullptr, 0);
 }

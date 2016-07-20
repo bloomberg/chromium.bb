@@ -15,9 +15,13 @@ BluetoothChooserDesktop::BluetoothChooserDesktop(
 
 BluetoothChooserDesktop::~BluetoothChooserDesktop() {}
 
-void BluetoothChooserDesktop::SetAdapterPresence(AdapterPresence presence) {}
+void BluetoothChooserDesktop::SetAdapterPresence(AdapterPresence presence) {
+  bluetooth_chooser_controller_->OnAdapterPresenceChanged(presence);
+}
 
-void BluetoothChooserDesktop::ShowDiscoveryState(DiscoveryState state) {}
+void BluetoothChooserDesktop::ShowDiscoveryState(DiscoveryState state) {
+  bluetooth_chooser_controller_->OnDiscoveryStateChanged(state);
+}
 
 void BluetoothChooserDesktop::AddDevice(const std::string& device_id,
                                         const base::string16& device_name) {

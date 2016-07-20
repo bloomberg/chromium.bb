@@ -25,9 +25,12 @@ ChromeExtensionBluetoothChooser::ChromeExtensionBluetoothChooser(
 ChromeExtensionBluetoothChooser::~ChromeExtensionBluetoothChooser() {}
 
 void ChromeExtensionBluetoothChooser::SetAdapterPresence(
-    AdapterPresence presence) {}
+    AdapterPresence presence) {
+  bluetooth_chooser_controller_->OnAdapterPresenceChanged(presence);
+}
 
 void ChromeExtensionBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
+  bluetooth_chooser_controller_->OnDiscoveryStateChanged(state);
 }
 
 void ChromeExtensionBluetoothChooser::AddDevice(

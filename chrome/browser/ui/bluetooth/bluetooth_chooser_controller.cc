@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -32,9 +33,15 @@ BluetoothChooserController::BluetoothChooserController(
     : ChooserController(owner,
                         IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
-      event_handler_(event_handler) {}
+      event_handler_(event_handler),
+      no_devices_text_(l10n_util::GetStringUTF16(
+          IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT)) {}
 
 BluetoothChooserController::~BluetoothChooserController() {}
+
+base::string16 BluetoothChooserController::GetNoOptionsText() const {
+  return no_devices_text_;
+}
 
 base::string16 BluetoothChooserController::GetOkButtonLabel() const {
   return l10n_util::GetStringUTF16(
@@ -55,6 +62,15 @@ base::string16 BluetoothChooserController::GetOption(size_t index) const {
              : l10n_util::GetStringFUTF16(
                    IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID, device_name,
                    base::UTF8ToUTF16(device_names_and_ids_[index].second));
+}
+
+void BluetoothChooserController::RefreshOptions() {
+  ClearAllDevices();
+  event_handler_.Run(content::BluetoothChooser::Event::RESCAN, std::string());
+}
+
+base::string16 BluetoothChooserController::GetStatus() const {
+  return status_text_;
 }
 
 void BluetoothChooserController::Select(size_t index) {
@@ -80,6 +96,54 @@ void BluetoothChooserController::OpenHelpCenterUrl() const {
       false /* is_renderer_initialized */));
 }
 
+void BluetoothChooserController::OnAdapterPresenceChanged(
+    content::BluetoothChooser::AdapterPresence presence) {
+  ClearAllDevices();
+  switch (presence) {
+    case content::BluetoothChooser::AdapterPresence::ABSENT:
+      NOTREACHED();
+      break;
+    case content::BluetoothChooser::AdapterPresence::POWERED_OFF:
+      no_devices_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF);
+      status_text_ = base::string16();
+      if (observer())
+        observer()->OnAdapterEnabledChanged(
+            false /* Bluetooth adapter is turned off */);
+      break;
+    case content::BluetoothChooser::AdapterPresence::POWERED_ON:
+      no_devices_text_ =
+          l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+      status_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
+      if (observer())
+        observer()->OnAdapterEnabledChanged(
+            true /* Bluetooth adapter is turned on */);
+      break;
+  }
+}
+
+void BluetoothChooserController::OnDiscoveryStateChanged(
+    content::BluetoothChooser::DiscoveryState state) {
+  switch (state) {
+    case content::BluetoothChooser::DiscoveryState::DISCOVERING:
+      status_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING);
+      if (observer())
+        observer()->OnRefreshStateChanged(
+            true /* Refreshing options is in progress */);
+      break;
+    case content::BluetoothChooser::DiscoveryState::IDLE:
+    case content::BluetoothChooser::DiscoveryState::FAILED_TO_START:
+      status_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
+      if (observer())
+        observer()->OnRefreshStateChanged(
+            false /* Refreshing options is complete */);
+      break;
+  }
+}
+
 void BluetoothChooserController::AddDevice(const std::string& device_id,
                                            const base::string16& device_name) {
   device_names_and_ids_.push_back(std::make_pair(device_name, device_id));
@@ -102,4 +166,9 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
       return;
     }
   }
+}
+
+void BluetoothChooserController::ClearAllDevices() {
+  device_names_and_ids_.clear();
+  device_name_map_.clear();
 }

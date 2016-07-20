@@ -36,7 +36,6 @@ class ChooserBubbleUiView : public BubbleUi {
   void UpdateAnchorPosition() override;
 
  private:
-  friend class ChooserBubbleUiViewDelegate;
   views::View* GetAnchorView();
   views::BubbleBorder::Arrow GetAnchorArrow();
 

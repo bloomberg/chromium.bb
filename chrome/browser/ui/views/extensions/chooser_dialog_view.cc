@@ -60,8 +60,12 @@ bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return chooser_content_view_->IsDialogButtonEnabled(button);
 }
 
+views::View* ChooserDialogView::CreateExtraView() {
+  return chooser_content_view_->CreateExtraView();
+}
+
 views::View* ChooserDialogView::CreateFootnoteView() {
-  return chooser_content_view_->CreateFootnoteView(this);
+  return chooser_content_view_->CreateFootnoteView();
 }
 
 bool ChooserDialogView::Accept() {
@@ -91,18 +95,12 @@ const views::Widget* ChooserDialogView::GetWidget() const {
   return chooser_content_view_->GetWidget();
 }
 
-void ChooserDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                               const gfx::Range& range,
-                                               int event_flags) {
-  chooser_content_view_->StyledLabelLinkClicked();
-}
-
 void ChooserDialogView::OnSelectionChanged() {
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-views::TableView* ChooserDialogView::table_view_for_test() const {
-  return chooser_content_view_->table_view_for_test();
+ChooserContentView* ChooserDialogView::chooser_content_view_for_test() const {
+  return chooser_content_view_;
 }
 
 void ChromeExtensionChooserDialog::ShowDialogImpl(

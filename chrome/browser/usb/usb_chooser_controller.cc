@@ -73,6 +73,10 @@ UsbChooserController::~UsbChooserController() {
     callback_.Run(nullptr);
 }
 
+base::string16 UsbChooserController::GetNoOptionsText() const {
+  return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+}
+
 base::string16 UsbChooserController::GetOkButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_USB_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT);
 }
@@ -91,6 +95,12 @@ base::string16 UsbChooserController::GetOption(size_t index) const {
              : l10n_util::GetStringFUTF16(
                    IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID, device_name,
                    devices_[index].first->serial_number());
+}
+
+void UsbChooserController::RefreshOptions() {}
+
+base::string16 UsbChooserController::GetStatus() const {
+  return base::string16();
 }
 
 void UsbChooserController::Select(size_t index) {

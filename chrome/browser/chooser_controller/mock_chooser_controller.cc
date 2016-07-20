@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
+
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 MockChooserController::MockChooserController(content::RenderFrameHost* owner)
     : ChooserController(owner,
@@ -11,6 +13,10 @@ MockChooserController::MockChooserController(content::RenderFrameHost* owner)
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME) {}
 
 MockChooserController::~MockChooserController() {}
+
+base::string16 MockChooserController::GetNoOptionsText() const {
+  return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+}
 
 base::string16 MockChooserController::GetOkButtonLabel() const {
   return base::string16();
@@ -22,6 +28,12 @@ size_t MockChooserController::NumOptions() const {
 
 base::string16 MockChooserController::GetOption(size_t index) const {
   return option_names_[index];
+}
+
+void MockChooserController::RefreshOptions() {}
+
+base::string16 MockChooserController::GetStatus() const {
+  return base::string16();
 }
 
 void MockChooserController::OptionAdded(const base::string16 option_name) {

@@ -50,6 +50,8 @@ class TableViewController : public ChooserController::Observer {
   void OnOptionsInitialized() override;
   void OnOptionAdded(size_t index) override;
   void OnOptionRemoved(size_t index) override;
+  void OnAdapterEnabledChanged(bool enabled) override;
+  void OnRefreshStateChanged(bool refreshing) override;
 
   void UpdateTableView();
 
@@ -97,6 +99,10 @@ void TableViewController::OnOptionRemoved(size_t index) {
 
   UpdateTableView();
 }
+
+void TableViewController::OnAdapterEnabledChanged(bool enabled) {}
+
+void TableViewController::OnRefreshStateChanged(bool refreshing) {}
 
 void TableViewController::UpdateTableView() {
   [table_view_ setEnabled:chooser_controller_->NumOptions() > 0];
