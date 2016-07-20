@@ -104,7 +104,7 @@ GLuint StaticBitmapImage::switchStorageToSkImage(WebGraphicsContext3DProvider* p
 
 void StaticBitmapImage::copyToTexture(WebGraphicsContext3DProvider* provider, GLuint destinationTexture, GLenum internalFormat, GLenum destType, bool flipY)
 {
-    GLuint textureId = textureIdForWebGL(provider);
+    GLuint textureId = switchStorageToSkImageForWebGL(provider);
     gpu::gles2::GLES2Interface* gl = provider->contextGL();
     if (!gl)
         return;
@@ -113,6 +113,8 @@ void StaticBitmapImage::copyToTexture(WebGraphicsContext3DProvider* provider, GL
     gl->Flush();
     GLbyte syncToken[24];
     gl->GenSyncTokenCHROMIUM(fenceSync, syncToken);
+    // Get a new mailbox because we cannot retain a texture in the WebGL context.
+    switchStorageToMailbox(provider);
 }
 
 bool StaticBitmapImage::switchStorageToMailbox(WebGraphicsContext3DProvider* provider)
@@ -137,11 +139,12 @@ bool StaticBitmapImage::switchStorageToMailbox(WebGraphicsContext3DProvider* pro
     m_mailbox.validSyncToken = true;
     gl->BindTexture(GL_TEXTURE_2D, 0);
     grContext->resetContext(kTextureBinding_GrGLBackendState);
+    m_image = nullptr;
     return true;
 }
 
 // This function is called only in the case that m_image is texture backed.
-GLuint StaticBitmapImage::textureIdForWebGL(WebGraphicsContext3DProvider* contextProvider)
+GLuint StaticBitmapImage::switchStorageToSkImageForWebGL(WebGraphicsContext3DProvider* contextProvider)
 {
     DCHECK(!m_image || m_image->isTextureBacked());
     GLuint textureId = 0;
@@ -152,16 +155,11 @@ GLuint StaticBitmapImage::textureIdForWebGL(WebGraphicsContext3DProvider* contex
             if (!switchStorageToMailbox(sharedProvider.get()))
                 return 0;
             textureId = switchStorageToSkImage(contextProvider);
-            // Get a new mailbox because we cannot retain a texture in the WebGL context.
-            if (!switchStorageToMailbox(contextProvider))
-                return 0;
             return textureId;
         }
     }
     DCHECK(hasMailbox());
     textureId = switchStorageToSkImage(contextProvider);
-    if (!switchStorageToMailbox(contextProvider))
-        return 0;
     return textureId;
 }
 

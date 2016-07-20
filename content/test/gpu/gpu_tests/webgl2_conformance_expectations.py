@@ -68,22 +68,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
     #     ['linux', 'amd', 'intel'], bug=483282)
 
-    # Linux passes because 2D canvas is not GPU accelerated.
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_byte.html',
-        ['win', 'mac'], bug=628954)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win', 'mac'], bug=628954)
+        ['win'], bug=628954)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win', 'mac'], bug=628954)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['win', 'mac'], bug=628954)
+        ['win'], bug=628954)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['win', 'mac'], bug=628954)
+        ['win'], bug=628954)
 
     # Windows only.
     self.Fail('conformance/glsl/bugs/' +

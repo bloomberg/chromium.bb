@@ -43,7 +43,7 @@ protected:
 private:
     GLuint switchStorageToSkImage(WebGraphicsContext3DProvider*);
     bool switchStorageToMailbox(WebGraphicsContext3DProvider*);
-    GLuint textureIdForWebGL(WebGraphicsContext3DProvider*);
+    GLuint switchStorageToSkImageForWebGL(WebGraphicsContext3DProvider*);
 
     RefPtr<SkImage> m_image;
     WebExternalTextureMailbox m_mailbox;
