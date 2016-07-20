@@ -13,7 +13,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -71,7 +71,7 @@ public class NewTabPageAdapterTest {
         assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, ntpa.getItemViewType(2));
         assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(3));
 
-        List<SnippetArticle> snippets = createDummySnippets();
+        List<SnippetArticleListItem> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
 
         List<NewTabPageListItem> loadedItems = new ArrayList<>(ntpa.getItemsForTesting());
@@ -82,8 +82,9 @@ public class NewTabPageAdapterTest {
                 NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(loadedItems.size() - 1));
 
         // The adapter should ignore any new incoming data.
-        mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
+        mSnippetsObserver.onSnippetsReceived(
+                Arrays.asList(new SnippetArticleListItem[] {new SnippetArticleListItem(
+                        "foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
         assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
@@ -97,7 +98,7 @@ public class NewTabPageAdapterTest {
         NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         // If we don't get anything, we should be in the same situation as the initial one.
-        mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticle>());
+        mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticleListItem>());
         assertEquals(4, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
@@ -105,7 +106,7 @@ public class NewTabPageAdapterTest {
         assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(3));
 
         // We should load new snippets when we get notified about them.
-        List<SnippetArticle> snippets = createDummySnippets();
+        List<SnippetArticleListItem> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
         List<NewTabPageListItem> loadedItems = new ArrayList<>(ntpa.getItemsForTesting());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
@@ -115,8 +116,9 @@ public class NewTabPageAdapterTest {
                 NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(loadedItems.size() - 1));
 
         // The adapter should ignore any new incoming data.
-        mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
+        mSnippetsObserver.onSnippetsReceived(
+                Arrays.asList(new SnippetArticleListItem[] {new SnippetArticleListItem(
+                        "foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
         assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
@@ -128,7 +130,7 @@ public class NewTabPageAdapterTest {
     public void testSnippetClearing() {
         NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
-        List<SnippetArticle> snippets = createDummySnippets();
+        List<SnippetArticleListItem> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
@@ -141,13 +143,13 @@ public class NewTabPageAdapterTest {
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
     }
 
-    private List<SnippetArticle> createDummySnippets() {
-        return Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
+    private List<SnippetArticleListItem> createDummySnippets() {
+        return Arrays.asList(new SnippetArticleListItem[] {
+                new SnippetArticleListItem("https://site.com/url1", "title1", "pub1", "txt1",
                         "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0, 0),
-                new SnippetArticle("https://site.com/url2", "title2", "pub2", "txt2",
+                new SnippetArticleListItem("https://site.com/url2", "title2", "pub2", "txt2",
                         "https://site.com/url2", "https://amp.site.com/url1", null, 0, 0, 0),
-                new SnippetArticle("https://site.com/url3", "title3", "pub3", "txt3",
+                new SnippetArticleListItem("https://site.com/url3", "title3", "pub3", "txt3",
                         "https://site.com/url3", "https://amp.site.com/url1", null, 0, 0, 0)});
     }
 }

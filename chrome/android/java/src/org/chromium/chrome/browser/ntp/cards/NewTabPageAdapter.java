@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
@@ -123,7 +123,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mSnippetsBridge = snippetsBridge;
         mStatusListItem = StatusListItem.create(snippetsBridge.getDisabledReason(), this, manager);
 
-        loadSnippets(new ArrayList<SnippetArticle>());
+        loadSnippets(new ArrayList<SnippetArticleListItem>());
         mSnippetsBridge.setObserver(this);
     }
 
@@ -133,7 +133,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onSnippetsReceived(List<SnippetArticle> listSnippets) {
+    public void onSnippetsReceived(List<SnippetArticleListItem> listSnippets) {
         if (!mWantsSnippets) return;
 
         int newSnippetCount = listSnippets.size();
@@ -158,7 +158,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         if (getItemCount() > 4 /* above-the-fold + header + card + spacing */) {
             // We had many items, implies that the service was previously enabled and just
             // transitioned. to a disabled state. We now clear it.
-            loadSnippets(new ArrayList<SnippetArticle>());
+            loadSnippets(new ArrayList<SnippetArticleListItem>());
         } else {
             mNewTabPageListItems.set(FIRST_CARD_POSITION, mStatusListItem);
             notifyItemRangeChanged(FIRST_CARD_POSITION, 2); // Update both the first card and the
@@ -218,14 +218,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         SnippetsBridge.fetchSnippets();
     }
 
-    private void loadSnippets(List<SnippetArticle> listSnippets) {
+    private void loadSnippets(List<SnippetArticleListItem> listSnippets) {
         // Copy thumbnails over
-        for (SnippetArticle newSnippet : listSnippets) {
+        for (SnippetArticleListItem newSnippet : listSnippets) {
             int existingSnippetIdx = mNewTabPageListItems.indexOf(newSnippet);
             if (existingSnippetIdx == -1) continue;
 
             newSnippet.setThumbnailBitmap(
-                    ((SnippetArticle) mNewTabPageListItems.get(existingSnippetIdx))
+                    ((SnippetArticleListItem) mNewTabPageListItems.get(existingSnippetIdx))
                             .getThumbnailBitmap());
         }
 
@@ -265,7 +265,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
 
         int position = itemViewHolder.getAdapterPosition();
-        SnippetArticle dismissedSnippet = (SnippetArticle) mNewTabPageListItems.get(position);
+        SnippetArticleListItem dismissedSnippet =
+                (SnippetArticleListItem) mNewTabPageListItems.get(position);
 
         mSnippetsBridge.getSnippedVisited(dismissedSnippet, new Callback<Boolean>() {
             @Override

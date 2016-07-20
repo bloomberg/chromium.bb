@@ -26,7 +26,7 @@ public class SnippetsBridge {
      * An observer for events in the snippets service.
      */
     public interface SnippetsObserver {
-        void onSnippetsReceived(List<SnippetArticle> snippets);
+        void onSnippetsReceived(List<SnippetArticleListItem> snippets);
 
         /** Called when the service is about to change its state. */
         void onDisabledReasonChanged(int disabledReason);
@@ -73,7 +73,7 @@ public class SnippetsBridge {
      *
      * @param snippet Snippet to discard.
      */
-    public void discardSnippet(SnippetArticle snippet) {
+    public void discardSnippet(SnippetArticleListItem snippet) {
         assert mNativeSnippetsBridge != 0;
         nativeDiscardSnippet(mNativeSnippetsBridge, snippet.mId);
     }
@@ -81,14 +81,14 @@ public class SnippetsBridge {
     /**
      * Fetches the thumbnail image for a snippet.
      */
-    public void fetchSnippetImage(SnippetArticle snippet, Callback<Bitmap> callback) {
+    public void fetchSnippetImage(SnippetArticleListItem snippet, Callback<Bitmap> callback) {
         nativeFetchImage(mNativeSnippetsBridge, snippet.mId, callback);
     }
 
     /**
      * Checks whether a snippet has been visited by querying the history for the snippet's URL.
      */
-    public void getSnippedVisited(SnippetArticle snippet, Callback<Boolean> callback) {
+    public void getSnippedVisited(SnippetArticleListItem snippet, Callback<Boolean> callback) {
         assert mNativeSnippetsBridge != 0;
         nativeSnippetVisited(mNativeSnippetsBridge, callback, snippet.mUrl);
     }
@@ -121,10 +121,11 @@ public class SnippetsBridge {
         assert mNativeSnippetsBridge != 0;
         assert mObserver != null;
 
-        List<SnippetArticle> newSnippets = new ArrayList<>(ids.length);
+        List<SnippetArticleListItem> newSnippets = new ArrayList<>(ids.length);
         for (int i = 0; i < ids.length; i++) {
-            newSnippets.add(new SnippetArticle(ids[i], titles[i], publishers[i], previewText[i],
-                    urls[i], ampUrls[i], thumbnailUrls[i], timestamps[i], scores[i], i));
+            newSnippets.add(
+                    new SnippetArticleListItem(ids[i], titles[i], publishers[i], previewText[i],
+                            urls[i], ampUrls[i], thumbnailUrls[i], timestamps[i], scores[i], i));
         }
 
         mObserver.onSnippetsReceived(newSnippets);

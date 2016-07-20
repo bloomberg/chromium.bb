@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 /**
  * Represents the data for an article card on the NTP.
  */
-public class SnippetArticle implements NewTabPageListItem {
+public class SnippetArticleListItem implements NewTabPageListItem {
     public final String mId;
     public final String mTitle;
     public final String mPublisher;
@@ -35,19 +35,20 @@ public class SnippetArticle implements NewTabPageListItem {
     private static final int[] HISTOGRAM_FOR_POSITIONS = {0, 2, 4, 9};
 
     /**
-     * Creates a SnippetArticle object that will hold the data
+     * Creates a SnippetArticleListItem object that will hold the data.
      * @param title the title of the article
      * @param publisher the canonical publisher name (e.g., New York Times)
      * @param previewText the snippet preview text
      * @param url the URL of the article
-     * @param mAmpUrl the AMP url for the article (possible for this to be empty)
+     * @param ampUrl the AMP url for the article (possible for this to be empty)
      * @param thumbnailUrl the URL of the thumbnail
      * @param timestamp the time in ms when this article was published
      * @param score the score expressing relative quality of the article for the user
      * @param position the position of this article in the list of snippets
      */
-    public SnippetArticle(String id, String title, String publisher, String previewText, String url,
-            String ampUrl, String thumbnailUrl, long timestamp, float score, int position) {
+    public SnippetArticleListItem(String id, String title, String publisher, String previewText,
+            String url, String ampUrl, String thumbnailUrl, long timestamp, float score,
+            int position) {
         mId = id;
         mTitle = title;
         mPublisher = publisher;
@@ -62,8 +63,8 @@ public class SnippetArticle implements NewTabPageListItem {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SnippetArticle)) return false;
-        return mId.equals(((SnippetArticle) other).mId);
+        if (!(other instanceof SnippetArticleListItem)) return false;
+        return mId.equals(((SnippetArticleListItem) other).mId);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class SnippetArticle implements NewTabPageListItem {
         mImpressionTracked = true;
     }
 
-    /** Returns whether impression of this SnippetArticle has already been tracked. */
+    /** Returns whether impression of this SnippetArticleListItem has already been tracked. */
     public boolean impressionTracked() {
         return mImpressionTracked;
     }

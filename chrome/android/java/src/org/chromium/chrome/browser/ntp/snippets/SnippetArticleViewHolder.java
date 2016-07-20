@@ -57,7 +57,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     private final ImageView mThumbnailView;
 
     private FetchImageCallback mImageCallback;
-    private SnippetArticle mArticle;
+    private SnippetArticleListItem mArticle;
     private ViewTreeObserver.OnPreDrawListener mPreDrawObserver;
     private int mPublisherFaviconSizePx;
 
@@ -123,7 +123,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     public void onBindViewHolder(NewTabPageListItem article) {
         super.onBindViewHolder(article);
 
-        mArticle = (SnippetArticle) article;
+        mArticle = (SnippetArticleListItem) article;
 
         mHeadlineTextView.setText(mArticle.mTitle);
 
@@ -165,9 +165,10 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
     private static class FetchImageCallback extends Callback<Bitmap> {
         private SnippetArticleViewHolder mViewHolder;
-        private final SnippetArticle mSnippet;
+        private final SnippetArticleListItem mSnippet;
 
-        public FetchImageCallback(SnippetArticleViewHolder viewHolder, SnippetArticle snippet) {
+        public FetchImageCallback(
+                SnippetArticleViewHolder viewHolder, SnippetArticleListItem snippet) {
             mViewHolder = viewHolder;
             mSnippet = snippet;
         }
@@ -191,7 +192,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         }
     }
 
-    private void fadeThumbnailIn(SnippetArticle snippet, Bitmap thumbnail) {
+    private void fadeThumbnailIn(SnippetArticleListItem snippet, Bitmap thumbnail) {
         mImageCallback = null;
         if (thumbnail == null) return; // Nothing to do, we keep the placeholder.
 
