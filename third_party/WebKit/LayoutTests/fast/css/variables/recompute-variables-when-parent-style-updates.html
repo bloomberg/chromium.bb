@@ -2,39 +2,40 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <style>
-  body {
-    --a: red;
-    --b: blue;
-  }
+body {
+  --a: red;
+  --b: blue;
+}
 
-  .foo {
-    --a: green;
-  }
+.setAToGreen {
+  --a: green;
+}
 
-  .container {
-    --a: var(--b);
-  }
+.setAToB {
+  --a: var(--b);
+}
 
-  .here {
-    background: var(--a);
-    width: 100px;
-    height: 100px;
-  }
+.backgroundA {
+  background: var(--a);
+}
 </style>
 <div id="outer">
-<div class="here" id='red'></div>
+  <div class="backgroundA" id='backgroundA'></div>
 
-<div class="container" id='container'>
-  <div class="here" id='blue'></div>
-</div>
+  <div class="setAToB">
+    <div class="backgroundA" id='backgroundB'></div>
+  </div>
 </div>
 
 <script>
 test(function() {
-  assert_equals(getComputedStyle(red).backgroundColor, "rgb(255, 0, 0)");
-  assert_equals(getComputedStyle(blue).backgroundColor, "rgb(0, 0, 255)");
-  outer.classList.add('foo');
-  assert_equals(getComputedStyle(red).backgroundColor, "rgb(0, 128, 0)");
-  assert_equals(getComputedStyle(blue).backgroundColor, "rgb(0, 0, 255)");
+  var red = "rgb(255, 0, 0)";
+  var blue = "rgb(0, 0, 255)";
+  var green = "rgb(0, 128, 0)";
+  assert_equals(getComputedStyle(backgroundA).backgroundColor, red);
+  assert_equals(getComputedStyle(backgroundB).backgroundColor, blue);
+  outer.classList.add('setAToGreen');
+  assert_equals(getComputedStyle(backgroundA).backgroundColor, green);
+  assert_equals(getComputedStyle(backgroundB).backgroundColor, blue);
 }, 'Custom properties are recomputed when parent style changes.');
 </script>
