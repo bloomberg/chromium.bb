@@ -56216,6 +56216,58 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.DocumentLoad.ActivationState"
+    enum="SubresourceFilterActivationState">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whenever a document load is committed in a main frame or subframe, records
+    whether subresource filtering should be activated for that load.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed"
+    units="resource loads">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whenever a document load is finished in a main frame or subframe with
+    subresource filtering activated, records the total number of subresource
+    loads that have been disallowed. This only differs from `MatchedRules` when
+    filtering is performed in dry-run mode.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated"
+    units="resource loads">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whenever a document load is finished in a main frame or subframe with
+    subresource filtering activated, records the total number of subresource
+    loads that have been evaluated.
+  </summary>
+</histogram>
+
+<histogram
+    name="SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules"
+    units="resource loads">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whenever a document load is finished in a main frame or subframe with
+    subresource filtering activated, records the total number of subresource
+    loads that have matched filtering rules. This only differs from `Disallowed`
+    when filtering is performed in dry-run mode.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.DocumentLoad.RulesetIsAvailable"
+    enum="BooleanAvailable">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whenever a document load is committed in a main frame or subframe and
+    subresource filtering should be activated, records whether the filtering
+    rules are available.
+  </summary>
+</histogram>
+
 <histogram name="Suggestions.FailedRequestErrorCode" enum="NetErrorCodes">
   <owner>mathp@chromium.org</owner>
   <summary>
@@ -91987,6 +92039,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="No usable cache found"/>
   <int value="1" label="DiskCache served the CSS source"/>
   <int value="2" label="MemoryCached StyleSheetContents was reused"/>
+</enum>
+
+<enum name="SubresourceFilterActivationState" type="int">
+  <int value="0" label="Disabled"/>
+  <int value="1" label="DryRun"/>
+  <int value="2" label="Enabled"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">

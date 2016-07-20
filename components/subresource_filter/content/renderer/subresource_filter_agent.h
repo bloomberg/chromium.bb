@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 
@@ -51,17 +52,22 @@ class SubresourceFilterAgent : public content::RenderFrameObserver {
  private:
   void ActivateForProvisionalLoad(ActivationState activation_state);
 
+  void RecordHistogramsOnLoadCommitted();
+  void RecordHistogramsOnLoadFinished();
+
   // content::RenderFrameObserver:
   void OnDestruct() override;
   void DidStartProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
+  void DidFinishLoad() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Owned by the ChromeContentRendererClient and outlives us.
   RulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_provisional_load_;
+  base::WeakPtr<DocumentSubresourceFilter> filter_for_last_committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgent);
 };

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 
@@ -27,7 +28,9 @@ class MemoryMappedRuleset;
 // subresource loads from URL paths having this string as a suffix if it is
 // non-empty. This enables exercising the feature end-to-end in a browsertest.
 // Replace this with the actual filtering logic.
-class DocumentSubresourceFilter : public blink::WebDocumentSubresourceFilter {
+class DocumentSubresourceFilter
+    : public blink::WebDocumentSubresourceFilter,
+      public base::SupportsWeakPtr<DocumentSubresourceFilter> {
  public:
   // Constructs a new filter that will:
   //  -- Operate at the prescribed |activation_state|, which must be either

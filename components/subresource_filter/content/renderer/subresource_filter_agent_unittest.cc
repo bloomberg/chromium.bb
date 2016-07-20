@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/test/histogram_tester.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -226,6 +227,112 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
   ExpectLoadAllowed(kTestFirstURL, true);
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();
+}
+
+TEST_F(SubresourceFilterAgentTest, Disabled_HistogramSamples) {
+  base::HistogramTester histogram_tester;
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
+  StartLoadWithoutSettingActivationState();
+  FinishLoad();
+
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.ActivationState",
+      static_cast<int>(ActivationState::DISABLED), 1);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 0);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 0);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0);
+}
+
+TEST_F(SubresourceFilterAgentTest,
+       EnabledButRulesetUnavailable_HistogramSamples) {
+  base::HistogramTester histogram_tester;
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  FinishLoad();
+
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.ActivationState",
+      static_cast<int>(ActivationState::ENABLED), 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 0, 1);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 0);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules", 0);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0);
+}
+
+TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
+  base::HistogramTester histogram_tester;
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestSecondURL, true);
+  FinishLoad();
+
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestSecondURL, true);
+  FinishLoad();
+
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.ActivationState",
+      static_cast<int>(ActivationState::ENABLED), 2);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 1, 2);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated"),
+      ::testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules"),
+      ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed"),
+      ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+}
+
+TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
+  base::HistogramTester histogram_tester;
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::DRYRUN);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  // In dry-run mode, loads to the first URL should be recorded as
+  // `MatchedRules`, but still be allowed to proceed and not recorded as
+  // `Disallowed`.
+  ExpectLoadAllowed(kTestFirstURL, true);
+  ExpectLoadAllowed(kTestFirstURL, true);
+  ExpectLoadAllowed(kTestSecondURL, true);
+  FinishLoad();
+
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.ActivationState",
+      static_cast<int>(ActivationState::DRYRUN), 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 3, 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0, 1);
 }
 
 }  // namespace subresource_filter
