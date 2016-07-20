@@ -20,7 +20,7 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "remoting/host/security_key/security_key_auth_handler.h"
+#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -155,12 +155,12 @@ class MockHostStatusObserver : public HostStatusObserver {
   MOCK_METHOD0(OnShutdown, void());
 };
 
-class MockSecurityKeyAuthHandler : public SecurityKeyAuthHandler {
+class MockGnubbyAuthHandler : public GnubbyAuthHandler {
  public:
-  MockSecurityKeyAuthHandler();
-  ~MockSecurityKeyAuthHandler() override;
+  MockGnubbyAuthHandler();
+  ~MockGnubbyAuthHandler() override;
 
-  MOCK_METHOD0(CreateSecurityKeyConnection, void());
+  MOCK_METHOD0(CreateGnubbyConnection, void());
   MOCK_CONST_METHOD1(IsValidConnectionId, bool(int connection_id));
   MOCK_METHOD2(SendClientResponse,
                void(int connection_id, const std::string& response));
@@ -169,13 +169,13 @@ class MockSecurityKeyAuthHandler : public SecurityKeyAuthHandler {
   MOCK_METHOD1(SetRequestTimeoutForTest, void(base::TimeDelta timeout));
 
   void SetSendMessageCallback(
-      const SecurityKeyAuthHandler::SendMessageCallback& callback) override;
-  const SecurityKeyAuthHandler::SendMessageCallback& GetSendMessageCallback();
+      const GnubbyAuthHandler::SendMessageCallback& callback) override;
+  const GnubbyAuthHandler::SendMessageCallback& GetSendMessageCallback();
 
  private:
-  SecurityKeyAuthHandler::SendMessageCallback callback_;
+  GnubbyAuthHandler::SendMessageCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSecurityKeyAuthHandler);
+  DISALLOW_COPY_AND_ASSIGN(MockGnubbyAuthHandler);
 };
 
 class MockMouseCursorMonitor : public webrtc::MouseCursorMonitor {
