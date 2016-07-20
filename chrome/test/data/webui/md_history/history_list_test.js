@@ -231,6 +231,45 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
+      test('deleting items using shortcuts', function(done) {
+        var listContainer = app.$.history;
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        flush().then(function() {
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
+
+          // Dialog should not appear when there is no item selected.
+          MockInteractions.pressAndReleaseKeyOn(
+            document.body, 46, '', 'Delete');
+          assertFalse(listContainer.$.dialog.opened);
+
+          MockInteractions.tap(items[1].$.checkbox);
+          MockInteractions.tap(items[2].$.checkbox);
+
+          assertEquals(2, toolbar.count);
+
+          registerMessageCallback('removeVisits', this, function(toRemove) {
+            assertEquals('https://www.example.com', toRemove[0].url);
+            assertEquals('https://www.google.com', toRemove[1].url);
+            assertEquals('2016-03-14 10:00 UTC', toRemove[0].timestamps[0]);
+            assertEquals('2016-03-14 9:00 UTC', toRemove[1].timestamps[0]);
+            done();
+          });
+
+          MockInteractions.pressAndReleaseKeyOn(
+            document.body, 46, '', 'Delete');
+          assertTrue(listContainer.$.dialog.opened);
+
+          MockInteractions.tap(listContainer.$$('.cancel-button'));
+          assertFalse(listContainer.$.dialog.opened);
+
+          MockInteractions.pressAndReleaseKeyOn(
+            document.body, 8, '', 'Backspace');
+          assertTrue(listContainer.$.dialog.opened);
+
+          MockInteractions.tap(listContainer.$$('.action-button'));
+        });
+      });
+
       teardown(function() {
         element.historyData_ = [];
         registerMessageCallback('removeVisits', this, undefined);

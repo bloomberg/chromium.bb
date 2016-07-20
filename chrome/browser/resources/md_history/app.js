@@ -159,6 +159,9 @@ Polymer({
             !(this.$.toolbar.searchBar.showingSearch &&
               this.$.toolbar.searchBar.isSearchFocused());
         break;
+      case 'delete-command':
+        e.canExecute = this.$.toolbar.count > 0;
+        break;
     }
   },
 
@@ -186,6 +189,8 @@ Polymer({
   onCommand_: function(e) {
     if (e.command.id == 'find-command' || e.command.id == 'slash-command')
       this.$.toolbar.showSearchField();
+    if (e.command.id == 'delete-command')
+      this.deleteSelected();
   },
 
   /**
