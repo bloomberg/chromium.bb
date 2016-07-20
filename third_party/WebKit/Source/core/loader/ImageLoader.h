@@ -115,7 +115,7 @@ private:
     class Task;
 
     // Called from the task or from updateFromElement to initiate the load.
-    void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior, ReferrerPolicy = ReferrerPolicyDefault);
+    void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior, const KURL&, ReferrerPolicy = ReferrerPolicyDefault);
 
     virtual void dispatchLoadEvent() = 0;
     virtual void noImageResourceToLoad() { }

@@ -107,6 +107,7 @@ public:
             m_scriptState = ScriptState::forMainWorld(loader->element()->document().frame());
             ASSERT(m_scriptState);
         }
+        m_requestURL = loader->imageSourceToKURL(loader->element()->imageSourceURL());
     }
 
     void run()
@@ -117,9 +118,9 @@ public:
         InspectorInstrumentation::AsyncTask asyncTask(&context, this);
         if (m_scriptState->contextIsValid()) {
             ScriptState::Scope scope(m_scriptState.get());
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_requestURL, m_referrerPolicy);
         } else {
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_requestURL, m_referrerPolicy);
         }
     }
 
@@ -141,6 +142,7 @@ private:
     RefPtr<ScriptState> m_scriptState;
     WeakPtrFactory<Task> m_weakFactory;
     ReferrerPolicy m_referrerPolicy;
+    KURL m_requestURL;
 };
 
 ImageLoader::ImageLoader(Element* element)
@@ -251,7 +253,7 @@ inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior 
     m_loadDelayCounter = IncrementLoadEventDelayCount::create(m_element->document());
 }
 
-void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
+void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, UpdateFromElementBehavior updateBehavior, const KURL& url, ReferrerPolicy referrerPolicy)
 {
     // FIXME: According to
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
@@ -271,7 +273,6 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         return;
 
     AtomicString imageSourceURL = m_element->imageSourceURL();
-    KURL url = imageSourceToKURL(imageSourceURL);
     ImageResource* newImage = nullptr;
     if (!url.isNull()) {
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
@@ -378,7 +379,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, Re
 
     KURL url = imageSourceToKURL(imageSourceURL);
     if (shouldLoadImmediately(url)) {
-        doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior, referrerPolicy);
+        doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior, url, referrerPolicy);
         return;
     }
     // Allow the idiom "img.src=''; img.src='.." to clear down the image before
