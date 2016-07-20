@@ -11,5 +11,4 @@ http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 fast/history/same-document-iframes-changing-fragment.html [ Failure ]
 fast/history/same-document-iframes-changing-pushstate.html [ Failure ]
-fast/loader/form-state-restore-with-frames.html [ Failure ]
 

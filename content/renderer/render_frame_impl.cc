@@ -2868,6 +2868,10 @@ void RenderFrameImpl::frameDetached(blink::WebLocalFrame* frame,
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameDetached(frame));
 
+  // Send a state update before the frame is detached.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    SendUpdateState();
+
   // We only notify the browser process when the frame is being detached for
   // removal and it was initiated from the renderer process.
   if (!in_browser_initiated_detach_ && type == DetachType::Remove)
