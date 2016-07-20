@@ -29,7 +29,6 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/status_area_widget.h"
-#include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
@@ -644,7 +643,7 @@ Shell::~Shell() {
   DeactivateKeyboard();
 
   // Destroy toasts
-  toast_manager_.reset();
+  wm_shell_->DeleteToastManager();
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
@@ -992,9 +991,6 @@ void Shell::Init(const ShellInitParams& init_params) {
       base::WrapUnique(wm_shell_->delegate()->CreateSystemTrayDelegate()));
 
   locale_notification_controller_.reset(new LocaleNotificationController);
-
-  // Initialize toast manager
-  toast_manager_.reset(new ToastManager);
 
 #if defined(OS_CHROMEOS)
   // Create TouchTransformerController before

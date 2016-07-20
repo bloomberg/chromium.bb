@@ -177,7 +177,7 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       Shell::GetInstance()->display_manager()->AddRemoveDisplay();
       break;
     case DEBUG_SHOW_TOAST:
-      Shell::GetInstance()->toast_manager()->Show(
+      WmShell::Get()->toast_manager()->Show(
           ToastData("id", "Toast", 5000 /* duration_ms */, "Dismiss"));
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:

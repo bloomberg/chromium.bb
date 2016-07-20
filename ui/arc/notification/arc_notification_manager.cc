@@ -5,7 +5,7 @@
 #include "ui/arc/notification/arc_notification_manager.h"
 
 #include "ash/common/system/toast/toast_manager.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/arc/notification/arc_custom_notification_item.h"
@@ -192,12 +192,12 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
 }
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
-  ash::Shell::GetInstance()->toast_manager()->Show(
+  ash::WmShell::Get()->toast_manager()->Show(
       ash::ToastData(data->id, data->text, data->duration, data->dismiss_text));
 }
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
-  ash::Shell::GetInstance()->toast_manager()->Cancel(data->id);
+  ash::WmShell::Get()->toast_manager()->Cancel(data->id);
 }
 
 }  // namespace arc

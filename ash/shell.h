@@ -133,7 +133,6 @@ class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
-class ToastManager;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
 class TouchObserverHUD;
@@ -493,8 +492,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return screen_pinning_controller_.get();
   }
 
-  ToastManager* toast_manager() { return toast_manager_.get(); }
-
   GPUSupport* gpu_support() { return gpu_support_.get(); }
 
  private:
@@ -654,8 +651,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   std::unique_ptr<ui::EventHandler> speech_feedback_handler_;
 #endif  // defined(OS_CHROMEOS)
-
-  std::unique_ptr<ToastManager> toast_manager_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

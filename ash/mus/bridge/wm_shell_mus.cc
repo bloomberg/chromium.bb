@@ -120,6 +120,7 @@ WmShellMus::~WmShellMus() {
   // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
   DeleteMaximizeModeController();
+  DeleteToastManager();
   DeleteSystemTrayDelegate();
   // Has to happen before ~MruWindowTracker.
   DeleteWindowCycleController();

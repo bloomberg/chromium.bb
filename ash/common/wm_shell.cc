@@ -14,6 +14,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
+#include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -52,6 +53,7 @@ void WmShell::Initialize() {
   // instead of the WmShell constructor.
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
+  toast_manager_.reset(new ToastManager);
 }
 
 void WmShell::Shutdown() {
@@ -207,6 +209,10 @@ void WmShell::CreateMruWindowTracker() {
 
 void WmShell::DeleteMruWindowTracker() {
   mru_window_tracker_.reset();
+}
+
+void WmShell::DeleteToastManager() {
+  toast_manager_.reset();
 }
 
 }  // namespace ash

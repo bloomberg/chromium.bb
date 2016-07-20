@@ -5,6 +5,7 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/toast/toast_manager.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -31,7 +32,7 @@ class ToastManagerTest : public test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
 
-    manager_ = Shell::GetInstance()->toast_manager();
+    manager_ = WmShell::Get()->toast_manager();
 
     manager_->ResetSerialForTesting();
     EXPECT_EQ(0, GetToastSerial());

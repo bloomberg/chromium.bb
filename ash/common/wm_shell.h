@@ -37,6 +37,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
+class ToastManager;
 class WindowCycleController;
 class WindowCycleEventFilter;
 class WindowResizer;
@@ -103,6 +104,8 @@ class ASH_EXPORT WmShell {
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
   }
+
+  ToastManager* toast_manager() { return toast_manager_.get(); }
 
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
@@ -284,6 +287,8 @@ class ASH_EXPORT WmShell {
   void CreateMruWindowTracker();
   void DeleteMruWindowTracker();
 
+  void DeleteToastManager();
+
  private:
   friend class AcceleratorControllerTest;
   friend class Shell;
@@ -305,6 +310,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
+  std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 
