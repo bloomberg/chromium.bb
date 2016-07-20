@@ -1573,7 +1573,6 @@
             'components.gyp:arc',
             'components.gyp:arc_test_support',
             'components.gyp:metrics_leak_detector',
-            'components.gyp:metrics_mojo_bindings',
             'components.gyp:ownership',
             'components.gyp:pairing',
             'components.gyp:user_manager_test_support',
