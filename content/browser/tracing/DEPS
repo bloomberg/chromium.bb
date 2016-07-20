@@ -4,3 +4,9 @@ include_rules = [
   "+third_party/zlib/zlib.h",
   "+tools/battor_agent",
 ]
+
+specific_include_rules = {
+  "tracing_controller_impl\.cc": [
+    "+v8"
+  ]
+}

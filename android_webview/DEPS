@@ -10,6 +10,7 @@ include_rules = [
   "+components/devtools_discovery",
   "+components/metrics",
   "+components/prefs",
+  "+components/version_info",
   "+content/public/common",
   "+crypto",
   "+gpu",

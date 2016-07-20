@@ -19,6 +19,7 @@
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
+#include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
@@ -501,6 +502,10 @@ bool AwContentBrowserClient::IsPepperVpnProviderAPIAllowed(
     const GURL& url) {
   NOTREACHED() << "Android WebView does not support plugins";
   return false;
+}
+
+content::TracingDelegate* AwContentBrowserClient::GetTracingDelegate() {
+  return new AwTracingDelegate();
 }
 
 void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(

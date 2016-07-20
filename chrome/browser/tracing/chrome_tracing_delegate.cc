@@ -21,6 +21,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/active_field_trials.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -167,6 +168,7 @@ void ChromeTracingDelegate::GenerateMetadataDict(
     variations_list->AppendString(it);
 
   metadata_dict->Set("field-trials", std::move(variations_list));
+  metadata_dict->SetString("revision", version_info::GetLastChange());
 }
 
 content::MetadataFilterPredicate
