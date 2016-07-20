@@ -564,10 +564,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'opengl'], bug=483282)
 
     # Linux NVIDIA only.
-    # La la la la la la la la la la ... (well, not right now, soon)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'random_teximage2d_cube.html',
-        ['linux', 'nvidia'], bug=483282)
+    # La la la la la la la la la la ...
 
     # Linux NVIDIA with ANGLE only
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',

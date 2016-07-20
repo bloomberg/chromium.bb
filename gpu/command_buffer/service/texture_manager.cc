@@ -2383,6 +2383,7 @@ void TextureManager::ValidateAndDoTexImage(
   // ValidateTexImage is passed already.
   Texture* texture = texture_ref->texture();
   bool need_cube_map_workaround =
+      !feature_info_->IsES3Enabled() &&
       texture->target() == GL_TEXTURE_CUBE_MAP &&
       (texture_state->force_cube_complete ||
        (texture_state->force_cube_map_positive_x_allocation &&
