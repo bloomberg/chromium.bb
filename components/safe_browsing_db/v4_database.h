@@ -30,6 +30,10 @@ typedef base::Callback<void()> DatabaseUpdatedCallback;
 // as manage their storage on disk.
 typedef base::hash_map<UpdateListIdentifier, std::unique_ptr<V4Store>> StoreMap;
 
+// Map of identifier for any store that had a hash prefix matching the given
+// full hash to the matching hash prefix.
+typedef base::hash_map<UpdateListIdentifier, HashPrefix> MatchedHashPrefixMap;
+
 // Factory for creating V4Database. Tests implement this factory to create fake
 // databases for testing.
 class V4DatabaseFactory {
@@ -74,6 +78,14 @@ class V4Database {
   // Returns the current state of each of the stores being managed.
   std::unique_ptr<StoreStateMap> GetStoreStateMap();
 
+  // Searches for a hash prefix matching the |full_hash| in stores in the
+  // database, filtered by |stores_to_look|, and returns the identifier of the
+  // store along with the matching hash prefix in |matched_hash_prefix_map|.
+  void GetStoresMatchingFullHash(
+      const FullHash& full_hash,
+      const base::hash_set<UpdateListIdentifier>& stores_to_look,
+      MatchedHashPrefixMap* matched_hash_prefix_map);
+
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase();
 
@@ -90,6 +102,7 @@ class V4Database {
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithNoNewState);
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate);
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate);
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestSomeStoresMatchFullHash);
 
   // Makes the passed |factory| the factory used to instantiate a V4Store. Only
   // for tests.

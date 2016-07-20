@@ -169,7 +169,7 @@ class V4Store {
 
   // If a hash prefix in this store matches |full_hash|, returns that hash
   // prefix; otherwise returns an empty hash prefix.
-  HashPrefix GetMatchingHashPrefix(const FullHash& full_hash);
+  virtual HashPrefix GetMatchingHashPrefix(const FullHash& full_hash);
 
   std::string DebugString() const;
 
