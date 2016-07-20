@@ -10,8 +10,11 @@ goog.provide('AutomationPredicate');
 goog.provide('AutomationPredicate.Binary');
 goog.provide('AutomationPredicate.Unary');
 
+goog.require('constants');
+
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
+var Dir = constants.Dir;
 var RoleType = chrome.automation.RoleType;
 
 /**
@@ -51,6 +54,8 @@ AutomationPredicate.inlineTextBox =
     AutomationPredicate.withRole(RoleType.inlineTextBox);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.link = AutomationPredicate.withRole(RoleType.link);
+/** @type {AutomationPredicate.Unary} */
+AutomationPredicate.row = AutomationPredicate.withRole(RoleType.row);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.table = AutomationPredicate.withRole(RoleType.table);
 
@@ -293,10 +298,12 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
   // Ignore some roles.
   return AutomationPredicate.leaf(node) &&
       (node.role == RoleType.client ||
+       node.role == RoleType.column ||
        node.role == RoleType.div ||
        node.role == RoleType.group ||
        node.role == RoleType.image ||
-       node.role == RoleType.staticText);
+       node.role == RoleType.staticText ||
+       node.role == RoleType.tableHeaderContainer);
 };
 
 
@@ -310,6 +317,88 @@ AutomationPredicate.checkable = function(node) {
       node.role == RoleType.radioButton ||
       node.role == RoleType.menuItemCheckBox ||
       node.role == RoleType.menuItemRadio;
+};
+
+// Table related predicates.
+/**
+ * Returns if the node has a cell like role.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.cellLike = function(node) {
+  return node.role == RoleType.cell ||
+      node.role == RoleType.rowHeader ||
+      node.role == RoleType.columnHeader;
+};
+
+/**
+ * Returns a predicate that will match against the directed next cell taking
+ * into account the current ancestor cell's position in the table.
+ * @param {AutomationNode} start
+ * @param {{dir: (Dir|undefined),
+*           row: (boolean|undefined),
+ *          col: (boolean|undefined)}} opts
+ * |dir|, specifies direction for |row or/and |col| movement by one cell.
+ *     |dir| defaults to forward.
+ *     |row| and |col| are both false by default.
+ *     |end| defaults to false. If set to true, |col| must also be set to true.
+ * It will then return the first or last cell in the current column.
+ * @return {?AutomationPredicate.Unary} Returns null if not in a table.
+ */
+AutomationPredicate.makeTableCellPredicate = function(start, opts) {
+  if (!opts.row && !opts.col)
+    throw new Error('You must set either row or col to true');
+
+  var dir = opts.dir || Dir.FORWARD;
+
+  // Compute the row/col index defaulting to 0.
+  var rowIndex = 0, colIndex = 0;
+  var tableNode = start;
+  while (tableNode) {
+    if (AutomationPredicate.table(tableNode))
+      break;
+
+    if (AutomationPredicate.cellLike(tableNode)) {
+      rowIndex = tableNode.tableCellRowIndex;
+      colIndex = tableNode.tableCellColumnIndex;
+    }
+
+    tableNode = tableNode.parent;
+  }
+  if (!tableNode)
+    return null;
+
+  // Only support making a predicate for column ends.
+  if (opts.end) {
+    if (!opts.col)
+      throw 'Unsupported option.';
+
+    if (dir == Dir.FORWARD) {
+      return function(node) {
+        return AutomationPredicate.cellLike(node) &&
+            node.tableCellColumnIndex == colIndex &&
+            node.tableCellRowIndex >= 0;
+      };
+    } else {
+      return function(node) {
+        return AutomationPredicate.cellLike(node) &&
+            node.tableCellColumnIndex == colIndex &&
+            node.tableCellRowIndex < tableNode.tableRowCount;
+      };
+    }
+  }
+
+  // Adjust for the next/previous row/col.
+  if (opts.row)
+    rowIndex = dir == Dir.FORWARD ? rowIndex + 1 : rowIndex - 1;
+  if (opts.col)
+    colIndex = dir == Dir.FORWARD ? colIndex + 1 : colIndex - 1;
+
+  return function(node) {
+    return AutomationPredicate.cellLike(node) &&
+        node.tableCellColumnIndex == colIndex &&
+        node.tableCellRowIndex == rowIndex;
+  };
 };
 
 });  // goog.scope

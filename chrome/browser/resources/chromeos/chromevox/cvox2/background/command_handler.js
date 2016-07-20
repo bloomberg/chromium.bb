@@ -198,6 +198,7 @@ CommandHandler.onCommand = function(command) {
   var dir = Dir.FORWARD;
   var pred = null;
   var predErrorMsg = undefined;
+  var rootPred = AutomationPredicate.root;
   var speechProps = {};
   switch (command) {
     case 'nextCharacter':
@@ -465,6 +466,102 @@ CommandHandler.onCommand = function(command) {
         ChromeVoxState.instance.pageSel_ = null;
         return false;
       }
+      break;
+    case 'fullyDescribe':
+      var o = new Output();
+      o.withContextFirst()
+          .withRichSpeechAndBraille(current, null, Output.EventType.NAVIGATE)
+          .go();
+      return false;
+
+    // Table commands.
+    case 'previousRow':
+      dir = Dir.BACKWARD;
+      var tableOpts = {row: true, dir: dir};
+      pred = AutomationPredicate.makeTableCellPredicate(
+          current.start.node, tableOpts);
+      predErrorMsg = 'no_cell_above';
+      rootPred = AutomationPredicate.table;
+      break;
+    case 'previousCol':
+      dir = Dir.BACKWARD;
+      var tableOpts = {col: true, dir: dir};
+      pred = AutomationPredicate.makeTableCellPredicate(
+          current.start.node, tableOpts);
+      predErrorMsg = 'no_cell_left';
+      rootPred = AutomationPredicate.row;
+      break;
+    case 'nextRow':
+      dir = Dir.FORWARD;
+      var tableOpts = {row: true, dir: dir};
+      pred = AutomationPredicate.makeTableCellPredicate(
+          current.start.node, tableOpts);
+      predErrorMsg = 'no_cell_below';
+      rootPred = AutomationPredicate.table;
+      break;
+    case 'nextCol':
+      dir = Dir.FORWARD;
+      var tableOpts = {col: true, dir: dir};
+      pred = AutomationPredicate.makeTableCellPredicate(
+          current.start.node, tableOpts);
+      predErrorMsg = 'no_cell_right';
+      rootPred = AutomationPredicate.row;
+      break;
+    case 'goToRowFirstCell':
+    case 'goToRowLastCell':
+      var node = current.start.node;
+      while (node && node.role != RoleType.row)
+        node = node.parent;
+      if (!node)
+        break;
+      var end = AutomationUtil.findNodePost(node,
+          command == 'goToRowLastCell' ? Dir.BACKWARD : Dir.FORWARD,
+          AutomationPredicate.leaf);
+      if (end)
+        current = cursors.Range.fromNode(end);
+      break;
+    case 'goToColFirstCell':
+      dir = Dir.FORWARD;
+      var node = current.start.node;
+      while (node && node.role != RoleType.table)
+        node = node.parent;
+      if (!node || !node.firstChild)
+        return false;
+      var tableOpts = {col: true, dir: dir, end: true};
+      pred = AutomationPredicate.makeTableCellPredicate(
+          current.start.node, tableOpts);
+      current = cursors.Range.fromNode(node.firstChild);
+      // Should not be outputted.
+      predErrorMsg = 'no_cell_above';
+      rootPred = AutomationPredicate.table;
+      break;
+    case 'goToColLastCell':
+      dir = Dir.BACKWARD;
+      var node = current.start.node;
+      while (node && node.role != RoleType.table)
+        node = node.parent;
+      if (!node || !node.lastChild)
+        return false;
+      var tableOpts = {col: true, dir: dir, end: true};
+      pred = AutomationPredicate.makeTableCellPredicate(
+          current.start.node, tableOpts);
+      current = cursors.Range.fromNode(node.lastChild);
+      // Should not be outputted.
+      predErrorMsg = 'no_cell_below';
+      rootPred = AutomationPredicate.table;
+      break;
+    case 'goToFirstCell':
+    case 'goToLastCell':
+      node = current.start.node;
+      while (node && node.role != RoleType.table)
+        node = node.parent;
+      if (!node)
+        break;
+      var end = AutomationUtil.findNodePost(node,
+          command == 'goToLastCell' ? Dir.BACKWARD : Dir.FORWARD,
+          AutomationPredicate.leaf);
+      if (end)
+        current = cursors.Range.fromNode(end);
       break;
     default:
       return true;

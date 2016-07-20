@@ -618,6 +618,18 @@ chrome.automation.focusOffset;
  */
 chrome.automation.AutomationNode.prototype.activeDescendant;
 
+/** @type {number} */
+chrome.automation.AutomationNode.prototype.tableCellColumnIndex;
+
+/** @type {number} */
+chrome.automation.AutomationNode.prototype.tableCellRowIndex;
+
+/** @type {number} */
+chrome.automation.AutomationNode.prototype.tableColumnCount;
+
+/** @type {number} */
+chrome.automation.AutomationNode.prototype.tableRowCount;
+
 /**
  * @extends {chrome.automation.AutomationNode}
  * @constructor

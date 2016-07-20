@@ -581,11 +581,134 @@
       }
     },
     {
+      "command": "fullyDescribe",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [75]
+        }
+      }
+    },
+    {
       "command": "copy",
       "sequence": {
         "keys": {
           "keyCode": [67],
           "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousRow",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [38],
+          "ctrlKey": [true],
+          "altKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextRow",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [40],
+          "ctrlKey": [true],
+          "altKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextCol",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [39],
+          "ctrlKey": [true],
+          "altKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousCol",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [37],
+          "ctrlKey": [true],
+          "altKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToRowFirstCell",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [37],
+          "ctrlKey": [true],
+          "altKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToColFirstCell",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [38],
+          "ctrlKey": [true],
+          "altKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToColLastCell",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [40],
+          "ctrlKey": [true],
+          "altKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToFirstCell",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [37],
+          "altKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToLastCell",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [39],
+          "altKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToRowLastCell",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [39],
+          "ctrlKey": [true],
+          "altKey": [true],
+          "shiftKey": [true]
         }
       }
     }

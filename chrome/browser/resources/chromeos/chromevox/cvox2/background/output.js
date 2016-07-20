@@ -87,6 +87,12 @@ Output = function() {
    * @private
    */
   this.queueMode_ = cvox.QueueMode.QUEUE;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.outputContextFirst_ = localStorage['outputContextFirst'] == 'true';
 };
 
 /**
@@ -135,15 +141,12 @@ Output.ROLE_INFO_ = {
     msgId: 'role_button',
     earconId: 'BUTTON'
   },
-  cell: {
-    msgId: 'role_gridcell'
-  },
   checkBox: {
     msgId: 'role_checkbox'
   },
   columnHeader: {
     msgId: 'role_columnheader',
-    inherits: 'abstractContainer'
+    inherits: 'cell'
   },
   comboBox: {
     msgId: 'role_combobox'
@@ -268,9 +271,13 @@ Output.ROLE_INFO_ = {
   radioGroup: {
     msgId: 'role_radiogroup',
   },
+  row: {
+    msgId: 'role_row',
+    inherits: 'abstractContainer'
+  },
   rowHeader: {
     msgId: 'role_rowheader',
-    inherits: 'abstractContainer'
+    inherits: 'cell'
   },
   scrollBar: {
     msgId: 'role_scrollbar',
@@ -422,7 +429,10 @@ Output.RULES = {
       speak: '$name $role $descendants'
     },
     cell: {
-      enter: '@column_granularity $tableCellColumnIndex'
+      enter: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
+          '$node(tableColumnHeader)',
+      speak: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
+          '$node(tableColumnHeader)'
     },
     checkBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
@@ -514,7 +524,10 @@ Output.RULES = {
       speak: '$descendants'
     },
     row: {
-      enter: '@row_granularity $tableRowIndex'
+      enter: '$node(tableRowHeader)'
+    },
+    rowHeader: {
+      speak: '$descendants'
     },
     slider: {
       speak: '$earcon(SLIDER) @describe_slider($value, $name) $description'
@@ -524,6 +537,13 @@ Output.RULES = {
     },
     tab: {
       speak: '@describe_tab($name)'
+    },
+    table: {
+      enter: '@table_summary($name, $tableRowCount, $tableColumnCount) ' +
+          '$node(tableHeader)'
+    },
+    tableHeaderContainer: {
+      speak: '$descendants'
     },
     textField: {
       speak: '$name $value $if($multiline, @tag_textarea, $if(' +
@@ -803,6 +823,16 @@ Output.prototype = {
   withString: function(value) {
     this.append_(this.speechBuffer_, value);
     this.append_(this.brailleBuffer_, value);
+    return this;
+  },
+
+
+  /**
+   * Outputs formatting nodes after this will contain context first.
+   * @return {!Output}
+   */
+  withContextFirst: function() {
+    this.outputContextFirst_ = true;
     return this;
   },
 
@@ -1133,14 +1163,19 @@ Output.prototype = {
           if (this.formatOptions_.braille)
             msgId = msgId + '_brl';
           this.append_(buff, Msgs.getMsg(msgId), options);
-        } else if (token == 'tableRowIndex' ||
+        } else if (token == 'tableCellRowIndex' ||
             token == 'tableCellColumnIndex') {
           var value = node[token];
-          if (!value)
+          if (value == undefined)
             return;
           value = String(value + 1);
           options.annotation.push(token);
           this.append_(buff, value, options);
+        } else if (token == 'node') {
+          if (!tree.firstChild || !node[tree.firstChild.value])
+            return;
+          var related = node[tree.firstChild.value];
+          this.node_(related, related, Output.EventType.NAVIGATE, buff);
         } else if (node[token] !== undefined) {
           options.annotation.push(token);
           var value = node[token];
@@ -1218,6 +1253,9 @@ Output.prototype = {
             }
             var msgBuff = [];
             this.format_(node, curArg, msgBuff);
+            // Fill in empty string if nothing was formatted.
+            if (!msgBuff.length)
+              msgBuff = [''];
             msgArgs = msgArgs.concat(msgBuff);
             curArg = curArg.nextSibling;
           }
@@ -1300,11 +1338,11 @@ Output.prototype = {
 
     var formatNodeAndAncestors = function(node, prevNode) {
       var buff = [];
-      var outputContextFirst = localStorage['outputContextFirst'] == 'true';
-      if (outputContextFirst)
+
+      if (this.outputContextFirst_)
         this.ancestry_(node, prevNode, type, buff);
       this.node_(node, prevNode, type, buff);
-      if (!outputContextFirst)
+      if (!this.outputContextFirst_)
         this.ancestry_(node, prevNode, type, buff);
       if (node.location)
         this.locations_.push(node.location);
@@ -1448,15 +1486,15 @@ Output.prototype = {
             startIndex));
       }
     }
-    var outputContextFirst = localStorage['outputContextFirst'] == 'true';
-    if (outputContextFirst)
+
+    if (this.outputContextFirst_)
       this.ancestry_(node, prevNode, type, buff);
     var earcon = this.findEarcon_(node, prevNode);
     if (earcon)
       options.annotation.push(earcon);
     this.append_(buff, range.start.getText().substring(startIndex, endIndex),
         options);
-    if (!outputContextFirst)
+    if (!this.outputContextFirst_)
       this.ancestry_(node, prevNode, type, buff);
 
     var loc =
