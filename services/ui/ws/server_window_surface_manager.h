@@ -11,7 +11,6 @@
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
@@ -46,7 +45,6 @@ class ServerWindowSurfaceManager {
   bool HasSurfaceOfType(mojom::SurfaceType type) const;
   bool HasAnySurface() const;
 
-  uint32_t client_id() const { return surface_id_allocator_.client_id(); }
   cc::SurfaceManager* GetSurfaceManager();
 
  private:
@@ -57,11 +55,7 @@ class ServerWindowSurfaceManager {
   // than the size of the window.
   bool IsSurfaceReadyAndNonEmpty(mojom::SurfaceType type) const;
 
-  cc::SurfaceId GenerateId();
-
   ServerWindow* window_;
-
-  cc::SurfaceIdAllocator surface_id_allocator_;
 
   using TypeToSurfaceMap =
       std::map<mojom::SurfaceType, std::unique_ptr<ServerWindowSurface>>;

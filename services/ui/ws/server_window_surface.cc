@@ -28,12 +28,15 @@ ServerWindowSurface::ServerWindowSurface(
     mojo::InterfaceRequest<Surface> request,
     mojom::SurfaceClientPtr client)
     : manager_(manager),
-      surface_id_(manager->GenerateId()),
+      surface_id_allocator_(
+          manager->window()->delegate()->GetSurfacesState()->next_client_id()),
       surface_factory_(manager_->GetSurfaceManager(), this),
       client_(std::move(client)),
-      binding_(this, std::move(request)),
-      registered_surface_factory_client_(false) {
-  surface_factory_.Create(surface_id_);
+      binding_(this, std::move(request)) {
+  cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
+  surface_id_allocator_.RegisterSurfaceClientId(surface_manager);
+  surface_manager->RegisterSurfaceFactoryClient(
+      surface_id_allocator_.client_id(), this);
 }
 
 ServerWindowSurface::~ServerWindowSurface() {
@@ -41,11 +44,9 @@ ServerWindowSurface::~ServerWindowSurface() {
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
   surface_factory_.DestroyAll();
-
-  if (registered_surface_factory_client_) {
-    cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-    surface_manager->UnregisterSurfaceFactoryClient(manager_->client_id());
-  }
+  cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
+  surface_manager->UnregisterSurfaceFactoryClient(
+      surface_id_allocator_.client_id());
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(
@@ -53,22 +54,22 @@ void ServerWindowSurface::SubmitCompositorFrame(
     const SubmitCompositorFrameCallback& callback) {
   gfx::Size frame_size =
       frame.delegated_frame_data->render_pass_list[0]->output_rect.size();
-  if (!surface_id_.is_null()) {
-    // If the size of the CompostiorFrame has changed then destroy the existing
-    // Surface and create a new one of the appropriate size.
-    if (frame_size != last_submitted_frame_size_) {
-      // Rendering of the topmost frame happens in two phases. First the frame
-      // is generated and submitted, and a later date it is actually drawn.
-      // During the time the frame is generated and drawn we can't destroy the
-      // surface, otherwise when drawn you get an empty surface. To deal with
-      // this we schedule destruction via the delegate. The delegate will call
-      // us back when we're not waiting on a frame to be drawn (which may be
-      // synchronously).
+  // If the size of the CompostiorFrame has changed then destroy the existing
+  // Surface and create a new one of the appropriate size.
+  if (surface_id_.is_null() || frame_size != last_submitted_frame_size_) {
+    // Rendering of the topmost frame happens in two phases. First the frame
+    // is generated and submitted, and a later date it is actually drawn.
+    // During the time the frame is generated and drawn we can't destroy the
+    // surface, otherwise when drawn you get an empty surface. To deal with
+    // this we schedule destruction via the delegate. The delegate will call
+    // us back when we're not waiting on a frame to be drawn (which may be
+    // synchronously).
+    if (!surface_id_.is_null()) {
       surfaces_scheduled_for_destruction_.insert(surface_id_);
       window()->delegate()->ScheduleSurfaceDestruction(window());
-      surface_id_ = manager_->GenerateId();
-      surface_factory_.Create(surface_id_);
     }
+    surface_id_ = surface_id_allocator_.GenerateId();
+    surface_factory_.Create(surface_id_);
   }
   surface_factory_.SubmitCompositorFrame(surface_id_, std::move(frame),
                                          base::Bind(&CallCallback, callback));
@@ -81,13 +82,6 @@ void ServerWindowSurface::DestroySurfacesScheduledForDestruction() {
   surfaces.swap(surfaces_scheduled_for_destruction_);
   for (auto& id : surfaces)
     surface_factory_.Destroy(id);
-}
-
-void ServerWindowSurface::RegisterForBeginFrames() {
-  DCHECK(!registered_surface_factory_client_);
-  registered_surface_factory_client_ = true;
-  cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-  surface_manager->RegisterSurfaceFactoryClient(manager_->client_id(), this);
 }
 
 ServerWindow* ServerWindowSurface::window() {

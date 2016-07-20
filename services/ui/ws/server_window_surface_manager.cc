@@ -14,12 +14,9 @@ namespace ws {
 
 ServerWindowSurfaceManager::ServerWindowSurfaceManager(ServerWindow* window)
     : window_(window),
-      surface_id_allocator_(
-          window->delegate()->GetSurfacesState()->next_client_id()),
       waiting_for_initial_frames_(
           window_->properties().count(ui::mojom::kWaitForUnderlay_Property) >
           0) {
-  surface_id_allocator_.RegisterSurfaceClientId(GetSurfaceManager());
 }
 
 ServerWindowSurfaceManager::~ServerWindowSurfaceManager() {
@@ -44,13 +41,6 @@ void ServerWindowSurfaceManager::CreateSurface(
     mojom::SurfaceClientPtr client) {
   std::unique_ptr<ServerWindowSurface> surface(
       new ServerWindowSurface(this, std::move(request), std::move(client)));
-  if (!HasAnySurface()) {
-    // Only one SurfaceFactoryClient can be registered per surface id namespace,
-    // so register the first one.  Since all surfaces created by this manager
-    // represent the same window, the begin frame source can be shared by
-    // all surfaces created here.
-    surface->RegisterForBeginFrames();
-  }
   type_to_surface_map_[surface_type] = std::move(surface);
 }
 
@@ -92,10 +82,6 @@ bool ServerWindowSurfaceManager::IsSurfaceReadyAndNonEmpty(
       iter->second->last_submitted_frame_size();
   return last_submitted_frame_size.width() >= window_->bounds().width() &&
          last_submitted_frame_size.height() >= window_->bounds().height();
-}
-
-cc::SurfaceId ServerWindowSurfaceManager::GenerateId() {
-  return surface_id_allocator_.GenerateId();
 }
 
 }  // namespace ws
