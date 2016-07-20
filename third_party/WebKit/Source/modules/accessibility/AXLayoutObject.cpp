@@ -201,21 +201,10 @@ LayoutRect AXLayoutObject::elementRect() const
 {
     if (!m_explicitElementRect.isEmpty())
         return m_explicitElementRect;
-    if (!m_layoutObject)
-        return LayoutRect();
-    if (!m_layoutObject->isBox())
-        return computeElementRect();
 
-    for (const AXObject* obj = this; obj; obj = obj->parentObject()) {
-        if (obj->isAXLayoutObject())
-            toAXLayoutObject(obj)->checkCachedElementRect();
-    }
-    for (const AXObject* obj = this; obj; obj = obj->parentObject()) {
-        if (obj->isAXLayoutObject())
-            toAXLayoutObject(obj)->updateCachedElementRect();
-    }
-
-    return m_cachedElementRect;
+    // FIXME(dmazzoni): use relative bounds instead since this is a bottleneck.
+    // http://crbug.com/618120
+    return computeElementRect();
 }
 
 SkMatrix44 AXLayoutObject::transformFromLocalParentFrame() const
