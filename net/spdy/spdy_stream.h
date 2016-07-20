@@ -373,7 +373,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // bidirectional streams; for request/response streams, it must be
   // MORE_DATA_TO_SEND if the request has data to upload, or
   // NO_MORE_DATA_TO_SEND if not.
-  int SendRequestHeaders(std::unique_ptr<SpdyHeaderBlock> request_headers,
+  int SendRequestHeaders(SpdyHeaderBlock request_headers,
                          SpdySendStatus send_status);
 
   // Sends a DATA frame. The delegate will be notified via
@@ -477,11 +477,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // already be activated.
   std::unique_ptr<SpdySerializedFrame> ProduceSynStreamFrame();
 
-  // Produce the initial HEADER frame for the stream with the given
-  // block. The stream must already be activated.
-  std::unique_ptr<SpdySerializedFrame> ProduceHeaderFrame(
-      std::unique_ptr<SpdyHeaderBlock> header_block);
-
   // Queues the send for next frame of the remaining data in
   // |pending_send_data_|. Must be called only when
   // |pending_send_data_| is set.
@@ -530,7 +525,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   //
   // TODO(akalin): Hang onto this only until we send it. This
   // necessitates stashing the URL separately.
-  std::unique_ptr<SpdyHeaderBlock> request_headers_;
+  bool request_headers_valid_;
+  SpdyHeaderBlock request_headers_;
 
   // Data waiting to be sent, and the close state of the local endpoint
   // after the data is fully written.

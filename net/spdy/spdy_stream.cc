@@ -100,6 +100,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       unacked_recv_window_bytes_(0),
       session_(session),
       delegate_(NULL),
+      request_headers_valid_(false),
       pending_send_status_(MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
       response_headers_status_(RESPONSE_HEADERS_ARE_INCOMPLETE),
@@ -201,14 +202,14 @@ void SpdyStream::PushedStreamReplay() {
 
 std::unique_ptr<SpdySerializedFrame> SpdyStream::ProduceSynStreamFrame() {
   CHECK_EQ(io_state_, STATE_IDLE);
-  CHECK(request_headers_);
+  CHECK(request_headers_valid_);
   CHECK_GT(stream_id_, 0u);
 
   SpdyControlFlags flags =
       (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
   std::unique_ptr<SpdySerializedFrame> frame(session_->CreateSynStream(
-      stream_id_, priority_, flags, request_headers_->Clone()));
+      stream_id_, priority_, flags, request_headers_.Clone()));
   send_time_ = base::TimeTicks::Now();
   return frame;
 }
@@ -464,13 +465,14 @@ int SpdyStream::OnAdditionalResponseHeadersReceived(
 }
 
 void SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
-  CHECK(!request_headers_.get());
+  CHECK(!request_headers_valid_);
   CHECK_EQ(io_state_, STATE_IDLE);
   CHECK_EQ(type_, SPDY_PUSH_STREAM);
   DCHECK(!delegate_);
 
   io_state_ = STATE_RESERVED_REMOTE;
-  request_headers_.reset(new SpdyHeaderBlock(headers.Clone()));
+  request_headers_ = headers.Clone();
+  request_headers_valid_ = true;
 }
 
 void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
@@ -680,15 +682,15 @@ base::WeakPtr<SpdyStream> SpdyStream::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-int SpdyStream::SendRequestHeaders(
-    std::unique_ptr<SpdyHeaderBlock> request_headers,
-    SpdySendStatus send_status) {
+int SpdyStream::SendRequestHeaders(SpdyHeaderBlock request_headers,
+                                   SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
-  CHECK(!request_headers_);
+  CHECK(!request_headers_valid_);
   CHECK(!pending_send_data_.get());
   CHECK_EQ(io_state_, STATE_IDLE);
   request_headers_ = std::move(request_headers);
+  request_headers_valid_ = true;
   pending_send_status_ = send_status;
   session_->EnqueueStreamWrite(GetWeakPtr(), SYN_STREAM,
                                std::unique_ptr<SpdyBufferProducer>(
@@ -774,10 +776,10 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 }
 
 GURL SpdyStream::GetUrlFromHeaders() const {
-  if (!request_headers_)
+  if (!request_headers_valid_)
     return GURL();
 
-  return GetUrlFromHeaderBlock(*request_headers_);
+  return GetUrlFromHeaderBlock(request_headers_);
 }
 
 bool SpdyStream::HasUrlFromHeaders() const {
