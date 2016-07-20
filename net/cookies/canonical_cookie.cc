@@ -137,8 +137,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url,
                                  bool httponly,
                                  CookieSameSite same_site,
                                  CookiePriority priority)
-    : source_(url.SchemeIsFile() ? url : url.GetOrigin()),
-      name_(name),
+    : name_(name),
       value_(value),
       domain_(domain),
       path_(path),
@@ -326,6 +325,12 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   return base::WrapUnique(new CanonicalCookie(
       GURL(), name, value, domain, path, creation, expiration, last_access,
       secure, http_only, same_site, priority));
+}
+
+bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
+    const CanonicalCookie& ecc) const {
+  return (name_ == ecc.Name() && (ecc.IsDomainMatch(DomainWithoutDot()) ||
+                                  IsDomainMatch(ecc.DomainWithoutDot())));
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
@@ -516,6 +521,12 @@ bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
            !parsed_cookie.HasDomain() && parsed_cookie.Path() == "/";
   }
   return true;
+}
+
+std::string CanonicalCookie::DomainWithoutDot() const {
+  if (domain_.empty() || domain_[0] != '.')
+    return domain_;
+  return domain_.substr(1);
 }
 
 }  // namespace net

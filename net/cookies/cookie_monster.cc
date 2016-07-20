@@ -1637,8 +1637,9 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
     // ignoring the path attribute.
     //
     // See: https://tools.ietf.org/html/draft-west-leave-secure-cookies-alone
-    if (enforce_strict_secure && !source_url.SchemeIsCryptographic() &&
-        ecc.IsEquivalentForSecureCookieMatching(*cc) && cc->IsSecure()) {
+    if (enforce_strict_secure && cc->IsSecure() &&
+        !source_url.SchemeIsCryptographic() &&
+        ecc.IsEquivalentForSecureCookieMatching(*cc)) {
       skipped_secure_cookie = true;
       histogram_cookie_delete_equivalent_->Add(
           COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE);

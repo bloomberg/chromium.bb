@@ -28,6 +28,7 @@ class NET_EXPORT CanonicalCookie {
   // unless the caller has done appropriate validation and canonicalization
   // themselves.
   CanonicalCookie();
+  // TODO(mmenke): Remove |url|, as it's not used.
   CanonicalCookie(const GURL& url,
                   const std::string& name,
                   const std::string& value,
@@ -127,10 +128,7 @@ class NET_EXPORT CanonicalCookie {
   //
   // This is needed for the updates to RFC6265 as per
   // https://tools.ietf.org/html/draft-west-leave-secure-cookies-alone.
-  bool IsEquivalentForSecureCookieMatching(const CanonicalCookie& ecc) const {
-    return (name_ == ecc.Name() && (ecc.IsDomainMatch(Source().host()) ||
-                                    IsDomainMatch(ecc.Source().host())));
-  }
+  bool IsEquivalentForSecureCookieMatching(const CanonicalCookie& ecc) const;
 
   void SetLastAccessDate(const base::Time& date) {
     last_access_date_ = date;
@@ -197,17 +195,9 @@ class NET_EXPORT CanonicalCookie {
                                   const GURL& url,
                                   const ParsedCookie& parsed_cookie);
 
-  const GURL& Source() const { return source_; }
+  // Returns the cookie's domain, with the leading dot removed, if present.
+  std::string DomainWithoutDot() const;
 
-  // The source member of a canonical cookie is the origin of the URL that tried
-  // to set this cookie.  This field is not persistent though; its only used in
-  // the in-tab cookies dialog to show the user the source URL. This is used for
-  // both allowed and blocked cookies.
-  // When a CanonicalCookie is constructed from the backing store (common case)
-  // this field will be null.  CanonicalCookie consumers should not rely on
-  // this field unless they guarantee that the creator of those
-  // CanonicalCookies properly initialized the field.
-  GURL source_;
   std::string name_;
   std::string value_;
   std::string domain_;
