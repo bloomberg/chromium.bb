@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_database_data.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
@@ -27,6 +28,8 @@ class PlatformNotificationContextImpl;
 struct PlatformNotificationData;
 class PlatformNotificationService;
 class ResourceContext;
+class ServiceWorkerContextWrapper;
+class ServiceWorkerRegistration;
 
 class NotificationMessageFilter : public BrowserMessageFilter {
  public:
@@ -34,6 +37,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       int process_id,
       PlatformNotificationContextImpl* notification_context,
       ResourceContext* resource_context,
+      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
       BrowserContext* browser_context);
 
   // To be called by the notification's delegate when it has closed, so that
@@ -77,11 +81,24 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   // |success|. Will present the notification to the user when successful.
   void DidWritePersistentNotificationData(
       int request_id,
+      int64_t service_worker_registration_id,
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
       bool success,
       int64_t persistent_notification_id);
+
+  // Callback to be invoked by the service worker context when the service
+  // worker registration was retrieved. Will present the notification to the
+  // user when successful.
+  void DidFindServiceWorkerRegistration(
+      int request_id,
+      const GURL& origin,
+      const PlatformNotificationData& notification_data,
+      const NotificationResources& notification_resources,
+      int64_t persistent_notification_id,
+      content::ServiceWorkerStatusCode service_worker_status,
+      const scoped_refptr<content::ServiceWorkerRegistration>& registration);
 
   // Callback to be invoked when all notifications belonging to a Service Worker
   // registration have been read from the database. The |success| argument
@@ -114,6 +131,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   int process_id_;
   scoped_refptr<PlatformNotificationContextImpl> notification_context_;
   ResourceContext* resource_context_;
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   BrowserContext* browser_context_;
 
   // Map mapping notification ids to their associated close closures.

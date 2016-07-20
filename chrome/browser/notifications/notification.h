@@ -43,6 +43,11 @@ class Notification : public message_center::Notification {
   // A unique identifier used to update (replace) or remove a notification.
   const std::string& tag() const { return tag_; }
 
+  const GURL& service_worker_scope() const { return service_worker_scope_; }
+  void set_service_worker_scope(const GURL& service_worker_scope) {
+    service_worker_scope_ = service_worker_scope;
+  }
+
   // Id of the delegate embedded inside this instance.
   std::string delegate_id() const { return delegate()->id(); }
 
@@ -51,6 +56,10 @@ class Notification : public message_center::Notification {
  private:
   // The user-supplied tag for the notification.
   std::string tag_;
+
+  // The service worker scope if the notification was displayed by a service
+  // worker. Used by WebAPKs.
+  GURL service_worker_scope_;
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

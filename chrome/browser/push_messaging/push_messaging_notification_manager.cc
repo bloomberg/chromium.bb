@@ -351,9 +351,13 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
     return;
   }
 
+  // Do not pass service worker scope. The origin will be used instead of the
+  // service worker scope to determine whether a notification should be
+  // attributed to a WebAPK on Android. This is OK because this code path is hit
+  // rarely.
   PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
-      profile_, persistent_notification_id, origin, notification_data,
-      NotificationResources());
+      profile_, persistent_notification_id, GURL() /* service_worker_scope */,
+      origin, notification_data, NotificationResources());
 
   message_handled_closure.Run();
 }

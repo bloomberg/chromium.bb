@@ -66,6 +66,7 @@ class CONTENT_EXPORT PlatformNotificationService {
   virtual void DisplayPersistentNotification(
       BrowserContext* browser_context,
       int64_t persistent_notification_id,
+      const GURL& service_worker_origin,
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources) = 0;

@@ -1038,9 +1038,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
 
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
+      static_cast<ServiceWorkerContextWrapper*>(
+          storage_partition_impl_->GetServiceWorkerContext()));
   notification_message_filter_ = new NotificationMessageFilter(
       GetID(), storage_partition_impl_->GetPlatformNotificationContext(),
-      resource_context, browser_context);
+      resource_context, service_worker_context, browser_context);
   AddFilter(notification_message_filter_.get());
 
   AddFilter(new GamepadBrowserMessageFilter());

@@ -409,6 +409,19 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
             notification.origin_url().spec());
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       PersistentNotificationServiceWorkerScope) {
+  RequestAndAcceptPermission();
+
+  // Creates a simple notification.
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+
+  EXPECT_EQ(TestPageUrl().spec(), notification.service_worker_scope().spec());
+}
+
 // TODO(felt): This DCHECKs when bubbles are enabled, when the file_url is
 // persisted. crbug.com/502057
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,

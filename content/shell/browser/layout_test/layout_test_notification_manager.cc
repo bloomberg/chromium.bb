@@ -54,6 +54,7 @@ void LayoutTestNotificationManager::DisplayNotification(
 void LayoutTestNotificationManager::DisplayPersistentNotification(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
+    const GURL& service_worker_scope,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources) {

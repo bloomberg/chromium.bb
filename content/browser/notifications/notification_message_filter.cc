@@ -10,6 +10,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -72,11 +73,13 @@ NotificationMessageFilter::NotificationMessageFilter(
     int process_id,
     PlatformNotificationContextImpl* notification_context,
     ResourceContext* resource_context,
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     BrowserContext* browser_context)
     : BrowserMessageFilter(PlatformNotificationMsgStart),
       process_id_(process_id),
       notification_context_(notification_context),
       resource_context_(resource_context),
+      service_worker_context_(service_worker_context),
       browser_context_(browser_context),
       weak_factory_io_(this) {}
 
@@ -183,12 +186,14 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   notification_context_->WriteNotificationData(
       origin, database_data,
       base::Bind(&NotificationMessageFilter::DidWritePersistentNotificationData,
-                 weak_factory_io_.GetWeakPtr(), request_id, origin,
+                 weak_factory_io_.GetWeakPtr(), request_id,
+                 service_worker_registration_id, origin,
                  sanitized_notification_data, notification_resources));
 }
 
 void NotificationMessageFilter::DidWritePersistentNotificationData(
     int request_id,
+    int64_t service_worker_registration_id,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources,
@@ -196,20 +201,50 @@ void NotificationMessageFilter::DidWritePersistentNotificationData(
     int64_t persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (success) {
-    PlatformNotificationService* service =
-        GetContentClient()->browser()->GetPlatformNotificationService();
-    DCHECK(service);
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PlatformNotificationService::DisplayPersistentNotification,
-                   base::Unretained(service),  // The service is a singleton.
-                   browser_context_, persistent_notification_id, origin,
-                   notification_data, notification_resources));
+  if (!success) {
+    Send(new PlatformNotificationMsg_DidShowPersistent(request_id, false));
+    return;
   }
 
-  Send(new PlatformNotificationMsg_DidShowPersistent(request_id, success));
+  // Get the service worker scope.
+  service_worker_context_->FindReadyRegistrationForId(
+      service_worker_registration_id, origin,
+      base::Bind(&NotificationMessageFilter::DidFindServiceWorkerRegistration,
+                 weak_factory_io_.GetWeakPtr(), request_id, origin,
+                 notification_data, notification_resources,
+                 persistent_notification_id));
+}
+
+void NotificationMessageFilter::DidFindServiceWorkerRegistration(
+    int request_id,
+    const GURL& origin,
+    const PlatformNotificationData& notification_data,
+    const NotificationResources& notification_resources,
+    int64_t persistent_notification_id,
+    content::ServiceWorkerStatusCode service_worker_status,
+    const scoped_refptr<content::ServiceWorkerRegistration>& registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (service_worker_status != SERVICE_WORKER_OK) {
+    Send(new PlatformNotificationMsg_DidShowPersistent(request_id, false));
+    LOG(ERROR) << "Registration not found for " << origin.spec();
+    // TODO(peter): Add UMA to track how often this occurs.
+    return;
+  }
+
+  PlatformNotificationService* service =
+      GetContentClient()->browser()->GetPlatformNotificationService();
+  DCHECK(service);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PlatformNotificationService::DisplayPersistentNotification,
+                 base::Unretained(service),  // The service is a singleton.
+                 browser_context_, persistent_notification_id,
+                 registration->pattern(), origin, notification_data,
+                 notification_resources));
+
+  Send(new PlatformNotificationMsg_DidShowPersistent(request_id, true));
 }
 
 void NotificationMessageFilter::OnGetNotifications(

@@ -199,8 +199,8 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
   service()->DisplayPersistentNotification(
-      profile(), kPersistentNotificationId, GURL("https://chrome.com/"),
-      notification_data, NotificationResources());
+      profile(), kPersistentNotificationId, GURL() /* service_worker_scope */,
+      GURL("https://chrome.com/"), notification_data, NotificationResources());
 
   ASSERT_EQ(1u, GetNotificationCount());
 
@@ -266,7 +266,8 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
   notification_resources.action_icons.resize(notification_data.actions.size());
 
   service()->DisplayPersistentNotification(
-      profile(), 0u /* persistent notification */, GURL("https://chrome.com/"),
+      profile(), 0u /* persistent notification */,
+      GURL() /* service_worker_scope */, GURL("https://chrome.com/"),
       notification_data, notification_resources);
 
   ASSERT_EQ(1u, GetNotificationCount());
@@ -304,8 +305,8 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
 
   service()->DisplayPersistentNotification(
-      profile(), 42 /* sw_registration_id */, origin,
-      PlatformNotificationData(), NotificationResources());
+      profile(), 42 /* sw_registration_id */, GURL() /* service_worker_scope */,
+      origin, PlatformNotificationData(), NotificationResources());
 
   base::Time after_persistent_notification =
       HostContentSettingsMapFactory::GetForProfile(profile())->GetLastUsage(
@@ -407,8 +408,9 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
   Notification notification = service()->CreateNotificationFromData(
-      profile(), GURL("https://chrome.com/"), notification_data,
-      NotificationResources(), new MockNotificationDelegate("hello"));
+      profile(), GURL() /* service_worker_scope */, GURL("https://chrome.com/"),
+      notification_data, NotificationResources(),
+      new MockNotificationDelegate("hello"));
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
@@ -429,6 +431,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
 
   notification = service()->CreateNotificationFromData(
       profile(),
+      GURL() /* service_worker_scope */,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
       notification_data, NotificationResources(),
       new MockNotificationDelegate("hello"));

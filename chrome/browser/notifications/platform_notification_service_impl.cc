@@ -289,7 +289,8 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(browser_context, std::move(delegate));
   Notification notification = CreateNotificationFromData(
-      profile, origin, notification_data, notification_resources, proxy);
+      profile, GURL() /* service_worker_scope */, origin, notification_data,
+      notification_resources, proxy);
 
   GetNotificationDisplayService(profile)->Display(
       NotificationCommon::NON_PERSISTENT, notification.delegate_id(),
@@ -313,6 +314,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
+    const GURL& service_worker_scope,
     const GURL& origin,
     const content::PlatformNotificationData& notification_data,
     const content::NotificationResources& notification_resources) {
@@ -329,7 +331,8 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
       settings_button_index);
 
   Notification notification = CreateNotificationFromData(
-      profile, origin, notification_data, notification_resources, delegate);
+      profile, service_worker_scope, origin, notification_data,
+      notification_resources, delegate);
 
   // TODO(peter): Remove this mapping when we have reliable id generation for
   // the message_center::Notification objects.
@@ -418,6 +421,7 @@ void PlatformNotificationServiceImpl::OnCloseEventDispatchComplete(
 
 Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     Profile* profile,
+    const GURL& service_worker_scope,
     const GURL& origin,
     const content::PlatformNotificationData& notification_data,
     const content::NotificationResources& notification_resources,
@@ -435,6 +439,7 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
       origin, notification_data.tag, message_center::RichNotificationData(),
       delegate);
 
+  notification.set_service_worker_scope(service_worker_scope);
   notification.set_context_message(
       DisplayNameForContextMessage(profile, origin));
   notification.set_vibration_pattern(notification_data.vibration_pattern);

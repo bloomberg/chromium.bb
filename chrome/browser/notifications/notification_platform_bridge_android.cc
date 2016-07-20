@@ -182,21 +182,24 @@ void NotificationPlatformBridgeAndroid::Display(
   DCHECK_EQ(notification_type, NotificationCommon::PERSISTENT);
 
   GURL origin_url(notification.origin_url().GetOrigin());
-
-  ScopedJavaLocalRef<jstring> origin =
-      ConvertUTF8ToJavaString(env, origin_url.spec());
-
   ScopedJavaLocalRef<jstring> webapk_package;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWebApk)) {
+    GURL scope_url(notification.service_worker_scope());
+    if (!scope_url.is_valid())
+      scope_url = origin_url;
+    ScopedJavaLocalRef<jstring> j_scope_url =
+        ConvertUTF8ToJavaString(env, scope_url.spec());
     webapk_package = Java_NotificationPlatformBridge_queryWebApkPackage(
-        env, java_object_.obj(), origin.obj());
+        env, java_object_.obj(), j_scope_url.obj());
   } else {
     webapk_package = ConvertUTF8ToJavaString(env, "");
   }
 
   ScopedJavaLocalRef<jstring> j_notification_id =
       ConvertUTF8ToJavaString(env, notification_id);
+  ScopedJavaLocalRef<jstring> j_origin =
+      ConvertUTF8ToJavaString(env, origin_url.spec());
   ScopedJavaLocalRef<jstring> tag =
       ConvertUTF8ToJavaString(env, notification.tag());
   ScopedJavaLocalRef<jstring> title =
@@ -230,7 +233,7 @@ void NotificationPlatformBridgeAndroid::Display(
       ConvertUTF8ToJavaString(env, profile_id);
 
   Java_NotificationPlatformBridge_displayNotification(
-      env, java_object_.obj(), j_notification_id.obj(), origin.obj(),
+      env, java_object_.obj(), j_notification_id.obj(), j_origin.obj(),
       j_profile_id.obj(), incognito, tag.obj(), webapk_package.obj(),
       title.obj(), body.obj(), notification_icon.obj(), badge.obj(),
       vibration_pattern.obj(), notification.timestamp().ToJavaTime(),
