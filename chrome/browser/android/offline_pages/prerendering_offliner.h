@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/android/application_status_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
 #include "components/offline_pages/background/offliner.h"
@@ -41,6 +42,11 @@ class PrerenderingOffliner : public Offliner {
   // and must be called before any of the Offliner interface methods are called.
   void SetLoaderForTesting(std::unique_ptr<PrerenderingLoader> loader);
 
+  void SetLowEndDeviceForTesting(bool is_low_end_device);
+
+  void SetApplicationStateForTesting(
+      base::android::ApplicationState application_state);
+
  protected:
   // Internal method for requesting OfflinePageModel to save page.
   // Exposed for unit testing.
@@ -48,24 +54,24 @@ class PrerenderingOffliner : public Offliner {
   virtual void SavePage(const GURL& url,
                         const ClientId& client_id,
                         std::unique_ptr<OfflinePageArchiver> archiver,
-                        const SavePageCallback& callback);
+                        const SavePageCallback& save_callback);
 
  private:
   // Callback logic for PrerenderingLoader::LoadPage().
   void OnLoadPageDone(const SavePageRequest& request,
-                      const CompletionCallback& completion_callback,
                       Offliner::RequestStatus load_status,
                       content::WebContents* web_contents);
 
   // Callback logic for OfflinePageModel::SavePage().
   void OnSavePageDone(const SavePageRequest& request,
-                      const CompletionCallback& completion_callback,
                       SavePageResult save_result,
                       int64_t offline_id);
 
   PrerenderingLoader* GetOrCreateLoader();
-  void SetPendingRequest(int64_t request_id);
-  void ClearPendingRequest();
+
+  // Listener function for changes to application background/foreground state.
+  void OnApplicationStateChange(
+      base::android::ApplicationState application_state);
 
   // Not owned.
   content::BrowserContext* browser_context_;
@@ -77,6 +83,11 @@ class PrerenderingOffliner : public Offliner {
   // May be used to ensure a callback applies to the pending request (e.g., in
   // case we receive a save page callback for an old, canceled request).
   std::unique_ptr<SavePageRequest> pending_request_;
+  // Callback to call when pending request completes/fails.
+  CompletionCallback completion_callback_;
+  bool is_low_end_device_;
+  // ApplicationStatusListener to monitor if the Chrome moves to the foreground.
+  std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
   base::WeakPtrFactory<PrerenderingOffliner> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingOffliner);

@@ -5,6 +5,7 @@
 #include "chrome/browser/android/offline_pages/prerendering_offliner.h"
 
 #include "base/bind.h"
+#include "base/sys_info.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -20,13 +21,14 @@ PrerenderingOffliner::PrerenderingOffliner(
     : browser_context_(browser_context),
       offline_page_model_(offline_page_model),
       pending_request_(nullptr),
+      is_low_end_device_(base::SysInfo::IsLowEndDevice()),
+      app_listener_(nullptr),
       weak_ptr_factory_(this) {}
 
 PrerenderingOffliner::~PrerenderingOffliner() {}
 
 void PrerenderingOffliner::OnLoadPageDone(
     const SavePageRequest& request,
-    const CompletionCallback& completion_callback,
     Offliner::RequestStatus load_status,
     content::WebContents* web_contents) {
   // Check if request is still pending receiving a callback.
@@ -61,33 +63,34 @@ void PrerenderingOffliner::OnLoadPageDone(
     SavePage(web_contents->GetLastCommittedURL(), request.client_id(),
              std::move(archiver),
              base::Bind(&PrerenderingOffliner::OnSavePageDone,
-                        weak_ptr_factory_.GetWeakPtr(), request,
-                        completion_callback));
+                        weak_ptr_factory_.GetWeakPtr(), request));
   } else {
-    // Clear pending request and then run the completion callback.
+    // Clear pending request and app listener then run completion callback.
     pending_request_.reset(nullptr);
-    completion_callback.Run(request, load_status);
+    app_listener_.reset(nullptr);
+    completion_callback_.Run(request, load_status);
   }
 }
 
 void PrerenderingOffliner::OnSavePageDone(
     const SavePageRequest& request,
-    const CompletionCallback& completion_callback,
     SavePageResult save_result,
     int64_t offline_id) {
   // Check if request is still pending receiving a callback.
   if (!pending_request_)
     return;
 
-  // Also check that save callback is for same request as pending request
+  // Also check that this completed request is same as the pending one
   // (since SavePage request is not cancel-able currently and could be old).
   if (request.request_id() != pending_request_->request_id()) {
     DVLOG(1) << "Ignoring save callback for old request";
     return;
   }
 
-  // Clear pending request here and inform loader we are done with WebContents.
+  // Clear pending request and app listener here and then inform loader we
+  // are done with WebContents.
   pending_request_.reset(nullptr);
+  app_listener_.reset(nullptr);
   GetOrCreateLoader()->StopLoading();
 
   // Determine status and run the completion callback.
@@ -99,7 +102,7 @@ void PrerenderingOffliner::OnSavePageDone(
     // request based on specific save error cases.
     save_status = RequestStatus::SAVE_FAILED;
   }
-  completion_callback.Run(request, save_status);
+  completion_callback_.Run(request, save_status);
 }
 
 bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
@@ -121,14 +124,20 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
 
   // Track copy of pending request for callback handling.
   pending_request_.reset(new SavePageRequest(request));
+  completion_callback_ = callback;
 
   // Kick off load page attempt.
   bool accepted = GetOrCreateLoader()->LoadPage(
-      request.url(),
-      base::Bind(&PrerenderingOffliner::OnLoadPageDone,
-                 weak_ptr_factory_.GetWeakPtr(), request, callback));
-  if (!accepted)
+      request.url(), base::Bind(&PrerenderingOffliner::OnLoadPageDone,
+                                weak_ptr_factory_.GetWeakPtr(), request));
+  if (!accepted) {
     pending_request_.reset(nullptr);
+  } else {
+    // Create app listener for the pending request.
+    app_listener_.reset(new base::android::ApplicationStatusListener(
+        base::Bind(&PrerenderingOffliner::OnApplicationStateChange,
+                   weak_ptr_factory_.GetWeakPtr())));
+  }
 
   return accepted;
 }
@@ -136,6 +145,7 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
 void PrerenderingOffliner::Cancel() {
   if (pending_request_) {
     pending_request_.reset(nullptr);
+    app_listener_.reset(nullptr);
     GetOrCreateLoader()->StopLoading();
     // TODO(dougarnett): Consider ability to cancel SavePage request.
   }
@@ -147,13 +157,23 @@ void PrerenderingOffliner::SetLoaderForTesting(
   loader_ = std::move(loader);
 }
 
+void PrerenderingOffliner::SetLowEndDeviceForTesting(bool is_low_end_device) {
+  is_low_end_device_ = is_low_end_device;
+}
+
+void PrerenderingOffliner::SetApplicationStateForTesting(
+    base::android::ApplicationState application_state) {
+  OnApplicationStateChange(application_state);
+}
+
 void PrerenderingOffliner::SavePage(
     const GURL& url,
     const ClientId& client_id,
     std::unique_ptr<OfflinePageArchiver> archiver,
-    const SavePageCallback& callback) {
+    const SavePageCallback& save_callback) {
   DCHECK(offline_page_model_);
-  offline_page_model_->SavePage(url, client_id, std::move(archiver), callback);
+  offline_page_model_->SavePage(url, client_id, std::move(archiver),
+                                save_callback);
 }
 
 PrerenderingLoader* PrerenderingOffliner::GetOrCreateLoader() {
@@ -161,6 +181,19 @@ PrerenderingLoader* PrerenderingOffliner::GetOrCreateLoader() {
     loader_.reset(new PrerenderingLoader(browser_context_));
   }
   return loader_.get();
+}
+
+void PrerenderingOffliner::OnApplicationStateChange(
+    base::android::ApplicationState application_state) {
+  if (pending_request_ && is_low_end_device_ &&
+      application_state ==
+          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+    DVLOG(1) << "App became active, canceling current offlining request";
+    SavePageRequest* request = pending_request_.get();
+    Cancel();
+    completion_callback_.Run(*request,
+                             Offliner::RequestStatus::FOREGROUND_CANCELED);
+  }
 }
 
 }  // namespace offline_pages

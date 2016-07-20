@@ -19,15 +19,22 @@ class Offliner {
   // WARNING: You must update histograms.xml to match any changes made to
   // this enum (ie, OfflinePagesBackgroundOfflinerRequestStatus histogram enum).
   enum RequestStatus {
-    UNKNOWN = 0,  // No status determined/reported yet. Interim status, not sent
-                  // in callback.
-    LOADED = 1,  // Page loaded but not (yet) saved. Interim status, not sent in
-                 // callback.
-    SAVED = 2,   // Offline page snapshot saved.
-    REQUEST_COORDINATOR_CANCELED = 3,  // RequestCoordinator canceled request.
-    PRERENDERING_CANCELED = 4,         // Prerendering was canceled.
-    PRERENDERING_FAILED = 5,           // Prerendering failed to load page.
-    SAVE_FAILED = 6,                   // Failed to save loaded page.
+    // No status determined/reported yet. Interim status, not sent in callback.
+    UNKNOWN = 0,
+    // Page loaded but not (yet) saved. Interim status, not sent in callback.
+    LOADED = 1,
+    // Offline page snapshot saved.
+    SAVED = 2,
+    // RequestCoordinator canceled request.
+    REQUEST_COORDINATOR_CANCELED = 3,
+    // Prerendering was canceled.
+    PRERENDERING_CANCELED = 4,
+    // Prerendering failed to load page.
+    PRERENDERING_FAILED = 5,
+    // Failed to save loaded page.
+    SAVE_FAILED = 6,
+    // Foreground transition canceled request.
+    FOREGROUND_CANCELED = 7,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

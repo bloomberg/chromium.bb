@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
 #include "chrome/test/base/testing_profile.h"
@@ -326,6 +327,37 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveLoadedButThenCanceledFromLoader) {
   EXPECT_FALSE(loader()->IsLoaded());
   // Note: save still in progress since it does not support canceling.
   EXPECT_TRUE(SaveInProgress());
+}
+
+TEST_F(PrerenderingOfflinerTest, ForegroundTransitionCancelsOnLowEndDevice) {
+  offliner()->SetLowEndDeviceForTesting(true);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  EXPECT_FALSE(loader()->IsIdle());
+
+  offliner()->SetApplicationStateForTesting(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+
+  // Loading canceled on low-end device.
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_EQ(Offliner::RequestStatus::FOREGROUND_CANCELED, request_status());
+}
+
+TEST_F(PrerenderingOfflinerTest, ForegroundTransitionIgnoredOnHighEndDevice) {
+  offliner()->SetLowEndDeviceForTesting(false);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  EXPECT_FALSE(loader()->IsIdle());
+
+  offliner()->SetApplicationStateForTesting(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+
+  // Loader still loading since not low-end device.
+  EXPECT_FALSE(loader()->IsIdle());
 }
 
 }  // namespace offline_pages
