@@ -16,3 +16,90 @@
 -keepnames,allowobfuscation class com.google.android.apps.chrome.**,org.chromium.** {
   *;
 }
+
+# Keeping @VisibleForTesting and its annotated classes + methods
+-keep @interface org.chromium.base.VisibleForTesting
+-keep @org.chromium.base.VisibleForTesting class **
+-keepclasseswithmembers class * {
+  @org.chromium.base.VisibleForTesting <methods>;
+}
+
+# TODO(aurimas): figure out why we need to keep these classes.
+-keep class org.chromium.base.test.** {
+  *;
+}
+
+# Everything below this is kept because they are referenced by the test APK.
+-keep class android.support.v7.mediarouter.R* {
+  *;
+}
+
+-keep class android.support.v7.media.MediaRouteProvider** {
+  *;
+}
+
+-keep class android.support.v4.app.FragmentManager** {
+  *;
+}
+
+-keep class android.support.v4.app.DialogFragment** {
+  *;
+}
+
+-keep class android.support.v7.app.NotificationCompat** {
+  *;
+}
+
+-keep class android.support.v7.app.AlertDialog** {
+  *;
+}
+
+-keep class com.google.android.gms.cast.CastMediaControlIntent* {
+  *;
+}
+
+-keepnames class com.google.android.gms.gcm.** {
+  *;
+}
+
+-keepclassmembers class com.google.android.gms.gcm.TaskParams {
+  public <init>(java.lang.String);
+}
+
+-keepnames class jp.tomorrowkey.android.gifplayer.** {
+  public *;
+}
+
+# Used in tests.
+-keep class android.support.v4.view.ViewCompat {
+  public static int getLayoutDirection(android.view.View);
+}
+
+# flingViewport is used by Android WebView and a Chrome test.
+-keepclassmembers class org.chromium.content.browser.ContentViewCore {
+  public void flingViewport(long, int, int);
+}
+
+# Needed to compile ChromeTest.apk
+-keep class android.support.customtabs.** {
+  *;
+}
+
+# TODO(yfriedman): Remove when crbug.com/488192 is fixed.
+-dontwarn org.apache.http.conn.scheme.LayeredSocketFactory
+
+# Needed to run ChromeTest.apk
+-keepnames class com.google.android.gms.common.GoogleApiAvailability {
+  *;
+}
+
+# Needed for chrome_sync_shell_test_apk. Note - these do no affect chrome_apk's
+# size.
+-keep class org.chromium.sync.protocol.* { *; }
+
+# These resources are referenced in tests, but not in the real application.
+-keepclassmembers class org.chromium.chrome.R$id {
+  int webapp_splash_space;
+  int mr_chooser_list;
+  int find_toolbar;
+}
