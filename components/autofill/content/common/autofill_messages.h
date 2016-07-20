@@ -58,6 +58,7 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldData)
   IPC_STRUCT_TRAITS_MEMBER(text_direction)
   IPC_STRUCT_TRAITS_MEMBER(option_values)
   IPC_STRUCT_TRAITS_MEMBER(option_contents)
+  IPC_STRUCT_TRAITS_MEMBER(css_classes)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldDataPredictions)

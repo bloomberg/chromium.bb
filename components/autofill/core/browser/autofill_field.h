@@ -175,9 +175,6 @@ class AutofillField : public FormFieldData {
   // The outcome of HTML parsing based form classifier.
   AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome_;
 
-  // The value of the class attribute on the field, if present.
-  base::string16 css_classes_;
-
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };
 
