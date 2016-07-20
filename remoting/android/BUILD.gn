@@ -108,7 +108,7 @@ android_resources("remoting_android_client_java_resources") {
   deps = [
     ":remoting_android_raw_resources",
     "//remoting/resources:strings_java",
-    "//third_party/android_tools:android_support_v7_appcompat_resources",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
 }
 
@@ -194,7 +194,7 @@ android_resources("remoting_host_apk_resources") {
   custom_package = "org.chromium.chromoting.host"
   resource_dirs = [ "host/res" ]
   deps = [
-    "//third_party/android_tools:android_support_v7_appcompat_resources",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
 }
 
@@ -216,7 +216,6 @@ android_apk("remoting_host_apk") {
     ":remoting_host_apk_resources",
     "//base:base_java",
     "//net/android:net_java",
-    "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     google_play_services_library,
   ]

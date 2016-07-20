@@ -57,6 +57,7 @@ _java_target_blacklist = [
   "//chrome:packed_extra_resources",
   "//chrome:packed_resources",
   "//remoting/android:remoting_android_raw_resources",
+  "*:*_unpack_aar",
 ]
 
 # Write the target's .build_config file. This is a json file that contains a

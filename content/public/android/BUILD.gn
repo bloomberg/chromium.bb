@@ -50,7 +50,7 @@ android_library("content_java") {
     "//mojo/public/java:system",
     "//net/android:net_java",
     "//third_party/WebKit/public:blink_headers_java",
-    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/accessibility:ui_accessibility_java",
     "//ui/android:ui_java",
@@ -318,7 +318,6 @@ android_library("content_javatests") {
     "//mojo/public/java:system",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
-    "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:legacy_http_javalib",
     "//ui/android:ui_java",
   ]

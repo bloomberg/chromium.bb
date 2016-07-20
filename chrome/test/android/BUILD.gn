@@ -75,7 +75,6 @@ android_library("chrome_java_test_support") {
     "//sync:sync_java_test_support",
     "//sync/android:sync_java",
     "//testing/android/reporter:reporter_java",
-    "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:legacy_http_javalib",
     "//third_party/jsr-305:jsr_305_javalib",

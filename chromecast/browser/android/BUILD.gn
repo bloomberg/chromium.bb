@@ -45,7 +45,7 @@ android_library("cast_shell_java") {
     "//net/android:net_java",
 
     # TODO(slan): We may need to pass this in as a parameter.
-    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_v4_java",
     "//ui/android:ui_java",
   ]
 }

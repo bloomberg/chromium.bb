@@ -16,7 +16,7 @@ android_java_prebuilt("espresso_contrib_java") {
 android_java_prebuilt("espresso_core_java") {
   jar_path = "lib/espresso-core-2.2-release-no-dep.jar"
   deps = [
-    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_annotations_java",
     "//third_party/guava:guava_java",
     "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/javax_inject:javax_inject_java",

@@ -2558,4 +2558,115 @@ if (enable_java_templates) {
       ]
     }
   }
+
+  # Declare an Android library target for a prebuilt AAR.
+  #
+  # This target creates an Android library containing java code and Android
+  # resources. For libraries without resources, it will not generate
+  # corresponding android_resources targets.
+  #
+  # Variables
+  #   aar_path: Path to the AAR.
+  #   TODO(jbudorick@): remove this arguments after crbug.com/522043 is fixed.
+  #   requires_android: Whether this target can only be used for compiling Android related targets.
+  #
+  # Example
+  #   android_aar_prebuilt("foo_java") {
+  #     aar_path = "foo.aar"
+  #   }
+  template("android_aar_prebuilt") {
+    assert(defined(invoker.aar_path))
+    _output_path = "${target_gen_dir}/${target_name}"
+    _unpack_target_name = "${target_name}__unpack_aar"
+
+    # Scan the AAR file and determine the resources and jar files.
+    # Some libraries might not have resources; others might have two jars.
+    _scanned_files =
+        exec_script("//build/android/gyp/aar.py",
+                    [
+                      "--input-file",
+                      rebase_path(invoker.aar_path, root_build_dir),
+                      "--list",
+                    ],
+                    "scope")
+
+    action(_unpack_target_name) {
+      script = "//build/android/gyp/aar.py"  # Unzips the AAR
+      args = [
+        "--input-file",
+        rebase_path(invoker.aar_path, root_build_dir),
+        "--output-dir",
+        rebase_path(_output_path, root_build_dir),
+        "--extract",
+      ]
+      inputs = [
+        invoker.aar_path,
+      ]
+      outputs = [
+        "${_output_path}/AndroidManifest.xml",
+      ]
+
+      if (_scanned_files.resources != []) {
+        outputs += [ "${_output_path}/R.txt" ]
+        outputs += get_path_info(
+                rebase_path(_scanned_files.resources, "", _output_path),
+                "abspath")
+      }
+      if (defined(_scanned_files.jars)) {
+        outputs +=
+            get_path_info(rebase_path(_scanned_files.jars, "", _output_path),
+                          "abspath")
+      }
+    }
+
+    _sub_target_names = []
+
+    # Create android_java_prebuilt targets for jar files.
+    _counter = 0
+    foreach(jar, _scanned_files.jars) {
+      _counter += 1
+      _current_target = "${target_name}__jar_$_counter"
+      _sub_target_names += [ ":$_current_target" ]
+      java_prebuilt(_current_target) {
+        forward_variables_from(invoker,
+                               [
+                                 "deps",
+                                 "requires_android",
+                               ])
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += [ ":$_unpack_target_name" ]
+        if (!defined(requires_android)) {
+          requires_android = true
+        }
+        supports_android = true
+        jar_path = "${_output_path}/$jar"
+      }
+    }
+
+    # Create the android_resources target for resources.
+    if (_scanned_files.resources != []) {
+      _res_target_name = "${target_name}__res"
+      _sub_target_names += [ ":$_res_target_name" ]
+      android_resources(_res_target_name) {
+        forward_variables_from(invoker, [ "deps" ])
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += [ ":$_unpack_target_name" ]
+        resource_dirs = []
+        generated_resource_dirs = [ "${_output_path}/res" ]
+        generated_resource_files =
+            rebase_path(_scanned_files.resources, "", _output_path)
+        android_manifest_dep = ":$_unpack_target_name"
+        android_manifest = "${_output_path}/AndroidManifest.xml"
+        v14_skip = true
+      }
+    }
+
+    java_group(target_name) {
+      deps = _sub_target_names
+    }
+  }
 }

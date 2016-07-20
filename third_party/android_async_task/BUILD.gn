@@ -10,7 +10,7 @@ android_library("android_async_task_java") {
   java_files = [ "java/src/org/chromium/third_party/android/os/AsyncTask.java" ]
   deps = [
     "//base:base_java",
-    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_annotations_java",
   ]
   chromium_code = false
 }
