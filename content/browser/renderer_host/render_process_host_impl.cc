@@ -841,6 +841,9 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
   mojo::ScopedMessagePipeHandle handle =
       mojo::edk::CreateParentMessagePipe(mojo_channel_token_, child_token_);
 
+  std::unique_ptr<IPC::ChannelFactory> channel_factory =
+      IPC::ChannelMojo::CreateServerFactory(std::move(handle), runner);
+
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
   // for Android WebView to maintain backward compatibility.
@@ -848,8 +851,7 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
     return IPC::SyncChannel::Create(
-        IPC::ChannelMojo::CreateServerFactory(std::move(handle)), this,
-        runner.get(), true, &never_signaled_);
+        std::move(channel_factory), this, runner.get(), true, &never_signaled_);
   }
 #endif  // OS_ANDROID
 
@@ -857,10 +859,9 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       new IPC::ChannelProxy(this, runner.get()));
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel.get(), content::BrowserThread::GetTaskRunnerForThread(
-                         content::BrowserThread::IO));
+      channel.get(), runner);
 #endif
-  channel->Init(IPC::ChannelMojo::CreateServerFactory(std::move(handle)), true);
+  channel->Init(std::move(channel_factory), true);
   return channel;
 }
 

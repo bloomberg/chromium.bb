@@ -377,8 +377,10 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
       handle = mojo::edk::CreateChildMessagePipe(ipc_token);
     }
     DCHECK(handle.is_valid());
-    channel_->Init(IPC::ChannelMojo::CreateClientFactory(std::move(handle)),
-                   create_pipe_now);
+    channel_->Init(
+        IPC::ChannelMojo::CreateClientFactory(
+            std::move(handle), ChildProcess::current()->io_task_runner()),
+        create_pipe_now);
     return;
   }
 

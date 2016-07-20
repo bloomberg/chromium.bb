@@ -428,7 +428,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ChannelProxyClient) {
   base::MessageLoopForIO main_message_loop;
   ChannelReflectorListener listener;
   std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("ChannelProxyClient"), &listener));
+      IPCTestBase::GetChannelName("ChannelProxyClient"), &listener,
+      main_message_loop.task_runner()));
   CHECK(channel->Connect());
   listener.Init(channel.get());
 

@@ -262,7 +262,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
   base::MessageLoopForIO main_message_loop;
   FuzzerServerListener listener;
   std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("FuzzServerClient"), &listener));
+      IPCTestBase::GetChannelName("FuzzServerClient"), &listener,
+      main_message_loop.task_runner()));
   CHECK(channel->Connect());
   listener.Init(channel.get());
   base::RunLoop().Run();

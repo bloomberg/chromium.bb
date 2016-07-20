@@ -28,10 +28,10 @@ class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
 
   std::unique_ptr<ChannelFactory> CreateChannelFactory(
       const ChannelHandle& handle,
-      base::SequencedTaskRunner* runner) override {
+      base::SingleThreadTaskRunner* runner) override {
     ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner()));
     return ChannelMojo::CreateServerFactory(
-        helper_.StartChild("MojoPerfTestClient"));
+        helper_.StartChild("MojoPerfTestClient"), runner);
   }
 
   bool StartClient() override {

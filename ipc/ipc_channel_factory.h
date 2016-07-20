@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel.h"
 
 namespace IPC {
@@ -20,12 +22,15 @@ class IPC_EXPORT ChannelFactory {
  public:
   // Creates a factory for "native" channel built through
   // IPC::Channel::Create().
-  static std::unique_ptr<ChannelFactory> Create(const ChannelHandle& handle,
-                                                Channel::Mode mode);
+  static std::unique_ptr<ChannelFactory> Create(
+      const ChannelHandle& handle,
+      Channel::Mode mode,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   virtual ~ChannelFactory() { }
   virtual std::string GetName() const = 0;
   virtual std::unique_ptr<Channel> BuildChannel(Listener* listener) = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetIPCTaskRunner() = 0;
 };
 
 }  // namespace IPC

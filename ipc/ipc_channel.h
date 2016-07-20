@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_endpoint.h"
@@ -185,8 +186,6 @@ class IPC_EXPORT Channel : public Endpoint {
   //   connects to the already established IPC object.
   //
   // Each mode has its own Create*() API to create the Channel object.
-  //
-  // TODO(morrita): Replace CreateByModeForProxy() with one of above Create*().
   static std::unique_ptr<Channel> Create(
       const IPC::ChannelHandle& channel_handle,
       Mode mode,
@@ -194,7 +193,9 @@ class IPC_EXPORT Channel : public Endpoint {
 
   static std::unique_ptr<Channel> CreateClient(
       const IPC::ChannelHandle& channel_handle,
-      Listener* listener);
+      Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
+          base::ThreadTaskRunnerHandle::Get());
 
   // Channels on Windows are named by default and accessible from other
   // processes. On POSIX channels are anonymous by default and not accessible
@@ -209,7 +210,9 @@ class IPC_EXPORT Channel : public Endpoint {
       Listener* listener);
   static std::unique_ptr<Channel> CreateServer(
       const IPC::ChannelHandle& channel_handle,
-      Listener* listener);
+      Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
+          base::ThreadTaskRunnerHandle::Get());
 
   ~Channel() override;
 

@@ -48,7 +48,8 @@ void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
   mojo::MessagePipe pipe;
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateServerFactory(
-          mojo::edk::CreateParentMessagePipe(mojo_ipc_token_, child_token)),
+          mojo::edk::CreateParentMessagePipe(mojo_ipc_token_, child_token),
+          ipc_thread_->task_runner()),
       dummy_listener_.get(), ipc_thread_->task_runner());
 }
 

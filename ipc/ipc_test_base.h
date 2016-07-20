@@ -111,11 +111,11 @@ class IPCTestBase : public base::MultiProcessTest {
   }
 
   const base::Process& client_process() const { return client_process_; }
-  scoped_refptr<base::SequencedTaskRunner> task_runner();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner();
 
   virtual std::unique_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
-      base::SequencedTaskRunner* runner);
+      base::SingleThreadTaskRunner* runner);
 
   virtual bool DidStartClient();
 

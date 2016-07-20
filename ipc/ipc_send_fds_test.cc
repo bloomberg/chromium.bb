@@ -27,6 +27,7 @@ extern "C" {
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_test_base.h"
@@ -156,7 +157,8 @@ int SendFdsClientCommon(const std::string& test_client_name,
 
   // Set up IPC channel.
   std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName(test_client_name), &listener));
+      IPCTestBase::GetChannelName(test_client_name), &listener,
+      main_message_loop.task_runner()));
   CHECK(channel->Connect());
 
   // Run message loop.
@@ -251,10 +253,12 @@ class PipeChannelHelper {
 
   void Init() {
     IPC::ChannelHandle in_handle("IN");
-    in = IPC::Channel::CreateServer(in_handle, &null_listener_);
+    in = IPC::Channel::CreateServer(
+        in_handle, &null_listener_, in_thread_->task_runner());
     IPC::ChannelHandle out_handle(
         "OUT", base::FileDescriptor(in->TakeClientFileDescriptor()));
-    out = IPC::Channel::CreateClient(out_handle, &cb_listener_);
+    out = IPC::Channel::CreateClient(
+        out_handle, &cb_listener_, out_thread_->task_runner());
     // PostTask the connect calls to make sure the callbacks happens
     // on the right threads.
     in_thread_->task_runner()->PostTask(

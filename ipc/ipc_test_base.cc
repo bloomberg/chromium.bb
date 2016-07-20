@@ -159,12 +159,12 @@ IPC::ChannelHandle IPCTestBase::GetTestChannelHandle() {
   return GetChannelName(test_client_name_);
 }
 
-scoped_refptr<base::SequencedTaskRunner> IPCTestBase::task_runner() {
+scoped_refptr<base::SingleThreadTaskRunner> IPCTestBase::task_runner() {
   return message_loop_->task_runner();
 }
 
 std::unique_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
     const IPC::ChannelHandle& handle,
-    base::SequencedTaskRunner* runner) {
-  return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER);
+    base::SingleThreadTaskRunner* runner) {
+  return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER, runner);
 }

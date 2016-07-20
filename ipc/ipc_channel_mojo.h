@@ -16,8 +16,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"
@@ -45,16 +47,22 @@ class IPC_EXPORT ChannelMojo
  public:
   // Creates a ChannelMojo.
   static std::unique_ptr<ChannelMojo>
-  Create(mojo::ScopedMessagePipeHandle handle, Mode mode, Listener* listener);
+  Create(mojo::ScopedMessagePipeHandle handle,
+         Mode mode,
+         Listener* listener,
+         const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
+            base::ThreadTaskRunnerHandle::Get());
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
   static std::unique_ptr<ChannelFactory> CreateServerFactory(
-      mojo::ScopedMessagePipeHandle handle);
+      mojo::ScopedMessagePipeHandle handle,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   static std::unique_ptr<ChannelFactory> CreateClientFactory(
-      mojo::ScopedMessagePipeHandle handle);
+      mojo::ScopedMessagePipeHandle handle,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   ~ChannelMojo() override;
 
@@ -95,9 +103,11 @@ class IPC_EXPORT ChannelMojo
   void OnPipeError() override;
 
  private:
-  ChannelMojo(mojo::ScopedMessagePipeHandle handle,
-              Mode mode,
-              Listener* listener);
+  ChannelMojo(
+      mojo::ScopedMessagePipeHandle handle,
+      Mode mode,
+      Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   void InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
                          mojom::ChannelAssociatedRequest receiver,

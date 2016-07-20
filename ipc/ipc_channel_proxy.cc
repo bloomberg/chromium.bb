@@ -74,6 +74,7 @@ void ChannelProxy::Context::CreateChannel(
     std::unique_ptr<ChannelFactory> factory) {
   base::AutoLock l(channel_lifetime_lock_);
   DCHECK(!channel_);
+  DCHECK_EQ(factory->GetIPCTaskRunner(), ipc_task_runner_);
   channel_id_ = factory->GetName();
   channel_ = factory->BuildChannel(this);
   channel_send_thread_safe_ = channel_->IsSendThreadSafe();
@@ -432,8 +433,7 @@ std::unique_ptr<ChannelProxy> ChannelProxy::Create(
 }
 
 ChannelProxy::ChannelProxy(Context* context)
-    : context_(context),
-      did_init_(false) {
+    : context_(context), did_init_(false) {
 #if defined(ENABLE_IPC_FUZZER)
   outgoing_message_filter_ = NULL;
 #endif
@@ -466,7 +466,9 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
     create_pipe_now = true;
   }
 #endif  // defined(OS_POSIX)
-  Init(ChannelFactory::Create(channel_handle, mode), create_pipe_now);
+  Init(
+      ChannelFactory::Create(channel_handle, mode, context_->ipc_task_runner()),
+      create_pipe_now);
 }
 
 void ChannelProxy::Init(std::unique_ptr<ChannelFactory> factory,

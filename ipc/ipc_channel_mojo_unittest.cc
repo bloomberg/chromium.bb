@@ -108,8 +108,9 @@ class ChannelClient {
   }
 
   void Connect(IPC::Listener* listener) {
-    channel_ = IPC::ChannelMojo::Create(std::move(handle_),
-                                        IPC::Channel::MODE_CLIENT, listener);
+    channel_ = IPC::ChannelMojo::Create(
+        std::move(handle_), IPC::Channel::MODE_CLIENT, listener,
+        base::ThreadTaskRunnerHandle::Get());
     CHECK(channel_->Connect());
   }
 
@@ -152,7 +153,8 @@ class IPCChannelMojoTest : public IPCChannelMojoTestBase {
 
   void CreateChannel(IPC::Listener* listener) {
     channel_ = IPC::ChannelMojo::Create(
-        TakeHandle(), IPC::Channel::MODE_SERVER, listener);
+        TakeHandle(), IPC::Channel::MODE_SERVER, listener,
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   bool ConnectChannel() { return channel_->Connect(); }
@@ -711,8 +713,10 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(SimpleAssociatedInterfaceClient,
 
 class ChannelProxyRunner {
  public:
-  ChannelProxyRunner(std::unique_ptr<IPC::ChannelFactory> channel_factory)
-      : channel_factory_(std::move(channel_factory)),
+  ChannelProxyRunner(mojo::ScopedMessagePipeHandle handle,
+                     bool for_server)
+      : for_server_(for_server),
+        handle_(std::move(handle)),
         io_thread_("ChannelProxyRunner IO thread") {
   }
 
@@ -721,13 +725,25 @@ class ChannelProxyRunner {
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     proxy_.reset(new IPC::ChannelProxy(listener, io_thread_.task_runner()));
   }
-  void RunProxy() { proxy_->Init(std::move(channel_factory_), true); }
+
+  void RunProxy() {
+    std::unique_ptr<IPC::ChannelFactory> factory;
+    if (for_server_) {
+      factory = IPC::ChannelMojo::CreateServerFactory(
+          std::move(handle_), io_thread_.task_runner());
+    } else {
+      factory = IPC::ChannelMojo::CreateClientFactory(
+          std::move(handle_), io_thread_.task_runner());
+    }
+    proxy_->Init(std::move(factory), true);
+  }
 
   IPC::ChannelProxy* proxy() { return proxy_.get(); }
 
  private:
-  std::unique_ptr<IPC::ChannelFactory> channel_factory_;
+  const bool for_server_;
 
+  mojo::ScopedMessagePipeHandle handle_;
   base::Thread io_thread_;
   std::unique_ptr<IPC::ChannelProxy> proxy_;
 
@@ -738,8 +754,7 @@ class IPCChannelProxyMojoTest : public IPCChannelMojoTestBase {
  public:
   void InitWithMojo(const std::string& client_name) {
     IPCChannelMojoTestBase::InitWithMojo(client_name);
-    runner_.reset(new ChannelProxyRunner(
-        IPC::ChannelMojo::CreateServerFactory(TakeHandle())));
+    runner_.reset(new ChannelProxyRunner(TakeHandle(), true));
   }
   void CreateProxy(IPC::Listener* listener) { runner_->CreateProxy(listener); }
   void RunProxy() { runner_->RunProxy(); }
@@ -829,8 +844,7 @@ TEST_F(IPCChannelProxyMojoTest, ProxyThreadAssociatedInterface) {
 class ChannelProxyClient {
  public:
   void Init(mojo::ScopedMessagePipeHandle handle) {
-    runner_.reset(new ChannelProxyRunner(
-        IPC::ChannelMojo::CreateClientFactory(std::move(handle))));
+    runner_.reset(new ChannelProxyRunner(std::move(handle), false));
   }
   void CreateProxy(IPC::Listener* listener) { runner_->CreateProxy(listener); }
   void RunProxy() { runner_->RunProxy(); }

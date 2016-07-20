@@ -45,18 +45,29 @@ namespace {
 
 class MojoChannelFactory : public ChannelFactory {
  public:
-  MojoChannelFactory(mojo::ScopedMessagePipeHandle handle, Channel::Mode mode)
-      : handle_(std::move(handle)), mode_(mode) {}
+  MojoChannelFactory(
+      mojo::ScopedMessagePipeHandle handle,
+      Channel::Mode mode,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
+      : handle_(std::move(handle)),
+        mode_(mode),
+        ipc_task_runner_(ipc_task_runner) {}
 
   std::string GetName() const override { return ""; }
 
   std::unique_ptr<Channel> BuildChannel(Listener* listener) override {
-    return ChannelMojo::Create(std::move(handle_), mode_, listener);
+    return ChannelMojo::Create(
+        std::move(handle_), mode_, listener, ipc_task_runner_);
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetIPCTaskRunner() override {
+    return ipc_task_runner_;
   }
 
  private:
   mojo::ScopedMessagePipeHandle handle_;
   const Channel::Mode mode_;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoChannelFactory);
 };
@@ -231,27 +242,33 @@ MojoResult UnwrapAttachment(mojom::SerializedHandlePtr handle,
 std::unique_ptr<ChannelMojo> ChannelMojo::Create(
     mojo::ScopedMessagePipeHandle handle,
     Mode mode,
-    Listener* listener) {
-  return base::WrapUnique(new ChannelMojo(std::move(handle), mode, listener));
+    Listener* listener,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
+  return base::WrapUnique(
+      new ChannelMojo(std::move(handle), mode, listener, ipc_task_runner));
 }
 
 // static
 std::unique_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
-    mojo::ScopedMessagePipeHandle handle) {
-  return base::WrapUnique(
-      new MojoChannelFactory(std::move(handle), Channel::MODE_SERVER));
+    mojo::ScopedMessagePipeHandle handle,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
+  return base::WrapUnique(new MojoChannelFactory(
+      std::move(handle), Channel::MODE_SERVER, ipc_task_runner));
 }
 
 // static
 std::unique_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
-    mojo::ScopedMessagePipeHandle handle) {
-  return base::WrapUnique(
-      new MojoChannelFactory(std::move(handle), Channel::MODE_CLIENT));
+    mojo::ScopedMessagePipeHandle handle,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
+  return base::WrapUnique(new MojoChannelFactory(
+      std::move(handle), Channel::MODE_CLIENT, ipc_task_runner));
 }
 
-ChannelMojo::ChannelMojo(mojo::ScopedMessagePipeHandle handle,
-                         Mode mode,
-                         Listener* listener)
+ChannelMojo::ChannelMojo(
+    mojo::ScopedMessagePipeHandle handle,
+    Mode mode,
+    Listener* listener,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
     : pipe_(handle.get()),
       listener_(listener),
       waiting_connect_(true),

@@ -161,7 +161,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(GenericClient) {
 
   // Set up IPC channel.
   std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName("GenericClient"), &listener));
+      IPCTestBase::GetChannelName("GenericClient"), &listener,
+      main_message_loop.task_runner()));
   CHECK(channel->Connect());
   listener.Init(channel.get());
   IPC::TestChannelListener::SendOneMessage(channel.get(), "hello from child");

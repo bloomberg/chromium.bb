@@ -114,9 +114,11 @@ void ReplayProcess::OpenChannel() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kMojoChannelToken);
     channel_ = IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateClientFactory(mojo::edk::CreateChildMessagePipe(
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kMojoChannelToken))),
+        IPC::ChannelMojo::CreateClientFactory(
+            mojo::edk::CreateChildMessagePipe(
+                base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                    switches::kMojoChannelToken)),
+            io_thread_.task_runner()),
         this, io_thread_.task_runner());
   } else {
     std::string channel_name =
