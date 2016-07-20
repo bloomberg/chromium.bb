@@ -234,6 +234,10 @@
       'renderer/pepper/chrome_pdf_print_client.cc',
       'renderer/pepper/chrome_pdf_print_client.h',
     ],
+    'chrome_renderer_leak_detector_sources': [
+      'renderer/leak_detector/leak_detector_remote_client.cc',
+      'renderer/leak_detector/leak_detector_remote_client.h',
+    ],
   },
   'targets': [
     {
@@ -396,6 +400,15 @@
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+        ['chromeos==1', {
+          'sources': [
+            '<@(chrome_renderer_leak_detector_sources)',
+          ],
+          'dependencies': [
+            '../components/components.gyp:metrics_leak_detector',
+            '../components/components.gyp:metrics_mojo_bindings',
           ],
         }],
       ],

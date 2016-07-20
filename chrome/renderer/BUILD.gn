@@ -184,6 +184,10 @@ static_library("renderer") {
       "spellchecker/hunspell_engine.h",
     ]
   }
+
+  if (is_chromeos) {
+    deps += [ "//chrome/renderer/leak_detector:leak_detector" ]
+  }
 }
 
 # In GYP this is part of test_support_common.
