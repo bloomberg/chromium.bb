@@ -675,10 +675,9 @@ std::vector<std::string> AncestorTagNames(
 bool IsLabelValid(base::StringPiece16 inferred_label,
     const std::vector<base::char16>& stop_words) {
   // If |inferred_label| has any character other than those in |stop_words|.
-  auto first_non_stop_word = std::find_if(inferred_label.begin(),
-      inferred_label.end(), [&stop_words](base::char16 c) {
-          return !ContainsValue(stop_words, c);
-      });
+  auto* first_non_stop_word = std::find_if(
+      inferred_label.begin(), inferred_label.end(),
+      [&stop_words](base::char16 c) { return !ContainsValue(stop_words, c); });
   return first_non_stop_word != inferred_label.end();
 }
 
@@ -1146,7 +1145,7 @@ bool FormOrFieldsetsToFormData(
   }
 
   // Copy the created FormFields into the resulting FormData object.
-  for (const auto& iter : form_fields)
+  for (const auto* iter : form_fields)
     form->fields.push_back(*iter);
   return true;
 }
@@ -1551,7 +1550,7 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     "wallet"
   };
 
-  for (const auto& keyword : kKeywords) {
+  for (const auto* keyword : kKeywords) {
     // Compare char16 elements of |title| with char elements of |keyword| using
     // operator==.
     auto title_pos = std::search(title.begin(), title.end(),

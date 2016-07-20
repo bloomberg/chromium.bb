@@ -70,7 +70,7 @@ bool DomainReliabilityConfig::IsValid() const {
     return false;
   }
 
-  for (const auto& url : collectors) {
+  for (const auto* url : collectors) {
     if (!url->is_valid())
       return false;
   }

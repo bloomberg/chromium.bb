@@ -102,7 +102,7 @@ size_t ActionImpl::ChangeAllItemsState(CrxUpdateItem::State from,
                                        CrxUpdateItem::State to) {
   DCHECK(thread_checker_.CalledOnValidThread());
   size_t count = 0;
-  for (auto item : update_context_->update_items) {
+  for (auto* item : update_context_->update_items) {
     if (item->state == from) {
       ChangeItemState(item, to);
       ++count;

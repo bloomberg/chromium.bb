@@ -173,7 +173,7 @@ class MockURLFetcherFactory : public net::URLFetcherFactory {
                              const GURL&,
                              net::URLFetcher::RequestType,
                              net::URLFetcherDelegate*>& args) {
-      auto fetcher = new net::FakeURLFetcher(
+      auto* fetcher = new net::FakeURLFetcher(
           testing::get<1>(args), testing::get<3>(args), body_, net::HTTP_OK,
           net::URLRequestStatus::SUCCESS);
       modifier_(fetcher);

@@ -41,7 +41,7 @@ void DependencyManager::RegisterPrefsForServices(
     NOTREACHED();
   }
 
-  for (const auto& dependency_node : construction_order) {
+  for (auto* dependency_node : construction_order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
     factory->RegisterPrefsIfNecessaryForContext(context, pref_registry);
@@ -63,7 +63,7 @@ void DependencyManager::CreateContextServices(base::SupportsUserData* context,
   DumpContextDependencies(context);
 #endif
 
-  for (const auto& dependency_node : construction_order) {
+  for (auto* dependency_node : construction_order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
     if (is_testing_context && factory->ServiceIsNULLWhileTesting() &&
@@ -86,7 +86,7 @@ void DependencyManager::DestroyContextServices(
   DumpContextDependencies(context);
 #endif
 
-  for (const auto& dependency_node : destruction_order) {
+  for (auto* dependency_node : destruction_order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
     factory->ContextShutdown(context);
@@ -97,7 +97,7 @@ void DependencyManager::DestroyContextServices(
   dead_context_pointers_.insert(context);
 #endif
 
-  for (const auto& dependency_node : destruction_order) {
+  for (auto* dependency_node : destruction_order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
     factory->ContextDestroyed(context);

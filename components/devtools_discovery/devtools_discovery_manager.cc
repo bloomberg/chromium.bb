@@ -55,7 +55,7 @@ std::unique_ptr<DevToolsTargetDescriptor> DevToolsDiscoveryManager::CreateNew(
 DevToolsTargetDescriptor::List
 DevToolsDiscoveryManager::GetDescriptorsFromProviders() {
   DevToolsTargetDescriptor::List result;
-  for (const auto& provider : providers_) {
+  for (auto* provider : providers_) {
     DevToolsTargetDescriptor::List partial = provider->GetDescriptors();
     result.insert(result.begin(), partial.begin(), partial.end());
   }

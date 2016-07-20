@@ -59,7 +59,7 @@ TEST_F(ProximityAuthLoggingTest, LogsSavedToBuffer) {
   PA_LOG(WARNING) << kLog2;
   PA_LOG(ERROR) << kLog3;
 
-  auto logs = LogBuffer::GetInstance()->logs();
+  auto* logs = LogBuffer::GetInstance()->logs();
   ASSERT_EQ(3u, logs->size());
 
   auto iterator = logs->begin();

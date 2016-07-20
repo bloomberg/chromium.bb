@@ -138,7 +138,7 @@ void BluetoothControllerPairingController::OnStartDiscoverySession(
   discovery_session_ = std::move(discovery_session);
   ChangeStage(STAGE_DEVICES_DISCOVERY);
 
-  for (const auto& device : adapter_->GetDevices())
+  for (auto* device : adapter_->GetDevices())
     DeviceFound(device);
 }
 

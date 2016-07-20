@@ -19,24 +19,24 @@ template <typename T>
 class GuestView : public GuestViewBase {
  public:
   static T* From(int embedder_process_id, int guest_instance_id) {
-    auto guest = GuestViewBase::From(embedder_process_id, guest_instance_id);
+    auto* guest = GuestViewBase::From(embedder_process_id, guest_instance_id);
     if (!guest)
       return nullptr;
     return guest->As<T>();
   }
 
   static T* FromWebContents(const content::WebContents* contents) {
-    auto guest = GuestViewBase::FromWebContents(contents);
+    auto* guest = GuestViewBase::FromWebContents(contents);
     return guest ? guest->As<T>() : nullptr;
   }
 
   static T* FromFrameID(int render_process_id, int render_frame_id) {
-    auto render_frame_host =
+    auto* render_frame_host =
         content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     if (!render_frame_host)
       return nullptr;
 
-    auto web_contents =
+    auto* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     return FromWebContents(web_contents);
   }

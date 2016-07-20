@@ -1057,7 +1057,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     recently_autofilled_forms_.push_back(
         std::map<std::string, base::string16>());
     auto& map = recently_autofilled_forms_.back();
-    for (const auto& field : submitted_form) {
+    for (const auto* field : submitted_form) {
       AutofillType type = field->Type();
       // Even though this is for development only, mask full credit card #'s.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER &&

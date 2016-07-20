@@ -200,7 +200,7 @@ void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary();
   state->SetString("name", GetName());
   state->BeginArray("updatable_queue_set");
-  for (auto& queue : updatable_queue_set_)
+  for (auto* queue : updatable_queue_set_)
     state->AppendString(queue->GetName());
   state->EndArray();
   state->SetInteger("registered_delay_count", delayed_wakeup_multimap_.size());

@@ -844,7 +844,7 @@ TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
 
   EXPECT_TRUE(db().GetAutoSignInLogins(&result));
   EXPECT_EQ(4U, result.size());
-  for (const auto& form : result)
+  for (const auto* form : result)
     EXPECT_FALSE(form->skip_zero_click);
 
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin));
@@ -865,7 +865,7 @@ TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4", origin4));
 
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  for (const auto& form : result)
+  for (const auto* form : result)
     EXPECT_FALSE(form->skip_zero_click);
 
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin1));

@@ -68,7 +68,7 @@ BookmarkPermanentNodeList LoadExtraNodes(
     ScopedVector<BookmarkPermanentNodeLoader> loaders,
     int64_t* next_node_id) {
   BookmarkPermanentNodeList extra_nodes;
-  for (const auto& loader : loaders)
+  for (auto* loader : loaders)
     extra_nodes.push_back(loader->Load(next_node_id).release());
   return extra_nodes;
 }

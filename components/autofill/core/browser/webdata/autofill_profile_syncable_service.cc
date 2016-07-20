@@ -111,7 +111,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
     DVLOG(2) << "[AUTOFILL MIGRATION]"
              << "Printing profiles from web db";
 
-    for (const auto& p : profiles_) {
+    for (const auto* p : profiles_) {
       DVLOG(2) << "[AUTOFILL MIGRATION]  "
                << UTF16ToUTF8(p->GetRawInfo(NAME_FIRST))
                << UTF16ToUTF8(p->GetRawInfo(NAME_LAST))

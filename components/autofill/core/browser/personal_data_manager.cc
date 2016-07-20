@@ -590,10 +590,10 @@ void PersonalDataManager::UpdateServerCreditCard(
     return;
 
   // Look up by server id, not GUID.
-  CreditCard* existing_credit_card = nullptr;
-  for (auto it : server_credit_cards_) {
-    if (credit_card.server_id() == it->server_id()) {
-      existing_credit_card = it;
+  const CreditCard* existing_credit_card = nullptr;
+  for (const auto* server_card : server_credit_cards_) {
+    if (credit_card.server_id() == server_card->server_id()) {
+      existing_credit_card = server_card;
       break;
     }
   }
@@ -620,9 +620,9 @@ void PersonalDataManager::UpdateServerCardBillingAddress(
     return;
 
   CreditCard* existing_credit_card = nullptr;
-  for (auto it : server_credit_cards_) {
-    if (credit_card.guid() == it->guid()) {
-      existing_credit_card = it;
+  for (auto* server_card : server_credit_cards_) {
+    if (credit_card.guid() == server_card->guid()) {
+      existing_credit_card = server_card;
       break;
     }
   }

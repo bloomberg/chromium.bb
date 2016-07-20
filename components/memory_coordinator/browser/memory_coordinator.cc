@@ -38,7 +38,7 @@ MemoryCoordinator::~MemoryCoordinator() {}
 void MemoryCoordinator::CreateHandle(
     int render_process_id,
     mojom::MemoryCoordinatorHandleRequest request) {
-  auto handle = new MemoryCoordinatorHandleImpl(std::move(request));
+  auto* handle = new MemoryCoordinatorHandleImpl(std::move(request));
   handle->binding().set_connection_error_handler(
       base::Bind(&MemoryCoordinator::OnConnectionError, base::Unretained(this),
                  render_process_id));

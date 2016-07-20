@@ -184,7 +184,7 @@ std::unique_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
   }
 
   std::unique_ptr<base::ListValue> collectors_value(new base::ListValue());
-  for (const auto& collector : collectors_) {
+  for (const auto* collector : collectors_) {
     std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
     value->SetInteger("failures", collector->failure_count());
     value->SetInteger("next_upload",

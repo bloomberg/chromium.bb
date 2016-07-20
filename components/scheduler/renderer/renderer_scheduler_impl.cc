@@ -1344,7 +1344,7 @@ void RendererSchedulerImpl::RemoveWebViewScheduler(
 void RendererSchedulerImpl::BroadcastConsoleWarning(
     const std::string& message) {
   helper_.CheckOnValidThread();
-  for (auto& web_view_scheduler : MainThreadOnly().web_view_schedulers)
+  for (auto* web_view_scheduler : MainThreadOnly().web_view_schedulers)
     web_view_scheduler->AddConsoleWarning(message);
 }
 

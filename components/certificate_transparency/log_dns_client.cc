@@ -39,7 +39,7 @@ bool ParseTxtResponse(const net::DnsResponse& response, std::string* txt) {
   if (parsed_record == nullptr)
     return false;
 
-  auto txt_record = parsed_record->rdata<net::TxtRecordRdata>();
+  auto* txt_record = parsed_record->rdata<net::TxtRecordRdata>();
   if (txt_record == nullptr)
     return false;
 

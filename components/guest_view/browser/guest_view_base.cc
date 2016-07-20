@@ -240,7 +240,7 @@ void GuestViewBase::InitWithWebContents(
     SetUpSizing(create_params);
 
   // Observe guest zoom changes.
-  auto zoom_controller = zoom::ZoomController::FromWebContents(web_contents());
+  auto* zoom_controller = zoom::ZoomController::FromWebContents(web_contents());
   zoom_controller->AddObserver(this);
 
   // Give the derived class an opportunity to perform additional initialization.
@@ -353,7 +353,7 @@ GuestViewBase* GuestViewBase::FromWebContents(const WebContents* web_contents) {
 // static
 GuestViewBase* GuestViewBase::From(int owner_process_id,
                                    int guest_instance_id) {
-  auto host = content::RenderProcessHost::FromID(owner_process_id);
+  auto* host = content::RenderProcessHost::FromID(owner_process_id);
   if (!host)
     return nullptr;
 
@@ -394,7 +394,7 @@ void GuestViewBase::SetContextMenuPosition(const gfx::Point& position) {}
 
 WebContents* GuestViewBase::CreateNewGuestWindow(
     const WebContents::CreateParams& create_params) {
-  auto guest_manager = GuestViewManager::FromBrowserContext(browser_context());
+  auto* guest_manager = GuestViewManager::FromBrowserContext(browser_context());
   return guest_manager->CreateGuestWithWebContentsParams(
       GetViewType(),
       owner_web_contents(),
@@ -729,7 +729,7 @@ void GuestViewBase::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
   if (data.web_contents == embedder_web_contents()) {
     // The embedder's zoom level has changed.
-    auto guest_zoom_controller =
+    auto* guest_zoom_controller =
         zoom::ZoomController::FromWebContents(web_contents());
     if (content::ZoomValuesEqual(data.new_zoom_level,
                                  guest_zoom_controller->GetZoomLevel())) {
@@ -846,7 +846,7 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
 }
 
 void GuestViewBase::SetGuestZoomLevelToMatchEmbedder() {
-  auto embedder_zoom_controller =
+  auto* embedder_zoom_controller =
       zoom::ZoomController::FromWebContents(owner_web_contents());
   if (!embedder_zoom_controller)
     return;
@@ -859,7 +859,7 @@ void GuestViewBase::StartTrackingEmbedderZoomLevel() {
   if (!ZoomPropagatesFromEmbedderToGuest())
     return;
 
-  auto embedder_zoom_controller =
+  auto* embedder_zoom_controller =
       zoom::ZoomController::FromWebContents(owner_web_contents());
   // Chrome Apps do not have a ZoomController.
   if (!embedder_zoom_controller)
@@ -875,7 +875,7 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
   if (!attached() || !ZoomPropagatesFromEmbedderToGuest())
     return;
 
-  auto embedder_zoom_controller =
+  auto* embedder_zoom_controller =
       zoom::ZoomController::FromWebContents(owner_web_contents());
   // Chrome Apps do not have a ZoomController.
   if (!embedder_zoom_controller)

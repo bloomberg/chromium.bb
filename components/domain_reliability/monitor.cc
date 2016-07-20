@@ -173,7 +173,7 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
 
   std::vector<DomainReliabilityConfig*> google_configs;
   GetAllGoogleConfigs(&google_configs);
-  for (auto google_config : google_configs)
+  for (auto* google_config : google_configs)
     context_manager_.AddContextForConfig(base::WrapUnique(google_config));
 }
 

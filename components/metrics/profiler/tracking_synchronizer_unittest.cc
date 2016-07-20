@@ -120,8 +120,8 @@ class TestTrackingSynchronizer : public TrackingSynchronizer {
 
 TEST(TrackingSynchronizerTest, ProfilerData) {
   // Testing how TrackingSynchronizer reports 2 phases of profiling.
-  auto clock = new base::SimpleTestTickClock();  // Will be owned by
-                                                 // |tracking_synchronizer|.
+  auto* clock = new base::SimpleTestTickClock();  // Will be owned by
+                                                  // |tracking_synchronizer|.
   clock->Advance(base::TimeDelta::FromMilliseconds(111));
 
   scoped_refptr<TestTrackingSynchronizer> tracking_synchronizer =

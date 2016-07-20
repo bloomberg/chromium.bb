@@ -414,7 +414,7 @@ TaskQueueManager::AsValueWithSelectorResult(
   }
 
   state->BeginArray("time_domains");
-  for (auto& time_domain : time_domains_)
+  for (auto* time_domain : time_domains_)
     time_domain->AsValueInto(state.get());
   state->EndArray();
   return std::move(state);

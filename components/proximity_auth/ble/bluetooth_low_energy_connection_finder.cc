@@ -197,7 +197,7 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
   if (finder_strategy_ == FIND_PAIRED_DEVICE) {
     PA_LOG(INFO) << "Looking for paired device: "
                  << remote_device_.bluetooth_address;
-    for (auto& device : adapter_->GetDevices()) {
+    for (const auto* device : adapter_->GetDevices()) {
       if (device->IsPaired())
         PA_LOG(INFO) << device->GetAddress() << " is paired";
     }
@@ -306,7 +306,7 @@ BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(
   // This is a bug in the way device::BluetoothAdapter is storing the devices
   // (see crbug.com/497841).
   std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-  for (const auto& device : devices) {
+  for (auto* device : devices) {
     if (device->GetAddress() == device_address)
       return device;
   }

@@ -70,7 +70,7 @@ NSString* gSslKeyLogFileName = nil;
   gChromeNet.Get()->set_quic_enabled(gQuicEnabled);
   gChromeNet.Get()->set_ssl_key_log_file_name(
       base::SysNSStringToUTF8(gSslKeyLogFileName));
-  for (const auto& quicHint : gQuicHints) {
+  for (const auto* quicHint : gQuicHints) {
     gChromeNet.Get()->AddQuicHint(quicHint->host, quicHint->port,
                                   quicHint->alternate_port);
   }

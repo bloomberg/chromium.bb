@@ -217,7 +217,7 @@ std::unique_ptr<base::Value> StringMappingListPolicyHandler::Map(
     map_getter_.Run(&map_);
 
   std::unique_ptr<base::Value> return_value;
-  for (const auto& mapping_entry : map_) {
+  for (const auto* mapping_entry : map_) {
     if (mapping_entry->enum_value == entry_value) {
       return_value = base::WrapUnique(mapping_entry->mapped_value->DeepCopy());
       break;
@@ -430,7 +430,7 @@ bool LegacyPoliciesDeprecatingPolicyHandler::CheckPolicySettings(
   // The new policy is not set, fall back to legacy ones.
   ScopedVector<ConfigurationPolicyHandler>::iterator handler;
   bool valid_policy_found = false;
-  for (const auto& handler : legacy_policy_handlers_) {
+  for (auto* handler : legacy_policy_handlers_) {
     if (handler->CheckPolicySettings(policies, errors))
       valid_policy_found = true;
   }
@@ -449,7 +449,7 @@ void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettingsWithParameters(
 
   // The new policy is not set, fall back to legacy ones.
   PolicyErrorMap scoped_errors;
-  for (const auto& handler : legacy_policy_handlers_) {
+  for (auto* handler : legacy_policy_handlers_) {
     if (handler->CheckPolicySettings(policies, &scoped_errors))
       handler->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
   }

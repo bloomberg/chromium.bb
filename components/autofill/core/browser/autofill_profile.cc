@@ -253,8 +253,8 @@ void AutofillProfile::GetMatchingTypes(
     const std::string& app_locale,
     ServerFieldTypeSet* matching_types) const {
   FormGroupList info = FormGroups();
-  for (const auto& it : info) {
-    it->GetMatchingTypes(text, app_locale, matching_types);
+  for (const auto* form_group : info) {
+    form_group->GetMatchingTypes(text, app_locale, matching_types);
   }
 }
 
@@ -698,8 +698,8 @@ void AutofillProfile::RecordAndLogUse() {
 void AutofillProfile::GetSupportedTypes(
     ServerFieldTypeSet* supported_types) const {
   FormGroupList info = FormGroups();
-  for (const auto& it : info) {
-    it->GetSupportedTypes(supported_types);
+  for (const auto* form_group : info) {
+    form_group->GetSupportedTypes(supported_types);
   }
 }
 

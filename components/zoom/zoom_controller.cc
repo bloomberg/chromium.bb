@@ -25,7 +25,7 @@ double ZoomController::GetZoomLevelForWebContents(
   if (!web_contents)
     return 0.0;
 
-  auto zoom_controller = FromWebContents(web_contents);
+  auto* zoom_controller = FromWebContents(web_contents);
   if (zoom_controller)
     return zoom_controller->GetZoomLevel();
 

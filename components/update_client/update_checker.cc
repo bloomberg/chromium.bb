@@ -48,7 +48,7 @@ update_client::InstallerAttributes SanitizeInstallerAttributes(
 
 // Returns true if at least one item requires network encryption.
 bool IsEncryptionRequired(const std::vector<CrxUpdateItem*>& items) {
-  for (const auto& item : items) {
+  for (const auto* item : items) {
     if (item->component.requires_network_encryption)
       return true;
   }
@@ -169,7 +169,7 @@ bool UpdateCheckerImpl::CheckForUpdates(
 
   std::unique_ptr<std::vector<std::string>> ids_checked(
       new std::vector<std::string>());
-  for (auto crx : items_to_check)
+  for (auto* crx : items_to_check)
     ids_checked->push_back(crx->id);
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(

@@ -67,7 +67,7 @@ void BubbleManager::UpdateAllBubbleAnchors() {
   // Guard against bubbles being added or removed while iterating the bubbles.
   ManagerState original_state = manager_state_;
   manager_state_ = ITERATING_BUBBLES;
-  for (auto controller : controllers_)
+  for (auto* controller : controllers_)
     controller->UpdateAnchorPosition();
   manager_state_ = original_state;
 }
@@ -122,7 +122,7 @@ bool BubbleManager::CloseAllMatchingBubbles(
   }
   manager_state_ = original_state;
 
-  for (auto controller : close_queue) {
+  for (auto* controller : close_queue) {
     controller->DoClose(reason);
 
     FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,

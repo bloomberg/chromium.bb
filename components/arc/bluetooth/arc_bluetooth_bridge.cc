@@ -734,7 +734,7 @@ void ArcBluetoothBridge::GetGattDB(mojom::BluetoothAddressPtr remote_addr) {
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
   mojo::Array<mojom::BluetoothGattDBElementPtr> db;
-  for (auto service : device->GetGattServices()) {
+  for (auto* service : device->GetGattServices()) {
     mojom::BluetoothGattDBElementPtr service_element = CreateGattDBElement<
         device::BluetoothRemoteGattService>(
         service->IsPrimary()
@@ -753,7 +753,7 @@ void ArcBluetoothBridge::GetGattDB(mojom::BluetoothAddressPtr remote_addr) {
     }
     db.push_back(std::move(service_element));
 
-    for (auto characteristic : characteristics) {
+    for (auto* characteristic : characteristics) {
       mojom::BluetoothGattDBElementPtr characteristic_element =
           CreateGattDBElement<device::BluetoothRemoteGattCharacteristic>(
               mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
@@ -761,7 +761,7 @@ void ArcBluetoothBridge::GetGattDB(mojom::BluetoothAddressPtr remote_addr) {
       characteristic_element->properties = characteristic->GetProperties();
       db.push_back(std::move(characteristic_element));
 
-      for (auto descriptor : characteristic->GetDescriptors()) {
+      for (auto* descriptor : characteristic->GetDescriptors()) {
         db.push_back(CreateGattDBElement<device::BluetoothRemoteGattDescriptor>(
             mojom::BluetoothGattDBAttributeType::BTGATT_DB_DESCRIPTOR,
             descriptor));
@@ -1203,7 +1203,7 @@ ArcBluetoothBridge::GetAdapterProperties(
     mojo::Array<mojom::BluetoothAddressPtr> bonded_devices =
         mojo::Array<mojom::BluetoothAddressPtr>::New(0);
 
-    for (auto device : devices) {
+    for (auto* device : devices) {
       if (device->IsPaired())
         continue;
 
@@ -1282,7 +1282,7 @@ void ArcBluetoothBridge::SendCachedDevicesFound() const {
     return;
 
   BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
-  for (auto device : devices) {
+  for (auto* device : devices) {
     if (device->IsPaired())
       continue;
 
@@ -1319,7 +1319,7 @@ void ArcBluetoothBridge::SendCachedPairedDevices() const {
     return;
 
   BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
-  for (auto device : devices) {
+  for (auto* device : devices) {
     if (!device->IsPaired())
       continue;
 

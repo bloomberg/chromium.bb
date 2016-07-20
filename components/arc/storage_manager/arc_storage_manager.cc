@@ -40,7 +40,7 @@ ArcStorageManager* ArcStorageManager::Get() {
 }
 
 bool ArcStorageManager::OpenPrivateVolumeSettings() {
-  auto storage_manager_instance = GetStorageManagerInstance();
+  auto* storage_manager_instance = GetStorageManagerInstance();
   if (!storage_manager_instance) {
     return false;
   }
@@ -50,7 +50,7 @@ bool ArcStorageManager::OpenPrivateVolumeSettings() {
 
 bool ArcStorageManager::GetApplicationsSize(
     const GetApplicationsSizeCallback& callback) {
-  auto storage_manager_instance = GetStorageManagerInstance();
+  auto* storage_manager_instance = GetStorageManagerInstance();
   if (!storage_manager_instance) {
     return false;
   }
@@ -60,7 +60,7 @@ bool ArcStorageManager::GetApplicationsSize(
 
 bool ArcStorageManager::DeleteApplicationsCache(
     const base::Callback<void()>& callback) {
-  auto storage_manager_instance = GetStorageManagerInstance();
+  auto* storage_manager_instance = GetStorageManagerInstance();
   if (!storage_manager_instance) {
     return false;
   }
@@ -69,8 +69,9 @@ bool ArcStorageManager::DeleteApplicationsCache(
 }
 
 mojom::StorageManagerInstance* ArcStorageManager::GetStorageManagerInstance() {
-  auto bridge_service = arc_bridge_service();
-  auto storage_manager_instance = bridge_service->storage_manager()->instance();
+  auto* bridge_service = arc_bridge_service();
+  auto* storage_manager_instance =
+      bridge_service->storage_manager()->instance();
   if (!storage_manager_instance) {
     DLOG(WARNING) << "ARC storage manager instance is not ready.";
     return nullptr;

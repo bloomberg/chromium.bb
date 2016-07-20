@@ -284,7 +284,7 @@ std::string DomainReliabilityHeader::ToString() const {
     DCHECK_EQ(0, max_age_s);
   } else {
     string += "report-uri=";
-    for (const auto& uri : config_->collectors)
+    for (const auto* uri : config_->collectors)
       string += uri->spec() + " ";
     // Remove trailing space.
     string.erase(string.length() - 1, 1);

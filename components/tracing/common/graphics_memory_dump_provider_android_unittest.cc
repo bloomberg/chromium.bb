@@ -15,12 +15,12 @@ TEST(GraphicsMemoryDumpProviderTest, ParseResponse) {
 
   base::trace_event::ProcessMemoryDump pmd(
       nullptr, {base::trace_event::MemoryDumpLevelOfDetail::DETAILED});
-  auto instance = GraphicsMemoryDumpProvider::GetInstance();
+  auto* instance = GraphicsMemoryDumpProvider::GetInstance();
   char buf[] = "graphics_total 12\ngraphics_pss 34\ngl_total 56\ngl_pss 78";
   instance->ParseResponseAndAddToDump(buf, strlen(buf), &pmd);
 
   // Check the "graphics" row.
-  auto mad = pmd.GetAllocatorDump(kDumpBaseName + std::string("graphics"));
+  auto* mad = pmd.GetAllocatorDump(kDumpBaseName + std::string("graphics"));
   ASSERT_TRUE(mad);
   std::string json;
   mad->attributes_for_testing()->AppendAsTraceFormat(&json);

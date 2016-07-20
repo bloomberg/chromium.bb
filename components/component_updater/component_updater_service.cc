@@ -234,7 +234,7 @@ bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
   DCHECK(GetComponent(id));
 
   // Check if the request is too soon.
-  const auto component_state(GetComponentState(id));
+  const auto* component_state(GetComponentState(id));
   if (component_state) {
     base::TimeDelta delta = base::Time::Now() - component_state->last_check;
     if (delta < base::TimeDelta::FromSeconds(config_->OnDemandDelay()))
@@ -269,7 +269,7 @@ bool CrxUpdateService::CheckForUpdates() {
   for (const auto id : components_order_) {
     DCHECK(components_.find(id) != components_.end());
 
-    auto component(GetComponent(id));
+    auto* component(GetComponent(id));
     if (!component || component->requires_network_encryption)
       secure_ids.push_back(id);
     else
@@ -327,7 +327,7 @@ void CrxUpdateService::OnUpdate(const std::vector<std::string>& ids,
   DCHECK(components->empty());
 
   for (const auto& id : ids) {
-    const auto registered_component(GetComponent(id));
+    const auto* registered_component(GetComponent(id));
     if (registered_component) {
       components->push_back(*registered_component);
     }
@@ -345,7 +345,7 @@ void CrxUpdateService::OnUpdateComplete(const base::TimeTicks& start_time,
 
   for (const auto id : components_pending_unregistration_) {
     if (!update_client_->IsUpdating(id)) {
-      const auto component = GetComponent(id);
+      const auto* component = GetComponent(id);
       if (component)
         DoUnregisterComponent(*component);
     }
@@ -376,7 +376,7 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
 
   // Update the component registration with the new version.
   if (event == Observer::Events::COMPONENT_UPDATED) {
-    auto component(const_cast<CrxComponent*>(GetComponent(id)));
+    auto* component(const_cast<CrxComponent*>(GetComponent(id)));
     if (component) {
       component->version = update_item.next_version;
       component->fingerprint = update_item.next_fp;

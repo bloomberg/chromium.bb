@@ -261,7 +261,7 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
                                only_return_personalized_results);
 
     auto content_restricts = base::MakeUnique<base::ListValue>();
-    for (const auto& metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
+    for (const auto* metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
       auto entry = base::MakeUnique<base::DictionaryValue>();
       entry->SetString("type", "METADATA");
       entry->SetString("value", metadata);

@@ -25,7 +25,7 @@ TEST(DomainReliabilityGoogleConfigsTest, ConfigsAreValid) {
   STLElementDeleter<ConfigPointerVector> configs_deleter(&configs);
 
   GetAllGoogleConfigs(&configs);
-  for (auto config : configs)
+  for (auto* config : configs)
     EXPECT_TRUE(config->IsValid());
 }
 

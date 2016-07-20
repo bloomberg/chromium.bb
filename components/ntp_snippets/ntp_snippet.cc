@@ -148,7 +148,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
 
   auto snippet = base::MakeUnique<NTPSnippet>(id);
   snippet->sources_.emplace_back(GURL(), std::string(), GURL());
-  auto source = &snippet->sources_.back();
+  auto* source = &snippet->sources_.back();
   snippet->best_source_index_ = 0;
 
   if (!(dict.GetString("title", &snippet->title_) &&

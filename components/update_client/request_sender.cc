@@ -207,7 +207,7 @@ GURL RequestSender::BuildUpdateUrl(const GURL& url,
 
 std::string RequestSender::GetStringHeaderValue(const net::URLFetcher* source,
                                                 const char* header_name) {
-  const auto response_headers(source->GetResponseHeaders());
+  auto* response_headers(source->GetResponseHeaders());
   if (!response_headers)
     return std::string();
 
@@ -219,7 +219,7 @@ std::string RequestSender::GetStringHeaderValue(const net::URLFetcher* source,
 
 int64_t RequestSender::GetInt64HeaderValue(const net::URLFetcher* source,
                                            const char* header_name) {
-  const auto response_headers(source->GetResponseHeaders());
+  auto* response_headers(source->GetResponseHeaders());
   return response_headers ? response_headers->GetInt64HeaderValue(header_name)
                           : -1;
 }

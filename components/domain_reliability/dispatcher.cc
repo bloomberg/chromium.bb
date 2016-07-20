@@ -76,7 +76,7 @@ void DomainReliabilityDispatcher::RunEligibleTasks() {
   std::set<Task*> tasks;
   tasks.swap(eligible_tasks_);
 
-  for (auto& task : tasks) {
+  for (auto* task : tasks) {
     DCHECK(task);
     DCHECK(task->eligible);
     RunAndDeleteTask(task);

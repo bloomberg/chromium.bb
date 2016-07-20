@@ -51,7 +51,7 @@ void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
   if (!ignore_logins_cutoff_.is_null()) {
     ScopedVector<autofill::PasswordForm> remaining_logins;
     remaining_logins.reserve(results.size());
-    for (auto& login : results) {
+    for (auto*& login : results) {
       if (login->date_created >= ignore_logins_cutoff_) {
         remaining_logins.push_back(login);
         login = nullptr;

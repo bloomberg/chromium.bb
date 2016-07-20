@@ -559,7 +559,7 @@ BluetoothDevice* BluetoothLowEnergyConnection::GetRemoteDevice() {
   // bug in the way device::BluetoothAdapter is storing the devices (see
   // crbug.com/497841).
   std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-  for (const auto& device : devices) {
+  for (auto* device : devices) {
     if (device->GetAddress() == GetDeviceAddress())
       return device;
   }
@@ -576,7 +576,7 @@ BluetoothRemoteGattService* BluetoothLowEnergyConnection::GetRemoteService() {
   if (remote_service_.id.empty()) {
     std::vector<BluetoothRemoteGattService*> services =
         remote_device->GetGattServices();
-    for (const auto& service : services)
+    for (const auto* service : services)
       if (service->GetUUID() == remote_service_.uuid) {
         remote_service_.id = service->GetIdentifier();
         break;

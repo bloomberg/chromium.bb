@@ -95,7 +95,7 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   }
 
   // Delete pending checks, calling back any clients with empty metadata.
-  for (auto check : api_checks_) {
+  for (auto* check : api_checks_) {
     if (check->client()) {
       check->client()->
           OnCheckApiBlacklistUrlResult(check->url(), ThreatMetadata());

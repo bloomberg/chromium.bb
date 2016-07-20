@@ -27,7 +27,7 @@ void ReportAccountChooserMetrics(
     const ScopedVector<autofill::PasswordForm>& local_results,
     bool had_empty_username) {
   std::vector<base::string16> usernames;
-  for (const auto& form : local_results)
+  for (const auto* form : local_results)
     usernames.push_back(form->username_value);
   std::sort(usernames.begin(), usernames.end());
   bool has_duplicates =
@@ -78,7 +78,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   ScopedVector<autofill::PasswordForm> local_results;
   ScopedVector<autofill::PasswordForm> affiliated_results;
   ScopedVector<autofill::PasswordForm> federated_results;
-  for (auto& form : results) {
+  for (auto*& form : results) {
     // Ensure that the form we're looking at matches the password and
     // federation filters provided.
     if (!((form->federation_origin.unique() && include_passwords_) ||

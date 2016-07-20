@@ -50,7 +50,7 @@ TEST_F(PrecacheSessionTableTest, SaveAndGetUnfinishedWork) {
       new PrecacheUnfinishedWork());
   unfinished_work->add_top_host()->set_hostname("foo.com");
   unfinished_work->add_top_host()->set_hostname("bar.com");
-  auto s = unfinished_work->mutable_config_settings();
+  auto* s = unfinished_work->mutable_config_settings();
   s->set_top_sites_count(11);
   s->add_forced_site("baz.com");
   s->set_top_resources_count(12);

@@ -432,7 +432,7 @@ bool FormStructure::EncodeQueryRequest(
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
-  for (const auto& form : forms) {
+  for (const auto* form : forms) {
     std::string signature(form->FormSignature());
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
