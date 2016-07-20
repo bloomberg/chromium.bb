@@ -57,6 +57,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final CallbackHelper mDismissed;
     protected final CallbackHelper mUnableToAbort;
     protected final CallbackHelper mBillingAddressChangeProcessed;
+    protected final CallbackHelper mShowFailed;
     protected PaymentRequestUI mUI;
 
     private final AtomicReference<ContentViewCore> mViewCoreRef;
@@ -78,6 +79,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mDismissed = new CallbackHelper();
         mUnableToAbort = new CallbackHelper();
         mBillingAddressChangeProcessed = new CallbackHelper();
+        mShowFailed = new CallbackHelper();
         mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = UrlUtils.getIsolatedTestFilePath(
@@ -91,6 +93,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
             throws InterruptedException, ExecutionException, TimeoutException;
 
     protected void triggerUIAndWait(PaymentsCallbackHelper<PaymentRequestUI> helper)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait((CallbackHelper) helper);
+        mUI = helper.getTarget();
+    }
+
+    protected void triggerUIAndWait(CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
         startMainActivityWithURL(mTestFilePath);
         onMainActivityStarted();
@@ -106,7 +114,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         });
         assertWaitForPageScaleFactorMatch(1);
         clickNodeAndWait("buy", helper);
-        mUI = helper.getTarget();
     }
 
     /** Clicks on an HTML node. */
@@ -477,6 +484,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     public void onPaymentRequestServiceBillingAddressChangeProcessed() {
         ThreadUtils.assertOnUiThread();
         mBillingAddressChangeProcessed.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestServiceShowFailed() {
+        ThreadUtils.assertOnUiThread();
+        mShowFailed.notifyCalled();
     }
 
     @Override

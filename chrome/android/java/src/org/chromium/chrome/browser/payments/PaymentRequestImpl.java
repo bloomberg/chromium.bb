@@ -75,6 +75,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
          * editor UI.
          */
         void onPaymentRequestServiceBillingAddressChangeProcessed();
+
+        /**
+         * Called when a show request failed.
+         */
+        void onPaymentRequestServiceShowFailed();
     }
 
     private static final String TAG = "cr_PaymentRequest";
@@ -219,6 +224,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
+        if (!getMatchingPaymentInstruments()) {
+            disconnectFromClientWithDebugMessage("Requested payment methods are not supported",
+                    PaymentErrorReason.NOT_SUPPORTED);
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            return;
+        }
+
         // Create a comparator to sort the suggestions by completeness.
         Comparator<Completable> completenessComparator = new Comparator<Completable>() {
             @Override
@@ -321,27 +333,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
         }
 
-        mPendingApps = new ArrayList<>(mApps);
-        mFirstCompletePendingInstrument = SectionInformation.NO_SELECTION;
-        mPendingInstruments = new ArrayList<>();
-        boolean isGettingInstruments = false;
-
-        for (int i = 0; i < mApps.size(); i++) {
-            PaymentApp app = mApps.get(i);
-            Set<String> appMethods = app.getSupportedMethodNames();
-            appMethods.retainAll(mMethodData.keySet());
-            if (appMethods.isEmpty()) {
-                mPendingApps.remove(app);
-            } else {
-                isGettingInstruments = true;
-                app.getInstruments(mMethodData.get(appMethods.iterator().next()), this);
-            }
-        }
-
-        if (!isGettingInstruments) {
-            mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS);
-        }
-
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
                 requestPayerPhone || requestPayerEmail, mMerchantName, mOrigin);
 
@@ -388,6 +379,32 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methods);
         }
         return result;
+    }
+
+    /**
+     * Queries the installed payment apps for their instruments that merchant supports.
+     *
+     * @return True if any of the requested payment methods are supported.
+     */
+    private boolean getMatchingPaymentInstruments() {
+        mPendingApps = new ArrayList<>(mApps);
+        mFirstCompletePendingInstrument = SectionInformation.NO_SELECTION;
+        mPendingInstruments = new ArrayList<>();
+        boolean arePaymentMethodsSupported = false;
+
+        for (int i = 0; i < mApps.size(); i++) {
+            PaymentApp app = mApps.get(i);
+            Set<String> appMethods = app.getSupportedMethodNames();
+            appMethods.retainAll(mMethodData.keySet());
+            if (appMethods.isEmpty()) {
+                mPendingApps.remove(app);
+            } else {
+                arePaymentMethodsSupported = true;
+                app.getInstruments(mMethodData.get(appMethods.iterator().next()), this);
+            }
+        }
+
+        return arePaymentMethodsSupported;
     }
 
     /**
@@ -783,6 +800,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         closeUI(false);
     }
 
+    private void disconnectFromClientWithDebugMessage(String debugMessage) {
+        disconnectFromClientWithDebugMessage(debugMessage, PaymentErrorReason.USER_CANCEL);
+    }
+
+    private void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
+        Log.d(TAG, debugMessage);
+        mClient.onError(reason);
+        closeClient();
+    }
+
     @Override
     public boolean merchantNeedsShippingAddress() {
         return mMerchantNeedsShippingAddress;
@@ -917,12 +944,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onInstrumentDetailsError() {
         mUI.onPayButtonProcessingCancelled();
         mPaymentAppRunning = false;
-    }
-
-    private void disconnectFromClientWithDebugMessage(String debugMessage) {
-        Log.d(TAG, debugMessage);
-        mClient.onError(PaymentErrorReason.USER_CANCEL);
-        closeClient();
     }
 
     /**

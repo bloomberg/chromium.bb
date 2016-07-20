@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class PaymentAppFactory {
      *
      * @param additionalFactory Can build instances of payment apps.
      */
+    @VisibleForTesting
     public static void setAdditionalFactory(PaymentAppFactoryAddition additionalFactory) {
         sAdditionalFactory = additionalFactory;
     }
