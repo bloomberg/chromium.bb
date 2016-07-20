@@ -1561,7 +1561,6 @@ cr.define('login', function() {
     showRemoveWarning_: function() {
       this.actionBoxMenuRemoveElement.hidden = true;
       this.actionBoxRemoveUserWarningElement.hidden = false;
-      this.actionBoxRemoveUserWarningButtonElement.focus();
 
       // Show extra statistics information for desktop users
       var message;
