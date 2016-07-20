@@ -85,7 +85,18 @@ bool IntentFilter::AuthorityEntry::match(const GURL& url) const {
     return false;
   }
 
-  if (port_ >= 0 && port_ != url.IntPort()) {
+  // Note: On android, intent filters with explicit port specifications only
+  // match URLs with explict ports, even if the specified port is the default
+  // port.  Using GURL::EffectiveIntPort instead of GURL::IntPort means that
+  // this code differs in behaviour (i.e. it just matches the effective port,
+  // ignoring whether it was implicitly or explicitly specified).
+  //
+  // We do this because it provides an optimistic match - ensuring that the
+  // disambiguation code doesn't miss URLs that might be handled by android
+  // apps.  This doesn't cause misrouted intents because this check is followed
+  // up by a mojo call that actually verifies the list of packages that could
+  // accept the given intent.
+  if (port_ >= 0 && port_ != url.EffectiveIntPort()) {
     return false;
   }
 

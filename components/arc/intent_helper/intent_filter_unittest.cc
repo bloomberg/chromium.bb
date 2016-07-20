@@ -116,6 +116,20 @@ TEST(IntentFilterTest, TestAuthorityEntry_with_port) {
   EXPECT_TRUE(filter_port_100.match(GURL("https://authority1:100")));
 }
 
+TEST(IntentFilterTest, TestAuthorityEntry_default_port) {
+  // Intent filters with explicit default ports match URLs with or without
+  // explicit ports.  This diverges from android's intent filter behaviour.  See
+  // the IntentFilter::AuthorityEntry::match code for details.
+  IntentFilter filter_default_port = IntentFilterBuilder()
+      .authority("authority1", 80)
+      .authority("authority1", 443);
+
+  EXPECT_TRUE(filter_default_port.match(GURL("http://authority1")));
+  EXPECT_TRUE(filter_default_port.match(GURL("https://authority1")));
+  EXPECT_TRUE(filter_default_port.match(GURL("http://authority1:80")));
+  EXPECT_TRUE(filter_default_port.match(GURL("https://authority1:443")));
+}
+
 TEST(IntentFilterTest, TestAuthorityEntry_multiple) {
   // A filter with multiple authorities should match URLs that match any of
   // those authorities.
