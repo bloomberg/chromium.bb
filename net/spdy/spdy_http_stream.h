@@ -117,6 +117,14 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // Call the user callback associated with sending the request.
   void DoRequestCallback(int rv);
 
+  // Method to PostTask for calling request callback asynchronously.
+  void MaybeDoRequestCallback(int rv);
+
+  // Post the request callback if not null.
+  // This is necessary because the request callback might destroy |stream_|,
+  // which does not support that.
+  void MaybePostRequestCallback(int rv);
+
   // Call the user callback associated with reading the response.
   void DoResponseCallback(int rv);
 
@@ -179,6 +187,10 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // Is this spdy stream direct to the origin server (or to a proxy).
   bool direct_;
+
+  SSLInfo ssl_info_;
+  bool was_npn_negotiated_;
+  NextProto protocol_negotiated_;
 
   base::WeakPtrFactory<SpdyHttpStream> weak_factory_;
 

@@ -1118,6 +1118,12 @@ int HttpNetworkTransaction::DoSendRequest() {
 
 int HttpNetworkTransaction::DoSendRequestComplete(int result) {
   send_end_time_ = base::TimeTicks::Now();
+
+  if (result == ERR_HTTP_1_1_REQUIRED ||
+      result == ERR_PROXY_HTTP_1_1_REQUIRED) {
+    return HandleHttp11Required(result);
+  }
+
   if (result < 0)
     return HandleIOError(result);
   next_state_ = STATE_READ_HEADERS;

@@ -3850,7 +3850,7 @@ TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
 
   EXPECT_EQ(out.rv, ERR_IO_PENDING);
   out.rv = callback.WaitForResult();
-  EXPECT_EQ(out.rv, OK);
+  EXPECT_EQ(out.rv, ERR_CONNECTION_CLOSED);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   EXPECT_TRUE(response->headers);
@@ -3860,23 +3860,6 @@ TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
-}
-
-// HTTP_1_1_REQUIRED results in ERR_HTTP_1_1_REQUIRED.
-TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), nullptr);
-
-  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
-      0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
-  MockRead reads[] = {
-      CreateMockRead(go_away, 0),
-  };
-  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
-
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_HTTP_1_1_REQUIRED));
 }
 
 // Retry with HTTP/1.1 when receiving HTTP_1_1_REQUIRED.  Note that no actual
