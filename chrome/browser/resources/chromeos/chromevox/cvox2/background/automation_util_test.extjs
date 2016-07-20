@@ -123,9 +123,11 @@ TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
     // Same node.
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
 
-    // Ancestor.
+    // Ancestry.
     left = left.firstChild;
-    assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
+    // Upward movement is backward (in dfs).
+    assertEquals(Dir.BACKWARD, AutomationUtil.getDirection(left, right));
+    // Downward movement is forward.
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(right, left));
 
     // Ordered.

@@ -31,7 +31,7 @@ CursorsTest.prototype = {
     window.CHARACTER = cursors.Unit.CHARACTER;
     window.WORD = cursors.Unit.WORD;
     window.LINE = cursors.Unit.LINE;
-    window.DOM_NODE = cursors.Unit.DOM_NODE;
+    window.NODE = cursors.Unit.NODE;
     window.BOUND = cursors.Movement.BOUND;
     window.DIRECTIONAL = cursors.Movement.DIRECTIONAL;
     window.RoleType = chrome.automation.RoleType;
@@ -282,11 +282,11 @@ TEST_F('CursorsTest', 'DontSplitOnNodeNavigation', function() {
     var para = root.firstChild;
     assertEquals('paragraph', para.role);
     var cursor = new cursors.Cursor(para.firstChild, 0);
-    cursor = cursor.move(DOM_NODE, DIRECTIONAL, FORWARD);
+    cursor = cursor.move(NODE, DIRECTIONAL, FORWARD);
     assertEquals('staticText', cursor.node.role);
     assertEquals('end', cursor.node.name);
 
-    cursor = cursor.move(DOM_NODE, DIRECTIONAL, BACKWARD);
+    cursor = cursor.move(NODE, DIRECTIONAL, BACKWARD);
     assertEquals('staticText', cursor.node.role);
     assertEquals('start diff line', cursor.node.name);
     
@@ -304,11 +304,11 @@ TEST_F('CursorsTest', 'WrappingCursors', function() {
     var cursor = new cursors.WrappingCursor(first, -1);
 
     // Wrap from first node to last node.
-    cursor = cursor.move(DOM_NODE, DIRECTIONAL, BACKWARD);
+    cursor = cursor.move(NODE, DIRECTIONAL, BACKWARD);
     assertEquals(last, cursor.node);
 
     // Wrap from last node to first node.
-    cursor = cursor.move(DOM_NODE, DIRECTIONAL, FORWARD);
+    cursor = cursor.move(NODE, DIRECTIONAL, FORWARD);
     assertEquals(first, cursor.node);
   });
 });

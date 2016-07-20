@@ -88,7 +88,7 @@ ISearch.prototype = {
       var cur = cursors.Cursor.fromNode(curNode);
       var prev = cur;
       cur =
-          cur.move(cursors.Unit.DOM_NODE, cursors.Movement.DIRECTIONAL, dir);
+          cur.move(cursors.Unit.NODE, cursors.Movement.DIRECTIONAL, dir);
       if (prev.equals(cur)) {
         this.handler_.onSearchReachedBoundary(this.node_);
         return;

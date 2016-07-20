@@ -173,11 +173,13 @@ AutomationPredicate.leafWithText = function(node) {
 };
 
 /**
- * Non-inline textbox nodes which have an equivalent in the DOM.
+ * Matches against leaves or static text nodes. Useful when restricting
+ * traversal to non-inline textboxes while still allowing them if navigation
+ * already entered into an inline textbox.
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.leafDomNode = function(node) {
+AutomationPredicate.leafOrStaticText = function(node) {
   return AutomationPredicate.leaf(node) ||
       node.role == RoleType.staticText;
 };
@@ -202,7 +204,7 @@ AutomationPredicate.text = function(node) {
  */
 AutomationPredicate.object = function(node) {
   return node.state.focusable ||
-      (AutomationPredicate.leafDomNode(node) &&
+      (AutomationPredicate.leafOrStaticText(node) &&
        (/\S+/.test(node.name) ||
         (node.role != RoleType.lineBreak &&
          node.role != RoleType.staticText &&

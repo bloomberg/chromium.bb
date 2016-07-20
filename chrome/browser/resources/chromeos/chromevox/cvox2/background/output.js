@@ -1112,24 +1112,24 @@ Output.prototype = {
               this.format_(node, formatString, buff);
           }
         } else if (token == 'descendants') {
-          if (!node || AutomationPredicate.leaf(node))
+          if (!node || AutomationPredicate.leafOrStaticText(node))
             return;
 
           // Construct a range to the leftmost and rightmost leaves.
           var leftmost = AutomationUtil.findNodePre(
-              node, Dir.FORWARD, AutomationPredicate.leaf);
+              node, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
           var rightmost = AutomationUtil.findNodePre(
-              node, Dir.BACKWARD, AutomationPredicate.leaf);
+              node, Dir.BACKWARD, AutomationPredicate.leafOrStaticText);
           if (!leftmost || !rightmost)
             return;
 
           var subrange = new cursors.Range(
-              new cursors.Cursor(leftmost, 0),
-              new cursors.Cursor(rightmost, 0));
+              new cursors.Cursor(leftmost, cursors.NODE_INDEX),
+              new cursors.Cursor(rightmost, cursors.NODE_INDEX));
           var prev = null;
           if (node)
             prev = cursors.Range.fromNode(node);
-          this.range_(subrange, prev, Output.EventType.NAVIGATE, buff);
+          this.render_(subrange, prev, Output.EventType.NAVIGATE, buff);
         } else if (token == 'joinedDescendants') {
           var unjoined = [];
           this.format_(node, '$descendants', unjoined);
@@ -1349,7 +1349,10 @@ Output.prototype = {
       return buff;
     }.bind(this);
 
-    while (cursor.node != range.end.node) {
+    while (cursor.node &&
+        range.end.node &&
+        AutomationUtil.getDirection(cursor.node, range.end.node) ==
+        Dir.FORWARD) {
       var node = cursor.node;
       rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
       prevNode = node;
@@ -1361,8 +1364,6 @@ Output.prototype = {
       if (cursor.node == prevNode)
         break;
     }
-    var lastNode = range.end.node;
-    rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(lastNode, prevNode));
   },
 
   /**

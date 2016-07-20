@@ -315,11 +315,11 @@ CommandHandler.onCommand = function(command) {
       break;
     case 'right':
     case 'nextObject':
-      current = current.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
+      current = current.move(cursors.Unit.NODE, Dir.FORWARD);
       break;
     case 'left':
     case 'previousObject':
-      current = current.move(cursors.Unit.DOM_NODE, Dir.BACKWARD);
+      current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
       break;
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
@@ -353,7 +353,7 @@ CommandHandler.onCommand = function(command) {
         var prevRange = ChromeVoxState.instance.currentRange_;
         var newRange =
             ChromeVoxState.instance.currentRange_.move(
-                cursors.Unit.DOM_NODE, Dir.FORWARD);
+                cursors.Unit.NODE, Dir.FORWARD);
 
         // Stop if we've wrapped back to the document.
         var maybeDoc = newRange.start.node;

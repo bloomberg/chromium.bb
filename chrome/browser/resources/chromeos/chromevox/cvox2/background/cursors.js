@@ -37,10 +37,10 @@ cursors.Unit = {
   /** A leaf node. */
   NODE: 'node',
 
-  /** A leaf DOM-node. */
-  DOM_NODE: 'dom_node',
-
-  /** Formed by a set of leaf nodes that are inline. */
+  /**
+   * A node or in line textbox that immediately precedes or follows a visual
+   *     line break.
+   */
   LINE: 'line'
 };
 
@@ -230,8 +230,7 @@ cursors.Cursor.prototype = {
     var newNode = originalNode;
     var newIndex = this.index_;
 
-    if ((unit != Unit.NODE || unit != Unit.DOM_NODE) &&
-        newIndex === cursors.NODE_INDEX)
+    if (unit != Unit.NODE && newIndex === cursors.NODE_INDEX)
       newIndex = 0;
 
     switch (unit) {
@@ -319,16 +318,13 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.NODE:
-      case Unit.DOM_NODE:
         switch (movement) {
           case Movement.BOUND:
             newIndex = dir == Dir.FORWARD ? this.getText().length - 1 : 0;
             break;
           case Movement.DIRECTIONAL:
-            var pred = unit == Unit.NODE ?
-                AutomationPredicate.leaf : AutomationPredicate.object;
             newNode = AutomationUtil.findNextNode(
-                newNode, dir, pred) || originalNode;
+                newNode, dir, AutomationPredicate.object) || originalNode;
             newIndex = cursors.NODE_INDEX;
             break;
         }
@@ -399,8 +395,14 @@ cursors.WrappingCursor.prototype = {
       return this;
 
     // Regular movement.
-    if (!AutomationPredicate.root(this.node) || dir == Dir.FORWARD)
+    if (!AutomationPredicate.root(this.node) ||
+        dir == Dir.FORWARD ||
+        movement == Movement.BOUND)
       result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
+
+    // Moving to the bounds of a unit never wraps.
+    if (movement == Movement.BOUND)
+      return new cursors.WrappingCursor(result.node, result.index);
 
     // There are two cases for wrapping:
     // 1. moving forwards from the last element.
@@ -410,7 +412,7 @@ cursors.WrappingCursor.prototype = {
     // For 2, place range on the root (if not already there). If at root,
     // try to descend to the first leaf-like object.
     if (movement == Movement.DIRECTIONAL && result.equals(this)) {
-      var pred = unit == Unit.DOM_NODE ?
+      var pred = unit == Unit.NODE ?
           AutomationPredicate.object : AutomationPredicate.leaf;
       var endpoint = this.node;
       if (!endpoint)
@@ -580,7 +582,6 @@ cursors.Range.prototype = {
         newEnd = newStart.move(unit, Movement.BOUND, Dir.FORWARD);
         break;
       case Unit.NODE:
-      case Unit.DOM_NODE:
         newStart = newStart.move(unit, Movement.DIRECTIONAL, dir);
         newEnd = newStart;
         break;

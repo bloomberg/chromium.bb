@@ -209,9 +209,17 @@ AutomationUtil.getDirection = function(nodeA, nodeB) {
   var divA = ancestorsA[divergence];
   var divB = ancestorsB[divergence];
 
-  // One of the nodes is an ancestor of the other. Don't distinguish and just
-  // consider it Dir.FORWARD.
-  if (!divA || !divB || divA.parent === nodeB || divB.parent === nodeA)
+  // One of the nodes is an ancestor of the other. Order this relationship in
+  // the same way dfs would. nodeA <= nodeB if nodeA is a descendant of
+  // nodeB. nodeA > nodeB if nodeB is a descendant of nodeA.
+
+  if (!divA)
+    return Dir.FORWARD;
+  if (!divB)
+    return Dir.BACKWARD;
+  if (divA.parent === nodeB)
+    return Dir.BACKWARD;
+  if (divB.parent === nodeA)
     return Dir.FORWARD;
 
   return divA.indexInParent <= divB.indexInParent ? Dir.FORWARD : Dir.BACKWARD;
