@@ -94,6 +94,10 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
 
   File TakeFile();
 
+  // Returns a new File object that is a duplicate of the underlying |file_|.
+  // See the comment at File::Duplicate for caveats.
+  File DuplicateFile();
+
   PlatformFile GetPlatformFile() const;
 
   // Proxies File::Close. The callback can be null.

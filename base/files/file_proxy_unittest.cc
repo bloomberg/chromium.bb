@@ -225,6 +225,23 @@ TEST_F(FileProxyTest, SetAndTake) {
   EXPECT_TRUE(file.IsValid());
 }
 
+TEST_F(FileProxyTest, DuplicateFile) {
+  FileProxy proxy(file_task_runner());
+  CreateProxy(File::FLAG_CREATE | File::FLAG_WRITE, &proxy);
+  ASSERT_TRUE(proxy.IsValid());
+
+  base::File duplicate = proxy.DuplicateFile();
+  EXPECT_TRUE(proxy.IsValid());
+  EXPECT_TRUE(duplicate.IsValid());
+
+  FileProxy invalid_proxy(file_task_runner());
+  ASSERT_FALSE(invalid_proxy.IsValid());
+
+  base::File invalid_duplicate = invalid_proxy.DuplicateFile();
+  EXPECT_FALSE(invalid_proxy.IsValid());
+  EXPECT_FALSE(invalid_duplicate.IsValid());
+}
+
 TEST_F(FileProxyTest, GetInfo) {
   // Setup.
   ASSERT_EQ(4, base::WriteFile(test_path(), "test", 4));

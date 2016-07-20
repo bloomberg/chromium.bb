@@ -274,6 +274,10 @@ File FileProxy::TakeFile() {
   return std::move(file_);
 }
 
+File FileProxy::DuplicateFile() {
+  return file_.Duplicate();
+}
+
 PlatformFile FileProxy::GetPlatformFile() const {
   return file_.GetPlatformFile();
 }

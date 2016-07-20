@@ -48,18 +48,6 @@ base::FilePath GetRulesetDataFilePath(const base::FilePath& version_directory) {
   return version_directory.Append(kRulesetDataFileName);
 }
 
-// Returns a duplicate of the file wrapped by |file_proxy|. Temporary workaround
-// because base::FileProxy exposes neither the underlying file nor a Duplicate()
-// method.
-base::File DuplicateHandle(base::FileProxy* file_proxy) {
-  DCHECK(file_proxy);
-  DCHECK(file_proxy->IsValid());
-  base::File file = file_proxy->TakeFile();
-  base::File duplicate = file.Duplicate();
-  file_proxy->SetFile(std::move(file));
-  return duplicate;
-}
-
 }  // namespace
 
 // RulesetVersion ------------------------------------------------------------
@@ -147,7 +135,7 @@ void RulesetService::StoreAndPublishUpdatedRuleset(
 void RulesetService::RegisterDistributor(
     std::unique_ptr<RulesetDistributor> distributor) {
   if (ruleset_data_ && ruleset_data_->IsValid())
-    distributor->PublishNewVersion(DuplicateHandle(ruleset_data_.get()));
+    distributor->PublishNewVersion(ruleset_data_->DuplicateFile());
   distributors_.push_back(std::move(distributor));
 }
 
@@ -211,7 +199,7 @@ void RulesetService::OnOpenedRuleset(base::File::Error error) {
     return;
   DCHECK_EQ(error, base::File::Error::FILE_OK);
   for (auto& distributor : distributors_)
-    distributor->PublishNewVersion(DuplicateHandle(ruleset_data_.get()));
+    distributor->PublishNewVersion(ruleset_data_->DuplicateFile());
 }
 
 }  // namespace subresource_filter
