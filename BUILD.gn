@@ -105,6 +105,7 @@ if (is_win) {
       "//chrome/installer/mini_installer",
       "//components/policy:pack_policy_templates",
       "//courgette",
+      "//courgette:copy_courgette_binaries",
       "//remoting/webapp",
     ]
     if (target_cpu == "x86") {
