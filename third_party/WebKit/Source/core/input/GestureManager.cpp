@@ -104,7 +104,7 @@ WebInputEventResult GestureManager::handleGestureEventInFrame(const GestureEvent
     case PlatformEvent::GestureLongTap:
         return handleGestureLongTap(targetedEvent);
     case PlatformEvent::GestureTwoFingerTap:
-        return m_frame->eventHandler().sendContextMenuEventForGesture(targetedEvent);
+        return handleGestureTwoFingerTap(targetedEvent);
     case PlatformEvent::GesturePinchBegin:
     case PlatformEvent::GesturePinchEnd:
     case PlatformEvent::GesturePinchUpdate:
@@ -266,7 +266,7 @@ WebInputEventResult GestureManager::handleGestureLongPress(const GestureEventWit
         return WebInputEventResult::HandledSystem;
     }
 
-    return m_frame->eventHandler().sendContextMenuEventForGesture(targetedEvent);
+    return sendContextMenuEventForGesture(targetedEvent);
 }
 
 WebInputEventResult GestureManager::handleGestureLongTap(const GestureEventWithHitTestResults& targetedEvent)
@@ -274,10 +274,49 @@ WebInputEventResult GestureManager::handleGestureLongTap(const GestureEventWithH
 #if !OS(ANDROID)
     if (m_longTapShouldInvokeContextMenu) {
         m_longTapShouldInvokeContextMenu = false;
-        return m_frame->eventHandler().sendContextMenuEventForGesture(targetedEvent);
+        return sendContextMenuEventForGesture(targetedEvent);
     }
 #endif
     return WebInputEventResult::NotHandled;
+}
+
+WebInputEventResult GestureManager::handleGestureTwoFingerTap(const GestureEventWithHitTestResults& targetedEvent)
+{
+    return sendContextMenuEventForGesture(targetedEvent);
+}
+
+WebInputEventResult GestureManager::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)
+{
+    const PlatformGestureEvent& gestureEvent = targetedEvent.event();
+    unsigned modifiers = gestureEvent.getModifiers();
+
+    if (!m_suppressMouseEventsFromGestures) {
+        // Send MouseMoved event prior to handling (https://crbug.com/485290).
+        PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
+            NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
+            static_cast<PlatformEvent::Modifiers>(modifiers),
+            PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
+        m_frame->eventHandler().dispatchMouseEvent(
+            EventTypeNames::mousemove, targetedEvent.hitTestResult().innerNode(), 0, fakeMouseMove);
+    }
+
+    PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
+    if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
+        eventType = PlatformEvent::MouseReleased;
+
+    // To simulate right-click behavior, we send a right mouse down and then context menu event.
+    // TODO(crbug.com/579564): Maybe we should not send mouse down at all
+    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1,
+        static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::RightButtonDown),
+        PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
+    if (!m_suppressMouseEventsFromGestures) {
+        // FIXME: Send HitTestResults to avoid redundant hit tests.
+        m_frame->eventHandler().handleMousePressEvent(mouseEvent);
+    }
+
+    return m_frame->eventHandler().sendContextMenuEvent(mouseEvent);
+    // We do not need to send a corresponding mouse release because in case of
+    // right-click, the context menu takes capture and consumes all events.
 }
 
 WebInputEventResult GestureManager::handleGestureShowPress()

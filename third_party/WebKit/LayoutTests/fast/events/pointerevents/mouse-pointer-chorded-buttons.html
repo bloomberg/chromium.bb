@@ -10,6 +10,12 @@ div.box {
 }
 </style>
 
+<h1>PointerEvent: Verifies that chorded buttons fire appropriate events</h1>
+
+<div id="target" class="box" style="background-color:red"></div>
+
+<div id="log"></div>
+
 <script>
 var receivedEvents = [];
 var preventDefaultOnPointerDown = false;
@@ -131,9 +137,7 @@ function runTests() {
   ], "LM button with preventDefault on pointerdown");
 }
 
-function run() {
-  setup({explicit_done: true});
-
+test(function() {
   if (!window.eventSender)
     assert_true(true, "No eventSender, skipped tests");
   else if (!window.PointerEvent)
@@ -144,13 +148,5 @@ function run() {
   }
 
   done();
-}
+}, "PointerEvent: Verifies that chorded buttons fire appropriate events");
 </script>
-
-<body onload="run()">
-  <h1>PointerEvent: Verifies that chorded buttons fire appropriate events</h1>
-
-  <div id="target" class="box" style="background-color:red"></div>
-
-  <div id="log"></div>
-</body>

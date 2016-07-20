@@ -180,7 +180,6 @@ public:
 
     WebInputEventResult sendContextMenuEvent(const PlatformMouseEvent&, Node* overrideTargetNode = nullptr);
     WebInputEventResult sendContextMenuEventForKey(Element* overrideTargetElement = nullptr);
-    WebInputEventResult sendContextMenuEventForGesture(const GestureEventWithHitTestResults&);
 
     // Returns whether pointerId is active or not
     bool isPointerEventActive(int);

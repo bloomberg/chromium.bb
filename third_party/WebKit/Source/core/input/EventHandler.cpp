@@ -862,7 +862,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     }
 
     // m_selectionInitiationState is initialized after dispatching mousedown
-    // event in order not to keep the selection by DOM APIs Because we can't
+    // event in order not to keep the selection by DOM APIs because we can't
     // give the user the chance to handle the selection by user action like
     // dragging if we keep the selection in case of mousedown. FireFox also has
     // the same behavior and it's more compatible with other browsers.
@@ -1501,6 +1501,9 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
 
     Node* lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
 
+    if (mouseEvent.getSyntheticEventType() == PlatformMouseEvent::FromTouch)
+        return dispatchMouseEvent(mouseEventType, m_nodeUnderMouse, clickCount, mouseEvent);
+
     return m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
         lastNodeUnderMouse);
@@ -2091,39 +2094,6 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
         WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
 
     return sendContextMenuEvent(mouseEvent, overrideTargetElement);
-}
-
-WebInputEventResult EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)
-{
-    const PlatformGestureEvent& gestureEvent = targetedEvent.event();
-    unsigned modifiers = gestureEvent.getModifiers();
-
-    // Send MouseMoved event prior to handling (https://crbug.com/485290).
-    PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
-        NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
-        static_cast<PlatformEvent::Modifiers>(modifiers),
-        PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
-    dispatchMouseEvent(EventTypeNames::mousemove, targetedEvent.hitTestResult().innerNode(), 0, fakeMouseMove);
-
-    PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
-
-    if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
-        eventType = PlatformEvent::MouseReleased;
-
-    // Always set right button down as we are sending mousedown event regardless
-    modifiers |= PlatformEvent::RightButtonDown;
-
-    // TODO(crbug.com/579564): Maybe we should not send mouse down at all
-    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1,
-        static_cast<PlatformEvent::Modifiers>(modifiers),
-        PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
-    // To simulate right-click behavior, we send a right mouse down and then
-    // context menu event.
-    // FIXME: Send HitTestResults to avoid redundant hit tests.
-    handleMousePressEvent(mouseEvent);
-    return sendContextMenuEvent(mouseEvent);
-    // We do not need to send a corresponding mouse release because in case of
-    // right-click, the context menu takes capture and consumes all events.
 }
 
 void EventHandler::scheduleHoverStateUpdate()

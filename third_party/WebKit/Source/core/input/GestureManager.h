@@ -46,6 +46,9 @@ private:
     WebInputEventResult handleGestureTap(const GestureEventWithHitTestResults&);
     WebInputEventResult handleGestureLongPress(const GestureEventWithHitTestResults&);
     WebInputEventResult handleGestureLongTap(const GestureEventWithHitTestResults&);
+    WebInputEventResult handleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
+
+    WebInputEventResult sendContextMenuEventForGesture(const GestureEventWithHitTestResults&);
 
     FrameHost* frameHost() const;
 

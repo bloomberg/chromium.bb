@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+
+<style>
+div.box {
+  margin: 10px;
+  padding: 50px;
+  float: left;
+}
+</style>
+
+<h1>PointerEvent: Verifies that long press doesn't fire redundant pointer events</h1>
+
+<div id="target" class="box" style="background-color:red"></div>
+
+<div id="log"></div>
+
+<script>
+var receivedEvents = [];
+
+function testReceivedEvents(expectedEvents, testLabel) {
+  test(function() {
+    assert_array_equals(receivedEvents, expectedEvents);
+  }, testLabel);
+  receivedEvents = [];
+}
+
+function init() {
+  var targetDiv = document.getElementById("target");
+  targetEvents = ["mousedown", "mouseup", "mousemove", "contextmenu",
+      "mouseenter", "mouseleave", "mouseover", "mouseout",
+      "pointerdown", "pointerup", "pointermove", "pointercancel",
+      "pointerenter", "pointerleave", "pointerover", "pointerout"];
+
+  targetEvents.forEach(function(eventName) {
+    targetDiv.addEventListener(eventName, function(event) {
+      receivedEvents.push(event.type);
+    });
+  });
+}
+
+function runTests() {
+  var rect = document.getElementById("target").getBoundingClientRect();
+  eventSender.gestureLongPress(rect.left + 5, rect.top + 5);
+  testReceivedEvents([
+    "mouseover", "mouseenter", "mousemove", "mousedown", "contextmenu"
+  ], "Long press events");
+
+}
+
+test(function() {
+  if (!window.eventSender)
+    assert_true(true, "No eventSender, skipped tests");
+  else if (!window.PointerEvent)
+    assert_true(true, "No PointerEvent, skipped tests");
+  else {
+    init();
+    runTests();
+  }
+}, "PointerEvent: Verifies that long press doesn't fire redundant pointer events");
+</script>

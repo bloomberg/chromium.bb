@@ -30,6 +30,22 @@ Received mousemove
 Received mousedown 
 Received mouseup 
 Received click 
+-- Long-press with paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointercancel primary
+Received touchcancel 
+Received mousemove 
+Received mousedown 
+-- Long-press without paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointercancel primary
+Received touchcancel 
+Received mousemove 
+Received mousedown 
+Received mousemove 
+Received mousedown 
 
 === With primary pointerdown canceled ===
 -- Tap with paired GEs --
@@ -52,6 +68,20 @@ Received mousemove
 Received mousedown 
 Received mouseup 
 Received click 
+-- Long-press with paired GEs --
+Received pointerdown primary,canceled
+Received touchstart 
+Received pointercancel primary
+Received touchcancel 
+-- Long-press without paired GEs --
+Received pointerdown primary,canceled
+Received touchstart 
+Received pointercancel primary
+Received touchcancel 
+Received mousemove 
+Received mousedown 
+Received mousemove 
+Received mousedown 
 
 === With primary pointerdown uncanceled ===
 -- Tap with paired GEs --
@@ -80,6 +110,22 @@ Received mousemove
 Received mousedown 
 Received mouseup 
 Received click 
+-- Long-press with paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointercancel primary
+Received touchcancel 
+Received mousemove 
+Received mousedown 
+-- Long-press without paired GEs --
+Received pointerdown primary
+Received touchstart 
+Received pointercancel primary
+Received touchcancel 
+Received mousemove 
+Received mousedown 
+Received mousemove 
+Received mousedown 
 
 PASS successfullyParsed is true
 

@@ -25,10 +25,12 @@ function init() {
     "pointerup",
     "pointerdown",
     "pointermove",
+    "pointercancel",
     "click",
     "touchstart",
     "touchend",
     "touchmove",
+    "touchcancel",
   ];
 
   events.forEach(function(event) {
@@ -90,6 +92,46 @@ function testTapWithoutPairedGE() {
   eventSender.gestureTap(x, y);
 }
 
+function testLongPressWithPairedGE() {
+  var rect = document.getElementById("target").getBoundingClientRect();
+  var x = rect.left + 50;
+  var y = rect.top + 50;
+
+  var uniqueId = 1234;
+  var tapWidth = 30;
+  var tapHeight = 30;
+
+  eventSender.addTouchPoint(x, y);
+  eventSender.touchStart(uniqueId);
+  eventSender.gestureTapDown(x, y, tapWidth, tapHeight, uniqueId);
+
+  eventSender.cancelTouchPoint(0);
+  eventSender.touchCancel();
+
+  eventSender.gestureLongPress(x, y, tapWidth, tapHeight, uniqueId);
+}
+
+function testLongPressWithoutPairedGE() {
+  var rect = document.getElementById("target").getBoundingClientRect();
+  var x = rect.left + 50;
+  var y = rect.top + 50;
+
+  var uniqueId = 1234;
+  var tapWidth = 30;
+  var tapHeight = 30;
+
+  eventSender.addTouchPoint(x, y);
+  eventSender.touchStart(uniqueId);
+  eventSender.cancelTouchPoint(0);
+  eventSender.touchCancel();
+
+  eventSender.gestureTapDown(x, y, tapWidth, tapHeight, uniqueId+1);
+  eventSender.gestureLongPress(x, y);
+
+  eventSender.gestureTapDown(x, y, tapWidth, tapHeight, uniqueId+2);
+  eventSender.gestureLongPress(x, y);
+}
+
 function runTests() {
   [false, true, false].forEach(function(boolVal) {
     debug("=== With primary pointerdown " + (boolVal ? "canceled" : "uncanceled") +" ===");
@@ -100,6 +142,12 @@ function runTests() {
 
     debug("-- Tap without paired GEs --");
     testTapWithoutPairedGE();
+
+    debug("-- Long-press with paired GEs --");
+    testLongPressWithPairedGE();
+
+    debug("-- Long-press without paired GEs --");
+    testLongPressWithoutPairedGE();
 
     debug("");
   });
