@@ -318,8 +318,15 @@ def SetupBuild(options):
 
   # Pull out some information from the U-Boot boards config file
   family = None
+  (PRE_KBUILD, PRE_KCONFIG, KCONFIG) = range(3)
+  if os.path.exists('MAINTAINERS'):
+    board_format = PRE_KBUILD
+  else:
+    board_format = PRE_KCONFIG
   with open('boards.cfg') as f:
     for line in f:
+      if 'genboardscfg' in line:
+        board_format = KCONFIG
       if uboard in line:
         if line[0] == '#':
           continue
@@ -328,9 +335,14 @@ def SetupBuild(options):
           continue
         arch = fields[1]
         fields += [None, None, None]
-        smdk = fields[3]
-        vendor = fields[4]
-        family = fields[5]
+        if board_format == PRE_KBUILD:
+          smdk = fields[3]
+          vendor = fields[4]
+          family = fields[5]
+        elif board_format in (PRE_KCONFIG, KCONFIG):
+          smdk = fields[5]
+          vendor = fields[4]
+          family = fields[3]
         break
   if not arch:
     cros_build_lib.Die("Selected board '%s' not found in boards.cfg." % board)
