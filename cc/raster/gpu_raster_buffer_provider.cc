@@ -226,7 +226,10 @@ bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
 }
 
 bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
-  return false;
+  // Partial raster doesn't support MSAA, as the MSAA resolve is unaware of clip
+  // rects.
+  // TODO(crbug.com/629683): See if we can work around this limitation.
+  return msaa_sample_count_ == 0;
 }
 
 void GpuRasterBufferProvider::Shutdown() {
