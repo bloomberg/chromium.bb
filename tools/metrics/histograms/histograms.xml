@@ -29476,6 +29476,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.PublicKeyPinReportSendingFailure" enum="NetErrorCodes">
   <owner>estark@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 07/2016. Replaced with
+    Net.PublicKeyPinReportSendingFailure2.
+  </obsolete>
+  <summary>
+    A validated certificate chain may be subject to additional pinning
+    requirements on a per-domain basis. When pinning requirements are violated,
+    Chrome attempts to send a report about the incident. This records the net
+    error code when sending a pinning violation report fails.
+  </summary>
+</histogram>
+
+<histogram name="Net.PublicKeyPinReportSendingFailure2" enum="NetErrorCodes">
+  <owner>estark@chromium.org</owner>
   <summary>
     A validated certificate chain may be subject to additional pinning
     requirements on a per-domain basis. When pinning requirements are violated,
@@ -55112,7 +55126,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SSL.CertificateErrorReportFailure" enum="NetErrorCodes">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Users can opt in to send reports of certificate validation errors to Google.
+    This records the error code whenever Chrome fails to send such a report.
+  </summary>
+</histogram>
+
 <histogram name="SSL.ExpectCTReportFailure" enum="NetErrorCodes">
+  <owner>estark@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 07/2016. Replaced with SSL.ExpectCTReportFailure2.
+  </obsolete>
+  <summary>
+    Sites can opt in to Expect CT, a reporting feature that sends a report
+    whenever a TLS connection does not have valid Certificate Transparency
+    information associated with it. This records the error code when Chrome
+    fails to send an Expect CT report.
+  </summary>
+</histogram>
+
+<histogram name="SSL.ExpectCTReportFailure2" enum="NetErrorCodes">
   <owner>estark@chromium.org</owner>
   <summary>
     Sites can opt in to Expect CT, a reporting feature that sends a report

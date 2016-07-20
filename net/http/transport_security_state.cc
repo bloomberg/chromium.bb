@@ -69,8 +69,8 @@ struct SHA256ToHashValueComparator {
 };
 
 void RecordUMAForHPKPReportFailure(const GURL& report_uri, int net_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.PublicKeyPinReportSendingFailure",
-                              net_error);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.PublicKeyPinReportSendingFailure2",
+                              -net_error);
 }
 
 std::string TimeToISO8601(const base::Time& t) {

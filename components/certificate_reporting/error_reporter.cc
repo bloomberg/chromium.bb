@@ -11,6 +11,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "crypto/aead.h"
 #include "crypto/curve25519.h"
@@ -98,18 +100,25 @@ bool EncryptSerializedReport(const uint8_t* server_public_key,
   return true;
 }
 
+// Records an UMA histogram of the net errors when certificate reports
+// fail to send.
+void RecordUMAOnFailure(const GURL& report_uri, int net_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.CertificateErrorReportFailure", -net_error);
+}
+
 }  // namespace
 
 ErrorReporter::ErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
     net::ReportSender::CookiesPreference cookies_preference)
-    : ErrorReporter(
-          upload_url,
-          kServerPublicKey,
-          kServerPublicKeyVersion,
-          base::WrapUnique(
-              new net::ReportSender(request_context, cookies_preference))) {}
+    : ErrorReporter(upload_url,
+                    kServerPublicKey,
+                    kServerPublicKeyVersion,
+                    base::WrapUnique(new net::ReportSender(
+                        request_context,
+                        cookies_preference,
+                        base::Bind(RecordUMAOnFailure)))) {}
 
 ErrorReporter::ErrorReporter(
     const GURL& upload_url,

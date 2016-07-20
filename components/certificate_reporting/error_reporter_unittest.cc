@@ -14,9 +14,14 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/curve25519.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/report_sender.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace certificate_reporting {
@@ -27,6 +32,7 @@ const char kDummyHttpReportUri[] = "http://example.test";
 const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
 const uint32_t kServerPublicKeyTestVersion = 16;
+const char kFailureHistogramName[] = "SSL.CertificateErrorReportFailure";
 
 // A mock ReportSender that keeps track of the last report
 // sent.
@@ -52,9 +58,32 @@ class MockCertificateReportSender : public net::ReportSender {
   DISALLOW_COPY_AND_ASSIGN(MockCertificateReportSender);
 };
 
+// A test network delegate that allows the user to specify a callback to
+// be run whenever a net::URLRequest is destroyed.
+class TestCertificateReporterNetworkDelegate : public net::NetworkDelegateImpl {
+ public:
+  TestCertificateReporterNetworkDelegate()
+      : url_request_destroyed_callback_(base::Bind(&base::DoNothing)) {}
+
+  void set_url_request_destroyed_callback(const base::Closure& callback) {
+    url_request_destroyed_callback_ = callback;
+  }
+
+  // net::NetworkDelegateImpl:
+  void OnURLRequestDestroyed(net::URLRequest* request) override {
+    url_request_destroyed_callback_.Run();
+  }
+
+ private:
+  base::Closure url_request_destroyed_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCertificateReporterNetworkDelegate);
+};
+
 class ErrorReporterTest : public ::testing::Test {
  public:
-  ErrorReporterTest() {
+  ErrorReporterTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
     memset(server_private_key_, 1, sizeof(server_private_key_));
     crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
   }
@@ -62,8 +91,11 @@ class ErrorReporterTest : public ::testing::Test {
   ~ErrorReporterTest() override {}
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];
+
+  DISALLOW_COPY_AND_ASSIGN(ErrorReporterTest);
 };
 
 // Test that ErrorReporter::SendExtendedReportingReport sends
@@ -103,6 +135,32 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
       server_private_key_, encrypted_request, &uploaded_report));
 
   EXPECT_EQ(kDummyReport, uploaded_report);
+}
+
+// Tests that an UMA histogram is recorded if a report fails to send.
+TEST_F(ErrorReporterTest, UMAOnFailure) {
+  net::URLRequestFailedJob::AddUrlHandler();
+
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFailureHistogramName, 0);
+
+  base::RunLoop run_loop;
+  net::TestURLRequestContext context(true);
+  TestCertificateReporterNetworkDelegate test_delegate;
+  test_delegate.set_url_request_destroyed_callback(run_loop.QuitClosure());
+  context.set_network_delegate(&test_delegate);
+  context.Init();
+
+  GURL report_uri(
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
+  ErrorReporter reporter(&context, report_uri,
+                         net::ReportSender::DO_NOT_SEND_COOKIES);
+  reporter.SendExtendedReportingReport(kDummyReport);
+  run_loop.Run();
+
+  histograms.ExpectTotalCount(kFailureHistogramName, 1);
+  histograms.ExpectBucketCount(kFailureHistogramName,
+                               -net::ERR_CONNECTION_FAILED, 1);
 }
 
 // This test decrypts a "known gold" report. It's intentionally brittle

@@ -105,9 +105,9 @@ void AddValidSCT(const net::SignedCertificateTimestampAndStatus& sct_and_status,
 }
 
 // Records an UMA histogram of the net errors when Expect CT reports
-// fails to send.
+// fail to send.
 void RecordUMAOnFailure(const GURL& report_uri, int net_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure", net_error);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure2", -net_error);
 }
 
 }  // namespace

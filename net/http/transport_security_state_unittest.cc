@@ -1362,7 +1362,7 @@ TEST_F(TransportSecurityStateTest, HPKPReporting) {
 // fails to send an HPKP violation report.
 TEST_F(TransportSecurityStateTest, UMAOnHPKPReportingFailure) {
   base::HistogramTester histograms;
-  const std::string histogram_name = "Net.PublicKeyPinReportSendingFailure";
+  const std::string histogram_name = "Net.PublicKeyPinReportSendingFailure2";
   HostPortPair host_port_pair(kHost, kPort);
   GURL report_uri(kReportUri);
   // Two dummy certs to use as the server-sent and validated chains. The
@@ -1401,7 +1401,7 @@ TEST_F(TransportSecurityStateTest, UMAOnHPKPReportingFailure) {
   // Check that the UMA histogram was updated when the report failed to
   // send.
   histograms.ExpectTotalCount(histogram_name, 1);
-  histograms.ExpectBucketCount(histogram_name, mock_report_sender.net_error(),
+  histograms.ExpectBucketCount(histogram_name, -mock_report_sender.net_error(),
                                1);
 }
 

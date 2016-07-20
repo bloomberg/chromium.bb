@@ -1039,7 +1039,6 @@
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(cast_certificate_unittest_sources)',
-        '<@(certificate_reporting_unittest_sources)',
         '<@(client_update_protocol_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
@@ -1309,6 +1308,7 @@
         }],
         ['OS != "ios"', {
           'sources': [
+            '<@(certificate_reporting_unittest_sources)',
             '<@(certificate_transparency_unittest_sources)',
             '<@(child_trace_message_filter_unittest_sources)',
             '<@(devtools_http_handler_unittest_sources)',

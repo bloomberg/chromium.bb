@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/certificate_reporting/error_report.h"
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
 #include "net/ssl/ssl_info.h"
 

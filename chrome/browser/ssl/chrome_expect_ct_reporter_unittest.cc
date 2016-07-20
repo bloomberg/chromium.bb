@@ -28,7 +28,7 @@
 namespace {
 
 const char kSendHistogramName[] = "SSL.ExpectCTReportSendingAttempt";
-const char kFailureHistogramName[] = "SSL.ExpectCTReportFailure";
+const char kFailureHistogramName[] = "SSL.ExpectCTReportFailure2";
 
 // A test ReportSender that exposes the latest report URI and
 // serialized report to be sent.
@@ -399,7 +399,7 @@ TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
 
   histograms.ExpectTotalCount(kFailureHistogramName, 1);
   histograms.ExpectBucketCount(kFailureHistogramName,
-                               net::ERR_CONNECTION_FAILED, 1);
+                               -net::ERR_CONNECTION_FAILED, 1);
   histograms.ExpectTotalCount(kSendHistogramName, 1);
   histograms.ExpectBucketCount(kSendHistogramName, true, 1);
 }
