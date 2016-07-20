@@ -122,11 +122,14 @@ TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
   EXPECT_EQ(1, GetToastSerial());
   EXPECT_TRUE(GetCurrentWidget()->GetLayer()->GetAnimator()->is_animating());
 
-  // Close it during animation.
+  // Try to close it during animation.
   ClickDismissButton();
 
-  while (GetCurrentOverlay() != nullptr)
+  while (GetCurrentWidget()->GetLayer()->GetAnimator()->is_animating())
     base::RunLoop().RunUntilIdle();
+
+  // Toast isn't closed.
+  EXPECT_TRUE(GetCurrentOverlay() != nullptr);
 }
 
 TEST_F(ToastManagerTest, QueueMessage) {
