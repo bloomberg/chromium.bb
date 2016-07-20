@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
-#include "remoting/host/security_key/remote_security_key_ipc_client.h"
-#include "remoting/host/security_key/remote_security_key_message_handler.h"
+#include "remoting/host/security_key/security_key_ipc_client.h"
+#include "remoting/host/security_key/security_key_message_handler.h"
 
 #if defined(OS_WIN)
 #include <aclapi.h>
@@ -119,7 +119,7 @@ int StartRemoteSecurityKey() {
   base::File read_file(GetStdHandle(STD_INPUT_HANDLE));
   base::File write_file(GetStdHandle(STD_OUTPUT_HANDLE));
 
-  // After the message handler starts, the remote security key message reader
+  // After the message handler starts, the security key message reader
   // will keep doing blocking read operations on the input named pipe.
   // If any other thread tries to perform any operation on STDIN, it will also
   // block because the input named pipe is synchronous (non-overlapped).
@@ -139,10 +139,9 @@ int StartRemoteSecurityKey() {
 
   base::RunLoop run_loop;
 
-  std::unique_ptr<RemoteSecurityKeyIpcClient> ipc_client(
-      new RemoteSecurityKeyIpcClient());
+  std::unique_ptr<SecurityKeyIpcClient> ipc_client(new SecurityKeyIpcClient());
 
-  RemoteSecurityKeyMessageHandler message_handler;
+  SecurityKeyMessageHandler message_handler;
   message_handler.Start(std::move(read_file), std::move(write_file),
                         std::move(ipc_client), run_loop.QuitClosure());
 

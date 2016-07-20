@@ -80,17 +80,17 @@ MockHostStatusObserver::MockHostStatusObserver() {}
 
 MockHostStatusObserver::~MockHostStatusObserver() {}
 
-MockGnubbyAuthHandler::MockGnubbyAuthHandler() {}
+MockSecurityKeyAuthHandler::MockSecurityKeyAuthHandler() {}
 
-MockGnubbyAuthHandler::~MockGnubbyAuthHandler() {}
+MockSecurityKeyAuthHandler::~MockSecurityKeyAuthHandler() {}
 
-void MockGnubbyAuthHandler::SetSendMessageCallback(
-    const GnubbyAuthHandler::SendMessageCallback& callback) {
+void MockSecurityKeyAuthHandler::SetSendMessageCallback(
+    const SecurityKeyAuthHandler::SendMessageCallback& callback) {
   callback_ = callback;
 }
 
-const GnubbyAuthHandler::SendMessageCallback&
-MockGnubbyAuthHandler::GetSendMessageCallback() {
+const SecurityKeyAuthHandler::SendMessageCallback&
+MockSecurityKeyAuthHandler::GetSendMessageCallback() {
   return callback_;
 }
 
