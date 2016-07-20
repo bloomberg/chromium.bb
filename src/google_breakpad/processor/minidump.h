@@ -1113,9 +1113,6 @@ class Minidump {
 
     // Pointer to the stream if cached, or NULL if not yet populated
     MinidumpStream* stream;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MinidumpStreamInfo);
   };
 
   typedef vector<MDRawDirectory> MinidumpDirectoryEntries;
