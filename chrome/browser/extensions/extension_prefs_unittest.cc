@@ -851,7 +851,8 @@ class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
     ExtensionIdSet empty_ids;
     EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
 
-    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    prefs()->SetExtensionBlacklistState(extension_a_->id(),
+                                        BLACKLISTED_MALWARE);
     EXPECT_EQ(BLACKLISTED_MALWARE,
               prefs()->GetExtensionBlacklistState(extension_a_->id()));
 
@@ -862,7 +863,8 @@ class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
     EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
 
-    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    prefs()->SetExtensionBlacklistState(extension_a_->id(),
+                                        BLACKLISTED_MALWARE);
     EXPECT_TRUE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
     EXPECT_EQ(BLACKLISTED_MALWARE,
               prefs()->GetExtensionBlacklistState(extension_a_->id()));

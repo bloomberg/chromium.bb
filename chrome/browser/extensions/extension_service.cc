@@ -2359,7 +2359,8 @@ void ExtensionService::UpdateBlacklistedExtensions(
       continue;
     }
     registry_->RemoveBlacklisted(*it);
-    extension_prefs_->SetExtensionBlacklisted(extension->id(), false);
+    extension_prefs_->SetExtensionBlacklistState(extension->id(),
+                                                 extensions::NOT_BLACKLISTED);
     AddExtension(extension.get());
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.UnblacklistInstalled",
                               extension->location(),

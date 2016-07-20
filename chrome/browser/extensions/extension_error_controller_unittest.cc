@@ -130,7 +130,8 @@ void ExtensionErrorControllerUnitTest::SetUp() {
 testing::AssertionResult
 ExtensionErrorControllerUnitTest::AddBlacklistedExtension(
     const Extension* extension) {
-  GetPrefs()->SetExtensionBlacklisted(extension->id(), true);
+  GetPrefs()->SetExtensionBlacklistState(extension->id(),
+                                         BLACKLISTED_MALWARE);
   service_->AddExtension(extension);
 
   // Make sure the extension is added to the blacklisted set.

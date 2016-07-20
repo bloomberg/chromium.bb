@@ -280,10 +280,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // blacklist.
   std::set<std::string> GetBlacklistedExtensions() const;
 
-  // Sets whether the extension with |id| is blacklisted.
-  void SetExtensionBlacklisted(const std::string& extension_id,
-                               bool is_blacklisted);
-
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
   std::string GetVersionString(const std::string& extension_id) const;
@@ -587,6 +583,12 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                                const std::string& pref_key,
                                URLPatternSet* result,
                                int valid_schemes) const;
+
+  // DEPRECATED. Use GetExtensionBlacklistState() instead.
+  // TODO(atuchin): Remove this once all clients are updated.
+  // Sets whether the extension with |id| is blacklisted.
+  void SetExtensionBlacklisted(const std::string& extension_id,
+                               bool is_blacklisted);
 
   // Converts |new_value| to a list of strings and sets the |pref_key| pref
   // belonging to |extension_id|.

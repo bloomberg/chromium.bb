@@ -730,6 +730,8 @@ class ExtensionService
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            WillNotLoadBlacklistedExtensionsFromDirectory);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ReloadBlacklistedExtension);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           RemoveExtensionFromBlacklist);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, BlacklistedInPrefsFromStartup);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            GreylistedExtensionDisabled);

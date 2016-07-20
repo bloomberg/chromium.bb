@@ -3122,6 +3122,47 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
 #endif  // defined(ENABLE_BLACKLIST_TESTS)
 
 #if defined(ENABLE_BLACKLIST_TESTS)
+// Tests that previously blacklisted extension will be enabled if it is removed
+// from the blacklist. Also checks that all blacklisted preferences will be
+// cleared in that case.
+TEST_F(ExtensionServiceTest, RemoveExtensionFromBlacklist) {
+  extensions::TestBlacklist test_blacklist;
+  // A profile with 3 extensions installed: good0, good1, and good2.
+  InitializeGoodInstalledExtensionService();
+  test_blacklist.Attach(service()->blacklist_);
+  service()->Init();
+
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(good0));
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(profile()), good0);
+
+  // Add the extension to the blacklist.
+  test_blacklist.SetBlacklistState(good0, extensions::BLACKLISTED_MALWARE,
+                                   true);
+  observer.WaitForExtensionUnloaded();
+
+  // The extension should be disabled, both "blacklist" and "blacklist_state"
+  // prefs should be set.
+  const auto prefs = ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
+  EXPECT_TRUE(prefs->IsExtensionBlacklisted(good0));
+  EXPECT_EQ(extensions::BLACKLISTED_MALWARE,
+            prefs->GetExtensionBlacklistState(good0));
+
+  // Remove the extension from the blacklist.
+  test_blacklist.SetBlacklistState(good0, extensions::NOT_BLACKLISTED, true);
+  observer.WaitForExtensionLoaded()->id();
+
+  // The extension should be enabled, both "blacklist" and "blacklist_state"
+  // should be cleared.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good0));
+  EXPECT_FALSE(prefs->IsExtensionBlacklisted(good0));
+  EXPECT_EQ(extensions::NOT_BLACKLISTED,
+            prefs->GetExtensionBlacklistState(good0));
+}
+#endif  // defined(ENABLE_BLACKLIST_TESTS)
+
+#if defined(ENABLE_BLACKLIST_TESTS)
 // Unload blacklisted extension on policy change.
 TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   extensions::TestBlacklist test_blacklist;
@@ -3189,8 +3230,10 @@ TEST_F(ExtensionServiceTest, BlacklistedInPrefsFromStartup) {
 
   InitializeGoodInstalledExtensionService();
   test_blacklist.Attach(service()->blacklist_);
-  ExtensionPrefs::Get(profile())->SetExtensionBlacklisted(good0, true);
-  ExtensionPrefs::Get(profile())->SetExtensionBlacklisted(good1, true);
+  ExtensionPrefs::Get(profile())->SetExtensionBlacklistState(
+      good0, extensions::BLACKLISTED_MALWARE);
+  ExtensionPrefs::Get(profile())->SetExtensionBlacklistState(
+      good1, extensions::BLACKLISTED_MALWARE);
 
   test_blacklist.SetBlacklistState(
       good1, extensions::BLACKLISTED_MALWARE, false);

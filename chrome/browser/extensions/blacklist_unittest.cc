@@ -124,14 +124,14 @@ TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
   std::string b = AddExtension("b");
 
   // Blacklist an installed extension.
-  prefs()->SetExtensionBlacklisted(a, true);
+  prefs()->SetExtensionBlacklistState(a, BLACKLISTED_MALWARE);
 
   // Blacklist some non-installed extensions. This is what the old preferences
   // blacklist looked like.
   std::string c = "cccccccccccccccccccccccccccccccc";
   std::string d = "dddddddddddddddddddddddddddddddd";
-  prefs()->SetExtensionBlacklisted(c, true);
-  prefs()->SetExtensionBlacklisted(d, true);
+  prefs()->SetExtensionBlacklistState(c, BLACKLISTED_MALWARE);
+  prefs()->SetExtensionBlacklistState(d, BLACKLISTED_MALWARE);
 
   EXPECT_EQ(Set(a, c, d), prefs()->GetBlacklistedExtensions());
 
