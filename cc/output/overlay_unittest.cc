@@ -40,9 +40,9 @@ namespace cc {
 namespace {
 
 const gfx::Size kDisplaySize(256, 256);
-const gfx::Rect kOverlayRect(0, 0, 128, 128);
-const gfx::Rect kOverlayTopLeftRect(0, 0, 64, 64);
-const gfx::Rect kOverlayBottomRightRect(64, 64, 64, 64);
+const gfx::Rect kOverlayRect(0, 0, 256, 256);
+const gfx::Rect kOverlayTopLeftRect(0, 0, 128, 128);
+const gfx::Rect kOverlayBottomRightRect(128, 128, 128, 128);
 const gfx::Rect kOverlayClipRect(0, 0, 128, 128);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
@@ -77,7 +77,7 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
 
     OverlayCandidate& candidate = surfaces->back();
     EXPECT_TRUE(!candidate.use_output_surface_for_resource);
-    if (candidate.display_rect.width() == 64) {
+    if (candidate.display_rect.width() == kOverlayBottomRightRect.width()) {
       EXPECT_EQ(gfx::RectF(kOverlayBottomRightRect), candidate.display_rect);
     } else {
       EXPECT_NEAR(kOverlayRect.x(), candidate.display_rect.x(), 0.01f);
@@ -270,8 +270,8 @@ TextureDrawQuad* CreateFullscreenCandidateQuad(
     ResourceProvider* resource_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass) {
-  return CreateCandidateQuadAt(
-      resource_provider, shared_quad_state, render_pass, kOverlayRect);
+  return CreateCandidateQuadAt(resource_provider, shared_quad_state,
+                               render_pass, render_pass->output_rect);
 }
 
 StreamVideoDrawQuad* CreateFullscreenCandidateVideoQuad(
@@ -280,7 +280,8 @@ StreamVideoDrawQuad* CreateFullscreenCandidateVideoQuad(
     RenderPass* render_pass,
     const gfx::Transform& transform) {
   return CreateCandidateVideoQuadAt(resource_provider, shared_quad_state,
-                                    render_pass, kOverlayRect, transform);
+                                    render_pass, render_pass->output_rect,
+                                    transform);
 }
 
 void CreateOpaqueQuadAt(ResourceProvider* resource_provider,
@@ -296,7 +297,7 @@ void CreateFullscreenOpaqueQuad(ResourceProvider* resource_provider,
                                 const SharedQuadState* shared_quad_state,
                                 RenderPass* render_pass) {
   CreateOpaqueQuadAt(resource_provider, shared_quad_state, render_pass,
-                     kOverlayRect);
+                     render_pass->output_rect);
 }
 
 static void CompareRenderPassLists(const RenderPassList& expected_list,
