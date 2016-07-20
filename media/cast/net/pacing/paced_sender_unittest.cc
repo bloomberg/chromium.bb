@@ -99,8 +99,8 @@ class PacedSenderTest : public ::testing::Test {
     paced_sender_.reset(new PacedSender(kTargetBurstSize, kMaxBurstSize,
                                         &testing_clock_, &packet_events_,
                                         &mock_transport_, task_runner_));
-    paced_sender_->RegisterAudioSsrc(kAudioSsrc);
-    paced_sender_->RegisterVideoSsrc(kVideoSsrc);
+    paced_sender_->RegisterSsrc(kAudioSsrc, true);
+    paced_sender_->RegisterSsrc(kVideoSsrc, false);
   }
 
   static void UpdateCastTransportStatus(CastTransportStatus status) {

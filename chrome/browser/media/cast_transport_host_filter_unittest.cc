@@ -93,14 +93,14 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   audio_config.ssrc = 1;
   audio_config.feedback_ssrc = 2;
   audio_config.rtp_payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
-  CastHostMsg_InitializeAudio init_audio_msg(kChannelId, audio_config);
+  CastHostMsg_InitializeStream init_audio_msg(kChannelId, audio_config);
   FakeSend(init_audio_msg);
 
   media::cast::CastTransportRtpConfig video_config;
   video_config.ssrc = 11;
   video_config.feedback_ssrc = 12;
   video_config.rtp_payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
-  CastHostMsg_InitializeVideo init_video_msg(kChannelId, video_config);
+  CastHostMsg_InitializeStream init_video_msg(kChannelId, video_config);
   FakeSend(init_video_msg);
 
   media::cast::EncodedFrame audio_frame;

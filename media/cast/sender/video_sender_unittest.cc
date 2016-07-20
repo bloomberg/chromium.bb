@@ -134,7 +134,7 @@ class TransportClient : public CastTransport::Client {
   TransportClient() {}
 
   void OnStatusChanged(CastTransportStatus status) final {
-    EXPECT_EQ(TRANSPORT_VIDEO_INITIALIZED, status);
+    EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
   };
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
@@ -162,10 +162,9 @@ class VideoSenderTest : public ::testing::Test {
     vea_factory_.SetAutoRespond(true);
     last_pixel_value_ = kPixelValue;
     transport_ = new TestPacketSender();
-    transport_sender_.reset(
-        new CastTransportImpl(testing_clock_, base::TimeDelta(),
-                              base::WrapUnique(new TransportClient()),
-                              base::WrapUnique(transport_), task_runner_));
+    transport_sender_.reset(new CastTransportImpl(
+        testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
+        base::WrapUnique(transport_), task_runner_));
   }
 
   ~VideoSenderTest() override {}

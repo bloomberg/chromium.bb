@@ -107,8 +107,8 @@ class CastTransportImplTest : public ::testing::Test {
     rtp_config.ssrc = kVideoSsrc;
     rtp_config.feedback_ssrc = 2;
     rtp_config.rtp_payload_type = RtpPayloadType::VIDEO_VP8;
-    transport_sender_->InitializeVideo(
-        rtp_config, base::WrapUnique(new StubRtcpObserver()));
+    transport_sender_->InitializeStream(rtp_config,
+                                        base::MakeUnique<StubRtcpObserver>());
   }
 
   void InitializeAudio() {
@@ -116,8 +116,8 @@ class CastTransportImplTest : public ::testing::Test {
     rtp_config.ssrc = kAudioSsrc;
     rtp_config.feedback_ssrc = 3;
     rtp_config.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
-    transport_sender_->InitializeAudio(
-        rtp_config, base::WrapUnique(new StubRtcpObserver()));
+    transport_sender_->InitializeStream(rtp_config,
+                                        base::MakeUnique<StubRtcpObserver>());
   }
 
   base::SimpleTestTickClock testing_clock_;
@@ -156,7 +156,7 @@ void CastTransportImplTest::InitWithoutLogging() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(
       new CastTransportImpl(&testing_clock_, base::TimeDelta(),
-                            base::WrapUnique(new TransportClient(nullptr)),
+                            base::MakeUnique<TransportClient>(nullptr),
                             base::WrapUnique(transport_), task_runner_));
   task_runner_->RunTasks();
 }
@@ -170,7 +170,7 @@ void CastTransportImplTest::InitWithOptions() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(
       new CastTransportImpl(&testing_clock_, base::TimeDelta(),
-                            base::WrapUnique(new TransportClient(nullptr)),
+                            base::MakeUnique<TransportClient>(nullptr),
                             base::WrapUnique(transport_), task_runner_));
   transport_sender_->SetOptions(*options);
   task_runner_->RunTasks();
@@ -180,7 +180,7 @@ void CastTransportImplTest::InitWithLogging() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(new CastTransportImpl(
       &testing_clock_, base::TimeDelta::FromMilliseconds(10),
-      base::WrapUnique(new TransportClient(this)), base::WrapUnique(transport_),
+      base::MakeUnique<TransportClient>(this), base::WrapUnique(transport_),
       task_runner_));
   task_runner_->RunTasks();
 }

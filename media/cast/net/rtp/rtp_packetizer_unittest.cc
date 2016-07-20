@@ -122,7 +122,7 @@ class RtpPacketizerTest : public ::testing::Test {
     pacer_.reset(new PacedSender(kTargetBurstSize, kMaxBurstSize,
                                  &testing_clock_, nullptr, transport_.get(),
                                  task_runner_));
-    pacer_->RegisterVideoSsrc(config_.ssrc);
+    pacer_->RegisterSsrc(config_.ssrc, false);
     rtp_packetizer_.reset(new RtpPacketizer(
         pacer_.get(), &packet_storage_, config_));
     video_frame_.dependency = EncodedFrame::DEPENDENT;

@@ -32,10 +32,7 @@ class CastTransportIPC : public media::cast::CastTransport {
   ~CastTransportIPC() override;
 
   // media::cast::CastTransport implementation.
-  void InitializeAudio(
-      const media::cast::CastTransportRtpConfig& config,
-      std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) override;
-  void InitializeVideo(
+  void InitializeStream(
       const media::cast::CastTransportRtpConfig& config,
       std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) override;
   void InsertFrame(uint32_t ssrc,

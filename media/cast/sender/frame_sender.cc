@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/constants.h"
@@ -53,32 +54,27 @@ void FrameSender::RtcpClient::OnReceivedPli() {
 }
 
 FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
-                         bool is_audio,
                          CastTransport* const transport_sender,
-                         int rtp_timebase,
-                         uint32_t ssrc,
-                         double max_frame_rate,
-                         base::TimeDelta min_playout_delay,
-                         base::TimeDelta max_playout_delay,
-                         base::TimeDelta animated_playout_delay,
+                         const FrameSenderConfig& config,
                          CongestionControl* congestion_control)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
-      ssrc_(ssrc),
-      min_playout_delay_(min_playout_delay.is_zero() ? max_playout_delay
-                                                     : min_playout_delay),
-      max_playout_delay_(max_playout_delay),
-      animated_playout_delay_(animated_playout_delay.is_zero()
-                                  ? max_playout_delay
-                                  : animated_playout_delay),
+      ssrc_(config.sender_ssrc),
+      min_playout_delay_(config.min_playout_delay.is_zero()
+                             ? config.max_playout_delay
+                             : config.min_playout_delay),
+      max_playout_delay_(config.max_playout_delay),
+      animated_playout_delay_(config.animated_playout_delay.is_zero()
+                                  ? config.max_playout_delay
+                                  : config.animated_playout_delay),
       send_target_playout_delay_(false),
-      max_frame_rate_(max_frame_rate),
+      max_frame_rate_(config.max_frame_rate),
       num_aggressive_rtcp_reports_sent_(0),
       duplicate_ack_counter_(0),
       congestion_control_(congestion_control),
       picture_lost_at_receiver_(false),
-      rtp_timebase_(rtp_timebase),
-      is_audio_(is_audio),
+      rtp_timebase_(config.rtp_timebase),
+      is_audio_(config.rtp_payload_type <= RtpPayloadType::AUDIO_LAST),
       weak_factory_(this) {
   DCHECK(transport_sender_);
   DCHECK_GT(rtp_timebase_, 0);
@@ -87,10 +83,21 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
   // case today.
   VLOG(1) << SENDER_SSRC << "min latency "
           << min_playout_delay_.InMilliseconds() << "max latency "
-          << max_playout_delay.InMilliseconds() << "animated latency "
-          << animated_playout_delay.InMilliseconds();
+          << max_playout_delay_.InMilliseconds() << "animated latency "
+          << animated_playout_delay_.InMilliseconds();
   SetTargetPlayoutDelay(animated_playout_delay_);
   send_target_playout_delay_ = false;
+
+  CastTransportRtpConfig transport_config;
+  transport_config.ssrc = config.sender_ssrc;
+  transport_config.feedback_ssrc = config.receiver_ssrc;
+  transport_config.rtp_payload_type = config.rtp_payload_type;
+  transport_config.aes_key = config.aes_key;
+  transport_config.aes_iv_mask = config.aes_iv_mask;
+
+  transport_sender->InitializeStream(
+      transport_config,
+      base::MakeUnique<FrameSender::RtcpClient>(weak_factory_.GetWeakPtr()));
 }
 
 FrameSender::~FrameSender() {

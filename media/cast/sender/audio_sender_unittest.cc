@@ -42,7 +42,7 @@ class TransportClient : public CastTransport::Client {
   TransportClient() {}
 
   void OnStatusChanged(CastTransportStatus status) final {
-    EXPECT_EQ(TRANSPORT_AUDIO_INITIALIZED, status);
+    EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
   };
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
@@ -109,10 +109,9 @@ class AudioSenderTest : public ::testing::Test {
     audio_config_.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
 
     transport_ = new TestPacketSender();
-    transport_sender_.reset(
-        new CastTransportImpl(testing_clock_, base::TimeDelta(),
-                              base::WrapUnique(new TransportClient()),
-                              base::WrapUnique(transport_), task_runner_));
+    transport_sender_.reset(new CastTransportImpl(
+        testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
+        base::WrapUnique(transport_), task_runner_));
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(
         cast_environment_,

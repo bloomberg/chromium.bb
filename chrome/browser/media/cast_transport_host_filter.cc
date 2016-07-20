@@ -118,8 +118,7 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CastTransportHostFilter, message)
     IPC_MESSAGE_HANDLER(CastHostMsg_New, OnNew)
     IPC_MESSAGE_HANDLER(CastHostMsg_Delete, OnDelete)
-    IPC_MESSAGE_HANDLER(CastHostMsg_InitializeAudio, OnInitializeAudio)
-    IPC_MESSAGE_HANDLER(CastHostMsg_InitializeVideo, OnInitializeVideo)
+    IPC_MESSAGE_HANDLER(CastHostMsg_InitializeStream, OnInitializeStream)
     IPC_MESSAGE_HANDLER(CastHostMsg_InsertFrame, OnInsertFrame)
     IPC_MESSAGE_HANDLER(CastHostMsg_SendSenderReport,
                         OnSendSenderReport)
@@ -173,7 +172,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   std::unique_ptr<media::cast::CastTransport> sender =
       media::cast::CastTransport::Create(
           &clock_, base::TimeDelta::FromSeconds(kSendRawEventsIntervalSecs),
-          base::WrapUnique(new TransportClient(channel_id, this)),
+          base::MakeUnique<TransportClient>(channel_id, this),
           std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
   sender->SetOptions(options);
   id_map_.AddWithID(sender.release(), channel_id);
@@ -196,33 +195,17 @@ void CastTransportHostFilter::OnDelete(int32_t channel_id) {
   }
 }
 
-// TODO(xjz): Replace all the separate "init/start audio" and "init/start video"
-// methods with a single "init/start rtp stream" that handles either media type.
-void CastTransportHostFilter::OnInitializeAudio(
+void CastTransportHostFilter::OnInitializeStream(
     int32_t channel_id,
     const media::cast::CastTransportRtpConfig& config) {
   media::cast::CastTransport* sender = id_map_.Lookup(channel_id);
   if (sender) {
-    sender->InitializeAudio(
-        config, base::WrapUnique(new RtcpClient(channel_id, config.ssrc,
-                                                weak_factory_.GetWeakPtr())));
+    sender->InitializeStream(
+        config, base::MakeUnique<RtcpClient>(channel_id, config.ssrc,
+                                             weak_factory_.GetWeakPtr()));
   } else {
-    DVLOG(1)
-        << "CastTransportHostFilter::OnInitializeAudio on non-existing channel";
-  }
-}
-
-void CastTransportHostFilter::OnInitializeVideo(
-    int32_t channel_id,
-    const media::cast::CastTransportRtpConfig& config) {
-  media::cast::CastTransport* sender = id_map_.Lookup(channel_id);
-  if (sender) {
-    sender->InitializeVideo(
-        config, base::WrapUnique(new RtcpClient(channel_id, config.ssrc,
-                                                weak_factory_.GetWeakPtr())));
-  } else {
-    DVLOG(1)
-        << "CastTransportHostFilter::OnInitializeVideo on non-existing channel";
+    DVLOG(1) << "CastTransportHostFilter::OnInitializeStream on non-existing "
+                "channel";
   }
 }
 

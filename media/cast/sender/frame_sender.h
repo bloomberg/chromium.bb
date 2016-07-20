@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
@@ -28,14 +29,8 @@ struct SenderEncodedFrame;
 class FrameSender {
  public:
   FrameSender(scoped_refptr<CastEnvironment> cast_environment,
-              bool is_audio,
               CastTransport* const transport_sender,
-              int rtp_timebase,
-              uint32_t ssrc,
-              double max_frame_rate,
-              base::TimeDelta min_playout_delay,
-              base::TimeDelta max_playout_delay,
-              base::TimeDelta animated_playout_delay,
+              const FrameSenderConfig& config,
               CongestionControl* congestion_control);
   virtual ~FrameSender();
 

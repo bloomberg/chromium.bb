@@ -38,20 +38,12 @@ CastTransportIPC::~CastTransportIPC() {
   }
 }
 
-void CastTransportIPC::InitializeAudio(
+void CastTransportIPC::InitializeStream(
     const media::cast::CastTransportRtpConfig& config,
     std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) {
   DCHECK(clients_.find(config.ssrc) == clients_.end());
   clients_[config.ssrc] = std::move(rtcp_observer);
-  Send(new CastHostMsg_InitializeAudio(channel_id_, config));
-}
-
-void CastTransportIPC::InitializeVideo(
-    const media::cast::CastTransportRtpConfig& config,
-    std::unique_ptr<media::cast::RtcpObserver> rtcp_observer) {
-  DCHECK(clients_.find(config.ssrc) == clients_.end());
-  clients_[config.ssrc] = std::move(rtcp_observer);
-  Send(new CastHostMsg_InitializeVideo(channel_id_, config));
+  Send(new CastHostMsg_InitializeStream(channel_id_, config));
 }
 
 void CastTransportIPC::InsertFrame(uint32_t ssrc,

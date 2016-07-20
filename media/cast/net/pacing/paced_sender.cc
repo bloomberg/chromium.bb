@@ -46,8 +46,29 @@ PacketKey::PacketKey(const PacketKey& other) = default;
 
 PacketKey::~PacketKey() {}
 
-PacedSender::PacketSendRecord::PacketSendRecord()
-    : last_byte_sent(0), last_byte_sent_for_audio(0), cancel_count(0) {}
+struct PacedSender::PacketSendRecord {
+  PacketSendRecord()
+      : last_byte_sent(0), last_byte_sent_for_audio(0), cancel_count(0) {}
+
+  base::TimeTicks time;    // Time when the packet was sent.
+  int64_t last_byte_sent;  // Number of bytes sent to network just after this
+                           // packet was sent.
+  int64_t last_byte_sent_for_audio;  // Number of bytes sent to network from
+                                     // audio stream just before this packet.
+  int cancel_count;  // Number of times the packet was canceled (debugging).
+};
+
+struct PacedSender::RtpSession {
+  explicit RtpSession(bool is_audio_stream)
+      : last_byte_sent(0), is_audio(is_audio_stream) {}
+  RtpSession() {}
+
+  // Tracks recently-logged RTP timestamps so that it can expand the truncated
+  // values found in packets.
+  RtpTimeTicks last_logged_rtp_timestamp_;
+  int64_t last_byte_sent;
+  bool is_audio;
+};
 
 PacedSender::PacedSender(
     size_t target_burst_size,
@@ -60,8 +81,7 @@ PacedSender::PacedSender(
       recent_packet_events_(recent_packet_events),
       transport_(transport),
       transport_task_runner_(transport_task_runner),
-      audio_ssrc_(0),
-      video_ssrc_(0),
+      last_byte_sent_for_audio_(0),
       target_burst_size_(target_burst_size),
       max_burst_size_(max_burst_size),
       current_max_burst_size_(target_burst_size_),
@@ -74,12 +94,11 @@ PacedSender::PacedSender(
 
 PacedSender::~PacedSender() {}
 
-void PacedSender::RegisterAudioSsrc(uint32_t audio_ssrc) {
-  audio_ssrc_ = audio_ssrc;
-}
+void PacedSender::RegisterSsrc(uint32_t ssrc, bool is_audio) {
+  if (sessions_.find(ssrc) != sessions_.end())
+    DVLOG(1) << "Re-register ssrc: " << ssrc;
 
-void PacedSender::RegisterVideoSsrc(uint32_t video_ssrc) {
-  video_ssrc_ = video_ssrc;
+  sessions_[ssrc] = RtpSession(is_audio);
 }
 
 void PacedSender::RegisterPrioritySsrc(uint32_t ssrc) {
@@ -94,10 +113,11 @@ int64_t PacedSender::GetLastByteSentForPacket(const PacketKey& packet_key) {
 }
 
 int64_t PacedSender::GetLastByteSentForSsrc(uint32_t ssrc) {
-  std::map<uint32_t, int64_t>::const_iterator it = last_byte_sent_.find(ssrc);
-  if (it == last_byte_sent_.end())
+  auto it = sessions_.find(ssrc);
+  // Return 0 for unknown session.
+  if (it == sessions_.end())
     return 0;
-  return it->second;
+  return it->second.last_byte_sent;
 }
 
 bool PacedSender::SendPackets(const SendPacketVector& packets) {
@@ -150,7 +170,10 @@ bool PacedSender::ShouldResend(const PacketKey& packet_key,
   //
   // TODO(miu): This sounds wrong.  Audio packets are always transmitted first
   // (because they are put in |priority_packet_list_|, see PopNextPacket()).
-  if (packet_key.ssrc == video_ssrc_) {
+  auto session_it = sessions_.find(packet_key.ssrc);
+  // The session should always have been registered in |sessions_|.
+  DCHECK(session_it != sessions_.end());
+  if (!session_it->second.is_audio) {
     if (dedup_info.last_byte_acked_for_audio &&
         it->second.last_byte_sent_for_audio &&
         dedup_info.last_byte_acked_for_audio <
@@ -389,9 +412,15 @@ void PacedSender::SendStoredPackets() {
 
     // Save the send record.
     send_record->last_byte_sent = transport_->GetBytesSent();
-    send_record->last_byte_sent_for_audio = GetLastByteSentForSsrc(audio_ssrc_);
+    send_record->last_byte_sent_for_audio = last_byte_sent_for_audio_;
     send_history_buffer_[packet_key] = *send_record;
-    last_byte_sent_[packet_key.ssrc] = send_record->last_byte_sent;
+
+    auto it = sessions_.find(packet_key.ssrc);
+    // The session should always have been registered in |sessions_|.
+    DCHECK(it != sessions_.end());
+    it->second.last_byte_sent = send_record->last_byte_sent;
+    if (it->second.is_audio)
+      last_byte_sent_for_audio_ = send_record->last_byte_sent;
 
     if (socket_blocked) {
       state_ = State_TransportBlocked;
@@ -433,18 +462,13 @@ void PacedSender::LogPacketEvent(const Packet& packet, CastLoggingEvent type) {
   success &= reader.ReadU32(&truncated_rtp_timestamp);
   uint32_t ssrc;
   success &= reader.ReadU32(&ssrc);
-  if (ssrc == audio_ssrc_) {
-    event.rtp_timestamp = last_logged_audio_rtp_timestamp_ =
-        last_logged_audio_rtp_timestamp_.Expand(truncated_rtp_timestamp);
-    event.media_type = AUDIO_EVENT;
-  } else if (ssrc == video_ssrc_) {
-    event.rtp_timestamp = last_logged_video_rtp_timestamp_ =
-        last_logged_video_rtp_timestamp_.Expand(truncated_rtp_timestamp);
-    event.media_type = VIDEO_EVENT;
-  } else {
-    DVLOG(3) << "Got unknown ssrc " << ssrc << " when logging packet event";
-    return;
-  }
+
+  auto it = sessions_.find(ssrc);
+  // The session should always have been registered in |sessions_|.
+  DCHECK(it != sessions_.end());
+  event.rtp_timestamp = it->second.last_logged_rtp_timestamp_ =
+      it->second.last_logged_rtp_timestamp_.Expand(truncated_rtp_timestamp);
+  event.media_type = it->second.is_audio ? AUDIO_EVENT : VIDEO_EVENT;
   success &= reader.Skip(2);
   success &= reader.ReadU16(&event.packet_id);
   success &= reader.ReadU16(&event.max_packet_id);

@@ -65,10 +65,8 @@ class CastTransportImpl final : public CastTransport {
   ~CastTransportImpl() final;
 
   // CastTransport implementation for sending.
-  void InitializeAudio(const CastTransportRtpConfig& config,
-                       std::unique_ptr<RtcpObserver> rtcp_observer) final;
-  void InitializeVideo(const CastTransportRtpConfig& config,
-                       std::unique_ptr<RtcpObserver> rtcp_observer) final;
+  void InitializeStream(const CastTransportRtpConfig& config,
+                        std::unique_ptr<RtcpObserver> rtcp_observer) final;
   void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final;
 
   void SendSenderReport(uint32_t ssrc,
@@ -116,6 +114,8 @@ class CastTransportImpl final : public CastTransport {
   // Handle received RTCP messages on RTP sender.
   class RtcpClient;
 
+  struct RtpStreamSession;
+
   FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, NacksCancelRetransmits);
   FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, CancelRetransmits);
   FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, Kickstart);
@@ -160,25 +160,6 @@ class CastTransportImpl final : public CastTransport {
   // Packet sender that performs pacing.
   PacedSender pacer_;
 
-  // Packetizer for audio and video frames.
-  std::unique_ptr<RtpSender> audio_sender_;
-  std::unique_ptr<RtpSender> video_sender_;
-
-  // Maintains RTCP session for audio and video.
-  std::unique_ptr<SenderRtcpSession> audio_rtcp_session_;
-  std::unique_ptr<SenderRtcpSession> video_rtcp_session_;
-
-  // RTCP observer for SenderRtcpSession.
-  std::unique_ptr<RtcpObserver> audio_rtcp_observer_;
-  std::unique_ptr<RtcpObserver> video_rtcp_observer_;
-
-  // Encrypts data in EncodedFrames before they are sent.  Note that it's
-  // important for the encryption to happen here, in code that would execute in
-  // the main browser process, for security reasons.  This helps to mitigate
-  // the damage that could be caused by a compromised renderer process.
-  TransportEncryptionHandler audio_encryptor_;
-  TransportEncryptionHandler video_encryptor_;
-
   // Right after a frame is sent we record the number of bytes sent to the
   // socket. We record the corresponding bytes sent for the most recent ACKed
   // audio packet.
@@ -198,6 +179,11 @@ class CastTransportImpl final : public CastTransport {
   std::set<uint32_t> valid_rtp_receiver_ssrcs_;
 
   std::unique_ptr<RtcpBuilder> rtcp_builder_at_rtp_receiver_;
+
+  // Records the initialized stream sessions on RTP sender. The sender SSRC is
+  // used as key since it is unique for each RTP stream.
+  using SessionMap = std::map<uint32_t, std::unique_ptr<RtpStreamSession>>;
+  SessionMap sessions_;
 
   base::WeakPtrFactory<CastTransportImpl> weak_factory_;
 

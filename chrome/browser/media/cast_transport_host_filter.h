@@ -40,10 +40,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Forwarding functions.
-  void OnInitializeAudio(int32_t channel_id,
-                         const media::cast::CastTransportRtpConfig& config);
-  void OnInitializeVideo(int32_t channel_id,
-                         const media::cast::CastTransportRtpConfig& config);
+  void OnInitializeStream(int32_t channel_id,
+                          const media::cast::CastTransportRtpConfig& config);
   void OnInsertFrame(int32_t channel_id,
                      uint32_t ssrc,
                      const media::cast::EncodedFrame& frame);

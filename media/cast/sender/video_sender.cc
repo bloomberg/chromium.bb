@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/performance_metrics_overlay.h"
@@ -97,14 +96,8 @@ VideoSender::VideoSender(
     const PlayoutDelayChangeCB& playout_delay_change_cb)
     : FrameSender(
           cast_environment,
-          false,
           transport_sender,
-          kVideoFrequency,
-          video_config.sender_ssrc,
-          video_config.max_frame_rate,
-          video_config.min_playout_delay,
-          video_config.max_playout_delay,
-          video_config.animated_playout_delay,
+          video_config,
           video_config.use_external_encoder
               ? NewFixedCongestionControl(
                     (video_config.min_bitrate + video_config.max_bitrate) / 2)
@@ -131,17 +124,6 @@ VideoSender::VideoSender(
         FROM_HERE,
         base::Bind(status_change_cb, STATUS_UNSUPPORTED_CODEC));
   }
-
-  media::cast::CastTransportRtpConfig transport_config;
-  transport_config.ssrc = video_config.sender_ssrc;
-  transport_config.feedback_ssrc = video_config.receiver_ssrc;
-  transport_config.rtp_payload_type = video_config.rtp_payload_type;
-  transport_config.aes_key = video_config.aes_key;
-  transport_config.aes_iv_mask = video_config.aes_iv_mask;
-
-  transport_sender->InitializeVideo(
-      transport_config, base::WrapUnique(new FrameSender::RtcpClient(
-                            weak_factory_.GetWeakPtr())));
 }
 
 VideoSender::~VideoSender() {

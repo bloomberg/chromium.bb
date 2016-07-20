@@ -91,10 +91,8 @@ void CastSessionDelegateBase::StatusNotificationCB(
   std::string error_message;
 
   switch (status) {
-    case media::cast::TRANSPORT_AUDIO_UNINITIALIZED:
-    case media::cast::TRANSPORT_VIDEO_UNINITIALIZED:
-    case media::cast::TRANSPORT_AUDIO_INITIALIZED:
-    case media::cast::TRANSPORT_VIDEO_INITIALIZED:
+    case media::cast::TRANSPORT_STREAM_UNINITIALIZED:
+    case media::cast::TRANSPORT_STREAM_INITIALIZED:
       return; // Not errors, do nothing.
     case media::cast::TRANSPORT_INVALID_CRYPTO_CONFIG:
       error_callback.Run("Invalid encrypt/decrypt configuration.");
@@ -188,14 +186,14 @@ void CastSessionDelegate::GetEventLogsAndReset(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
-    callback.Run(base::WrapUnique(new base::BinaryValue));
+    callback.Run(base::MakeUnique<base::BinaryValue>());
     return;
   }
 
   media::cast::EncodingEventSubscriber* subscriber =
       event_subscribers_->GetEncodingEventSubscriber(is_audio);
   if (!subscriber) {
-    callback.Run(base::WrapUnique(new base::BinaryValue));
+    callback.Run(base::MakeUnique<base::BinaryValue>());
     return;
   }
 
@@ -226,7 +224,7 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
   if (!success) {
     DVLOG(2) << "Failed to serialize event log.";
-    callback.Run(base::WrapUnique(new base::BinaryValue));
+    callback.Run(base::MakeUnique<base::BinaryValue>());
     return;
   }
 
@@ -242,14 +240,14 @@ void CastSessionDelegate::GetStatsAndReset(bool is_audio,
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
-    callback.Run(base::WrapUnique(new base::DictionaryValue));
+    callback.Run(base::MakeUnique<base::DictionaryValue>());
     return;
   }
 
   media::cast::StatsEventSubscriber* subscriber =
       event_subscribers_->GetStatsEventSubscriber(is_audio);
   if (!subscriber) {
-    callback.Run(base::WrapUnique(new base::DictionaryValue));
+    callback.Run(base::MakeUnique<base::DictionaryValue>());
     return;
   }
 

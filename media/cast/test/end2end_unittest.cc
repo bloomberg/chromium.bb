@@ -469,6 +469,7 @@ class End2EndTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     video_sender_config_.rtp_payload_type = RtpPayloadType::VIDEO_VP8;
     video_sender_config_.use_external_encoder = false;
+    video_sender_config_.rtp_timebase = kVideoFrequency;
     video_sender_config_.max_bitrate = 50000;
     video_sender_config_.min_bitrate = 10000;
     video_sender_config_.start_bitrate = 10000;
@@ -894,9 +895,7 @@ class TransportClient : public CastTransport::Client {
       : log_event_dispatcher_(log_event_dispatcher), e2e_test_(e2e_test) {}
 
   void OnStatusChanged(media::cast::CastTransportStatus status) final {
-    bool result = (status == TRANSPORT_AUDIO_INITIALIZED ||
-                   status == TRANSPORT_VIDEO_INITIALIZED);
-    EXPECT_TRUE(result);
+    EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
   };
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
@@ -921,14 +920,14 @@ class TransportClient : public CastTransport::Client {
 void End2EndTest::Create() {
   transport_sender_.reset(new CastTransportImpl(
       testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
-      base::WrapUnique(
-          new TransportClient(cast_environment_sender_->logger(), nullptr)),
+      base::MakeUnique<TransportClient>(cast_environment_sender_->logger(),
+                                        nullptr),
       base::WrapUnique(sender_to_receiver_), task_runner_sender_));
 
   transport_receiver_.reset(new CastTransportImpl(
       testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
-      base::WrapUnique(
-          new TransportClient(cast_environment_receiver_->logger(), this)),
+      base::MakeUnique<TransportClient>(cast_environment_receiver_->logger(),
+                                        this),
       base::WrapUnique(receiver_to_sender_), task_runner_sender_));
 
   cast_receiver_ =

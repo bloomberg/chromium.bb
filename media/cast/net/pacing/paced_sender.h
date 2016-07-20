@@ -115,8 +115,7 @@ class PacedSender : public PacedPacketSender,
   ~PacedSender() final;
 
   // These must be called before non-RTCP packets are sent.
-  void RegisterAudioSsrc(uint32_t audio_ssrc);
-  void RegisterVideoSsrc(uint32_t video_ssrc);
+  void RegisterSsrc(uint32_t ssrc, bool is_audio);
 
   // Register SSRC that has a higher priority for sending. Multiple SSRCs can
   // be registered.
@@ -127,10 +126,12 @@ class PacedSender : public PacedPacketSender,
   // Returns the total number of bytes sent to the socket when the specified
   // packet was just sent.
   // Returns 0 if the packet cannot be found or not yet sent.
+  // This function is currently only used by unittests.
   int64_t GetLastByteSentForPacket(const PacketKey& packet_key);
 
   // Returns the total number of bytes sent to the socket when the last payload
-  // identified by SSRC is just sent.
+  // identified by SSRC is just sent. Returns 0 for an unknown ssrc.
+  // This function is currently only used by unittests.
   int64_t GetLastByteSentForSsrc(uint32_t ssrc);
 
   // PacedPacketSender implementation.
@@ -205,8 +206,6 @@ class PacedSender : public PacedPacketSender,
   PacketTransport* const transport_;
 
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
-  uint32_t audio_ssrc_;
-  uint32_t video_ssrc_;
 
   // Set of SSRCs that have higher priority. This is a vector instead of a
   // set because there's only very few in it (most likely 1).
@@ -215,20 +214,19 @@ class PacedSender : public PacedPacketSender,
   PacketList packet_list_;
   PacketList priority_packet_list_;
 
-  struct PacketSendRecord {
-    PacketSendRecord();
-    base::TimeTicks time;  // Time when the packet was sent.
-    int64_t last_byte_sent;  // Number of bytes sent to network just after this
-                             // packet was sent.
-    int64_t last_byte_sent_for_audio;  // Number of bytes sent to network from
-                                       // audio stream just before this packet.
-    int cancel_count;  // Number of times the packet was canceled (debugging).
-  };
-  typedef std::map<PacketKey, PacketSendRecord> PacketSendHistory;
+  struct PacketSendRecord;
+  using PacketSendHistory = std::map<PacketKey, PacketSendRecord>;
   PacketSendHistory send_history_;
   PacketSendHistory send_history_buffer_;
-  // Records the last byte sent for payload with a specific SSRC.
-  std::map<uint32_t, int64_t> last_byte_sent_;
+
+  struct RtpSession;
+  using SessionMap = std::map<uint32_t, RtpSession>;
+  // Records all the cast sessions with the sender SSRC as the key. These
+  // sessions are in sync with those in CastTransportImpl.
+  SessionMap sessions_;
+
+  // Records the last byte sent for audio payload.
+  int64_t last_byte_sent_for_audio_;
 
   size_t target_burst_size_;
   size_t max_burst_size_;
@@ -245,11 +243,6 @@ class PacedSender : public PacedPacketSender,
   State state_;
 
   bool has_reached_upper_bound_once_;
-
-  // Tracks recently-logged RTP timestamps so that it can expand the truncated
-  // values found in packets.
-  RtpTimeTicks last_logged_audio_rtp_timestamp_;
-  RtpTimeTicks last_logged_video_rtp_timestamp_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PacedSender> weak_factory_;

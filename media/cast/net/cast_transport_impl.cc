@@ -91,6 +91,27 @@ class CastTransportImpl::RtcpClient : public RtcpObserver {
   DISALLOW_COPY_AND_ASSIGN(RtcpClient);
 };
 
+struct CastTransportImpl::RtpStreamSession {
+  explicit RtpStreamSession(bool is_audio_stream) : is_audio(is_audio_stream) {}
+
+  // Packetizer for audio and video frames.
+  std::unique_ptr<RtpSender> rtp_sender;
+
+  // Maintains RTCP session for audio and video.
+  std::unique_ptr<SenderRtcpSession> rtcp_session;
+
+  // RTCP observer for SenderRtcpSession.
+  std::unique_ptr<RtcpObserver> rtcp_observer;
+
+  // Encrypts data in EncodedFrames before they are sent.  Note that it's
+  // important for the encryption to happen here, in code that would execute in
+  // the main browser process, for security reasons.  This helps to mitigate
+  // the damage that could be caused by a compromised renderer process.
+  TransportEncryptionHandler encryptor;
+
+  const bool is_audio;
+};
+
 CastTransportImpl::CastTransportImpl(
     base::TickClock* clock,
     base::TimeDelta logging_flush_interval,
@@ -129,63 +150,45 @@ CastTransportImpl::~CastTransportImpl() {
   transport_->StopReceiving();
 }
 
-void CastTransportImpl::InitializeAudio(
+void CastTransportImpl::InitializeStream(
     const CastTransportRtpConfig& config,
     std::unique_ptr<RtcpObserver> rtcp_observer) {
+  if (sessions_.find(config.ssrc) != sessions_.end())
+    DVLOG(1) << "Initialize an existing stream on RTP sender." << config.ssrc;
+
   LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
-      << "Unsafe to send audio with encryption DISABLED.";
-  if (!audio_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
-    transport_client_->OnStatusChanged(TRANSPORT_AUDIO_UNINITIALIZED);
+      << "Unsafe to send stream with encryption DISABLED.";
+
+  bool is_audio = config.rtp_payload_type <= RtpPayloadType::AUDIO_LAST;
+  std::unique_ptr<RtpStreamSession> session(new RtpStreamSession(is_audio));
+
+  if (!session->encryptor.Initialize(config.aes_key, config.aes_iv_mask)) {
+    transport_client_->OnStatusChanged(TRANSPORT_STREAM_UNINITIALIZED);
     return;
   }
 
-  audio_sender_.reset(new RtpSender(transport_task_runner_, &pacer_));
-  if (audio_sender_->Initialize(config)) {
-    // Audio packets have a higher priority.
-    pacer_.RegisterAudioSsrc(config.ssrc);
+  session->rtp_sender.reset(new RtpSender(transport_task_runner_, &pacer_));
+  if (!session->rtp_sender->Initialize(config)) {
+    session->rtp_sender.reset();
+    transport_client_->OnStatusChanged(TRANSPORT_STREAM_UNINITIALIZED);
+    return;
+  }
+
+  pacer_.RegisterSsrc(config.ssrc, is_audio);
+  // Audio packets have a higher priority.
+  if (is_audio)
     pacer_.RegisterPrioritySsrc(config.ssrc);
-    transport_client_->OnStatusChanged(TRANSPORT_AUDIO_INITIALIZED);
-  } else {
-    audio_sender_.reset();
-    transport_client_->OnStatusChanged(TRANSPORT_AUDIO_UNINITIALIZED);
-    return;
-  }
 
-  audio_rtcp_observer_.reset(
-      new RtcpClient(std::move(rtcp_observer), config.ssrc, AUDIO_EVENT, this));
-  audio_rtcp_session_.reset(
-      new SenderRtcpSession(clock_, &pacer_, audio_rtcp_observer_.get(),
+  session->rtcp_observer.reset(
+      new RtcpClient(std::move(rtcp_observer), config.ssrc,
+                     is_audio ? AUDIO_EVENT : VIDEO_EVENT, this));
+  session->rtcp_session.reset(
+      new SenderRtcpSession(clock_, &pacer_, session->rtcp_observer.get(),
                             config.ssrc, config.feedback_ssrc));
-  pacer_.RegisterAudioSsrc(config.ssrc);
+
   valid_sender_ssrcs_.insert(config.feedback_ssrc);
-  transport_client_->OnStatusChanged(TRANSPORT_AUDIO_INITIALIZED);
-}
-
-void CastTransportImpl::InitializeVideo(
-    const CastTransportRtpConfig& config,
-    std::unique_ptr<RtcpObserver> rtcp_observer) {
-  LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
-      << "Unsafe to send video with encryption DISABLED.";
-  if (!video_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
-    transport_client_->OnStatusChanged(TRANSPORT_VIDEO_UNINITIALIZED);
-    return;
-  }
-
-  video_sender_.reset(new RtpSender(transport_task_runner_, &pacer_));
-  if (!video_sender_->Initialize(config)) {
-    video_sender_.reset();
-    transport_client_->OnStatusChanged(TRANSPORT_VIDEO_UNINITIALIZED);
-    return;
-  }
-
-  video_rtcp_observer_.reset(
-      new RtcpClient(std::move(rtcp_observer), config.ssrc, VIDEO_EVENT, this));
-  video_rtcp_session_.reset(
-      new SenderRtcpSession(clock_, &pacer_, video_rtcp_observer_.get(),
-                            config.ssrc, config.feedback_ssrc));
-  pacer_.RegisterVideoSsrc(config.ssrc);
-  valid_sender_ssrcs_.insert(config.feedback_ssrc);
-  transport_client_->OnStatusChanged(TRANSPORT_VIDEO_INITIALIZED);
+  sessions_[config.ssrc] = std::move(session);
+  transport_client_->OnStatusChanged(TRANSPORT_STREAM_INITIALIZED);
 }
 
 namespace {
@@ -210,59 +213,56 @@ void EncryptAndSendFrame(const EncodedFrame& frame,
 }  // namespace
 
 void CastTransportImpl::InsertFrame(uint32_t ssrc, const EncodedFrame& frame) {
-  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
-    audio_rtcp_session_->WillSendFrame(frame.frame_id);
-    EncryptAndSendFrame(frame, &audio_encryptor_, audio_sender_.get());
-  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
-    video_rtcp_session_->WillSendFrame(frame.frame_id);
-    EncryptAndSendFrame(frame, &video_encryptor_, video_sender_.get());
-  } else {
+  auto it = sessions_.find(ssrc);
+  if (it == sessions_.end()) {
     NOTREACHED() << "Invalid InsertFrame call.";
+    return;
   }
+
+  it->second->rtcp_session->WillSendFrame(frame.frame_id);
+  EncryptAndSendFrame(frame, &it->second->encryptor,
+                      it->second->rtp_sender.get());
 }
 
 void CastTransportImpl::SendSenderReport(
     uint32_t ssrc,
     base::TimeTicks current_time,
     RtpTimeTicks current_time_as_rtp_timestamp) {
-  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
-    audio_rtcp_session_->SendRtcpReport(
-        current_time, current_time_as_rtp_timestamp,
-        audio_sender_->send_packet_count(), audio_sender_->send_octet_count());
-  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
-    video_rtcp_session_->SendRtcpReport(
-        current_time, current_time_as_rtp_timestamp,
-        video_sender_->send_packet_count(), video_sender_->send_octet_count());
-  } else {
+  auto it = sessions_.find(ssrc);
+  if (it == sessions_.end()) {
     NOTREACHED() << "Invalid request for sending RTCP packet.";
+    return;
   }
+
+  it->second->rtcp_session->SendRtcpReport(
+      current_time, current_time_as_rtp_timestamp,
+      it->second->rtp_sender->send_packet_count(),
+      it->second->rtp_sender->send_octet_count());
 }
 
 void CastTransportImpl::CancelSendingFrames(
     uint32_t ssrc,
     const std::vector<FrameId>& frame_ids) {
-  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
-    audio_sender_->CancelSendingFrames(frame_ids);
-  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
-    video_sender_->CancelSendingFrames(frame_ids);
-  } else {
+  auto it = sessions_.find(ssrc);
+  if (it == sessions_.end()) {
     NOTREACHED() << "Invalid request for cancel sending.";
+    return;
   }
+
+  it->second->rtp_sender->CancelSendingFrames(frame_ids);
 }
 
 void CastTransportImpl::ResendFrameForKickstart(uint32_t ssrc,
                                                 FrameId frame_id) {
-  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
-    DCHECK(audio_rtcp_session_);
-    audio_sender_->ResendFrameForKickstart(
-        frame_id, audio_rtcp_session_->current_round_trip_time());
-  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
-    DCHECK(video_rtcp_session_);
-    video_sender_->ResendFrameForKickstart(
-        frame_id, video_rtcp_session_->current_round_trip_time());
-  } else {
+  auto it = sessions_.find(ssrc);
+  if (it == sessions_.end()) {
     NOTREACHED() << "Invalid request for kickstart.";
+    return;
   }
+
+  DCHECK(it->second->rtcp_session);
+  it->second->rtp_sender->ResendFrameForKickstart(
+      frame_id, it->second->rtcp_session->current_round_trip_time());
 }
 
 void CastTransportImpl::ResendPackets(
@@ -270,15 +270,14 @@ void CastTransportImpl::ResendPackets(
     const MissingFramesAndPacketsMap& missing_packets,
     bool cancel_rtx_if_not_in_list,
     const DedupInfo& dedup_info) {
-  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
-    audio_sender_->ResendPackets(missing_packets, cancel_rtx_if_not_in_list,
-                                 dedup_info);
-  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
-    video_sender_->ResendPackets(missing_packets, cancel_rtx_if_not_in_list,
-                                 dedup_info);
-  } else {
+  auto it = sessions_.find(ssrc);
+  if (it == sessions_.end()) {
     NOTREACHED() << "Invalid request for retransmission.";
+    return;
   }
+
+  it->second->rtp_sender->ResendPackets(missing_packets,
+                                        cancel_rtx_if_not_in_list, dedup_info);
 }
 
 PacketReceiverCallback CastTransportImpl::PacketReceiverForTesting() {
@@ -321,14 +320,11 @@ bool CastTransportImpl::OnReceivedPacket(std::unique_ptr<Packet> packet) {
     return false;
   }
 
-  if (audio_rtcp_session_ &&
-      audio_rtcp_session_->IncomingRtcpPacket(data, length)) {
-    return true;
+  for (const auto& session : sessions_) {
+    if (session.second->rtcp_session->IncomingRtcpPacket(data, length))
+      return true;
   }
-  if (video_rtcp_session_ &&
-      video_rtcp_session_->IncomingRtcpPacket(data, length)) {
-    return true;
-  }
+
   transport_client_->ProcessRtpPacket(std::move(packet));
   return true;
 }
@@ -381,16 +377,21 @@ void CastTransportImpl::OnReceivedCastMessage(
     const RtcpCastMessage& cast_message) {
 
   DedupInfo dedup_info;
-  if (audio_sender_ && audio_sender_->ssrc() == ssrc) {
-    const int64_t acked_bytes =
-        audio_sender_->GetLastByteSentForFrame(cast_message.ack_frame_id);
+  auto it = sessions_.find(ssrc);
+  if (it == sessions_.end() || !it->second->rtp_sender)
+    return;
+
+  if (it->second->is_audio) {
+    const int64_t acked_bytes = it->second->rtp_sender->GetLastByteSentForFrame(
+        cast_message.ack_frame_id);
     last_byte_acked_for_audio_ =
         std::max(acked_bytes, last_byte_acked_for_audio_);
-  } else if (video_sender_ && video_sender_->ssrc() == ssrc) {
-    dedup_info.resend_interval = video_rtcp_session_->current_round_trip_time();
+  } else {
+    dedup_info.resend_interval =
+        it->second->rtcp_session->current_round_trip_time();
 
     // Only use audio stream to dedup if there is one.
-    if (audio_sender_) {
+    if (last_byte_acked_for_audio_) {
       dedup_info.last_byte_acked_for_audio = last_byte_acked_for_audio_;
     }
   }

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -22,14 +21,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const StatusChangeCallback& status_change_cb,
                          CastTransport* const transport_sender)
     : FrameSender(cast_environment,
-                  true,
                   transport_sender,
-                  audio_config.rtp_timebase,
-                  audio_config.sender_ssrc,
-                  0,  // |max_frame_rate_| is set after encoder initialization.
-                  audio_config.min_playout_delay,
-                  audio_config.max_playout_delay,
-                  audio_config.animated_playout_delay,
+                  audio_config,
                   NewFixedCongestionControl(audio_config.max_bitrate)),
       samples_in_encoder_(0),
       weak_factory_(this) {
@@ -56,17 +49,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   // the maximum frame rate.
   max_frame_rate_ =
       audio_config.rtp_timebase / audio_encoder_->GetSamplesPerFrame();
-
-  media::cast::CastTransportRtpConfig transport_config;
-  transport_config.ssrc = audio_config.sender_ssrc;
-  transport_config.feedback_ssrc = audio_config.receiver_ssrc;
-  transport_config.rtp_payload_type = audio_config.rtp_payload_type;
-  transport_config.aes_key = audio_config.aes_key;
-  transport_config.aes_iv_mask = audio_config.aes_iv_mask;
-
-  transport_sender->InitializeAudio(
-      transport_config, base::WrapUnique(new FrameSender::RtcpClient(
-                            weak_factory_.GetWeakPtr())));
 }
 
 AudioSender::~AudioSender() {}

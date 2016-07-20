@@ -178,11 +178,7 @@ IPC_MESSAGE_CONTROL3(CastMsg_RawEvents,
 
 // Cast messages sent from the renderer to the browser.
 
-IPC_MESSAGE_CONTROL2(CastHostMsg_InitializeAudio,
-                     int32_t /*channel_id*/,
-                     media::cast::CastTransportRtpConfig /*config*/)
-
-IPC_MESSAGE_CONTROL2(CastHostMsg_InitializeVideo,
+IPC_MESSAGE_CONTROL2(CastHostMsg_InitializeStream,
                      int32_t /*channel_id*/,
                      media::cast::CastTransportRtpConfig /*config*/)
 
