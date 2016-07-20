@@ -109,11 +109,6 @@ public interface WebContents extends Parcelable {
     void unselect();
 
     /**
-     * Inserts css into main frame's document.
-     */
-    void insertCSS(String css);
-
-    /**
      * To be called when the ContentView is hidden.
      */
     void onHide();

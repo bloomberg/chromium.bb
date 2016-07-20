@@ -707,10 +707,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
 // RenderFrame has completed loading.
 IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
-// Request for the renderer to insert CSS into the frame.
-IPC_MESSAGE_ROUTED1(FrameMsg_CSSInsertRequest,
-                    std::string  /* css */)
-
 // Add message to the frame console.
 IPC_MESSAGE_ROUTED2(FrameMsg_AddMessageToConsole,
                     content::ConsoleMessageLevel /* level */,

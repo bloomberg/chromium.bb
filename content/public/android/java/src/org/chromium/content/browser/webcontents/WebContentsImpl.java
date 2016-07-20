@@ -212,12 +212,6 @@ import java.util.UUID;
     }
 
     @Override
-    public void insertCSS(String css) {
-        if (isDestroyed()) return;
-        nativeInsertCSS(mNativeWebContentsAndroid, css);
-    }
-
-    @Override
     public void onHide() {
         nativeOnHide(mNativeWebContentsAndroid);
     }
@@ -525,7 +519,6 @@ import java.util.UUID;
     private native void nativeReplace(long nativeWebContentsAndroid, String word);
     private native void nativeSelectAll(long nativeWebContentsAndroid);
     private native void nativeUnselect(long nativeWebContentsAndroid);
-    private native void nativeInsertCSS(long nativeWebContentsAndroid, String css);
     private native void nativeOnHide(long nativeWebContentsAndroid);
     private native void nativeOnShow(long nativeWebContentsAndroid);
     private native void nativeSuspendAllMediaPlayers(long nativeWebContentsAndroid);

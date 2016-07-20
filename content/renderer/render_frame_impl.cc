@@ -1538,7 +1538,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(InputMsg_ExecuteNoValueEditCommand,
                         OnExecuteNoValueEditCommand)
-    IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
                         OnJavaScriptExecuteRequest)
@@ -1928,10 +1927,6 @@ void RenderFrameImpl::OnCopyImageAt(int x, int y) {
 
 void RenderFrameImpl::OnSaveImageAt(int x, int y) {
   frame_->saveImageAt(WebPoint(x, y));
-}
-
-void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
-  frame_->document().insertStyleSheet(WebString::fromUTF8(css));
 }
 
 void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,

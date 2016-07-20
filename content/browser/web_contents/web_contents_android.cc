@@ -326,12 +326,6 @@ void WebContentsAndroid::Unselect(JNIEnv* env,
   web_contents_->Unselect();
 }
 
-void WebContentsAndroid::InsertCSS(JNIEnv* env,
-                                   const JavaParamRef<jobject>& jobj,
-                                   const JavaParamRef<jstring>& jcss) {
-  web_contents_->InsertCSS(base::android::ConvertJavaStringToUTF8(env, jcss));
-}
-
 RenderWidgetHostViewAndroid*
     WebContentsAndroid::GetRenderWidgetHostViewAndroid() {
   RenderWidgetHostView* rwhv = NULL;

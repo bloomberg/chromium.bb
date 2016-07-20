@@ -790,7 +790,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnReplaceMisspelling(const base::string16& text);
   void OnCopyImageAt(int x, int y);
   void OnSaveImageAt(int x, int y);
-  void OnCSSInsertRequest(const std::string& css);
   void OnAddMessageToConsole(ConsoleMessageLevel level,
                              const std::string& message);
   void OnJavaScriptExecuteRequest(const base::string16& javascript,

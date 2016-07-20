@@ -117,9 +117,6 @@ class CONTENT_EXPORT WebContentsAndroid
       const base::android::JavaParamRef<jobject>& obj,
       jint start_adjust,
       jint end_adjust);
-  void InsertCSS(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& jobj,
-                 const base::android::JavaParamRef<jstring>& jcss);
   void EvaluateJavaScript(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jstring>& script,

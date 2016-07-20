@@ -390,7 +390,6 @@ class CONTENT_EXPORT WebContentsImpl
             const base::string16& search_text,
             const blink::WebFindOptions& options) override;
   void StopFinding(StopFindAction action) override;
-  void InsertCSS(const std::string& css) override;
   bool WasRecentlyAudible() override;
   void GetManifest(const GetManifestCallback& callback) override;
   void ExitFullscreen(bool will_cause_resize) override;
