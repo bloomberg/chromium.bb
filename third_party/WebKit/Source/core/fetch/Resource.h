@@ -143,8 +143,6 @@ public:
     };
     PreloadResult getPreloadResult() const { return static_cast<PreloadResult>(m_preloadResult); }
 
-    unsigned count() const { return m_clients.size(); }
-
     Status getStatus() const { return static_cast<Status>(m_status); }
     void setStatus(Status status) { m_status = status; }
 
@@ -197,8 +195,6 @@ public:
     // This may return nullptr when the resource isn't cacheable.
     CachedMetadataHandler* cacheHandler();
 
-    String reasonNotDeletable() const;
-
     AtomicString httpContentType() const;
 
     bool wasCanceled() const { return m_error.isCancellation(); }
@@ -244,7 +240,6 @@ public:
     virtual void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const;
 
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
-    static const char* resourceTypeName(Type);
 
 protected:
     Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
@@ -313,6 +308,8 @@ private:
     size_t calculateOverheadSize() const;
 
     bool unlock();
+
+    String reasonNotDeletable() const;
 
     Member<CachedMetadataHandlerImpl> m_cacheHandler;
     RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;

@@ -149,7 +149,7 @@ void RawResource::responseReceived(const ResourceResponse& response, std::unique
     Resource::responseReceived(response, nullptr);
 
     ResourceClientWalker<RawResourceClient> w(clients());
-    ASSERT(count() <= 1 || !handle);
+    DCHECK(clients().size() <= 1 || !handle);
     while (RawResourceClient* c = w.next()) {
         // |handle| is cleared when passed, but it's not a problem because
         // |handle| is null when there are two or more clients, as asserted.

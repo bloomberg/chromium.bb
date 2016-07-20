@@ -1106,42 +1106,4 @@ bool Resource::isLoadEventBlockingResourceType() const
     return false;
 }
 
-// Do not modify existing strings below because they are used as UMA names.
-// https://crbug.com/579496
-const char* Resource::resourceTypeName(Resource::Type type)
-{
-    switch (type) {
-    case Resource::MainResource:
-        return "MainResource";
-    case Resource::Image:
-        return "Image";
-    case Resource::CSSStyleSheet:
-        return "CSSStyleSheet";
-    case Resource::Script:
-        return "Script";
-    case Resource::Font:
-        return "Font";
-    case Resource::Raw:
-        return "Raw";
-    case Resource::SVGDocument:
-        return "SVGDocument";
-    case Resource::XSLStyleSheet:
-        return "XSLStyleSheet";
-    case Resource::LinkPrefetch:
-        return "LinkPrefetch";
-    case Resource::LinkPreload:
-        return "LinkPreload";
-    case Resource::TextTrack:
-        return "TextTrack";
-    case Resource::ImportResource:
-        return "ImportResource";
-    case Resource::Media:
-        return "Media";
-    case Resource::Manifest:
-        return "Manifest";
-    }
-    ASSERT_NOT_REACHED();
-    return "Unknown";
-}
-
 } // namespace blink
