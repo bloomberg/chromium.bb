@@ -124,6 +124,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     GLint location;
     std::string name;
   };
+  struct UniformBlockSizeInfo {
+    uint32_t binding;
+    uint32_t data_size;
+  };
 
   template <typename T>
   class ShaderVariableLocationEntry {
@@ -399,6 +403,13 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
       return fragment_output_written_mask_;
   }
 
+  // Update uniform block binding after a successful glUniformBlockBinding().
+  void SetUniformBlockBinding(GLuint index, GLuint binding);
+
+  const std::vector<UniformBlockSizeInfo>& uniform_block_size_info() const {
+    return uniform_block_size_info_;
+  }
+
  private:
   friend class base::RefCounted<Program>;
   friend class ProgramManager;
@@ -436,6 +447,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   void UpdateFragmentInputs();
   void UpdateProgramOutputs();
   void UpdateFragmentOutputBaseTypes();
+  void UpdateUniformBlockSizeInfo();
 
   // Process the program log, replacing the hashed names with original names.
   std::string ProcessLogInfo(const std::string& log);
@@ -541,6 +553,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // output variable - (location,index) binding map from
   // glBindFragDataLocation() and ..IndexedEXT() calls.
   LocationIndexMap bind_program_output_location_index_map_;
+
+  // It's stored in the order of uniform block indices, i.e., the first
+  // entry is the info about UniformBlock with index 0, etc.
+  std::vector<UniformBlockSizeInfo> uniform_block_size_info_;
 
   // Fragment output variable base types: FLOAT, INT, or UINT.
   // We have up to 16 outputs, each is encoded into 2 bits, total 32 bits:

@@ -195,6 +195,26 @@ GLsizeiptr IndexedBufferBindingHost::GetBufferSize(GLuint index) const {
   return buffer_bindings_[index].size;
 }
 
+GLsizeiptr IndexedBufferBindingHost::GetEffectiveBufferSize(
+    GLuint index) const {
+  DCHECK_LT(index, buffer_bindings_.size());
+  const IndexedBufferBinding& binding = buffer_bindings_[index];
+  if (!binding.buffer.get())
+    return 0;
+  GLsizeiptr full_buffer_size = binding.buffer->size();
+  switch (binding.type) {
+    case kBindBufferBase:
+      return full_buffer_size;
+    case kBindBufferRange:
+      if (binding.offset + binding.size > full_buffer_size)
+        return full_buffer_size - binding.offset;
+      return binding.size;
+    case kBindBufferNone:
+      return 0;
+  }
+  return buffer_bindings_[index].size;
+}
+
 GLintptr IndexedBufferBindingHost::GetBufferStart(GLuint index) const {
   DCHECK_LT(index, buffer_bindings_.size());
   return buffer_bindings_[index].offset;

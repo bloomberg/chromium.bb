@@ -44,9 +44,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
 
-    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
-        bug=628863)
-
     self.Fail('conformance2/transform_feedback/' +
         'unwritten-output-defaults-to-zero.html', bug=1441) # ANGLE bug
 

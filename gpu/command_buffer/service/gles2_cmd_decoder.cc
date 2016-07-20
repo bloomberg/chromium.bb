@@ -1374,6 +1374,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // NONE through DrawBuffers, to be on the safe side. Return true.
   bool ValidateAndAdjustDrawBuffers(const char* function_name);
 
+  // Checks if all active uniform blocks in the current program are backed by
+  // a buffer of sufficient size.
+  // If not, generates an INVALID_OPERATION to avoid undefined behavior in
+  // shader execution and return false.
+  bool ValidateUniformBlockBackings(const char* function_name);
+
   // Checks if |api_type| is valid for the given uniform
   // If the api type is not valid generates the appropriate GL
   // error. Returns true if |api_type| is valid for the uniform
@@ -8085,6 +8091,29 @@ bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
   return true;
 }
 
+bool GLES2DecoderImpl::ValidateUniformBlockBackings(const char* func_name) {
+  switch (feature_info_->context_type()) {
+    case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_WEBGL1:
+      // Uniform blocks do not exist in ES2 contexts.
+      return true;
+    default:
+      break;
+  }
+  DCHECK(state_.current_program.get());
+  for (auto info : state_.current_program->uniform_block_size_info()) {
+    uint32_t buffer_size = static_cast<uint32_t>(
+        state_.indexed_uniform_buffer_bindings->GetEffectiveBufferSize(
+            info.binding));
+    if (info.data_size > buffer_size) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "uniform blocks are not backed by a buffer with sufficient data");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::CheckUniformForApiType(
     const Program::UniformInfo* info,
     const char* function_name,
@@ -9115,6 +9144,9 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
       if (!ValidateAndAdjustDrawBuffers(function_name)) {
         return error::kNoError;
       }
+      if (!ValidateUniformBlockBackings(function_name)) {
+        return error::kNoError;
+      }
       if (!instanced) {
         glDrawArrays(mode, first, count);
       } else {
@@ -9257,6 +9289,9 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
         indices = element_array_buffer->GetRange(offset, 0);
       }
       if (!ValidateAndAdjustDrawBuffers(function_name)) {
+        return error::kNoError;
+      }
+      if (!ValidateUniformBlockBackings(function_name)) {
         return error::kNoError;
       }
       if (state_.enable_flags.primitive_restart_fixed_index &&
@@ -15968,6 +16003,7 @@ void GLES2DecoderImpl::DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode) {
 
 error::Error GLES2DecoderImpl::HandleUniformBlockBinding(
     uint32_t immediate_data_size, const void* cmd_data) {
+  const char* func_name = "glUniformBlockBinding";
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const gles2::cmds::UniformBlockBinding& c =
@@ -15975,13 +16011,23 @@ error::Error GLES2DecoderImpl::HandleUniformBlockBinding(
   GLuint client_id = c.program;
   GLuint index = static_cast<GLuint>(c.index);
   GLuint binding = static_cast<GLuint>(c.binding);
-  Program* program = GetProgramInfoNotShader(
-      client_id, "glUniformBlockBinding");
+  Program* program = GetProgramInfoNotShader(client_id, func_name);
   if (!program) {
+    return error::kNoError;
+  }
+  if (index >= program->uniform_block_size_info().size()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
+        "uniformBlockIndex is not an active uniform block index");
+    return error::kNoError;
+  }
+  if (binding >= group_->max_uniform_buffer_bindings()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
+        "uniformBlockBinding >= MAX_UNIFORM_BUFFER_BINDINGS");
     return error::kNoError;
   }
   GLuint service_id = program->service_id();
   glUniformBlockBinding(service_id, index, binding);
+  program->SetUniformBlockBinding(index, binding);
   return error::kNoError;
 }
 

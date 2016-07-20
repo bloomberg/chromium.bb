@@ -43,7 +43,13 @@ class GPU_EXPORT IndexedBufferBindingHost :
   void RemoveBoundBuffer(Buffer* buffer);
 
   Buffer* GetBufferBinding(GLuint index) const;
+  // Returns |size| set by glBindBufferRange; 0 if set by glBindBufferBase.
   GLsizeiptr GetBufferSize(GLuint index) const;
+  // For glBindBufferBase, return the actual buffer size when this function is
+  // called, not when glBindBufferBase is called.
+  // For glBindBufferRange, return the |size| set by glBindBufferRange minus
+  // the range that's beyond the buffer.
+  GLsizeiptr GetEffectiveBufferSize(GLuint index) const;
   GLintptr GetBufferStart(GLuint index) const;
 
   // This is used only for UNIFORM_BUFFER bindings in context switching.

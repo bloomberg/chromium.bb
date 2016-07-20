@@ -356,6 +356,39 @@ void Program::UpdateFragmentOutputBaseTypes() {
   }
 }
 
+void Program::UpdateUniformBlockSizeInfo() {
+  switch (feature_info().context_type()) {
+    case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_WEBGL1:
+      // Uniform blocks do not exist in ES2.
+      return;
+    default:
+      break;
+  }
+
+  uniform_block_size_info_.clear();
+
+  GLint num_uniform_blocks = 0;
+  glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_BLOCKS, &num_uniform_blocks);
+  uniform_block_size_info_.resize(num_uniform_blocks);
+  for (GLint ii = 0; ii < num_uniform_blocks; ++ii) {
+    GLint binding = 0;
+    glGetActiveUniformBlockiv(
+        service_id_, ii, GL_UNIFORM_BLOCK_BINDING, &binding);
+    uniform_block_size_info_[ii].binding = static_cast<GLuint>(binding);
+
+    GLint size = 0;
+    glGetActiveUniformBlockiv(
+        service_id_, ii, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
+    uniform_block_size_info_[ii].data_size = static_cast<GLuint>(size);
+  }
+}
+
+void Program::SetUniformBlockBinding(GLuint index, GLuint binding) {
+  DCHECK_GT(uniform_block_size_info_.size(), index);
+  uniform_block_size_info_[index].binding = binding;
+}
+
 std::string Program::ProcessLogInfo(
     const std::string& log) {
   std::string output;
@@ -590,6 +623,7 @@ void Program::Update() {
   UpdateFragmentInputs();
   UpdateProgramOutputs();
   UpdateFragmentOutputBaseTypes();
+  UpdateUniformBlockSizeInfo();
 
   valid_ = true;
 }
