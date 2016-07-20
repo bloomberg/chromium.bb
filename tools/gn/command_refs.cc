@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
@@ -142,6 +143,9 @@ bool TargetContainsFile(const Target* target, const SourceFile& file) {
   }
   for (const auto& cur_file : target->data()) {
     if (cur_file == file.value())
+      return true;
+    if (cur_file.back() == '/' &&
+        base::StartsWith(file.value(), cur_file, base::CompareCase::SENSITIVE))
       return true;
   }
 
