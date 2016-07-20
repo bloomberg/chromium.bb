@@ -491,6 +491,13 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   selection_controller_client_.reset(
       new TouchSelectionControllerClientAura(this));
   CreateSelectionController();
+
+  RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (rvh) {
+    // TODO(mostynb): actually use prefs.  Landing this as a separate CL
+    // first to rebaseline some unreliable layout tests.
+    ignore_result(rvh->GetWebkitPreferences());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,8 +18,9 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -520,6 +521,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     render_widget_host_->delegate()
         ->GetInputEventRouter()
         ->AddSurfaceClientIdOwner(GetSurfaceClientId(), this);
+  }
+
+  RenderViewHost* rvh = RenderViewHost::From(render_widget_host_);
+  if (rvh) {
+    // TODO(mostynb): actually use prefs.  Landing this as a separate CL
+    // first to rebaseline some unreliable layout tests.
+    ignore_result(rvh->GetWebkitPreferences());
   }
 }
 
