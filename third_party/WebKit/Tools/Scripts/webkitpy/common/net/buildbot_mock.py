@@ -26,12 +26,49 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from webkitpy.common.net.buildbot import BuildBot
+import logging
+
 from webkitpy.common.net.layouttestresults import LayoutTestResults
-from webkitpy.common.net.layouttestresults_unittest import LayoutTestResultsTest
+from webkitpy.common.net import layouttestresults_unittest
+
+_log = logging.getLogger(__name__)
 
 
-class MockBuildBot(BuildBot):
+class MockBuild(object):
+
+    def __init__(self, builder, build_number):
+        self._builder = builder
+        self._number = build_number
+
+    def results_url(self):
+        return "%s/%s" % (self._builder.results_url(), self._number)
+
+
+class MockBuilder(object):
+
+    def __init__(self, builder_name):
+        self._name = builder_name
+
+    def name(self):
+        return self._name
+
+    def build(self, build_number):
+        return MockBuild(self, build_number=build_number)
+
+    def results_url(self):
+        return "http://example.com/builders/%s/results" % self.name()
+
+    def latest_layout_test_results_url(self):
+        return "http://example.com/f/builders/%s/results/layout-test-results" % self.name()
+
+    def latest_layout_test_results(self):
+        return self.fetch_layout_test_results(self.latest_layout_test_results_url())
 
     def fetch_layout_test_results(self, _):
-        return LayoutTestResults.results_from_string(LayoutTestResultsTest.example_full_results_json)
+        return LayoutTestResults.results_from_string(layouttestresults_unittest.LayoutTestResultsTest.example_full_results_json)
+
+
+class MockBuildBot(object):
+
+    def builder_with_name(self, builder_name):
+        return MockBuilder(builder_name)

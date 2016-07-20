@@ -105,9 +105,9 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
 
     def _unexpected_mismatch_results(self, try_job):
         """Fetches a list of LayoutTestResult objects for unexpected results with new baselines."""
-        buildbot = self._tool.buildbot
-        results_url = buildbot.results_url(try_job.builder_name, try_job.build_number)
-        layout_test_results = buildbot.fetch_layout_test_results(results_url)
+        results_url = self._results_url(try_job.builder_name, try_job.build_number)
+        builder = self._tool.buildbot.builder_with_name(try_job.builder_name)
+        layout_test_results = builder.fetch_layout_test_results(results_url)
         if layout_test_results is None:
             _log.warning('Failed to request layout test results from "%s".', results_url)
             return []

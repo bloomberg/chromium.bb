@@ -26,6 +26,20 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# FIXME: this could be moved over to perftestsrunner (the one place where it's used).
+import re
+
+
 def view_source_url(local_path):
     return "https://src.chromium.org/viewvc/blink/trunk/%s" % local_path
+
+
+def chromium_results_url_base():
+    return 'https://storage.googleapis.com/chromium-layout-test-archives'
+
+
+def chromium_results_url_base_for_builder(builder_name):
+    return '%s/%s' % (chromium_results_url_base(), re.sub('[ .()]', '_', builder_name))
+
+
+def chromium_accumulated_results_url_base_for_builder(builder_name):
+    return chromium_results_url_base_for_builder(builder_name) + "/results/layout-test-results"

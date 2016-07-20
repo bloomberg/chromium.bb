@@ -29,31 +29,43 @@
 import unittest
 
 from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.net.layouttestresults import LayoutTestResults
 
 
 class BuilderTest(unittest.TestCase):
 
-    def test_results_url_no_build_number(self):
-        self.assertEqual(
-            BuildBot().results_url('Test Builder'),
-            'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/results/layout-test-results')
+    def setUp(self):
+        self.buildbot = BuildBot()
 
-    def test_results_url_with_build_number(self):
-        self.assertEqual(
-            BuildBot().results_url('Test Builder', 10),
-            'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/10/layout-test-results')
+    def test_latest_layout_test_results(self):
+        builder = BuildBot().builder_with_name('WebKit Mac10.8 (dbg)')
+        builder.fetch_layout_test_results = lambda _: LayoutTestResults(None)
+        self.assertTrue(builder.latest_layout_test_results())
 
-    def test_builder_results_url_base(self):
+    def test_results_url(self):
+        builder = BuildBot().builder_with_name('WebKit Mac10.8 (dbg)')
         self.assertEqual(
-            BuildBot().builder_results_url_base('WebKit Mac10.8 (dbg)'),
+            builder.results_url(),
             'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_')
 
     def test_accumulated_results_url(self):
+        builder = BuildBot().builder_with_name('WebKit Mac10.8 (dbg)')
         self.assertEqual(
-            BuildBot().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
+            builder.latest_layout_test_results_url(),
             'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_/results/layout-test-results')
 
-    def fetch_layout_test_results_with_no_responses(self):
+
+class BuildBotTest(unittest.TestCase):
+
+    def test_builder_with_name(self):
         buildbot = BuildBot()
-        buildbot._fetch_file_from_results = lambda: None
-        self.assertIsNone(buildbot.fetch_layout_test_results(buildbot.results_url('Builder')))
+
+        builder = buildbot.builder_with_name('Test Builder')
+        self.assertEqual(builder.name(), 'Test Builder')
+        self.assertEqual(builder.results_url(), 'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder')
+
+        build = builder.build(10)
+        self.assertEqual(build.builder(), builder)
+        self.assertEqual(
+            build.results_url(),
+            'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/10/layout-test-results')
