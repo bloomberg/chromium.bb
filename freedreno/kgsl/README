@@ -1,3 +1,13 @@
+This is a historical discription of what is now the kgsl backend
+in libdrm freedreno (before the upstream drm/msm driver).  Note
+that the kgsl backend requires the "kgsl-drm" shim driver, which
+usually is in disrepair (QCOM does not build it for android), and
+due to random differences between different downstream android
+kernel branches it may or may not work.  So YMMV.
+
+Original README:
+----------------
+
 Note that current msm kernel driver is a bit strange.  It provides a
 DRM interface for GEM, which is basically sufficient to have DRI2
 working.  But it does not provide KMS.  And interface to 2d and 3d
