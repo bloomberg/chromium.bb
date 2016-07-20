@@ -85,7 +85,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/new_back_shortcut_bubble.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -154,6 +153,10 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#endif
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_util.h"

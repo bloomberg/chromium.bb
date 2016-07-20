@@ -1144,17 +1144,17 @@ test("browser_tests") {
               ".",
               "//chrome")
       deps += [ "//ui/views" ]
+      if (!is_chromeos && (!is_mac || mac_views_browser)) {
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_browser_tests_views_non_cros_sources,
+                ".",
+                "//chrome")
+      }
       if (!is_mac) {
         sources += rebase_path(
                 chrome_tests_gypi_values.chrome_browser_tests_views_non_mac_sources,
                 ".",
                 "//chrome")
-        if (!is_chromeos) {
-          sources += rebase_path(
-                  chrome_tests_gypi_values.chrome_browser_tests_views_non_cros_or_mac_sources,
-                  ".",
-                  "//chrome")
-        }
       }
     }
 

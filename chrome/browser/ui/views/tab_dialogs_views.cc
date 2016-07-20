@@ -9,9 +9,12 @@
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
-#include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 #include "chrome/browser/ui/views/validation_message_bubble_view.h"
 #include "content/public/browser/web_contents.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
+#endif
 
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
@@ -50,8 +53,12 @@ void TabDialogsViews::ShowProfileSigninConfirmation(
     Profile* profile,
     const std::string& username,
     ui::ProfileSigninConfirmationDelegate* delegate) {
+#if !defined(OS_CHROMEOS)
   ProfileSigninConfirmationDialogViews::ShowDialog(
       browser, profile, username, delegate);
+#else
+  NOTREACHED();
+#endif
 }
 
 void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {

@@ -883,7 +883,7 @@
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
       'browser/ui/webui/options/chromeos/shared_options_browsertest.cc',
     ],
-    'chrome_browser_tests_views_non_cros_or_mac_sources': [
+    'chrome_browser_tests_views_non_cros_sources': [
       # This should be brought up on OSX Views but not CrOS.
       'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
     ],
@@ -2649,8 +2649,8 @@
         ['toolkit_views==1 and OS!="mac"', {
           'sources': [ '<@(chrome_browser_tests_views_non_mac_sources)' ],
         }],
-        ['toolkit_views==1 and OS!="mac" and chromeos == 0', {
-          'sources': [ '<@(chrome_browser_tests_views_non_cros_or_mac_sources)' ],
+        ['toolkit_views==1 and (OS!="mac" or mac_views_browser==1) and chromeos == 0', {
+          'sources': [ '<@(chrome_browser_tests_views_non_cros_sources)' ],
         }],
         ['OS=="linux" or OS=="win"', {
           'sources': [ '<@(chrome_browser_tests_non_mac_desktop_sources)' ],
