@@ -123,11 +123,53 @@ std::unique_ptr<base::ListValue> GetTokenBindingParams(
   return values;
 }
 
+std::string OCSPStatusToString(
+    const BaseTestServer::SSLOptions::OCSPStatus& ocsp_status) {
+  switch (ocsp_status) {
+    case BaseTestServer::SSLOptions::OCSP_OK:
+      return "ok";
+    case BaseTestServer::SSLOptions::OCSP_REVOKED:
+      return "revoked";
+    case BaseTestServer::SSLOptions::OCSP_INVALID_RESPONSE:
+      return "invalid";
+    case BaseTestServer::SSLOptions::OCSP_UNAUTHORIZED:
+      return "unauthorized";
+    case BaseTestServer::SSLOptions::OCSP_UNKNOWN:
+      return "unknown";
+    case BaseTestServer::SSLOptions::OCSP_TRY_LATER:
+      return "later";
+    case BaseTestServer::SSLOptions::OCSP_INVALID_RESPONSE_DATA:
+      return "invalid_data";
+    case BaseTestServer::SSLOptions::OCSP_MISMATCHED_SERIAL:
+      return "mismatched_serial";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string OCSPDateToString(
+    const BaseTestServer::SSLOptions::OCSPDate& ocsp_date) {
+  switch (ocsp_date) {
+    case BaseTestServer::SSLOptions::OCSP_DATE_VALID:
+      return "valid";
+    case BaseTestServer::SSLOptions::OCSP_DATE_OLD:
+      return "old";
+    case BaseTestServer::SSLOptions::OCSP_DATE_EARLY:
+      return "early";
+    case BaseTestServer::SSLOptions::OCSP_DATE_LONG:
+      return "long";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 BaseTestServer::SSLOptions::SSLOptions()
     : server_certificate(CERT_OK),
       ocsp_status(OCSP_OK),
+      ocsp_date(OCSP_DATE_VALID),
+      ocsp_produced(OCSP_PRODUCED_VALID),
       cert_serial(0),
       request_client_certificate(false),
       key_exchanges(SSLOptions::KEY_EXCHANGE_ANY),
@@ -146,6 +188,8 @@ BaseTestServer::SSLOptions::SSLOptions(
     BaseTestServer::SSLOptions::ServerCertificate cert)
     : server_certificate(cert),
       ocsp_status(OCSP_OK),
+      ocsp_date(OCSP_DATE_VALID),
+      ocsp_produced(OCSP_PRODUCED_VALID),
       cert_serial(0),
       request_client_certificate(false),
       key_exchanges(SSLOptions::KEY_EXCHANGE_ANY),
@@ -191,17 +235,48 @@ std::string BaseTestServer::SSLOptions::GetOCSPArgument() const {
   if (server_certificate != CERT_AUTO)
     return std::string();
 
-  switch (ocsp_status) {
-    case OCSP_OK:
-      return "ok";
-    case OCSP_REVOKED:
-      return "revoked";
-    case OCSP_INVALID:
-      return "invalid";
-    case OCSP_UNAUTHORIZED:
-      return "unauthorized";
-    case OCSP_UNKNOWN:
-      return "unknown";
+  // |ocsp_responses| overrides when it is non-empty.
+  if (!ocsp_responses.empty()) {
+    std::string arg;
+    for (size_t i = 0; i < ocsp_responses.size(); i++) {
+      if (i != 0)
+        arg += ":";
+      arg += OCSPStatusToString(ocsp_responses[i].status);
+    }
+    return arg;
+  }
+
+  return OCSPStatusToString(ocsp_status);
+}
+
+std::string BaseTestServer::SSLOptions::GetOCSPDateArgument() const {
+  if (server_certificate != CERT_AUTO)
+    return std::string();
+
+  if (!ocsp_responses.empty()) {
+    std::string arg;
+    for (size_t i = 0; i < ocsp_responses.size(); i++) {
+      if (i != 0)
+        arg += ":";
+      arg += OCSPDateToString(ocsp_responses[i].date);
+    }
+    return arg;
+  }
+
+  return OCSPDateToString(ocsp_date);
+}
+
+std::string BaseTestServer::SSLOptions::GetOCSPProducedArgument() const {
+  if (server_certificate != CERT_AUTO)
+    return std::string();
+
+  switch (ocsp_produced) {
+    case OCSP_PRODUCED_VALID:
+      return "valid";
+    case OCSP_PRODUCED_BEFORE_CERT:
+      return "before";
+    case OCSP_PRODUCED_AFTER_CERT:
+      return "after";
     default:
       NOTREACHED();
       return std::string();
@@ -523,6 +598,14 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     std::string ocsp_arg = ssl_options_.GetOCSPArgument();
     if (!ocsp_arg.empty())
       arguments->SetString("ocsp", ocsp_arg);
+
+    std::string ocsp_date_arg = ssl_options_.GetOCSPDateArgument();
+    if (!ocsp_date_arg.empty())
+      arguments->SetString("ocsp-date", ocsp_date_arg);
+
+    std::string ocsp_produced_arg = ssl_options_.GetOCSPProducedArgument();
+    if (!ocsp_produced_arg.empty())
+      arguments->SetString("ocsp-produced", ocsp_produced_arg);
 
     if (ssl_options_.cert_serial != 0) {
       arguments->SetInteger("cert-serial", ssl_options_.cert_serial);

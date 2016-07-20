@@ -80,6 +80,13 @@ SERVER_WEBSOCKET = 5
 # Default request queue size for WebSocketServer.
 _DEFAULT_REQUEST_QUEUE_SIZE = 128
 
+OCSP_STATES_NO_SINGLE_RESPONSE = {
+  minica.OCSP_STATE_INVALID_RESPONSE,
+  minica.OCSP_STATE_UNAUTHORIZED,
+  minica.OCSP_STATE_TRY_LATER,
+  minica.OCSP_STATE_INVALID_RESPONSE_DATA,
+}
+
 class WebSocketOptions:
   """Holds options for WebSocketServer."""
 
@@ -1896,27 +1903,75 @@ class ServerRunner(testserver_base.TestServerRunner):
           print ('OCSP server started on %s:%d...' %
               (host, self.__ocsp_server.server_port))
 
-          ocsp_state = None
+          ocsp_states = list()
+          for ocsp_state_arg in self.options.ocsp.split(':'):
+            if ocsp_state_arg == 'ok':
+              ocsp_state = minica.OCSP_STATE_GOOD
+            elif ocsp_state_arg == 'revoked':
+              ocsp_state = minica.OCSP_STATE_REVOKED
+            elif ocsp_state_arg == 'invalid':
+              ocsp_state = minica.OCSP_STATE_INVALID_RESPONSE
+            elif ocsp_state_arg == 'unauthorized':
+              ocsp_state = minica.OCSP_STATE_UNAUTHORIZED
+            elif ocsp_state_arg == 'unknown':
+              ocsp_state = minica.OCSP_STATE_UNKNOWN
+            elif ocsp_state_arg == 'later':
+              ocsp_state = minica.OCSP_STATE_TRY_LATER
+            elif ocsp_state_arg == 'invalid_data':
+              ocsp_state = minica.OCSP_STATE_INVALID_RESPONSE_DATA
+            elif ocsp_state_arg == "mismatched_serial":
+              ocsp_state = minica.OCSP_STATE_MISMATCHED_SERIAL
+            else:
+              raise testserver_base.OptionError('unknown OCSP status: ' +
+                  ocsp_state_arg)
+            ocsp_states.append(ocsp_state)
 
-          if self.options.ocsp == 'ok':
-            ocsp_state = minica.OCSP_STATE_GOOD
-          elif self.options.ocsp == 'revoked':
-            ocsp_state = minica.OCSP_STATE_REVOKED
-          elif self.options.ocsp == 'invalid':
-            ocsp_state = minica.OCSP_STATE_INVALID
-          elif self.options.ocsp == 'unauthorized':
-            ocsp_state = minica.OCSP_STATE_UNAUTHORIZED
-          elif self.options.ocsp == 'unknown':
-            ocsp_state = minica.OCSP_STATE_UNKNOWN
+          if len(ocsp_states) > 1:
+            if set(ocsp_states) & OCSP_STATES_NO_SINGLE_RESPONSE:
+              raise testserver_base.OptionError('Multiple OCSP responses '
+                  'incompatible with states ' + str(ocsp_states))
+
+          ocsp_dates = list()
+          for ocsp_date_arg in self.options.ocsp_date.split(':'):
+            if ocsp_date_arg == 'valid':
+              ocsp_date = minica.OCSP_DATE_VALID
+            elif ocsp_date_arg == 'old':
+              ocsp_date = minica.OCSP_DATE_OLD
+            elif ocsp_date_arg == 'early':
+              ocsp_date = minica.OCSP_DATE_EARLY
+            elif ocsp_date_arg == 'long':
+              ocsp_date = minica.OCSP_DATE_LONG
+            elif ocsp_date_arg == 'before_cert':
+              ocsp_date = minica.OCSP_DATE_AFTER_CERT
+            elif ocsp_date_arg == 'after_cert':
+              ocsp_date = minica.OCSP_DATE_AFTER_CERT
+            else:
+              raise testserver_base.OptionError('unknown OCSP date: ' +
+                  ocsp_date_arg)
+            ocsp_dates.append(ocsp_date)
+
+          if len(ocsp_states) != len(ocsp_dates):
+            raise testserver_base.OptionError('mismatched ocsp and ocsp-date '
+                'count')
+
+          ocsp_produced = None
+          if self.options.ocsp_produced == 'valid':
+            ocsp_produced = minica.OCSP_PRODUCED_VALID
+          elif self.options.ocsp_produced == 'before':
+            ocsp_produced = minica.OCSP_PRODUCED_BEFORE_CERT
+          elif self.options.ocsp_produced == 'after':
+            ocsp_produced = minica.OCSP_PRODUCED_AFTER_CERT
           else:
-            raise testserver_base.OptionError('unknown OCSP status: ' +
-                self.options.ocsp_status)
+            raise testserver_base.OptionError('unknown OCSP produced: ' +
+                self.options.ocsp_produced)
 
           (pem_cert_and_key, ocsp_der) = minica.GenerateCertKeyAndOCSP(
               subject = "127.0.0.1",
               ocsp_url = ("http://%s:%d/ocsp" %
                   (host, self.__ocsp_server.server_port)),
-              ocsp_state = ocsp_state,
+              ocsp_states = ocsp_states,
+              ocsp_dates = ocsp_dates,
+              ocsp_produced = ocsp_produced,
               serial = self.options.cert_serial)
 
           if self.options.ocsp_server_unavailable:
@@ -2088,6 +2143,12 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   help='The type of OCSP response generated '
                                   'for the automatically generated '
                                   'certificate. One of [ok,revoked,invalid]')
+    self.option_parser.add_option('--ocsp-date', dest='ocsp_date',
+                                  default='valid', help='The validity of the '
+                                  'range between thisUpdate and nextUpdate')
+    self.option_parser.add_option('--ocsp-produced', dest='ocsp_produced',
+                                  default='valid', help='producedAt relative '
+                                  'to certificate expiry')
     self.option_parser.add_option('--cert-serial', dest='cert_serial',
                                   default=0, type=int,
                                   help='If non-zero then the generated '

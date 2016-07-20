@@ -798,6 +798,7 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->token_binding_negotiated = tb_was_negotiated_;
   ssl_info->token_binding_key_param = tb_negotiated_param_;
   ssl_info->pinning_failure_log = pinning_failure_log_;
+  ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
 
   AddCTInfoToSSLInfo(ssl_info);
 
@@ -1287,13 +1288,11 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
   }
 
   std::string ocsp_response;
-  if (cert_verifier_->SupportsOCSPStapling()) {
-    const uint8_t* ocsp_response_raw;
-    size_t ocsp_response_len;
-    SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
-    ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
-                         ocsp_response_len);
-  }
+  const uint8_t* ocsp_response_raw;
+  size_t ocsp_response_len;
+  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
+  ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
+                       ocsp_response_len);
 
   start_cert_verification_time_ = base::TimeTicks::Now();
 

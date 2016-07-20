@@ -81,9 +81,37 @@ class BaseTestServer {
     enum OCSPStatus {
       OCSP_OK,
       OCSP_REVOKED,
-      OCSP_INVALID,
+      OCSP_INVALID_RESPONSE,
       OCSP_UNAUTHORIZED,
       OCSP_UNKNOWN,
+      OCSP_INVALID_RESPONSE_DATA,
+      OCSP_TRY_LATER,
+      OCSP_MISMATCHED_SERIAL,
+    };
+
+    // OCSPDate enumerates the date ranges for OCSP responses that the
+    // testserver can produce.
+    enum OCSPDate {
+      OCSP_DATE_VALID,
+      OCSP_DATE_OLD,
+      OCSP_DATE_EARLY,
+      OCSP_DATE_LONG,
+    };
+
+    // OCSPSingleResponse is used when specifying multiple stapled responses,
+    // each
+    // with their own CertStatus and date validity.
+    struct OCSPSingleResponse {
+      OCSPStatus status;
+      OCSPDate date;
+    };
+
+    // OCSPProduced enumerates the validity of the producedAt field in OCSP
+    // responses produced by the testserver.
+    enum OCSPProduced {
+      OCSP_PRODUCED_VALID,
+      OCSP_PRODUCED_BEFORE_CERT,
+      OCSP_PRODUCED_AFTER_CERT,
     };
 
     // Bitmask of key exchange algorithms that the test server supports and that
@@ -151,12 +179,34 @@ class BaseTestServer {
     // the empty string if there is none.
     std::string GetOCSPArgument() const;
 
+    // GetOCSPDateArgument returns the value of the OCSP date argument to
+    // testserver or the empty string if there is none.
+    std::string GetOCSPDateArgument() const;
+
+    // GetOCSPProducedArgument returns the value of the OCSP produced argument
+    // to testserver or the empty string if there is none.
+    std::string GetOCSPProducedArgument() const;
+
     // The certificate to use when serving requests.
     ServerCertificate server_certificate;
 
     // If |server_certificate==CERT_AUTO| then this determines the type of OCSP
-    // response returned.
+    // response returned. Ignored if |ocsp_responses| is non-empty.
     OCSPStatus ocsp_status;
+
+    // If |server_certificate==CERT_AUTO| then this determines the date range
+    // set on the OCSP response returned. Ignore if |ocsp_responses| is
+    // non-empty.
+    OCSPDate ocsp_date;
+
+    // If |server_certificate==CERT_AUTO|, contains the status and validity for
+    // multiple stapled responeses. Overrides |ocsp_status| and |ocsp_date| when
+    // non-empty.
+    std::vector<OCSPSingleResponse> ocsp_responses;
+
+    // If |server_certificate==CERT_AUTO| then this determines the validity of
+    // the producedAt field on the returned OCSP response.
+    OCSPProduced ocsp_produced;
 
     // If not zero, |cert_serial| will be the serial number of the
     // auto-generated leaf certificate when |server_certificate==CERT_AUTO|.

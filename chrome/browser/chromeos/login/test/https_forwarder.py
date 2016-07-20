@@ -188,6 +188,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'only).')
     self.option_parser.add_option('--ocsp', help='Ignored (provided for'
                                   'compatibility only).')
+    self.option_parser.add_option('--ocsp-date', help='Ignored (provided for'
+                                  'compatibility only).')
+    self.option_parser.add_option('--ocsp-produced', help='Ignored (provided '
+                                  'for compatibility only).')
     self.option_parser.add_option('--ssl-host', help='The host name that the '
                                   'certificate should be issued to.')
     self.option_parser.add_option('--forward-target', help='The URL prefix to '

@@ -32,6 +32,7 @@ void CertVerifyResult::Reset() {
   common_name_fallback_used = false;
 
   public_key_hashes.clear();
+  ocsp_result = OCSPVerifyResult();
 }
 
 bool CertVerifyResult::operator==(const CertVerifyResult& other) const {
