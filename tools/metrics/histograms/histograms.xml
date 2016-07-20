@@ -61108,6 +61108,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.CodegenFractionCrankshaft" units="%">
+  <obsolete>
+    This histogram is no longer present in V8.
+  </obsolete>
   <owner>jochen@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
