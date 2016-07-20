@@ -394,18 +394,23 @@ var RoutableBehaviorImpl = {
       return;
     }
 
-    if (!newRouteIsSubpage && oldRouteIsSubpage) {
-      var section = this.getSection_(oldRoute.section);
-      if (section)
-        this.collapseSection(section);
-    } else if (newRouteIsSubpage &&
-               (!oldRouteIsSubpage || newRoute.section != oldRoute.section)) {
-      var section = this.getSection_(newRoute.section);
-      if (section)
-        this.expandSection(section);
-    } else if (newRoute && newRoute.section &&
-        this.$$('[data-page=' + newRoute.page + ']')) {
-      this.scrollToSection_();
+    if (newRouteIsSubpage) {
+      if (!oldRouteIsSubpage || newRoute.section != oldRoute.section) {
+        var section = this.getSection_(newRoute.section);
+        if (section)
+          this.expandSection(section);
+      }
+    } else {
+      if (oldRouteIsSubpage) {
+        var section = this.getSection_(oldRoute.section);
+        if (section)
+          this.collapseSection(section);
+      }
+
+      if (newRoute && newRoute.section &&
+          this.$$('[data-page=' + newRoute.page + ']')) {
+        this.scrollToSection_();
+      }
     }
   },
 
