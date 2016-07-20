@@ -33,7 +33,7 @@ public class AndroidCellularSignalStrength {
      * {@link CellularSignalStrengthError#ERROR_NOT_SUPPORTED} if the signal strength is
      * unavailable or if there are multiple cellular radios on the device.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @CalledByNative
     public static int getSignalStrengthDbm(Context context) {
         List<CellInfo> cellInfos = getRegisteredCellInfo(context);
@@ -48,7 +48,7 @@ public class AndroidCellularSignalStrength {
      * {@link CellularSignalStrengthError#ERROR_NOT_SUPPORTED} if the signal strength level is
      * unavailable or if there are multiple cellular radios on the device.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @CalledByNative
     public static int getSignalStrengthLevel(Context context) {
         List<CellInfo> cellInfos = getRegisteredCellInfo(context);
@@ -59,15 +59,15 @@ public class AndroidCellularSignalStrength {
 
     /**
      * Returns true if the API for quering the signal strength is available.
-     * {@link TelephonyManager#getAllCellInfo} is only available on API Level
-     * {@link Build.VERSION_CODES#JELLY_BEAN_MR1} and higher. Also verifies that appropriate
+     * {@link android.telephony#CellInfoWcdma} is only available on API Level
+     * {@link Build.VERSION_CODES#JELLY_BEAN_MR2} and higher. Also verifies that appropriate
      * permissions are already available. This ensures that on Android M and higher, Chromium will
      * not request run-time permission from the user when querying for cellular signal strength.
      * TODO(tbansal): Consider using {@link TelephonyManager#getNeighboringCellInfo}
      * for earlier versions of Android.
     */
     private static boolean isAPIAvailable(Context context) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
                 && context.checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION,
                            Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
@@ -78,7 +78,7 @@ public class AndroidCellularSignalStrength {
      * and neighboring cells. Returns only the information of cells that are registered to a
      * mobile network. May return {@code null}.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static List<CellInfo> getRegisteredCellInfo(Context context) {
         if (!isAPIAvailable(context)) {
             return null;
@@ -108,6 +108,7 @@ public class AndroidCellularSignalStrength {
      * @return Signal strength (in dbM) from {@link cellInfo}. Returns {@link
      * CellularSignalStrengthError#ERROR_NOT_SUPPORTED} if the signal strength is unavailable.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static int getSignalStrengthDbm(CellInfo cellInfo) {
         if (cellInfo instanceof CellInfoCdma) {
             return ((CellInfoCdma) cellInfo).getCellSignalStrength().getDbm();
@@ -129,6 +130,7 @@ public class AndroidCellularSignalStrength {
      * CellularSignalStrengthError#ERROR_NOT_SUPPORTED} if the signal
      * level is unavailable with lower value indicating lower signal strength.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static int getSignalStrengthLevel(CellInfo cellInfo) {
         if (cellInfo instanceof CellInfoCdma) {
             return ((CellInfoCdma) cellInfo).getCellSignalStrength().getLevel();
