@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
@@ -150,9 +152,15 @@ using autofill::AutofillPopupLayoutModel;
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                    textYOffset:(CGFloat)textYOffset {
-  // If this row is selected, highlight it.
+  // If this row is selected, highlight it with this mac system color.
+  // Otherwise the controller may have a specific background color for this
+  // entry.
   if (isSelected) {
     [[self highlightColor] set];
+    [NSBezierPath fillRect:bounds];
+  } else {
+    SkColor backgroundColor = controller_->GetBackgroundColorForRow(index);
+    [skia::SkColorToSRGBNSColor(backgroundColor) set];
     [NSBezierPath fillRect:bounds];
   }
 
