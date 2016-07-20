@@ -29,11 +29,11 @@ void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const String& v
         m_cssPropertyMap->setProperty(property, value, false, styleSheetContents);
 }
 
-void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const CSSValue* value)
+void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const CSSValue& value)
 {
     ASSERT(property != CSSPropertyInvalid);
     ASSERT(CSSAnimations::isAnimatableProperty(property));
-    m_cssPropertyMap->setProperty(property, value, false);
+    m_cssPropertyMap->setProperty(property, &value, false);
 }
 
 void StringKeyframe::setPresentationAttributeValue(CSSPropertyID property, const String& value, Element* element, StyleSheetContents* styleSheetContents)
@@ -56,7 +56,7 @@ PropertyHandleSet StringKeyframe::properties() const
     for (unsigned i = 0; i < m_cssPropertyMap->propertyCount(); ++i) {
         StylePropertySet::PropertyReference propertyReference = m_cssPropertyMap->propertyAt(i);
         DCHECK(
-            !isShorthandProperty(propertyReference.id()) || propertyReference.value()->isVariableReferenceValue())
+            !isShorthandProperty(propertyReference.id()) || propertyReference.value().isVariableReferenceValue())
             << "Web Animations: Encountered unexpanded shorthand CSS property (" << propertyReference.id() << ").";
         properties.add(PropertyHandle(propertyReference.id(), false));
     }
@@ -78,10 +78,10 @@ PassRefPtr<Keyframe> StringKeyframe::clone() const
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
 {
     if (property.isCSSProperty())
-        return CSSPropertySpecificKeyframe::create(offset(), &easing(), cssPropertyValue(property.cssProperty()), composite());
+        return CSSPropertySpecificKeyframe::create(offset(), &easing(), &cssPropertyValue(property.cssProperty()), composite());
 
     if (property.isPresentationAttribute())
-        return CSSPropertySpecificKeyframe::create(offset(), &easing(), presentationAttributeValue(property.presentationAttribute()), composite());
+        return CSSPropertySpecificKeyframe::create(offset(), &easing(), &presentationAttributeValue(property.presentationAttribute()), composite());
 
     ASSERT(property.isSVGAttribute());
     return SVGPropertySpecificKeyframe::create(offset(), &easing(), svgPropertyValue(property.svgAttribute()), composite());

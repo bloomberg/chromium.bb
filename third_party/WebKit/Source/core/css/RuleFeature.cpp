@@ -389,12 +389,12 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
         return;
 
     StylePropertySet::PropertyReference contentProperty = propertySet.propertyAt(propertyIndex);
-    const CSSValue* contentValue = contentProperty.value();
+    const CSSValue& contentValue = contentProperty.value();
 
-    if (!contentValue->isValueList())
+    if (!contentValue.isValueList())
         return;
 
-    for (auto& item : toCSSValueList(*contentValue)) {
+    for (auto& item : toCSSValueList(contentValue)) {
         if (!item->isFunctionValue())
             continue;
         const CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());

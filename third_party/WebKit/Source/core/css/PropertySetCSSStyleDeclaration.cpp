@@ -143,7 +143,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const
         return "";
     StylePropertySet::PropertyReference property = propertySet().propertyAt(i);
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && property.id() == CSSPropertyVariable)
-        return toCSSCustomPropertyDeclaration(property.value())->name();
+        return toCSSCustomPropertyDeclaration(property.value()).name();
     if (property.id() == CSSPropertyApplyAtRule)
         return "@apply";
     return getPropertyName(property.id());
@@ -303,7 +303,7 @@ StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() 
 
 bool AbstractPropertySetCSSStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
 {
-    return propertySet().propertyMatches(propertyID, propertyValue);
+    return propertySet().propertyMatches(propertyID, *propertyValue);
 }
 
 DEFINE_TRACE(AbstractPropertySetCSSStyleDeclaration)

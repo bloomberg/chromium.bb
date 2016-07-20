@@ -154,16 +154,16 @@ HeapVector<StylePropertyMap::StylePropertyMapEntry> InlineStylePropertyMap::getI
         String name;
         CSSStyleValueOrCSSStyleValueSequence value;
         if (propertyID == CSSPropertyVariable) {
-            const CSSCustomPropertyDeclaration* customDeclaration = toCSSCustomPropertyDeclaration(propertyReference.value());
-            name = customDeclaration->name();
+            const CSSCustomPropertyDeclaration& customDeclaration = toCSSCustomPropertyDeclaration(propertyReference.value());
+            name = customDeclaration.name();
             // TODO(meade): Eventually custom properties will support other types, so actually return them instead of always returning a CSSUnsupportedStyleValue.
-            value.setCSSStyleValue(CSSUnsupportedStyleValue::create(customDeclaration->customCSSText()));
+            value.setCSSStyleValue(CSSUnsupportedStyleValue::create(customDeclaration.customCSSText()));
         } else if (propertyID == CSSPropertyApplyAtRule) {
             name = "@apply";
-            value.setCSSStyleValue(CSSUnsupportedStyleValue::create(toCSSCustomIdentValue(propertyReference.value())->value()));
+            value.setCSSStyleValue(CSSUnsupportedStyleValue::create(toCSSCustomIdentValue(propertyReference.value()).value()));
         } else {
             name = getPropertyNameString(propertyID);
-            CSSStyleValueVector styleValueVector = StyleValueFactory::cssValueToStyleValueVector(propertyID, *propertyReference.value());
+            CSSStyleValueVector styleValueVector = StyleValueFactory::cssValueToStyleValueVector(propertyID, propertyReference.value());
             if (styleValueVector.size() == 1)
                 value.setCSSStyleValue(styleValueVector[0]);
             else

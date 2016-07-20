@@ -74,6 +74,7 @@ private:
             , m_isImplicit(property.isImplicit())
             , m_isInherited(property.isInherited()) { }
 
+        // TODO(sashab): Make this take a const CSSValue&.
         PropertyValueForSerializer(CSSPropertyID id, const CSSValue* value, bool isImportant)
             : m_value(value)
             , m_id(id)

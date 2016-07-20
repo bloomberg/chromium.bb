@@ -3265,7 +3265,7 @@ static bool needsURLResolutionForInlineStyle(const Element& element, const Docum
         return false;
     for (unsigned i = 0; i < style->propertyCount(); ++i) {
         // FIXME: Should handle all URL-based properties: CSSImageSetValue, CSSCursorImageValue, etc.
-        if (style->propertyAt(i).value()->isImageValue())
+        if (style->propertyAt(i).value().isImageValue())
             return true;
     }
     return false;
@@ -3276,8 +3276,8 @@ static void reResolveURLsInInlineStyle(const Document& document, MutableStylePro
     for (unsigned i = 0; i < style.propertyCount(); ++i) {
         StylePropertySet::PropertyReference property = style.propertyAt(i);
         // FIXME: Should handle all URL-based properties: CSSImageSetValue, CSSCursorImageValue, etc.
-        if (property.value()->isImageValue())
-            toCSSImageValue(property.value())->reResolveURL(document);
+        if (property.value().isImageValue())
+            toCSSImageValue(property.value()).reResolveURL(document);
     }
 }
 

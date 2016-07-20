@@ -1140,15 +1140,15 @@ EditingStyle* EditingStyle::wrappingStyleForSerialization(ContainerNode* context
     return wrappingStyle;
 }
 
-static CSSValueList* mergeTextDecorationValues(const CSSValueList* mergedValue, const CSSValueList* valueToMerge)
+static CSSValueList* mergeTextDecorationValues(const CSSValueList& mergedValue, const CSSValueList& valueToMerge)
 {
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-    CSSValueList* result = mergedValue->copy();
-    if (valueToMerge->hasValue(underline) && !mergedValue->hasValue(underline))
+    CSSValueList* result = mergedValue.copy();
+    if (valueToMerge.hasValue(underline) && !mergedValue.hasValue(underline))
         result->append(underline);
 
-    if (valueToMerge->hasValue(lineThrough) && !mergedValue->hasValue(lineThrough))
+    if (valueToMerge.hasValue(lineThrough) && !mergedValue.hasValue(lineThrough))
         result->append(lineThrough);
 
     return result;
@@ -1170,9 +1170,9 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
         const CSSValue* value = m_mutableStyle->getPropertyCSSValue(property.id());
 
         // text decorations never override values
-        if ((property.id() == textDecorationPropertyForEditing() || property.id() == CSSPropertyWebkitTextDecorationsInEffect) && property.value()->isValueList() && value) {
+        if ((property.id() == textDecorationPropertyForEditing() || property.id() == CSSPropertyWebkitTextDecorationsInEffect) && property.value().isValueList() && value) {
             if (value->isValueList()) {
-                CSSValueList* result = mergeTextDecorationValues(toCSSValueList(value), toCSSValueList(property.value()));
+                CSSValueList* result = mergeTextDecorationValues(*toCSSValueList(value), toCSSValueList(property.value()));
                 m_mutableStyle->setProperty(property.id(), result, property.isImportant());
                 continue;
             }
@@ -1180,7 +1180,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
         }
 
         if (mode == OverrideValues || (mode == DoNotOverrideValues && !value))
-            m_mutableStyle->setProperty(property.id(), property.value()->cssText(), property.isImportant());
+            m_mutableStyle->setProperty(property.id(), property.value().cssText(), property.isImportant());
     }
 }
 
@@ -1221,10 +1221,10 @@ void EditingStyle::mergeStyleFromRulesForSerialization(Element* element)
         unsigned propertyCount = m_mutableStyle->propertyCount();
         for (unsigned i = 0; i < propertyCount; ++i) {
             StylePropertySet::PropertyReference property = m_mutableStyle->propertyAt(i);
-            const CSSValue* value = property.value();
-            if (!value->isPrimitiveValue())
+            const CSSValue& value = property.value();
+            if (!value.isPrimitiveValue())
                 continue;
-            if (toCSSPrimitiveValue(value)->isPercentage()) {
+            if (toCSSPrimitiveValue(value).isPercentage()) {
                 if (const CSSValue* computedPropertyValue = computedStyleForElement->getPropertyCSSValue(property.id()))
                     fromComputedStyle->addRespectingCascade(CSSProperty(property.id(), *computedPropertyValue));
             }

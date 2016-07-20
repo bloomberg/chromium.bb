@@ -89,13 +89,11 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     EXPECT_EQ(0, keyframes[0]->offset());
     EXPECT_EQ(1, keyframes[1]->offset());
 
-    const CSSValue* keyframe1Width = toStringKeyframe(keyframes[0].get())->cssPropertyValue(CSSPropertyWidth);
-    const CSSValue* keyframe2Width = toStringKeyframe(keyframes[1].get())->cssPropertyValue(CSSPropertyWidth);
-    ASSERT(keyframe1Width);
-    ASSERT(keyframe2Width);
+    const CSSValue& keyframe1Width = toStringKeyframe(keyframes[0].get())->cssPropertyValue(CSSPropertyWidth);
+    const CSSValue& keyframe2Width = toStringKeyframe(keyframes[1].get())->cssPropertyValue(CSSPropertyWidth);
 
-    EXPECT_EQ("100px", keyframe1Width->cssText());
-    EXPECT_EQ("0px", keyframe2Width->cssText());
+    EXPECT_EQ("100px", keyframe1Width.cssText());
+    EXPECT_EQ("0px", keyframe2Width.cssText());
 
     EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT)), keyframes[0]->easing());
     EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), keyframes[1]->easing());

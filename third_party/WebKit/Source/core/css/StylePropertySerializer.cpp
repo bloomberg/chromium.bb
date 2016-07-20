@@ -50,7 +50,7 @@ StylePropertySerializer::StylePropertySetForSerializer::StylePropertySetForSeria
                 continue;
             if (static_cast<unsigned>(m_allIndex) >= i)
                 continue;
-            if (property.value()->equals(*allProperty.value())
+            if (property.value().equals(allProperty.value())
                 && property.isImportant() == allProperty.isImportant())
                 continue;
             m_needToExpandAll = true;
@@ -87,7 +87,7 @@ StylePropertySerializer::PropertyValueForSerializer StylePropertySerializer::Sty
     }
 
     StylePropertySet::PropertyReference property = m_propertySet->propertyAt(m_allIndex);
-    return StylePropertySerializer::PropertyValueForSerializer(propertyID, property.value(), property.isImportant());
+    return StylePropertySerializer::PropertyValueForSerializer(propertyID, &property.value(), property.isImportant());
 }
 
 bool StylePropertySerializer::StylePropertySetForSerializer::shouldProcessPropertyAt(unsigned index) const

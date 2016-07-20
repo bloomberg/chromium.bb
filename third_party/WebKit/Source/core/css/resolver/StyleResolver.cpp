@@ -117,7 +117,7 @@ bool cacheCustomPropertiesForApplyAtRules(StyleResolverState& state, const Match
             StylePropertySet::PropertyReference current = properties.propertyAt(i);
             if (current.id() != CSSPropertyApplyAtRule)
                 continue;
-            AtomicString name(toCSSCustomIdentValue(current.value())->value());
+            AtomicString name(toCSSCustomIdentValue(current.value()).value());
             CSSVariableData* variableData = state.style()->variables()->getVariable(name);
             if (!variableData)
                 continue;
@@ -1395,7 +1395,7 @@ static inline bool isPropertyInWhitelist(PropertyWhitelistType propertyWhitelist
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
 template <CSSPropertyPriority priority>
-void StyleResolver::applyAllProperty(StyleResolverState& state, const CSSValue* allValue, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
+void StyleResolver::applyAllProperty(StyleResolverState& state, const CSSValue& allValue, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     // The 'all' property doesn't apply to variables:
     // https://drafts.csswg.org/css-variables/#defining-variables
@@ -1429,16 +1429,16 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, const CSSValue* 
         if (inheritedOnly && !CSSPropertyMetadata::isInheritedProperty(propertyId))
             continue;
 
-        StyleBuilder::applyProperty(propertyId, state, *allValue);
+        StyleBuilder::applyProperty(propertyId, state, allValue);
     }
 }
 
 template <CSSPropertyPriority priority>
-void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue* value, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
+void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue& value, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     if (!state.style()->variables())
         return;
-    const String& name = toCSSCustomIdentValue(value)->value();
+    const String& name = toCSSCustomIdentValue(value).value();
     const StylePropertySet* propertySet = state.customPropertySetForApplyAtRule(name);
     if (propertySet)
         applyProperties<priority>(state, propertySet, isImportant, inheritedOnly, propertyWhitelistType);
@@ -1472,14 +1472,14 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
             // If the property value is explicitly inherited, we need to apply further non-inherited properties
             // as they might override the value inherited here. For this reason we don't allow declarations with
             // explicitly inherited properties to be cached.
-            ASSERT(!current.value()->isInheritedValue());
+            DCHECK(!current.value().isInheritedValue());
             continue;
         }
 
         if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
 
-        StyleBuilder::applyProperty(current.id(), state, *current.value());
+        StyleBuilder::applyProperty(current.id(), state, current.value());
     }
 }
 

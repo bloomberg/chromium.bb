@@ -211,9 +211,9 @@ private:
     template <CSSPropertyPriority priority>
     void applyAnimatedProperties(StyleResolverState&, const ActiveInterpolationsMap&);
     template <CSSPropertyPriority priority>
-    void applyAllProperty(StyleResolverState&, const CSSValue*, bool inheritedOnly, PropertyWhitelistType);
+    void applyAllProperty(StyleResolverState&, const CSSValue&, bool inheritedOnly, PropertyWhitelistType);
     template <CSSPropertyPriority priority>
-    void applyPropertiesForApplyAtRule(StyleResolverState&, const CSSValue*, bool isImportant, bool inheritedOnly, PropertyWhitelistType);
+    void applyPropertiesForApplyAtRule(StyleResolverState&, const CSSValue&, bool isImportant, bool inheritedOnly, PropertyWhitelistType);
 
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const ComputedStyle* parentStyle, StyleResolverState&);
     bool hasAuthorBackground(const StyleResolverState&);

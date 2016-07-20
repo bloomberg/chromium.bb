@@ -63,15 +63,15 @@ public:
         bool isInherited() const { return propertyMetadata().m_inherited; }
         bool isImplicit() const { return propertyMetadata().m_implicit; }
 
-        const CSSValue* value() const { return propertyValue(); }
+        const CSSValue& value() const { return propertyValue(); }
 
         // FIXME: Remove this.
-        CSSProperty toCSSProperty() const { return CSSProperty(propertyMetadata(), *propertyValue()); }
+        CSSProperty toCSSProperty() const { return CSSProperty(propertyMetadata(), propertyValue()); }
 
         const StylePropertyMetadata& propertyMetadata() const;
 
     private:
-        const CSSValue* propertyValue() const;
+        const CSSValue& propertyValue() const;
 
         Member<const StylePropertySet> m_propertySet;
         unsigned m_index;
@@ -120,7 +120,7 @@ public:
     void showStyle();
 #endif
 
-    bool propertyMatches(CSSPropertyID, const CSSValue*) const;
+    bool propertyMatches(CSSPropertyID, const CSSValue&) const;
 
     DECLARE_TRACE();
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { }
@@ -201,6 +201,7 @@ public:
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID unresolvedProperty, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
     bool setProperty(const AtomicString& customPropertyName, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
+    // TODO(sashab): Make this take a const CSSValue&
     void setProperty(CSSPropertyID, const CSSValue*, bool important = false);
 
     // These do not. FIXME: This is too messy, we can do better.
@@ -261,11 +262,11 @@ inline const StylePropertyMetadata& StylePropertySet::PropertyReference::propert
     return toImmutableStylePropertySet(*m_propertySet).metadataArray()[m_index];
 }
 
-inline const CSSValue* StylePropertySet::PropertyReference::propertyValue() const
+inline const CSSValue& StylePropertySet::PropertyReference::propertyValue() const
 {
     if (m_propertySet->isMutable())
-        return toMutableStylePropertySet(*m_propertySet).m_propertyVector.at(m_index).value();
-    return toImmutableStylePropertySet(*m_propertySet).valueArray()[m_index];
+        return *toMutableStylePropertySet(*m_propertySet).m_propertyVector.at(m_index).value();
+    return *toImmutableStylePropertySet(*m_propertySet).valueArray()[m_index];
 }
 
 inline unsigned StylePropertySet::propertyCount() const

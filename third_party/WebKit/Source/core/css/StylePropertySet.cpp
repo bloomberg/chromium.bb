@@ -178,7 +178,7 @@ const CSSValue* StylePropertySet::getPropertyCSSValue(T property) const
     int foundPropertyIndex = findPropertyIndex(property);
     if (foundPropertyIndex == -1)
         return nullptr;
-    return propertyAt(foundPropertyIndex).value();
+    return &propertyAt(foundPropertyIndex).value();
 }
 template CORE_EXPORT const CSSValue* StylePropertySet::getPropertyCSSValue<CSSPropertyID>(CSSPropertyID) const;
 template CORE_EXPORT const CSSValue* StylePropertySet::getPropertyCSSValue<AtomicString>(AtomicString) const;
@@ -217,7 +217,7 @@ bool MutableStylePropertySet::removePropertyAtIndex(int propertyIndex, String* r
     }
 
     if (returnText)
-        *returnText = propertyAt(propertyIndex).value()->cssText();
+        *returnText = propertyAt(propertyIndex).value().cssText();
 
     // A more efficient removal strategy would involve marking entries as empty
     // and sweeping them when the vector grows too big.
@@ -397,7 +397,7 @@ bool StylePropertySet::hasFailedOrCanceledSubresources() const
 {
     unsigned size = propertyCount();
     for (unsigned i = 0; i < size; ++i) {
-        if (propertyAt(i).value()->hasFailedOrCanceledSubresources())
+        if (propertyAt(i).value().hasFailedOrCanceledSubresources())
             return true;
     }
     return false;
@@ -455,12 +455,12 @@ CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(CSSPropertyID proper
     return &m_propertyVector.at(foundPropertyIndex);
 }
 
-bool StylePropertySet::propertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
+bool StylePropertySet::propertyMatches(CSSPropertyID propertyID, const CSSValue& propertyValue) const
 {
     int foundPropertyIndex = findPropertyIndex(propertyID);
     if (foundPropertyIndex == -1)
         return false;
-    return propertyAt(foundPropertyIndex).value()->equals(*propertyValue);
+    return propertyAt(foundPropertyIndex).value().equals(propertyValue);
 }
 
 void MutableStylePropertySet::removeEquivalentProperties(const StylePropertySet* style)
@@ -483,7 +483,7 @@ void MutableStylePropertySet::removeEquivalentProperties(const CSSStyleDeclarati
     unsigned size = m_propertyVector.size();
     for (unsigned i = 0; i < size; ++i) {
         PropertyReference property = propertyAt(i);
-        if (style->cssPropertyMatches(property.id(), property.value()))
+        if (style->cssPropertyMatches(property.id(), &property.value()))
             propertiesToRemove.append(property.id());
     }
     // FIXME: This should use mass removal.

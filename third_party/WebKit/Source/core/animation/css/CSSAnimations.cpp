@@ -91,14 +91,14 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
             CSSPropertyID property = properties.propertyAt(j).id();
             specifiedPropertiesForUseCounter.add(property);
             if (property == CSSPropertyAnimationTimingFunction) {
-                const CSSValue* value = properties.propertyAt(j).value();
+                const CSSValue& value = properties.propertyAt(j).value();
                 RefPtr<TimingFunction> timingFunction;
-                if (value->isInheritedValue() && parentStyle->animations()) {
+                if (value.isInheritedValue() && parentStyle->animations()) {
                     timingFunction = parentStyle->animations()->timingFunctionList()[0];
-                } else if (value->isValueList()) {
-                    timingFunction = CSSToStyleMap::mapAnimationTimingFunction(toCSSValueList(value)->item(0));
+                } else if (value.isValueList()) {
+                    timingFunction = CSSToStyleMap::mapAnimationTimingFunction(toCSSValueList(value).item(0));
                 } else {
-                    ASSERT(value->isCSSWideKeyword());
+                    DCHECK(value.isCSSWideKeyword());
                     timingFunction = CSSTimingData::initialTimingFunction();
                 }
                 keyframe->setEasing(timingFunction.release());
