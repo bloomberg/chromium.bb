@@ -1158,7 +1158,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
 
   Visual* visual;
   int depth;
-  ui::ChooseVisualForWindow(&visual, &depth);
+  ui::ChooseVisualForWindow(true, &visual, &depth);
   if (depth == 32) {
     attribute_mask |= CWColormap;
     swa.colormap =

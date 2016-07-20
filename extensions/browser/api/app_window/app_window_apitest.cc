@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,6 +22,10 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
+#endif
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/gfx/x/x11_switches.h"
 #endif
 
 namespace extensions {
@@ -130,19 +135,29 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiSetShapeNoPerm) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        WindowsApiAlphaEnabledHasPermissions) {
-  const char* no_alpha_dir =
+  const char kNoAlphaDir[] =
       "platform_apps/windows_api_alpha_enabled/has_permissions_no_alpha";
-  const char* test_dir = no_alpha_dir;
+  const char kHasAlphaDir[] =
+      "platform_apps/windows_api_alpha_enabled/has_permissions_has_alpha";
+  ALLOW_UNUSED_LOCAL(kHasAlphaDir);
+  const char* test_dir = kNoAlphaDir;
 
 #if defined(USE_AURA) && (defined(OS_CHROMEOS) || !defined(OS_LINUX))
-  test_dir =
-      "platform_apps/windows_api_alpha_enabled/has_permissions_has_alpha";
+  test_dir = kHasAlphaDir;
+
 #if defined(OS_WIN)
   if (!ui::win::IsAeroGlassEnabled()) {
-    test_dir = no_alpha_dir;
+    test_dir = kNoAlphaDir;
   }
 #endif  // OS_WIN
 #endif  // USE_AURA && (OS_CHROMEOS || !OS_LINUX)
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWindowDepth) == "32") {
+    test_dir = kHasAlphaDir;
+  }
+#endif  // USE_X11 && !OS_CHROMEOS
 
   EXPECT_TRUE(RunPlatformAppTest(test_dir)) << message_;
 }

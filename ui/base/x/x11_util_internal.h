@@ -51,7 +51,9 @@ UI_BASE_X_EXPORT void LogErrorEventDescription(Display* dpy,
 // supports transparency. NULL parameters are allowed to install or query the
 // cached visual and depth.
 #if !defined(OS_CHROMEOS)
-UI_BASE_X_EXPORT void ChooseVisualForWindow(Visual** visual, int* depth);
+UI_BASE_X_EXPORT void ChooseVisualForWindow(bool enable_transparent_visuals,
+                                            Visual** visual,
+                                            int* depth);
 #endif
 
 }  // namespace ui

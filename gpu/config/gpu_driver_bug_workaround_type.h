@@ -67,6 +67,8 @@
          disable_timestamp_queries)                          \
   GPU_OP(DISABLE_MULTISAMPLING_COLOR_MASK_USAGE,             \
          disable_multisampling_color_mask_usage)             \
+  GPU_OP(DISABLE_TRANSPARENT_VISUALS,                        \
+         disable_transparent_visuals)                        \
   GPU_OP(DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE,              \
          disable_webgl_rgb_multisampling_usage)              \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
