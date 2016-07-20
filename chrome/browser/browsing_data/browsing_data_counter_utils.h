@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_UTILS_H_
 
 #include "base/strings/string16.h"
-#include "components/browsing_data/browsing_data_utils.h"
-#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 
 class Profile;
 

@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/browsing_data/pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 
 AutofillCounter::AutofillCounter(Profile* profile)
     : BrowsingDataCounter(browsing_data::prefs::kDeleteFormData),

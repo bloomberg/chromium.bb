@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "components/browsing_data/pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 
 namespace browsing_data {
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_PASSWORDS_COUNTER_H_
 #define CHROME_BROWSER_BROWSING_DATA_PASSWORDS_COUNTER_H_
 
-#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 

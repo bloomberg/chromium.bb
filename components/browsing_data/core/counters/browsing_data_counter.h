@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_H_
-#define COMPONENTS_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_H_
+#ifndef COMPONENTS_BROWSING_DATA_CORE_COUNTERS_BROWSING_DATA_COUNTER_H_
+#define COMPONENTS_BROWSING_DATA_CORE_COUNTERS_BROWSING_DATA_COUNTER_H_
 
 #include <stdint.h>
 #include <string>
@@ -120,4 +120,4 @@ class BrowsingDataCounter {
 
 }  // namespace browsing_data
 
-#endif  // COMPONENTS_BROWSING_DATA_COUNTERS_BROWSING_DATA_COUNTER_H_
+#endif  // COMPONENTS_BROWSING_DATA_CORE_COUNTERS_BROWSING_DATA_COUNTER_H_

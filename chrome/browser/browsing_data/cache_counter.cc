@@ -4,8 +4,8 @@
 
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browsing_data/pref_names.h"
-#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "net/base/net_errors.h"
 
 CacheCounter::CacheCounter(Profile* profile)

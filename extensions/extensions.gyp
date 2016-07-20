@@ -114,7 +114,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../components/components.gyp:browsing_data',
+        '../components/components.gyp:browsing_data_content',
         '../components/components.gyp:cast_certificate',
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:guest_view_browser',

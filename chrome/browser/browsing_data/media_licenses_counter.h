@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "url/gurl.h"
 
 class Profile;

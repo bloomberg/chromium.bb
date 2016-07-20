@@ -208,7 +208,7 @@ android_library("chrome_java") {
     srcjar_deps += [
       "//chrome:page_info_connection_type_javagen",
       "//chrome:website_settings_action_javagen",
-      "//components/browsing_data:browsing_data_utils_java",
+      "//components/browsing_data/core:browsing_data_utils_java",
       "//components/infobars/core:infobar_enums_java",
       "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
       "//components/ntp_tiles:ntp_tiles_enums_java",

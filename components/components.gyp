@@ -16,6 +16,7 @@
     'base32.gypi',
     'bookmarks.gypi',
     'browser_sync.gypi',
+    'browsing_data.gypi',
     'browsing_data_ui.gypi',
     'bubble.gypi',
     'captive_portal.gypi',
@@ -115,7 +116,6 @@
     ['OS != "ios"', {
       'includes': [
         'app_modal.gypi',
-        'browsing_data.gypi',
         'cdm.gypi',
         'certificate_transparency.gypi',
         'contextual_search.gypi',

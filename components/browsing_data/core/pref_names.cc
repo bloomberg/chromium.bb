@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 
 namespace browsing_data {
 

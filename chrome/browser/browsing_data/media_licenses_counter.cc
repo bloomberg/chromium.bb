@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browsing_data/pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/fileapi/file_system_context.h"

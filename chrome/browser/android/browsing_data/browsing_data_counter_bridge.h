@@ -7,7 +7,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 
 class Profile;
 

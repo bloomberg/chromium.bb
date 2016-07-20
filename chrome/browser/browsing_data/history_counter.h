@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
-#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/sync_driver/sync_service_observer.h"

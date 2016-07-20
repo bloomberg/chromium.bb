@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSING_DATA_BROWSING_DATA_UTILS_H_
-#define COMPONENTS_BROWSING_DATA_BROWSING_DATA_UTILS_H_
+#ifndef COMPONENTS_BROWSING_DATA_CORE_BROWSING_DATA_UTILS_H_
+#define COMPONENTS_BROWSING_DATA_CORE_BROWSING_DATA_UTILS_H_
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -44,4 +44,4 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
 }  // namespace browsing_data
 
-#endif  // COMPONENTS_BROWSING_DATA_BROWSING_DATA_UTILS_H_
+#endif  // COMPONENTS_BROWSING_DATA_CORE_BROWSING_DATA_UTILS_H_

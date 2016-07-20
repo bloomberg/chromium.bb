@@ -13,8 +13,8 @@
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browsing_data/counters/browsing_data_counter.h"
-#include "components/browsing_data/pref_names.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/pref_names.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"

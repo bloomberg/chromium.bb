@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/browsing_data/browsing_data_utils.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "jni/BrowsingDataCounterBridge_jni.h"
 
 BrowsingDataCounterBridge::BrowsingDataCounterBridge(

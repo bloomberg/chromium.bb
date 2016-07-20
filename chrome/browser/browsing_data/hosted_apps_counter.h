@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 
 class Profile;
 

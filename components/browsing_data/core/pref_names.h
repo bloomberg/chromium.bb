@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSING_DATA_PREF_NAMES_H_
-#define COMPONENTS_BROWSING_DATA_PREF_NAMES_H_
+#ifndef COMPONENTS_BROWSING_DATA_CORE_PREF_NAMES_H_
+#define COMPONENTS_BROWSING_DATA_CORE_PREF_NAMES_H_
 
 namespace browsing_data {
 
@@ -24,4 +24,4 @@ extern const char kDeleteMediaLicenses[];
 
 }  // namespace browsing_data
 
-#endif  // COMPONENTS_BROWSING_DATA_PREF_NAMES_H_
+#endif  // COMPONENTS_BROWSING_DATA_CORE_PREF_NAMES_H_
