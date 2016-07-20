@@ -340,7 +340,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
-                requestPayerPhone || requestPayerEmail, mMerchantName, mOrigin);
+                requestPayerPhone || requestPayerEmail, mMerchantSupportsAutofillPaymentInstruments,
+                mMerchantName, mOrigin);
 
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;

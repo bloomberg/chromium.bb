@@ -266,7 +266,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private boolean mIsEditingPaymentItem;
     private boolean mIsClosing;
 
-    private ShoppingCart mShoppingCart;
     private SectionInformation mPaymentMethodSectionInformation;
     private SectionInformation mShippingAddressSectionInformation;
     private SectionInformation mShippingOptionsSectionInformation;
@@ -285,6 +284,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param requestShipping Whether the UI should show the shipping address and option selection.
      * @param requestContact  Whether the UI should show the email address and phone number
      *                        selection.
+     * @param canAddCards     Whether the UI should show the [+ADD CARD] button. This can be false,
+     *                        for example, when the merchant does not accept credit cards, so
+     *                        there's no point in adding cards within PaymentRequest UI.
      * @param title           The title to show at the top of the UI. This can be, for example, the
      *                        &lt;title&gt; of the merchant website. If the string is too long for
      *                        UI, it elides at the end.
@@ -294,11 +296,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * https://www.chromium.org/Home/chromium-security/enamel#TOC-Eliding-Origin-Names-And-Hostnames
      */
     public PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            boolean requestContactDetails, String title, String origin) {
+            boolean requestContact, boolean canAddCards, String title, String origin) {
         mContext = activity;
         mClient = client;
         mRequestShipping = requestShipping;
-        mRequestContactDetails = requestContactDetails;
+        mRequestContactDetails = requestContact;
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
@@ -332,7 +334,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
-        prepareRequestView(activity, title, origin);
+        prepareRequestView(activity, title, origin, canAddCards);
 
         // To handle the specced animations, the dialog is entirely contained within a translucent
         // FrameLayout.  This could eventually be converted to a real BottomSheetDialog, but that
@@ -416,11 +418,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * TODO(dfalcantara): Ideally, everything related to the request and its views would just be put
      *                    into its own class but that'll require yanking out a lot of this class.
      *
-     * @param activity Activity displaying the UI.
-     * @param title    Title of the page.
-     * @param origin   Host of the page.
+     * @param activity    Activity displaying the UI.
+     * @param title       Title of the page.
+     * @param origin      Host of the page.
+     * @param canAddCards Whether new cards can be added.
      */
-    private void prepareRequestView(Activity activity, String title, String origin) {
+    private void prepareRequestView(
+            Activity activity, String title, String origin, boolean canAddCards) {
         mSpinnyLayout = mRequestView.findViewById(R.id.payment_request_spinny);
 
         // Indicate that we're preparing the dialog for display.
@@ -445,7 +449,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mButtonBar.addView(mEditButton);
 
         // Create all the possible sections.
-        mSectionSeparators = new ArrayList<SectionSeparator>();
+        mSectionSeparators = new ArrayList<>();
         mPaymentContainer = (ScrollView) mRequestView.findViewById(R.id.option_container);
         mPaymentContainerLayout =
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
@@ -465,6 +469,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentMethodSection = new OptionSection(activity,
                 activity.getString(R.string.payments_method_of_payment_label),
                 activity.getString(R.string.payments_select_method_of_payment_prompt), this);
+        mPaymentMethodSection.setCanAddItems(canAddCards);
 
         // Add the necessary sections to the layout.
         mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
@@ -555,8 +560,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param cart The shopping cart, including the line items and the total.
      */
     public void updateOrderSummarySection(ShoppingCart cart) {
-        mShoppingCart = cart;
-
         if (cart == null || cart.getTotal() == null) {
             mOrderSummarySection.setVisibility(View.GONE);
         } else {

@@ -71,7 +71,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     public static final String TAG = "PaymentRequestUI";
 
     /** Handles clicks on the widgets and providing data to the PaymentsRequestSection. */
-    public static interface SectionDelegate extends View.OnClickListener {
+    public interface SectionDelegate extends View.OnClickListener {
         /**
          * Called when the user selects a radio button option from an {@link OptionSection}.
          *
@@ -249,7 +249,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
      *
      * @param sectionName Title to display for the section.
      */
-    private final LinearLayout prepareMainSection(String sectionName) {
+    private LinearLayout prepareMainSection(String sectionName) {
         // The main section is a vertical linear layout that subclasses can append to.
         LinearLayout mainSectionLayout = new LinearLayout(getContext());
         mainSectionLayout.setOrientation(VERTICAL);
@@ -530,6 +530,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private static final int INVALID_OPTION_INDEX = -1;
 
         private final List<TextView> mLabelsForTest = new ArrayList<>();
+        private boolean mCanAddItems = true;
 
         /**
          * Displays a row representing either a selectable option or some flavor text.
@@ -722,7 +723,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private final int mVerticalMargin;
 
         /** All the possible PaymentOptions in Layout form, then one row for adding new options. */
-        private final ArrayList<OptionRow> mOptionRows = new ArrayList<OptionRow>();
+        private final ArrayList<OptionRow> mOptionRows = new ArrayList<>();
 
         /** Width that the icon takes. */
         private final int mIconMaxWidth;
@@ -794,6 +795,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
             mOptionLayout.setColumnCount(3);
             mainSectionLayout.addView(mOptionLayout, new LinearLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
+
+        /** @param canAddItems If false, this section will not show [+ ADD THING] button. */
+        public void setCanAddItems(boolean canAddItems) {
+            mCanAddItems = canAddItems;
         }
 
         /** Updates the View to account for the new {@link SectionInformation} being passed in. */
@@ -908,7 +914,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
             }
 
             // If the user is allowed to add new options, show the button for it.
-            if (information.getAddStringId() != 0) {
+            if (information.getAddStringId() != 0 && mCanAddItems) {
                 OptionRow addRow = new OptionRow(mOptionLayout, mOptionLayout.getChildCount(),
                         OptionRow.OPTION_ROW_TYPE_ADD, null, false);
                 addRow.setLabel(information.getAddStringId());
