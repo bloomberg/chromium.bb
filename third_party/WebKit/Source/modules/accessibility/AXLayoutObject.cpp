@@ -1403,9 +1403,11 @@ const AtomicString& AXLayoutObject::liveRegionRelevant() const
 
 bool AXLayoutObject::liveRegionAtomic() const
 {
-    // ARIA role status should have implicit aria-atomic value of true.
-    if (getAttribute(aria_atomicAttr).isEmpty() && roleValue() == StatusRole)
+    // ARIA roles "alert" and "status" should have an implicit aria-atomic value of true.
+    if (getAttribute(aria_atomicAttr).isEmpty()
+        && (roleValue() == AlertRole || roleValue() == StatusRole)) {
         return true;
+    }
     return elementAttributeValue(aria_atomicAttr);
 }
 
