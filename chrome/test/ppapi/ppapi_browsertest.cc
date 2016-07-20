@@ -959,23 +959,24 @@ TEST_PPAPI_NACL(AudioEncoder)
 // http://crbug.com/396464
 #define MAYBE_Audio DISABLED_Audio
 #else
-#define MAYBE_Audio Audio
+// Tests are flaky: http://crbug.com/629680
+#define MAYBE_Audio DISABLED_Audio
 #endif
 // PPB_Audio is not supported in-process.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_Audio) {
   RUN_AUDIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(Audio)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(MAYBE_Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(Audio)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(MAYBE_Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(Audio)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(MAYBE_Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(Audio)) {
+                       MAYBE_PNACL_NONSFI(MAYBE_Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
 
@@ -985,19 +986,23 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
       LIST_TEST(Audio_AudioThreadCreatorIsCalled) \
   )
 
+// Tests are flaky: http://crbug.com/629680
+#define MAYBE_AudioThreadCreator DISABLED_AudioThreadCreator
+
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest,
-                       MAYBE_PPAPI_NACL(AudioThreadCreator)) {
+                       MAYBE_PPAPI_NACL(MAYBE_AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioThreadCreator)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest,
+                       MAYBE_GLIBC(MAYBE_AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest,
-                       MAYBE_PPAPI_NACL(AudioThreadCreator)) {
+                       MAYBE_PPAPI_NACL(MAYBE_AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(AudioThreadCreator)) {
+                       MAYBE_PNACL_NONSFI(MAYBE_AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 
