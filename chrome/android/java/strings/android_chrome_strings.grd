@@ -189,6 +189,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_HELP" desc="Generic label for a button that displays help for the current screen.">
         Help
       </message>
+      <message name="IDS_TODAY" desc="Generic Label saying the date is today.">
+        Today
+      </message>
+      <message name="IDS_YESTERDAY" desc="Generic Label saying the date is yesterday.">
+        Yesterday
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">

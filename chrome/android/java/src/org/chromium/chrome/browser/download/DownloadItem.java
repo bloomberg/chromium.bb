@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.download;
 
+import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+
 /**
  * A generic class representing a download item. The item can be either downloaded through the
  * Android DownloadManager, or through Chrome's network stack
  */
-public class DownloadItem {
+public class DownloadItem implements TimedItem {
     static final long INVALID_DOWNLOAD_ID = -1L;
     private boolean mUseAndroidDownloadManager;
     private DownloadInfo mDownloadInfo;
@@ -83,6 +85,7 @@ public class DownloadItem {
      *
      * @return Download start time from System.currentTimeMillis().
      */
+    @Override
     public long getStartTime() {
         return mStartTime;
     }

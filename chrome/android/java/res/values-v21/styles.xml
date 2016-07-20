@@ -4,6 +4,9 @@
      found in the LICENSE file. -->
 
 <resources>
+    <style name="RobotoMediumStyle">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
     <!-- Preferences -->
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>

@@ -553,6 +553,11 @@
         <item name="android:paddingEnd">16dp</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
     </style>
+    <style name="RobotoMediumStyle">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <!-- New tab page RecyclerView overscroll color -->
     <style name="NewTabPageRecyclerView">
         <item name="android:colorEdgeEffect">@color/google_grey_300</item>
