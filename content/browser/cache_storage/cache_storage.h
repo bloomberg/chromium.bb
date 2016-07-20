@@ -199,25 +199,6 @@ class CONTENT_EXPORT CacheStorage {
 
   void SizeImpl(const SizeCallback& callback);
 
-  void PendingClosure(const base::Closure& callback);
-  void PendingBoolAndErrorCallback(const BoolAndErrorCallback& callback,
-                                   bool found,
-                                   CacheStorageError error);
-  void PendingCacheAndErrorCallback(
-      const CacheAndErrorCallback& callback,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      CacheStorageError error);
-  void PendingStringsAndErrorCallback(const StringsAndErrorCallback& callback,
-                                      const StringVector& strings,
-                                      CacheStorageError error);
-  void PendingResponseCallback(
-      const CacheStorageCache::ResponseCallback& callback,
-      CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
-
-  void PendingSizeCallback(const SizeCallback& callback, int64_t size);
-
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;
   bool initializing_;
