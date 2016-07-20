@@ -131,6 +131,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ImportantSitesInCBD": [
+        {
+            "enable_features": [
+                "ImportantSitesInCBD"
+            ],
+            "group_name": "DialogEnabled"
+        }
+    ],
     "InvalidationsGCMUpstream": [
         {
             "group_name": "Enabled"
