@@ -1496,7 +1496,8 @@ EGL_FUNCTIONS = [
       'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '
       'EGLuint64CHROMIUM* sbc', },
 { 'return_type': 'EGLBoolean',
-  'names': ['eglImageFlushExternalEXT'],
+  'versions': [{ 'name': 'eglImageFlushExternalEXT',
+                 'extensions': ['EGL_EXT_image_flush_external'] }],
   'arguments':
       'EGLDisplay dpy, EGLImageKHR image, const EGLAttrib* attrib_list' },
 { 'return_type': 'EGLBoolean',
@@ -2219,7 +2220,7 @@ void DriverGL::InitializeDynamicBindings(
 """)
   elif set_name == 'egl':
     file.write("""\
-void DriverEGL::InitializeExtensionBindings() {
+void DriverEGL::InitializeClientExtensionBindings() {
   std::string client_extensions(GetClientExtensions());
   client_extensions += " ";
   ALLOW_UNUSED_LOCAL(client_extensions);
@@ -2254,6 +2255,9 @@ void Driver%s::InitializeExtensionBindings() {
 
   if set_name == 'egl':
     file.write("""\
+}
+
+void DriverEGL::InitializeExtensionBindings() {
   std::string extensions(GetPlatformExtensions());
   extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);

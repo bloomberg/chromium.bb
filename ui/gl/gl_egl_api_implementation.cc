@@ -34,7 +34,6 @@ void InitializeStaticGLBindingsEGL() {
   }
   g_real_egl->Initialize(&g_driver_egl);
   g_current_egl_context = g_real_egl;
-  g_driver_egl.InitializeExtensionBindings();
 
   // These two functions take single precision float rather than double
   // precision float parameters in GLES.

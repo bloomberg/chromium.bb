@@ -143,9 +143,6 @@
             'gl_image_egl.h',
             'gl_surface_egl.cc',
             'gl_surface_egl.h',
-            'gl_surface_egl_android.cc',
-            'gl_surface_egl_ozone.cc',
-            'gl_surface_egl_win.cc',
           ],
           'direct_dependent_settings': {
             'defines': [

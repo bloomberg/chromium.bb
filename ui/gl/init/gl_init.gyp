@@ -49,6 +49,28 @@
             ],
           },
         }],
+        ['OS=="win"', {
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'dwmapi.dll',
+              ],
+              'AdditionalDependencies': [
+                'dwmapi.lib',
+              ],
+            },
+          },
+          'link_settings': {
+            'libraries': [
+              '-ldwmapi.lib',
+            ],
+          },
+        }],
+        ['use_x11 == 1', {
+          'dependencies': [
+            '../../gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
         ['use_ozone==1', {
           'dependencies': [
             '../../ozone/ozone.gyp:ozone',

@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -25,9 +26,6 @@
 #include "ui/gl/gl_surface_overlay.h"
 
 namespace gl {
-
-// Get default EGL display for GLSurfaceEGL (differs by platform).
-EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay();
 
 // If adding a new type, also add it to EGLDisplayType in
 // tools/metrics/histograms/histograms.xml. Don't remove or reorder entries.
@@ -57,9 +55,9 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   EGLConfig GetConfig() override;
   GLSurface::Format GetFormat() override;
 
-  static bool InitializeOneOff();
+  static bool InitializeOneOff(EGLNativeDisplayType native_display);
   static EGLDisplay GetHardwareDisplay();
-  static EGLDisplay InitializeDisplay();
+  static EGLDisplay InitializeDisplay(EGLNativeDisplayType native_display);
   static EGLNativeDisplayType GetNativeDisplay();
 
   // These aren't particularly tied to surfaces, but since we already

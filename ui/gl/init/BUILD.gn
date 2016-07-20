@@ -39,6 +39,9 @@ component("init") {
       "gl_factory_win.cc",
       "gl_initializer_win.cc",
     ]
+
+    libs = [ "dwmapi.lib" ]
+    ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
   } else if (is_mac) {
     sources += [
       "gl_factory_mac.cc",
@@ -51,6 +54,8 @@ component("init") {
       "gl_factory_x11.cc",
       "gl_initializer_x11.cc",
     ]
+
+    deps += [ "//ui/gfx/x" ]
   } else if (use_ozone) {
     sources += [
       "gl_factory_ozone.cc",

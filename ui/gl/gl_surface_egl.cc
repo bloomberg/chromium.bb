@@ -116,10 +116,10 @@ const unsigned int MULTISWAP_FRAME_VSYNC_THRESHOLD = 60;
 
 namespace {
 
-EGLDisplay g_display;
-EGLNativeDisplayType g_native_display;
+EGLDisplay g_display = EGL_NO_DISPLAY;
+EGLNativeDisplayType g_native_display = EGL_DEFAULT_DISPLAY;
 
-const char* g_egl_extensions = NULL;
+const char* g_egl_extensions = nullptr;
 bool g_egl_create_context_robustness_supported = false;
 bool g_egl_sync_control_supported = false;
 bool g_egl_window_fixed_size_supported = false;
@@ -447,14 +447,36 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
 
 GLSurfaceEGL::GLSurfaceEGL() {}
 
-bool GLSurfaceEGL::InitializeOneOff() {
+GLSurface::Format GLSurfaceEGL::GetFormat() {
+  return format_;
+}
+
+EGLDisplay GLSurfaceEGL::GetDisplay() {
+  return g_display;
+}
+
+EGLConfig GLSurfaceEGL::GetConfig() {
+  if (!config_) {
+    config_ = ChooseConfig(format_);
+  }
+  return config_;
+}
+
+// static
+bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
   static bool initialized = false;
   if (initialized)
     return true;
 
-  InitializeDisplay();
+  // Must be called before InitializeDisplay().
+  g_driver_egl.InitializeClientExtensionBindings();
+
+  InitializeDisplay(native_display);
   if (g_display == EGL_NO_DISPLAY)
     return false;
+
+  // Must be called after InitializeDisplay().
+  g_driver_egl.InitializeExtensionBindings();
 
   g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
   g_egl_create_context_robustness_supported =
@@ -508,45 +530,37 @@ bool GLSurfaceEGL::InitializeOneOff() {
   return true;
 }
 
-GLSurface::Format GLSurfaceEGL::GetFormat() {
-  return format_;
-}
-
-EGLDisplay GLSurfaceEGL::GetDisplay() {
-  return g_display;
-}
-
-EGLConfig GLSurfaceEGL::GetConfig() {
-  if (!config_) {
-    config_ = ChooseConfig(format_);
-  }
-  return config_;
-}
-
+// static
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
   return g_display;
 }
 
+// static
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
   return g_native_display;
 }
 
+// static
 const char* GLSurfaceEGL::GetEGLExtensions() {
   return g_egl_extensions;
 }
 
+// static
 bool GLSurfaceEGL::HasEGLExtension(const char* name) {
   return ExtensionsContain(GetEGLExtensions(), name);
 }
 
+// static
 bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
   return g_egl_create_context_robustness_supported;
 }
 
+// static
 bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
   return g_egl_surfaceless_context_supported;
 }
 
+// static
 bool GLSurfaceEGL::IsDirectCompositionSupported() {
   return g_use_direct_composition;
 }
@@ -556,12 +570,13 @@ GLSurfaceEGL::~GLSurfaceEGL() {}
 // InitializeDisplay is necessary because the static binding code
 // needs a full Display init before it can query the Display extensions.
 // static
-EGLDisplay GLSurfaceEGL::InitializeDisplay() {
+EGLDisplay GLSurfaceEGL::InitializeDisplay(
+    EGLNativeDisplayType native_display) {
   if (g_display != EGL_NO_DISPLAY) {
     return g_display;
   }
 
-  g_native_display = GetPlatformDefaultEGLNativeDisplay();
+  g_native_display = native_display;
 
   // If EGL_EXT_client_extensions not supported this call to eglQueryString
   // will return NULL.

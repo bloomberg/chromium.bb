@@ -20,10 +20,12 @@ namespace init {
 
 namespace {
 
+ui::SurfaceFactoryOzone* GetSurfaceFactory() {
+  return ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+}
+
 bool InitializeStaticEGLInternal() {
-  auto surface_factory =
-      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-  if (!surface_factory->LoadEGLGLES2Bindings(
+  if (!GetSurfaceFactory()->LoadEGLGLES2Bindings(
           base::Bind(&AddGLNativeLibrary),
           base::Bind(&SetGLGetProcAddressProc))) {
     return false;
@@ -41,7 +43,8 @@ bool InitializeStaticEGLInternal() {
 bool InitializeGLOneOffPlatform() {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
+      if (!GLSurfaceEGL::InitializeOneOff(
+              GetSurfaceFactory()->GetNativeDisplay())) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }

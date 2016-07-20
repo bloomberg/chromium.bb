@@ -58,7 +58,7 @@ bool InitializeStaticEGLInternal() {
 bool InitializeGLOneOffPlatform() {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
+      if (!GLSurfaceEGL::InitializeOneOff(EGL_DEFAULT_DISPLAY)) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }

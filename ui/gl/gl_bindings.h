@@ -447,6 +447,7 @@ struct GL_EXPORT DriverWGL {
 #if defined(USE_EGL)
 struct GL_EXPORT DriverEGL {
   void InitializeStaticBindings();
+  void InitializeClientExtensionBindings();
   void InitializeExtensionBindings();
   void InitializeDebugBindings();
   void ClearBindings();

@@ -4,6 +4,8 @@
 
 #include "ui/gl/init/gl_initializer.h"
 
+#include <dwmapi.h>
+
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -263,7 +265,7 @@ bool InitializeGLOneOffPlatform() {
       }
       break;
     case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
+      if (!GLSurfaceEGL::InitializeOneOff(GetDC(nullptr))) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }

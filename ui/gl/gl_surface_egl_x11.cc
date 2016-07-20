@@ -5,7 +5,6 @@
 #include "ui/gl/gl_surface_egl_x11.h"
 
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/egl_util.h"
 
 extern "C" {
@@ -176,10 +175,6 @@ uint32_t NativeViewGLSurfaceEGLX11::DispatchEvent(const PlatformEvent& event) {
 
 NativeViewGLSurfaceEGLX11::~NativeViewGLSurfaceEGLX11() {
   Destroy();
-}
-
-EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  return gfx::GetXDisplay();
 }
 
 }  // namespace gl
