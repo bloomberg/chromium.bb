@@ -11,6 +11,10 @@
 <body style="width: 4000px; height:10000px;background-image:url('resources/grid.png')" onload="runTest();">
 <script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
+// Under-invalidation checking is too slow for this test.
+if (window.internals)
+    internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = false;
+
 function runTest() {
     if (window.testRunner)
         testRunner.waitUntilDone();

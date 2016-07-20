@@ -1350,8 +1350,6 @@ crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failu
 # crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
 
-crbug.com/625020 [ Debug ] compositing/repaint/page-scale-repaint.html [ Timeout ]
-
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
