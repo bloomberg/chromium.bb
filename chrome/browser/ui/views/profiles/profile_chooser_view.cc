@@ -184,7 +184,9 @@ class BackgroundColorHoverButton : public views::LabelButton {
   BackgroundColorHoverButton(views::ButtonListener* listener,
                              const base::string16& text)
       : views::LabelButton(listener, text) {
-    SetImageLabelSpacing(views::kItemLabelSpacing);
+    SetImageLabelSpacing(switches::IsMaterialDesignUserMenu()
+                             ? (kMaterialMenuEdgeMargin - 2)
+                             : views::kItemLabelSpacing);
     const int button_margin = switches::IsMaterialDesignUserMenu()
                                   ? kMaterialMenuEdgeMargin
                                   : views::kButtonHEdgeMarginNew;
@@ -1699,6 +1701,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   views::GridLayout* layout =
       CreateSingleColumnLayout(view, GetFixedMenuWidth());
 
+  const bool is_guest = browser_->profile()->IsGuestSession();
   const int kIconSize = switches::IsMaterialDesignUserMenu() ? 20 : 16;
   if (switches::IsMaterialDesignUserMenu()) {
     // Add the user switching buttons
@@ -1713,6 +1716,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
         views::LabelButton* button = new BackgroundColorHoverButton(
             this, profiles::GetProfileSwitcherTextForItem(item),
             *image.ToImageSkia());
+        button->SetImageLabelSpacing(kMaterialMenuEdgeMargin);
         open_other_profile_indexes_map_[button] = i;
 
         layout->StartRow(1, 0);
@@ -1721,7 +1725,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     }
 
     // Add the "Guest" button for browsing as guest
-    if (!browser_->profile()->IsGuestSession()) {
+    if (!is_guest) {
       PrefService* service = g_browser_process->local_state();
       DCHECK(service);
       if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
@@ -1735,14 +1739,19 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     }
   }
 
-  base::string16 text = browser_->profile()->IsGuestSession() ?
-      l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST) :
-      l10n_util::GetStringUTF16(IDS_PROFILES_SWITCH_USERS_BUTTON);
-  gfx::VectorIconId settings_icon = gfx::VectorIconId::ACCOUNT_BOX;
-  if (!browser_->profile()->IsGuestSession()
-      && switches::IsMaterialDesignUserMenu()) {
-    text = l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON);
-    settings_icon = gfx::VectorIconId::SETTINGS;
+  base::string16 text;
+  gfx::VectorIconId settings_icon;
+  if (switches::IsMaterialDesignUserMenu()) {
+    text = is_guest
+               ? l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST)
+               : l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON);
+    settings_icon =
+        is_guest ? gfx::VectorIconId::CLOSE_ALL : gfx::VectorIconId::SETTINGS;
+  } else {
+    text = is_guest
+               ? l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST)
+               : l10n_util::GetStringUTF16(IDS_PROFILES_SWITCH_USERS_BUTTON);
+    settings_icon = gfx::VectorIconId::ACCOUNT_BOX;
   }
   users_button_ = new BackgroundColorHoverButton(
       this, text, gfx::CreateVectorIcon(settings_icon, kIconSize,
@@ -1776,8 +1785,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
                               gfx::kChromeIconGrey));
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
-  } else if (switches::IsMaterialDesignUserMenu() &&
-             !browser_->profile()->IsGuestSession()) {
+  } else if (switches::IsMaterialDesignUserMenu() && !is_guest) {
     int num_browsers = 0;
     for (auto* browser : *BrowserList::GetInstance()) {
       if (browser->profile()->GetOriginalProfile() ==
