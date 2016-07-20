@@ -17,13 +17,6 @@
 
 namespace blink {
 
-static PaintChunker::ItemBehavior behaviorOfItemType(DisplayItem::Type type)
-{
-    if (DisplayItem::isForeignLayerType(type))
-        return PaintChunker::RequiresSeparateChunk;
-    return PaintChunker::DefaultBehavior;
-}
-
 const PaintArtifact& PaintController::paintArtifact() const
 {
     DCHECK(m_newDisplayItemList.isEmpty());
@@ -165,7 +158,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     DCHECK(!m_constructionDisabled);
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    if (!skippingCache()) {
+    if (!isSkippingCache()) {
         if (displayItem.isCacheable()) {
             // Mark the client shouldKeepAlive under this PaintController.
             // The status will end after the new display items are committed.
@@ -196,7 +189,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     }
 #endif
 
-    if (skippingCache())
+    if (isSkippingCache())
         displayItem.setSkippedCache();
 
 #if DCHECK_IS_ON()
@@ -216,12 +209,12 @@ void PaintController::processNewItem(DisplayItem& displayItem)
 #endif // DCHECK_IS_ON()
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        m_newPaintChunks.incrementDisplayItemIndex(behaviorOfItemType(displayItem.getType()));
+        m_newPaintChunks.incrementDisplayItemIndex(displayItem);
 }
 
-void PaintController::updateCurrentPaintChunkProperties(const PaintChunkProperties& newProperties)
+void PaintController::updateCurrentPaintChunkProperties(const PaintChunk::Id* id, const PaintChunkProperties& newProperties)
 {
-    m_newPaintChunks.updateCurrentPaintChunkProperties(newProperties);
+    m_newPaintChunks.updateCurrentPaintChunkProperties(id, newProperties);
 }
 
 const PaintChunkProperties& PaintController::currentPaintChunkProperties() const
@@ -242,7 +235,7 @@ bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     CHECK(client.isAlive());
 #endif
-    if (skippingCache())
+    if (isSkippingCache())
         return false;
     return client.displayItemsAreCached(m_currentCacheGeneration);
 }
@@ -410,7 +403,7 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
     m_numCachedNewItems = 0;
 
     // These data structures are used during painting only.
-    DCHECK(!skippingCache());
+    DCHECK(!isSkippingCache());
 #if DCHECK_IS_ON()
     m_newDisplayItemIndicesByClient.clear();
 #endif

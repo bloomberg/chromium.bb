@@ -6,8 +6,10 @@
 #define PaintChunk_h
 
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "wtf/Allocator.h"
+#include "wtf/Optional.h"
 #include <iosfwd>
 
 namespace blink {
@@ -21,13 +23,35 @@ namespace blink {
 struct PaintChunk {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     PaintChunk() : beginIndex(0), endIndex(0), knownToBeOpaque(false) { }
-    PaintChunk(unsigned begin, unsigned end, const PaintChunkProperties& props)
-        : beginIndex(begin), endIndex(end), properties(props), knownToBeOpaque(false) { }
+    PaintChunk(unsigned begin, unsigned end, const DisplayItem::Id* chunkId, const PaintChunkProperties& props)
+        : beginIndex(begin), endIndex(end), properties(props), knownToBeOpaque(false)
+    {
+        if (chunkId)
+            id.emplace(*chunkId);
+    }
 
     unsigned size() const
     {
         ASSERT(endIndex >= beginIndex);
         return endIndex - beginIndex;
+    }
+
+    // Check if a new PaintChunk (this) created in the latest paint matches an old
+    // PaintChunk created in the previous paint.
+    bool matches(const PaintChunk& old) const
+    {
+        // A PaintChunk without an id doesn't match any other PaintChunks.
+        if (!id || !old.id)
+            return false;
+        if (*id != *old.id)
+            return false;
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        CHECK(id->client.isAlive());
+#endif
+        // A chunk whose client is just created should not match any cached chunk,
+        // even if it's id equals the old chunk's id (which may happen if this chunk's
+        // client is just created at the same address of the old chunk's deleted client).
+        return !id->client.isJustCreated();
     }
 
     // Index of the first drawing in this chunk.
@@ -36,6 +60,15 @@ struct PaintChunk {
     // Index of the first drawing not in this chunk, so that there are
     // |endIndex - beginIndex| drawings in the chunk.
     unsigned endIndex;
+
+    // Identifier of this chunk. If it has a value, it should be unique.
+    // It's used to match a new chunk to a cached old chunk to track changes of chunk
+    // contents, so the id should be stable across document cycles.
+    // If the contents of the chunk can't be cached (e.g. it's created when PaintController
+    // is skipping cache, normally because display items can't be uniquely identified),
+    // id is nullopt so that the chunk won't match any other chunk.
+    using Id = DisplayItem::Id;
+    Optional<Id> id;
 
     // The paint properties which apply to this chunk.
     PaintChunkProperties properties;
@@ -51,6 +84,7 @@ inline bool operator==(const PaintChunk& a, const PaintChunk& b)
 {
     return a.beginIndex == b.beginIndex
         && a.endIndex == b.endIndex
+        && a.id == b.id
         && a.properties == b.properties
         && a.bounds == b.bounds
         && a.knownToBeOpaque == b.knownToBeOpaque;

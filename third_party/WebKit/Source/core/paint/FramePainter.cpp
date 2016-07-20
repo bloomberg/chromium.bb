@@ -54,7 +54,7 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
                     properties.transform = transform;
                 if (clip)
                     properties.clip = clip;
-                scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
+                scopedPaintChunkProperties.emplace(context.getPaintController(), *frameView().layoutView(), properties);
             }
         }
 
@@ -78,7 +78,7 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
             if (TransformPaintPropertyNode* transform = m_frameView->preTranslation()) {
                 PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
                 properties.transform = transform;
-                scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
+                scopedPaintChunkProperties.emplace(context.getPaintController(), *frameView().layoutView(), properties);
             }
         }
 
