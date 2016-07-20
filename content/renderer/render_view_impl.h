@@ -297,7 +297,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // TODO(lfg): Remove once WebViewClient no longer inherits from
   // WebWidgetClient.
-  bool allowsBrokenNullLayerTreeView() const override;
   void closeWidgetSoon() override;
   void convertViewportToWindow(blink::WebRect* rect) override;
   void convertWindowToViewport(blink::WebFloatRect* rect) override;
@@ -322,6 +321,7 @@ class CONTENT_EXPORT RenderViewImpl
                                   bool pageChanged) override;
   blink::WebRect windowRect() override;
   blink::WebRect windowResizerRect() override;
+  blink::WebWidgetClient* widgetClient() override;
 
   // blink::WebViewClient implementation --------------------------------------
 

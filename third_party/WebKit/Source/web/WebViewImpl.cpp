@@ -4358,7 +4358,7 @@ void WebViewImpl::initializeLayerTreeView()
 
     // FIXME: only unittests, click to play, Android printing, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
-    DCHECK(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
+    DCHECK(m_layerTreeView || !m_client || m_client->widgetClient()->allowsBrokenNullLayerTreeView());
 
     if (Platform::current()->isThreadedAnimationEnabled() && m_layerTreeView) {
         m_linkHighlightsTimeline = CompositorAnimationTimeline::create();

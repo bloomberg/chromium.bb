@@ -2001,10 +2001,6 @@ void RenderViewImpl::initializeLayerTreeView() {
   }
 }
 
-bool RenderViewImpl::allowsBrokenNullLayerTreeView() const {
-  return RenderWidget::allowsBrokenNullLayerTreeView();
-}
-
 void RenderViewImpl::closeWidgetSoon() {
   RenderWidget::closeWidgetSoon();
 }
@@ -2093,6 +2089,10 @@ blink::WebRect RenderViewImpl::windowRect() {
 
 blink::WebRect RenderViewImpl::windowResizerRect() {
   return RenderWidget::windowResizerRect();
+}
+
+blink::WebWidgetClient* RenderViewImpl::widgetClient() {
+  return static_cast<RenderWidget*>(this);
 }
 
 // blink::WebFrameClient -----------------------------------------------------

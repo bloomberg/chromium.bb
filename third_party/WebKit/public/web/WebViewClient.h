@@ -257,7 +257,6 @@ public:
     // TODO(lfg): These methods are only exposed through WebViewClient while we
     // refactor WebView to not inherit from WebWidget.
     // WebWidgetClient overrides.
-    bool allowsBrokenNullLayerTreeView() const override { return false; }
     void closeWidgetSoon() override {}
     void convertViewportToWindow(WebRect* rect) override {}
     void convertWindowToViewport(WebFloatRect* rect) override {}
@@ -281,6 +280,7 @@ public:
     void show(WebNavigationPolicy) override {}
     WebRect windowRect() override { return WebRect(); }
     WebRect windowResizerRect() override { return WebRect(); }
+    virtual WebWidgetClient* widgetClient() { return this; }
 
 protected:
     ~WebViewClient() { }
