@@ -67,11 +67,18 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     }.bind(this));
 
     teardown(function(done) {
-      if (this.isAtRoot())
-        return done();
-      this.backToRoot();
-      setTimeout(done);
-    }.bind(this));
+      // Close the section if we're in a sub-page.
+      if (advanced.currentRoute.subpage.length == 0) {
+        done();
+      } else {
+        advanced.currentRoute = {
+          page: 'advanced',
+          section: '',
+          subpage: [],
+        };
+        setTimeout(done);
+      }
+    });
 
     test('manage languages', function() {
       var manageLanguagesButton =
