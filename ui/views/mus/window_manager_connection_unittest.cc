@@ -9,17 +9,17 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
-#include "ui/views/pointer_watcher.h"
+#include "ui/views/pointer_down_watcher.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/touch_event_watcher.h"
 
 namespace views {
 namespace {
 
-class TestPointerWatcher : public PointerWatcher {
+class TestPointerDownWatcher : public PointerDownWatcher {
  public:
-  TestPointerWatcher() {}
-  ~TestPointerWatcher() override {}
+  TestPointerDownWatcher() {}
+  ~TestPointerDownWatcher() override {}
 
   bool mouse_pressed() const { return mouse_pressed_; }
   bool touch_pressed() const { return touch_pressed_; }
@@ -29,7 +29,7 @@ class TestPointerWatcher : public PointerWatcher {
     touch_pressed_ = false;
   }
 
-  // PointerWatcher:
+  // PointerDownWatcher:
   void OnMousePressed(const ui::MouseEvent& event,
                       const gfx::Point& location_in_screen,
                       Widget* target) override {
@@ -45,7 +45,7 @@ class TestPointerWatcher : public PointerWatcher {
   bool mouse_pressed_ = false;
   bool touch_pressed_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPointerWatcher);
+  DISALLOW_COPY_AND_ASSIGN(TestPointerDownWatcher);
 };
 
 }  // namespace
@@ -88,7 +88,7 @@ class WindowManagerConnectionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnectionTest);
 };
 
-TEST_F(WindowManagerConnectionTest, PointerWatcher) {
+TEST_F(WindowManagerConnectionTest, PointerDownWatcher) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
   WindowManagerConnection* connection = WindowManagerConnection::Get();
@@ -99,43 +99,43 @@ TEST_F(WindowManagerConnectionTest, PointerWatcher) {
                                base::TimeTicks());
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
 
-  // PointerWatchers receive mouse events.
-  TestPointerWatcher watcher1;
-  connection->AddPointerWatcher(&watcher1);
+  // PointerDownWatchers receive mouse events.
+  TestPointerDownWatcher watcher1;
+  connection->AddPointerDownWatcher(&watcher1);
   OnEventObserved(mouse_pressed);
   EXPECT_TRUE(watcher1.mouse_pressed());
   watcher1.Reset();
 
-  // PointerWatchers receive touch events.
+  // PointerDownWatchers receive touch events.
   OnEventObserved(touch_pressed);
   EXPECT_TRUE(watcher1.touch_pressed());
   watcher1.Reset();
 
-  // PointerWatchers do not trigger for key events.
+  // PointerDownWatchers do not trigger for key events.
   OnEventObserved(key_pressed);
   EXPECT_FALSE(watcher1.mouse_pressed());
   EXPECT_FALSE(watcher1.touch_pressed());
   watcher1.Reset();
 
-  // Two PointerWatchers can both receive a single observed event.
-  TestPointerWatcher watcher2;
-  connection->AddPointerWatcher(&watcher2);
+  // Two PointerDownWatchers can both receive a single observed event.
+  TestPointerDownWatcher watcher2;
+  connection->AddPointerDownWatcher(&watcher2);
   OnEventObserved(mouse_pressed);
   EXPECT_TRUE(watcher1.mouse_pressed());
   EXPECT_TRUE(watcher2.mouse_pressed());
   watcher1.Reset();
   watcher2.Reset();
 
-  // Removing the first PointerWatcher stops sending events to it.
-  connection->RemovePointerWatcher(&watcher1);
+  // Removing the first PointerDownWatcher stops sending events to it.
+  connection->RemovePointerDownWatcher(&watcher1);
   OnEventObserved(mouse_pressed);
   EXPECT_FALSE(watcher1.mouse_pressed());
   EXPECT_TRUE(watcher2.mouse_pressed());
   watcher1.Reset();
   watcher2.Reset();
 
-  // Removing the last PointerWatcher stops sending events to it.
-  connection->RemovePointerWatcher(&watcher2);
+  // Removing the last PointerDownWatcher stops sending events to it.
+  connection->RemovePointerDownWatcher(&watcher2);
   OnEventObserved(mouse_pressed);
   EXPECT_FALSE(watcher1.mouse_pressed());
   EXPECT_FALSE(watcher1.touch_pressed());

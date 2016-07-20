@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 
 namespace views {
-class PointerWatcher;
+class PointerDownWatcher;
 }
 
 namespace ash {
@@ -222,8 +222,8 @@ class ASH_EXPORT WmShell {
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-  virtual void AddPointerWatcher(views::PointerWatcher* watcher) = 0;
-  virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
+  virtual void AddPointerDownWatcher(views::PointerDownWatcher* watcher) = 0;
+  virtual void RemovePointerDownWatcher(views::PointerDownWatcher* watcher) = 0;
 
 #if defined(OS_CHROMEOS)
   LogoutConfirmationController* logout_confirmation_controller() {

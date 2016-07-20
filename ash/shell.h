@@ -62,7 +62,7 @@ class UserActivityPowerManagerNotifier;
 }
 namespace views {
 class NonClientFrameView;
-class PointerWatcher;
+class PointerDownWatcher;
 class Widget;
 namespace corewm {
 class TooltipController;
@@ -109,7 +109,7 @@ class MouseCursorEventFilter;
 class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
-class PointerWatcherDelegate;
+class PointerDownWatcherDelegate;
 class PowerButtonController;
 class PowerEventObserver;
 class ProjectingObserver;
@@ -298,8 +298,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();
 
-  void AddPointerWatcher(views::PointerWatcher* watcher);
-  void RemovePointerWatcher(views::PointerWatcher* watcher);
+  void AddPointerDownWatcher(views::PointerDownWatcher* watcher);
+  void RemovePointerDownWatcher(views::PointerDownWatcher* watcher);
 
 #if defined(OS_CHROMEOS)
   // Test if MaximizeModeWindowManager is not enabled, and if
@@ -586,7 +586,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
-  std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
+  std::unique_ptr<PointerDownWatcherDelegate> pointer_down_watcher_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;

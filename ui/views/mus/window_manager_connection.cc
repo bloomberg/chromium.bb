@@ -20,7 +20,7 @@
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
-#include "ui/views/pointer_watcher.h"
+#include "ui/views/pointer_down_watcher.h"
 #include "ui/views/touch_event_watcher.h"
 #include "ui/views/views_delegate.h"
 
@@ -81,11 +81,12 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
                              ui::mojom::SurfaceType::DEFAULT);
 }
 
-void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
+void WindowManagerConnection::AddPointerDownWatcher(
+    PointerDownWatcher* watcher) {
   // TODO(riajiang): Support multiple event matchers (crbug.com/627146).
   DCHECK(!HasTouchEventWatcher());
-  bool had_watcher = HasPointerWatcher();
-  pointer_watchers_.AddObserver(watcher);
+  bool had_watcher = HasPointerDownWatcher();
+  pointer_down_watchers_.AddObserver(watcher);
   if (!had_watcher) {
     // Start a watcher for pointer down.
     // TODO(jamescook): Extend event observers to handle multiple event types.
@@ -96,17 +97,18 @@ void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
   }
 }
 
-void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
-  pointer_watchers_.RemoveObserver(watcher);
-  if (!HasPointerWatcher()) {
-    // Last PointerWatcher removed, stop the event observer.
+void WindowManagerConnection::RemovePointerDownWatcher(
+    PointerDownWatcher* watcher) {
+  pointer_down_watchers_.RemoveObserver(watcher);
+  if (!HasPointerDownWatcher()) {
+    // Last PointerDownWatcher removed, stop the event observer.
     client_->SetEventObserver(nullptr);
   }
 }
 
 void WindowManagerConnection::AddTouchEventWatcher(TouchEventWatcher* watcher) {
   // TODO(riajiang): Support multiple event matchers (crbug.com/627146).
-  DCHECK(!HasPointerWatcher());
+  DCHECK(!HasPointerDownWatcher());
   bool had_watcher = HasTouchEventWatcher();
   touch_event_watchers_.AddObserver(watcher);
   if (!had_watcher) {
@@ -168,11 +170,12 @@ WindowManagerConnection::~WindowManagerConnection() {
   }
 }
 
-bool WindowManagerConnection::HasPointerWatcher() {
+bool WindowManagerConnection::HasPointerDownWatcher() {
   // Check to see if we really have any observers left. This doesn't use
   // base::ObserverList<>::might_have_observers() because that returns true
   // during iteration over the list even when the last observer is removed.
-  base::ObserverList<PointerWatcher>::Iterator iterator(&pointer_watchers_);
+  base::ObserverList<PointerDownWatcher>::Iterator iterator(
+      &pointer_down_watchers_);
   return !!iterator.GetNext();
 }
 
@@ -209,13 +212,13 @@ void WindowManagerConnection::OnEventObserved(const ui::Event& event,
   // to store screen coordinates. Screen coordinates really should be returned
   // separately. See http://crbug.com/608547
   gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
-  if (HasPointerWatcher()) {
+  if (HasPointerDownWatcher()) {
     if (event.type() == ui::ET_MOUSE_PRESSED) {
-      FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
+      FOR_EACH_OBSERVER(PointerDownWatcher, pointer_down_watchers_,
                         OnMousePressed(*event.AsMouseEvent(),
                                        location_in_screen, target_widget));
     } else if (event.type() == ui::ET_TOUCH_PRESSED) {
-      FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
+      FOR_EACH_OBSERVER(PointerDownWatcher, pointer_down_watchers_,
                         OnTouchPressed(*event.AsTouchEvent(),
                                        location_in_screen, target_widget));
     }

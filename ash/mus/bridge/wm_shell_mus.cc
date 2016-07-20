@@ -306,12 +306,13 @@ void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher) {
-  // TODO(jamescook): Move PointerWatcherDelegateMus to //ash/mus and use here.
+void WmShellMus::AddPointerDownWatcher(views::PointerDownWatcher* watcher) {
+  // TODO(jamescook): Move PointerDownWatcherDelegateMus to //ash/mus
+  // and use here.
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
+void WmShellMus::RemovePointerDownWatcher(views::PointerDownWatcher* watcher) {
   NOTIMPLEMENTED();
 }
 

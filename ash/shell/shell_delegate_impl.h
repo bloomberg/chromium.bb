@@ -49,7 +49,7 @@ class ShellDelegateImpl : public ShellDelegate {
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
-  std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
+  std::unique_ptr<PointerDownWatcherDelegate> CreatePointerDownWatcherDelegate()
       override;
   ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
                                    const ShelfItem* item) override;
