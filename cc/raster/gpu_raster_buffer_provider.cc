@@ -226,7 +226,7 @@ bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
 }
 
 bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
-  return true;
+  return false;
 }
 
 void GpuRasterBufferProvider::Shutdown() {

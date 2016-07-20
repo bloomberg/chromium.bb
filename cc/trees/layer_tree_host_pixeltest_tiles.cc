@@ -223,8 +223,10 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
+// TODO(crbug.com/629683): Re-enable this test once GPU partial raster issues
+// are fixed.
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
-       PartialRaster_SingleThread_GpuRaster) {
+       DISABLED_PartialRaster_SingleThread_GpuRaster) {
   RunRasterPixelTest(
       false, PARTIAL_GPU, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
