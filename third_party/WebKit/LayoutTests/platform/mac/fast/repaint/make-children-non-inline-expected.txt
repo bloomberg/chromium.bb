@@ -31,7 +31,7 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 150, 113, 18],
-          "reason": "style change"
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
@@ -40,8 +40,18 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [8, 132, 80, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [8, 96, 80, 18],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 96, 80, 18],
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
@@ -51,7 +61,7 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 168, 69, 18],
-          "reason": "style change"
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
@@ -61,7 +71,7 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 204, 64, 18],
-          "reason": "style change"
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
@@ -70,13 +80,28 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [8, 114, 45, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [8, 78, 44, 18],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
+          "rect": [8, 78, 44, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [8, 60, 40, 18],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 60, 40, 18],
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
@@ -86,7 +111,7 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 186, 30, 18],
-          "reason": "style change"
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
@@ -97,6 +122,74 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "style change"
