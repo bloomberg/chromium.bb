@@ -1389,6 +1389,7 @@ interface HTMLAreaElement : HTMLElement
     attribute @@toStringTag
     getter alt
     getter coords
+    getter download
     getter hash
     getter host
     getter hostname
@@ -1401,6 +1402,7 @@ interface HTMLAreaElement : HTMLElement
     getter port
     getter protocol
     getter referrerPolicy
+    getter rel
     getter search
     getter shape
     getter target
@@ -1409,6 +1411,7 @@ interface HTMLAreaElement : HTMLElement
     method toString
     setter alt
     setter coords
+    setter download
     setter hash
     setter host
     setter hostname
@@ -1420,6 +1423,7 @@ interface HTMLAreaElement : HTMLElement
     setter port
     setter protocol
     setter referrerPolicy
+    setter rel
     setter search
     setter shape
     setter target

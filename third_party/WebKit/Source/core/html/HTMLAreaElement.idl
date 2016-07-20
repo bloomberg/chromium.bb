@@ -23,11 +23,13 @@
 interface HTMLAreaElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString alt;
     [CEReactions, Reflect] attribute DOMString coords;
+    [CEReactions, Reflect] attribute DOMString download;
     [CEReactions, Reflect] attribute DOMString shape;
     [CEReactions, Reflect] attribute DOMString target;
     // FIXME: ping should be a DOMTokenList.
     [CEReactions, Reflect] attribute DOMString ping;
-    // FIXME: download, rel, relList are missing
+    [CEReactions, Reflect] attribute DOMString rel;
+    // FIXME: relList is missing
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
 
     // obsolete members

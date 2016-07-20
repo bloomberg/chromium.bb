@@ -277,6 +277,7 @@ html element applet
 html element area
     property alt
     property coords
+    property download
     property hash
     property host
     property hostname
@@ -289,6 +290,7 @@ html element area
     property port
     property protocol
     property referrerPolicy
+    property rel
     property search
     property shape
     property target
