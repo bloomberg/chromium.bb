@@ -39,6 +39,7 @@
 #include "core/editing/Editor.h"
 #include "core/events/Event.h"
 #include "core/events/EventUtil.h"
+#include "core/events/PointerEvent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
@@ -547,6 +548,8 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     // dispatch. Conveniently, all new event listeners will be added after or at
     // index |size|, so iterating up to (but not including) |size| naturally excludes
     // new event listeners.
+    //
+    // TODO(mustaq): This code needs to be refactored, crbug.com/629601
 
     if (event->type() == EventTypeNames::beforeunload) {
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
@@ -566,6 +569,18 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     } else if (event->type() == EventTypeNames::textInput) {
         if (LocalDOMWindow* executingWindow = this->executingWindow())
             UseCounter::count(executingWindow->document(), UseCounter::TextInputFired);
+    } else if (event->type() == EventTypeNames::touchstart) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow->document(), UseCounter::TouchStartFired);
+    } else if (event->type() == EventTypeNames::mousedown) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow->document(), UseCounter::MouseDownFired);
+    } else if (event->type() == EventTypeNames::pointerdown) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+            if (event->isPointerEvent() && static_cast<PointerEvent*>(event)->pointerType() == "touch")
+                UseCounter::count(executingWindow->document(), UseCounter::PointerDownFiredForTouch);
+            UseCounter::count(executingWindow->document(), UseCounter::PointerDownFired);
+        }
     }
 
     ExecutionContext* context = getExecutionContext();

@@ -156,6 +156,9 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
         return WebInputEventResult::NotHandled;
     if (!checkForListener || target->hasEventListeners(eventType)) {
         UseCounter::count(m_frame->document(), UseCounter::PointerEventDispatch);
+        if (eventType == EventTypeNames::pointerdown)
+            UseCounter::count(m_frame->document(), UseCounter::PointerEventDispatchPointerDown);
+
         DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
         return EventHandler::toWebInputEventResult(dispatchResult);
     }

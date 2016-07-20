@@ -76920,6 +76920,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1447" label="V8BroadcastChannel_Constructor"/>
   <int value="1448" label="V8BroadcastChannel_PostMessage_Method"/>
   <int value="1449" label="V8BroadcastChannel_Close_Method"/>
+  <int value="1450" label="TouchStartFired"/>
+  <int value="1451" label="MouseDownFired"/>
+  <int value="1452" label="PointerDownFired"/>
+  <int value="1453" label="PointerDownFiredForTouch"/>
+  <int value="1454" label="PointerEventDispatchPointerDown"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
