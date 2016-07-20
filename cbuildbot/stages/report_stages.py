@@ -177,7 +177,8 @@ class BuildStartStage(generic_stages.BuilderStage):
             bot_hostname=d['bot-hostname'],
             master_build_id=d['master_build_id'],
             timeout_seconds=self._GetBuildTimeoutSeconds(),
-            important=d['important'])
+            important=d['important'],
+            buildbucket_id=self._run.options.buildbucket_id)
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database type %s.',

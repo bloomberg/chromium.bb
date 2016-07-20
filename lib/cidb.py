@@ -607,7 +607,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   BUILD_STATUS_KEYS = (
       'id', 'build_config', 'start_time', 'finish_time', 'status', 'waterfall',
       'build_number', 'builder_name', 'platform_version', 'full_version',
-      'milestone_version', 'important')
+      'milestone_version', 'important', 'buildbucket_id')
 
   def __init__(self, db_credentials_dir, *args, **kwargs):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
@@ -621,10 +621,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
-  @minimum_schema(43)
+  @minimum_schema(47)
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  timeout_seconds=None, important=None):
+                  timeout_seconds=None, important=None, buildbucket_id=None):
     """Insert a build row.
 
     Args:
@@ -635,8 +635,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       bot_hostname: hostname of bot running the build
       master_build_id: (Optional) primary key of master build to this build.
       timeout_seconds: (Optional) If provided, total time allocated for this
-          build. A deadline is recorded in cidb for the current build to end.
+                       build. A deadline is recorded in cidb for the current
+                       build to end.
       important: (Optional) If provided, the |important| value for this build.
+      buildbucket_id: (Optional) If provided, the |buildbucket_id| value for
+                       this build.
     """
     values = {
         'builder_name': builder_name,
@@ -648,6 +651,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'start_time': sqlalchemy.func.current_timestamp(),
         'master_build_id': master_build_id,
         'important': important,
+        'buildbucket_id': buildbucket_id
     }
     if timeout_seconds is not None:
       now = self.GetTime()
@@ -960,8 +964,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'WHERE (build_id, child_config) = (%d, "%s")' %
         (status, build_id, child_config))
 
-
-  @minimum_schema(43)
+  @minimum_schema(47)
   def GetBuildStatus(self, build_id):
     """Gets the status of the build.
 
@@ -975,7 +978,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     statuses = self.GetBuildStatuses([build_id])
     return statuses[0] if statuses else None
 
-  @minimum_schema(43)
+  @minimum_schema(47)
   def GetBuildStatuses(self, build_ids):
     """Gets the statuses of the builds.
 
@@ -1124,7 +1127,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     deadline_past = (r[0][0] == 0)
     return 0 if deadline_past else abs(time_remaining.total_seconds())
 
-  @minimum_schema(43)
+  @minimum_schema(47)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None, milestone_version=None,
@@ -1158,12 +1161,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       build statuses in descending order. Valid keys in the dictionary are
       [id, build_config, buildbot_generation, waterfall, build_number,
       start_time, finish_time, platform_version, full_version, status,
-      important].
+      important, buildbucket_id].
     """
     # TODO(akeshet): Unify this with BUILD_STATUS_KEYS
     columns = ['id', 'build_config', 'buildbot_generation', 'waterfall',
                'build_number', 'start_time', 'finish_time', 'platform_version',
-               'full_version', 'status', 'important']
+               'full_version', 'status', 'important', 'buildbucket_id']
 
     where_clauses = ['build_config = "%s"' % build_config]
     if start_date is not None:

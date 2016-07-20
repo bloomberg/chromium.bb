@@ -51,7 +51,7 @@ class FakeCIDBConnection(object):
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
-                  important=None):
+                  important=None, buildbucket_id=None):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
@@ -75,7 +75,8 @@ class FakeCIDBConnection(object):
            'deadline': deadline,
            'status': status,
            'finish_time': datetime.datetime.now(),
-           'important': important}
+           'important': important,
+           'buildbucket_id': buildbucket_id}
     self.buildTable.append(row)
     return build_id
 
