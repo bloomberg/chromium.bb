@@ -26,7 +26,7 @@ CSSTokenizer::Scope::Scope(const String& string)
     // However, we can skip this step since:
     // * We're using HTML spaces (which accept \r and \f as a valid white space)
     // * Do not count white spaces
-    // * CSSTokenizerInputStream::peek replaces NULLs for replacement characters
+    // * CSSTokenizerInputStream::nextInputChar() replaces NULLs for replacement characters
 
     if (string.isEmpty())
         return;
@@ -191,7 +191,9 @@ CSSParserToken CSSTokenizer::asterisk(UChar cc)
 CSSParserToken CSSTokenizer::lessThan(UChar cc)
 {
     ASSERT(cc == '<');
-    if (m_input.peek(0) == '!' && m_input.peek(1) == '-' && m_input.peek(2) == '-') {
+    if (m_input.peekWithoutReplacement(0) == '!'
+        && m_input.peekWithoutReplacement(1) == '-'
+        && m_input.peekWithoutReplacement(2) == '-') {
         m_input.advance(3);
         return CSSParserToken(CDOToken);
     }
@@ -209,7 +211,8 @@ CSSParserToken CSSTokenizer::hyphenMinus(UChar cc)
         reconsume(cc);
         return consumeNumericToken();
     }
-    if (m_input.peek(0) == '-' && m_input.peek(1) == '>') {
+    if (m_input.peekWithoutReplacement(0) == '-'
+        && m_input.peekWithoutReplacement(1) == '>') {
         m_input.advance(2);
         return CSSParserToken(CDCToken);
     }
@@ -244,7 +247,7 @@ CSSParserToken CSSTokenizer::semiColon(UChar cc)
 CSSParserToken CSSTokenizer::hash(UChar cc)
 {
     UChar nextChar = m_input.nextInputChar();
-    if (isNameCodePoint(nextChar) || twoCharsAreValidEscape(nextChar, m_input.peek(1))) {
+    if (isNameCodePoint(nextChar) || twoCharsAreValidEscape(nextChar, m_input.peekWithoutReplacement(1))) {
         HashTokenType type = nextCharsAreIdentifier() ? HashTokenId : HashTokenUnrestricted;
         return CSSParserToken(type, consumeName());
     }
@@ -312,7 +315,8 @@ CSSParserToken CSSTokenizer::asciiDigit(UChar cc)
 CSSParserToken CSSTokenizer::letterU(UChar cc)
 {
     if (m_input.nextInputChar() == '+'
-        && (isASCIIHexDigit(m_input.peek(1)) || m_input.peek(1) == '?')) {
+        && (isASCIIHexDigit(m_input.peekWithoutReplacement(1))
+            || m_input.peekWithoutReplacement(1) == '?')) {
         m_input.advance();
         return consumeUnicodeRange();
     }
@@ -383,7 +387,8 @@ static double getInteger(CSSTokenizerInputStream& input, unsigned& offset)
 
 static double getFraction(CSSTokenizerInputStream& input, unsigned& offset)
 {
-    if (input.peek(offset) != '.' || !isASCIIDigit(input.peek(offset + 1)))
+    if (input.peekWithoutReplacement(offset) != '.'
+        || !isASCIIDigit(input.peekWithoutReplacement(offset + 1)))
         return 0;
     unsigned startOffset = offset;
     offset = input.skipWhilePredicate<isASCIIDigit>(offset + 1);
@@ -394,21 +399,23 @@ static double getExponent(CSSTokenizerInputStream& input, unsigned& offset, int&
 {
     unsigned exponentStartPos = 0;
     unsigned exponentEndPos = 0;
-    if ((input.peek(offset) == 'E' || input.peek(offset) == 'e')) {
-        int offsetBeforeExponent = offset;
+    UChar next = input.peekWithoutReplacement(offset);
+    if (next != 'E' && next != 'e')
+        return 0;
+    int offsetBeforeExponent = offset;
+    ++offset;
+    next = input.peekWithoutReplacement(offset);
+    if (next == '+') {
         ++offset;
-        if (input.peek(offset) == '+') {
-            ++offset;
-        } else if (input.peek(offset) =='-') {
-            sign = -1;
-            ++offset;
-        }
-        exponentStartPos = offset;
-        offset = input.skipWhilePredicate<isASCIIDigit>(offset);
-        exponentEndPos = offset;
-        if (exponentEndPos == exponentStartPos)
-            offset = offsetBeforeExponent;
+    } else if (next =='-') {
+        sign = -1;
+        ++offset;
     }
+    exponentStartPos = offset;
+    offset = input.skipWhilePredicate<isASCIIDigit>(offset);
+    exponentEndPos = offset;
+    if (exponentEndPos == exponentStartPos)
+        offset = offsetBeforeExponent;
     return input.getDouble(exponentStartPos, exponentEndPos);
 }
 
@@ -528,7 +535,7 @@ CSSParserToken CSSTokenizer::consumeUnicodeRange()
             end = end * 16 + 0xF;
             --lengthRemaining;
         } while (lengthRemaining && consumeIfNext('?'));
-    } else if (m_input.nextInputChar() == '-' && isASCIIHexDigit(m_input.peek(1))) {
+    } else if (m_input.nextInputChar() == '-' && isASCIIHexDigit(m_input.peekWithoutReplacement(1))) {
         m_input.advance();
         lengthRemaining = 6;
         end = 0;
@@ -611,7 +618,7 @@ void CSSTokenizer::consumeSingleWhitespaceIfNext()
 {
     // We check for \r\n and HTML spaces since we don't do preprocessing
     UChar c = m_input.nextInputChar();
-    if (c == '\r' && m_input.peek(1) == '\n')
+    if (c == '\r' && m_input.peekWithoutReplacement(1) == '\n')
         m_input.advance(2);
     else if (isHTMLSpace(c))
         m_input.advance();
@@ -708,7 +715,7 @@ UChar32 CSSTokenizer::consumeEscape()
 
 bool CSSTokenizer::nextTwoCharsAreValidEscape()
 {
-    return twoCharsAreValidEscape(m_input.nextInputChar(), m_input.peek(1));
+    return twoCharsAreValidEscape(m_input.nextInputChar(), m_input.peekWithoutReplacement(1));
 }
 
 // http://www.w3.org/TR/css3-syntax/#starts-with-a-number
@@ -718,7 +725,7 @@ bool CSSTokenizer::nextCharsAreNumber(UChar first)
     if (isASCIIDigit(first))
         return true;
     if (first == '+' || first == '-')
-        return ((isASCIIDigit(second)) || (second == '.' && isASCIIDigit(m_input.peek(1))));
+        return ((isASCIIDigit(second)) || (second == '.' && isASCIIDigit(m_input.peekWithoutReplacement(1))));
     if (first =='.')
         return (isASCIIDigit(second));
     return false;
