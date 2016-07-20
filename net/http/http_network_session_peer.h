@@ -27,8 +27,6 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
   void SetClientSocketPoolManager(
       std::unique_ptr<ClientSocketPoolManager> socket_pool_manager);
 
-  void SetProxyService(ProxyService* proxy_service);
-
   void SetHttpStreamFactory(
       std::unique_ptr<HttpStreamFactory> http_stream_factory);
   void SetHttpStreamFactoryForWebSocket(

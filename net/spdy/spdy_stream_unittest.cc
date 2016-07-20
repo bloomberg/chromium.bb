@@ -43,14 +43,6 @@ namespace test {
 
 namespace {
 
-enum TestCase {
-  // Test without specifying a stream dependency based on the RequestPriority.
-  kTestCaseNoPriorityDependencies,
-
-  // Test specifying a stream dependency based on the RequestPriority.
-  kTestCasePriorityDependencies
-};
-
 const char kStreamUrl[] = "http://www.example.org/";
 const char kPostBody[] = "\0hello!\xff";
 const size_t kPostBodyLength = arraysize(kPostBody);
@@ -58,22 +50,19 @@ const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 }  // namespace
 
-class SpdyStreamTest : public ::testing::Test,
-                       public ::testing::WithParamInterface<TestCase> {
+class SpdyStreamTest : public ::testing::Test {
  protected:
   // A function that takes a SpdyStream and the number of bytes which
   // will unstall the next frame completely.
   typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32_t)>
       UnstallFunction;
 
-  SpdyStreamTest() : spdy_util_(GetDependenciesFromPriority()), offset_(0) {
+  SpdyStreamTest() : offset_(0) {
     spdy_util_.set_default_url(GURL(kStreamUrl));
-    session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
 
-  ~SpdyStreamTest() {
-  }
+  ~SpdyStreamTest() override {}
 
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair("www.example.org", 80),
@@ -82,10 +71,6 @@ class SpdyStreamTest : public ::testing::Test,
   }
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
-
-  bool GetDependenciesFromPriority() const {
-    return GetParam() == kTestCasePriorityDependencies;
-  }
 
   void RunResumeAfterUnstallRequestResponseTest(
       const UnstallFunction& unstall_function);
@@ -146,12 +131,7 @@ class SpdyStreamTest : public ::testing::Test,
   int offset_;
 };
 
-INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
-                        SpdyStreamTest,
-                        testing::Values(kTestCaseNoPriorityDependencies,
-                                        kTestCasePriorityDependencies));
-
-TEST_P(SpdyStreamTest, SendDataAfterOpen) {
+TEST_F(SpdyStreamTest, SendDataAfterOpen) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
@@ -226,7 +206,7 @@ class StreamDelegateWithTrailers : public test::StreamDelegateWithBody {
 };
 
 // Regression test for crbug.com/481033.
-TEST_P(SpdyStreamTest, Trailers) {
+TEST_F(SpdyStreamTest, Trailers) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
@@ -289,7 +269,7 @@ TEST_P(SpdyStreamTest, Trailers) {
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
-TEST_P(SpdyStreamTest, PushedStream) {
+TEST_F(SpdyStreamTest, PushedStream) {
   AddReadEOF();
 
   SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
@@ -355,7 +335,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
   EXPECT_FALSE(spdy_session);
 }
 
-TEST_P(SpdyStreamTest, StreamError) {
+TEST_F(SpdyStreamTest, StreamError) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
@@ -430,7 +410,7 @@ TEST_P(SpdyStreamTest, StreamError) {
 // Make sure that large blocks of data are properly split up into
 // frame-sized chunks for a request/response (i.e., an HTTP-like)
 // stream.
-TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
+TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
@@ -490,7 +470,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 // Make sure that large blocks of data are properly split up into
 // frame-sized chunks for a bidirectional (i.e., non-HTTP-like)
 // stream.
-TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
+TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
@@ -546,7 +526,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
 // Receiving a header with uppercase ASCII should result in a protocol
 // error.
-TEST_P(SpdyStreamTest, UpperCaseHeaders) {
+TEST_F(SpdyStreamTest, UpperCaseHeaders) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame syn(
@@ -595,7 +575,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
 
 // Receiving a header with uppercase ASCII should result in a protocol
 // error even for a push stream.
-TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
+TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame syn(
@@ -657,7 +637,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
 // Receiving a header with uppercase ASCII in a HEADERS frame should
 // result in a protocol error.
-TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
+TEST_F(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame syn(
@@ -732,7 +712,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
 // Receiving a duplicate header in a HEADERS frame should result in a
 // protocol error.
-TEST_P(SpdyStreamTest, DuplicateHeaders) {
+TEST_F(SpdyStreamTest, DuplicateHeaders) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame syn(
@@ -808,7 +788,7 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 // Call IncreaseSendWindowSize on a stream with a large enough delta
 // to overflow an int32_t. The SpdyStream should handle that case
 // gracefully.
-TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
+TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   AddWrite(req);
@@ -959,12 +939,12 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
-TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
+TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
   RunResumeAfterUnstallRequestResponseTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
-TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustRequestResponse) {
+TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustRequestResponse) {
   RunResumeAfterUnstallRequestResponseTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }
@@ -1045,18 +1025,18 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
-TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseBidirectional) {
+TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseBidirectional) {
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
-TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustBidirectional) {
+TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustBidirectional) {
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }
 
 // Test calculation of amount of bytes received from network.
-TEST_P(SpdyStreamTest, ReceivedBytes) {
+TEST_F(SpdyStreamTest, ReceivedBytes) {
   GURL url(kStreamUrl);
 
   SpdySerializedFrame syn(

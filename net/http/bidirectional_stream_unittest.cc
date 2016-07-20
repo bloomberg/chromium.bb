@@ -336,8 +336,7 @@ class MockTimer : public base::MockTimer {
 class BidirectionalStreamTest : public testing::TestWithParam<bool> {
  public:
   BidirectionalStreamTest()
-      : spdy_util_(true),
-        default_url_(kDefaultUrl),
+      : default_url_(kDefaultUrl),
         host_port_pair_(HostPortPair::FromURL(default_url_)),
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {

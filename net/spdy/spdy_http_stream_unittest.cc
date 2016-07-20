@@ -38,14 +38,6 @@ namespace net {
 
 namespace {
 
-enum TestCase {
-  // Test without specifying a stream dependency based on the RequestPriority.
-  kTestCaseNoPriorityDependencies,
-
-  // Test specifying a stream dependency based on the RequestPriority.
-  kTestCasePriorityDependencies
-};
-
 // Tests the load timing of a stream that's connected and is not the first
 // request sent on a connection.
 void TestLoadTimingReused(const HttpStream& stream) {
@@ -126,25 +118,18 @@ class CancelStreamCallback : public TestCompletionCallbackBase {
 
 }  // namespace
 
-class SpdyHttpStreamTest : public testing::Test,
-                           public testing::WithParamInterface<TestCase> {
+class SpdyHttpStreamTest : public testing::Test {
  public:
   SpdyHttpStreamTest()
-      : spdy_util_(GetDependenciesFromPriority()),
-        host_port_pair_(HostPortPair::FromURL(GURL(kDefaultUrl))),
+      : host_port_pair_(HostPortPair::FromURL(GURL(kDefaultUrl))),
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED) {
-    session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_deps_.net_log = &net_log_;
     spdy_util_.set_default_url(GURL("http://www.example.org/"));
   }
 
-  ~SpdyHttpStreamTest() {}
+  ~SpdyHttpStreamTest() override {}
 
  protected:
-  bool GetDependenciesFromPriority() const {
-    return GetParam() == kTestCasePriorityDependencies;
-  }
-
   void TearDown() override {
     crypto::ECSignatureCreator::SetFactoryForTesting(nullptr);
     base::RunLoop().RunUntilIdle();
@@ -183,14 +168,9 @@ class SpdyHttpStreamTest : public testing::Test,
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
-                        SpdyHttpStreamTest,
-                        testing::Values(kTestCaseNoPriorityDependencies,
-                                        kTestCasePriorityDependencies));
-
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.
-TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
+TEST_F(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -206,7 +186,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(SpdyHttpStreamTest, SendRequest) {
+TEST_F(SpdyHttpStreamTest, SendRequest) {
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
@@ -263,7 +243,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
             http_stream->GetTotalReceivedBytes());
 }
 
-TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
+TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   SpdySerializedFrame req2(
@@ -355,7 +335,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
             http_stream2->GetTotalReceivedBytes());
 }
 
-TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
+TEST_F(SpdyHttpStreamTest, SendChunkedPost) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, kUploadData,
                                                              kUploadDataSize,
@@ -413,7 +393,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 }
 
 // This unittest tests the request callback is properly called and handled.
-TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
+TEST_F(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame chunk(
       spdy_util_.ConstructSpdyDataFrame(1, nullptr, 0, true));
@@ -463,7 +443,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
-TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
+TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, kUploadData,
                                                              kUploadDataSize,
@@ -527,7 +507,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
 
 // Test to ensure the SpdyStream state machine does not get confused when a
 // chunk becomes available while a write is pending.
-TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
+TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   const char kUploadData1[] = "12345678";
   const int kUploadData1Size = arraysize(kUploadData1)-1;
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
@@ -624,7 +604,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
 
 // Test that the SpdyStream state machine can handle sending a final empty data
 // frame when uploading a chunked data stream.
-TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
+TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame chunk1(spdy_util_.ConstructSpdyDataFrame(1, false));
   SpdySerializedFrame chunk2(spdy_util_.ConstructSpdyDataFrame(1, "", 0, true));
@@ -708,7 +688,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
 
 // Test that the SpdyStream state machine handles a chunked upload with no
 // payload. Unclear if this is a case worth supporting.
-TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
+TEST_F(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame chunk(spdy_util_.ConstructSpdyDataFrame(1, "", 0, true));
   MockWrite writes[] = {
@@ -771,7 +751,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
 }
 
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
-TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
+TEST_F(SpdyHttpStreamTest, SpdyURLTest) {
   const char* const full_url = "http://www.example.org/foo?query=what#anchor";
   const char* const base_url = "http://www.example.org/foo?query=what";
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(base_url, 1, LOWEST));
@@ -816,7 +796,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
 // made available is handled correctly.
-TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
+TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame chunk1(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
@@ -910,7 +890,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   ASSERT_EQ(200, response.headers->response_code());
 }
 
-TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
+TEST_F(SpdyHttpStreamTest, DataReadErrorSynchronous) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
 
   // Server receives RST_STREAM_INTERNAL_ERROR on client's internal failure.
@@ -958,7 +938,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
-TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
+TEST_F(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
 
   // Server receives RST_STREAM_INTERNAL_ERROR on client's internal failure.
@@ -1008,7 +988,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
 }
 
 // Regression test for https://crbug.com/622447.
-TEST_P(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
+TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
   SpdySerializedFrame chunk(
       spdy_util_.ConstructSpdyDataFrame(1, nullptr, 0, true));

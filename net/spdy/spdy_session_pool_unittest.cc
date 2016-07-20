@@ -518,8 +518,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   // can ignore issues of how dependencies are set.  We default to
   // setting them (when doing the appropriate protocol) since that's
   // where we're eventually headed for all HTTP/2 connections.
-  session_deps_.enable_priority_dependencies = true;
-  SpdyTestUtil spdy_util(/*enable_priority_dependencies*/ true);
+  SpdyTestUtil spdy_util;
 
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.

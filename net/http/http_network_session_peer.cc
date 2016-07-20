@@ -24,10 +24,6 @@ void HttpNetworkSessionPeer::SetClientSocketPoolManager(
   session_->normal_socket_pool_manager_.swap(socket_pool_manager);
 }
 
-void HttpNetworkSessionPeer::SetProxyService(ProxyService* proxy_service) {
-  session_->proxy_service_ = proxy_service;
-}
-
 void HttpNetworkSessionPeer::SetHttpStreamFactory(
     std::unique_ptr<HttpStreamFactory> http_stream_factory) {
   session_->http_stream_factory_.swap(http_stream_factory);

@@ -338,7 +338,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
-      enable_priority_dependencies(true),
       enable_quic(false),
       session_max_recv_window_size(kDefaultInitialWindowSize),
       stream_max_recv_window_size(kDefaultInitialWindowSize),
@@ -388,8 +387,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
-  params.enable_priority_dependencies =
-      session_deps->enable_priority_dependencies;
   params.enable_quic = session_deps->enable_quic;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
@@ -644,12 +641,11 @@ void SpdySessionPoolPeer::SetStreamInitialRecvWindowSize(size_t window) {
   pool_->stream_max_recv_window_size_ = window;
 }
 
-SpdyTestUtil::SpdyTestUtil(bool dependency_priorities)
+SpdyTestUtil::SpdyTestUtil()
     : headerless_spdy_framer_(HTTP2),
       request_spdy_framer_(HTTP2),
       response_spdy_framer_(HTTP2),
-      default_url_(GURL(kDefaultUrl)),
-      dependency_priorities_(dependency_priorities) {}
+      default_url_(GURL(kDefaultUrl)) {}
 
 SpdyTestUtil::~SpdyTestUtil() {}
 
@@ -933,10 +929,8 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdySyn(int stream_id,
   headers.set_has_priority(true);
   headers.set_weight(Spdy3PriorityToHttp2Weight(
       ConvertRequestPriorityToSpdyPriority(priority)));
-  if (dependency_priorities_) {
-    headers.set_parent_stream_id(parent_stream_id);
-    headers.set_exclusive(true);
-  }
+  headers.set_parent_stream_id(parent_stream_id);
+  headers.set_exclusive(true);
   headers.set_fin(fin);
   return SpdySerializedFrame(request_spdy_framer_.SerializeFrame(headers));
 }

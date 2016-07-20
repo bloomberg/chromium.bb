@@ -199,7 +199,6 @@ struct SpdySessionDependencies {
   bool enable_ip_pooling;
   bool enable_ping;
   bool enable_user_alternate_protocol_ports;
-  bool enable_priority_dependencies;
   bool enable_quic;
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;
@@ -282,7 +281,7 @@ class SpdySessionPoolPeer {
 
 class SpdyTestUtil {
  public:
-  explicit SpdyTestUtil(bool dependency_priorities);
+  SpdyTestUtil();
   ~SpdyTestUtil();
 
   // Add the appropriate headers to put |url| into |block|.
@@ -519,7 +518,6 @@ class SpdyTestUtil {
   SpdyFramer response_spdy_framer_;
 
   GURL default_url_;
-  bool dependency_priorities_;
 
   // Track a FIFO list of the stream_id of all created requests by priority.
   std::map<int, std::vector<int>> priority_to_stream_id_list_;
