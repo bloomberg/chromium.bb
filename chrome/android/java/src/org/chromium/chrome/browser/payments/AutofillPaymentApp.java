@@ -61,7 +61,7 @@ public class AutofillPaymentApp implements PaymentApp {
         // The spec also includes more detailed card types, e.g., "visa/credit" and "visa/debit".
         // Autofill does not distinguish between these types of cards, so they are not in the list
         // of supported method names.
-        Set<String> methods = new HashSet<String>();
+        Set<String> methods = new HashSet<>();
 
         methods.add("visa");
         methods.add("mastercard");

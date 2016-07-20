@@ -77,7 +77,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         void onPaymentRequestServiceBillingAddressChangeProcessed();
 
         /**
-         * Called when a show request failed.
+         * Called when a show request failed. This can happen when:
+         * <ul>
+         *   <li>The merchant requests only unsupported payment methods.</li>
+         *   <li>The merchant requests only payment methods that don't have instruments and are not
+         *       able to add instruments from PaymentRequest UI.</li>
+         * </ul>
          */
         void onPaymentRequestServiceShowFailed();
     }
@@ -116,13 +121,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private ShoppingCart mUiShoppingCart;
 
     /**
-     * The raw shipping options, as they were received from the website. This data is compared to
-     * updated payment options from the website to determine whether shipping options have changed
-     * due to user selecting a shipping address.
-     */
-    private List<PaymentShippingOption> mRawShippingOptions;
-
-    /**
      * The UI model for the shipping options. Includes the label and sublabel for each shipping
      * option. Also keeps track of the selected shipping option. This data is passed to the UI.
      */
@@ -139,6 +137,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private boolean mMerchantNeedsShippingAddress;
     private boolean mPaymentAppRunning;
+    private boolean mMerchantSupportsAutofillPaymentInstruments;
     private AddressEditor mAddressEditor;
     private CardEditor mCardEditor;
     private ContactEditor mContactEditor;
@@ -360,7 +359,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     // if the data field is supplied but is not a JSON-serializable object,
                     // then should throw a TypeError. So, we should return null here even if
                     // only one is bad.
-                    // [1] https://w3c.github.io/browser-payment-api/specs/paymentrequest.html
+                    // [1] https://w3c.github.io/browser-payment-api/
                     return null;
                 }
             }
@@ -400,6 +399,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mPendingApps.remove(app);
             } else {
                 arePaymentMethodsSupported = true;
+                mMerchantSupportsAutofillPaymentInstruments = app instanceof AutofillPaymentApp;
                 app.getInstruments(mMethodData.get(appMethods.iterator().next()), this);
             }
         }
@@ -500,8 +500,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return false;
         }
 
-        mRawShippingOptions = Arrays.asList(details.shippingOptions);
-
         return true;
     }
 
@@ -529,7 +527,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private static List<LineItem> getValidatedLineItems(
             PaymentItem[] items, String totalCurrency, CurrencyStringFormatter formatter) {
         // Line items are optional.
-        if (items == null) return new ArrayList<LineItem>();
+        if (items == null) return new ArrayList<>();
 
         List<LineItem> result = new ArrayList<>(items.length);
         for (int i = 0; i < items.length; i++) {
@@ -874,13 +872,26 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        if (mPendingApps.isEmpty()) {
-            mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS,
-                    mFirstCompletePendingInstrument, mPendingInstruments);
-            mPendingInstruments.clear();
+        // Some payment apps still have not responded. Continue waiting for them.
+        if (!mPendingApps.isEmpty()) return;
 
-            if (mPaymentInformationCallback != null) providePaymentInformation();
+        if (mPendingInstruments.isEmpty() && !mMerchantSupportsAutofillPaymentInstruments) {
+            // All payment apps have responded, but none of them have instruments. It's possible to
+            // add credit cards, but the merchant does not support them either. The payment request
+            // must be rejected.
+            disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
+                    PaymentErrorReason.NOT_SUPPORTED);
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            return;
         }
+
+        // The list of payment instruments is ready to display.
+        mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS,
+                mFirstCompletePendingInstrument, mPendingInstruments);
+        mPendingInstruments.clear();
+
+        // UI has requested the full list of payment instruments. Provide it now.
+        if (mPaymentInformationCallback != null) providePaymentInformation();
     }
 
     private void checkForCompletePaymentInstrument(PaymentInstrument instrument, int index) {
