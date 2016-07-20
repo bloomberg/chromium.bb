@@ -40,6 +40,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/JavaExceptionReporter.java",
   "java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java",
   "java/src/org/chromium/chrome/browser/KeyboardShortcuts.java",
+  "java/src/org/chromium/chrome/browser/LauncherShortcutActivity.java",
   "java/src/org/chromium/chrome/browser/LoginPrompt.java",
   "java/src/org/chromium/chrome/browser/LollipopTtsPlatformImpl.java",
   "java/src/org/chromium/chrome/browser/NativePage.java",
