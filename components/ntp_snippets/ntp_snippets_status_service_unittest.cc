@@ -76,8 +76,8 @@ TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
   // The default test setup is signed out.
   ASSERT_EQ(DisabledReason::SIGNED_OUT, service()->GetDisabledReasonFromDeps());
 
-  // Once the disabled pref is set, we should be disabled.
-  pref_service()->SetBoolean(prefs::kDisableSnippets, true);
+  // Once the enabled pref is set to false, we should be disabled.
+  pref_service()->SetBoolean(prefs::kEnableSnippets, false);
   EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
             service()->GetDisabledReasonFromDeps());
 

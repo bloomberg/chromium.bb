@@ -27,7 +27,7 @@ NTPSnippetsStatusService::~NTPSnippetsStatusService() {}
 // static
 void NTPSnippetsStatusService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kDisableSnippets, false);
+  registry->RegisterBooleanPref(prefs::kEnableSnippets, true);
 }
 
 void NTPSnippetsStatusService::Init(
@@ -45,7 +45,7 @@ void NTPSnippetsStatusService::Init(
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
-      prefs::kDisableSnippets,
+      prefs::kEnableSnippets,
       base::Bind(&NTPSnippetsStatusService::OnStateChanged,
                  base::Unretained(this)));
 }
@@ -61,7 +61,7 @@ void NTPSnippetsStatusService::OnStateChanged() {
 }
 
 DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {
-  if (pref_service_->GetBoolean(prefs::kDisableSnippets)) {
+  if (!pref_service_->GetBoolean(prefs::kEnableSnippets)) {
     DVLOG(1) << "[GetNewDisabledReason] Disabled via pref";
     return DisabledReason::EXPLICITLY_DISABLED;
   }
