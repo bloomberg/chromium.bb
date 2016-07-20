@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
@@ -116,6 +115,20 @@ void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time) {
                               base::TimeDelta::FromMilliseconds(5000), 50);
 }
 
+#if DCHECK_IS_ON()
+// Check that the routing ID references a valid RenderFrameHost, and run
+// |callback| on the IO thread with true if the ID is valid.
+void ValidateRenderFrameId(int render_process_id,
+                           int render_frame_id,
+                           const base::Callback<void(bool)>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const bool frame_exists =
+      !!RenderFrameHost::FromID(render_process_id, render_frame_id);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, frame_exists));
+}
+#endif  // DCHECK_IS_ON()
+
 }  // namespace
 
 class AudioRendererHost::AudioEntry
@@ -216,6 +229,9 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       media_stream_manager_(media_stream_manager),
       num_playing_streams_(0),
       salt_(salt),
+#if DCHECK_IS_ON()
+      validate_render_frame_id_function_(&ValidateRenderFrameId),
+#endif  // DCHECK_IS_ON()
       max_simultaneous_streams_(0) {
   DCHECK(audio_manager_);
   DCHECK(media_stream_manager_);
@@ -544,27 +560,56 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   DVLOG(1) << "AudioRendererHost@" << this << "::OnCreateStream"
            << "(stream_id=" << stream_id << ")";
 
+  // Determine whether to use the device_unique_id from an authorization, or an
+  // empty string (i.e., when no previous authorization was requested, assume
+  // default device).
+  std::string device_unique_id;
   const auto& auth_data = authorizations_.find(stream_id);
-
-  // If no previous authorization requested, assume default device
-  if (auth_data == authorizations_.end()) {
-    DoCreateStream(stream_id, render_frame_id, params, std::string());
-    return;
+  if (auth_data != authorizations_.end()) {
+    CHECK(auth_data->second.first);
+    device_unique_id.swap(auth_data->second.second);
+    authorizations_.erase(auth_data);
   }
 
-  CHECK(auth_data->second.first);
-  DoCreateStream(stream_id, render_frame_id, params, auth_data->second.second);
-  authorizations_.erase(auth_data);
+#if DCHECK_IS_ON()
+  // When DCHECKs are turned on, hop over to the UI thread to validate the
+  // |render_frame_id|, then continue stream creation on the IO thread. See
+  // comment at top of DoCreateStream() for further details.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(validate_render_frame_id_function_, render_process_id_,
+                 render_frame_id,
+                 base::Bind(&AudioRendererHost::DoCreateStream, this, stream_id,
+                            render_frame_id, params, device_unique_id)));
+#else
+  DoCreateStream(stream_id, render_frame_id, params, device_unique_id,
+                 render_frame_id > 0);
+#endif  // DCHECK_IS_ON()
 }
 
 void AudioRendererHost::DoCreateStream(int stream_id,
                                        int render_frame_id,
                                        const media::AudioParameters& params,
-                                       const std::string& device_unique_id) {
+                                       const std::string& device_unique_id,
+                                       bool render_frame_id_is_valid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // media::AudioParameters is validated in the deserializer.
-  if (LookupById(stream_id) != NULL) {
+  // Fail early if either of two sanity-checks fail:
+  //   1. There should not yet exist an AudioEntry for the given |stream_id|
+  //      since the renderer may not create two streams with the same ID.
+  //   2. The render frame ID was either invalid or the render frame host it
+  //      references has shutdown before the request could be fulfilled (race
+  //      condition). Renderers must *always* specify a valid render frame ID
+  //      for each audio output they create, as several browser-level features
+  //      depend on this (e.g., OOM manager, UI audio indicator, muting, audio
+  //      capture).
+  // Note: media::AudioParameters is validated in the deserializer, so there is
+  // no need to check that here.
+  if (LookupById(stream_id)) {
+    SendErrorMessage(stream_id);
+    return;
+  }
+  if (!render_frame_id_is_valid) {
     SendErrorMessage(stream_id);
     return;
   }

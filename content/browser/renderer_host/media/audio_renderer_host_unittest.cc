@@ -32,6 +32,8 @@ using ::testing::Assign;
 using ::testing::DoAll;
 using ::testing::NotNull;
 
+namespace content {
+
 namespace {
 const int kRenderProcessId = 1;
 const int kRenderFrameId = 5;
@@ -41,9 +43,20 @@ const char kDefaultDeviceId[] = "";
 const char kBadDeviceId[] =
     "badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad1";
 const char kInvalidDeviceId[] = "invalid-device-id";
-}  // namespace
 
-namespace content {
+#if DCHECK_IS_ON()
+void ValidateRenderFrameId(int render_process_id,
+                           int render_frame_id,
+                           const base::Callback<void(bool)>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const bool frame_exists = (render_process_id == kRenderProcessId &&
+                             render_frame_id == kRenderFrameId);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, frame_exists));
+}
+#endif  // DCHECK_IS_ON()
+
+}  // namespace
 
 class MockAudioMirroringManager : public AudioMirroringManager {
  public:
@@ -73,7 +86,11 @@ class MockAudioRendererHost : public AudioRendererHost {
                           media_internals,
                           media_stream_manager,
                           salt),
-        shared_memory_length_(0) {}
+        shared_memory_length_(0) {
+#if DCHECK_IS_ON()
+    set_render_frame_id_validate_function_for_testing(&ValidateRenderFrameId);
+#endif  // DCHECK_IS_ON()
+  }
 
   // A list of mock methods.
   MOCK_METHOD4(OnDeviceAuthorized,
@@ -266,6 +283,29 @@ class AudioRendererHostTest : public testing::Test {
     SyncWithAudioThread();
   }
 
+  void CreateWithInvalidRenderFrameId() {
+    // Because the render frame is invalid, the host should only reply with a
+    // stream error message.
+    EXPECT_CALL(*host_, OnStreamError(kStreamId));
+
+    // When DCHECKs are on, provide a seemingly-valid render frame ID; and it
+    // should be rejected when AudioRendererHost calls
+    // ValidateRenderFrameId(). When DCHECKs are off, AudioRendererHost won't
+    // call the validation function, but can still reject a render frame ID when
+    // it is obviously bogus.
+#if DCHECK_IS_ON()
+    const int kInvalidRenderFrameId = kRenderFrameId + 1;
+#else
+    const int kInvalidRenderFrameId = MSG_ROUTING_NONE;
+#endif  // DCHECK_IS_ON()
+
+    const media::AudioParameters params(
+        media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+        media::AudioParameters::kAudioCDSampleRate, 16,
+        media::AudioParameters::kAudioCDSampleRate / 10);
+    host_->OnCreateStream(kStreamId, kInvalidRenderFrameId, params);
+  }
+
   void Close() {
     // Send a message to AudioRendererHost to tell it we want to close the
     // stream.
@@ -402,6 +442,11 @@ TEST_F(AudioRendererHostTest, CreateUnauthorizedDevice) {
 
 TEST_F(AudioRendererHostTest, CreateInvalidDevice) {
   Create(false, kInvalidDeviceId, url::Origin(GURL(kSecurityOrigin)));
+  Close();
+}
+
+TEST_F(AudioRendererHostTest, CreateFailsForInvalidRenderFrame) {
+  CreateWithInvalidRenderFrameId();
   Close();
 }
 
