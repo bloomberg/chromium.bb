@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
     <style>
@@ -13,13 +12,11 @@
         }
         #target.transition-top {
             top: 400px;
-            -webkit-transition: top 100ms linear;
-            transition: top 100ms linear;
+            transition: top 2000ms linear;
         }
         #target.transition-left {
             left: 400px;
-            -webkit-transition: left 100ms linear;
-            transition: left 100ms linear;
+            transition: left 2000ms linear;
         }
     </style>
     <script>
@@ -28,44 +25,71 @@
             testRunner.waitUntilDone();
         }
 
+        function fail(message) {
+            var result = "<span style='color:red'>" + message + "</span>";
+            document.getElementById('result').innerHTML = result;
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+
+        function success() {
+            var result = "<span style='color:green'>PASS</span>";
+            document.getElementById('result').innerHTML = result;
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+
         function isEqual(actual, desired, tolerance)
         {
             var diff = Math.abs(actual - desired);
             return diff < tolerance;
         }
 
+        function start()
+        {
+            document.getElementById("target").classList.add('transition-top');
+            internals.pauseAnimations(1);
+            cancelTransition();
+        }
+
         function cancelTransition()
         {
-            document.getElementById("target").classList.remove('transition-top');
+            var top = parseFloat(window.getComputedStyle(document.getElementById('target')).top);
+            if (isEqual(top, 200, 1)) {
+                document.getElementById("target").classList.remove('transition-top');
+                internals.pauseAnimations(1);
+                startNewTransition();
+            } else {
+                fail('top was: ' + top + ', expected: 200');
+            }
         }
 
         function startNewTransition()
         {
-            document.getElementById("target").classList.add('transition-left');
-            setTimeout(check, 50);
+            var top = parseFloat(window.getComputedStyle(document.getElementById('target')).top);
+            if (isEqual(top, 0, 1)) {
+                document.getElementById("target").classList.add('transition-left');
+                internals.pauseAnimations(1);
+                check();
+            } else {
+                fail('top was: ' + top + ', expected: 0');
+            }
         }
 
         function check()
         {
             var left = parseFloat(window.getComputedStyle(document.getElementById('target')).left);
-            if (isEqual(left, 200, 50))
-                var result = "<span style='color:green'>PASS</span>";
-            else
-                var result = "<span style='color:red'>FAIL(was: " + left + ", expected: 200)</span>";
-            document.getElementById('result').innerHTML = result;
-            if (window.testRunner)
-                testRunner.notifyDone();
+            if (isEqual(left, 200, 1)) {
+                success();
+            } else {
+                fail('left was: ' + left + ', expected: 200');
+            }
         }
 
-        function start()
-        {
-            document.getElementById("target").classList.add('transition-top');
-            setTimeout("cancelTransition()", 50);
-            setTimeout("startNewTransition()", 100);
-        }
+        window.onload = start;
     </script>
 </head>
-<body onload="start()">
+<body>
 <p>
     Tests that having stopped a transition before it completes, a subsequent
     transition starts correctly.
