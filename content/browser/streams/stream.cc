@@ -77,6 +77,11 @@ void Stream::Abort() {
   ClearBuffer();
   can_add_data_ = false;
   registry_->UnregisterStream(url());
+  // Notify the observer that something happens. Read will return
+  // STREAM_ABORTED.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {

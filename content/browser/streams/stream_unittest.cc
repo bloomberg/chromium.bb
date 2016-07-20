@@ -43,8 +43,7 @@ class StreamTest : public testing::Test {
 
 class TestStreamReader : public StreamReadObserver {
  public:
-  TestStreamReader() : buffer_(new net::GrowableIOBuffer()), completed_(false) {
-  }
+  TestStreamReader() : buffer_(new net::GrowableIOBuffer()) {}
   ~TestStreamReader() override {}
 
   void Read(Stream* stream) {
@@ -68,6 +67,7 @@ class TestStreamReader : public StreamReadObserver {
           EXPECT_FALSE(completed_);
           return;
         case Stream::STREAM_ABORTED:
+          aborted_ = true;
           EXPECT_FALSE(completed_);
           return;
       }
@@ -82,13 +82,13 @@ class TestStreamReader : public StreamReadObserver {
 
   scoped_refptr<net::GrowableIOBuffer> buffer() { return buffer_; }
 
-  bool completed() const {
-    return completed_;
-  }
+  bool completed() const { return completed_; }
+  bool aborted() const { return aborted_; }
 
  private:
   scoped_refptr<net::GrowableIOBuffer> buffer_;
-  bool completed_;
+  bool completed_ = false;
+  bool aborted_ = false;
 };
 
 class TestStreamWriter : public StreamWriteObserver {
@@ -202,6 +202,20 @@ TEST_F(StreamTest, Stream) {
   ASSERT_EQ(reader.buffer()->capacity(), kBufferSize);
   for (int i = 0; i < kBufferSize; i++)
     EXPECT_EQ(buffer->data()[i], reader.buffer()->data()[i]);
+}
+
+TEST_F(StreamTest, Abort) {
+  TestStreamReader reader;
+  TestStreamWriter writer;
+
+  GURL url("blob://stream");
+  scoped_refptr<Stream> stream(new Stream(registry_.get(), &writer, url));
+  EXPECT_TRUE(stream->SetReadObserver(&reader));
+
+  stream->Abort();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(reader.completed());
+  EXPECT_TRUE(reader.aborted());
 }
 
 // Test that even if a reader receives an empty buffer, once TransferData()
