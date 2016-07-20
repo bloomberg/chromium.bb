@@ -289,8 +289,7 @@ cr.define('options', function() {
 
     /** @private */
     showImportExportButton_: function() {
-      $('password-manager-import').hidden = false;
-      $('password-manager-export').hidden = false;
+      $('password-manager-import-export').hidden = false;
     },
   };
 
