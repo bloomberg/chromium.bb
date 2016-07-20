@@ -110,6 +110,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Helper that defaults to no disallowed features and a GLES2 context.
   bool InitializeForTesting();
+  // Helper that defaults to no disallowed Features.
+  bool InitializeForTesting(ContextType context_type);
   // Helper that defaults to a GLES2 context.
   bool InitializeForTesting(const DisallowedFeatures& disallowed_features);
 

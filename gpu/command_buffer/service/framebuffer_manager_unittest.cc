@@ -1494,6 +1494,23 @@ TEST_F(FramebufferInfoTest, GetStatus) {
 class FramebufferInfoES3Test : public FramebufferInfoTestBase {
  public:
   FramebufferInfoES3Test() : FramebufferInfoTestBase(CONTEXT_TYPE_WEBGL2) {}
+
+ protected:
+  void SetUp() override {
+    InitializeContext("OpenGL ES 3.0", "");
+  }
+
+  void InitializeContext(const char* gl_version, const char* extensions) {
+    GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
+        extensions, "", gl_version);
+    feature_info_->InitializeForTesting(CONTEXT_TYPE_OPENGLES3);
+    decoder_.reset(new MockGLES2Decoder());
+    manager_.CreateFramebuffer(kClient1Id, kService1Id);
+    error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
+    framebuffer_ = manager_.GetFramebuffer(kClient1Id);
+    ASSERT_TRUE(framebuffer_ != NULL);
+  }
 };
 
 TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
@@ -1536,6 +1553,38 @@ TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
 
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
+}
+
+TEST_F(FramebufferInfoES3Test, DuplicatedAttachments) {
+  const GLuint kTextureClientId = 33;
+  const GLuint kTextureServiceId = 333;
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kWidth = 16;
+  const GLint kHeight = 32;
+  const GLint kDepth = 1;
+  const GLint kBorder = 0;
+  const GLint kSamples = 0;
+
+  texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
+  scoped_refptr<TextureRef> texture(
+      texture_manager_->GetTexture(kTextureClientId));
+  ASSERT_TRUE(texture.get() != nullptr);
+  texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, kLevel,
+                                 kFormat, kWidth, kHeight, kDepth, kBorder,
+                                 kFormat, kType, gfx::Rect());
+
+  // Check an image is attached to more than one color attachment point
+  // in a framebuffer.
+  framebuffer_->AttachTexture(
+      GL_COLOR_ATTACHMENT0, texture.get(), kTarget, kLevel, kSamples);
+  framebuffer_->AttachTexture(
+      GL_COLOR_ATTACHMENT1, texture.get(), kTarget, kLevel, kSamples);
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_UNSUPPORTED),
+      framebuffer_->IsPossiblyComplete(feature_info_.get()));
 }
 
 TEST_F(FramebufferInfoES3Test, ReadBuffer) {

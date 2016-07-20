@@ -51,8 +51,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual bool IsTextureAttachment() const = 0;
     virtual bool IsRenderbufferAttachment() const = 0;
     virtual bool IsTexture(TextureRef* texture) const = 0;
-    virtual bool IsRenderbuffer(
-        Renderbuffer* renderbuffer) const = 0;
+    virtual bool IsRenderbuffer(Renderbuffer* renderbuffer) const = 0;
+    virtual bool IsSameAttachment(const Attachment* attachment) const = 0;
     virtual bool Is3D() const = 0;
 
     // If it's a 3D texture attachment, return true if

@@ -211,6 +211,10 @@ bool FeatureInfo::InitializeForTesting() {
   return Initialize(CONTEXT_TYPE_OPENGLES2, DisallowedFeatures());
 }
 
+bool FeatureInfo::InitializeForTesting(ContextType context_type) {
+  return Initialize(context_type, DisallowedFeatures());
+}
+
 bool IsGL_REDSupportedOnFBOs() {
   // Skia uses GL_RED with frame buffers, unfortunately, Mesa claims to support
   // GL_EXT_texture_rg, but it doesn't support it on frame buffers.  To fix

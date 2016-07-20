@@ -89,6 +89,15 @@ class RenderbufferAttachment
     return renderbuffer_.get() == renderbuffer;
   }
 
+  bool IsSameAttachment(const Attachment* attachment) const override {
+    if (attachment->IsRenderbufferAttachment()) {
+      const RenderbufferAttachment* other =
+          reinterpret_cast<const RenderbufferAttachment*>(attachment);
+      return IsRenderbuffer(other->renderbuffer());
+    }
+    return false;
+  }
+
   bool Is3D() const override { return false; }
 
   bool CanRenderTo(const FeatureInfo*) const override { return true; }
@@ -218,6 +227,18 @@ class TextureAttachment
 
   bool IsTexture(TextureRef* texture) const override {
     return texture == texture_ref_.get();
+  }
+
+  bool IsSameAttachment(const Attachment* attachment) const override {
+    if (attachment->IsTextureAttachment()) {
+      const TextureAttachment* other =
+          reinterpret_cast<const TextureAttachment*>(attachment);
+      return IsTexture(other->texture()) &&
+          layer_ == other->layer() &&
+          target_ == other->target() &&
+          level_ == other->level();
+    }
+    return false;
   }
 
   bool IsRenderbuffer(Renderbuffer* /* renderbuffer */) const override {
@@ -710,6 +731,19 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
     }
     if (!attachment->CanRenderTo(feature_info)) {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+    }
+
+    // Attaching an image to more than one color attachment point should return
+    // FRAMEBUFFER_UNSUPPORTED.
+    if (it->first >= GL_COLOR_ATTACHMENT0 &&
+        it->first < GL_COLOR_ATTACHMENT0 + manager_->max_color_attachments_) {
+      for (GLenum i = it->first + 1;
+           i < GL_COLOR_ATTACHMENT0 + manager_->max_color_attachments_; i++) {
+        const Attachment* other = GetAttachment(i);
+        if (other && attachment->IsSameAttachment(other)) {
+          return GL_FRAMEBUFFER_UNSUPPORTED;
+        }
+      }
     }
   }
 
