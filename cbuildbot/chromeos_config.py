@@ -318,7 +318,7 @@ class HWTestList(object):
   @classmethod
   def ToolchainTest(cls, **kwargs):
     """Return a list of HWTESTConfigs which run toolchain correctness tests."""
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL, async=False,
+    default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
                         file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
     default_dict.update(kwargs)
@@ -327,8 +327,6 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_TOOLCHAIN_SUITE,
-                                    **default_dict),
-            config_lib.HWTestConfig('paygen_au_canary',
                                     **default_dict),
             config_lib.HWTestConfig('security',
                                     **default_dict),
@@ -2174,21 +2172,11 @@ def GetConfig():
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       images=['base', 'recovery', 'test', 'factory_install'],
-      sign_types=['recovery'],
-      push_image=True,
-      upload_symbols=True,
-      binhost_bucket='gs://chromeos-dev-installer',
-      binhost_key='RELEASE_BINHOST',
-      binhost_base_url='https://commondatastorage.googleapis.com/'
-                       'chromeos-dev-installer',
-      dev_installer_prebuilts=True,
       git_sync=False,
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
       hw_tests=HWTestList.ToolchainTest(),
-      paygen=True,
-      signer_tests=True,
       trybot_list=True,
       hwqual=True,
       description="Toolchain Builds (internal)",
