@@ -370,7 +370,7 @@ File::Error File::Unlock() {
   return CallFcntlFlock(file_.get(), false);
 }
 
-File File::Duplicate() {
+File File::Duplicate() const {
   if (!IsValid())
     return File();
 

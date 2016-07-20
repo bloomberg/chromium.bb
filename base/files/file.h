@@ -290,7 +290,7 @@ class BASE_EXPORT File {
   // object that was created or initialized with this flag will have unlinked
   // the underlying file when it was created or opened. On Windows, the
   // underlying file is deleted when the last handle to it is closed.
-  File Duplicate();
+  File Duplicate() const;
 
   bool async() const { return async_; }
 

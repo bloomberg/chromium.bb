@@ -20,23 +20,26 @@ bool FileTracingProviderImpl::FileTracingCategoryIsEnabled() const {
   return enabled;
 }
 
-void FileTracingProviderImpl::FileTracingEnable(void* id) {
+void FileTracingProviderImpl::FileTracingEnable(const void* id) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       kFileTracingEventCategoryGroup, FILE_TRACING_PREFIX, id);
 }
 
-void FileTracingProviderImpl::FileTracingDisable(void* id) {
+void FileTracingProviderImpl::FileTracingDisable(const void* id) {
   TRACE_EVENT_NESTABLE_ASYNC_END0(
       kFileTracingEventCategoryGroup, FILE_TRACING_PREFIX, id);
 }
 
-void FileTracingProviderImpl::FileTracingEventBegin(
-    const char* name, void* id, const base::FilePath& path, int64_t size) {
+void FileTracingProviderImpl::FileTracingEventBegin(const char* name,
+                                                    const void* id,
+                                                    const base::FilePath& path,
+                                                    int64_t size) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(kFileTracingEventCategoryGroup, name, id,
       "path", path.AsUTF8Unsafe(), "size", size);
 }
 
-void FileTracingProviderImpl::FileTracingEventEnd(const char* name, void* id) {
+void FileTracingProviderImpl::FileTracingEventEnd(const char* name,
+                                                  const void* id) {
   TRACE_EVENT_NESTABLE_ASYNC_END0(kFileTracingEventCategoryGroup, name, id);
 }
 

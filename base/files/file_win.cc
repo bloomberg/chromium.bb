@@ -249,7 +249,7 @@ File::Error File::Unlock() {
   return FILE_OK;
 }
 
-File File::Duplicate() {
+File File::Duplicate() const {
   if (!IsValid())
     return File();
 
