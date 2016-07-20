@@ -50,10 +50,10 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   void BeginMainFrameAbortedOnImpl(
       CommitEarlyOutReason reason,
       base::TimeTicks main_thread_start_time) override;
-  void StartCommitOnImpl(CompletionEvent* completion,
-                         LayerTreeHost* layer_tree_host,
-                         base::TimeTicks main_thread_start_time,
-                         bool hold_commit_for_activation) override;
+  void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
+                                 LayerTreeHost* layer_tree_host,
+                                 base::TimeTicks main_thread_start_time,
+                                 bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
       LayerTreeHost* layer_tree_host,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;

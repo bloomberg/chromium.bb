@@ -49,20 +49,17 @@ class CC_EXPORT ProxyMain : public Proxy {
     COMMIT_PIPELINE_STAGE,
   };
 
-  // Virtual for testing.
-  virtual void DidCompleteSwapBuffers();
-  virtual void SetRendererCapabilities(
-      const RendererCapabilities& capabilities);
-  virtual void BeginMainFrameNotExpectedSoon();
-  virtual void DidCommitAndDrawFrame();
-  virtual void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
-  virtual void DidLoseOutputSurface();
-  virtual void RequestNewOutputSurface();
-  virtual void DidInitializeOutputSurface(
-      bool success,
-      const RendererCapabilities& capabilities);
-  virtual void DidCompletePageScaleAnimation();
-  virtual void BeginMainFrame(
+  void DidCompleteSwapBuffers();
+  void SetRendererCapabilities(const RendererCapabilities& capabilities);
+  void BeginMainFrameNotExpectedSoon();
+  void DidCommitAndDrawFrame();
+  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
+  void DidLoseOutputSurface();
+  void RequestNewOutputSurface();
+  void DidInitializeOutputSurface(bool success,
+                                  const RendererCapabilities& capabilities);
+  void DidCompletePageScaleAnimation();
+  void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
 
   ChannelMain* channel_main() const { return channel_main_.get(); }

@@ -50,6 +50,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -147,6 +148,7 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
   enum ImplOrder : int {
     IMPL_START = 1,
+    IMPL_READY_TO_COMMIT,
     IMPL_COMMIT,
     IMPL_COMMIT_COMPLETE,
     IMPL_ACTIVATE,
@@ -175,6 +177,10 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
   void DidBeginMainFrame() override {
     EXPECT_TRUE(CheckStep(MAIN_DID_BEGIN_FRAME, &main_));
+  }
+
+  void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_READY_TO_COMMIT, &impl_));
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
@@ -2349,11 +2355,11 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
     }
   }
 
-  void ScheduledActionSendBeginMainFrame() override {
+  void WillBeginMainFrame() override {
     num_send_begin_main_frame_++;
     switch (num_send_begin_main_frame_) {
       case 1:
-        PostSetDeferCommitsToMainThread(true);
+        layer_tree_host()->SetDeferCommits(true);
         break;
       case 2:
         EndTest();
@@ -2637,6 +2643,38 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   int commit_complete_count_;
 };
 
+class OnDrawOutputSurface : public OutputSurface {
+ public:
+  explicit OnDrawOutputSurface(base::Closure invalidate_callback)
+      : OutputSurface(TestContextProvider::Create(),
+                      TestContextProvider::CreateWorker(),
+                      nullptr),
+        invalidate_callback_(std::move(invalidate_callback)) {
+    capabilities_.delegated_rendering = true;
+  }
+
+  // OutputSurface implementation.
+  void SwapBuffers(CompositorFrame frame) override { did_swap_ = true; }
+  uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
+  void Invalidate() override { invalidate_callback_.Run(); }
+
+  void OnDraw(bool resourceless_software_draw) {
+    gfx::Transform identity;
+    gfx::Rect empty_rect;
+    // SwapBuffers happens inside of OnDraw.
+    client_->OnDraw(identity, empty_rect, empty_rect,
+                    resourceless_software_draw);
+    if (did_swap_) {
+      did_swap_ = false;
+      client_->DidSwapBuffersComplete();
+    }
+  }
+
+ private:
+  bool did_swap_ = false;
+  base::Closure invalidate_callback_;
+};
+
 class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     : public LayerTreeHostTestAbortedCommitDoesntStall {
  protected:
@@ -2645,28 +2683,28 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     settings->using_synchronous_renderer_compositor = true;
   }
 
-  void ScheduledActionInvalidateOutputSurface() override {
-    // Do not call ImplThreadTaskRunner after the test ended because of the
-    // possibility of use-after-free due to a race.
-    if (TestEnded())
-      return;
-    ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
-                CallOnDraw,
-            base::Unretained(this)));
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
+    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(base::Bind(
+        &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
+            CallOnDraw,
+        base::Unretained(this)));
+    output_surface_ = output_surface.get();
+    return std::move(output_surface);
   }
 
   void CallOnDraw() {
-    // Synchronous compositor does not draw unless told to do so by the output
-    // surface.
-    gfx::Transform identity;
-    gfx::Rect empty_rect;
-    bool resourceless_software_draw = false;
-    fake_output_surface()->client()->OnDraw(identity, empty_rect, empty_rect,
-                                            resourceless_software_draw);
+    if (!TestEnded()) {
+      // Synchronous compositor does not draw unless told to do so by the output
+      // surface. But it needs to be done on a new stack frame.
+      bool resourceless_software_draw = false;
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE, base::Bind(&OnDrawOutputSurface::OnDraw,
+                                base::Unretained(output_surface_),
+                                resourceless_software_draw));
+    }
   }
+
+  OnDrawOutputSurface* output_surface_ = nullptr;
 };
 
 MULTI_THREAD_TEST_F(
@@ -2758,7 +2796,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNumFramesPending);
 
 class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
- public:
+ protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->using_synchronous_renderer_compositor = true;
   }
@@ -2786,36 +2824,27 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   }
 
   std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    auto output_surface = delegating_renderer()
-                              ? FakeOutputSurface::CreateDelegatingSoftware(
-                                    base::WrapUnique(new SoftwareOutputDevice))
-                              : FakeOutputSurface::CreateSoftware(
-                                    base::WrapUnique(new SoftwareOutputDevice));
-    software_output_surface_ = output_surface.get();
+    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(
+        base::Bind(&LayerTreeHostTestResourcelessSoftwareDraw::CallOnDraw,
+                   base::Unretained(this)));
+    output_surface_ = output_surface.get();
     return std::move(output_surface);
   }
 
   void BeginTest() override {
     PostSetNeedsCommitToMainThread();
-    swap_count_ = 0;
-  }
-
-  void ScheduledActionInvalidateOutputSurface() override {
-    if (TestEnded())
-      return;
-
-    ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostTestResourcelessSoftwareDraw::CallOnDraw,
-                   base::Unretained(this)));
   }
 
   void CallOnDraw() {
-    gfx::Transform identity;
-    gfx::Rect empty_rect;
-    bool resourceless_software_draw = true;
-    software_output_surface_->client()->OnDraw(identity, empty_rect, empty_rect,
-                                               resourceless_software_draw);
+    if (!TestEnded()) {
+      // Synchronous compositor does not draw unless told to do so by the output
+      // surface. But it needs to be done on a new stack frame.
+      bool resourceless_software_draw = true;
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE, base::Bind(&OnDrawOutputSurface::OnDraw,
+                                base::Unretained(output_surface_),
+                                resourceless_software_draw));
+    }
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -2838,8 +2867,8 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    swap_count_++;
-    switch (swap_count_) {
+    draw_count_++;
+    switch (draw_count_) {
       case 1:
         host_impl->SetNeedsRedraw();
         break;
@@ -2854,12 +2883,12 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  FakeOutputSurface* software_output_surface_ = nullptr;
+  OnDrawOutputSurface* output_surface_ = nullptr;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<Layer> parent_layer_;
   scoped_refptr<Layer> child_layer_;
-  int swap_count_;
+  int draw_count_ = 0;
 };
 
 // Resourceless is not used for SingleThreadProxy, so it is unimplemented.
@@ -4652,7 +4681,8 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
   }
 
-  void ScheduledActionWillSendBeginMainFrame() override {
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const BeginFrameArgs& args) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeHostTestBreakSwapPromiseForVisibility
@@ -4696,7 +4726,8 @@ class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
   }
 
-  void ScheduledActionWillSendBeginMainFrame() override {
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const BeginFrameArgs& args) override {
     if (output_surface_lost_triggered_)
       return;
     output_surface_lost_triggered_ = true;
@@ -5224,7 +5255,7 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
       PostSetNeedsCommitToMainThread();
   }
 
-  void SendBeginMainFrameNotExpectedSoon() override { EndTest(); }
+  void BeginMainFrameNotExpectedSoon() override { EndTest(); }
 
   void AfterTest() override {
     EXPECT_GT(will_begin_impl_frame_count_, 0);
@@ -5297,7 +5328,7 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
     EXPECT_PRED_FORMAT2(AssertFrameTimeContained, impl_frame_args_, args);
   }
 
-  void SendBeginMainFrameNotExpectedSoon() override { EndTest(); }
+  void BeginMainFrameNotExpectedSoon() override { EndTest(); }
 
   void AfterTest() override {
     EXPECT_GT(impl_frame_args_.size(), 0U);
@@ -6002,7 +6033,7 @@ class LayerTreeHostTestOneActivatePerPrepareTiles : public LayerTreeHostTest {
     EndTestAfterDelayMs(100);
   }
 
-  void ScheduledActionPrepareTiles() override {
+  void WillPrepareTilesOnThread(LayerTreeHostImpl* impl) override {
     ++scheduled_prepare_tiles_count_;
   }
 
@@ -6057,7 +6088,7 @@ class LayerTreeHostTestActivationCausesPrepareTiles : public LayerTreeHostTest {
     EndTest();
   }
 
-  void ScheduledActionPrepareTiles() override {
+  void WillPrepareTilesOnThread(LayerTreeHostImpl* impl) override {
     ++scheduled_prepare_tiles_count_;
   }
 
@@ -6711,71 +6742,6 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestPageScaleFlags);
-
-class LayerTreeHostScrollingAndScalingUpdatesLayers : public LayerTreeHostTest {
- public:
-  LayerTreeHostScrollingAndScalingUpdatesLayers()
-      : requested_update_layers_(false), commit_count_(0) {}
-
-  void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-    Layer* root_layer = layer_tree_host()->root_layer();
-    scoped_refptr<Layer> scroll_layer = Layer::Create();
-    CreateVirtualViewportLayers(root_layer, scroll_layer, root_layer->bounds(),
-                                root_layer->bounds(), layer_tree_host());
-  }
-
-  void BeginTest() override {
-    LayerTreeHostCommon::ScrollUpdateInfo scroll;
-    scroll.layer_id = layer_tree_host()->root_layer()->id();
-    scroll.scroll_delta = gfx::Vector2d(0, 33);
-    scroll_info_.scrolls.push_back(scroll);
-
-    scale_info_.page_scale_delta = 2.71f;
-
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void BeginMainFrame(const BeginFrameArgs& args) override {
-    switch (commit_count_) {
-      case 0:
-        requested_update_layers_ = false;
-        layer_tree_host()->ApplyScrollAndScale(&no_op_info_);
-        EXPECT_FALSE(requested_update_layers_);
-        break;
-      case 1:
-        requested_update_layers_ = false;
-        layer_tree_host()->ApplyScrollAndScale(&scale_info_);
-        EXPECT_TRUE(requested_update_layers_);
-        break;
-      case 2:
-        requested_update_layers_ = false;
-        layer_tree_host()->ApplyScrollAndScale(&scroll_info_);
-        EXPECT_TRUE(requested_update_layers_);
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void DidSetNeedsUpdateLayers() override { requested_update_layers_ = true; }
-
-  void DidCommit() override {
-    if (++commit_count_ < 3)
-      PostSetNeedsCommitToMainThread();
-  }
-
-  void AfterTest() override {}
-
-  ScrollAndScaleSet scroll_info_;
-  ScrollAndScaleSet scale_info_;
-  ScrollAndScaleSet no_op_info_;
-  bool requested_update_layers_;
-  int commit_count_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostScrollingAndScalingUpdatesLayers);
 
 class LayerTreeHostTestDestroyWhileInitializingOutputSurface
     : public LayerTreeHostTest {

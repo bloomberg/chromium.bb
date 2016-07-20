@@ -172,12 +172,12 @@ void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
   SendMessageProto(proto);
 }
 
-void RemoteChannelMain::StartCommitOnImpl(
+void RemoteChannelMain::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
     LayerTreeHost* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
-  TRACE_EVENT0("cc.remote", "RemoteChannelMain::StartCommitOnImpl");
+  TRACE_EVENT0("cc.remote", "RemoteChannelMain::NotifyReadyToCommitOnImpl");
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(proto::CompositorMessageToImpl::START_COMMIT);

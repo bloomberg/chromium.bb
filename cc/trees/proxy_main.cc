@@ -245,9 +245,9 @@ void ProxyMain::BeginMainFrame(
     bool hold_commit_for_activation = commit_waits_for_activation_;
     commit_waits_for_activation_ = false;
     CompletionEvent completion;
-    channel_main_->StartCommitOnImpl(&completion, layer_tree_host_,
-                                     begin_main_frame_start_time,
-                                     hold_commit_for_activation);
+    channel_main_->NotifyReadyToCommitOnImpl(&completion, layer_tree_host_,
+                                             begin_main_frame_start_time,
+                                             hold_commit_for_activation);
     completion.Wait();
   }
 

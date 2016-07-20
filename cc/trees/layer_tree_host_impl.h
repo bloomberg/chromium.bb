@@ -236,6 +236,7 @@ class CC_EXPORT LayerTreeHostImpl
   };
 
   virtual void BeginMainFrameAborted(CommitEarlyOutReason reason);
+  virtual void ReadyToCommit() {}  // For tests.
   virtual void BeginCommit();
   virtual void CommitComplete();
   virtual void UpdateAnimationState(bool start_ready_animations);

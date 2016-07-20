@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
 #include "base/single_thread_task_runner.h"
@@ -322,8 +323,8 @@ void LayerTreeHost::InitializeRemoteClient(
   // LayerTreeHost on the client, while the other requests are sent to the
   // RemoteChannelMain on the server which directs them to ProxyMain and the
   // remote server LayerTreeHost.
-  InitializeProxy(RemoteChannelImpl::Create(this, remote_proto_channel,
-                                            task_runner_provider_.get()),
+  InitializeProxy(base::MakeUnique<RemoteChannelImpl>(
+                      this, remote_proto_channel, task_runner_provider_.get()),
                   nullptr);
 }
 

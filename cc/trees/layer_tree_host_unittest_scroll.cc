@@ -1533,17 +1533,17 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void StartCommitOnImpl() override {
+  void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
     switch (num_commits_) {
       case 1:
         // Ask for commit here because activation (and draw) will be blocked.
-        GetProxyImplForTest()->SetNeedsCommitOnImpl();
+        impl->SetNeedsCommit();
         // Block activation after second commit until third commit is ready.
-        GetProxyImplForTest()->BlockNotifyReadyToActivateForTesting(true);
+        impl->BlockNotifyReadyToActivateForTesting(true);
         break;
       case 2:
         // Unblock activation after third commit is ready.
-        GetProxyImplForTest()->BlockNotifyReadyToActivateForTesting(false);
+        impl->BlockNotifyReadyToActivateForTesting(false);
         break;
     }
     num_commits_++;

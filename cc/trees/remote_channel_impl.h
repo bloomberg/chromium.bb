@@ -78,17 +78,10 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
                                     public RemoteProtoChannel::ProtoReceiver,
                                     public Proxy {
  public:
-  static std::unique_ptr<RemoteChannelImpl> Create(
-      LayerTreeHost* layer_tree_host,
-      RemoteProtoChannel* remote_proto_channel,
-      TaskRunnerProvider* task_runner_provider);
-
-  ~RemoteChannelImpl() override;
-
- protected:
   RemoteChannelImpl(LayerTreeHost* layer_tree_host,
                     RemoteProtoChannel* remote_proto_channel,
                     TaskRunnerProvider* task_runner_provider);
+  ~RemoteChannelImpl() override;
 
   // virtual for testing.
   virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(

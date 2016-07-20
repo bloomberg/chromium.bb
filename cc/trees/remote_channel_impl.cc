@@ -17,14 +17,6 @@
 
 namespace cc {
 
-std::unique_ptr<RemoteChannelImpl> RemoteChannelImpl::Create(
-    LayerTreeHost* layer_tree_host,
-    RemoteProtoChannel* remote_proto_channel,
-    TaskRunnerProvider* task_runner_provider) {
-  return base::WrapUnique(new RemoteChannelImpl(
-      layer_tree_host, remote_proto_channel, task_runner_provider));
-}
-
 RemoteChannelImpl::RemoteChannelImpl(LayerTreeHost* layer_tree_host,
                                      RemoteProtoChannel* remote_proto_channel,
                                      TaskRunnerProvider* task_runner_provider)
@@ -51,8 +43,9 @@ std::unique_ptr<ProxyImpl> RemoteChannelImpl::CreateProxyImpl(
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(task_runner_provider_->IsImplThread());
   DCHECK(!external_begin_frame_source);
-  return ProxyImpl::Create(channel_impl, layer_tree_host, task_runner_provider,
-                           std::move(external_begin_frame_source));
+  return base::MakeUnique<ProxyImpl>(channel_impl, layer_tree_host,
+                                     task_runner_provider,
+                                     std::move(external_begin_frame_source));
 }
 
 void RemoteChannelImpl::OnProtoReceived(
@@ -125,9 +118,9 @@ void RemoteChannelImpl::HandleProto(
         VLOG(1) << "Starting commit.";
         ImplThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&ProxyImpl::StartCommitOnImpl, proxy_impl_weak_ptr_,
-                       &completion, main().layer_tree_host,
-                       main_thread_start_time, false));
+            base::Bind(&ProxyImpl::NotifyReadyToCommitOnImpl,
+                       proxy_impl_weak_ptr_, &completion,
+                       main().layer_tree_host, main_thread_start_time, false));
         completion.Wait();
       }
     } break;

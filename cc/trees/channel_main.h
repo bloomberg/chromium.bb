@@ -52,10 +52,10 @@ class CC_EXPORT ChannelMain {
   virtual void BeginMainFrameAbortedOnImpl(
       CommitEarlyOutReason reason,
       base::TimeTicks main_thread_start_time) = 0;
-  virtual void StartCommitOnImpl(CompletionEvent* completion,
-                                 LayerTreeHost* layer_tree_host,
-                                 base::TimeTicks main_thread_start_time,
-                                 bool hold_commit_for_activation) = 0;
+  virtual void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
+                                         LayerTreeHost* layer_tree_host,
+                                         base::TimeTicks main_thread_start_time,
+                                         bool hold_commit_for_activation) = 0;
 
   // Must be called before using the channel.
   virtual void SynchronouslyInitializeImpl(

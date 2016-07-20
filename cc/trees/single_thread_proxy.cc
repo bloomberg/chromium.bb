@@ -236,6 +236,7 @@ void SingleThreadProxy::DoCommit() {
     commit_blocking_task_runner_.reset(new BlockingTaskRunner::CapturePostTasks(
         task_runner_provider_->blocking_main_thread_task_runner()));
 
+    layer_tree_host_impl_->ReadyToCommit();
     layer_tree_host_impl_->BeginCommit();
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509

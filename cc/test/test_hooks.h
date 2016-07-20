@@ -22,8 +22,6 @@ class TestHooks : public AnimationDelegate {
   TestHooks();
   ~TestHooks() override;
 
-  void ReadSettings(const LayerTreeSettings& settings);
-
   virtual void CreateResourceAndRasterBufferProvider(
       LayerTreeHostImpl* host_impl,
       std::unique_ptr<RasterBufferProvider>* raster_buffer_provider,
@@ -33,7 +31,8 @@ class TestHooks : public AnimationDelegate {
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                              CommitEarlyOutReason reason) {}
-  virtual void WillPrepareTiles(LayerTreeHostImpl* host_impl) {}
+  virtual void ReadyToCommitOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
@@ -68,6 +67,7 @@ class TestHooks : public AnimationDelegate {
       const gfx::Vector2dF& elastic_overscroll_delta,
       float scale,
       float top_controls_delta) {}
+  virtual void BeginMainFrameNotExpectedSoon() {}
   virtual void BeginMainFrame(const BeginFrameArgs& args) {}
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
@@ -82,53 +82,9 @@ class TestHooks : public AnimationDelegate {
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
   virtual void ScheduleComposite() {}
-  virtual void DidSetNeedsUpdateLayers() {}
   virtual void DidActivateSyncTree() {}
 
-  // Hooks for SchedulerClient.
-  virtual void ScheduledActionWillSendBeginMainFrame() {}
-  virtual void ScheduledActionSendBeginMainFrame() {}
-  virtual void ScheduledActionDrawAndSwapIfPossible() {}
-  virtual void ScheduledActionCommit() {}
-  virtual void ScheduledActionBeginOutputSurfaceCreation() {}
-  virtual void ScheduledActionPrepareTiles() {}
-  virtual void ScheduledActionInvalidateOutputSurface() {}
-  virtual void SendBeginMainFrameNotExpectedSoon() {}
-
-  // Hooks for ProxyImpl
-  virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                            TopControlsState current,
-                                            bool animate) {}
-  virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) {}
-  virtual void MainThreadHasStoppedFlingingOnImpl() {}
-  virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) {}
-  virtual void SetDeferCommitsOnImpl(bool defer_commits) {}
-  virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) {}
-  virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {}
-  virtual void SetNeedsCommitOnImpl() {}
-  virtual void FinishAllRenderingOnImpl() {}
-  virtual void SetVisibleOnImpl(bool visible) {}
-  virtual void ReleaseOutputSurfaceOnImpl() {}
-  virtual void FinishGLOnImpl() {}
-  virtual void StartCommitOnImpl() {}
-
-  // Hooks for ProxyMain
-  virtual void ReceivedDidCompleteSwapBuffers() {}
-  virtual void ReceivedSetRendererCapabilitiesMainCopy(
-      const RendererCapabilities& capabilities) {}
-  virtual void ReceivedBeginMainFrameNotExpectedSoon() {}
-  virtual void ReceivedDidCommitAndDrawFrame() {}
-  virtual void ReceivedSetAnimationEvents() {}
-  virtual void ReceivedDidLoseOutputSurface() {}
-  virtual void ReceivedRequestNewOutputSurface() {}
-  virtual void ReceivedDidInitializeOutputSurface(
-      bool success,
-      const RendererCapabilities& capabilities) {}
-  virtual void ReceivedDidCompletePageScaleAnimation() {}
-  virtual void ReceivedPostFrameTimingEventsOnMain() {}
-  virtual void ReceivedBeginMainFrame() {}
-
-  // Implementation of AnimationDelegate:
+  // AnimationDelegate implementation.
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group) override {}

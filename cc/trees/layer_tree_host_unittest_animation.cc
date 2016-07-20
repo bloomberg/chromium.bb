@@ -1178,7 +1178,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     PostSetNeedsCommitToMainThread();
   }
 
-  void WillPrepareTiles(LayerTreeHostImpl* host_impl) override {
+  void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->sync_tree()->source_frame_number() != 0)
       return;
 

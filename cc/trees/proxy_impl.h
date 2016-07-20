@@ -23,49 +23,36 @@ namespace cc {
 class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
                             public NON_EXPORTED_BASE(SchedulerClient) {
  public:
-  static std::unique_ptr<ProxyImpl> Create(
-      ChannelImpl* channel_impl,
-      LayerTreeHost* layer_tree_host,
-      TaskRunnerProvider* task_runner_provider,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
-
+  ProxyImpl(ChannelImpl* channel_impl,
+            LayerTreeHost* layer_tree_host,
+            TaskRunnerProvider* task_runner_provider,
+            std::unique_ptr<BeginFrameSource> external_begin_frame_source);
   ~ProxyImpl() override;
 
   // Virtual for testing.
-  virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                            TopControlsState current,
-                                            bool animate);
-  virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface);
-  virtual void InitializeMutatorOnImpl(
-      std::unique_ptr<LayerTreeMutator> mutator);
-  virtual void MainThreadHasStoppedFlingingOnImpl();
-  virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
-  virtual void SetDeferCommitsOnImpl(bool defer_commits) const;
-  virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
-  virtual void SetNeedsCommitOnImpl();
-  virtual void BeginMainFrameAbortedOnImpl(
-      CommitEarlyOutReason reason,
-      base::TimeTicks main_thread_start_time);
-  virtual void FinishAllRenderingOnImpl(CompletionEvent* completion);
-  virtual void SetVisibleOnImpl(bool visible);
-  virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion);
-  virtual void FinishGLOnImpl(CompletionEvent* completion);
-  virtual void StartCommitOnImpl(CompletionEvent* completion,
+  void UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                    TopControlsState current,
+                                    bool animate);
+  void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface);
+  void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);
+  void MainThreadHasStoppedFlingingOnImpl();
+  void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
+  void SetDeferCommitsOnImpl(bool defer_commits) const;
+  void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
+  void SetNeedsCommitOnImpl();
+  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason,
+                                   base::TimeTicks main_thread_start_time);
+  void FinishAllRenderingOnImpl(CompletionEvent* completion);
+  void SetVisibleOnImpl(bool visible);
+  void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion);
+  void FinishGLOnImpl(CompletionEvent* completion);
+  void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation);
 
   void MainFrameWillHappenOnImplForTesting(CompletionEvent* completion,
                                            bool* main_frame_will_happen);
-  void BlockNotifyReadyToActivateForTesting(bool block);
-  CompletionEvent* ActivationCompletionEventForTesting();
-
- protected:
-  // protected for testing.
-  ProxyImpl(ChannelImpl* channel_impl,
-            LayerTreeHost* layer_tree_host,
-            TaskRunnerProvider* task_runner_provider,
-            std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   // The members of this struct should be accessed on the impl thread only when
@@ -75,8 +62,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
     ~BlockedMainCommitOnly();
     LayerTreeHost* layer_tree_host;
   };
-
-  friend class ProxyImplForTest;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;

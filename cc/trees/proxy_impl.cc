@@ -36,16 +36,6 @@ unsigned int nextBeginFrameId = 0;
 
 }  // namespace
 
-std::unique_ptr<ProxyImpl> ProxyImpl::Create(
-    ChannelImpl* channel_impl,
-    LayerTreeHost* layer_tree_host,
-    TaskRunnerProvider* task_runner_provider,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
-  return base::WrapUnique(
-      new ProxyImpl(channel_impl, layer_tree_host, task_runner_provider,
-                    std::move(external_begin_frame_source)));
-}
-
 ProxyImpl::ProxyImpl(
     ChannelImpl* channel_impl,
     LayerTreeHost* layer_tree_host,
@@ -71,6 +61,10 @@ ProxyImpl::ProxyImpl(
   TRACE_EVENT0("cc", "ProxyImpl::ProxyImpl");
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
+
+  // Double checking we set this correctly since double->int truncations are
+  // silent and have been done mistakenly: crbug.com/568120.
+  DCHECK(!smoothness_priority_expiration_notifier_.delay().is_zero());
 
   layer_tree_host_impl_ = layer_tree_host->CreateLayerTreeHostImpl(this);
 
@@ -256,21 +250,12 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
   completion->Signal();
 }
 
-void ProxyImpl::BlockNotifyReadyToActivateForTesting(bool block) {
-  DCHECK(IsImplThread());
-  layer_tree_host_impl_->BlockNotifyReadyToActivateForTesting(block);
-}
-
-CompletionEvent* ProxyImpl::ActivationCompletionEventForTesting() {
-  DCHECK(IsImplThread());
-  return activation_completion_event_;
-}
-
-void ProxyImpl::StartCommitOnImpl(CompletionEvent* completion,
-                                  LayerTreeHost* layer_tree_host,
-                                  base::TimeTicks main_thread_start_time,
-                                  bool hold_commit_for_activation) {
-  TRACE_EVENT0("cc", "ProxyImpl::StartCommitOnImplThread");
+void ProxyImpl::NotifyReadyToCommitOnImpl(
+    CompletionEvent* completion,
+    LayerTreeHost* layer_tree_host,
+    base::TimeTicks main_thread_start_time,
+    bool hold_commit_for_activation) {
+  TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToCommitOnImpl");
   DCHECK(!commit_completion_event_);
   DCHECK(IsImplThread() && IsMainThreadBlocked());
   DCHECK(scheduler_);
@@ -286,6 +271,8 @@ void ProxyImpl::StartCommitOnImpl(CompletionEvent* completion,
   // Ideally, we should inform to impl thread when BeginMainFrame is started.
   // But, we can avoid a PostTask in here.
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
+
+  layer_tree_host_impl_->ReadyToCommit();
 
   commit_completion_event_ = completion;
   commit_completion_waits_for_activation_ = hold_commit_for_activation;

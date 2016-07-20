@@ -1569,13 +1569,16 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     PostSetNeedsCommitToMainThread();
   }
 
-  void ScheduledActionWillSendBeginMainFrame() override {
+  void WillBeginMainFrame() override {
+    // Don't begin a frame with a lost surface.
+    EXPECT_FALSE(layer_tree_host()->output_surface_lost());
+
     if (deferred_)
       return;
     deferred_ = true;
 
-    // Defer commits before the BeginFrame arrives, causing it to be delayed.
-    PostSetDeferCommitsToMainThread(true);
+    // Defer commits before the BeginFrame completes, causing it to be delayed.
+    layer_tree_host()->SetDeferCommits(true);
     // Meanwhile, lose the context while we are in defer commits.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -1589,11 +1592,6 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
 
     // After losing the context, stop deferring commits.
     PostSetDeferCommitsToMainThread(false);
-  }
-
-  void WillBeginMainFrame() override {
-    // Don't begin a frame with a lost surface.
-    EXPECT_FALSE(layer_tree_host()->output_surface_lost());
   }
 
   void DidCommitAndDrawFrame() override { EndTest(); }

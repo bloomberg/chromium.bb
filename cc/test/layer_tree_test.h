@@ -8,8 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "cc/animation/animation_delegate.h"
-#include "cc/test/proxy_impl_for_test.h"
-#include "cc/test/proxy_main_for_test.h"
 #include "cc/test/remote_proto_channel_bridge.h"
 #include "cc/test/test_hooks.h"
 #include "cc/trees/layer_tree_host.h"
@@ -26,12 +24,13 @@ class LayerTreeHost;
 class LayerTreeHostForTesting;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
+class ProxyImpl;
+class ProxyMain;
 class RemoteChannelImplForTest;
 class TestContextProvider;
 class TestGpuMemoryBufferManager;
 class TestTaskGraphRunner;
 class TestWebGraphicsContext3D;
-class ThreadedChannelForTest;
 
 // Creates the virtual viewport layer hierarchy under the given root_layer.
 // Convenient overload of the method below that creates a scrolling layer as
@@ -150,16 +149,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   TestGpuMemoryBufferManager* gpu_memory_buffer_manager() {
     return gpu_memory_buffer_manager_.get();
   }
-
-  // Use these only for tests in threaded or remote mode.
-  ProxyMainForTest* GetProxyMainForTest() const;
-  ProxyImplForTest* GetProxyImplForTest() const;
-
-  // Use this only for tests in threaded mode.
-  ThreadedChannelForTest* GetThreadedChannelForTest() const;
-
-  // Use this only for tests in remote mode.
-  RemoteChannelImplForTest* GetRemoteChannelImplForTest() const;
 
   void DestroyLayerTreeHost();
   void DestroyRemoteClientHost() override;
