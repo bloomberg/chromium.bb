@@ -35,6 +35,7 @@ PrefServiceSyncable::PrefServiceSyncable(
                   pref_registry,
                   read_error_callback,
                   async),
+      pref_service_forked_(false),
       pref_sync_associator_(pref_model_associator_client, syncer::PREFERENCES),
       priority_pref_sync_associator_(pref_model_associator_client,
                                      syncer::PRIORITY_PREFERENCES) {
