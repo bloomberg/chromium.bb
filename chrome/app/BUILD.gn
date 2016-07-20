@@ -354,7 +354,7 @@ static_library("test_support") {
   if (is_chromeos) {
     deps += [
       "//chrome/browser/chromeos",
-      "//components/metrics/leak_detector:leak_detector",
+      "//components/metrics:leak_detector",
     ]
   }
 

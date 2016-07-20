@@ -14,8 +14,6 @@ include_rules = [
   "+components/dom_distiller/content/renderer",
   "+components/dom_distiller/core",
   "+components/guest_view/renderer",
-  "+components/metrics/leak_detector",
-  "+components/metrics/proto",
   "+components/nacl/common",
   "+components/nacl/renderer",
   "+components/network_hints/renderer",

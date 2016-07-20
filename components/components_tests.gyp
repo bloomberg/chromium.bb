@@ -390,7 +390,6 @@
       'metrics/leak_detector/leak_analyzer_unittest.cc',
       'metrics/leak_detector/leak_detector_impl_unittest.cc',
       'metrics/leak_detector/leak_detector_unittest.cc',
-      'metrics/leak_detector/protobuf_to_mojo_converter_unittest.cc',
       'metrics/leak_detector/ranked_set_unittest.cc',
     ],
     'mime_util_unittest_sources': [

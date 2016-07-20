@@ -278,20 +278,8 @@
             'metrics/leak_detector/leak_detector_impl.h',
             'metrics/leak_detector/leak_detector_value_type.cc',
             'metrics/leak_detector/leak_detector_value_type.h',
-            'metrics/leak_detector/protobuf_to_mojo_converter.cc',
-            'metrics/leak_detector/protobuf_to_mojo_converter.h',
             'metrics/leak_detector/ranked_set.cc',
             'metrics/leak_detector/ranked_set.h',
-          ],
-        },
-        {
-          'target_name': 'metrics_mojo_bindings',
-          'type': 'static_library',
-          'includes': [
-            '../mojo/mojom_bindings_generator.gypi',
-          ],
-          'sources': [
-            'metrics/leak_detector/leak_detector.mojom',
           ],
         },
       ],
