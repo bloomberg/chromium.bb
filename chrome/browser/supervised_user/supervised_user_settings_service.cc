@@ -75,9 +75,7 @@ void SupervisedUserSettingsService::Init(
   Init(store);
   if (load_synchronously) {
     store_->ReadPrefs();
-    // This should be a DCHECK, but it is triggering in the wild.
-    // https://crbug.com/627031
-    CHECK(store_->IsInitializationComplete());
+    DCHECK(IsReady());
   } else {
     store_->ReadPrefsAsync(nullptr);
   }
