@@ -162,7 +162,7 @@ def main():
     script_runtime = datetime.datetime.utcnow()
     script_runtime_string = script_runtime.strftime(_EXPORT_TIME_FORMAT)
   else:
-    script_runtime = arguments.timestamp_string
+    script_runtime_string = arguments.timestamp_string
   logging.info('Build time is %s', script_runtime_string)
   apk_output_dir = os.path.abspath(os.path.join(
       constants.DIR_SOURCE_ROOT, arguments.apk_output_dir))
