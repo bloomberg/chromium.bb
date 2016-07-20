@@ -123,6 +123,8 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::UnitType::Calc:
     case CSSPrimitiveValue::UnitType::CalcPercentageWithNumber:
     case CSSPrimitiveValue::UnitType::CalcPercentageWithLength:
+    case CSSPrimitiveValue::UnitType::CalcLengthWithNumber:
+    case CSSPrimitiveValue::UnitType::CalcPercentageWithLengthAndNumber:
     case CSSPrimitiveValue::UnitType::ValueID:
     case CSSPrimitiveValue::UnitType::QuirkyEms:
         return false;
@@ -204,6 +206,11 @@ public:
             ASSERT(m_value->isPercentage());
             value.percent += m_value->getDoubleValue() * multiplier;
             break;
+        case CalcNumber:
+            // TODO(alancutter): Stop treating numbers like pixels unconditionally in calcs to be able to accomodate border-image-width
+            // https://drafts.csswg.org/css-backgrounds-3/#the-border-image-width
+            value.pixels += m_value->getDoubleValue() * conversionData.zoom() * multiplier;
+            break;
         default:
             ASSERT_NOT_REACHED();
         }
@@ -230,6 +237,8 @@ public:
         case CalcPercentLength:
         case CalcPercentNumber:
         case CalcTime:
+        case CalcLengthNumber:
+        case CalcPercentLengthNumber:
         case CalcOther:
             ASSERT_NOT_REACHED();
             break;
@@ -276,15 +285,17 @@ private:
 };
 
 static const CalculationCategory addSubtractResult[CalcOther][CalcOther] = {
-//                        CalcNumber         CalcLength         CalcPercent        CalcPercentNumber  CalcPercentLength  CalcAngle  CalcTime   CalcFrequency
-/* CalcNumber */        { CalcNumber,        CalcOther,         CalcPercentNumber, CalcPercentNumber, CalcOther,         CalcOther, CalcOther, CalcOther     },
-/* CalcLength */        { CalcOther,         CalcLength,        CalcPercentLength, CalcOther,         CalcPercentLength, CalcOther, CalcOther, CalcOther     },
-/* CalcPercent */       { CalcPercentNumber, CalcPercentLength, CalcPercent,       CalcPercentNumber, CalcPercentLength, CalcOther, CalcOther, CalcOther     },
-/* CalcPercentNumber */ { CalcPercentNumber, CalcOther,         CalcPercentNumber, CalcPercentNumber, CalcOther,         CalcOther, CalcOther, CalcOther     },
-/* CalcPercentLength */ { CalcOther,         CalcPercentLength, CalcPercentLength, CalcOther,         CalcPercentLength, CalcOther, CalcOther, CalcOther     },
-/* CalcAngle  */        { CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcAngle, CalcOther, CalcOther     },
-/* CalcTime */          { CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther, CalcTime,  CalcOther     },
-/* CalcFrequency */     { CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther, CalcOther, CalcFrequency }
+//                              CalcNumber               CalcLength               CalcPercent              CalcPercentNumber        CalcPercentLength        CalcAngle  CalcTime   CalcFrequency  CalcLengthNumber         CalcPercentLengthNumber
+/* CalcNumber */              { CalcNumber,              CalcLengthNumber,        CalcPercentNumber,       CalcPercentNumber,       CalcOther,               CalcOther, CalcOther, CalcOther,     CalcLengthNumber,        CalcPercentLengthNumber },
+/* CalcLength */              { CalcLengthNumber,        CalcLength,              CalcPercentLength,       CalcOther,               CalcPercentLength,       CalcOther, CalcOther, CalcOther,     CalcLengthNumber,        CalcPercentLengthNumber },
+/* CalcPercent */             { CalcPercentNumber,       CalcPercentLength,       CalcPercent,             CalcPercentNumber,       CalcPercentLength,       CalcOther, CalcOther, CalcOther,     CalcPercentLengthNumber, CalcPercentLengthNumber },
+/* CalcPercentNumber */       { CalcPercentNumber,       CalcPercentLengthNumber, CalcPercentNumber,       CalcPercentNumber,       CalcPercentLengthNumber, CalcOther, CalcOther, CalcOther,     CalcOther,               CalcPercentLengthNumber },
+/* CalcPercentLength */       { CalcPercentLengthNumber, CalcPercentLength,       CalcPercentLength,       CalcPercentLengthNumber, CalcPercentLength,       CalcOther, CalcOther, CalcOther,     CalcOther,               CalcPercentLengthNumber },
+/* CalcAngle  */              { CalcOther,               CalcOther,               CalcOther,               CalcOther,               CalcOther,               CalcAngle, CalcOther, CalcOther,     CalcOther,               CalcOther               },
+/* CalcTime */                { CalcOther,               CalcOther,               CalcOther,               CalcOther,               CalcOther,               CalcOther, CalcTime,  CalcOther,     CalcOther,               CalcOther               },
+/* CalcFrequency */           { CalcOther,               CalcOther,               CalcOther,               CalcOther,               CalcOther,               CalcOther, CalcOther, CalcFrequency, CalcOther,               CalcOther               },
+/* CalcLengthNumber */        { CalcLengthNumber,        CalcLengthNumber,        CalcPercentLengthNumber, CalcPercentLengthNumber, CalcPercentLengthNumber, CalcOther, CalcOther, CalcOther,     CalcLengthNumber,        CalcPercentLengthNumber },
+/* CalcPercentLengthNumber */ { CalcPercentLengthNumber, CalcPercentLengthNumber, CalcPercentLengthNumber, CalcPercentLengthNumber, CalcPercentLengthNumber, CalcOther, CalcOther, CalcOther,     CalcPercentLengthNumber, CalcPercentLengthNumber }
 };
 
 static CalculationCategory determineCategory(const CSSCalcExpressionNode& leftSide, const CSSCalcExpressionNode& rightSide, CalcOperator op)
@@ -518,6 +529,8 @@ public:
             return CSSPrimitiveValue::UnitType::Hertz;
         case CalcPercentLength:
         case CalcPercentNumber:
+        case CalcLengthNumber:
+        case CalcPercentLengthNumber:
         case CalcOther:
             return CSSPrimitiveValue::UnitType::Unknown;
         }

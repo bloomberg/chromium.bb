@@ -214,6 +214,20 @@ CSSPrimitiveValue* consumePercent(CSSParserTokenRange& range, ValueRange valueRa
     return nullptr;
 }
 
+bool canConsumeCalcValue(CalculationCategory category, CSSParserMode cssParserMode)
+{
+    if (category == CalcLength || category == CalcPercent || category == CalcPercentLength)
+        return true;
+
+    if (cssParserMode != SVGAttributeMode)
+        return false;
+
+    if (category == CalcNumber || category == CalcPercentNumber || category == CalcLengthNumber || category == CalcPercentLengthNumber)
+        return true;
+
+    return false;
+}
+
 CSSPrimitiveValue* consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless)
 {
     const CSSParserToken& token = range.peek();
@@ -223,7 +237,7 @@ CSSPrimitiveValue* consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserM
         return consumePercent(range, valueRange);
     CalcParser calcParser(range, valueRange);
     if (const CSSCalcValue* calculation = calcParser.value()) {
-        if (calculation->category() == CalcLength || calculation->category() == CalcPercent || calculation->category() == CalcPercentLength)
+        if (canConsumeCalcValue(calculation->category(), cssParserMode))
             return calcParser.consumeValue();
     }
     return nullptr;

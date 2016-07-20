@@ -14,88 +14,10 @@
 
 namespace blink {
 
-namespace {
-
-enum LengthInterpolatedUnit {
-    LengthInterpolatedNumber,
-    LengthInterpolatedPercentage,
-    LengthInterpolatedEMS,
-    LengthInterpolatedEXS,
-    LengthInterpolatedREMS,
-    LengthInterpolatedCHS,
-    LengthInterpolatedViewportWidth,
-    LengthInterpolatedViewportHeight,
-    LengthInterpolatedViewportMin,
-    LengthInterpolatedViewportMax,
-};
-
-static const CSSPrimitiveValue::UnitType unitTypes[] = {
-    CSSPrimitiveValue::UnitType::UserUnits,
-    CSSPrimitiveValue::UnitType::Percentage,
-    CSSPrimitiveValue::UnitType::Ems,
-    CSSPrimitiveValue::UnitType::Exs,
-    CSSPrimitiveValue::UnitType::Rems,
-    CSSPrimitiveValue::UnitType::Chs,
-    CSSPrimitiveValue::UnitType::ViewportWidth,
-    CSSPrimitiveValue::UnitType::ViewportHeight,
-    CSSPrimitiveValue::UnitType::ViewportMin,
-    CSSPrimitiveValue::UnitType::ViewportMax,
-};
-
-const size_t numLengthInterpolatedUnits = WTF_ARRAY_LENGTH(unitTypes);
-
-LengthInterpolatedUnit convertToInterpolatedUnit(CSSPrimitiveValue::UnitType unitType, double& value)
-{
-    switch (unitType) {
-    case CSSPrimitiveValue::UnitType::Unknown:
-    default:
-        NOTREACHED();
-    case CSSPrimitiveValue::UnitType::Pixels:
-    case CSSPrimitiveValue::UnitType::Number:
-    case CSSPrimitiveValue::UnitType::UserUnits:
-        return LengthInterpolatedNumber;
-    case CSSPrimitiveValue::UnitType::Percentage:
-        return LengthInterpolatedPercentage;
-    case CSSPrimitiveValue::UnitType::Ems:
-        return LengthInterpolatedEMS;
-    case CSSPrimitiveValue::UnitType::Exs:
-        return LengthInterpolatedEXS;
-    case CSSPrimitiveValue::UnitType::Centimeters:
-        value *= cssPixelsPerCentimeter;
-        return LengthInterpolatedNumber;
-    case CSSPrimitiveValue::UnitType::Millimeters:
-        value *= cssPixelsPerMillimeter;
-        return LengthInterpolatedNumber;
-    case CSSPrimitiveValue::UnitType::Inches:
-        value *= cssPixelsPerInch;
-        return LengthInterpolatedNumber;
-    case CSSPrimitiveValue::UnitType::Points:
-        value *= cssPixelsPerPoint;
-        return LengthInterpolatedNumber;
-    case CSSPrimitiveValue::UnitType::Picas:
-        value *= cssPixelsPerPica;
-        return LengthInterpolatedNumber;
-    case CSSPrimitiveValue::UnitType::Rems:
-        return LengthInterpolatedREMS;
-    case CSSPrimitiveValue::UnitType::Chs:
-        return LengthInterpolatedCHS;
-    case CSSPrimitiveValue::UnitType::ViewportWidth:
-        return LengthInterpolatedViewportWidth;
-    case CSSPrimitiveValue::UnitType::ViewportHeight:
-        return LengthInterpolatedViewportHeight;
-    case CSSPrimitiveValue::UnitType::ViewportMin:
-        return LengthInterpolatedViewportMin;
-    case CSSPrimitiveValue::UnitType::ViewportMax:
-        return LengthInterpolatedViewportMax;
-    }
-}
-
-} // namespace
-
 std::unique_ptr<InterpolableValue> SVGLengthInterpolationType::neutralInterpolableValue()
 {
-    std::unique_ptr<InterpolableList> listOfValues = InterpolableList::create(numLengthInterpolatedUnits);
-    for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
+    std::unique_ptr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i)
         listOfValues->set(i, InterpolableNumber::create(0));
 
     return std::move(listOfValues);
@@ -103,15 +25,14 @@ std::unique_ptr<InterpolableValue> SVGLengthInterpolationType::neutralInterpolab
 
 InterpolationValue SVGLengthInterpolationType::convertSVGLength(const SVGLength& length)
 {
-    double value = length.valueInSpecifiedUnits();
-    LengthInterpolatedUnit unitType = convertToInterpolatedUnit(length.typeWithCalcResolved(), value);
+    const CSSPrimitiveValue* primitiveValue = length.asCSSPrimitiveValue();
 
-    double values[numLengthInterpolatedUnits] = { };
-    values[unitType] = value;
+    CSSLengthArray lengthArray;
+    primitiveValue->accumulateLengthArray(lengthArray);
 
-    std::unique_ptr<InterpolableList> listOfValues = InterpolableList::create(numLengthInterpolatedUnits);
-    for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
-        listOfValues->set(i, InterpolableNumber::create(values[i]));
+    std::unique_ptr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i)
+        listOfValues->set(i, InterpolableNumber::create(lengthArray.values[i]));
 
     return InterpolationValue(std::move(listOfValues));
 }
@@ -124,7 +45,7 @@ SVGLength* SVGLengthInterpolationType::resolveInterpolableSVGLength(const Interp
     CSSPrimitiveValue::UnitType unitType = CSSPrimitiveValue::UnitType::UserUnits;
     unsigned unitTypeCount = 0;
     // We optimise for the common case where only one unit type is involved.
-    for (size_t i = 0; i < numLengthInterpolatedUnits; i++) {
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
         double entry = toInterpolableNumber(listOfValues.get(i))->value();
         if (!entry)
             continue;
@@ -133,7 +54,7 @@ SVGLength* SVGLengthInterpolationType::resolveInterpolableSVGLength(const Interp
             break;
 
         value = entry;
-        unitType = unitTypes[i];
+        unitType = CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(i));
     }
 
     if (unitTypeCount > 1) {
@@ -141,10 +62,10 @@ SVGLength* SVGLengthInterpolationType::resolveInterpolableSVGLength(const Interp
         unitType = CSSPrimitiveValue::UnitType::UserUnits;
 
         // SVGLength does not support calc expressions, so we convert to canonical units.
-        for (size_t i = 0; i < numLengthInterpolatedUnits; i++) {
+        for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
             double entry = toInterpolableNumber(listOfValues.get(i))->value();
             if (entry)
-                value += lengthContext.convertValueToUserUnits(entry, unitMode, unitTypes[i]);
+                value += lengthContext.convertValueToUserUnits(entry, unitMode, CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(i)));
         }
     }
 

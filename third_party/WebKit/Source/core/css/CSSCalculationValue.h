@@ -60,6 +60,8 @@ enum CalculationCategory {
     CalcAngle,
     CalcTime,
     CalcFrequency,
+    CalcLengthNumber,
+    CalcPercentLengthNumber,
     CalcOther
 };
 

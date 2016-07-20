@@ -74,6 +74,7 @@ SVGParsingError SVGLengthList::parseInternal(const CharType*& ptr, const CharTyp
     const CharType* listStart = ptr;
     while (ptr < end) {
         const CharType* start = ptr;
+        // TODO(shanmuga.m): Enable calc for SVGLengthList
         while (ptr < end && *ptr != ',' && !isHTMLSpace<CharType>(*ptr))
             ptr++;
         if (ptr == start)
@@ -143,6 +144,7 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
         return;
 
     for (size_t i = 0; i < toLengthListSize; ++i) {
+        // TODO(shanmuga.m): Support calc for SVGLengthList animation
         float animatedNumber = at(i)->value(lengthContext);
         CSSPrimitiveValue::UnitType unitType = toList->at(i)->typeWithCalcResolved();
         float effectiveFrom = 0;

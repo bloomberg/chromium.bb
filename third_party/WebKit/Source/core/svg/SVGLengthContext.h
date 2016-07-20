@@ -77,6 +77,7 @@ public:
     static float valueForLength(const Length&, const ComputedStyle&, float dimension);
 
     bool determineViewport(FloatSize&) const;
+    float resolveValue(const CSSPrimitiveValue&, SVGLengthMode) const;
 
 private:
     float valueForLength(const Length&, float zoom, SVGLengthMode) const;

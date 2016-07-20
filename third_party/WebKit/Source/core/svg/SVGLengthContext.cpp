@@ -24,6 +24,7 @@
 
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
@@ -417,4 +418,18 @@ bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
     return true;
 }
 
+float SVGLengthContext::resolveValue(const CSSPrimitiveValue& primitiveValue, SVGLengthMode mode) const
+{
+    const ComputedStyle* style = computedStyleForLengthResolving(m_context);
+    if (!style)
+        return 0;
+
+    const ComputedStyle* rootStyle = rootElementStyle(m_context);
+    if (!rootStyle)
+        return 0;
+
+    CSSToLengthConversionData conversionData = CSSToLengthConversionData(style, rootStyle, m_context->document().layoutViewItem(), 1.0f);
+    Length length = primitiveValue.convertToLength(conversionData);
+    return valueForLength(length, 1.0f, mode);
+}
 } // namespace blink

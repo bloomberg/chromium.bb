@@ -104,6 +104,9 @@ inline SVGLengthType toSVGLengthType(CSSPrimitiveValue::UnitType type)
 
 bool SVGLengthTearOff::hasExposedLengthUnit()
 {
+    if (target()->isCalculated())
+        return false;
+
     CSSPrimitiveValue::UnitType unit = target()->typeWithCalcResolved();
     return isValidLengthUnit(unit)
         || unit == CSSPrimitiveValue::UnitType::Unknown
@@ -144,12 +147,19 @@ void SVGLengthTearOff::setValue(float value, ExceptionState& exceptionState)
     }
 
     SVGLengthContext lengthContext(contextElement());
-    target()->setValue(value, lengthContext);
+    if (target()->isCalculated())
+        target()->setValueAsNumber(value);
+    else
+        target()->setValue(value, lengthContext);
+
     commitChange();
 }
 
 float SVGLengthTearOff::valueInSpecifiedUnits()
 {
+    if (target()->isCalculated())
+        return 0;
+
     return target()->valueInSpecifiedUnits();
 }
 
@@ -159,7 +169,12 @@ void SVGLengthTearOff::setValueInSpecifiedUnits(float value, ExceptionState& exc
         exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
         return;
     }
-    target()->setValueInSpecifiedUnits(value);
+
+    if (target()->isCalculated())
+        target()->setValueAsNumber(value);
+    else
+        target()->setValueInSpecifiedUnits(value);
+
     commitChange();
 }
 

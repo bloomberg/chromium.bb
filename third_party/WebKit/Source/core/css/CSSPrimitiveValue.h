@@ -107,6 +107,8 @@ public:
         Calc,
         CalcPercentageWithNumber,
         CalcPercentageWithLength,
+        CalcLengthWithNumber,
+        CalcPercentageWithLengthAndNumber,
         ValueID,
 
         // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.

@@ -179,6 +179,10 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const
         return UnitType::CalcPercentageWithNumber;
     case CalcPercentLength:
         return UnitType::CalcPercentageWithLength;
+    case CalcLengthNumber:
+        return UnitType::CalcLengthWithNumber;
+    case CalcPercentLengthNumber:
+        return UnitType::CalcPercentageWithLengthAndNumber;
     case CalcTime:
         return UnitType::Milliseconds;
     case CalcOther:
@@ -645,6 +649,8 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::Calc:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
+    case UnitType::CalcLengthWithNumber:
+    case UnitType::CalcPercentageWithLengthAndNumber:
         break;
     };
     ASSERT_NOT_REACHED();
@@ -706,6 +712,8 @@ String CSSPrimitiveValue::customCSSText() const
         break;
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
+    case UnitType::CalcLengthWithNumber:
+    case UnitType::CalcPercentageWithLengthAndNumber:
         ASSERT_NOT_REACHED();
         break;
     }
@@ -761,6 +769,8 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::Chs:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
+    case UnitType::CalcLengthWithNumber:
+    case UnitType::CalcPercentageWithLengthAndNumber:
     case UnitType::QuirkyEms:
         return false;
     }
