@@ -125,6 +125,10 @@ void RecentTabHelper::DocumentAvailableInMainFrame() {
 }
 
 void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
+  // TODO(dimich): Figure out when this can fire before DidFinishNavigate().
+  // See bug 628716 for more info.
+  if (!snapshot_controller_)
+    return;
   snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
 }
 
