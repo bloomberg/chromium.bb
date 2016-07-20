@@ -101,7 +101,7 @@ TEST_P(AV1QuantizeTest, OperationCheck) {
     const int skip_block = i == 0;
     const TX_SIZE sz = (TX_SIZE)(i % 3);  // TX_4X4, TX_8X8 TX_16X16
     const TX_TYPE tx_type = (TX_TYPE)((i >> 2) % 3);
-    const scan_order *scan_order = &av1_scan_orders[sz][tx_type];
+    const SCAN_ORDER *scan_order = &av1_scan_orders[sz][tx_type];
     const int count = (4 << sz) * (4 << sz);  // 16, 64, 256
     int err_count = 0;
     *eob_ptr = rnd.Rand16();
@@ -159,7 +159,7 @@ TEST_P(AV1Quantize32Test, OperationCheck) {
     const int skip_block = i == 0;
     const TX_SIZE sz = TX_32X32;
     const TX_TYPE tx_type = (TX_TYPE)(i % 4);
-    const scan_order *scan_order = &av1_scan_orders[sz][tx_type];
+    const SCAN_ORDER *scan_order = &av1_scan_orders[sz][tx_type];
     const int count = (4 << sz) * (4 << sz);  // 1024
     int err_count = 0;
     *eob_ptr = rnd.Rand16();
@@ -217,7 +217,7 @@ TEST_P(AV1QuantizeTest, EOBCheck) {
     int skip_block = i == 0;
     TX_SIZE sz = (TX_SIZE)(i % 3);  // TX_4X4, TX_8X8 TX_16X16
     TX_TYPE tx_type = (TX_TYPE)((i >> 2) % 3);
-    const scan_order *scan_order = &av1_scan_orders[sz][tx_type];
+    const SCAN_ORDER *scan_order = &av1_scan_orders[sz][tx_type];
     int count = (4 << sz) * (4 << sz);  // 16, 64, 256
     int err_count = 0;
     *eob_ptr = rnd.Rand16();
@@ -280,7 +280,7 @@ TEST_P(AV1Quantize32Test, EOBCheck) {
     int skip_block = i == 0;
     TX_SIZE sz = TX_32X32;
     TX_TYPE tx_type = (TX_TYPE)(i % 4);
-    const scan_order *scan_order = &av1_scan_orders[sz][tx_type];
+    const SCAN_ORDER *scan_order = &av1_scan_orders[sz][tx_type];
     int count = (4 << sz) * (4 << sz);  // 1024
     int err_count = 0;
     *eob_ptr = rnd.Rand16();

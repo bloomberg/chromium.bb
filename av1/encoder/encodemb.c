@@ -111,9 +111,9 @@ static int optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
   const int16_t *dequant_ptr = pd->dequant;
   const uint8_t *const band_translate = get_band_translate(tx_size);
   TX_TYPE tx_type = get_tx_type(type, xd, block);
-  const scan_order *const so = get_scan(tx_size, tx_type);
-  const int16_t *const scan = so->scan;
-  const int16_t *const nb = so->neighbors;
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
+  const int16_t *const scan = scan_order->scan;
+  const int16_t *const nb = scan_order->neighbors;
   int next = eob, sz = 0;
   int64_t rdmult = mb->rdmult * plane_rd_mult[type], rddiv = mb->rddiv;
   int64_t rd_cost0, rd_cost1;
@@ -342,7 +342,7 @@ void av1_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block);
-  const scan_order *const scan_order = get_scan(tx_size, tx_type);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -599,7 +599,7 @@ void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block);
-  const scan_order *const scan_order = get_scan(tx_size, tx_type);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -919,7 +919,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block);
-  const scan_order *const scan_order = get_scan(tx_size, tx_type);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   PREDICTION_MODE mode;
   const int bwl = b_width_log2_lookup[plane_bsize];
   const int bhl = b_height_log2_lookup[plane_bsize];

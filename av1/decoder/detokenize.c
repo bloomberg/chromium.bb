@@ -276,7 +276,7 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
   return c;
 }
 
-int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
+int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const SCAN_ORDER *sc,
                             int x, int y, TX_SIZE tx_size, aom_reader *r,
                             int seg_id) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
