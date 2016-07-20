@@ -19,6 +19,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -434,8 +436,7 @@ TEST_F(ShellSurfaceTest, Shadow) {
                        ash::kShellWindowId_DefaultContainer));
   surface->Commit();
 
-  views::Widget* widget = shell_surface->GetWidget();
-  aura::Window* window = widget->GetNativeWindow();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
 
   // 1) Initial state, no shadow.
   wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
@@ -484,12 +485,126 @@ TEST_F(ShellSurfaceTest, Shadow) {
   EXPECT_EQ(wm::SHADOW_TYPE_NONE, wm::GetShadowType(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
-  // 6) Seting non empty content bounds should enable shadow.
+  // 6) Setting non empty content bounds should enable shadow.
   shell_surface->SetRectangularShadow(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
   EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
   EXPECT_TRUE(shadow->layer()->visible());
+}
+
+TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
+  std::unique_ptr<Surface> surface(new Surface);
+  // Set the bounds to disable auto managed mode.
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 480), true,
+                       ash::kShellWindowId_DefaultContainer));
+
+  // Postion the widget at 10,10 so that we get non zero offset.
+  const gfx::Size content_size(100, 100);
+  const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
+  shell_surface->SetGeometry(original_bounds);
+  surface->Commit();
+
+  // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
+  const gfx::Rect shadow_bounds(content_size);
+
+  // Expected shadow position/bounds in parent coordinates.
+  const gfx::Point expected_shadow_origin(-10, -10);
+  const gfx::Rect expected_shadow_bounds(expected_shadow_origin, content_size);
+
+  views::Widget* widget = shell_surface->GetWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+
+  shell_surface->SetRectangularShadow(shadow_bounds);
+  surface->Commit();
+  EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
+
+  // Shadow overlay bounds.
+  EXPECT_TRUE(shadow->layer()->visible());
+  // Origin must be in sync.
+  EXPECT_EQ(expected_shadow_origin,
+            shadow->layer()->parent()->bounds().origin());
+
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  // Maximizing window hides the shadow.
+  widget->Maximize();
+  ASSERT_EQ(work_area, window->bounds());
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  shell_surface->SetRectangularShadow(work_area);
+  surface->Commit();
+  EXPECT_FALSE(shadow->layer()->visible());
+
+  // Restoring bounds will re-enable shadow. It's content size is set to work
+  // area,/ thus not visible until new bounds is committed.
+  widget->Restore();
+  EXPECT_TRUE(shadow->layer()->visible());
+  const gfx::Rect shadow_in_maximized(expected_shadow_origin, work_area.size());
+  EXPECT_EQ(shadow_in_maximized, shadow->layer()->parent()->bounds());
+
+  // The bounds is updated.
+  shell_surface->SetRectangularShadow(shadow_bounds);
+  surface->Commit();
+  EXPECT_EQ(expected_shadow_bounds, shadow->layer()->parent()->bounds());
+}
+
+TEST_F(ShellSurfaceTest, ShadowWithTransform) {
+  std::unique_ptr<Surface> surface(new Surface);
+  // Set the bounds to disable auto managed mode.
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 400), true,
+                       ash::kShellWindowId_DefaultContainer));
+
+  // Postion the widget at 10,10 so that we get non zero offset.
+  const gfx::Size content_size(100, 100);
+  const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
+  shell_surface->SetGeometry(original_bounds);
+  surface->Commit();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+
+  // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
+  const gfx::Rect shadow_bounds(content_size);
+
+  // Shadow bounds relative to its parent should not be affected by a transform.
+  gfx::Transform transform;
+  transform.Translate(50, 50);
+  window->SetTransform(transform);
+  shell_surface->SetRectangularShadow(shadow_bounds);
+  surface->Commit();
+  EXPECT_TRUE(shadow->layer()->visible());
+  EXPECT_EQ(gfx::Rect(-10, -10, 100, 100), shadow->layer()->parent()->bounds());
+}
+
+TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 480), true,
+                       ash::kShellWindowId_DefaultContainer));
+  shell_surface->Maximize();
+  views::Widget* widget = shell_surface->GetWidget();
+  aura::Window* window = widget->GetNativeWindow();
+
+  // There is no shadow when started in maximized state.
+  EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
+
+  // Sending a shadow bounds in maximized state won't create a shaodw.
+  shell_surface->SetRectangularShadow(gfx::Rect(10, 10, 100, 100));
+  surface->Commit();
+
+  EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
+
+  // Restore the window and make sure the shadow is created, visible and
+  // has the latest bounds.
+  widget->Restore();
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_TRUE(shadow->layer()->visible());
+  EXPECT_EQ(gfx::Rect(10, 10, 100, 100), shadow->layer()->parent()->bounds());
 }
 
 }  // namespace
