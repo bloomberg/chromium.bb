@@ -171,6 +171,16 @@ class DisplayConfiguratorTest : public testing::Test {
     o->set_is_aspect_preserving_scaling(true);
     o->set_display_id(456);
 
+    modes.clear();
+    modes.push_back(small_mode_.Clone());
+    o = &outputs_[2];
+    o->set_current_mode(modes.back().get());
+    o->set_native_mode(modes.back().get());
+    o->set_modes(std::move(modes));
+    o->set_type(DISPLAY_CONNECTION_TYPE_HDMI);
+    o->set_is_aspect_preserving_scaling(true);
+    o->set_display_id(789);
+
     UpdateOutputs(2, false);
   }
 
@@ -265,7 +275,7 @@ class DisplayConfiguratorTest : public testing::Test {
       query_content_protection_response_;
   int query_content_protection_call_count_;
 
-  TestDisplaySnapshot outputs_[2];
+  TestDisplaySnapshot outputs_[3];
 
   CallbackResult callback_result_;
   CallbackResult display_control_result_;
@@ -1822,6 +1832,117 @@ TEST_F(DisplayConfiguratorTest,
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(2, observer_.num_failures());
 
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
+                               &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height() +
+                                          DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          kUngrab, NULL),
+      log_->GetActionsAndClear());
+}
+
+TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
+  // Start out with two displays in extended mode.
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  Init(false);
+  configurator_.ForceInitialConfigure(0);
+  log_->GetActionsAndClear();
+  observer_.Reset();
+
+  UpdateOutputs(3, true);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
+
+  const int kDualHeight = small_mode_.size().height() +
+                          DisplayConfigurator::kVerticalGap +
+                          big_mode_.size().height();
+  const int kTripleHeight = 2 * small_mode_.size().height() +
+                            2 * DisplayConfigurator::kVerticalGap +
+                            big_mode_.size().height();
+  EXPECT_EQ(
+      JoinActions(
+          kGrab, GetFramebufferAction(
+                     gfx::Size(big_mode_.size().width(), kTripleHeight),
+                     &outputs_[0], &outputs_[1])
+                     .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height() +
+                                          DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          GetCrtcAction(
+              outputs_[2], &small_mode_,
+              gfx::Point(0, small_mode_.size().height() +
+                                big_mode_.size().height() +
+                                2 * DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          kUngrab, NULL),
+      log_->GetActionsAndClear());
+
+  // Verify that turning the power off works.
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab, GetFramebufferAction(
+                     gfx::Size(big_mode_.size().width(), kTripleHeight),
+                     &outputs_[0], &outputs_[1])
+                     .c_str(),
+          GetCrtcAction(outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], nullptr,
+                        gfx::Point(0, small_mode_.size().height() +
+                                          DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          GetCrtcAction(
+              outputs_[2], nullptr,
+              gfx::Point(0, small_mode_.size().height() +
+                                big_mode_.size().height() +
+                                2 * DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          kUngrab, NULL),
+      log_->GetActionsAndClear());
+
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab, GetFramebufferAction(
+                     gfx::Size(big_mode_.size().width(), kTripleHeight),
+                     &outputs_[0], &outputs_[1])
+                     .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height() +
+                                          DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          GetCrtcAction(
+              outputs_[2], &small_mode_,
+              gfx::Point(0, small_mode_.size().height() +
+                                big_mode_.size().height() +
+                                2 * DisplayConfigurator::kVerticalGap))
+              .c_str(),
+          kForceDPMS, kUngrab, NULL),
+      log_->GetActionsAndClear());
+
+  // Disconnect the third output.
+  observer_.Reset();
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
           kGrab,

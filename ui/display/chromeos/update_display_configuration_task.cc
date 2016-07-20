@@ -204,7 +204,7 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
     return state_controller->GetStateForDisplayIds(cached_displays_);
   }
 
-  if (num_on_displays >= 3) {
+  if (num_displays >= 3) {
     // 3+ displays are always extended
     return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
   }

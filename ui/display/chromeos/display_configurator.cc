@@ -296,10 +296,11 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
     }
     case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
     case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED: {
-      if ((new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
-           states.size() != 2 && num_on_displays != 2) ||
-          (new_display_state == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED &&
-           num_on_displays <= 2)) {
+      // In docked mode (with internal display + 2 external displays) the state
+      // will be DUAL_EXTENDED with internal display turned off and the 2
+      // external displays turned on.
+      if (new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
+          states.size() != 2 && num_on_displays != 2) {
         LOG(WARNING) << "Ignoring request to enter extended mode with "
                      << states.size() << " connected display(s) and "
                      << num_on_displays << " turned on";
