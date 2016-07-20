@@ -530,4 +530,87 @@ TEST_F(V4StoreTest, TestReadFullResponseWithInvalidHashPrefixMap) {
   EXPECT_TRUE(read_store.hash_prefix_map_.empty());
 }
 
+TEST_F(V4StoreTest, TestHashPrefixExistsAtTheBeginning) {
+  HashPrefixes hash_prefixes = "abcdebbbbbccccc";
+  HashPrefix hash_prefix = "abcde";
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
+                                         std::end(hash_prefixes)));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixExistsInTheMiddle) {
+  HashPrefixes hash_prefixes = "abcdebbbbbccccc";
+  HashPrefix hash_prefix = "bbbbb";
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
+                                         std::end(hash_prefixes)));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixExistsAtTheEnd) {
+  HashPrefixes hash_prefixes = "abcdebbbbbccccc";
+  HashPrefix hash_prefix = "ccccc";
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
+                                         std::end(hash_prefixes)));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixExistsAtTheBeginningOfEven) {
+  HashPrefixes hash_prefixes = "abcdebbbbb";
+  HashPrefix hash_prefix = "abcde";
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
+                                         std::end(hash_prefixes)));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixExistsAtTheEndOfEven) {
+  HashPrefixes hash_prefixes = "abcdebbbbb";
+  HashPrefix hash_prefix = "bbbbb";
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
+                                         std::end(hash_prefixes)));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixDoesNotExistInConcatenatedList) {
+  HashPrefixes hash_prefixes = "abcdebbbbb";
+  HashPrefix hash_prefix = "bbbbc";
+  EXPECT_FALSE(V4Store::HashPrefixMatches(
+      hash_prefix, std::begin(hash_prefixes), std::end(hash_prefixes)));
+}
+
+TEST_F(V4StoreTest, TestFullHashExistsInMapWithSingleSize) {
+  V4Store store(task_runner_, store_path_);
+  store.hash_prefix_map_[32] =
+      "0111222233334444555566667777888811112222333344445555666677778888";
+  FullHash full_hash = "11112222333344445555666677778888";
+  EXPECT_EQ("11112222333344445555666677778888",
+            store.GetMatchingHashPrefix(full_hash));
+}
+
+TEST_F(V4StoreTest, TestFullHashExistsInMapWithDifferentSizes) {
+  V4Store store(task_runner_, store_path_);
+  store.hash_prefix_map_[4] = "22223333aaaa";
+  store.hash_prefix_map_[32] = "11112222333344445555666677778888";
+  FullHash full_hash = "11112222333344445555666677778888";
+  EXPECT_EQ("11112222333344445555666677778888",
+            store.GetMatchingHashPrefix(full_hash));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixExistsInMapWithSingleSize) {
+  V4Store store(task_runner_, store_path_);
+  store.hash_prefix_map_[4] = "22223333aaaa";
+  FullHash full_hash = "22222222222222222222222222222222";
+  EXPECT_EQ("2222", store.GetMatchingHashPrefix(full_hash));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixExistsInMapWithDifferentSizes) {
+  V4Store store(task_runner_, store_path_);
+  store.hash_prefix_map_[4] = "22223333aaaa";
+  store.hash_prefix_map_[5] = "11111hhhhh";
+  FullHash full_hash = "22222222222222222222222222222222";
+  EXPECT_EQ("2222", store.GetMatchingHashPrefix(full_hash));
+}
+
+TEST_F(V4StoreTest, TestHashPrefixDoesNotExistInMapWithDifferentSizes) {
+  V4Store store(task_runner_, store_path_);
+  store.hash_prefix_map_[4] = "3333aaaa";
+  store.hash_prefix_map_[5] = "11111hhhhh";
+  FullHash full_hash = "22222222222222222222222222222222";
+  EXPECT_TRUE(store.GetMatchingHashPrefix(full_hash).empty());
+}
+
 }  // namespace safe_browsing

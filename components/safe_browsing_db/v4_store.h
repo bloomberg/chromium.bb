@@ -38,6 +38,9 @@ typedef base::hash_map<PrefixSize, HashPrefixes> HashPrefixMap;
 // 3 hash prefixes of length 4, and 1 hash prefix of length 5.
 typedef base::hash_map<PrefixSize, HashPrefixes::const_iterator> IteratorMap;
 
+// A full SHA256 hash.
+typedef HashPrefix FullHash;
+
 // Enumerate different failure events while parsing the file read from disk for
 // histogramming purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
 enum StoreReadResult {
@@ -58,7 +61,7 @@ enum StoreReadResult {
   PROTO_PARSING_FAILURE = 4,
 
   // The magic number didn't match. We're most likely trying to read a file
-  // that doesn't contain hash-prefixes.
+  // that doesn't contain hash prefixes.
   UNEXPECTED_MAGIC_NUMBER_FAILURE = 5,
 
   // The version of the file is different from expected and Chromium doesn't
@@ -164,6 +167,10 @@ class V4Store {
                    const scoped_refptr<base::SingleThreadTaskRunner>&,
                    UpdatedStoreReadyCallback);
 
+  // If a hash prefix in this store matches |full_hash|, returns that hash
+  // prefix; otherwise returns an empty hash prefix.
+  HashPrefix GetMatchingHashPrefix(const FullHash& full_hash);
+
   std::string DebugString() const;
 
   // Reads the store file from disk and populates the in-memory representation
@@ -214,6 +221,23 @@ class V4Store {
                            TestReadFullResponseWithValidHashPrefixMap);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestReadFullResponseWithInvalidHashPrefixMap);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestHashPrefixExistsAtTheBeginning);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestHashPrefixExistsInTheMiddle);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestHashPrefixExistsAtTheEnd);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestHashPrefixExistsAtTheBeginningOfEven);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestHashPrefixExistsAtTheEndOfEven);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestHashPrefixDoesNotExistInConcatenatedList);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestFullHashExistsInMapWithSingleSize);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestFullHashExistsInMapWithDifferentSizes);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestHashPrefixExistsInMapWithSingleSize);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestHashPrefixExistsInMapWithDifferentSizes);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestHashPrefixDoesNotExistInMapWithDifferentSizes);
 
   // If |prefix_size| is within expected range, and |raw_hashes| is not invalid,
   // then it sets |raw_hashes| as the value at key |prefix_size| in
@@ -230,6 +254,11 @@ class V4Store {
       const HashPrefixMap& hash_prefix_map,
       const IteratorMap& iterator_map,
       HashPrefix* smallest_hash_prefix);
+
+  // Returns true if |hash_prefix| exists between |begin| and |end| iterators.
+  static bool HashPrefixMatches(const HashPrefix& hash_prefix,
+                                const HashPrefixes::const_iterator& begin,
+                                const HashPrefixes::const_iterator& end);
 
   // For each key in |hash_prefix_map|, sets the iterator at that key
   // |iterator_map| to hash_prefix_map[key].begin().

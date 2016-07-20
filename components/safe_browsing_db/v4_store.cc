@@ -213,7 +213,7 @@ bool V4Store::GetNextSmallestUnmergedPrefix(
     const HashPrefixes& hash_prefixes = hash_prefix_map.at(prefix_size);
     if (prefix_size <=
         static_cast<PrefixSize>(std::distance(start, hash_prefixes.end()))) {
-      current_hash_prefix = std::string(start, start + prefix_size);
+      current_hash_prefix = HashPrefix(start, start + prefix_size);
       if (!has_unmerged || *smallest_hash_prefix > current_hash_prefix) {
         has_unmerged = true;
         smallest_hash_prefix->swap(current_hash_prefix);
@@ -423,6 +423,46 @@ StoreWriteResult V4Store::WriteToDisk(
   }
 
   return WRITE_SUCCESS;
+}
+
+HashPrefix V4Store::GetMatchingHashPrefix(const FullHash& full_hash) {
+  // It should never be the case that more than one hash prefixes match a given
+  // full hash. However, if that happens, this method returns any one of them.
+  // It does not guarantee which one of those will be returned.
+  DCHECK_EQ(32u, full_hash.size());
+  for (const auto& pair : hash_prefix_map_) {
+    const PrefixSize& prefix_size = pair.first;
+    const HashPrefixes& hash_prefixes = pair.second;
+    HashPrefix hash_prefix = full_hash.substr(0, prefix_size);
+    if (HashPrefixMatches(hash_prefix, hash_prefixes.begin(),
+                          hash_prefixes.end())) {
+      return hash_prefix;
+    }
+  }
+  return HashPrefix();
+}
+
+// static
+bool V4Store::HashPrefixMatches(const HashPrefix& hash_prefix,
+                                const HashPrefixes::const_iterator& begin,
+                                const HashPrefixes::const_iterator& end) {
+  if (begin == end) {
+    return false;
+  }
+  size_t distance = std::distance(begin, end);
+  const PrefixSize prefix_size = hash_prefix.length();
+  DCHECK_EQ(0u, distance % prefix_size);
+  size_t mid_prefix_index = ((distance / prefix_size) / 2) * prefix_size;
+  HashPrefixes::const_iterator mid = begin + mid_prefix_index;
+  HashPrefix mid_prefix = HashPrefix(mid, mid + prefix_size);
+  int result = hash_prefix.compare(mid_prefix);
+  if (result == 0) {
+    return true;
+  } else if (result < 0) {
+    return HashPrefixMatches(hash_prefix, begin, mid);
+  } else {
+    return HashPrefixMatches(hash_prefix, mid + prefix_size, end);
+  }
 }
 
 }  // namespace safe_browsing
