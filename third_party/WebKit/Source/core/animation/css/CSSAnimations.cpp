@@ -91,7 +91,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
             CSSPropertyID property = properties.propertyAt(j).id();
             specifiedPropertiesForUseCounter.add(property);
             if (property == CSSPropertyAnimationTimingFunction) {
-                CSSValue* value = properties.propertyAt(j).value();
+                const CSSValue* value = properties.propertyAt(j).value();
                 RefPtr<TimingFunction> timingFunction;
                 if (value->isInheritedValue() && parentStyle->animations()) {
                     timingFunction = parentStyle->animations()->timingFunctionList()[0];

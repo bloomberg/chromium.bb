@@ -389,7 +389,7 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
         return;
 
     StylePropertySet::PropertyReference contentProperty = propertySet.propertyAt(propertyIndex);
-    CSSValue* contentValue = contentProperty.value();
+    const CSSValue* contentValue = contentProperty.value();
 
     if (!contentValue->isValueList())
         return;

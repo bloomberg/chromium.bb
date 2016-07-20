@@ -1221,7 +1221,7 @@ void EditingStyle::mergeStyleFromRulesForSerialization(Element* element)
         unsigned propertyCount = m_mutableStyle->propertyCount();
         for (unsigned i = 0; i < propertyCount; ++i) {
             StylePropertySet::PropertyReference property = m_mutableStyle->propertyAt(i);
-            CSSValue* value = property.value();
+            const CSSValue* value = property.value();
             if (!value->isPrimitiveValue())
                 continue;
             if (toCSSPrimitiveValue(value)->isPercentage()) {

@@ -430,7 +430,7 @@ void FrameSerializer::retrieveResourcesForProperties(const StylePropertySet* sty
     // image properties there might be.
     unsigned propertyCount = styleDeclaration->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
-        CSSValue* cssValue = styleDeclaration->propertyAt(i).value();
+        const CSSValue* cssValue = styleDeclaration->propertyAt(i).value();
         retrieveResourcesForCSSValue(*cssValue, document);
     }
 }

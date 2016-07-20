@@ -64,8 +64,6 @@ public:
         bool isImplicit() const { return propertyMetadata().m_implicit; }
 
         const CSSValue* value() const { return propertyValue(); }
-        // FIXME: We should try to remove this mutable overload.
-        CSSValue* value() { return const_cast<CSSValue*>(propertyValue()); }
 
         // FIXME: Remove this.
         CSSProperty toCSSProperty() const { return CSSProperty(propertyMetadata(), *propertyValue()); }

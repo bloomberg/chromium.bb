@@ -1395,7 +1395,7 @@ static inline bool isPropertyInWhitelist(PropertyWhitelistType propertyWhitelist
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
 template <CSSPropertyPriority priority>
-void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
+void StyleResolver::applyAllProperty(StyleResolverState& state, const CSSValue* allValue, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     // The 'all' property doesn't apply to variables:
     // https://drafts.csswg.org/css-variables/#defining-variables
