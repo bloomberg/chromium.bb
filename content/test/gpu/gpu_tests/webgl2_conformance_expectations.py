@@ -40,8 +40,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
 
-    self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
-
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
@@ -230,6 +228,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+    self.Fail('deqp/data/gles3/shaders/linkage.html',
+        ['mac'], bug=601821)
+
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
