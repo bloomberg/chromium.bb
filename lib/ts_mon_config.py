@@ -7,6 +7,8 @@
 from __future__ import print_function
 
 import argparse
+import os
+import socket
 
 from chromite.lib import cros_logging as logging
 
@@ -22,11 +24,13 @@ except (ImportError, RuntimeError) as e:
 _WasSetup = False
 
 
-def SetupTsMonGlobalState(service_name):
+def SetupTsMonGlobalState(service_name, short_lived=False):
   """Uses a dummy argument parser to get the default behavior from ts-mon.
 
   Args:
-    service_name: the name of the task we are sending metrics from.
+    service_name: The name of the task we are sending metrics from.
+    short_lived: Whether this process is short-lived and should use the autogen
+                 hostname prefix.
   """
   if not config:
     return
@@ -35,12 +39,23 @@ def SetupTsMonGlobalState(service_name):
   googleapiclient.discovery.logger.setLevel(logging.WARNING)
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)
+  args = [
+      '--ts-mon-target-type', 'task',
+      '--ts-mon-task-service-name', service_name,
+      '--ts-mon-task-job-name', service_name,
+  ]
+
+  # Short lived processes will have autogen: prepended to their hostname and
+  # use task-number=PID to trigger shorter retention policies under
+  # chrome-infra@, and used by a Monarch precomputation to group across the
+  # task number.
+  if short_lived:
+    fqdn = socket.getfqdn().lower()
+    host = fqdn.split('.')[0]
+    args.extend(['--ts-mon-task-hostname', 'autogen:' + host,
+                 '--ts-mon-task-number', os.getpid()])
   try:
-    config.process_argparse_options(parser.parse_args(args=[
-        '--ts-mon-target-type', 'task',
-        '--ts-mon-task-service-name', service_name,
-        '--ts-mon-task-job-name', service_name,
-    ]))
+    config.process_argparse_options(parser.parse_args(args=args))
     logging.notice('ts_mon was set up.')
     _WasSetup = True
   except Exception as e:
