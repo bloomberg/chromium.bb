@@ -3737,7 +3737,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     // Clean up host_impl_ state.
     const auto& testcase = cases[i];
     std::vector<LayerImpl*> to_remove;
-    for (const auto& child : root->test_properties()->children)
+    for (auto* child : root->test_properties()->children)
       to_remove.push_back(child);
     for (auto* child : to_remove)
       root->test_properties()->RemoveChild(child);
@@ -3832,7 +3832,7 @@ TEST_F(LayerTreeHostImplTest,
   for (size_t i = 0; i < cases.size(); ++i) {
     const auto& testcase = cases[i];
     std::vector<LayerImpl*> to_remove;
-    for (const auto& child : root->test_properties()->children)
+    for (auto* child : root->test_properties()->children)
       to_remove.push_back(child);
     for (auto* child : to_remove)
       root->test_properties()->RemoveChild(child);
@@ -6910,7 +6910,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
  protected:
   size_t CountGutterQuads(const QuadList& quad_list) {
     size_t num_gutter_quads = 0;
-    for (const auto& quad : quad_list) {
+    for (auto* quad : quad_list) {
       num_gutter_quads += (quad->material == gutter_quad_material_) ? 1 : 0;
     }
     return num_gutter_quads;
@@ -6923,7 +6923,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   // Make sure that the texture coordinates match their expectations.
   void ValidateTextureDrawQuads(const QuadList& quad_list) {
-    for (const auto& quad : quad_list) {
+    for (auto* quad : quad_list) {
       if (quad->material != DrawQuad::TEXTURE_CONTENT)
         continue;
       const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);

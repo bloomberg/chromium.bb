@@ -1038,7 +1038,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     // If this is not the sync tree, then it is not safe to update lcd text
     // as it causes invalidations and the tiles may be in use.
     DCHECK_EQ(this, sync_tree);
-    for (const auto& layer : picture_layers_)
+    for (auto* layer : picture_layers_)
       layer->UpdateCanUseLCDTextAfterCommit();
   }
 

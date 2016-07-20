@@ -91,7 +91,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   LayerTestCommon::LayerImplTest impl;
   impl.host_impl()->SetViewportSize(layer_size);
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
-  auto active_tree = impl.host_impl()->active_tree();
+  auto* active_tree = impl.host_impl()->active_tree();
 
   // Create a video layer with no frame on top of another layer.
   std::unique_ptr<LayerImpl> layer_impl = LayerImpl::Create(active_tree, 3);

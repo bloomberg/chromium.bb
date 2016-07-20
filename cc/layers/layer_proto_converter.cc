@@ -57,7 +57,7 @@ void LayerProtoConverter::SerializeLayerProperties(
     LayerTreeHost* host,
     proto::LayerUpdate* layer_update) {
   TRACE_EVENT0("cc.remote", "LayerProtoConverter::SerializeLayerProperties");
-  for (auto layer : host->LayersThatShouldPushProperties())
+  for (auto* layer : host->LayersThatShouldPushProperties())
     layer->ToLayerPropertiesProto(layer_update);
   host->LayersThatShouldPushProperties().clear();
 }

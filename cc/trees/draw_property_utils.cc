@@ -1146,13 +1146,13 @@ void VerifyClipTreeCalculations(const LayerImplList& layer_list,
   if (property_trees->non_root_surfaces_enabled) {
     ComputeClipsWithEffectTree(property_trees);
   }
-  for (auto layer : layer_list)
+  for (auto* layer : layer_list)
     ComputeLayerClipRect(property_trees, layer);
 }
 
 void VerifyTransformTreeCalculations(const LayerImplList& layer_list,
                                      PropertyTrees* property_trees) {
-  for (auto layer : layer_list)
+  for (auto* layer : layer_list)
     VerifyDrawTransformsMatch(layer, property_trees);
 }
 

@@ -49,7 +49,7 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
                         const char* value_name,
                         const char* units,
                         uint64_t value) override {
-    auto dump = GetOrCreateAllocatorDump(dump_name);
+    auto* dump = GetOrCreateAllocatorDump(dump_name);
     dump->AddScalar(value_name, units, value);
   }
 
@@ -104,7 +104,7 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
   // Helper to create allocator dumps.
   base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
       const char* dump_name) {
-    auto dump = pmd_->GetAllocatorDump(dump_name);
+    auto* dump = pmd_->GetAllocatorDump(dump_name);
     if (!dump)
       dump = pmd_->CreateAllocatorDump(dump_name);
     return dump;

@@ -76,7 +76,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     int priority_count = 0;
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
-    for (const auto& layer : layers)
+    for (auto* layer : layers)
       layer->UpdateTiles();
 
     timer_.Reset();
@@ -104,7 +104,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
                                  NEW_CONTENT_TAKES_PRIORITY};
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 100);
-    for (const auto& layer : layers)
+    for (auto* layer : layers)
       layer->UpdateTiles();
 
     int priority_count = 0;
@@ -140,7 +140,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     int priority_count = 0;
 
     std::vector<FakePictureLayerImpl*> layers = CreateLayers(layer_count, 10);
-    for (const auto& layer : layers) {
+    for (auto* layer : layers) {
       layer->UpdateTiles();
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
@@ -174,7 +174,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     std::vector<FakePictureLayerImpl*> layers =
         CreateLayers(layer_count, tile_count);
-    for (const auto& layer : layers) {
+    for (auto* layer : layers) {
       layer->UpdateTiles();
       for (size_t i = 0; i < layer->num_tilings(); ++i) {
         tile_manager()->InitializeTilesWithResourcesForTesting(
@@ -281,7 +281,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     timer_.Reset();
     do {
       host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-      for (const auto& layer : layers)
+      for (auto* layer : layers)
         layer->UpdateTiles();
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());

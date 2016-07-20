@@ -970,7 +970,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
 #if DCHECK_IS_ON()
   for (const auto& render_pass : frame->render_passes) {
-    for (const auto& quad : render_pass->quad_list)
+    for (auto* quad : render_pass->quad_list)
       DCHECK(quad->shared_quad_state);
   }
   DCHECK(frame->render_passes.back()->output_rect.origin().IsOrigin());
@@ -1702,7 +1702,7 @@ void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
   for (size_t i = 0; i < frame.will_draw_layers.size(); ++i)
     frame.will_draw_layers[i]->DidDraw(resource_provider_.get());
 
-  for (auto& it : video_frame_controllers_)
+  for (auto* it : video_frame_controllers_)
     it->DidDrawFrame();
 }
 
@@ -1855,7 +1855,7 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
 
   Animate();
 
-  for (auto& it : video_frame_controllers_)
+  for (auto* it : video_frame_controllers_)
     it->OnBeginFrame(args);
 }
 

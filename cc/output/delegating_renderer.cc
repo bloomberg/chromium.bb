@@ -89,7 +89,7 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // Collect all resource ids in the render passes into a ResourceIdArray.
   ResourceProvider::ResourceIdArray resources;
   for (const auto& render_pass : out_data.render_pass_list) {
-    for (const auto& quad : render_pass->quad_list) {
+    for (auto* quad : render_pass->quad_list) {
       for (ResourceId resource_id : quad->resources)
         resources.push_back(resource_id);
     }

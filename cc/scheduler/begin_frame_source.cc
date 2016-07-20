@@ -169,7 +169,7 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
   BeginFrameArgs args = CreateBeginFrameArgs(time_source_->LastTickTime(),
                                              BeginFrameArgs::NORMAL);
   std::unordered_set<BeginFrameObserver*> observers(observers_);
-  for (auto& obs : observers) {
+  for (auto* obs : observers) {
     BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         (args.frame_time >

@@ -1609,7 +1609,7 @@ TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
   active_layer()->DidDraw(nullptr);
 
   Region remaining = visible_rect;
-  for (const auto& quad : render_pass->quad_list) {
+  for (auto* quad : render_pass->quad_list) {
     EXPECT_TRUE(visible_rect.Contains(quad->rect));
     EXPECT_TRUE(remaining.Contains(quad->rect));
     remaining.Subtract(quad->rect);

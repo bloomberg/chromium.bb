@@ -113,7 +113,7 @@ void RenderPass::CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
                       source->damage_rect,
                       source->transform_to_root_target,
                       source->has_transparent_background);
-    for (const auto& shared_quad_state : source->shared_quad_state_list) {
+    for (auto* shared_quad_state : source->shared_quad_state_list) {
       SharedQuadState* copy_shared_quad_state =
           copy_pass->CreateAndAppendSharedQuadState();
       *copy_shared_quad_state = *shared_quad_state;
@@ -122,7 +122,7 @@ void RenderPass::CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
         source->shared_quad_state_list.begin();
     SharedQuadStateList::Iterator copy_sqs_iter =
         copy_pass->shared_quad_state_list.begin();
-    for (const auto& quad : source->quad_list) {
+    for (auto* quad : source->quad_list) {
       while (quad->shared_quad_state != *sqs_iter) {
         ++sqs_iter;
         ++copy_sqs_iter;
@@ -189,7 +189,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
                     base::saturated_cast<int>(copy_requests.size()));
 
   value->BeginArray("shared_quad_state_list");
-  for (const auto& shared_quad_state : shared_quad_state_list) {
+  for (auto* shared_quad_state : shared_quad_state_list) {
     value->BeginDictionary();
     shared_quad_state->AsValueInto(value);
     value->EndDictionary();
@@ -197,7 +197,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   value->EndArray();
 
   value->BeginArray("quad_list");
-  for (const auto& quad : quad_list) {
+  for (auto* quad : quad_list) {
     value->BeginDictionary();
     quad->AsValueInto(value);
     value->EndDictionary();

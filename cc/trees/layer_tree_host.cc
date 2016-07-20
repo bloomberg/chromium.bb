@@ -1535,7 +1535,7 @@ void LayerTreeHost::ToProtobufForCommit(
 
   // layers_that_should_push_properties_ should be serialized before layer
   // properties because it is cleared during the properties serialization.
-  for (auto layer : layers_that_should_push_properties_)
+  for (auto* layer : layers_that_should_push_properties_)
     proto->add_layers_that_should_push_properties(layer->id());
 
   LayerProtoConverter::SerializeLayerProperties(this,

@@ -357,7 +357,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   std::vector<Tile*> pending_tiles =
       pending_set->tiling_at(0)->AllTilesForTesting();
   EXPECT_GT(pending_tiles.size(), 0u);
-  for (const auto& tile : pending_tiles)
+  for (auto* tile : pending_tiles)
     EXPECT_EQ(tile_size1, tile->content_rect().size());
 
   // Update to a new source frame with a new tile size.
@@ -381,7 +381,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   // Tiles should have the new correct size.
   pending_tiles = pending_set->tiling_at(0)->AllTilesForTesting();
   EXPECT_GT(pending_tiles.size(), 0u);
-  for (const auto& tile : pending_tiles)
+  for (auto* tile : pending_tiles)
     EXPECT_EQ(tile_size2, tile->content_rect().size());
 
   // Clone from the pending to the active tree.
@@ -395,7 +395,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   std::vector<Tile*> active_tiles =
       active_set->tiling_at(0)->AllTilesForTesting();
   EXPECT_GT(active_tiles.size(), 0u);
-  for (const auto& tile : active_tiles)
+  for (auto* tile : active_tiles)
     EXPECT_EQ(tile_size2, tile->content_rect().size());
 
   // A new source frame with a new tile size.
@@ -413,7 +413,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   // Tiles are resized for the new size.
   pending_tiles = pending_set->tiling_at(0)->AllTilesForTesting();
   EXPECT_GT(pending_tiles.size(), 0u);
-  for (const auto& tile : pending_tiles)
+  for (auto* tile : pending_tiles)
     EXPECT_EQ(tile_size3, tile->content_rect().size());
 
   // Now we activate with a different tile size for the active tiling.
@@ -426,7 +426,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   // And its tiles are resized.
   active_tiles = active_set->tiling_at(0)->AllTilesForTesting();
   EXPECT_GT(active_tiles.size(), 0u);
-  for (const auto& tile : active_tiles)
+  for (auto* tile : active_tiles)
     EXPECT_EQ(tile_size3, tile->content_rect().size());
 }
 

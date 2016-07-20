@@ -487,7 +487,7 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   // so that drawing can proceed without GL context switching interruptions.
   ResourceProvider* resource_provider = resource_provider_;
   for (const auto& pass : *frame->render_passes_in_draw_order) {
-    for (const auto& quad : pass->quad_list) {
+    for (auto* quad : pass->quad_list) {
       for (ResourceId resource_id : quad->resources)
         resource_provider->WaitSyncTokenIfNeeded(resource_id);
     }

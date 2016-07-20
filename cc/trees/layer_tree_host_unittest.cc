@@ -245,7 +245,7 @@ class LayerTreeHostTestReadyToActivateEmpty : public LayerTreeHostTest {
     const std::vector<PictureLayerImpl*>& layers =
         impl->sync_tree()->picture_layers();
     required_for_activation_count_ = 0;
-    for (const auto& layer : layers) {
+    for (auto* layer : layers) {
       FakePictureLayerImpl* fake_layer =
           static_cast<FakePictureLayerImpl*>(layer);
       required_for_activation_count_ +=
@@ -322,7 +322,7 @@ class LayerTreeHostTestReadyToDrawEmpty : public LayerTreeHostTest {
         impl->active_tree()->picture_layers();
     all_tiles_required_for_draw_are_ready_to_draw_ =
         impl->tile_manager()->IsReadyToDraw();
-    for (const auto& layer : layers) {
+    for (auto* layer : layers) {
       FakePictureLayerImpl* fake_layer =
           static_cast<FakePictureLayerImpl*>(layer);
       required_for_draw_count_ += fake_layer->CountTilesRequiredForDraw();
@@ -1408,20 +1408,20 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (num_draws_ == 2) {
-      auto pending_tree = host_impl->pending_tree();
-      auto pending_layer_impl = static_cast<FakePictureLayerImpl*>(
+      auto* pending_tree = host_impl->pending_tree();
+      auto* pending_layer_impl = static_cast<FakePictureLayerImpl*>(
           pending_tree->root_layer_for_testing());
       EXPECT_NE(pending_layer_impl, nullptr);
 
-      auto active_tree = host_impl->pending_tree();
-      auto active_layer_impl = static_cast<FakePictureLayerImpl*>(
+      auto* active_tree = host_impl->pending_tree();
+      auto* active_layer_impl = static_cast<FakePictureLayerImpl*>(
           active_tree->root_layer_for_testing());
       EXPECT_NE(pending_layer_impl, nullptr);
 
-      auto active_tiling_set = active_layer_impl->picture_layer_tiling_set();
-      auto active_tiling = active_tiling_set->tiling_at(0);
-      auto pending_tiling_set = pending_layer_impl->picture_layer_tiling_set();
-      auto pending_tiling = pending_tiling_set->tiling_at(0);
+      auto* active_tiling_set = active_layer_impl->picture_layer_tiling_set();
+      auto* active_tiling = active_tiling_set->tiling_at(0);
+      auto* pending_tiling_set = pending_layer_impl->picture_layer_tiling_set();
+      auto* pending_tiling = pending_tiling_set->tiling_at(0);
       EXPECT_EQ(
           pending_tiling->TilingDataForTesting().max_texture_size().width(),
           active_tiling->TilingDataForTesting().max_texture_size().width());
@@ -5567,7 +5567,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       return 0.f;
     float frame_scale = 0.f;
     RenderPass* root_pass = frame_data->render_passes.back().get();
-    for (const auto& draw_quad : root_pass->quad_list) {
+    for (auto* draw_quad : root_pass->quad_list) {
       // Checkerboards mean an incomplete frame.
       if (draw_quad->material != DrawQuad::TILED_CONTENT)
         return 0.f;
@@ -5870,7 +5870,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
       return 0.f;
     float frame_scale = 0.f;
     RenderPass* root_pass = frame_data->render_passes.back().get();
-    for (const auto& draw_quad : root_pass->quad_list) {
+    for (auto* draw_quad : root_pass->quad_list) {
       const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());

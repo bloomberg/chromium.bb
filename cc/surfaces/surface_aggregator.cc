@@ -377,7 +377,7 @@ void SurfaceAggregator::CopyQuadsToPass(
   // invalid SharedQuadState pointer, it should DCHECK.
   SharedQuadStateList::ConstIterator sqs_iter =
       source_shared_quad_state_list.begin();
-  for (const auto& quad : source_quad_list) {
+  for (auto* quad : source_quad_list) {
     while (sqs_iter != source_shared_quad_state_list.end() &&
            quad->shared_quad_state != *sqs_iter) {
       ++sqs_iter;
@@ -386,7 +386,7 @@ void SurfaceAggregator::CopyQuadsToPass(
   }
 #endif
 
-  for (const auto& quad : source_quad_list) {
+  for (auto* quad : source_quad_list) {
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
       // HandleSurfaceQuad may add other shared quad state, so reset the
@@ -605,7 +605,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   for (const auto& render_pass : base::Reversed(frame_data->render_pass_list)) {
     RenderPassId remapped_pass_id = RemapPassId(render_pass->id, surface_id);
     bool in_moved_pixel_pass = !!moved_pixel_passes_.count(remapped_pass_id);
-    for (const auto& quad : render_pass->quad_list) {
+    for (auto* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
         const SurfaceDrawQuad* surface_quad =
             SurfaceDrawQuad::MaterialCast(quad);

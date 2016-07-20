@@ -332,7 +332,7 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
       p.shared_quad_state_list.begin();
   cc::SharedQuadStateList::ConstIterator last_shared_quad_state_iter =
       p.shared_quad_state_list.end();
-  for (const auto& quad : p.quad_list) {
+  for (auto* quad : p.quad_list) {
     DCHECK(quad->rect.Contains(quad->visible_rect))
         << quad->material << " rect: " << quad->rect.ToString()
         << " visible_rect: " << quad->visible_rect.ToString();
@@ -524,13 +524,13 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append(", ");
 
   l->append("[");
-  for (const auto& shared_quad_state : p.shared_quad_state_list) {
+  for (auto* shared_quad_state : p.shared_quad_state_list) {
     if (shared_quad_state != p.shared_quad_state_list.front())
       l->append(", ");
     LogParam(*shared_quad_state, l);
   }
   l->append("], [");
-  for (const auto& quad : p.quad_list) {
+  for (auto* quad : p.quad_list) {
     if (quad != p.quad_list.front())
       l->append(", ");
     switch (quad->material) {
