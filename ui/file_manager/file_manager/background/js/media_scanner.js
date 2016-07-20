@@ -148,7 +148,7 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
       }.bind(this));
 
   scan.setCandidateCount(entries.length);
-  var scanPromises = entries.map(this.onUniqueFileFound_.bind(this, scan));
+  var scanPromises = entries.map(this.onFileEntryFound_.bind(this, scan));
 
   Promise.all(scanPromises)
       .then(scan.resolve)

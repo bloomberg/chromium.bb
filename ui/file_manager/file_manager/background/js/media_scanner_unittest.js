@@ -142,6 +142,48 @@ function testScanFiles(callback) {
 }
 
 /**
+ * Verifies that scanFiles skips duplicated files.
+ */
+function testScanFilesIgnoresPreviousImports(callback) {
+  var filenames = [
+    'oldimage1234.jpg',    // a history duplicate
+    'driveimage1234.jpg',  // a content duplicate
+    'foo.jpg',
+    'bar.gif',
+    'baz.avi'
+  ];
+
+  // Replace the default dispositionChecker with a function
+  // that treats our dupes accordingly.
+  dispositionChecker = function(entry, destination) {
+    if (entry.name === filenames[0]) {
+      return Promise.resolve(importer.Disposition.HISTORY_DUPLICATE);
+    }
+    if (entry.name === filenames[1]) {
+      return Promise.resolve(importer.Disposition.CONTENT_DUPLICATE);
+    }
+    return Promise.resolve(importer.Disposition.ORIGINAL);
+  };
+
+  var expectedFiles = [
+    '/testScanFilesIgnoresPreviousImports/foo.jpg',
+    '/testScanFilesIgnoresPreviousImports/bar.gif',
+    '/testScanFilesIgnoresPreviousImports/baz.avi'
+  ];
+  reportPromise(
+      makeTestFileSystemRoot('testScanFilesIgnoresPreviousImports')
+          .then(populateDir.bind(null, filenames))
+          .then(fileOperationUtil.gatherEntriesRecursively)
+          .then(
+              /** @param {!Array<!FileEntry>} files */
+              function(files) {
+                return scanner.scanFiles(files).whenFinal();
+              })
+          .then(assertFilesFound.bind(null, expectedFiles)),
+      callback);
+}
+
+/**
  * Verifies that scanning a simple single-level directory structure works.
  */
 function testEmptyScanResults(callback) {
