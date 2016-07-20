@@ -1635,17 +1635,32 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         String updatedUrl = null;
         if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
-            if (!skipCheck && selectedIndex >= mSuggestionItems.size()) {
-                // Adding to track down the source of the crash in crbug.com/595395.
-                throw new IllegalStateException("Selected index out of bounds");
+            int verifiedIndex = -1;
+            if (!skipCheck) {
+                if (mSuggestionItems.size() > selectedIndex
+                        && mSuggestionItems.get(selectedIndex).getSuggestion() == suggestion) {
+                    verifiedIndex = selectedIndex;
+                } else {
+                    // Underlying omnibox results may have changed since the selection was made,
+                    // find the suggestion item, if possible.
+                    for (int i = 0; i < mSuggestionItems.size(); i++) {
+                        if (suggestion.equals(mSuggestionItems.get(i).getSuggestion())) {
+                            verifiedIndex = i;
+                            break;
+                        }
+                    }
+                }
             }
+
+            // If we do not have the suggestion as part of our results, skip the URL update.
+            if (verifiedIndex == -1) return suggestion.getUrl();
 
             // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
             // for query in the omnibox and voice suggestions, but it's currently difficult to do.
             long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
                     ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp) : -1;
             updatedUrl = mAutocomplete.updateMatchDestinationUrlWithQueryFormulationTime(
-                    selectedIndex, elapsedTimeSinceInputChange);
+                    verifiedIndex, elapsedTimeSinceInputChange);
         }
 
         return updatedUrl == null ? suggestion.getUrl() : updatedUrl;
