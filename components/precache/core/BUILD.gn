@@ -52,6 +52,7 @@ source_set("core") {
 proto_library("proto") {
   sources = [
     "proto/precache.proto",
+    "proto/timestamp.proto",
     "proto/unfinished_work.proto",
   ]
 }

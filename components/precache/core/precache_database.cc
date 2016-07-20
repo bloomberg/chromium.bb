@@ -23,6 +23,9 @@ namespace {
 // it is considered "old" and is removed from the table.
 const int kPrecacheHistoryExpiryPeriodDays = 60;
 
+const int kSecondsInMinute = 60;
+const int kSecondsInHour = kSecondsInMinute * 60;
+
 }  // namespace
 
 namespace precache {
@@ -88,6 +91,28 @@ void PrecacheDatabase::ClearHistory() {
   buffered_writes_.push_back(base::Bind(
       &PrecacheURLTable::DeleteAll, base::Unretained(&precache_url_table_)));
   Flush();
+}
+
+void PrecacheDatabase::SetLastPrecacheTimestamp(const base::Time& time) {
+  last_precache_timestamp_ = time;
+
+  if (!IsDatabaseAccessible()) {
+    // Do nothing if unable to access the database.
+    return;
+  }
+
+  buffered_writes_.push_back(
+      base::Bind(&PrecacheSessionTable::SetLastPrecacheTimestamp,
+                 base::Unretained(&precache_session_table_), time));
+  MaybePostFlush();
+}
+
+base::Time PrecacheDatabase::GetLastPrecacheTimestamp() {
+  if (last_precache_timestamp_.is_null() && IsDatabaseAccessible()) {
+    last_precache_timestamp_ =
+        precache_session_table_.GetLastPrecacheTimestamp();
+  }
+  return last_precache_timestamp_;
 }
 
 void PrecacheDatabase::RecordURLPrefetch(const GURL& url,
@@ -157,6 +182,8 @@ void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
     return;
   }
 
+  RecordTimeSinceLastPrecache(fetch_time);
+
   if (buffered_urls_.find(url.spec()) != buffered_urls_.end()) {
     // If the URL for this fetch is in the write buffer, then flush the write
     // buffer.
@@ -199,6 +226,25 @@ void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
                  base::Unretained(&precache_url_table_), url));
   buffered_urls_.insert(url.spec());
   MaybePostFlush();
+}
+
+void PrecacheDatabase::RecordTimeSinceLastPrecache(
+    const base::Time& fetch_time) {
+  const base::Time& last_precache_timestamp = GetLastPrecacheTimestamp();
+  // It could still be null if the DB was not accessible.
+  if (!last_precache_timestamp.is_null()) {
+    // This is the timespan (in seconds) between the last call to
+    // PrecacheManager::StartPrecaching and the fetch time of a non-precache
+    // URL. Please note that the session started by that call to
+    // PrecacheManager::StartPrecaching may not have precached this particular
+    // URL or even any URL for that matter.
+    // The range was estimated to have the 95 percentile within the last bounded
+    // bucket.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Precache.TimeSinceLastPrecache",
+        (fetch_time - last_precache_timestamp).InSeconds(), kSecondsInMinute,
+        kSecondsInHour * 36, 100);
+  }
 }
 
 bool PrecacheDatabase::IsDatabaseAccessible() const {

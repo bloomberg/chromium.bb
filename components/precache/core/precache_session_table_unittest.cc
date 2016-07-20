@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "components/precache/core/precache_session_table.h"
@@ -30,6 +32,18 @@ class PrecacheSessionTableTest : public testing::Test {
   std::unique_ptr<PrecacheSessionTable> precache_session_table_;
   std::unique_ptr<sql::Connection> db_;
 };
+
+TEST_F(PrecacheSessionTableTest, LastPrecacheTimestamp) {
+  const base::Time sometime = base::Time::FromDoubleT(42);
+
+  precache_session_table_->SetLastPrecacheTimestamp(sometime);
+
+  EXPECT_EQ(sometime, precache_session_table_->GetLastPrecacheTimestamp());
+
+  precache_session_table_->DeleteLastPrecacheTimestamp();
+
+  EXPECT_EQ(base::Time(), precache_session_table_->GetLastPrecacheTimestamp());
+}
 
 TEST_F(PrecacheSessionTableTest, SaveAndGetUnfinishedWork) {
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(

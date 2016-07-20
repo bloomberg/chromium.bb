@@ -123,6 +123,11 @@ void PrecacheManager::StartPrecaching(
   precache_completion_callback_ = precache_completion_callback;
 
   is_precaching_ = true;
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&PrecacheDatabase::SetLastPrecacheTimestamp,
+                 base::Unretained(precache_database_.get()),
+                 base::Time::Now()));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB,
       FROM_HERE,

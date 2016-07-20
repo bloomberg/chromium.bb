@@ -243,12 +243,17 @@ TEST_F(PrecacheManagerTest, StartAndFinishPrecachingWithUnfinishedHosts) {
       GURL(kEvilManifestURL), "",
       net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
+  ASSERT_TRUE(precache_database_->GetLastPrecacheTimestamp().is_null());
+
   precache_manager_->StartPrecaching(precache_callback_.GetCallback());
   EXPECT_TRUE(precache_manager_->IsPrecaching());
 
   base::RunLoop().RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   EXPECT_TRUE(precache_callback_.was_on_done_called());
+
+  // The LastPrecacheTimestamp has been set.
+  EXPECT_FALSE(precache_database_->GetLastPrecacheTimestamp().is_null());
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
@@ -505,6 +510,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Fetch.TimeToComplete"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"]++;
+  expected_histogram_count_map["Precache.TimeSinceLastPrecache"] += 1;
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
@@ -521,6 +527,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Latency.NonPrefetch"] += 2;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"] += 2;
   expected_histogram_count_map["Precache.Saved"] += 2;
+  expected_histogram_count_map["Precache.TimeSinceLastPrecache"] += 2;
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),

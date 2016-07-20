@@ -4,10 +4,12 @@
 
 #include "components/precache/core/precache_session_table.h"
 
+#include <stdint.h>
 #include <string>
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "components/precache/core/proto/timestamp.pb.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -25,6 +27,38 @@ bool PrecacheSessionTable::Init(sql::Connection* db) {
   DCHECK(db);    // The database connection must be non-NULL.
   db_ = db;
   return CreateTableIfNonExistent();
+}
+
+void PrecacheSessionTable::SetLastPrecacheTimestamp(const base::Time& time) {
+  DCHECK(!time.is_null());
+  Timestamp timestamp;
+  timestamp.set_seconds((time - base::Time::UnixEpoch()).InSeconds());
+  Statement statement(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT OR REPLACE INTO precache_session (type, value) VALUES(?,?)"));
+  statement.BindInt(0, static_cast<int>(LAST_PRECACHE_TIMESTAMP));
+  statement.BindString(1, timestamp.SerializeAsString());
+  statement.Run();
+}
+
+base::Time PrecacheSessionTable::GetLastPrecacheTimestamp() {
+  Statement statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT value from precache_session where type=?"));
+  statement.BindInt(0, static_cast<int>(LAST_PRECACHE_TIMESTAMP));
+  Timestamp timestamp;
+  if (statement.Step())
+    timestamp.ParseFromString(statement.ColumnString(0));
+  return timestamp.has_seconds()
+             ? base::Time::UnixEpoch() +
+                   base::TimeDelta::FromSeconds(timestamp.seconds())
+             : base::Time();
+}
+
+void PrecacheSessionTable::DeleteLastPrecacheTimestamp() {
+  Statement statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM precache_session where type=?"));
+  statement.BindInt(0, static_cast<int>(LAST_PRECACHE_TIMESTAMP));
+  statement.Run();
 }
 
 // Store unfinished work.

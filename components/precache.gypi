@@ -43,6 +43,7 @@
       'type': 'static_library',
       'sources': [
         'precache/core/proto/precache.proto',
+        'precache/core/proto/timestamp.proto',
         'precache/core/proto/unfinished_work.proto',
       ],
       'variables': {

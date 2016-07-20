@@ -381,6 +381,35 @@ TEST_F(PrecacheDatabaseTest, SampleInteraction) {
               ElementsAre(Bucket(kSize1, 1)));
 }
 
+TEST_F(PrecacheDatabaseTest, LastPrecacheTimestamp) {
+  // So that it starts recording TimeSinceLastPrecache.
+  const base::Time kStartTime =
+      base::Time() + base::TimeDelta::FromSeconds(100);
+  precache_database_->SetLastPrecacheTimestamp(kStartTime);
+
+  RecordPrecacheFromNetwork(kURL, kLatency, kStartTime, kSize);
+  RecordPrecacheFromNetwork(kURL, kLatency, kStartTime, kSize);
+  RecordPrecacheFromNetwork(kURL, kLatency, kStartTime, kSize);
+  RecordPrecacheFromNetwork(kURL, kLatency, kStartTime, kSize);
+
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.TimeSinceLastPrecache"),
+              ElementsAre());
+
+  const base::Time kTimeA = kStartTime + base::TimeDelta::FromSeconds(7);
+  const base::Time kTimeB = kStartTime + base::TimeDelta::FromMinutes(42);
+  const base::Time kTimeC = kStartTime + base::TimeDelta::FromHours(20);
+
+  RecordFetchFromCacheCellular(kURL, kTimeA, kSize);
+  RecordFetchFromCacheCellular(kURL, kTimeA, kSize);
+  RecordFetchFromNetworkCellular(kURL, kLatency, kTimeB, kSize);
+  RecordFetchFromNetworkCellular(kURL, kLatency, kTimeB, kSize);
+  RecordFetchFromCacheCellular(kURL, kTimeB, kSize);
+  RecordFetchFromCacheCellular(kURL, kTimeC, kSize);
+
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.TimeSinceLastPrecache"),
+              ElementsAre(Bucket(0, 2), Bucket(2406, 3), Bucket(69347, 1)));
+}
+
 }  // namespace
 
 }  // namespace precache

@@ -42982,6 +42982,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.TimeSinceLastPrecache" units="seconds">
+  <owner>jamartin@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The time between the the beginning of the last precache session and each of
+    the URL fetches made by the user ever since. Logged per-request.
+  </summary>
+</histogram>
+
 <histogram name="PrefService.CreateProfilePrefsTime" units="ms">
   <owner>rkaplow@chromium.org</owner>
   <summary>The amount of time that elapsed during CreateProfilePrefs.</summary>

@@ -29,6 +29,8 @@ class PrecacheUnfinishedWork;
 enum SessionDataType {
   // Unfinished work to do sometime later.
   UNFINISHED_WORK = 0,
+  // Timestamp of the last precache.
+  LAST_PRECACHE_TIMESTAMP = 1,
 };
 
 class PrecacheSessionTable {
@@ -40,6 +42,18 @@ class PrecacheSessionTable {
   // connection. The caller keeps ownership of |db|, and |db| must not be null.
   // Init must be called before any other methods.
   bool Init(sql::Connection* db);
+
+  // -- Time since last precache --
+
+  void SetLastPrecacheTimestamp(const base::Time& time);
+
+  // If none present, it will return base::Time(), so it can be checked via
+  // is_null().
+  base::Time GetLastPrecacheTimestamp();
+
+  void DeleteLastPrecacheTimestamp();
+
+  // -- Unfinished work --
 
   // Stores unfinished work.
   void SaveUnfinishedWork(

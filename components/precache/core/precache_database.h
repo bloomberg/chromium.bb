@@ -58,6 +58,10 @@ class PrecacheDatabase {
   // Delete all history entries from the database.
   void ClearHistory();
 
+  // Setter and getter for the last precache timestamp.
+  void SetLastPrecacheTimestamp(const base::Time& time);
+  base::Time GetLastPrecacheTimestamp();
+
   // Report precache-related metrics in response to a URL being fetched, where
   // the fetch was motivated by precaching.
   void RecordURLPrefetch(const GURL& url,
@@ -109,6 +113,9 @@ class PrecacheDatabase {
   // posted.
   void MaybePostFlush();
 
+  // Records the time since the last precache.
+  void RecordTimeSinceLastPrecache(const base::Time& fetch_time);
+
   std::unique_ptr<sql::Connection> db_;
 
   // Table that keeps track of URLs that are in the cache because of precaching,
@@ -135,6 +142,11 @@ class PrecacheDatabase {
   // or destructor are called on the same thread.
   base::ThreadChecker thread_checker_;
 
+  // Time of the last precache. This is a cached copy of
+  // precache_session_table_.GetLastPrecacheTimestamp.
+  base::Time last_precache_timestamp_;
+
+  // This must be the last member of this class.
   base::WeakPtrFactory<PrecacheDatabase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheDatabase);
