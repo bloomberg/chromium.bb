@@ -20,6 +20,7 @@ class BLIMP_NET_EXPORT MockBlobChannelSender : public BlobChannelSender {
 
   MOCK_METHOD2(PutBlob, void(const BlobId& id, BlobDataPtr data));
   MOCK_METHOD1(DeliverBlob, void(const BlobId& id));
+  MOCK_CONST_METHOD0(GetCachedBlobIds, std::vector<CacheStateEntry>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlobChannelSender);

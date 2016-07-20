@@ -25,6 +25,9 @@ class BLIMP_COMMON_EXPORT BlobCache {
  public:
   virtual ~BlobCache() {}
 
+  // Gets the keys of items stored by the cache.
+  virtual std::vector<BlobId> GetCachedBlobIds() const = 0;
+
   // Returns true if there is a cache item |id|.
   virtual bool Contains(const BlobId& id) const = 0;
 

@@ -4,6 +4,7 @@
 
 #include "blimp/engine/renderer/blob_channel_sender_proxy.h"
 
+#include <unordered_map>
 #include <utility>
 
 #include "blimp/common/blob_cache/id_util.h"
@@ -61,13 +62,17 @@ mojo::ScopedSharedBufferHandle SharedMemoryBlob::CreateRemoteHandle() {
 }  // namespace
 
 BlobChannelSenderProxy::BlobChannelSenderProxy()
-    : BlobChannelSenderProxy(GetConnectedBlobChannel()) {}
+    : blob_channel_(GetConnectedBlobChannel()), weak_factory_(this) {
+  blob_channel_->GetCachedBlobIds(
+      base::Bind(&BlobChannelSenderProxy::OnGetCacheStateComplete,
+                 weak_factory_.GetWeakPtr()));
+}
 
 BlobChannelSenderProxy::~BlobChannelSenderProxy() {}
 
 BlobChannelSenderProxy::BlobChannelSenderProxy(
     mojom::BlobChannelPtr blob_channel)
-    : blob_channel_(std::move(blob_channel)) {}
+    : blob_channel_(std::move(blob_channel)), weak_factory_(this) {}
 
 // static
 std::unique_ptr<BlobChannelSenderProxy> BlobChannelSenderProxy::CreateForTest(
@@ -108,6 +113,22 @@ void BlobChannelSenderProxy::DeliverBlob(const std::string& id) {
   replication_state_[id] = true;
 
   blob_channel_->DeliverBlob(id);
+}
+
+std::vector<BlobChannelSender::CacheStateEntry>
+BlobChannelSenderProxy::GetCachedBlobIds() const {
+  NOTREACHED();
+  return std::vector<BlobChannelSender::CacheStateEntry>();
+}
+
+void BlobChannelSenderProxy::OnGetCacheStateComplete(
+    const std::unordered_map<std::string, bool>& cache_state) {
+  VLOG(1) << "Received cache state from browser (" << cache_state.size()
+          << " items)";
+  replication_state_.clear();
+  for (const auto& next_item : cache_state) {
+    replication_state_[next_item.first] = next_item.second;
+  }
 }
 
 }  // namespace engine

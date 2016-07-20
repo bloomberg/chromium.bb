@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -37,6 +38,8 @@ class BLIMP_NET_EXPORT BlobChannelSenderImpl : public BlobChannelSender {
   ~BlobChannelSenderImpl() override;
 
   // BlobChannelSender implementation.
+  std::vector<BlobChannelSender::CacheStateEntry> GetCachedBlobIds()
+      const override;
   void PutBlob(const BlobId& id, BlobDataPtr data) override;
   void DeliverBlob(const BlobId& id) override;
 

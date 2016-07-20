@@ -5,6 +5,8 @@
 #ifndef BLIMP_COMMON_BLOB_CACHE_MOCK_BLOB_CACHE_H_
 #define BLIMP_COMMON_BLOB_CACHE_MOCK_BLOB_CACHE_H_
 
+#include <vector>
+
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,6 +20,7 @@ class MockBlobCache : public BlobCache {
   MOCK_CONST_METHOD1(Contains, bool(const BlobId&));
   MOCK_METHOD2(Put, void(const BlobId&, BlobDataPtr));
   MOCK_CONST_METHOD1(Get, BlobDataPtr(const BlobId&));
+  MOCK_CONST_METHOD0(GetCachedBlobIds, std::vector<BlobId>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlobCache);

@@ -6,20 +6,23 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/blob_cache/mock_blob_cache.h"
 #include "blimp/net/blob_channel/blob_channel_sender_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace blimp {
-namespace {
-
 using testing::_;
 using testing::Pointee;
 using testing::Return;
+using testing::UnorderedElementsAre;
+
+namespace blimp {
+namespace {
 
 const char kBlobId[] = "blob-1";
 const char kBlobPayload[] = "blob-1-payload";
+const char kBlobId2[] = "blob-2";
 
 // Helper function for creating a cache payload vector from a string.
 BlobDataPtr CreatePayload(const std::string& input) {
@@ -54,19 +57,19 @@ class BlobChannelSenderTest : public testing::Test {
   std::unique_ptr<BlobChannelSender> blob_sender_;
 };
 
-TEST_F(BlobChannelSenderTest, TestPutBlob) {
+TEST_F(BlobChannelSenderTest, PutBlob) {
   EXPECT_CALL(*mock_cache_,
               Put(kBlobId, BlobDataEqual(CreatePayload(kBlobPayload))));
   EXPECT_CALL(*mock_cache_, Contains(kBlobId)).WillOnce(Return(false));
   blob_sender_->PutBlob(kBlobId, CreatePayload(kBlobPayload));
 }
 
-TEST_F(BlobChannelSenderTest, TestPutBlobDuplicate) {
+TEST_F(BlobChannelSenderTest, PutBlobDuplicate) {
   EXPECT_CALL(*mock_cache_, Contains(kBlobId)).WillOnce(Return(true));
   blob_sender_->PutBlob(kBlobId, CreatePayload(kBlobPayload));
 }
 
-TEST_F(BlobChannelSenderTest, TestPush) {
+TEST_F(BlobChannelSenderTest, Push) {
   auto payload = CreatePayload(kBlobPayload);
   EXPECT_CALL(*mock_delegate_, DeliverBlob(kBlobId, BlobDataEqual(payload)));
   EXPECT_CALL(*mock_cache_, Contains(kBlobId))
@@ -76,6 +79,34 @@ TEST_F(BlobChannelSenderTest, TestPush) {
   EXPECT_CALL(*mock_cache_, Get(kBlobId)).WillOnce(Return(payload));
   blob_sender_->PutBlob(kBlobId, payload);
   blob_sender_->DeliverBlob(kBlobId);
+}
+
+TEST_F(BlobChannelSenderTest, GetCachedBlobIds) {
+  std::string blob_id1 = CalculateBlobId(kBlobId);
+  std::string blob_id2 = CalculateBlobId(kBlobId2);
+  BlobDataPtr blob_payload1 = CreatePayload(kBlobPayload);
+
+  EXPECT_CALL(*mock_cache_, Contains(blob_id1)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_cache_, Get(blob_id1)).WillOnce(Return(blob_payload1));
+
+  std::vector<BlobId> cache_state;
+  cache_state.push_back(blob_id1);
+  cache_state.push_back(blob_id2);
+
+  EXPECT_CALL(*mock_cache_, GetCachedBlobIds()).WillOnce(Return(cache_state));
+  EXPECT_CALL(*mock_delegate_,
+              DeliverBlob(blob_id1, BlobDataEqual(blob_payload1)));
+
+  // Mark one of the blobs as delivered.
+  blob_sender_->DeliverBlob(blob_id1);
+
+  std::vector<BlobChannelSender::CacheStateEntry> actual =
+      blob_sender_->GetCachedBlobIds();
+  EXPECT_EQ(2u, actual.size());
+  EXPECT_EQ(blob_id1, actual[0].id);
+  EXPECT_TRUE(actual[0].was_delivered);
+  EXPECT_EQ(blob_id2, actual[1].id);
+  EXPECT_FALSE(actual[1].was_delivered);
 }
 
 }  // namespace

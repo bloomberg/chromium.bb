@@ -5,6 +5,8 @@
 #ifndef BLIMP_ENGINE_MOJO_BLOB_CHANNEL_SERVICE_H_
 #define BLIMP_ENGINE_MOJO_BLOB_CHANNEL_SERVICE_H_
 
+#include <string>
+
 #include "blimp/engine/mojo/blob_channel.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -31,10 +33,12 @@ class BlobChannelService : public mojom::BlobChannel {
                      mojom::BlobChannelRequest request);
 
   // BlobChannel implementation.
-  void PutBlob(const mojo::String& id,
+  void GetCachedBlobIds(
+      const GetCachedBlobIdsCallback& response_callback) override;
+  void PutBlob(const std::string& id,
                mojo::ScopedSharedBufferHandle data,
                uint32_t size) override;
-  void DeliverBlob(const mojo::String& id) override;
+  void DeliverBlob(const std::string& id) override;
 
   // Binds |this| and its object lifetime to a Mojo connection.
   mojo::StrongBinding<mojom::BlobChannel> binding_;

@@ -8,6 +8,14 @@ module blimp.engine.mojom;
 // The renderer can use this service to push bulk data such as images to
 // the client.
 interface BlobChannel {
+  // Gets the list of cached BlobIDs and their replication status in the
+  // browser process' BlobCache. The replication status is represented
+  // as a boolean which, when true, indicates that the blob has been
+  // sent to the client.
+  // TODO(kmarshall): Add a delegate receiver to process cache invalidation
+  // events from the browser as they occur.
+  GetCachedBlobIds() => (map<string, bool> cache_state);
+
   // Stores the blob |id| in the BlobCache.
   // Because the IPC channel is a shared resource and payloads can be quite
   // large, we use shared memory to reduce channel contention and associated

@@ -34,16 +34,25 @@ class InMemoryBlobCacheTest : public testing::Test {
 TEST_F(InMemoryBlobCacheTest, SimplePutContainsAndGetOperations) {
   EXPECT_FALSE(cache_.Contains(kFoo));
   EXPECT_FALSE(cache_.Get(kFoo));
+  EXPECT_FALSE(cache_.Contains(kBar));
+  EXPECT_FALSE(cache_.Get(kBar));
 
-  BlobDataPtr blob_data = CreateBlobDataPtr(kDeadbeef);
-  cache_.Put(kFoo, blob_data);
+  BlobDataPtr blob_data_1 = CreateBlobDataPtr(kDeadbeef);
+  cache_.Put(kFoo, blob_data_1);
 
   EXPECT_TRUE(cache_.Contains(kFoo));
   EXPECT_FALSE(cache_.Contains(kBar));
 
-  BlobDataPtr out = cache_.Get(kFoo);
+  BlobDataPtr blob_data_2 = CreateBlobDataPtr(kDeadbeef);
+  cache_.Put(kBar, blob_data_2);
 
-  EXPECT_EQ(blob_data, out);
+  EXPECT_EQ(blob_data_1, cache_.Get(kFoo));
+  EXPECT_EQ(blob_data_2, cache_.Get(kBar));
+
+  auto cache_state = cache_.GetCachedBlobIds();
+  EXPECT_EQ(2u, cache_state.size());
+  EXPECT_EQ(kBar, cache_state[0]);
+  EXPECT_EQ(kFoo, cache_state[1]);
 }
 
 TEST_F(InMemoryBlobCacheTest, TestDuplicatePut) {
@@ -59,6 +68,10 @@ TEST_F(InMemoryBlobCacheTest, TestDuplicatePut) {
   cache_.Put(kFoo, duplicate);
   BlobDataPtr out2 = cache_.Get(kFoo);
   EXPECT_EQ(first, out2);
+
+  auto cache_state = cache_.GetCachedBlobIds();
+  EXPECT_EQ(1u, cache_state.size());
+  EXPECT_EQ(kFoo, cache_state[0]);
 }
 
 }  // namespace

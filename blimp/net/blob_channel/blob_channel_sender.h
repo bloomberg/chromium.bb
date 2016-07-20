@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_BLOB_CHANNEL_BLOB_CHANNEL_SENDER_H_
 #define BLIMP_NET_BLOB_CHANNEL_BLOB_CHANNEL_SENDER_H_
 
+#include <vector>
+
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "blimp/net/blimp_net_export.h"
 
@@ -15,7 +17,15 @@ const size_t kMaxBlobSizeBytes = 10 * 1024 * 1024;
 
 class BLIMP_NET_EXPORT BlobChannelSender {
  public:
+  struct CacheStateEntry {
+    BlobId id;
+    bool was_delivered;
+  };
+
   virtual ~BlobChannelSender() {}
+
+  // Gets the list of cache keys and their replication status in the BlobCache.
+  virtual std::vector<CacheStateEntry> GetCachedBlobIds() const = 0;
 
   // Puts a blob in the local BlobChannel. The blob can then be pushed to the
   // remote receiver via "DeliverBlob()".

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,6 +24,7 @@ class BLIMP_COMMON_EXPORT InMemoryBlobCache : public BlobCache {
   ~InMemoryBlobCache() override;
 
   // BlobCache implementation.
+  std::vector<BlobId> GetCachedBlobIds() const override;
   bool Contains(const BlobId& id) const override;
   void Put(const BlobId& id, BlobDataPtr data) override;
   BlobDataPtr Get(const BlobId& id) const override;
