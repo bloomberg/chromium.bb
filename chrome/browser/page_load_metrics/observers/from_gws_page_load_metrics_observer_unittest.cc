@@ -674,6 +674,25 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, CloseAfterInteraction) {
       internal::kHistogramFromGWSAbortCloseBeforeInteraction, 0);
 }
 
+TEST_F(FromGWSPageLoadMetricsObserverTest, CommittedIntent) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("intent://en.m.wikipedia.org/wiki/Test"));
+  SimulateTimingWithFirstPaint();
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeInteraction, 0);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, ProvisionalIntent) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  StartNavigation(GURL("intent://en.m.wikipedia.org/wiki/Test"));
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeCommit, 0);
+}
+
 TEST_F(FromGWSPageLoadMetricsLoggerTest, IsGoogleSearchHostname) {
   struct {
     bool expected_result;
@@ -830,49 +849,35 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, QueryContainsComponentPrefix) {
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, Basic) {
   FromGWSPageLoadMetricsLogger logger;
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
+  ASSERT_FALSE(logger.ShouldLogPostCommitMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NoPreviousPage) {
   FromGWSPageLoadMetricsLogger logger;
   logger.SetPreviouslyCommittedUrl(GURL());
   logger.set_navigation_initiated_via_link(true);
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
+  ASSERT_FALSE(logger.ShouldLogPostCommitMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationNotInitiatedViaLink) {
   FromGWSPageLoadMetricsLogger logger;
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.set_navigation_initiated_via_link(false);
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
-}
-
-TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalNonHttpOrHttpsScheme) {
-  FromGWSPageLoadMetricsLogger logger;
-  logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
-  logger.SetProvisionalUrl(GURL("intent://foo"));
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL::EmptyGURL()));
+  ASSERT_FALSE(logger.ShouldLogPostCommitMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalFromGWS) {
   FromGWSPageLoadMetricsLogger logger;
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.SetProvisionalUrl(GURL(kGoogleSearchResultsUrl));
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL::EmptyGURL()));
+  ASSERT_FALSE(logger.ShouldLogFailedProvisionalLoadMetrics());
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalNotFromGWS) {
   FromGWSPageLoadMetricsLogger logger;
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.SetProvisionalUrl(GURL(kExampleUrl));
-  ASSERT_TRUE(logger.ShouldLogMetrics(GURL::EmptyGURL()));
-}
-
-TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalIntent) {
-  FromGWSPageLoadMetricsLogger logger;
-  logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
-  logger.SetProvisionalUrl(GURL("intent://en.m.wikipedia.org/wiki/Test"));
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL::EmptyGURL()));
+  ASSERT_TRUE(logger.ShouldLogFailedProvisionalLoadMetrics());
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalIgnoredAfterCommit1) {
@@ -880,7 +885,8 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalIgnoredAfterCommit1) {
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.SetProvisionalUrl(GURL(kExampleUrl));
   logger.set_navigation_initiated_via_link(true);
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kGoogleSearchResultsUrl)));
+  ASSERT_FALSE(
+      logger.ShouldLogPostCommitMetrics(GURL(kGoogleSearchResultsUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalIgnoredAfterCommit2) {
@@ -888,21 +894,22 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, ProvisionalIgnoredAfterCommit2) {
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.SetProvisionalUrl(GURL(kGoogleSearchResultsUrl));
   logger.set_navigation_initiated_via_link(true);
-  ASSERT_TRUE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
+  ASSERT_TRUE(logger.ShouldLogPostCommitMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearch) {
   FromGWSPageLoadMetricsLogger logger;
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.set_navigation_initiated_via_link(true);
-  ASSERT_TRUE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
+  ASSERT_TRUE(logger.ShouldLogPostCommitMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationToSearchHostname) {
   FromGWSPageLoadMetricsLogger logger;
   logger.SetPreviouslyCommittedUrl(GURL(kGoogleSearchResultsUrl));
   logger.set_navigation_initiated_via_link(true);
-  ASSERT_FALSE(logger.ShouldLogMetrics(GURL("https://www.google.com/about/")));
+  ASSERT_FALSE(
+      logger.ShouldLogPostCommitMetrics(GURL("https://www.google.com/about/")));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearchRedirector) {
@@ -910,5 +917,5 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearchRedirector) {
   logger.SetPreviouslyCommittedUrl(
       GURL("https://www.google.com/url?source=web"));
   logger.set_navigation_initiated_via_link(true);
-  ASSERT_TRUE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
+  ASSERT_TRUE(logger.ShouldLogPostCommitMetrics(GURL(kExampleUrl)));
 }

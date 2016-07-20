@@ -37647,6 +37647,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.CommitToComplete.NoTimingIPCs" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The delay between commit and completion, for page loads that did not receive
+    any timing IPCs. This metric is only intended to help understand the cases
+    where committed page loads don't receive timing IPCs. Please contact
+    bmcquade@chromium.org before using this metric.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.ForwardBack"
     units="length">
   <owner>csharrison@chromium.org</owner>

@@ -34,6 +34,9 @@ class AbortsPageLoadMetricsObserver
   void OnComplete(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFailedProvisionalLoad(
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AbortsPageLoadMetricsObserver);

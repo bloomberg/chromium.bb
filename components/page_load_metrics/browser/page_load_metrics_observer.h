@@ -50,6 +50,15 @@ enum UserAbortType {
   ABORT_LAST_ENTRY
 };
 
+// Information related to failed provisional loads.
+struct FailedProvisionalLoadInfo {
+  FailedProvisionalLoadInfo(base::TimeDelta interval, net::Error error);
+  ~FailedProvisionalLoadInfo();
+
+  base::TimeDelta time_to_failed_provisional_load;
+  net::Error error;
+};
+
 struct PageLoadExtraInfo {
   PageLoadExtraInfo(
       const base::Optional<base::TimeDelta>& first_background_time,
@@ -122,12 +131,6 @@ class PageLoadMetricsObserver {
   // Note that this does not get called for same page navigations.
   virtual void OnCommit(content::NavigationHandle* navigation_handle) {}
 
-  // OnFailedProvisionalLoad is triggered when a provisional load failed and did
-  // not commit. Note that provisional loads that result in downloads or 204s
-  // are aborted by the system, and thus considered failed provisional loads.
-  virtual void OnFailedProvisionalLoad(
-      content::NavigationHandle* navigation_handle) {}
-
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to
   // OnComplete instead.
@@ -150,7 +153,6 @@ class PageLoadMetricsObserver {
   // loading-dev@chromium.org if you intend to override this method.
   virtual void OnTimingUpdate(const PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
-
   // OnUserInput is triggered when a new user input is passed in to
   // web_contents. Contains a TimeDelta from navigation start.
   virtual void OnUserInput(const blink::WebInputEvent& event) {}
@@ -182,13 +184,27 @@ class PageLoadMetricsObserver {
   virtual void OnLoadingBehaviorObserved(
       const page_load_metrics::PageLoadExtraInfo& extra_info) {}
 
-  // OnComplete is invoked for tracked page loads, immediately before the
-  // observer is deleted.  The PageLoadTiming struct contains timing data and
-  // the PageLoadExtraInfo struct contains other useful data collected over the
-  // course of the page load. Most observers should not need to implement this
-  // method, and should implement the On* timing callbacks instead.
+  // One of OnComplete or OnFailedProvisionalLoad is invoked for tracked page
+  // loads, immediately before the observer is deleted. These callbacks will not
+  // be invoked for page loads that did not meet the criteria for being tracked
+  // at the time the navigation completed. The PageLoadTiming struct contains
+  // timing data and the PageLoadExtraInfo struct contains other useful data
+  // collected over the course of the page load. Most observers should not need
+  // to implement these callbacks, and should implement the On* timing callbacks
+  // instead.
+
+  // OnComplete is invoked for tracked page loads that committed, immediately
+  // before the observer is deleted.
   virtual void OnComplete(const PageLoadTiming& timing,
                           const PageLoadExtraInfo& extra_info) {}
+
+  // OnFailedProvisionalLoad is invoked for tracked page loads that did not
+  // commit, immediately before the observer is deleted. Note that provisional
+  // loads that result in downloads or 204s are aborted by the system, and are
+  // also included as failed provisional loads.
+  virtual void OnFailedProvisionalLoad(
+      const FailedProvisionalLoadInfo& failed_provisional_load_info,
+      const PageLoadExtraInfo& extra_info) {}
 };
 
 }  // namespace page_load_metrics

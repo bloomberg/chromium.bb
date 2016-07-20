@@ -61,6 +61,9 @@ class FromGWSPageLoadMetricsLogger {
   // Invoked when metrics for the given page are complete.
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& extra_info);
+  void OnFailedProvisionalLoad(
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
 
   void OnDomContentLoadedEventStart(
       const page_load_metrics::PageLoadTiming& timing,
@@ -87,7 +90,8 @@ class FromGWSPageLoadMetricsLogger {
   static bool IsGoogleSearchHostname(base::StringPiece host);
   static bool IsGoogleSearchResultUrl(const GURL& url);
   static bool IsGoogleSearchRedirectorUrl(const GURL& url);
-  bool ShouldLogMetrics(const GURL& url);
+  bool ShouldLogFailedProvisionalLoadMetrics();
+  bool ShouldLogPostCommitMetrics(const GURL& url);
   bool ShouldLogForegroundEventAfterCommit(
       const base::Optional<base::TimeDelta>& event,
       const page_load_metrics::PageLoadExtraInfo& info);
@@ -112,7 +116,6 @@ class FromGWSPageLoadMetricsLogger {
   bool previously_committed_url_is_search_redirector_ = false;
   bool navigation_initiated_via_link_ = false;
   bool provisional_url_has_search_hostname_ = false;
-  bool provisional_url_is_non_http_or_https_ = false;
 
   // The state of if first paint is triggered.
   bool first_paint_triggered_ = false;
@@ -168,6 +171,9 @@ class FromGWSPageLoadMetricsObserver
 
   void OnComplete(
       const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFailedProvisionalLoad(
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   void OnUserInput(const blink::WebInputEvent& event) override;

@@ -392,7 +392,6 @@ void FromGWSPageLoadMetricsLogger::SetPreviouslyCommittedUrl(const GURL& url) {
 void FromGWSPageLoadMetricsLogger::SetProvisionalUrl(const GURL& url) {
   provisional_url_has_search_hostname_ =
       IsGoogleSearchHostname(url.host_piece());
-  provisional_url_is_non_http_or_https_ = !url.SchemeIsHTTPOrHTTPS();
 }
 
 FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver() {}
@@ -476,6 +475,12 @@ void FromGWSPageLoadMetricsObserver::OnComplete(
   logger_.OnComplete(timing, extra_info);
 }
 
+void FromGWSPageLoadMetricsObserver::OnFailedProvisionalLoad(
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnFailedProvisionalLoad(failed_load_info, extra_info);
+}
+
 void FromGWSPageLoadMetricsObserver::OnUserInput(
     const blink::WebInputEvent& event) {
   logger_.OnUserInput(event);
@@ -484,29 +489,24 @@ void FromGWSPageLoadMetricsObserver::OnUserInput(
 void FromGWSPageLoadMetricsLogger::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!ShouldLogMetrics(extra_info.committed_url))
+  if (!ShouldLogPostCommitMetrics(extra_info.committed_url))
     return;
 
-  // If we have a committed load but |timing.IsEmpty()|, then this load was not
-  // tracked by the renderer. In this case, it is not possible to know whether
-  // the abort signals came before the page painted. Additionally, for
-  // consistency with core PageLoad metrics, we ignore non-render-tracked
-  // loads when tracking aborts after commit.
   UserAbortType abort_type = extra_info.abort_type;
   if (!WasAbortedInForeground(abort_type, extra_info.time_to_abort, extra_info))
     return;
 
-  base::TimeDelta time_to_abort = extra_info.time_to_abort.value();
-  if (extra_info.committed_url.is_empty()) {
-    LogProvisionalAborts(abort_type, time_to_abort);
-    return;
-  }
-
-  // If we didn't receive any timing data but did commit, this is likely not a
-  // renderer-tracked navigation, so ignore it.
+  // If we did not receive any timing IPCs from the render process, we can't
+  // know for certain if the page was truly aborted before paint, or if the
+  // abort happened before we received the IPC from the render process. Thus, we
+  // do not log aborts for these page loads. Tracked page loads that receive no
+  // timing IPCs are tracked via the ERR_NO_IPCS_RECEIVED error code in the
+  // PageLoad.Events.InternalError histogram, so we can keep track of how often
+  // this happens.
   if (timing.IsEmpty())
     return;
 
+  base::TimeDelta time_to_abort = extra_info.time_to_abort.value();
   if (!timing.first_paint || timing.first_paint >= time_to_abort) {
     LogCommittedAbortsBeforePaint(abort_type, time_to_abort);
   } else if (WasAbortedBeforeInteraction(abort_type,
@@ -516,7 +516,33 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
   }
 }
 
-bool FromGWSPageLoadMetricsLogger::ShouldLogMetrics(const GURL& committed_url) {
+void FromGWSPageLoadMetricsLogger::OnFailedProvisionalLoad(
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (!ShouldLogFailedProvisionalLoadMetrics())
+    return;
+
+  UserAbortType abort_type = extra_info.abort_type;
+  if (!WasAbortedInForeground(abort_type, extra_info.time_to_abort, extra_info))
+    return;
+
+  LogProvisionalAborts(abort_type, extra_info.time_to_abort.value());
+}
+
+bool FromGWSPageLoadMetricsLogger::ShouldLogFailedProvisionalLoadMetrics() {
+  // See comment in ShouldLogPostCommitMetrics above the call to
+  // IsGoogleSearchHostname for more info on this if test.
+  if (provisional_url_has_search_hostname_)
+    return false;
+
+  return previously_committed_url_is_search_results_ ||
+         previously_committed_url_is_search_redirector_;
+}
+
+bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(
+    const GURL& committed_url) {
+  DCHECK(!committed_url.is_empty());
+
   // If this page has a URL on a known google search hostname, then it may be a
   // page associated with search (either a search results page, or a search
   // redirector url), so we should not log stats. We could try to detect only
@@ -525,25 +551,16 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogMetrics(const GURL& committed_url) {
   // includes a result for https://www.google.com/about/), however, we assume
   // these cases are relatively uncommon, and we run the risk of logging metrics
   // for some search redirector URLs. Thus we choose the more conservative
-  // approach of ignoring all urls on known search hostnames. We use the
-  // provisional url if the navigation didn't commit. Also ignore navigations to
-  // other URL schemes, such as app navigations via intent://.
-  if (committed_url.is_empty()) {
-    if (provisional_url_has_search_hostname_ ||
-        provisional_url_is_non_http_or_https_)
-      return false;
-  } else {
-    if (IsGoogleSearchHostname(committed_url.host_piece()) ||
-        !committed_url.SchemeIsHTTPOrHTTPS())
-      return false;
-  }
+  // approach of ignoring all urls on known search hostnames.
+  if (IsGoogleSearchHostname(committed_url.host_piece()))
+    return false;
 
   // We're only interested in tracking navigations (e.g. clicks) initiated via
   // links. Note that the redirector will mask these, so don't enforce this if
   // the navigation came from a redirect url. TODO(csharrison): Use this signal
   // for provisional loads when the content APIs allow for it.
   if (previously_committed_url_is_search_results_ &&
-      (committed_url.is_empty() || navigation_initiated_via_link_)) {
+      navigation_initiated_via_link_) {
     return true;
   }
 
@@ -559,7 +576,7 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogForegroundEventAfterCommit(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK(!info.committed_url.is_empty())
       << "ShouldLogForegroundEventAfterCommit called without committed URL.";
-  return ShouldLogMetrics(info.committed_url) &&
+  return ShouldLogPostCommitMetrics(info.committed_url) &&
          WasStartedInForegroundOptionalEventInForeground(event, info);
 }
 

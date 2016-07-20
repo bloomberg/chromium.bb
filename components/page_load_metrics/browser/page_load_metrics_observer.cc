@@ -27,4 +27,11 @@ PageLoadExtraInfo::PageLoadExtraInfo(
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
 
 PageLoadExtraInfo::~PageLoadExtraInfo() {}
+
+FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,
+                                                     net::Error error)
+    : time_to_failed_provisional_load(interval), error(error) {}
+
+FailedProvisionalLoadInfo::~FailedProvisionalLoadInfo() {}
+
 }  // namespace page_load_metrics

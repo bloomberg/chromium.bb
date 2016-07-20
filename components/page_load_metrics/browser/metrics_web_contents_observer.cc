@@ -51,6 +51,8 @@ const char kClientRedirectFirstPaintToNavigation[] =
     "PageLoad.Internal.ClientRedirect.FirstPaintToNavigation";
 const char kClientRedirectWithoutPaint[] =
     "PageLoad.Internal.ClientRedirect.NavigationWithoutPaint";
+const char kCommitToCompleteNoTimingIPCs[] =
+    "PageLoad.Internal.CommitToComplete.NoTimingIPCs";
 
 }  // namespace internal
 
@@ -265,9 +267,14 @@ PageLoadTracker::~PageLoadTracker() {
     return;
 
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
-
+  DCHECK_NE(static_cast<bool>(info.time_to_commit),
+            static_cast<bool>(failed_provisional_load_info_));
   if (info.time_to_commit && timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
+    const base::TimeTicks commit_time =
+        navigation_start_ + info.time_to_commit.value();
+    PAGE_LOAD_HISTOGRAM(internal::kCommitToCompleteNoTimingIPCs,
+                        base::TimeTicks::Now() - commit_time);
   }
   // Recall that trackers that are given ABORT_UNKNOWN_NAVIGATION have their
   // chain length added to the next navigation. Take care not to double count
@@ -276,7 +283,11 @@ PageLoadTracker::~PageLoadTracker() {
     LogAbortChainHistograms(nullptr);
 
   for (const auto& observer : observers_) {
-    observer->OnComplete(timing_, info);
+    if (failed_provisional_load_info_) {
+      observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
+    } else {
+      observer->OnComplete(timing_, info);
+    }
   }
 }
 
@@ -369,9 +380,10 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
 
 void PageLoadTracker::FailedProvisionalLoad(
     content::NavigationHandle* navigation_handle) {
-  for (const auto& observer : observers_) {
-    observer->OnFailedProvisionalLoad(navigation_handle);
-  }
+  DCHECK(!failed_provisional_load_info_);
+  failed_provisional_load_info_.reset(new FailedProvisionalLoadInfo(
+      base::TimeTicks::Now() - navigation_handle->NavigationStart(),
+      navigation_handle->GetNetErrorCode()));
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {

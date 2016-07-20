@@ -6,6 +6,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -24,6 +25,7 @@ class MetricsWebContentsObserverBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
@@ -59,6 +61,47 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       SameUrlNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+
+  // We expect one histogram sample for each navigation to title1.html.
+  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 2);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 2);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 2);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 2);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       NonHtmlMainResource) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/simple.svg"));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       NonHttpOrHttpsUrl) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
@@ -148,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       DocumentWriteASync) {
+                       DocumentWriteAsync) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(

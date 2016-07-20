@@ -167,6 +167,22 @@ void RecordAbortDuringParse(UserAbortType abort_type,
   NOTREACHED();
 }
 
+bool ShouldTrackMetrics(
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  UserAbortType abort_type = extra_info.abort_type;
+  if (abort_type == UserAbortType::ABORT_NONE)
+    return false;
+
+  DCHECK(extra_info.time_to_abort);
+
+  // Don't log abort times if the page was backgrounded before the abort event.
+  if (!WasStartedInForegroundOptionalEventInForeground(extra_info.time_to_abort,
+                                                       extra_info))
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 AbortsPageLoadMetricsObserver::AbortsPageLoadMetricsObserver() {}
@@ -174,38 +190,35 @@ AbortsPageLoadMetricsObserver::AbortsPageLoadMetricsObserver() {}
 void AbortsPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  UserAbortType abort_type = extra_info.abort_type;
-  if (abort_type == UserAbortType::ABORT_NONE)
+  if (!ShouldTrackMetrics(extra_info))
     return;
 
-  DCHECK(extra_info.time_to_abort);
-
-  // Don't log abort times if the page was backgrounded before the abort event.
-  if (!WasStartedInForegroundOptionalEventInForeground(extra_info.time_to_abort,
-                                                       extra_info))
-    return;
-
-  const base::TimeDelta& time_to_abort = extra_info.time_to_abort.value();
-
-  if (!extra_info.time_to_commit) {
-    RecordAbortBeforeCommit(abort_type, time_to_abort);
-    return;
-  }
-
-  // If we have a committed load but |timing.IsEmpty()|, then this load was not
-  // tracked by the renderer. In this case, it is not possible to know whether
-  // the abort signals came before the page painted. Additionally, for
-  // consistency with PageLoad.(Document|Paint|Parse)Timing metrics recorded by
-  // the CorePageLoadMetricsObserver, we ignore non-render-tracked loads when
-  // tracking aborts after commit.
+  // If we did not receive any timing IPCs from the render process, we can't
+  // know for certain if the page was truly aborted before paint, or if the
+  // abort happened before we received the IPC from the render process. Thus, we
+  // do not log aborts for these page loads. Tracked page loads that receive no
+  // timing IPCs are tracked via the ERR_NO_IPCS_RECEIVED error code in the
+  // PageLoad.Events.InternalError histogram, so we can keep track of how often
+  // this happens.
   if (timing.IsEmpty())
     return;
 
+  const base::TimeDelta& time_to_abort = extra_info.time_to_abort.value();
   if (timing.parse_start && time_to_abort >= timing.parse_start &&
       (!timing.parse_stop || timing.parse_stop >= time_to_abort)) {
-    RecordAbortDuringParse(abort_type, time_to_abort);
+    RecordAbortDuringParse(extra_info.abort_type, time_to_abort);
   }
   if (!timing.first_paint || timing.first_paint >= time_to_abort) {
-    RecordAbortAfterCommitBeforePaint(abort_type, time_to_abort);
+    RecordAbortAfterCommitBeforePaint(extra_info.abort_type, time_to_abort);
   }
+}
+
+void AbortsPageLoadMetricsObserver::OnFailedProvisionalLoad(
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (!ShouldTrackMetrics(extra_info))
+    return;
+
+  RecordAbortBeforeCommit(extra_info.abort_type,
+                          extra_info.time_to_abort.value());
 }

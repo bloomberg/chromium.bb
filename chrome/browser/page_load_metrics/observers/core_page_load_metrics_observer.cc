@@ -423,29 +423,25 @@ void CorePageLoadMetricsObserver::OnComplete(
   RecordRappor(timing, info);
 }
 
-CorePageLoadMetricsObserver::FailedProvisionalLoadInfo::
-    FailedProvisionalLoadInfo()
-    : error(net::OK) {}
-
-CorePageLoadMetricsObserver::FailedProvisionalLoadInfo::
-    ~FailedProvisionalLoadInfo() {}
-
 void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
-    content::NavigationHandle* navigation_handle) {
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (extra_info.started_in_foreground && extra_info.first_background_time) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
+                        extra_info.first_background_time.value());
+  }
+
   // Only handle actual failures; provisional loads that failed due to another
   // committed load or due to user action are recorded in
   // AbortsPageLoadMetricsObserver.
-  net::Error error = navigation_handle->GetNetErrorCode();
-  if (error == net::OK || error == net::ERR_ABORTED) {
-    return;
+  if (failed_load_info.error != net::OK &&
+      failed_load_info.error != net::ERR_ABORTED) {
+    if (WasStartedInForegroundOptionalEventInForeground(
+            failed_load_info.time_to_failed_provisional_load, extra_info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFailedProvisionalLoad,
+                          failed_load_info.time_to_failed_provisional_load);
+    }
   }
-
-  // Saving the related timing and other data in this Observer instead of
-  // PageLoadTracker which saves commit and abort times, as it seems
-  // not every observer implementation would be interested in this metric.
-  failed_provisional_load_info_.interval =
-      base::TimeTicks::Now() - navigation_handle->NavigationStart();
-  failed_provisional_load_info_.error = error;
 }
 
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
@@ -457,11 +453,7 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const base::TimeDelta first_background_time =
         info.first_background_time.value();
 
-    if (!info.time_to_commit) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
-                          first_background_time);
-    } else if (!timing.first_paint ||
-               timing.first_paint > first_background_time) {
+    if (!timing.first_paint || timing.first_paint > first_background_time) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforePaint,
                           first_background_time);
     }
@@ -471,23 +463,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
                           first_background_time);
     }
   }
-
-  if (failed_provisional_load_info_.error != net::OK) {
-    DCHECK(failed_provisional_load_info_.interval);
-
-    // Ignores a background failed provisional load.
-    if (WasStartedInForegroundOptionalEventInForeground(
-            failed_provisional_load_info_.interval, info)) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFailedProvisionalLoad,
-                          failed_provisional_load_info_.interval.value());
-    }
-  }
-
-  // The rest of the histograms require the load to have committed and be
-  // relevant. If |timing.IsEmpty()|, then this load was not tracked by the
-  // renderer.
-  if (!info.time_to_commit || timing.IsEmpty())
-    return;
 
   const base::TimeDelta time_to_commit = info.time_to_commit.value();
   if (WasStartedInForegroundOptionalEventInForeground(info.time_to_commit,

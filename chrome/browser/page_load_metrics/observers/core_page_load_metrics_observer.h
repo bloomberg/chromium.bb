@@ -88,25 +88,15 @@ class CorePageLoadMetricsObserver
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFailedProvisionalLoad(
-      content::NavigationHandle* navigation_handle) override;
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
-  // Information related to failed provisional loads.
-  // Populated in OnFailedProvisionalLoad and accessed in OnComplete.
-  struct FailedProvisionalLoadInfo {
-    base::Optional<base::TimeDelta> interval;
-    net::Error error;
-
-    FailedProvisionalLoadInfo();
-    ~FailedProvisionalLoadInfo();
-  };
-
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,
                               const page_load_metrics::PageLoadExtraInfo& info);
   void RecordRappor(const page_load_metrics::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info);
 
-  FailedProvisionalLoadInfo failed_provisional_load_info_;
   ui::PageTransition transition_;
   bool initiated_by_user_gesture_;
 
