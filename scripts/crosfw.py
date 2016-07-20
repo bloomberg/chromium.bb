@@ -448,12 +448,12 @@ def SetupBuild(options):
 
   if options.incremental:
     # Get the correct board for cros_write_firmware
-    config_mk = '%s/include/config.mk' % outdir
+    config_mk = '%s/include/autoconf.mk' % outdir
     if not os.path.exists(config_mk):
       logging.warning('No build found for %s - dropping -i' % board)
       options.incremental = False
 
-  config_mk = 'include/config.mk'
+  config_mk = 'include/autoconf.mk'
   if os.path.exists(config_mk):
     logging.warning("Warning: '%s' exists, try 'make distclean'" % config_mk)
 
