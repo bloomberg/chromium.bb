@@ -19,7 +19,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_navigator.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"

@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_navigator.h"
+#include "ash/common/shelf/shelf_navigator.h"
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/shelf.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_NAVIGATOR_H_
-#define ASH_SHELF_SHELF_NAVIGATOR_H_
+#ifndef ASH_COMMON_SHELF_SHELF_NAVIGATOR_H_
+#define ASH_COMMON_SHELF_SHELF_NAVIGATOR_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -20,4 +20,4 @@ ASH_EXPORT int GetNextActivatedItemIndex(const ShelfModel& model,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_NAVIGATOR_H_
+#endif  // ASH_COMMON_SHELF_SHELF_NAVIGATOR_H_
