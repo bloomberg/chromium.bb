@@ -23,6 +23,7 @@
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_worker.h"
 #include "base/task_scheduler/scheduler_worker_pool.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/scheduler_worker_stack.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
@@ -38,11 +39,6 @@ class TaskTracker;
 // A pool of workers that run Tasks. This class is thread-safe.
 class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
  public:
-  enum class IORestriction {
-    ALLOWED,
-    DISALLOWED,
-  };
-
   // Callback invoked when a Sequence isn't empty after a worker pops a Task
   // from it.
   using ReEnqueueSequenceCallback = Callback<void(scoped_refptr<Sequence>)>;
@@ -52,19 +48,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // JoinForTesting() has returned.
   ~SchedulerWorkerPoolImpl() override;
 
-  // Creates a SchedulerWorkerPoolImpl labeled |name| with up to |max_threads|
-  // threads of priority |thread_priority|. |io_restriction| indicates whether
-  // Tasks on the constructed worker pool are allowed to make I/O calls.
-  // |re_enqueue_sequence_callback| will be invoked after a worker of this
-  // worker pool tries to run a Task. |task_tracker| is used to handle shutdown
-  // behavior of Tasks. |delayed_task_manager| handles Tasks posted with a
-  // delay. Returns nullptr on failure to create a worker pool with at least one
-  // thread.
+  // Creates a SchedulerWorkerPoolImpl following the |worker_pool_params|
+  // specification. |re_enqueue_sequence_callback| will be invoked after a
+  // worker of this worker pool tries to run a Task. |task_tracker| is used to
+  // handle shutdown behavior of Tasks. |delayed_task_manager| handles Tasks
+  // posted with a delay. Returns nullptr on failure to create a worker pool
+  // with at least one thread.
   static std::unique_ptr<SchedulerWorkerPoolImpl> Create(
-      StringPiece name,
-      ThreadPriority thread_priority,
-      size_t max_threads,
-      IORestriction io_restriction,
+      const SchedulerWorkerPoolParams& params,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
       TaskTracker* task_tracker,
       DelayedTaskManager* delayed_task_manager);
@@ -93,7 +84,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   class SchedulerWorkerDelegateImpl;
 
   SchedulerWorkerPoolImpl(StringPiece name,
-                          IORestriction io_restriction,
+                          SchedulerWorkerPoolParams::IORestriction
+                              io_restriction,
                           TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
@@ -129,7 +121,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   PriorityQueue shared_priority_queue_;
 
   // Indicates whether Tasks on this worker pool are allowed to make I/O calls.
-  const IORestriction io_restriction_;
+  const SchedulerWorkerPoolParams::IORestriction io_restriction_;
 
   // Synchronizes access to |idle_workers_stack_| and
   // |idle_workers_stack_cv_for_testing_|. Has |shared_priority_queue_|'s

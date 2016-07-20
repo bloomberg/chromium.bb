@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/task_scheduler/test_task_factory.h"
 #include "base/threading/platform_thread.h"
@@ -158,30 +159,31 @@ class TaskSchedulerImplTest
   TaskSchedulerImplTest() = default;
 
   void SetUp() override {
-    using IORestriction = SchedulerWorkerPoolImpl::IORestriction;
+    using IORestriction = SchedulerWorkerPoolParams::IORestriction;
 
-    std::vector<TaskSchedulerImpl::WorkerPoolCreationArgs> worker_pools;
+    std::vector<SchedulerWorkerPoolParams> params_vector;
 
-    ASSERT_EQ(BACKGROUND_WORKER_POOL, worker_pools.size());
-    worker_pools.push_back({"TaskSchedulerBackground",
-                            ThreadPriority::BACKGROUND,
-                            IORestriction::DISALLOWED, 1U});
+    ASSERT_EQ(BACKGROUND_WORKER_POOL, params_vector.size());
+    params_vector.emplace_back("TaskSchedulerBackground",
+                               ThreadPriority::BACKGROUND,
+                               IORestriction::DISALLOWED, 1U);
 
-    ASSERT_EQ(BACKGROUND_FILE_IO_WORKER_POOL, worker_pools.size());
-    worker_pools.push_back({"TaskSchedulerBackgroundFileIO",
-                            ThreadPriority::BACKGROUND, IORestriction::ALLOWED,
-                            3U});
+    ASSERT_EQ(BACKGROUND_FILE_IO_WORKER_POOL, params_vector.size());
+    params_vector.emplace_back("TaskSchedulerBackgroundFileIO",
+                               ThreadPriority::BACKGROUND,
+                               IORestriction::ALLOWED, 3U);
 
-    ASSERT_EQ(FOREGROUND_WORKER_POOL, worker_pools.size());
-    worker_pools.push_back({"TaskSchedulerForeground", ThreadPriority::NORMAL,
-                            IORestriction::DISALLOWED, 4U});
+    ASSERT_EQ(FOREGROUND_WORKER_POOL, params_vector.size());
+    params_vector.emplace_back("TaskSchedulerForeground",
+                               ThreadPriority::NORMAL,
+                               IORestriction::DISALLOWED, 4U);
 
-    ASSERT_EQ(FOREGROUND_FILE_IO_WORKER_POOL, worker_pools.size());
-    worker_pools.push_back({"TaskSchedulerForegroundFileIO",
-                            ThreadPriority::NORMAL, IORestriction::ALLOWED,
-                            12U});
+    ASSERT_EQ(FOREGROUND_FILE_IO_WORKER_POOL, params_vector.size());
+    params_vector.emplace_back("TaskSchedulerForegroundFileIO",
+                               ThreadPriority::NORMAL, IORestriction::ALLOWED,
+                               12U);
 
-    scheduler_ = TaskSchedulerImpl::Create(worker_pools,
+    scheduler_ = TaskSchedulerImpl::Create(params_vector,
                                            Bind(&GetThreadPoolIndexForTraits));
     ASSERT_TRUE(scheduler_);
   }

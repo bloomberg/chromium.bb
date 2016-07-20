@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -54,8 +55,11 @@ class TaskSchedulerServiceThreadTest : public testing::Test {
 
   void SetUp() override {
     scheduler_worker_pool_ = SchedulerWorkerPoolImpl::Create(
-        "TestWorkerPoolForSchedulerServiceThread", ThreadPriority::BACKGROUND,
-        1u, SchedulerWorkerPoolImpl::IORestriction::DISALLOWED,
+        SchedulerWorkerPoolParams("TestWorkerPoolForSchedulerServiceThread",
+                                  ThreadPriority::BACKGROUND,
+                                  SchedulerWorkerPoolParams::IORestriction::
+                                      DISALLOWED,
+                                  1u),
         Bind(&ReEnqueueSequenceCallback), &task_tracker_,
         &delayed_task_manager_);
     ASSERT_TRUE(scheduler_worker_pool_);

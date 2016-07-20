@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/scheduler_service_thread.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/time/time.h"
@@ -19,12 +20,12 @@ namespace internal {
 
 // static
 std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
-    const std::vector<WorkerPoolCreationArgs>& worker_pools,
+    const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
     const WorkerPoolIndexForTraitsCallback&
         worker_pool_index_for_traits_callback) {
   std::unique_ptr<TaskSchedulerImpl> scheduler(
       new TaskSchedulerImpl(worker_pool_index_for_traits_callback));
-  scheduler->Initialize(worker_pools);
+  scheduler->Initialize(worker_pool_params_vector);
   return scheduler;
 }
 
@@ -84,21 +85,20 @@ TaskSchedulerImpl::TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
 }
 
 void TaskSchedulerImpl::Initialize(
-    const std::vector<WorkerPoolCreationArgs>& worker_pools) {
-  DCHECK(!worker_pools.empty());
+    const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector) {
+  DCHECK(!worker_pool_params_vector.empty());
 
   const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
       re_enqueue_sequence_callback =
           Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
 
-  for (const auto& worker_pool : worker_pools) {
+  for (const auto& worker_pool_params : worker_pool_params_vector) {
     // Passing pointers to objects owned by |this| to
     // SchedulerWorkerPoolImpl::Create() is safe because a TaskSchedulerImpl
     // can't be deleted before all its worker pools have been joined.
     worker_pools_.push_back(SchedulerWorkerPoolImpl::Create(
-        worker_pool.name, worker_pool.thread_priority, worker_pool.max_threads,
-        worker_pool.io_restriction, re_enqueue_sequence_callback,
-        &task_tracker_, &delayed_task_manager_));
+        worker_pool_params, re_enqueue_sequence_callback, &task_tracker_,
+        &delayed_task_manager_));
     CHECK(worker_pools_.back());
   }
 

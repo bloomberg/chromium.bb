@@ -30,24 +30,11 @@ namespace base {
 namespace internal {
 
 class SchedulerServiceThread;
+class SchedulerWorkerPoolParams;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
  public:
-  struct WorkerPoolCreationArgs {
-    // Name of the pool. Used to label the pool's threads.
-    std::string name;
-
-    // Priority of the pool's threads.
-    ThreadPriority thread_priority;
-
-    // Whether I/O is allowed in the pool.
-    SchedulerWorkerPoolImpl::IORestriction io_restriction;
-
-    // Maximum number of threads in the pool.
-    size_t max_threads;
-  };
-
   // Returns the index of the worker pool in which a task with |traits| should
   // run. This should be coded in a future-proof way: new traits should
   // gracefully map to a default pool.
@@ -59,7 +46,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // |worker_pool_index_for_traits_callback| returns the index in |worker_pools|
   // of the worker pool in which a task with given traits should run.
   static std::unique_ptr<TaskSchedulerImpl> Create(
-      const std::vector<WorkerPoolCreationArgs>& worker_pools,
+      const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
       const WorkerPoolIndexForTraitsCallback&
           worker_pool_index_for_traits_callback);
 
@@ -85,7 +72,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   explicit TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
                                  worker_pool_index_for_traits_callback);
 
-  void Initialize(const std::vector<WorkerPoolCreationArgs>& worker_pools);
+  void Initialize(
+      const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector);
 
   // Returns the worker pool that runs Tasks with |traits|.
   SchedulerWorkerPool* GetWorkerPoolForTraits(const TaskTraits& traits);

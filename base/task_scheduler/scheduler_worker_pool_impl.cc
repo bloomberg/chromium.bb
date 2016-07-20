@@ -227,17 +227,16 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
 
 // static
 std::unique_ptr<SchedulerWorkerPoolImpl> SchedulerWorkerPoolImpl::Create(
-    StringPiece name,
-    ThreadPriority thread_priority,
-    size_t max_threads,
-    IORestriction io_restriction,
+    const SchedulerWorkerPoolParams& params,
     const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager) {
   std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool(
-      new SchedulerWorkerPoolImpl(name, io_restriction, task_tracker,
-                                  delayed_task_manager));
-  if (worker_pool->Initialize(thread_priority, max_threads,
+      new SchedulerWorkerPoolImpl(params.name(),
+                                  params.io_restriction(),
+                                  task_tracker, delayed_task_manager));
+  if (worker_pool->Initialize(params.thread_priority(),
+                              params.max_threads(),
                               re_enqueue_sequence_callback)) {
     return worker_pool;
   }
@@ -399,8 +398,9 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
   tls_current_worker.Get().Set(worker);
   tls_current_worker_pool.Get().Set(outer_);
 
-  ThreadRestrictions::SetIOAllowed(outer_->io_restriction_ ==
-                                   IORestriction::ALLOWED);
+  ThreadRestrictions::SetIOAllowed(
+      outer_->io_restriction_ ==
+          SchedulerWorkerPoolParams::IORestriction::ALLOWED);
 }
 
 scoped_refptr<Sequence>
@@ -486,7 +486,7 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CanDetach(
 
 SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece name,
-    IORestriction io_restriction,
+    SchedulerWorkerPoolParams::IORestriction io_restriction,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
     : name_(name.as_string()),

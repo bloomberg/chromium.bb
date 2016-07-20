@@ -21,6 +21,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/delayed_task_manager.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -39,7 +40,7 @@ const size_t kNumWorkersInWorkerPool = 4;
 const size_t kNumThreadsPostingTasks = 4;
 const size_t kNumTasksPostedPerThread = 150;
 
-using IORestriction = SchedulerWorkerPoolImpl::IORestriction;
+using IORestriction = SchedulerWorkerPoolParams::IORestriction;
 
 class TestDelayedTaskManager : public DelayedTaskManager {
  public:
@@ -63,8 +64,10 @@ class TaskSchedulerWorkerPoolImplTest
 
   void SetUp() override {
     worker_pool_ = SchedulerWorkerPoolImpl::Create(
-        "TestWorkerPoolWithFileIO", ThreadPriority::NORMAL,
-        kNumWorkersInWorkerPool, IORestriction::ALLOWED,
+        SchedulerWorkerPoolParams("TestWorkerPoolWithFileIO",
+                                  ThreadPriority::NORMAL,
+                                  IORestriction::ALLOWED,
+                                  kNumWorkersInWorkerPool),
         Bind(&TaskSchedulerWorkerPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),
         &task_tracker_, &delayed_task_manager_);
@@ -363,7 +366,8 @@ TEST_P(TaskSchedulerWorkerPoolImplIORestrictionTest, IORestriction) {
   DelayedTaskManager delayed_task_manager(Bind(&DoNothing));
 
   auto worker_pool = SchedulerWorkerPoolImpl::Create(
-      "TestWorkerPoolWithParam", ThreadPriority::NORMAL, 1U, GetParam(),
+      SchedulerWorkerPoolParams("TestWorkerPoolWithParam",
+                                ThreadPriority::NORMAL, GetParam(), 1U),
       Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
       &delayed_task_manager);
   ASSERT_TRUE(worker_pool);
