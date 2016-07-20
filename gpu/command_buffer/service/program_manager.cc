@@ -1862,7 +1862,7 @@ bool Program::CheckVaryingsPacking(
   const VaryingMap* vertex_varyings = &(attached_shaders_[0]->varying_map());
   const VaryingMap* fragment_varyings = &(attached_shaders_[1]->varying_map());
 
-  std::map<std::string, ShVariableInfo> combined_map;
+  std::map<std::string, const sh::ShaderVariable*> combined_map;
 
   for (const auto& key_value : *fragment_varyings) {
     if (!key_value.second.staticUse && option == kCountOnlyStaticallyUsed)
@@ -1876,26 +1876,18 @@ bool Program::CheckVaryingsPacking(
         continue;
     }
 
-    ShVariableInfo var;
-    var.type = static_cast<sh::GLenum>(key_value.second.type);
-    var.size = std::max(1u, key_value.second.arraySize);
-    combined_map[key_value.first] = var;
+    combined_map[key_value.first] = &key_value.second;
   }
 
   if (combined_map.size() == 0)
     return true;
-  std::unique_ptr<ShVariableInfo[]> variables(
-      new ShVariableInfo[combined_map.size()]);
-  size_t index = 0;
+  std::vector<sh::ShaderVariable> variables;
   for (const auto& key_value : combined_map) {
-    variables[index].type = key_value.second.type;
-    variables[index].size = key_value.second.size;
-    ++index;
+    variables.push_back(*key_value.second);
   }
   return ShCheckVariablesWithinPackingLimits(
       static_cast<int>(manager_->max_varying_vectors()),
-      variables.get(),
-      combined_map.size());
+      variables);
 }
 
 void Program::GetProgramInfo(
