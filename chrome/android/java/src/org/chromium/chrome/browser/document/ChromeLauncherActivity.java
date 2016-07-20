@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.InstantAppsHandler;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -301,6 +302,11 @@ public class ChromeLauncherActivity extends Activity
             URI uri = URI.create(url);
             if (UrlUtilities.isInternalScheme(uri)) return false;
         } catch (IllegalArgumentException e) {
+            return false;
+        }
+
+        // Don't reroute Home screen shortcuts.
+        if (IntentUtils.safeHasExtra(intent, ShortcutHelper.EXTRA_SOURCE)) {
             return false;
         }
 

@@ -28,6 +28,19 @@ public class IntentUtils {
     private static final int MAX_INTENT_SIZE_THRESHOLD = 750000;
 
     /**
+     * Just like {@link Intent#hasExtra(String)} but doesn't throw exceptions.
+     */
+    public static boolean safeHasExtra(Intent intent, String name) {
+        try {
+            return intent.hasExtra(name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "hasExtra failed on intent " + intent);
+            return false;
+        }
+    }
+
+    /**
      * Just like {@link Intent#getBooleanExtra(String, boolean)} but doesn't throw exceptions.
      */
     public static boolean safeGetBooleanExtra(Intent intent, String name, boolean defaultValue) {
