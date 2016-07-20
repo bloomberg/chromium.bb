@@ -97,14 +97,12 @@ class ValidateClientHelloHelper {
     DetachCallback();
   }
 
-  void StartedAsyncCallback() { DetachCallback(); }
-
- private:
   void DetachCallback() {
     QUIC_BUG_IF(done_cb_ == nullptr) << "Callback already detached.";
     done_cb_ = nullptr;
   }
 
+ private:
   ValidateClientHelloResultCallback::Result* result_;
   ValidateClientHelloResultCallback* done_cb_;
 
@@ -990,6 +988,57 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   }
 }
 
+class EvaluateClientHelloCallback : public ProofSource::Callback {
+ public:
+  EvaluateClientHelloCallback(
+      const QuicCryptoServerConfig& config,
+      bool found_error,
+      const IPAddress& server_ip,
+      QuicVersion version,
+      const uint8_t* primary_orbit,
+      scoped_refptr<QuicCryptoServerConfig::Config> requested_config,
+      scoped_refptr<QuicCryptoServerConfig::Config> primary_config,
+      QuicCryptoProof* crypto_proof,
+      ValidateClientHelloResultCallback::Result* client_hello_state,
+      ValidateClientHelloResultCallback* done_cb)
+      : config_(config),
+        found_error_(found_error),
+        server_ip_(server_ip),
+        version_(version),
+        primary_orbit_(primary_orbit),
+        requested_config_(std::move(requested_config)),
+        primary_config_(std::move(primary_config)),
+        crypto_proof_(crypto_proof),
+        client_hello_state_(client_hello_state),
+        done_cb_(done_cb) {}
+
+  void Run(bool ok,
+           const scoped_refptr<ProofSource::Chain>& chain,
+           const string& signature,
+           const string& leaf_cert_sct) override {
+    if (ok) {
+      crypto_proof_->chain = chain;
+      crypto_proof_->signature = signature;
+      crypto_proof_->cert_sct = leaf_cert_sct;
+    }
+    config_.EvaluateClientHelloAfterGetProof(
+        found_error_, server_ip_, version_, primary_orbit_, requested_config_,
+        primary_config_, crypto_proof_, !ok, client_hello_state_, done_cb_);
+  }
+
+ private:
+  const QuicCryptoServerConfig& config_;
+  const bool found_error_;
+  const IPAddress& server_ip_;
+  const QuicVersion version_;
+  const uint8_t* primary_orbit_;
+  const scoped_refptr<QuicCryptoServerConfig::Config> requested_config_;
+  const scoped_refptr<QuicCryptoServerConfig::Config> primary_config_;
+  QuicCryptoProof* crypto_proof_;
+  ValidateClientHelloResultCallback::Result* client_hello_state_;
+  ValidateClientHelloResultCallback* done_cb_;
+};
+
 void QuicCryptoServerConfig::EvaluateClientHello(
     const IPAddress& server_ip,
     QuicVersion version,
@@ -1063,6 +1112,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     found_error = true;
   }
 
+  bool get_proof_failed = false;
   if (version > QUIC_VERSION_25) {
     bool x509_supported = false;
     bool x509_ecdsa_supported = false;
@@ -1074,16 +1124,61 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     if (FLAGS_quic_refresh_proof) {
       need_proof = !crypto_proof->chain;
     }
+    if (FLAGS_enable_async_get_proof) {
+      if (need_proof) {
+        // Make an async call to GetProof and setup the callback to trampoline
+        // back into EvaluateClientHelloAfterGetProof
+        std::unique_ptr<EvaluateClientHelloCallback> cb(
+            new EvaluateClientHelloCallback(
+                *this, found_error, server_ip, version, primary_orbit,
+                requested_config, primary_config, crypto_proof,
+                client_hello_state, done_cb));
+        proof_source_->GetProof(server_ip, info->sni.as_string(),
+                                serialized_config, version, chlo_hash,
+                                x509_ecdsa_supported, std::move(cb));
+        helper.DetachCallback();
+        return;
+      }
+    }
+
     // No need to get a new proof if one was already generated.
     if (need_proof &&
         !proof_source_->GetProof(
             server_ip, info->sni.as_string(), serialized_config, version,
             chlo_hash, x509_ecdsa_supported, &crypto_proof->chain,
             &crypto_proof->signature, &crypto_proof->cert_sct)) {
-      found_error = true;
-      info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
+      get_proof_failed = true;
     }
+  }
 
+  EvaluateClientHelloAfterGetProof(
+      found_error, server_ip, version, primary_orbit, requested_config,
+      primary_config, crypto_proof, get_proof_failed, client_hello_state,
+      done_cb);
+  helper.DetachCallback();
+}
+
+void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
+    bool found_error,
+    const IPAddress& server_ip,
+    QuicVersion version,
+    const uint8_t* primary_orbit,
+    scoped_refptr<Config> requested_config,
+    scoped_refptr<Config> primary_config,
+    QuicCryptoProof* crypto_proof,
+    bool get_proof_failed,
+    ValidateClientHelloResultCallback::Result* client_hello_state,
+    ValidateClientHelloResultCallback* done_cb) const {
+  ValidateClientHelloHelper helper(client_hello_state, done_cb);
+  const CryptoHandshakeMessage& client_hello = client_hello_state->client_hello;
+  ClientHelloInfo* info = &(client_hello_state->info);
+
+  if (get_proof_failed) {
+    found_error = true;
+    info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
+  }
+
+  if (version > QUIC_VERSION_25) {
     if (!ValidateExpectedLeafCertificate(client_hello, *crypto_proof)) {
       found_error = true;
       info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
@@ -1166,7 +1261,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   strike_register_client->VerifyNonceIsValidAndUnique(
       info->client_nonce, info->now,
       new VerifyNonceIsValidAndUniqueCallback(client_hello_state, done_cb));
-  helper.StartedAsyncCallback();
+  helper.DetachCallback();
 }
 
 bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
@@ -1200,20 +1295,11 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
   scoped_refptr<ProofSource::Chain> chain;
   string signature;
   string cert_sct;
-  if (FLAGS_quic_use_hash_in_scup) {
-    if (!proof_source_->GetProof(server_ip, params.sni, serialized, version,
-                                 chlo_hash, params.x509_ecdsa_supported, &chain,
-                                 &signature, &cert_sct)) {
-      DVLOG(1) << "Server: failed to get proof.";
-      return false;
-    }
-  } else {
-    if (!proof_source_->GetProof(
-            server_ip, params.sni, serialized, version, params.client_nonce,
-            params.x509_ecdsa_supported, &chain, &signature, &cert_sct)) {
-      DVLOG(1) << "Server: failed to get proof.";
-      return false;
-    }
+  if (!proof_source_->GetProof(server_ip, params.sni, serialized, version,
+                               chlo_hash, params.x509_ecdsa_supported, &chain,
+                               &signature, &cert_sct)) {
+    DVLOG(1) << "Server: failed to get proof.";
+    return false;
   }
 
   const string compressed = CompressChain(
@@ -1267,15 +1353,9 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
           this, version, compressed_certs_cache, common_cert_sets, params,
           std::move(message), std::move(cb)));
 
-  if (FLAGS_quic_use_hash_in_scup) {
-    proof_source_->GetProof(server_ip, params.sni, serialized, version,
-                            chlo_hash, params.x509_ecdsa_supported,
-                            std::move(proof_source_cb));
-  } else {
-    proof_source_->GetProof(server_ip, params.sni, serialized, version,
-                            params.client_nonce, params.x509_ecdsa_supported,
-                            std::move(proof_source_cb));
-  }
+  proof_source_->GetProof(server_ip, params.sni, serialized, version, chlo_hash,
+                          params.x509_ecdsa_supported,
+                          std::move(proof_source_cb));
 }
 
 QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::

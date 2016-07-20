@@ -63,6 +63,11 @@ class NET_EXPORT_PRIVATE QuicAlarm {
   // cancelation of the alarm.
   virtual void CancelImpl() = 0;
 
+  // Subclasses implement this method to perform the platform-specific update of
+  // the alarm if there exists a more optimal implementation than calling
+  // CancelImpl() and SetImpl().
+  virtual void UpdateImpl();
+
   // Called by subclasses when the alarm fires.  Invokes the
   // delegates |OnAlarm| if a delegate is set, and if the deadline
   // has been exceeded.  Implementations which do not remove the

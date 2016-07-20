@@ -81,17 +81,9 @@ bool FLAGS_quic_loss_recovery_use_largest_acked = true;
 // retransmission alarm.  Disabled because it breaks QUIC time loss detection.
 bool FLAGS_quic_only_one_sending_alarm = false;
 
-// If true, the hash of the CHLO message will be used in the proof generated for
-// an SCUP message.
-bool FLAGS_quic_use_hash_in_scup = true;
-
 // If true, QUIC public reset packets will have the \"pre-v33\" public header
 // flags.
 bool FLAGS_quic_use_old_public_reset_packets = true;
-
-// If true, the dispatcher is responsible for generating server designated
-// connection IDs.
-bool FLAGS_quic_dispatcher_creates_id = true;
 
 // If true, checks if the CHLO is acceptable as a matter of policy.
 bool FLAGS_quic_enable_chlo_policy = true;
@@ -116,7 +108,7 @@ bool FLAGS_quic_use_cheap_stateless_rejects = false;
 
 // If true, treat timestamps from SO_TIMESTAMPING as QuicWallTimes rather
 // than QuicTimes.
-bool FLAGS_quic_socket_walltimestamps = false;
+bool FLAGS_quic_socket_walltimestamps = true;
 
 // If true, default to immediate forward secure once established on the
 // server side, and the IPFS connection option disables this instead of
@@ -124,21 +116,21 @@ bool FLAGS_quic_socket_walltimestamps = false;
 bool FLAGS_quic_default_immediate_forward_secure = true;
 
 // If true, disables support for QUIC version 29 and earlier.
-bool FLAGS_quic_disable_pre_30 = false;
+bool FLAGS_quic_disable_pre_30 = true;
 
 // If true, QUIC respect HTTP2 SETTINGS frame rather than always close the
 // connection.
 bool FLAGS_quic_respect_http2_settings_frame = true;
 
 // Do not use a QuicAckListener in order to confirm a larger Path MTU.
-bool FLAGS_quic_no_mtu_discovery_ack_listener = false;
+bool FLAGS_quic_no_mtu_discovery_ack_listener = true;
 
 // Deprecate QuicPacketCreator::next_packet_number_length_ because it's no
 // longer necessary.
-bool FLAGS_quic_simple_packet_number_length = false;
+bool FLAGS_quic_simple_packet_number_length = true;
 
 // If true, enables QUIC_VERSION_35.
-bool FLAGS_quic_enable_version_35 = false;
+bool FLAGS_quic_enable_version_35 = true;
 
 // If true, enables QUIC_VERSION_36.
 bool FLAGS_quic_enable_version_36 = false;
@@ -163,3 +155,7 @@ bool FLAGS_enable_async_get_proof = false;
 // If true, neuter null encrypted packets before sending the next handshake
 // message.
 bool FLAGS_quic_neuter_unencrypted_when_sending = false;
+
+// If true, QuicAlarm::Update will call a faster UpdateImpl implementation
+// instead of canceling and reregistering the alarm.
+bool FLAGS_quic_change_alarms_efficiently = false;

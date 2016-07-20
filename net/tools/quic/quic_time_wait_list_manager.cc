@@ -261,7 +261,6 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
 }
 
 void QuicTimeWaitListManager::SetConnectionIdCleanUpAlarm() {
-  connection_id_clean_up_alarm_->Cancel();
   QuicTime::Delta next_alarm_interval = QuicTime::Delta::Zero();
   if (!connection_id_map_.empty()) {
     QuicTime oldest_connection_id =
@@ -277,8 +276,8 @@ void QuicTimeWaitListManager::SetConnectionIdCleanUpAlarm() {
     next_alarm_interval = time_wait_period_;
   }
 
-  connection_id_clean_up_alarm_->Set(clock_->ApproximateNow() +
-                                     next_alarm_interval);
+  connection_id_clean_up_alarm_->Update(
+      clock_->ApproximateNow() + next_alarm_interval, QuicTime::Delta::Zero());
 }
 
 bool QuicTimeWaitListManager::MaybeExpireOldestConnection(

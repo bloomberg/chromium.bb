@@ -475,8 +475,8 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
       << ", with details: " << error_details;
 
   if (closed_session_list_.empty()) {
-    delete_sessions_alarm_->Cancel();
-    delete_sessions_alarm_->Set(helper()->GetClock()->ApproximateNow());
+    delete_sessions_alarm_->Update(helper()->GetClock()->ApproximateNow(),
+                                   QuicTime::Delta::Zero());
   }
   closed_session_list_.push_back(it->second);
   const bool should_close_statelessly =

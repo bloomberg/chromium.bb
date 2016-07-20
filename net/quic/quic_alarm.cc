@@ -39,8 +39,18 @@ void QuicAlarm::Update(QuicTime new_deadline, QuicTime::Delta granularity) {
       granularity.ToMicroseconds()) {
     return;
   }
-  Cancel();
-  Set(new_deadline);
+  if (FLAGS_quic_change_alarms_efficiently) {
+    const bool was_set = IsSet();
+    deadline_ = new_deadline;
+    if (was_set) {
+      UpdateImpl();
+    } else {
+      SetImpl();
+    }
+  } else {
+    Cancel();
+    Set(new_deadline);
+  }
 }
 
 bool QuicAlarm::IsSet() const {
@@ -54,6 +64,18 @@ void QuicAlarm::Fire() {
 
   deadline_ = QuicTime::Zero();
   delegate_->OnAlarm();
+}
+
+void QuicAlarm::UpdateImpl() {
+  // CancelImpl and SetImpl take the new deadline by way of the deadline_
+  // member, so save and restore deadline_ before canceling.
+  const QuicTime new_deadline = deadline_;
+
+  deadline_ = QuicTime::Zero();
+  CancelImpl();
+
+  deadline_ = new_deadline;
+  SetImpl();
 }
 
 }  // namespace net

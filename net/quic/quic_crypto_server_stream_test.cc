@@ -503,7 +503,6 @@ TEST_P(QuicCryptoServerStreamTest, OnlySendSCUPAfterHandshakeComplete) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, SendSCUPAfterHandshakeComplete) {
-  FLAGS_quic_use_hash_in_scup = true;
   Initialize();
 
   InitializeFakeClient(/* supports_stateless_rejects= */ false);

@@ -29,9 +29,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_autotune_by_default;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_loss_recovery_use_largest_acked;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_only_one_sending_alarm;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_hash_in_scup;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_old_public_reset_packets;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_dispatcher_creates_id;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_chlo_policy;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_ignore_zero_length_frames;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_shlo_listener;
@@ -52,5 +50,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_refresh_proof;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_not_migrate_on_old_packet;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_async_get_proof;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_neuter_unencrypted_when_sending;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_change_alarms_efficiently;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

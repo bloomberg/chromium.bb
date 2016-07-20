@@ -1091,8 +1091,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
             clock_->ApproximateNow() +
             0.125 * sent_packet_manager_->GetRttStats()->min_rtt();
         if (!ack_alarm_->IsSet() || ack_alarm_->deadline() > ack_time) {
-          ack_alarm_->Cancel();
-          ack_alarm_->Set(ack_time);
+          ack_alarm_->Update(ack_time, QuicTime::Delta::Zero());
         }
       } else {
         ack_queued_ = true;
@@ -1158,8 +1157,7 @@ void QuicConnection::MaybeSendInResponseToPacket() {
   // Now that we have received an ack, we might be able to send packets which
   // are queued locally, or drain streams which are blocked.
   if (defer_send_in_response_to_packets_) {
-    send_alarm_->Cancel();
-    send_alarm_->Set(clock_->ApproximateNow());
+    send_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
   } else {
     WriteAndBundleAcksIfNotBlocked();
   }
@@ -1834,8 +1832,7 @@ void QuicConnection::OnHandshakeComplete() {
   // complete with the server.
   if (perspective_ == Perspective::IS_CLIENT && !ack_queued_ &&
       ack_frame_updated()) {
-    ack_alarm_->Cancel();
-    ack_alarm_->Set(clock_->ApproximateNow());
+    ack_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
   }
 }
 
@@ -2204,8 +2201,7 @@ void QuicConnection::SetTimeoutAlarm() {
         min(deadline, stats_.connection_creation_time + handshake_timeout_);
   }
 
-  timeout_alarm_->Cancel();
-  timeout_alarm_->Set(deadline);
+  timeout_alarm_->Update(deadline, QuicTime::Delta::Zero());
 }
 
 void QuicConnection::SetPingAlarm() {

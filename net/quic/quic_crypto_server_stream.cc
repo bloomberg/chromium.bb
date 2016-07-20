@@ -481,13 +481,11 @@ void QuicCryptoServerStream::ValidateCallback::RunImpl(
 
 QuicConnectionId QuicCryptoServerStream::GenerateConnectionIdForReject(
     QuicConnectionId connection_id) {
-  // TODO(rch): Remove this method when this flag is removed.
-  if (FLAGS_quic_dispatcher_creates_id) {
-    QuicServerSessionBase* session_base =
-        static_cast<QuicServerSessionBase*>(session());
-    return session_base->GenerateConnectionIdForReject(connection_id);
-  }
-  return session()->connection()->random_generator()->RandUint64();
+  // TODO(rch): Remove this method when
+  // reloadable_flag_quic_dispatcher_creates_id2 is removed.
+  QuicServerSessionBase* session_base =
+      static_cast<QuicServerSessionBase*>(session());
+  return session_base->GenerateConnectionIdForReject(connection_id);
 }
 
 }  // namespace net

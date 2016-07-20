@@ -515,6 +515,27 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       ValidateClientHelloResultCallback::Result* client_hello_state,
       ValidateClientHelloResultCallback* done_cb) const;
 
+  // Callback class for bridging between EvaluateClientHello and
+  // EvaluateClientHelloAfterGetProof
+  friend class EvaluateClientHelloCallback;
+
+  // Continuation of EvaluateClientHello after the call to
+  // ProofSource::GetProof.  |found_error| indicates whether an error was
+  // detected in EvaluateClientHello, and |get_proof_failed| indicates whether
+  // GetProof failed.  If GetProof was not run, then |get_proof_failed| will be
+  // set to false.
+  void EvaluateClientHelloAfterGetProof(
+      bool found_error,
+      const IPAddress& server_ip,
+      QuicVersion version,
+      const uint8_t* primary_orbit,
+      scoped_refptr<Config> requested_config,
+      scoped_refptr<Config> primary_config,
+      QuicCryptoProof* crypto_proof,
+      bool get_proof_failed,
+      ValidateClientHelloResultCallback::Result* client_hello_state,
+      ValidateClientHelloResultCallback* done_cb) const;
+
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(QuicVersion version,
                       const Config& config,
