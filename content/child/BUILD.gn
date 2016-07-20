@@ -6,7 +6,12 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/child/child.gni")
 
-source_set("child") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "child") {
   # Targets external to content should always link to the public API.
   # Internal targets can link to this but only if they're child processes
   # (i.e. not content/browser or content/common) and only if they're inside the

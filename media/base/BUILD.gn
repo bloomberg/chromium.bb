@@ -22,7 +22,12 @@ config("base_config") {
   ]
 }
 
-source_set("base") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "base") {
   # This is part of the media component.
   visibility = [ "//media/*" ]
   sources = [

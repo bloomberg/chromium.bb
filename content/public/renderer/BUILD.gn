@@ -18,7 +18,12 @@ group("renderer") {
   }
 }
 
-source_set("renderer_sources") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "renderer_sources") {
   # External code should depend on via ":renderer" above.
   visibility = [ "//content/*" ]
 
