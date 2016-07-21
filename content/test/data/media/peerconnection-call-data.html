@@ -36,9 +36,9 @@
 
   // Test that we can setup call with legacy settings.
   function callWithLegacySdp() {
-    transformSdp = function(sdp) {
+    setOfferSdpTransform(function(sdp) {
       return removeBundle(useGice(useExternalSdes(sdp)));
-    };
+    });
     createConnections({
       'mandatory': {'RtpDataChannels': true, 'DtlsSrtpKeyAgreement': false}
     });
