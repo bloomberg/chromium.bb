@@ -50,7 +50,10 @@ cr.define('chrome.SnippetsInternals', function() {
       event.preventDefault();
     });
 
-    chrome.send('loaded');
+    window.addEventListener('focus', refreshContent);
+    window.setInterval(refreshContent, 1000);
+
+    refreshContent();
   }
 
   function setHostRestricted(restricted) {
@@ -106,6 +109,10 @@ cr.define('chrome.SnippetsInternals', function() {
     link.download = 'snippets.json';
     link.href = 'data:,' + json;
     link.click();
+  }
+
+  function refreshContent() {
+    chrome.send('refreshContent');
   }
 
   function toggleHidden(event) {

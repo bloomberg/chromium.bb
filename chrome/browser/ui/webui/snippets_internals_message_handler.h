@@ -45,14 +45,14 @@ class SnippetsInternalsMessageHandler
       ntp_snippets::ContentSuggestionsCategoryStatus new_status) override;
   void ContentSuggestionsServiceShutdown() override;
 
-  void HandleLoaded(const base::ListValue* args);
+  void HandleRefreshContent(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);
   void HandleClearDiscarded(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
   void HandleClearCachedSuggestions(const base::ListValue* args);
   void HandleClearDiscardedSuggestions(const base::ListValue* args);
 
-  void SendInitialData();
+  void SendAllContent();
   void SendSnippets();
   void SendDiscardedSnippets();
   void SendHosts();

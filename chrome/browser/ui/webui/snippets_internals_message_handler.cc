@@ -170,8 +170,8 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
   content_suggestions_service_observer_.Add(content_suggestions_service_);
 
   web_ui()->RegisterMessageCallback(
-      "loaded",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleLoaded,
+      "refreshContent",
+      base::Bind(&SnippetsInternalsMessageHandler::HandleRefreshContent,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -199,13 +199,13 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
-void SnippetsInternalsMessageHandler::HandleLoaded(
+void SnippetsInternalsMessageHandler::HandleRefreshContent(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
   dom_loaded_ = true;
 
-  SendInitialData();
+  SendAllContent();
 }
 
 void SnippetsInternalsMessageHandler::HandleClear(const base::ListValue* args) {
@@ -252,7 +252,7 @@ void SnippetsInternalsMessageHandler::HandleClearDiscardedSuggestions(
   content_suggestions_service_->ClearDiscardedSuggestionsForDebugging();
 }
 
-void SnippetsInternalsMessageHandler::SendInitialData() {
+void SnippetsInternalsMessageHandler::SendAllContent() {
   SendHosts();
 
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
