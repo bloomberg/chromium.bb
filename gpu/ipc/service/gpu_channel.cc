@@ -591,7 +591,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
     : gpu_channel_manager_(gpu_channel_manager),
       sync_point_manager_(sync_point_manager),
       unhandled_message_listener_(nullptr),
-      channel_id_(IPC::Channel::GenerateVerifiedChannelID("gpu")),
       preempting_flag_(preempting_flag),
       preempted_flag_(preempted_flag),
       client_id_(client_id),
@@ -629,23 +628,19 @@ IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event) {
   DCHECK(shutdown_event);
   DCHECK(!channel_);
 
-  IPC::ChannelHandle channel_handle(channel_id_);
+  IPC::ChannelHandle client_handle;
+  IPC::ChannelHandle server_handle;
+  IPC::Channel::GenerateMojoChannelHandlePair(
+      "gpu", &client_handle, &server_handle);
+  channel_id_ = client_handle.name;
 
   channel_ =
-      IPC::SyncChannel::Create(channel_handle, IPC::Channel::MODE_SERVER, this,
-                               io_task_runner_, false, shutdown_event);
-
-#if defined(OS_POSIX)
-  // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
-  // that it gets closed after it has been sent.
-  base::ScopedFD renderer_fd = channel_->TakeClientFileDescriptor();
-  DCHECK(renderer_fd.is_valid());
-  channel_handle.socket = base::FileDescriptor(std::move(renderer_fd));
-#endif
+      IPC::SyncChannel::Create(server_handle, IPC::Channel::MODE_SERVER,
+                               this, io_task_runner_, false, shutdown_event);
 
   channel_->AddFilter(filter_.get());
 
-  return channel_handle;
+  return client_handle;
 }
 
 void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {

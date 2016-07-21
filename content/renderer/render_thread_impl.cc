@@ -1801,10 +1801,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync(
     // Ask the browser for the channel name.
     if (!Send(new ChildProcessHostMsg_EstablishGpuChannel(
             cause_for_gpu_launch, &client_id, &channel_handle, &gpu_info)) ||
-#if defined(OS_POSIX)
-        channel_handle.socket.fd == -1 ||
-#endif
-        channel_handle.name.empty()) {
+        !channel_handle.mojo_handle.is_valid()) {
       // Otherwise cancel the connection.
       return nullptr;
     }

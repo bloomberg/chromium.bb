@@ -181,6 +181,8 @@ class GPU_EXPORT GpuChannel
   base::ScopedPtrHashMap<int32_t, std::unique_ptr<GpuCommandBufferStub>> stubs_;
 
  private:
+  friend class TestGpuChannel;
+
   bool OnControlMessageReceived(const IPC::Message& msg);
 
   void HandleMessage(const scoped_refptr<GpuChannelMessageQueue>& queue);

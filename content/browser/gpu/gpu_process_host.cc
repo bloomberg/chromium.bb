@@ -822,7 +822,7 @@ void GpuProcessHost::OnChannelEstablished(
 
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
-  if (!channel_handle.name.empty() &&
+  if (channel_handle.mojo_handle.is_valid() &&
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL)) {
     Send(new GpuMsg_CloseChannel(request.client_id));
     request.callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());

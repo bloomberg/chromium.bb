@@ -153,7 +153,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
 void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
     const IPC::ChannelHandle& channel_handle,
     const gpu::GPUInfo& gpu_info) {
-  if (channel_handle.name.empty() && reused_gpu_process_) {
+  if (!channel_handle.mojo_handle.is_valid() && reused_gpu_process_) {
     // We failed after re-using the GPU process, but it may have died in the
     // mean time. Retry to have a chance to create a fresh GPU process.
     DVLOG(1) << "Failed to create channel on existing GPU process. Trying to "
@@ -337,7 +337,7 @@ gpu::GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
 void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   DCHECK(IsMainThread());
   DCHECK(pending_request_.get());
-  if (pending_request_->channel_handle().name.empty()) {
+  if (!pending_request_->channel_handle().mojo_handle.is_valid()) {
     DCHECK(!gpu_channel_.get());
   } else {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466866
