@@ -26,6 +26,8 @@
         'memory_coordinator_mojo_bindings',
       ],
       'sources': [
+        'memory_coordinator/common/client_registry.cc',
+        'memory_coordinator/common/client_registry.h',
         'memory_coordinator/common/memory_coordinator_client.h',
         'memory_coordinator/common/memory_coordinator_features.cc',
         'memory_coordinator/common/memory_coordinator_features.h',

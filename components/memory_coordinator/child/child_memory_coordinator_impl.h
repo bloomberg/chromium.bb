@@ -6,7 +6,7 @@
 #define COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "base/observer_list_threadsafe.h"
+#include "components/memory_coordinator/common/client_registry.h"
 #include "components/memory_coordinator/common/memory_coordinator_client.h"
 #include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/memory_coordinator/public/interfaces/child_memory_coordinator.mojom.h"
@@ -19,14 +19,11 @@ namespace memory_coordinator {
 // It lives in child processes and is responsible for dispatching memory events
 // to its clients.
 class ChildMemoryCoordinatorImpl
-    : NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
+    : public ClientRegistry,
+      NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
  public:
   explicit ChildMemoryCoordinatorImpl(mojom::MemoryCoordinatorHandlePtr parent);
   ~ChildMemoryCoordinatorImpl() override;
-
-  // Registers/unregisters a client. Does not take ownership of client.
-  void RegisterClient(MemoryCoordinatorClient* client);
-  void UnregisterClient(MemoryCoordinatorClient* client);
 
   // mojom::ChildMemoryCoordinator implementations:
   void OnStateChange(mojom::MemoryState state) override;
@@ -35,8 +32,6 @@ class ChildMemoryCoordinatorImpl
   friend class ChildMemoryCoordinatorImplTest;
 
   mojo::Binding<mojom::ChildMemoryCoordinator> binding_;
-  using ClientList = base::ObserverListThreadSafe<MemoryCoordinatorClient>;
-  scoped_refptr<ClientList> clients_;
   mojom::MemoryCoordinatorHandlePtr parent_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildMemoryCoordinatorImpl);

@@ -8,26 +8,16 @@ namespace memory_coordinator {
 
 ChildMemoryCoordinatorImpl::ChildMemoryCoordinatorImpl(
     mojom::MemoryCoordinatorHandlePtr parent)
-    : binding_(this), clients_(new ClientList), parent_(std::move(parent)) {
+    : binding_(this), parent_(std::move(parent)) {
   parent_->AddChild(binding_.CreateInterfacePtrAndBind());
 }
 
 ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 }
 
-void ChildMemoryCoordinatorImpl::RegisterClient(
-    MemoryCoordinatorClient* client) {
-  clients_->AddObserver(client);
-}
-
-void ChildMemoryCoordinatorImpl::UnregisterClient(
-    MemoryCoordinatorClient* client) {
-  clients_->RemoveObserver(client);
-}
-
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
-  clients_->Notify(FROM_HERE, &MemoryCoordinatorClient::OnMemoryStateChange,
-                   state);
+  clients()->Notify(FROM_HERE, &MemoryCoordinatorClient::OnMemoryStateChange,
+                    state);
 }
 
 }  // namespace memory_coordinator

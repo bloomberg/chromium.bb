@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 #define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 
+#include "components/memory_coordinator/common/client_registry.h"
 #include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -15,10 +16,10 @@ class MemoryCoordinatorHandleImpl;
 // MemoryCoordinator is responsible for the whole memory management accross the
 // browser and child proceeses. It will dispatch memory events to its clients
 // and child processes based on its best knowledge of the memory usage.
-class MemoryCoordinator {
+class MemoryCoordinator : public ClientRegistry {
  public:
   MemoryCoordinator();
-  ~MemoryCoordinator();
+  ~MemoryCoordinator() override;
 
   void CreateHandle(int render_process_id,
                     mojom::MemoryCoordinatorHandleRequest request);
