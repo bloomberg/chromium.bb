@@ -90,6 +90,7 @@
         'ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h',
       ],
       'dependencies': [
+        '../ui/ozone/gl/ozone_gl.gyp:ozone_gl',
         '../ui/ozone/ozone.gyp:ozone',
       ],
     }],

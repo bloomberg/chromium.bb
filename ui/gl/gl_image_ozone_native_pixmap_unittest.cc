@@ -6,8 +6,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/gl/test/gl_image_test_template.h"
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -44,8 +44,10 @@ class GLImageOzoneNativePixmapTestDelegate {
       client_pixmap->Unmap();
     }
 
-    scoped_refptr<GLImageOzoneNativePixmap> image(new GLImageOzoneNativePixmap(
-        size, GLImageOzoneNativePixmap::GetInternalFormatForTesting(format)));
+    scoped_refptr<ui::GLImageOzoneNativePixmap> image(
+        new ui::GLImageOzoneNativePixmap(
+            size,
+            ui::GLImageOzoneNativePixmap::GetInternalFormatForTesting(format)));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }

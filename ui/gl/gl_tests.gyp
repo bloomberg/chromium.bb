@@ -63,6 +63,7 @@
         }],
         ['use_ozone==1', {
           'dependencies': [
+            '../ozone/gl/ozone_gl.gyp:ozone_gl',
             '../ozone/ozone.gyp:ozone',
           ],
           'sources': [

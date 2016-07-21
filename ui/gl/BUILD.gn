@@ -189,13 +189,7 @@ component("gl") {
     ]
   }
   if (use_ozone) {
-    sources += [
-      "gl_image_ozone_native_pixmap.cc",
-      "gl_image_ozone_native_pixmap.h",
-      "gl_implementation_ozone.cc",
-    ]
-
-    deps += [ "//ui/ozone" ]
+    sources += [ "gl_implementation_ozone.cc" ]
   }
   if (use_glx) {
     sources += [

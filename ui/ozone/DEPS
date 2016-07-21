@@ -5,7 +5,8 @@ include_rules = [
   "+ui/display/types",
   "+ui/display/util",
   "+ui/events",
-  "+ui/gfx",
   "+ui/base/cursor",
+  "+ui/gfx",
+  "+ui/gl",
   "+ui/platform_window",
 ]

@@ -4,7 +4,6 @@ include_rules = [
   "+ui/base",
   "+ui/events",
   "+ui/gfx",
-  "+ui/ozone/public",
 ]
 
 specific_include_rules = {
@@ -17,5 +16,13 @@ specific_include_rules = {
 # Allow us to include ANGLE's base platform implementation.
   "angle_platform_impl.h": [
     "+third_party/angle/include/platform/Platform.h",
+  ],
+  "gl_image_ozone_native_pixmap_drm_unittest.cc": [
+    "+ui/ozone/gl",
+    "+ui/ozone/public",
+  ],
+  "gl_image_ozone_native_pixmap_unittest.cc": [
+    "+ui/ozone/gl",
+    "+ui/ozone/public",
   ],
 }

@@ -292,16 +292,6 @@
         ['OS!="android"', {
           'sources/': [ ['exclude', '^android/'] ],
         }],
-        ['use_ozone==1', {
-          'sources': [
-            'gl_image_ozone_native_pixmap.cc',
-            'gl_image_ozone_native_pixmap.h',
-          ],
-          'dependencies': [
-            '../ozone/ozone.gyp:ozone',
-            '../ozone/ozone.gyp:ozone_base',
-          ],
-        }],
       ],
     },
     {

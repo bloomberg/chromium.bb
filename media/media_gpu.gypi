@@ -274,6 +274,9 @@
               'gpu/va_drm.sigs',
             ],
           },
+          'dependencies': [
+            '../ui/ozone/gl/ozone_gl.gyp:ozone_gl',
+          ],
           'sources': [
             'gpu/vaapi_drm_picture.cc',
             'gpu/vaapi_drm_picture.h',

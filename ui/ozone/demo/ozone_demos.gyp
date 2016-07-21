@@ -17,6 +17,7 @@
         '../../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../../ui/gl/gl.gyp:gl',
         '../../../ui/gl/init/gl_init.gyp:gl_init',
+        '../../../ui/ozone/gl/ozone_gl.gyp:ozone_gl',
         '../../../ui/ozone/ozone.gyp:ozone',
         '../../../ui/ozone/ozone.gyp:ozone_base',
       ],

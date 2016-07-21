@@ -1,9 +1,12 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
+
+#include <vector>
+
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/gl/gl_surface_egl.h"
 
 #define FOURCC(a, b, c, d)                                        \
@@ -18,7 +21,7 @@
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
 #define DRM_FORMAT_YV12 FOURCC('Y', 'V', '1', '2')
 
-namespace gl {
+namespace ui {
 namespace {
 
 bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
@@ -104,12 +107,11 @@ GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const gfx::Size& size,
     : GLImageEGL(size),
       internalformat_(internalformat),
       has_image_flush_external_(
-          GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external")) {}
+          gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external")) {}
 
-GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
-}
+GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {}
 
-bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
+bool GLImageOzoneNativePixmap::Initialize(NativePixmap* pixmap,
                                           gfx::BufferFormat format) {
   DCHECK(!pixmap_);
   if (pixmap->GetEGLClientBuffer()) {
@@ -119,7 +121,6 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
       return false;
     }
   } else if (pixmap->AreDmaBufFdsValid()) {
-
     if (!ValidFormat(format)) {
       LOG(ERROR) << "Invalid format: " << static_cast<int>(format);
       return false;
@@ -144,8 +145,8 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
     const EGLint kLinuxDrmModifiers[] = {EGL_LINUX_DRM_PLANE0_MODIFIER0_EXT,
                                          EGL_LINUX_DRM_PLANE1_MODIFIER0_EXT,
                                          EGL_LINUX_DRM_PLANE2_MODIFIER0_EXT};
-    bool has_dma_buf_import_modifier =
-        GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_dma_buf_import_modifiers");
+    bool has_dma_buf_import_modifier = gl::GLSurfaceEGL::HasEGLExtension(
+        "EGL_EXT_image_dma_buf_import_modifiers");
 
     for (size_t plane = 0;
          plane < gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
@@ -192,9 +193,8 @@ bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {
     // Pass-through image type fails to bind and copy; make sure we
     // don't draw with uninitialized texture.
     std::vector<unsigned char> data(size_.width() * size_.height() * 4);
-    glTexImage2D(target, 0, GL_RGBA, size_.width(),
-                 size_.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                 data.data());
+    glTexImage2D(target, 0, GL_RGBA, size_.width(), size_.height(), 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data.data());
     return true;
   }
   return GLImageEGL::CopyTexImage(target);
@@ -215,7 +215,7 @@ void GLImageOzoneNativePixmap::Flush() {
   if (!has_image_flush_external_)
     return;
 
-  EGLDisplay display = GLSurfaceEGL::GetHardwareDisplay();
+  EGLDisplay display = gl::GLSurfaceEGL::GetHardwareDisplay();
   const EGLAttrib attribs[] = {
       EGL_NONE,
   };
@@ -264,4 +264,4 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormatForTesting(
   return GL_NONE;
 }
 
-}  // namespace gl
+}  // namespace ui

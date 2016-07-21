@@ -1,3 +1,9 @@
 include_rules = [
   "+ui/platform_window/x11",
 ]
+
+specific_include_rules = {
+  "run_all_unittests.cc": [
+    "+ui/ozone/public",
+  ],
+}

@@ -35,7 +35,7 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_OZONE)
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #endif
 
 namespace ui {
@@ -302,8 +302,8 @@ void CommandBufferDriver::CreateImageNativeOzone(int32_t id,
     return;
   }
 
-  scoped_refptr<gl::GLImageOzoneNativePixmap> image =
-      new gl::GLImageOzoneNativePixmap(size, internal_format);
+  scoped_refptr<ui::GLImageOzoneNativePixmap> image =
+      new ui::GLImageOzoneNativePixmap(size, internal_format);
   if (!image->Initialize(pixmap, format)) {
     NOTREACHED();
     return;

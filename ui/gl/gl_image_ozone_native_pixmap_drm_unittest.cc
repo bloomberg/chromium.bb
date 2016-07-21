@@ -14,8 +14,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/gl/test/gl_image_test_template.h"
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -111,8 +111,8 @@ class GLImageOzoneNativePixmapDrmTestDelegate {
                                                const uint8_t color[4]) const {
     scoped_refptr<ui::NativePixmap> pixmap = CreateYVU420Pixmap(size, color);
 
-    scoped_refptr<GLImageOzoneNativePixmap> image(
-        new GLImageOzoneNativePixmap(size, GL_RGB_YCRCB_420_CHROMIUM));
+    scoped_refptr<ui::GLImageOzoneNativePixmap> image(
+        new ui::GLImageOzoneNativePixmap(size, GL_RGB_YCRCB_420_CHROMIUM));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }

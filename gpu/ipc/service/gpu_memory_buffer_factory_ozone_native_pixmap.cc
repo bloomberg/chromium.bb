@@ -4,7 +4,7 @@
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/native_pixmap.h"
@@ -68,8 +68,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     return nullptr;
   }
 
-  scoped_refptr<gl::GLImageOzoneNativePixmap> image(
-      new gl::GLImageOzoneNativePixmap(size, internalformat));
+  scoped_refptr<ui::GLImageOzoneNativePixmap> image(
+      new ui::GLImageOzoneNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
     LOG(ERROR) << "Failed to create GLImage";
     return nullptr;

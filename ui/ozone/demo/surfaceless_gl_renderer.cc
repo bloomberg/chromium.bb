@@ -12,8 +12,8 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -44,8 +44,8 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, size, gfx::BufferFormat::BGRX_8888,
                                gfx::BufferUsage::SCANOUT);
-  scoped_refptr<gl::GLImageOzoneNativePixmap> image(
-      new gl::GLImageOzoneNativePixmap(size, GL_RGB));
+  scoped_refptr<ui::GLImageOzoneNativePixmap> image(
+      new ui::GLImageOzoneNativePixmap(size, GL_RGB));
   if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRX_8888)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;

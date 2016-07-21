@@ -1,24 +1,26 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
-#define UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
+#ifndef UI_OZONE_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
+#define UI_OZONE_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
 
 #include <stdint.h>
 
+#include <string>
+
 #include "ui/gfx/buffer_types.h"
-#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image_egl.h"
+#include "ui/ozone/gl/ozone_gl_export.h"
 #include "ui/ozone/public/native_pixmap.h"
 
-namespace gl {
+namespace ui {
 
-class GL_EXPORT GLImageOzoneNativePixmap : public GLImageEGL {
+class OZONE_GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
  public:
   GLImageOzoneNativePixmap(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(ui::NativePixmap* pixmap, gfx::BufferFormat format);
+  bool Initialize(NativePixmap* pixmap, gfx::BufferFormat format);
 
   // Overridden from GLImage:
   unsigned GetInternalFormat() override;
@@ -41,10 +43,10 @@ class GL_EXPORT GLImageOzoneNativePixmap : public GLImageEGL {
 
  private:
   unsigned internalformat_;
-  scoped_refptr<ui::NativePixmap> pixmap_;
+  scoped_refptr<NativePixmap> pixmap_;
   bool has_image_flush_external_;
 };
 
-}  // namespace gl
+}  // namespace ui
 
-#endif  // UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
+#endif  // UI_OZONE_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_

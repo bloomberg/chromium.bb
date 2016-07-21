@@ -19,7 +19,6 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
-#include "ui/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
@@ -27,6 +26,7 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
+#include "ui/ozone/gl/gl_image_ozone_native_pixmap.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -650,8 +650,8 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
                                  gfx::BufferUsage::SCANOUT);
     if (!pixmap)
       return false;
-    scoped_refptr<GLImageOzoneNativePixmap> image =
-        new GLImageOzoneNativePixmap(GetSize(), GL_BGRA_EXT);
+    scoped_refptr<ui::GLImageOzoneNativePixmap> image =
+        new ui::GLImageOzoneNativePixmap(GetSize(), GL_BGRA_EXT);
     if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRA_8888))
       return false;
     // Image must have Destroy() called before destruction.
