@@ -14,7 +14,6 @@
 #include "jni/VideoCapture_jni.h"
 #include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
-#include "mojo/public/cpp/bindings/string.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -263,8 +262,7 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
   std::vector<uint8_t> native_data;
   base::android::JavaByteArrayToByteVector(env, data.obj(), &native_data);
 
-  cb->Run(mojo::String::From(native_data.empty() ? "" : "image/jpeg"),
-          mojo::Array<uint8_t>::From(native_data));
+  cb->Run(std::string(native_data.empty() ? "" : "image/jpeg"), native_data);
 
   photo_callbacks_.erase(reference_it);
 }

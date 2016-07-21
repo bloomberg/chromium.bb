@@ -326,7 +326,7 @@ class CAPTURE_EXPORT VideoCaptureDevice {
   // and/or interrupting the capture flow. Runs |callback| on the thread
   // where TakePhoto() is called, if the photo was successfully taken.
   using TakePhotoCallback = ScopedResultCallback<
-      base::Callback<void(mojo::String, mojo::Array<uint8_t>)>>;
+      base::Callback<void(const std::string&, const std::vector<uint8_t>&)>>;
   virtual void TakePhoto(TakePhotoCallback callback);
 
   // Gets the power line frequency, either from the params if specified by the

@@ -7,7 +7,6 @@
 
 #include "media/mojo/interfaces/image_capture.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -18,14 +17,14 @@ class ImageCaptureImpl : public media::mojom::ImageCapture {
       mojo::InterfaceRequest<media::mojom::ImageCapture> request);
   ~ImageCaptureImpl() override;
 
-  void GetCapabilities(const mojo::String& source_id,
+  void GetCapabilities(const std::string& source_id,
                        const GetCapabilitiesCallback& callback) override;
 
-  void SetOptions(const mojo::String& source_id,
+  void SetOptions(const std::string& source_id,
                   media::mojom::PhotoSettingsPtr settings,
                   const SetOptionsCallback& callback) override;
 
-  void TakePhoto(const mojo::String& source_id,
+  void TakePhoto(const std::string& source_id,
                  const TakePhotoCallback& callback) override;
 
  private:

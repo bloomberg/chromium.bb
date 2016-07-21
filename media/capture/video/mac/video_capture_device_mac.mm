@@ -444,9 +444,8 @@ void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,
     return;
   }
 
-  photo_callback_->Run(mojo::String::From(mime_type),
-                       mojo::Array<uint8_t>(std::vector<uint8_t>(
-                           image_data, image_data + image_length)));
+  photo_callback_->Run(
+      mime_type, std::vector<uint8_t>(image_data, image_data + image_length));
   photo_callback_.reset();
 }
 

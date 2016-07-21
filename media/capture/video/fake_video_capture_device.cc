@@ -108,8 +108,7 @@ void DoTakeFakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
       std::vector<gfx::PNGCodec::Comment>(), &encoded_data);
   DCHECK(result);
 
-  callback.Run(mojo::String::From("image/png"),
-               mojo::Array<uint8_t>::From(encoded_data));
+  callback.Run("image/png", encoded_data);
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,

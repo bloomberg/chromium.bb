@@ -218,17 +218,15 @@ void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result)
     m_serviceRequests.remove(resolver);
 }
 
-void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, const String& mimeType, mojo::WTFArray<uint8_t> data)
+void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, const String& mimeType, const Vector<uint8_t>& data)
 {
     if (!m_serviceRequests.contains(resolver))
         return;
 
-    if (data.is_null() || data.empty()) {
+    if (data.isEmpty())
         resolver->reject(DOMException::create(UnknownError, "platform error"));
-    } else {
-        const auto& storage = data.storage();
-        resolver->resolve(Blob::create(storage.data(), storage.size(), mimeType));
-    }
+    else
+        resolver->resolve(Blob::create(data.data(), data.size(), mimeType));
     m_serviceRequests.remove(resolver);
 }
 

@@ -85,9 +85,6 @@
       'sources': [
         'image_capture.mojom',
       ],
-      'variables': {
-        'use_new_wrapper_types': 'false',
-      },
     },
     {
       # GN version: //media/mojo/interfaces:image_capture
@@ -95,7 +92,6 @@
       'type': 'static_library',
       'variables': {
         'for_blink': 'true',
-        'use_new_wrapper_types': 'false',
       },
       'includes': [
         '../../../mojo/mojom_bindings_generator.gypi',

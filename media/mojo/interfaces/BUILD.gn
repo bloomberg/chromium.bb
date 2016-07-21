@@ -39,6 +39,4 @@ mojom("image_capture") {
   sources = [
     "image_capture.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
