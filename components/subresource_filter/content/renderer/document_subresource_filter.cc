@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "url/gurl.h"
@@ -29,6 +30,8 @@ DocumentSubresourceFilter::~DocumentSubresourceFilter() = default;
 bool DocumentSubresourceFilter::allowLoad(
     const blink::WebURL& resourceUrl,
     blink::WebURLRequest::RequestContext /* ignored */) {
+  TRACE_EVENT1("loader", "DocumentSubresourceFilter::allowLoad", "url",
+               resourceUrl.string().utf8());
   ++num_loads_evaluated_;
   if (DoesLoadMatchFilteringRules(GURL(resourceUrl))) {
     ++num_loads_matching_rules_;
