@@ -339,12 +339,22 @@ public class TestTabModelDirectory {
     }
 
     /**
-     * Writes out data required to restore a TabModel to the data directories.
-     * @param writeTabStates Whether or not to write the TabState files for each of the Tabs out.
+     * Calls the three-param version of this method with index = 0.
      */
     public void writeTabModelFiles(TabModelMetaDataInfo info, boolean writeTabStates)
             throws Exception {
-        writeFile(mDataDirectory, "tab_state0", info.encodedFile);
+        writeTabModelFiles(info, writeTabStates, 0);
+    }
+
+    /**
+     * Writes out data required to restore a TabModel to the data directories.
+     * @param info The info to write to the tab metadata file.
+     * @param writeTabStates Whether or not to write the TabState files for each of the Tabs out.
+     * @param index The TabModelSelectorIndex to write the metadata file for.
+     */
+    public void writeTabModelFiles(TabModelMetaDataInfo info, boolean writeTabStates, int index)
+            throws Exception {
+        writeFile(mDataDirectory, "tab_state" + Integer.toString(index), info.encodedFile);
         for (TabStateInfo tabStateInfo : info.contents) {
             writeTabStateFile(tabStateInfo);
         }

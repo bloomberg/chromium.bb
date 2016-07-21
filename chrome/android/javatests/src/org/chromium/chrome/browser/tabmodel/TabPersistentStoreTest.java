@@ -13,7 +13,9 @@ import android.util.SparseArray;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
@@ -23,6 +25,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
@@ -143,7 +146,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
             mTabCreatorManager = new MockTabCreatorManager(this);
             mTabPersistentStoreObserver = new MockTabPersistentStoreObserver();
             mTabPersistentStore = new TabPersistentStore(
-                    this, 0, context, mTabCreatorManager, mTabPersistentStoreObserver, false);
+                    this, 0, context, mTabCreatorManager, mTabPersistentStoreObserver, true);
             mTabModelOrderController = new TabModelOrderController(this);
 
             Callable<TabModelImpl> callable = new Callable<TabModelImpl>() {
@@ -567,6 +570,21 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
                 assertEquals(info.contents[j].url, currentState.getVirtualUrlFromState());
             }
         }
+    }
+
+    @SmallTest
+    @Feature({"TabPersistentStore", "MultiWindow"})
+    @MinAndroidSdkLevel(24)
+    @CommandLineFlags.Add(FeatureUtilities.MERGE_TABS_FLAG)
+    public void testDuplicateTabIdsOnColdStart() throws Exception {
+        final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
+
+        // Write the same data to tab_state0 and tab_state1.
+        mMockDirectory.writeTabModelFiles(info, true, 0);
+        mMockDirectory.writeTabModelFiles(info, true, 1);
+
+        // This method will check that the correct number of tabs are created.
+        createAndRestoreRealTabModelImpls(info);
     }
 
     private TestTabModelSelector createAndRestoreRealTabModelImpls(TabModelMetaDataInfo info)

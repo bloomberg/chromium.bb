@@ -44,7 +44,9 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -191,6 +193,7 @@ public class TabPersistentStore extends TabPersister {
 
     private final Deque<Tab> mTabsToSave;
     private final Deque<TabRestoreDetails> mTabsToRestore;
+    private final Set<Integer> mTabIdsToRestore;
 
     private LoadTabTask mLoadTabTask;
     private SaveTabTask mSaveTabTask;
@@ -207,9 +210,12 @@ public class TabPersistentStore extends TabPersister {
     private SharedPreferences mPreferences;
     private AsyncTask<Void, Void, DataInputStream> mPrefetchTabListTask;
     private AsyncTask<Void, Void, DataInputStream> mPrefetchTabListToMergeTask;
-    private boolean mLoadInProgress;
-    private boolean mMergeInProgress;
     private byte[] mLastSavedMetadata;
+
+    // Tracks whether this TabPersistentStore's tabs are being loaded.
+    private boolean mLoadInProgress;
+    // Tracks whether another TabPersistentStore's tabs are being merged into this instance.
+    private boolean mMergeInProgress;
 
     @VisibleForTesting
     AsyncTask<Void, Void, TabState> mPrefetchActiveTabTask;
@@ -233,6 +239,7 @@ public class TabPersistentStore extends TabPersister {
         mTabCreatorManager = tabCreatorManager;
         mTabsToSave = new ArrayDeque<Tab>();
         mTabsToRestore = new ArrayDeque<TabRestoreDetails>();
+        mTabIdsToRestore = new HashSet<Integer>();
         mSelectorIndex = selectorIndex;
         mOtherSelectorIndex = selectorIndex == 0 ? 1 : 0;
         mObserver = observer;
@@ -379,6 +386,11 @@ public class TabPersistentStore extends TabPersister {
 
     /**
      * Restore saved state. Must be called before any tabs are added to the list.
+     *
+     * This will read the metadata file for the current TabPersistentStore and the metadata file
+     * from another TabPersistentStore if applicable. When restoreTabs() is called, tabs from both
+     * will be restored into this instance.
+     *
      * @param ignoreIncognitoFiles Whether to skip loading incognito tabs.
      */
     public void loadState(boolean ignoreIncognitoFiles) {
@@ -441,12 +453,13 @@ public class TabPersistentStore extends TabPersister {
     /**
      * Merge the tabs of the other Chrome instance into this instance by reading its tab metadata
      * file and tab state files.
+     *
+     * This method should be called after a change in activity state indicates that a merge is
+     * necessary. #loadState() will take care of merging states on application cold start if needed.
+     *
+     * If there is currently a merge or load in progress then this method will return early.
      */
     public void mergeState() {
-        // TODO(twellington): Handle cases where merging is interrupted. Currently if a merge is
-        // in progress and the activity is destroyed the tab state may continue duplicate tabs
-        // on the next cold start.
-
         // TODO(twellington): Add UMA metrics to determine merging performance.
 
         if (mLoadInProgress || mMergeInProgress || !mTabsToRestore.isEmpty()) {
@@ -900,6 +913,18 @@ public class TabPersistentStore extends TabPersister {
             @Override
             public void onDetailsRead(int index, int id, String url, Boolean isIncognito,
                     boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {
+                if (mLoadInProgress) {
+                    // If a load and merge are both in progress, that means two metadata files
+                    // are being read. If a merge was previously started and interrupted due to the
+                    // app dying, the two metadata files may contain duplicate IDs. Skip tabs with
+                    // duplicate IDs.
+                    if (mMergeInProgress && mTabIdsToRestore.contains(id)) {
+                        return;
+                    }
+
+                    mTabIdsToRestore.add(id);
+                }
+
                 // Note that incognito tab may not load properly so we may need to use
                 // the current tab from the standard model.
                 // This logic only works because we store the incognito indices first.
@@ -1103,7 +1128,6 @@ public class TabPersistentStore extends TabPersister {
                 saveTabListAsynchronously();
                 deleteFileAsync(getStateFileName(mOtherSelectorIndex));
                 if (mObserver != null) mObserver.onStateMerged();
-                mMergeInProgress = false;
             }
 
             // Only clean up persistent data on application cold start.
@@ -1156,6 +1180,12 @@ public class TabPersistentStore extends TabPersister {
                 File stateFile = new File(getStateDirectory(), file);
                 if (stateFile.exists()) {
                     if (!stateFile.delete()) Log.e(TAG, "Failed to delete file: " + stateFile);
+
+                    // The merge isn't completely finished until the other TabPersistentStore's
+                    // metadata file is deleted.
+                    if (file.equals(getStateFileName(mOtherSelectorIndex))) {
+                        mMergeInProgress = false;
+                    }
                 }
                 return null;
             }
