@@ -37,6 +37,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     static const SkColor kResultsTableTextMd = SK_ColorBLACK;
     static const SkColor kResultsTableDimmedTextMd =
         SkColorSetRGB(0x64, 0x64, 0x64);
+    // Tooltip
+    static const SkColor kTooltipBackgroundMd =
+        SkColorSetA(SK_ColorBLACK, 0xCC);
+    static const SkColor kTooltipTextColorMd = SkColorSetA(SK_ColorWHITE, 0xDE);
 
     switch (color_id) {
       // Dialogs
@@ -87,6 +91,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ResultsTableHoveredUrl:
       case NativeTheme::kColorId_ResultsTableSelectedUrl:
         return base_theme->GetSystemColor(NativeTheme::kColorId_LinkEnabled);
+
+      // Tooltip
+      case NativeTheme::kColorId_TooltipBackground:
+        return kTooltipBackgroundMd;
+      case NativeTheme::kColorId_TooltipText:
+        return kTooltipTextColorMd;
 
       default:
         break;

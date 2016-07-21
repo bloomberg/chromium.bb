@@ -15,6 +15,7 @@ specific_include_rules = {
   "tooltip_aura.cc": [
     "+ui/views/background.h",
     "+ui/views/border.h",
+    "+ui/views/painter.h",
     "+ui/views/widget/widget.h",
     "+ui/views/view.h",
   ],
