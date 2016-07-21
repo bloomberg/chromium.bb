@@ -23220,6 +23220,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Location the user clicked to open the Media Router dialog.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Provider.TerminateRoute.Result"
+    enum="MediaRouteProviderResult">
+  <owner>mfoltz@chromium.org</owner>
+  <summary>Result of a request to terminate a route.</summary>
+</histogram>
+
 <histogram name="MediaRouter.Provider.Version" enum="MediaRouteProviderVersion">
   <owner>mfoltz@chromium.org</owner>
   <summary>
@@ -83412,6 +83418,17 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MediaPlayerExitStatus" type="int">
   <int value="0" label="No errors"/>
   <int value="1" label="Has errors"/>
+</enum>
+
+<enum name="MediaRouteProviderResult" type="int">
+  <int value="0" label="UnknownError"/>
+  <int value="1" label="Ok"/>
+  <int value="2" label="TimedOut"/>
+  <int value="3" label="RouteNotFound"/>
+  <int value="4" label="SinkNotFound"/>
+  <int value="5" label="InvalidOrigin"/>
+  <int value="6" label="OffTheRecordMismatch"/>
+  <int value="7" label="NoSupportedProvider"/>
 </enum>
 
 <enum name="MediaRouteProviderVersion" type="int">

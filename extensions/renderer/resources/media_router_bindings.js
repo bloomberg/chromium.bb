@@ -153,10 +153,8 @@ define('media_router_bindings', [
    * @return {!mediaRouterMojom.RouteRequestResultCode}
    */
   function getRouteRequestResultCode_(error) {
-    if (error.message.startsWith('timeout'))
-      return mediaRouterMojom.RouteRequestResultCode.TIMED_OUT;
-    else
-      return mediaRouterMojom.RouteRequestResultCode.UNKNOWN_ERROR;
+    return error.errorCode ? error.errorCode :
+      mediaRouterMojom.RouteRequestResultCode.UNKNOWN_ERROR;
   }
 
   /**
@@ -172,13 +170,13 @@ define('media_router_bindings', [
   }
 
   /**
-   * Creates and returns a error route response from given Error object
+   * Creates and returns a error route response from given Error object.
    * @param {!Error} error
    * @return {!Object}
    */
   function toErrorRouteResponse_(error) {
     return {
-        error_text: 'Error creating route: ' + error.message,
+        error_text: error.message,
         result_code: getRouteRequestResultCode_(error)
     };
   }
@@ -438,7 +436,7 @@ define('media_router_bindings', [
     this.joinRoute = null;
 
     /**
-     * @type {function(string)}
+     * @type {function(string): Promise}
      */
     this.terminateRoute = null;
 
@@ -690,9 +688,25 @@ define('media_router_bindings', [
   /**
    * Terminates the route specified by |routeId|.
    * @param {!string} routeId
+   * @return {!Promise<!Object>} A Promise resolving to an object describing
+   *    the result of the terminate operation, or rejecting with an error
+   *    message and code if the operation failed.
    */
   MediaRouteProvider.prototype.terminateRoute = function(routeId) {
-    this.handlers_.terminateRoute(routeId);
+    // TODO(crbug.com/627967): Remove code path that doesn't expect a Promise
+    // in M56.
+    var maybePromise = this.handlers_.terminateRoute(routeId);
+    var successResult = {
+        result_code: mediaRouterMojom.RouteRequestResultCode.OK
+    };
+    if (maybePromise) {
+      return maybePromise.then(
+        function() { return successResult; },
+        function(err) { return toErrorRouteResponse_(err); }
+      );
+    } else {
+      return Promise.resolve(successResult);
+    }
   };
 
   /**

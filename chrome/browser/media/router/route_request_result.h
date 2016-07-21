@@ -30,13 +30,22 @@ class MediaRoute;
 // |result_code|: A value from RouteRequestResult describing the error.
 class RouteRequestResult {
  public:
+  // Keep in sync with:
+  // - RouteRequestResultCode in media_router.mojom
+  // - MediaRouteProviderResult enum in tools/metrics/histograms.xml
+  // - mr.RouteRequestResultCode in route_request_error.js
   enum ResultCode {
-    UNKNOWN_ERROR,
-    OK,
-    TIMED_OUT,
-    ROUTE_NOT_FOUND,
-    INVALID_ORIGIN,
-    OFF_THE_RECORD_MISMATCH
+    UNKNOWN_ERROR = 0,
+    OK = 1,
+    TIMED_OUT = 2,
+    ROUTE_NOT_FOUND = 3,
+    SINK_NOT_FOUND = 4,
+    INVALID_ORIGIN = 5,
+    OFF_THE_RECORD_MISMATCH = 6,
+    NO_SUPPORTED_PROVIDER = 7,
+    // New values must be added here.
+
+    TOTAL_COUNT = 8 // The total number of values.
   };
 
   static std::unique_ptr<RouteRequestResult> FromSuccess(

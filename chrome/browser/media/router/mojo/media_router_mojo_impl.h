@@ -306,6 +306,12 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const mojo::String& route_id,
       mojo::Array<interfaces::RouteMessagePtr> messages) override;
 
+  // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
+  // to the ID of the route that was terminated.
+  void OnTerminateRouteResult(const MediaRoute::Id& route_id,
+                              mojo::String error_text,
+                              interfaces::RouteRequestResultCode result_code);
+
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
   void RouteResponseReceived(

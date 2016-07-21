@@ -179,6 +179,18 @@ class MediaRouterMojoImplTest : public MediaRouterMojoTest {
  public:
   MediaRouterMojoImplTest() {}
   ~MediaRouterMojoImplTest() override {}
+
+  void ExpectResultBucketCount(const std::string& operation,
+                               RouteRequestResult::ResultCode result_code,
+                               int expected_count) {
+    histogram_tester_.ExpectBucketCount(
+        "MediaRouter.Provider." + operation + ".Result",
+        result_code,
+        expected_count);
+  }
+
+ private:
+  base::HistogramTester histogram_tester_;
 };
 
 // ProcessManager with a mocked method subset, for testing extension suspend
@@ -376,7 +388,13 @@ TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
   run_loop.RunUntilIdle();
 
   EXPECT_CALL(mock_media_route_provider_,
-              TerminateRoute(mojo::String(kRouteId)));
+              TerminateRoute(mojo::String(kRouteId), _))
+      .WillOnce(Invoke([](
+          const mojo::String& route_id,
+          const interfaces::MediaRouteProvider::TerminateRouteCallback& cb) {
+         cb.Run(mojo::String(), interfaces::RouteRequestResultCode::OK);
+       }));
+
   base::RunLoop run_loop2;
   router()->OnOffTheRecordProfileShutdown();
   run_loop2.RunUntilIdle();
@@ -634,10 +652,36 @@ TEST_F(MediaRouterMojoImplTest, DetachRoute) {
 TEST_F(MediaRouterMojoImplTest, TerminateRoute) {
   base::RunLoop run_loop;
   EXPECT_CALL(mock_media_route_provider_,
-              TerminateRoute(mojo::String(kRouteId)))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+              TerminateRoute(mojo::String(kRouteId), _))
+      .WillOnce(Invoke([&run_loop](
+          const mojo::String& route_id,
+          const interfaces::MediaRouteProvider::TerminateRouteCallback& cb) {
+        cb.Run(mojo::String(), interfaces::RouteRequestResultCode::OK);
+      }));
   router()->TerminateRoute(kRouteId);
-  run_loop.Run();
+  run_loop.RunUntilIdle();
+  ExpectResultBucketCount("TerminateRoute",
+                          RouteRequestResult::ResultCode::OK,
+                          1);
+}
+
+TEST_F(MediaRouterMojoImplTest, TerminateRouteFails) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_media_route_provider_,
+              TerminateRoute(mojo::String(kRouteId), _))
+      .WillOnce(Invoke([&run_loop](
+          const mojo::String& route_id,
+          const interfaces::MediaRouteProvider::TerminateRouteCallback& cb) {
+        cb.Run(mojo::String(), interfaces::RouteRequestResultCode::TIMED_OUT);
+      }));
+  router()->TerminateRoute(kRouteId);
+  run_loop.RunUntilIdle();
+  ExpectResultBucketCount("TerminateRoute",
+                          RouteRequestResult::ResultCode::OK,
+                          0);
+  ExpectResultBucketCount("TerminateRoute",
+                          RouteRequestResult::ResultCode::TIMED_OUT,
+                          1);
 }
 
 TEST_F(MediaRouterMojoImplTest, HandleIssue) {

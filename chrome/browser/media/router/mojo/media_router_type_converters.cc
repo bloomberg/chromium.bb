@@ -185,6 +185,14 @@ media_router::RouteRequestResult::ResultCode RouteRequestResultCodeFromMojo(
       return media_router::RouteRequestResult::TIMED_OUT;
     case RouteRequestResultCode::ROUTE_NOT_FOUND:
       return media_router::RouteRequestResult::ROUTE_NOT_FOUND;
+    case RouteRequestResultCode::SINK_NOT_FOUND:
+      return media_router::RouteRequestResult::SINK_NOT_FOUND;
+    case RouteRequestResultCode::INVALID_ORIGIN:
+      return media_router::RouteRequestResult::INVALID_ORIGIN;
+    case RouteRequestResultCode::OFF_THE_RECORD_MISMATCH:
+      return media_router::RouteRequestResult::OFF_THE_RECORD_MISMATCH;
+    case RouteRequestResultCode::NO_SUPPORTED_PROVIDER:
+      return media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER;
     default:
       NOTREACHED() << "Unknown RouteRequestResultCode " << result_code;
       return media_router::RouteRequestResult::UNKNOWN_ERROR;

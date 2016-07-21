@@ -122,13 +122,20 @@ struct SinkSearchCriteria {
   string domain;
 };
 
-// Maps to a ResultCode value in route_request_result.h
-// The enum defined here is a subset of those defined in route_request_result.h.
+// Keep in sync with:
+// - RouteRequestResult::ResultCode in route_request_result.h
+// - MediaRouteProviderResult enum in tools/metrics/histograms.xml.
+// - mr.RouteRequestResultCode in route_request_error.js
 enum RouteRequestResultCode {
   UNKNOWN_ERROR,
   OK,
   TIMED_OUT,
-  ROUTE_NOT_FOUND
+  ROUTE_NOT_FOUND,
+  SINK_NOT_FOUND,
+  INVALID_ORIGIN,
+  OFF_THE_RECORD_MISMATCH,
+  NO_SUPPORTED_PROVIDER
+// New values must be added here.
 };
 
 // Modeled after the MediaRouter interface defined in
@@ -229,8 +236,12 @@ interface MediaRouteProvider {
                              string? error_text,
                              RouteRequestResultCode result_code);
 
-  // Terminates the route specified by |route_id|.
-  TerminateRoute(string route_id);
+  // Terminates the route specified by |route_id|.  If the route was terminated
+  // successfully, |result_code| is set to OK and |error_text| is null.
+  // Otherwise, |result_code| is an error code and |error_text| describes the
+  // error.
+  TerminateRoute(string route_id) =>
+      (string? error_text, RouteRequestResultCode result_code);
 
   // Sends |message| via the media route |media_route_id|.
   // If the operation was successful, |sent| is true; otherwise it is false.

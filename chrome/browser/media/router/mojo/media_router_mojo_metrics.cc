@@ -50,6 +50,15 @@ void MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(
 }
 
 // static
+void MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(
+    RouteRequestResult::ResultCode result_code) {
+  DCHECK_LT(result_code, RouteRequestResult::ResultCode::TOTAL_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(
+      "MediaRouter.Provider.TerminateRoute.Result", result_code,
+      RouteRequestResult::ResultCode::TOTAL_COUNT);
+}
+
+// static
 MediaRouteProviderVersion MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
     const base::Version& extension_version,
     const base::Version& browser_version) {
