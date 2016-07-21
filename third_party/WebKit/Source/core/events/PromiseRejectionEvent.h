@@ -48,9 +48,6 @@ private:
     PromiseRejectionEvent(ScriptState*, const AtomicString&, const PromiseRejectionEventInit&);
     ~PromiseRejectionEvent() override;
 
-    static void didCollectPromise(const v8::WeakCallbackInfo<PromiseRejectionEvent>&);
-    static void didCollectReason(const v8::WeakCallbackInfo<PromiseRejectionEvent>&);
-
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_promise;
     ScopedPersistent<v8::Value> m_reason;
