@@ -19,20 +19,23 @@ extern "C" {
 #include "aom_dsp/bitwriter.h"
 #include "aom_dsp/prob.h"
 
-void av1_write_prob_diff_update(aom_writer *w, aom_prob newp, aom_prob oldp);
+void av1_write_prob_diff_update(aom_writer *w, aom_prob newp, aom_prob oldpm);
 
 void av1_cond_prob_diff_update(aom_writer *w, aom_prob *oldp,
-                               const unsigned int ct[2]);
+                               const unsigned int ct[2], int probwt);
 
 int av1_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
-                                        aom_prob *bestp, aom_prob upd);
+                                        aom_prob *bestp, aom_prob upd,
+                                        int probwt);
 
 int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
                                               const aom_prob *oldp,
                                               aom_prob *bestp, aom_prob upd,
-                                              int stepsize);
+                                              int stepsize, int probwt);
 
-int av1_cond_prob_diff_update_savings(aom_prob *oldp, const unsigned int ct[2]);
+int av1_cond_prob_diff_update_savings(aom_prob *oldp, const unsigned int ct[2],
+                                      int probwt);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

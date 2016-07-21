@@ -273,6 +273,7 @@ EXPERIMENT_LIST="
     delta_q
     adapt_scan
     bitstream_debug
+    tile_groups
 "
 CONFIG_LIST="
     dependency_tracking
@@ -381,6 +382,7 @@ CMDLINE_SELECT="
     aom_highbitdepth
     experimental
     aom_qm
+    tile_groups
 "
 
 process_cmdline() {

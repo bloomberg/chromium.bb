@@ -142,7 +142,13 @@ static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
                       aom_prob upd_p) {
 #if CONFIG_MISC_FIXES
   (void)upd_p;
+#if CONFIG_TILE_GROUPS
+  // Just use the maximum number of tile groups to avoid passing in the actual
+  // number
+  av1_cond_prob_diff_update(w, cur_p, ct, MAX_NUM_TG);
+#else
   av1_cond_prob_diff_update(w, cur_p, ct);
+#endif
 #else
   const aom_prob new_p = get_binary_prob(ct[0], ct[1]) | 1;
   const int update = cost_branch256(ct, *cur_p) + av1_cost_zero(upd_p) >
