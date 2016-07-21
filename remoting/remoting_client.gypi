@@ -198,6 +198,7 @@
           ],
           'dependencies': [
             '../third_party/khronos/khronos.gyp:khronos_headers',
+            '../third_party/libyuv/libyuv.gyp:libyuv',
             '../third_party/webrtc/webrtc.gyp:webrtc'
           ]
         }  # end of target 'remoting_opengl_renderer'

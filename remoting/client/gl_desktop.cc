@@ -54,7 +54,7 @@ void GlDesktop::SetVideoFrame(std::unique_ptr<webrtc::DesktopFrame> frame) {
 
 void GlDesktop::Draw() {
   if (layer_ && last_frame_) {
-    layer_->Draw();
+    layer_->Draw(1.f);
   }
 }
 

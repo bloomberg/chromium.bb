@@ -353,12 +353,20 @@
     'remoting_opengl_renderer_sources': [
       'client/gl_canvas.cc',
       'client/gl_canvas.h',
+      'client/gl_cursor.cc',
+      'client/gl_cursor.h',
+      'client/gl_cursor_feedback.cc',
+      'client/gl_cursor_feedback.h',
+      'client/gl_cursor_feedback_texture.cc',
+      'client/gl_cursor_feedback_texture.h',
       'client/gl_desktop.cc',
       'client/gl_desktop.h',
       'client/gl_helpers.cc',
       'client/gl_helpers.h',
+      'client/gl_math.cc',
+      'client/gl_math.h',
       'client/gl_render_layer.cc',
-      'client/gl_render_layer.h'
+      'client/gl_render_layer.h',
     ],
   }
 }

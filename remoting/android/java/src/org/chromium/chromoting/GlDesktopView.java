@@ -31,6 +31,8 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
     @Override
     public void showInputFeedback(InputFeedbackType feedbackToShow, Point pos) {
         float diameter;
+        // TODO(yuweih): diameter (and radius in DesktopView) should be defined in dp so that it is
+        // DPI independent.
         switch (feedbackToShow) {
             case LARGE_ANIMATION:
                 diameter = 320.f;

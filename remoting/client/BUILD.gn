@@ -43,18 +43,14 @@ static_library("client") {
 
 if (is_android || is_ios) {
   source_set("opengl_renderer") {
-    sources = [
-      "gl_canvas.cc",
-      "gl_canvas.h",
-      "gl_desktop.cc",
-      "gl_desktop.h",
-      "gl_helpers.cc",
-      "gl_helpers.h",
-      "gl_render_layer.cc",
-      "gl_render_layer.h",
-    ]
+    sources =
+        rebase_path(remoting_srcs_gypi_values.remoting_opengl_renderer_sources,
+                    ".",
+                    "//remoting")
 
     deps = [
+      "//remoting/proto",
+      "//third_party/libyuv",
       "//third_party/webrtc",
     ]
 

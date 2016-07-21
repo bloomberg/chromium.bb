@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "remoting/client/gl_canvas.h"
 #include "remoting/client/gl_helpers.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+
+
+namespace remoting {
 
 namespace {
 
@@ -22,11 +24,21 @@ const float kVertices[] = {
     0, 0, 0, 1, 1, 0, 1, 1};
 
 const int kDefaultUpdateBufferCapacity =
-    2048 * 2048 * webrtc::DesktopFrame::kBytesPerPixel;
+    2048 * 2048 * GlRenderLayer::kBytesPerPixel;
 
+void PackDirtyRegion(uint8_t* dest,
+                     const uint8_t* source,
+                     int width,
+                     int height,
+                     int stride) {
+  for (int i = 0; i < height; i++) {
+    memcpy(dest, source, width * GlRenderLayer::kBytesPerPixel);
+    source += stride;
+    dest += GlRenderLayer::kBytesPerPixel * width;
+  }
 }
 
-namespace remoting {
+}  // namespace
 
 GlRenderLayer::GlRenderLayer(int texture_id, GlCanvas* canvas)
     : texture_id_(texture_id), canvas_(canvas) {
@@ -49,22 +61,12 @@ void GlRenderLayer::SetTexture(const uint8_t* texture, int width, int height) {
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void PackDirtyRegion(uint8_t* dest,
-                     const uint8_t* source,
-                     int width,
-                     int height,
-                     int stride) {
-  for (int i = 0; i < height; i++) {
-    memcpy(dest, source, width * webrtc::DesktopFrame::kBytesPerPixel);
-    source += stride;
-    dest += webrtc::DesktopFrame::kBytesPerPixel * width;
-  }
 }
 
 void GlRenderLayer::UpdateTexture(const uint8_t* subtexture,
@@ -79,22 +81,20 @@ void GlRenderLayer::UpdateTexture(const uint8_t* subtexture,
   glActiveTexture(GL_TEXTURE0 + texture_id_);
   glBindTexture(GL_TEXTURE_2D, texture_handle_);
 
-  bool stride_multiple_of_bytes_per_pixel =
-      stride % webrtc::DesktopFrame::kBytesPerPixel == 0;
+  bool stride_multiple_of_bytes_per_pixel = stride % kBytesPerPixel == 0;
   bool loosely_packed =
       !stride_multiple_of_bytes_per_pixel ||
-      (stride > 0 && stride != webrtc::DesktopFrame::kBytesPerPixel * width);
+      (stride > 0 && stride != kBytesPerPixel * width);
 
   const void* buffer_to_update = subtexture;
 
   if (loosely_packed) {
     if (stride_multiple_of_bytes_per_pixel && canvas_->GetGlVersion() >= 3) {
-      glPixelStorei(GL_UNPACK_ROW_LENGTH,
-                    stride / webrtc::DesktopFrame::kBytesPerPixel);
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / kBytesPerPixel);
     } else {
       // Doesn't support GL_UNPACK_ROW_LENGTH or stride not multiple of
       // kBytesPerPixel. Manually pack the data.
-      int required_size = width * height * webrtc::DesktopFrame::kBytesPerPixel;
+      int required_size = width * height * kBytesPerPixel;
       if (update_buffer_size_ < required_size) {
         if (required_size < kDefaultUpdateBufferCapacity) {
           update_buffer_size_ = kDefaultUpdateBufferCapacity;
@@ -134,10 +134,11 @@ void GlRenderLayer::SetTextureVisibleArea(
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void GlRenderLayer::Draw() {
+void GlRenderLayer::Draw(float alpha_multiplier) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(texture_set_);
-  canvas_->DrawTexture(texture_id_, texture_handle_, buffer_handle_);
+  canvas_->DrawTexture(texture_id_, texture_handle_, buffer_handle_,
+                       alpha_multiplier);
 }
 
 }  // namespace remoting

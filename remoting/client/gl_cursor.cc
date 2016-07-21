@@ -1,0 +1,113 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "remoting/client/gl_cursor.h"
+
+#include "remoting/base/util.h"
+#include "remoting/client/gl_canvas.h"
+#include "remoting/client/gl_math.h"
+#include "remoting/client/gl_render_layer.h"
+#include "remoting/proto/control.pb.h"
+#include "third_party/libyuv/include/libyuv/convert_argb.h"
+
+namespace remoting {
+
+namespace {
+
+// TODO(yuweih): Create separate header file for texture IDs to avoid conflicts.
+const int kTextureId = 1;
+const int kDefaultCursorDataSize = 32 * 32 * GlRenderLayer::kBytesPerPixel;
+
+}  // namespace
+
+GlCursor::GlCursor() {}
+
+GlCursor::~GlCursor() {}
+
+void GlCursor::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
+  int data_size = cursor_shape.width() * cursor_shape.height() *
+      GlRenderLayer::kBytesPerPixel;
+  if (current_cursor_data_size_ < data_size) {
+    current_cursor_data_size_ =
+        kDefaultCursorDataSize > data_size ? kDefaultCursorDataSize : data_size;
+    current_cursor_data_.reset(new uint8_t[current_cursor_data_size_]);
+  }
+  int stride = cursor_shape.width() * GlRenderLayer::kBytesPerPixel;
+  libyuv::ABGRToARGB(
+      reinterpret_cast<const uint8_t*>(cursor_shape.data().data()), stride,
+      current_cursor_data_.get(), stride, cursor_shape.width(),
+      cursor_shape.height());
+
+  bool size_changed = current_cursor_width_ != cursor_shape.width() ||
+                      current_cursor_height_ != cursor_shape.height();
+
+  current_cursor_width_ = cursor_shape.width();
+  current_cursor_height_ = cursor_shape.height();
+  current_cursor_hotspot_x_ = cursor_shape.hotspot_x();
+  current_cursor_hotspot_y_ = cursor_shape.hotspot_y();
+
+  SetCurrentCursorShape(size_changed);
+
+  SetCursorPosition(cursor_x_, cursor_y_);
+}
+
+void GlCursor::SetCanvasSize(int width, int height) {
+  canvas_width_ = width;
+  canvas_height_ = height;
+  SetCursorPosition(cursor_x_, cursor_y_);
+}
+
+void GlCursor::SetCursorPosition(int x, int y) {
+  cursor_x_ = x;
+  cursor_y_ = y;
+  if (!canvas_width_ || !canvas_height_ || !current_cursor_data_) {
+    return;
+  }
+  std::array<float, 8> positions;
+  FillRectangleVertexPositions(
+      (x - current_cursor_hotspot_x_) / ((float)canvas_width_),
+      (y - current_cursor_hotspot_y_) / ((float)canvas_height_),
+      ((float)current_cursor_width_) / canvas_width_,
+      ((float)current_cursor_height_) / canvas_height_,
+      &positions);
+  if (layer_) {
+    layer_->SetVertexPositions(positions);
+  }
+}
+
+void GlCursor::SetCursorVisible(bool visible) {
+  visible_ = visible;
+}
+
+void GlCursor::SetCanvas(GlCanvas* canvas) {
+  if (!canvas) {
+    layer_.reset();
+    return;
+  }
+  layer_.reset(new GlRenderLayer(kTextureId, canvas));
+  if (current_cursor_data_) {
+    SetCurrentCursorShape(true);
+  }
+  SetCursorPosition(cursor_x_, cursor_y_);
+}
+
+void GlCursor::Draw() {
+  if (layer_ && current_cursor_data_ && visible_) {
+    layer_->Draw(1.f);
+  }
+}
+
+void GlCursor::SetCurrentCursorShape(bool size_changed) {
+  if (layer_) {
+    if (size_changed) {
+      layer_->SetTexture(current_cursor_data_.get(), current_cursor_width_,
+                         current_cursor_height_);
+    } else {
+      layer_->UpdateTexture(current_cursor_data_.get(), 0, 0,
+                            current_cursor_width_, current_cursor_width_, 0);
+    }
+  }
+}
+
+}  // namespace remoting

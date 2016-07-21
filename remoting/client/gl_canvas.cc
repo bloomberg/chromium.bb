@@ -44,8 +44,10 @@ const char kDrawTexFrag[] =
     // Region on the texture to be used (normally the whole texture).
     "varying vec2 v_texCoord;\n"
     "uniform sampler2D u_texture;\n"
+    "uniform float u_alpha_multiplier;\n"
     "void main() {\n"
     "  gl_FragColor = texture2D(u_texture, v_texCoord);\n"
+    "  gl_FragColor.a *= u_alpha_multiplier;\n"
     "}";
 
 }  // namespace
@@ -60,6 +62,8 @@ GlCanvas::GlCanvas(int gl_version) : gl_version_(gl_version) {
 
   transform_location_ = glGetUniformLocation(program_, "u_transform");
   texture_location_ = glGetUniformLocation(program_, "u_texture");
+  alpha_multiplier_location_ =
+      glGetUniformLocation(program_, "u_alpha_multiplier");
   position_location_ = glGetAttribLocation(program_, "a_position");
   tex_cord_location_ = glGetAttribLocation(program_, "a_texCoord");
   glEnableVertexAttribArray(position_location_);
@@ -86,7 +90,8 @@ void GlCanvas::SetNormalizedTransformation(const std::array<float, 9>& matrix) {
 
 void GlCanvas::DrawTexture(int texture_id,
                            GLuint texture_handle,
-                           GLuint vertex_buffer) {
+                           GLuint vertex_buffer,
+                           float alpha_multiplier) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!transformation_set_) {
     return;
@@ -94,6 +99,7 @@ void GlCanvas::DrawTexture(int texture_id,
   glActiveTexture(GL_TEXTURE0 + texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_handle);
   glUniform1i(texture_location_, texture_id);
+  glUniform1f(alpha_multiplier_location_, alpha_multiplier);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 
   glVertexAttribPointer(position_location_, kVertexSize, GL_FLOAT, GL_FALSE, 0,

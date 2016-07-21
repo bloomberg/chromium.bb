@@ -16,6 +16,8 @@ class GlCanvas;
 // canvas is deleted.
 class GlRenderLayer {
  public:
+  static const int kBytesPerPixel = 4;
+
   // texture_id: An integer in range [0, GL_MAX_TEXTURE_IMAGE_UNITS], defining
   //             which slot to store the texture.
   GlRenderLayer(int texture_id, GlCanvas* canvas);
@@ -50,7 +52,7 @@ class GlRenderLayer {
   void SetTextureVisibleArea(const std::array<float, 8>& positions);
 
   // Draws the texture on the canvas. Texture must be set before calling Draw().
-  void Draw();
+  void Draw(float alpha_multiplier);
 
  private:
   int texture_id_;

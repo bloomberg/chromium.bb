@@ -50,7 +50,13 @@ class GlCanvas {
   // vertex_buffer: reference to the 2x4x2 float vertex buffer.
   //                [ four (x, y) normalized vertex positions on the canvas,
   //                  four (x, y) vertex positions to define the visible area ]
-  void DrawTexture(int texture_id, GLuint texture_handle, GLuint vertex_buffer);
+  // alpha_multiplier: Will be multiplied with the alpha channel of the texture.
+  //                   Passing 1 means no change of the transparency of the
+  //                   texture.
+  void DrawTexture(int texture_id,
+                   GLuint texture_handle,
+                   GLuint vertex_buffer,
+                   float alpha_multiplier);
 
   // Returns the version number of current OpenGL ES context. Either 2 or 3.
   int GetGlVersion() const;
@@ -69,6 +75,7 @@ class GlCanvas {
   // Locations of the corresponding shader attributes.
   GLuint transform_location_;
   GLuint texture_location_;
+  GLuint alpha_multiplier_location_;
   GLuint position_location_;
   GLuint tex_cord_location_;
 
