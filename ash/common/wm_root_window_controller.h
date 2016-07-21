@@ -59,6 +59,10 @@ class ASH_EXPORT WmRootWindowController {
   // may extend outside the bounds of the window.
   virtual WmWindow* FindEventTarget(const gfx::Point& location_in_screen) = 0;
 
+  // Gets the last location seen in a mouse event in this root window's
+  // coordinates. This may return a point outside the root window's bounds.
+  virtual gfx::Point GetLastMouseLocationInRoot() = 0;
+
   virtual void AddObserver(WmRootWindowControllerObserver* observer) = 0;
   virtual void RemoveObserver(WmRootWindowControllerObserver* observer) = 0;
 };

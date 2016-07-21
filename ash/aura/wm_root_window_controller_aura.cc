@@ -16,7 +16,9 @@
 #include "ash/shell.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 
@@ -112,6 +114,12 @@ WmWindow* WmRootWindowControllerAura::FindEventTarget(
                                        ->GetEventTargeter()
                                        ->FindTargetForEvent(root, &test_event);
   return WmWindowAura::Get(static_cast<aura::Window*>(event_handler));
+}
+
+gfx::Point WmRootWindowControllerAura::GetLastMouseLocationInRoot() {
+  return root_window_controller_->GetHost()
+      ->dispatcher()
+      ->GetLastMouseLocationInRoot();
 }
 
 void WmRootWindowControllerAura::AddObserver(

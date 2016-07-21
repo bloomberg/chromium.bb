@@ -109,7 +109,7 @@ void PrintLayerHierarchyImp(const Layer* layer,
 
 }  // namespace
 
-void PrintLayerHierarchy(const Layer* layer, gfx::Point mouse_location) {
+void PrintLayerHierarchy(const Layer* layer, const gfx::Point& mouse_location) {
   std::ostringstream out;
   out << "Layer hierarchy:\n";
   PrintLayerHierarchyImp(layer, 0, mouse_location, &out);

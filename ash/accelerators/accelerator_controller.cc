@@ -566,12 +566,6 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
-    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
-    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
-    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
-    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
-    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       return debug::DebugAcceleratorsEnabled();
     case NEXT_IME:
       return CanHandleNextIme(ime_control_delegate_.get());
@@ -585,12 +579,10 @@ bool AcceleratorController::CanPerformAction(
     case WINDOW_POSITION_CENTER:
       return CanHandlePositionCenter();
 #if defined(OS_CHROMEOS)
-    case DEBUG_ADD_REMOVE_DISPLAY:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_TOUCH_VIEW:
-    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       return debug::DebugAcceleratorsEnabled();
     case DISABLE_CAPS_LOCK:
       return CanHandleDisableCapsLock(previous_accelerator);
@@ -636,8 +628,8 @@ bool AcceleratorController::CanPerformAction(
       // some actions don't yet work with mash.
       break;
   }
-  DCHECK(delegate_ && delegate_->HandlesAction(action));
-  return delegate_->CanPerformAction(action, accelerator, previous_accelerator);
+  return delegate_ && delegate_->HandlesAction(action) &&
+         delegate_->CanPerformAction(action, accelerator, previous_accelerator);
 }
 
 void AcceleratorController::PerformAction(AcceleratorAction action,
@@ -660,12 +652,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
-    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
-    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
-    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
-    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
-    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       debug::PerformDebugActionIfEnabled(action);
       break;
     case EXIT:
@@ -733,12 +719,10 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
         delegate->HandleBrightnessUp(accelerator);
       break;
     }
-    case DEBUG_ADD_REMOVE_DISPLAY:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_TOUCH_VIEW:
-    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
       debug::PerformDebugActionIfEnabled(action);
       break;
     case DISABLE_CAPS_LOCK:

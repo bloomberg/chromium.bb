@@ -181,6 +181,13 @@ void WmWindowMus::SetName(const char* name) {
   }
 }
 
+std::string WmWindowMus::GetName() const {
+  return window_->HasSharedProperty(::ui::mojom::WindowManager::kName_Property)
+             ? window_->GetSharedProperty<std::string>(
+                   ::ui::mojom::WindowManager::kName_Property)
+             : std::string();
+}
+
 base::string16 WmWindowMus::GetTitle() const {
   return GetWindowTitle(window_);
 }

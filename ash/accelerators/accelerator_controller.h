@@ -30,7 +30,6 @@ struct AcceleratorData;
 class AcceleratorControllerDelegate;
 class ExitWarningHandler;
 class ImeControlDelegate;
-class VolumeControlDelegate;
 
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It

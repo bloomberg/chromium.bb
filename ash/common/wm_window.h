@@ -73,6 +73,7 @@ class ASH_EXPORT WmWindow {
 
   // Used for debugging.
   virtual void SetName(const char* name) = 0;
+  virtual std::string GetName() const = 0;
 
   virtual base::string16 GetTitle() const = 0;
 

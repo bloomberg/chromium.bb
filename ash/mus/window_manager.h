@@ -52,6 +52,8 @@ class WindowManager : public ::ui::WindowManagerDelegate,
 
   WmShellMus* shell() { return shell_.get(); }
 
+  ::ui::WindowTreeClient* window_tree_client() { return window_tree_client_; }
+
   ::ui::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }

@@ -1,5 +1,5 @@
 specific_include_rules = {
-  "debug_commands\.cc": [
+  "accelerator_controller_delegate_aura\.cc": [
     "+ash/host"
   ],
 }

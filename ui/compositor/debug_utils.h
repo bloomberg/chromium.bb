@@ -17,7 +17,7 @@ class Layer;
 
 // Log the layer hierarchy. Mark layers which contain |mouse_location| with '*'.
 COMPOSITOR_EXPORT void PrintLayerHierarchy(const Layer* layer,
-                                           gfx::Point mouse_location);
+                                           const gfx::Point& mouse_location);
 
 }  // namespace ui
 

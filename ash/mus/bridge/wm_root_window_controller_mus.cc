@@ -12,6 +12,7 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
 #include "ash/mus/root_window_controller.h"
+#include "ash/mus/window_manager.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tree_client.h"
@@ -133,6 +134,15 @@ WmWindow* WmRootWindowControllerMus::FindEventTarget(
     const gfx::Point& location_in_screen) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+gfx::Point WmRootWindowControllerMus::GetLastMouseLocationInRoot() {
+  gfx::Point location = root_window_controller_->window_manager()
+                            ->window_tree_client()
+                            ->GetCursorScreenPoint();
+  location -=
+      root_window_controller_->display().bounds().origin().OffsetFromOrigin();
+  return location;
 }
 
 void WmRootWindowControllerMus::AddObserver(

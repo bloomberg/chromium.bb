@@ -145,6 +145,10 @@ void WmWindowAura::SetName(const char* name) {
   window_->SetName(name);
 }
 
+std::string WmWindowAura::GetName() const {
+  return window_->name();
+}
+
 base::string16 WmWindowAura::GetTitle() const {
   return window_->title();
 }

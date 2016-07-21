@@ -10,6 +10,9 @@
 
 // This file contains implementations of commands that are used only when
 // debugging.
+//
+// NOTE: these commands may be enabled in about:flags, so that they may be
+// available at run time.
 namespace ash {
 namespace debug {
 

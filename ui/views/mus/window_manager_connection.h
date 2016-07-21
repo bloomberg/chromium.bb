@@ -47,13 +47,13 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(ui::WindowTreeClientDelegate),
       public ScreenMusDelegate {
  public:
+  ~WindowManagerConnection() override;
+
   static std::unique_ptr<WindowManagerConnection> Create(
       shell::Connector* connector,
       const shell::Identity& identity);
   static WindowManagerConnection* Get();
   static bool Exists();
-
-  ~WindowManagerConnection() override;
 
   shell::Connector* connector() { return connector_; }
 

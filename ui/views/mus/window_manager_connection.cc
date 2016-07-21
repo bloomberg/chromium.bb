@@ -36,6 +36,20 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 
 }  // namespace
 
+WindowManagerConnection::~WindowManagerConnection() {
+  // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
+  // we are still valid.
+  client_.reset();
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+  ui::GpuService::Terminate();
+  lazy_tls_ptr.Pointer()->Set(nullptr);
+
+  if (ViewsDelegate::GetInstance()) {
+    ViewsDelegate::GetInstance()->set_native_widget_factory(
+        ViewsDelegate::NativeWidgetFactory());
+  }
+}
+
 // static
 std::unique_ptr<WindowManagerConnection> WindowManagerConnection::Create(
     shell::Connector* connector,
@@ -154,20 +168,6 @@ WindowManagerConnection::WindowManagerConnection(
       &WindowManagerConnection::CreateNativeWidgetMus,
       base::Unretained(this),
       std::map<std::string, std::vector<uint8_t>>()));
-}
-
-WindowManagerConnection::~WindowManagerConnection() {
-  // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
-  // we are still valid.
-  client_.reset();
-  ui::Clipboard::DestroyClipboardForCurrentThread();
-  ui::GpuService::Terminate();
-  lazy_tls_ptr.Pointer()->Set(nullptr);
-
-  if (ViewsDelegate::GetInstance()) {
-    ViewsDelegate::GetInstance()->set_native_widget_factory(
-        ViewsDelegate::NativeWidgetFactory());
-  }
 }
 
 bool WindowManagerConnection::HasPointerDownWatcher() {

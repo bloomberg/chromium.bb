@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands_aura.h"
+#include "ash/accelerators/debug_commands.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
@@ -27,7 +28,11 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/debug.h"
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/new_window_delegate.h"
@@ -48,6 +53,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -56,6 +63,8 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
@@ -339,6 +348,50 @@ void HandleToggleAppList(const ui::Accelerator& accelerator) {
   WmShell::Get()->ToggleAppList();
 }
 
+gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
+  // TODO(oshima): Consider adding a command line option to control
+  // wallpaper images for testing.
+  // The size is randomly picked.
+  gfx::Size image_size(1366, 768);
+  gfx::Canvas canvas(image_size, 1.0f, true);
+  canvas.DrawColor(fill);
+  SkPaint paint;
+  paint.setColor(rect);
+  paint.setStrokeWidth(10);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  canvas.DrawRoundRect(gfx::Rect(image_size), 100, paint);
+  return gfx::ImageSkia(canvas.ExtractImageRep());
+}
+
+void HandleToggleDesktopBackgroundMode() {
+  static int index = 0;
+  DesktopBackgroundController* desktop_background_controller =
+      Shell::GetInstance()->desktop_background_controller();
+  switch (++index % 4) {
+    case 0:
+      ash::Shell::GetInstance()
+          ->user_wallpaper_delegate()
+          ->InitializeWallpaper();
+      break;
+    case 1:
+      desktop_background_controller->SetWallpaperImage(
+          CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE),
+          wallpaper::WALLPAPER_LAYOUT_STRETCH);
+      break;
+    case 2:
+      desktop_background_controller->SetWallpaperImage(
+          CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN),
+          wallpaper::WALLPAPER_LAYOUT_CENTER);
+      break;
+    case 3:
+      desktop_background_controller->SetWallpaperImage(
+          CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED),
+          wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED);
+      break;
+  }
+}
+
 bool CanHandleUnpin() {
   wm::WindowState* window_state = wm::GetActiveWindowState();
   return window_state && window_state->IsPinned();
@@ -404,6 +457,12 @@ void AcceleratorControllerDelegateAura::SetScreenshotDelegate(
 bool AcceleratorControllerDelegateAura::HandlesAction(
     AcceleratorAction action) {
   switch (action) {
+    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
+    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
+    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
+    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
+    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
     case FOCUS_SHELF:
     case LAUNCH_APP_0:
     case LAUNCH_APP_1:
@@ -438,6 +497,8 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
       return true;
 
 #if defined(OS_CHROMEOS)
+    case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
     case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
@@ -465,6 +526,13 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
   switch (action) {
+    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
+    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
+    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
+    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
+    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
+      return debug::DebugAcceleratorsEnabled();
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return CanHandleMagnifyScreen();
@@ -507,6 +575,10 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
       return true;
 
 #if defined(OS_CHROMEOS)
+    case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
+      return debug::DebugAcceleratorsEnabled();
+
     case SWAP_PRIMARY_DISPLAY:
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case TOUCH_HUD_CLEAR:
@@ -538,6 +610,24 @@ void AcceleratorControllerDelegateAura::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   switch (action) {
+    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
+      HandleToggleDesktopBackgroundMode();
+      break;
+    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
+      Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();
+      break;
+    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+      Shell::GetPrimaryRootWindowController()->ash_host()->ToggleFullScreen();
+      break;
+    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
+      debug::ToggleShowDebugBorders();
+      break;
+    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
+      debug::ToggleShowFpsCounter();
+      break;
+    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
+      debug::ToggleShowPaintRects();
+      break;
     case FOCUS_SHELF:
       HandleFocusShelf();
       break;
@@ -632,6 +722,13 @@ void AcceleratorControllerDelegateAura::PerformAction(
       accelerators::Unpin();
       break;
 #if defined(OS_CHROMEOS)
+    case DEBUG_ADD_REMOVE_DISPLAY:
+      Shell::GetInstance()->display_manager()->AddRemoveDisplay();
+      break;
+    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
+      Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
+          !Shell::GetInstance()->display_manager()->unified_desktop_enabled());
+      break;
     case DISABLE_GPU_WATCHDOG:
       Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
       break;

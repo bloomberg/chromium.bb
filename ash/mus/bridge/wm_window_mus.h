@@ -105,6 +105,7 @@ class WmWindowMus : public WmWindow, public ::ui::WindowObserver {
   WmRootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
   void SetName(const char* name) override;
+  std::string GetName() const override;
   base::string16 GetTitle() const override;
   void SetShellWindowId(int id) override;
   int GetShellWindowId() const override;
