@@ -2090,9 +2090,8 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
         processToken(token);
         break;
     case TextMode:
-        if (token->name() == scriptTag) {
+        if (token->name() == scriptTag && m_tree.currentStackItem()->hasTagName(scriptTag)) {
             // Pause ourselves so that parsing stops until the script can be processed by the caller.
-            ASSERT(m_tree.currentStackItem()->hasTagName(scriptTag));
             if (scriptingContentIsAllowed(m_tree.getParserContentPolicy()))
                 m_scriptToProcess = m_tree.currentElement();
             m_tree.openElements()->pop();
