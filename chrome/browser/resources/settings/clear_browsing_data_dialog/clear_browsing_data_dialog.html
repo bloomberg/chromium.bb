@@ -97,9 +97,10 @@
       }
 
       /* Cap the height on smaller screens to avoid unfavorable clipping. */
-      @media screen and (max-height: 714px) {
+      @media all and (max-height: 714px) {
         .body {
           max-height: 270px;
+          overflow-y: scroll;
         }
       }
     </style>
