@@ -8,8 +8,6 @@ mojom("url_mojom_gurl") {
   sources = [
     "url.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("url_mojom_origin") {
@@ -20,8 +18,6 @@ mojom("url_mojom_origin") {
   public_deps = [
     ":url_mojom_gurl",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("test_url_mojom_gurl") {
@@ -33,6 +29,4 @@ mojom("test_url_mojom_gurl") {
     ":url_mojom_gurl",
     ":url_mojom_origin",
   ]
-
-  use_new_wrapper_types = false
 }

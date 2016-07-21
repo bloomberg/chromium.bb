@@ -130,7 +130,6 @@
           'mojo/gurl.typemap',
           'mojo/origin.typemap',
         ],
-        'use_new_wrapper_types': 'false',
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
@@ -163,7 +162,6 @@
           'mojo/gurl.typemap',
           'mojo/origin.typemap',
         ],
-        'use_new_wrapper_types': 'false',
       },
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
       'dependencies': [
@@ -237,7 +235,6 @@
               '../third_party/WebKit/Source/platform/mojo/KURL.typemap',
               '../third_party/WebKit/Source/platform/mojo/SecurityOrigin.typemap',
             ],
-            'use_new_wrapper_types': 'false',
           },
           'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
         },
@@ -267,7 +264,6 @@
               '../third_party/WebKit/Source/platform/mojo/KURL.typemap',
               '../third_party/WebKit/Source/platform/mojo/SecurityOrigin.typemap',
             ],
-            'use_new_wrapper_types': 'false',
           },
           'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
           'dependencies': [

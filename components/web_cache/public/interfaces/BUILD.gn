@@ -8,6 +8,4 @@ mojom("interfaces") {
   sources = [
     "web_cache.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

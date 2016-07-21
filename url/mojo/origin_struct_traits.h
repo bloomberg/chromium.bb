@@ -13,12 +13,8 @@ namespace mojo {
 
 template <>
 struct StructTraits<url::mojom::Origin, url::Origin> {
-  static base::StringPiece scheme(const url::Origin& r) {
-    return base::StringPiece(r.scheme());
-  }
-  static base::StringPiece host(const url::Origin& r) {
-    return base::StringPiece(r.host());
-  }
+  static const std::string& scheme(const url::Origin& r) { return r.scheme(); }
+  static const std::string& host(const url::Origin& r) { return r.host(); }
   static uint16_t port(const url::Origin& r) {
     return r.port();
   }
