@@ -4790,7 +4790,6 @@
     },
     "cave-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "cave"
         ],

@@ -657,7 +657,6 @@ _waterfall_config_map = {
         'glados-release',
         'chell-release',
         'glados-cheets-release',
-        'cave-release',
         'chell-cheets-release',
         'asuka-release',
         # reef
