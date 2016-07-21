@@ -45,7 +45,7 @@
       ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
         (target_arch=="arm" or target_arch=="ia32" or \
-         target_arch=="mipsel")', {
+         target_arch=="mipsel" or target_arch=="mips")', {
         'target_conditions': [
           ['_toolset=="host"', {
             'cflags': [ '-m32' ],
@@ -60,7 +60,7 @@
       ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
         (target_arch=="arm64" or target_arch=="x64" or \
-         target_arch=="mipsel64")', {
+         target_arch=="mips64el" or target_arch=="mips64")', {
         'target_conditions': [
           ['_toolset=="host"', {
             'cflags': [ '-m64' ],
@@ -83,12 +83,12 @@
     ['use_system_icu==0 or want_separate_host_toolset==1', {
       'targets': [
         {
-          'target_name': 'copy_icudtl_dat',
+          'target_name': 'copy_icudt_dat',
           'type': 'none',
           # icudtl.dat is the same for both host/target, so this only supports a
           # single toolset. If a target requires that the .dat file be copied
           # to the output directory, it should explicitly depend on this target
-          # with the host toolset (like copy_icudtl_dat#host).
+          # with the host toolset (like copy_icudt_dat#host).
           'toolsets': [ 'host' ],
           'copies': [{
             'destination': '<(PRODUCT_DIR)',
@@ -98,12 +98,66 @@
                   'android/icudtl.dat',
                 ],
               } , { # else: OS != android
-                'files': [
-                  'common/icudtl.dat',
+                'conditions': [
+                  # Big Endian
+                  [ 'target_arch=="mips" or target_arch=="mips64"', {
+                    'files': [
+                      'common/icudtb.dat',
+                    ],
+                  } , {  # else: ! Big Endian = Little Endian
+                    'files': [
+                      'common/icudtl.dat',
+                    ],
+                  }],
                 ],
               }],
             ],
           }],
+        },
+        {
+          'target_name': 'data_assembly',
+          'type': 'none',
+          'conditions': [
+            [ 'target_arch=="mips" or target_arch=="mips64"', {
+              'data_assembly_sources': [
+                'common/icudtb.dat',
+              ],
+              'data_assembly_inputs': [
+                'scripts/make_data_assembly.py',
+                'common/icudtb.dat',
+              ],
+              'data_assembly_outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S',
+              ],
+            }],
+            [ 'target_arch!="mips" and target_arch!="mips64"', {
+              'data_assembly_sources': [
+                'common/icudtl.dat',
+              ],
+              'data_assembly_inputs': [
+                'scripts/make_data_assembly.py',
+                'common/icudtl.dat',
+              ],
+              'data_assembly_outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S',
+              ],
+            }],
+          ],
+          'sources': [
+            '<@(_data_assembly_sources)',
+          ],
+          'actions': [
+            {
+              'action_name': 'make_data_assembly',
+              'inputs': [
+                '<@(_data_assembly_inputs)',
+              ],
+              'outputs': [
+                '<@(_data_assembly_outputs)',
+              ],
+              'action': ['python', '<@(_inputs)', '<@(_outputs)'],
+            },
+          ],
         },
         {
           'target_name': 'icudata',
@@ -111,16 +165,26 @@
           'defines': [
             'U_HIDE_DATA_SYMBOL',
           ],
+          'dependencies': [
+            'data_assembly#target',
+          ],
           'sources': [
              # These are hand-generated, but will do for now.  The linux
              # version is an identical copy of the (mac) icudtl_dat.S file,
              # modulo removal of the .private_extern and .const directives and
              # with no leading underscore on the icudt52_dat symbol.
              'android/icudtl_dat.S',
-             'linux/icudtl_dat.S',
+             '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S',
+             '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S',
              'mac/icudtl_dat.S',
           ],
           'conditions': [
+            [ 'target_arch=="mips" or target_arch=="mips64"', {
+              'sources!': ['<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S'],
+            }],
+            [ 'target_arch!="mips" and target_arch!="mips64"', {
+              'sources!': ['<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S'],
+            }],
             [ 'use_system_icu==1 and want_separate_host_toolset==1', {
               'toolsets': ['host'],
             }],
@@ -132,6 +196,9 @@
             }],
             [ 'OS == "win" and icu_use_data_file_flag==0', {
               'type': 'none',
+              'dependencies!': [
+                'data_assembly#target',
+              ],
               'copies': [
                 {
                   'destination': '<(PRODUCT_DIR)',
@@ -141,16 +208,25 @@
                 },
               ],
             }],
+            [ '(OS == "mac" or OS == "ios") and icu_use_data_file_flag==0', {
+              'type': 'none',
+              'dependencies!': [
+                'data_assembly#target',
+              ],
+            }],
             [ 'icu_use_data_file_flag==1', {
               'type': 'none',
+              'dependencies!': [
+                'data_assembly#target',
+              ],
               # Remove any assembly data file.
-              'sources/': [['exclude', 'icudtl_dat']],
+              'sources/': [['exclude', 'icudt[lb]_dat']],
 
               # Make sure any binary depending on this gets the data file.
               'conditions': [
                 ['OS != "ios"', {
                   'dependencies': [
-                    'copy_icudtl_dat#host',
+                    'copy_icudt_dat#host',
                   ],
                 } , { # else: OS=="ios"
                   'link_settings': {
@@ -166,7 +242,10 @@
             [ 'OS == "win" or OS == "mac" or OS == "ios" or '
               '(OS == "android" and (_toolset != "host" or host_os != "linux")) or '
               '(OS == "qnx" and (_toolset == "host" and host_os != "linux"))', {
-              'sources!': ['linux/icudtl_dat.S'],
+              'sources!': [
+                '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S',
+                '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S'
+              ],
             }],
             [ 'OS != "android" or _toolset == "host"', {
               'sources!': ['android/icudtl_dat.S'],
