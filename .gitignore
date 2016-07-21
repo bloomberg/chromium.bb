@@ -277,7 +277,7 @@ vs-chromium-project.txt
 /sync/sync.xml
 /sync_testserver.log
 /testing/gmock
-/testing/gtest
+/testing/gtest/third_party/googletest
 /testserver.log
 /tools/luci-go/linux64/isolate
 /tools/luci-go/mac64/isolate

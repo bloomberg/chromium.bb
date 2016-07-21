@@ -110,7 +110,6 @@ ADDITIONAL_PATHS = (
     os.path.join('net', 'tools', 'spdyshark'),
     os.path.join('sdch', 'open-vcdiff'),
     os.path.join('testing', 'gmock'),
-    os.path.join('testing', 'gtest'),
     os.path.join('tools', 'gyp'),
     os.path.join('tools', 'page_cycler', 'acid3'),
     os.path.join('url', 'third_party', 'mozilla'),
@@ -142,7 +141,7 @@ SPECIAL_CASES = {
         "License": "BSD",
         "License File": "NOT_SHIPPED",
     },
-    os.path.join('testing', 'gtest'): {
+    os.path.join('testing', 'third_party', 'googletest'): {
         "Name": "gtest",
         "URL": "http://code.google.com/p/googletest",
         "License": "BSD",

@@ -28,8 +28,8 @@
             '<@(gtest_sources)',
           ],
           'include_dirs': [
-            'gtest',
-            'gtest/include',
+            'third_party/googletest/googletest',
+            'third_party/googletest/googletest/include',
           ],
           'defines': [
             # In order to allow regex matches in gtest to be shared between
@@ -61,7 +61,7 @@
               'GTEST_HAS_RTTI=0',
             ],
             'include_dirs': [
-              'gtest/include',  # So that gtest headers can find themselves.
+              'third_party/googletest/googletest/include',  # So that gtest headers can find themselves.
             ],
           },
         },
@@ -80,7 +80,7 @@
             'gtest_nacl',
           ],
           'sources': [
-            'gtest/src/gtest_main.cc',
+            'third_party/googletest/googletest/src/gtest_main.cc',
           ],
           'all_dependent_settings': {
             'link_flags': [
