@@ -106,6 +106,7 @@
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -2642,16 +2643,15 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
         // Usually this is not needed because the PaintLayer will setup the chunk properties
         // altogether. However in debug builds the GraphicsLayer could paint debug background before
         // we ever reach the PaintLayer.
+        Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             PaintChunkProperties properties;
             properties.transform = m_rootTransform;
             properties.clip = m_rootClip;
             properties.effect = m_rootEffect;
-            graphicsLayer->getPaintController().updateCurrentPaintChunkProperties(properties);
+            scopedPaintChunkProperties.emplace(graphicsLayer->getPaintController(), *layoutView(), DisplayItem::DebugRedFill, properties);
         }
         graphicsLayer->paint(nullptr);
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            graphicsLayer->getPaintController().updateCurrentPaintChunkProperties(PaintChunkProperties());
     }
 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {

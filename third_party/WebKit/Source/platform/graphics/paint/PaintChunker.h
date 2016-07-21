@@ -6,6 +6,7 @@
 #define PaintChunker_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "wtf/Allocator.h"
@@ -21,23 +22,15 @@ class PLATFORM_EXPORT PaintChunker final {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PaintChunker);
 public:
-    enum ItemBehavior {
-        // Can be combined with adjacent items when building chunks.
-        DefaultBehavior = 0,
-
-        // Item requires its own paint chunk.
-        RequiresSeparateChunk,
-    };
-
     PaintChunker();
     ~PaintChunker();
 
     bool isInInitialState() const { return m_chunks.isEmpty() && m_currentProperties == PaintChunkProperties(); }
 
     const PaintChunkProperties& currentPaintChunkProperties() const { return m_currentProperties; }
-    void updateCurrentPaintChunkProperties(const PaintChunkProperties&);
+    void updateCurrentPaintChunkProperties(const PaintChunk::Id*, const PaintChunkProperties&);
 
-    void incrementDisplayItemIndex(ItemBehavior);
+    void incrementDisplayItemIndex(const DisplayItem&);
     void decrementDisplayItemIndex();
 
     void clear();
@@ -47,8 +40,17 @@ public:
     Vector<PaintChunk> releasePaintChunks();
 
 private:
+    enum ItemBehavior {
+        // Can be combined with adjacent items when building chunks.
+        DefaultBehavior = 0,
+
+        // Item requires its own paint chunk.
+        RequiresSeparateChunk,
+    };
+
     Vector<PaintChunk> m_chunks;
     Vector<ItemBehavior> m_chunkBehavior;
+    Optional<PaintChunk::Id> m_currentChunkId;
     PaintChunkProperties m_currentProperties;
 };
 
