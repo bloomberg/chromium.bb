@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gl/ca_renderer_layer_params.h"
 
 namespace cc {
 
@@ -62,6 +63,11 @@ class CC_EXPORT CALayerOverlay {
   unsigned edge_aa_mask = 0;
   // The minification and magnification filters for the CALayer.
   unsigned filter;
+
+  // If valid, the renderer must copy the contents of the render pass into an
+  // overlay resource to use as the contents.
+  RenderPassId render_pass_id;
+  ui::CARendererLayerParams::FilterEffects filter_effects;
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;
@@ -72,6 +78,9 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
                                const gfx::RectF& display_rect,
                                const QuadList& quad_list,
                                CALayerOverlayList* ca_layer_overlays);
+
+// Allows RenderPassDrawQuads to be converted to CALayerOverlays.
+void CC_EXPORT EnableRenderPassDrawQuadForTesting();
 
 }  // namespace cc
 

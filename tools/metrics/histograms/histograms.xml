@@ -68211,6 +68211,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Different clip settings in a sorting context is not supported."/>
   <int value="17"
       label="Different vertex opacities for a single texture is not supported"/>
+  <int value="18" label="RenderPassDrawQuad has a filter scale."/>
+  <int value="19" label="RenderPassDrawQuad has background filters."/>
+  <int value="20" label="RenderPassDrawQuad has a mask."/>
+  <int value="21" label="RenderPassDrawQuad has unconvertable filters."/>
 </enum>
 
 <enum name="CanvasContextType" type="int">

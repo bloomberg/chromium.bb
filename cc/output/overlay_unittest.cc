@@ -8,8 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
+#include "cc/output/ca_layer_overlay.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/filter_operation.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
@@ -19,6 +21,7 @@
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "cc/quads/render_pass.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -1747,6 +1750,112 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+}
+
+class CALayerOverlayRPDQTest : public CALayerOverlayTest {
+ protected:
+  void SetUp() override {
+    CALayerOverlayTest::SetUp();
+    EnableRenderPassDrawQuadForTesting();
+    pass_ = CreateRenderPass();
+    quad_ = pass_->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+    render_pass_id_.layer_id = 3;
+    render_pass_id_.index = 17;
+  }
+
+  void ProcessForOverlays() {
+    gfx::Rect damage_rect;
+    overlay_list_ = BackbufferOverlayList(pass_.get());
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(),
+                                           pass_.get(), &overlay_list_,
+                                           &ca_layer_list_, &damage_rect);
+  }
+  std::unique_ptr<RenderPass> pass_;
+  RenderPassDrawQuad* quad_;
+  RenderPassId render_pass_id_;
+  FilterOperations filters_;
+  FilterOperations background_filters_;
+  CALayerOverlayList ca_layer_list_;
+  OverlayCandidateList overlay_list_;
+};
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadNoFilters) {
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 1), background_filters_);
+  ProcessForOverlays();
+
+  EXPECT_EQ(1U, ca_layer_list_.size());
+  CALayerOverlay overlay = ca_layer_list_[0];
+  EXPECT_EQ(render_pass_id_, overlay.render_pass_id);
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadAllValidFilters) {
+  filters_.Append(FilterOperation::CreateGrayscaleFilter(0.1f));
+  filters_.Append(FilterOperation::CreateSepiaFilter(0.2f));
+  filters_.Append(FilterOperation::CreateSaturateFilter(0.3f));
+  filters_.Append(FilterOperation::CreateHueRotateFilter(0.4f));
+  filters_.Append(FilterOperation::CreateInvertFilter(0.5f));
+  filters_.Append(FilterOperation::CreateBrightnessFilter(0.6f));
+  filters_.Append(FilterOperation::CreateContrastFilter(0.7f));
+  filters_.Append(FilterOperation::CreateOpacityFilter(0.8f));
+  filters_.Append(FilterOperation::CreateBlurFilter(0.9f));
+  filters_.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(10, 20),
+                                                          1.0f, SK_ColorGREEN));
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 1), background_filters_);
+  ProcessForOverlays();
+
+  EXPECT_EQ(1U, ca_layer_list_.size());
+
+  CALayerOverlay overlay = ca_layer_list_[0];
+  EXPECT_EQ(10u, overlay.filter_effects.size());
+  for (size_t i = 0; i < 10; ++i) {
+    ui::CARendererLayerParams::FilterEffect effect = overlay.filter_effects[i];
+    EXPECT_FLOAT_EQ((i + 1) / 10.0f, effect.amount);
+
+    if (effect.type ==
+        ui::CARendererLayerParams::FilterEffectType::DROP_SHADOW) {
+      EXPECT_EQ(10, effect.drop_shadow_offset.x());
+      EXPECT_EQ(20, effect.drop_shadow_offset.y());
+      EXPECT_EQ(SK_ColorGREEN, effect.drop_shadow_color);
+    }
+  }
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadFilterScale) {
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 2), background_filters_);
+  ProcessForOverlays();
+  EXPECT_EQ(0U, ca_layer_list_.size());
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadBackgroundFilter) {
+  background_filters_.Append(FilterOperation::CreateGrayscaleFilter(0.1f));
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 1), background_filters_);
+  ProcessForOverlays();
+  EXPECT_EQ(0U, ca_layer_list_.size());
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadMask) {
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 2, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 1), background_filters_);
+  ProcessForOverlays();
+  EXPECT_EQ(0U, ca_layer_list_.size());
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadUnsupportedFilter) {
+  filters_.Append(FilterOperation::CreateZoomFilter(0.9f, 1));
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 1), background_filters_);
+  ProcessForOverlays();
+  EXPECT_EQ(0U, ca_layer_list_.size());
 }
 
 }  // namespace

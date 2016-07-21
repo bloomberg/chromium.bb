@@ -5,6 +5,7 @@
 #include "cc/output/ca_layer_overlay.h"
 
 #include "base/metrics/histogram.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -15,6 +16,8 @@
 namespace cc {
 
 namespace {
+
+bool g_allow_rpdq_quad_conversion = false;
 
 // This enum is used for histogram states and should only have new values added
 // to the end before COUNT.
@@ -37,8 +40,94 @@ enum CALayerResult {
   CA_LAYER_FAILED_YUV_VIDEO_CONTENT,
   CA_LAYER_FAILED_DIFFERENT_CLIP_SETTINGS,
   CA_LAYER_FAILED_DIFFERENT_VERTEX_OPACITIES,
+  CA_LAYER_FAILED_RENDER_PASS_FILTER_SCALE,
+  CA_LAYER_FAILED_RENDER_PASS_BACKGROUND_FILTERS,
+  CA_LAYER_FAILED_RENDER_PASS_MASK,
+  CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION,
   CA_LAYER_FAILED_COUNT,
 };
+
+bool ConvertAndAppendFilterOperation(
+    const FilterOperation& operation,
+    ui::CARendererLayerParams::FilterEffects* filter_effects) {
+  ui::CARendererLayerParams::FilterEffect filter_effect;
+  switch (operation.type()) {
+    case FilterOperation::GRAYSCALE:
+      filter_effect.type =
+          ui::CARendererLayerParams::FilterEffectType::GRAYSCALE;
+      break;
+    case FilterOperation::SEPIA:
+      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::SEPIA;
+      break;
+    case FilterOperation::SATURATE:
+      filter_effect.type =
+          ui::CARendererLayerParams::FilterEffectType::SATURATE;
+      break;
+    case FilterOperation::HUE_ROTATE:
+      filter_effect.type =
+          ui::CARendererLayerParams::FilterEffectType::HUE_ROTATE;
+      break;
+    case FilterOperation::INVERT:
+      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::INVERT;
+      break;
+    case FilterOperation::BRIGHTNESS:
+      filter_effect.type =
+          ui::CARendererLayerParams::FilterEffectType::BRIGHTNESS;
+      break;
+    case FilterOperation::CONTRAST:
+      filter_effect.type =
+          ui::CARendererLayerParams::FilterEffectType::CONTRAST;
+      break;
+    case FilterOperation::OPACITY:
+      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::OPACITY;
+      break;
+    case FilterOperation::BLUR:
+      filter_effect.type = ui::CARendererLayerParams::FilterEffectType::BLUR;
+      break;
+    case FilterOperation::DROP_SHADOW:
+      filter_effect.type =
+          ui::CARendererLayerParams::FilterEffectType::DROP_SHADOW;
+      break;
+    default:
+      return false;
+  }
+
+  filter_effect.amount = operation.amount();
+  if (filter_effect.type ==
+      ui::CARendererLayerParams::FilterEffectType::DROP_SHADOW) {
+    filter_effect.drop_shadow_offset = operation.drop_shadow_offset();
+    filter_effect.drop_shadow_color = operation.drop_shadow_color();
+  }
+  filter_effects->push_back(filter_effect);
+  return true;
+}
+
+CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
+                                 const RenderPassDrawQuad* quad,
+                                 CALayerOverlay* ca_layer_overlay) {
+  if (quad->filters_scale != gfx::Vector2dF(1, 1))
+    return CA_LAYER_FAILED_RENDER_PASS_FILTER_SCALE;
+  if (quad->background_filters.size() != 0)
+    return CA_LAYER_FAILED_RENDER_PASS_BACKGROUND_FILTERS;
+  if (quad->mask_resource_id() != 0)
+    return CA_LAYER_FAILED_RENDER_PASS_MASK;
+
+  for (const FilterOperation& operation : quad->filters.operations()) {
+    bool success = ConvertAndAppendFilterOperation(
+        operation, &ca_layer_overlay->filter_effects);
+    if (!success)
+      return CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION;
+  }
+
+  ca_layer_overlay->render_pass_id = quad->render_pass_id;
+  ca_layer_overlay->contents_rect = gfx::RectF(0, 0, 1, 1);
+
+  // TODO(erikchen): Enable this when RenderPassDrawQuad promotion to CALayer
+  // is fully functional. https://crbug.com/581526.
+  if (g_allow_rpdq_quad_conversion)
+    return CA_LAYER_SUCCESS;
+  return CA_LAYER_FAILED_RENDER_PASS;
+}
 
 CALayerResult FromStreamVideoQuad(ResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
@@ -175,7 +264,9 @@ class CALayerOverlayProcessor {
       case DrawQuad::PICTURE_CONTENT:
         return CA_LAYER_FAILED_PICTURE_CONTENT;
       case DrawQuad::RENDER_PASS:
-        return CA_LAYER_FAILED_RENDER_PASS;
+        return FromRenderPassQuad(resource_provider,
+                                  RenderPassDrawQuad::MaterialCast(quad),
+                                  ca_layer_overlay);
       case DrawQuad::SURFACE_CONTENT:
         return CA_LAYER_FAILED_SURFACE_CONTENT;
       case DrawQuad::YUV_VIDEO_CONTENT:
@@ -249,6 +340,10 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
     return false;
   }
   return true;
+}
+
+void EnableRenderPassDrawQuadForTesting() {
+  g_allow_rpdq_quad_conversion = true;
 }
 
 }  // namespace cc
