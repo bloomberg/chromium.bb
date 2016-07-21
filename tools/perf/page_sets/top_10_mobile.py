@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import cache_temperature as cache_temperature_module
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
@@ -42,10 +43,11 @@ URL_LIST = [
 class Top10MobilePage(page_module.Page):
 
   def __init__(self, url, page_set, run_no_page_interactions,
-               collect_memory_dumps):
+               collect_memory_dumps, cache_temperature=None):
     super(Top10MobilePage, self).__init__(
         url=url, page_set=page_set, credentials_path = 'data/credentials.json',
-        shared_page_state_class=shared_page_state.SharedMobilePageState)
+        shared_page_state_class=shared_page_state.SharedMobilePageState,
+        cache_temperature=cache_temperature)
     self.archive_data_file = 'data/top_10_mobile.json'
     self._run_no_page_interactions = run_no_page_interactions
     self._collect_memory_dumps = collect_memory_dumps
@@ -65,21 +67,25 @@ class _Top10MobilePageSet(story.StorySet):
   """ Base class for Top 10 mobile sites """
 
   def __init__(self, run_no_page_interactions=False,
-               collect_memory_dumps=False):
+               collect_memory_dumps=False, cache_temperatures=None):
     super(_Top10MobilePageSet, self).__init__(
       archive_data_file='data/top_10_mobile.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
+    if cache_temperatures is None:
+      cache_temperatures = [cache_temperature_module.ANY]
 
     for url in URL_LIST:
-      self.AddStory(Top10MobilePage(url, self, run_no_page_interactions,
-        collect_memory_dumps))
+      for temp in cache_temperatures:
+        self.AddStory(Top10MobilePage(url, self, run_no_page_interactions,
+          collect_memory_dumps, cache_temperature=temp))
 
 
 class Top10MobilePageSet(_Top10MobilePageSet):
   """ Top 10 mobile sites """
 
-  def __init__(self, run_no_page_interactions=False):
-    super(Top10MobilePageSet, self).__init__(run_no_page_interactions)
+  def __init__(self, run_no_page_interactions=False, cache_temperatures=None):
+    super(Top10MobilePageSet, self).__init__(run_no_page_interactions,
+        cache_temperatures=cache_temperatures)
 
 
 class Top10MobileMemoryPageSet(_Top10MobilePageSet):
