@@ -1678,20 +1678,21 @@ static bool PointHitsRegion(const gfx::PointF& screen_space_point,
 }
 
 static const gfx::Transform SurfaceScreenSpaceTransform(
-    const LayerImpl* layer,
-    const TransformTree& transform_tree) {
+    const LayerImpl* layer) {
+  const PropertyTrees* property_trees =
+      layer->layer_tree_impl()->property_trees();
   DCHECK(layer->render_surface());
   return layer->is_drawn_render_surface_layer_list_member()
              ? layer->render_surface()->screen_space_transform()
-             : transform_tree.ToScreenSpaceTransformWithoutSurfaceContentsScale(
-                   layer->render_surface()->TransformTreeIndex());
+             : property_trees
+                   ->ToScreenSpaceTransformWithoutSurfaceContentsScale(
+                       layer->render_surface()->TransformTreeIndex(),
+                       layer->render_surface()->EffectTreeIndex());
 }
 
 static bool PointIsClippedByAncestorClipNode(
     const gfx::PointF& screen_space_point,
-    const LayerImpl* layer,
-    const ClipTree& clip_tree,
-    const TransformTree& transform_tree) {
+    const LayerImpl* layer) {
   // We need to visit all ancestor clip nodes to check this. Checking with just
   // the combined clip stored at a clip node is not enough because parent
   // combined clip can sometimes be smaller than current combined clip. This can
@@ -1700,6 +1701,10 @@ static bool PointIsClippedByAncestorClipNode(
   // ancestor render surface.
 
   // We first check if the point is clipped by viewport.
+  const PropertyTrees* property_trees =
+      layer->layer_tree_impl()->property_trees();
+  const ClipTree& clip_tree = property_trees->clip_tree;
+  const TransformTree& transform_tree = property_trees->transform_tree;
   const ClipNode* clip_node = clip_tree.Node(1);
   gfx::Rect combined_clip_in_target_space =
       gfx::ToEnclosingRect(clip_node->combined_clip_in_target_space);
@@ -1724,7 +1729,7 @@ static bool PointIsClippedByAncestorClipNode(
                   (layer->layer_tree_impl()
                        ->is_in_resourceless_software_draw_mode())
               ? gfx::Transform()
-              : SurfaceScreenSpaceTransform(target_layer, transform_tree);
+              : SurfaceScreenSpaceTransform(target_layer);
       if (!PointHitsRect(screen_space_point, surface_screen_space_transform,
                          combined_clip_in_target_space, NULL)) {
         return true;
@@ -1734,8 +1739,7 @@ static bool PointIsClippedByAncestorClipNode(
         layer->layer_tree_impl()->LayerById(clip_node->owner_id);
     if (clip_node_owner->render_surface() &&
         !PointHitsRect(
-            screen_space_point,
-            SurfaceScreenSpaceTransform(clip_node_owner, transform_tree),
+            screen_space_point, SurfaceScreenSpaceTransform(clip_node_owner),
             clip_node_owner->render_surface()->content_rect(), NULL)) {
       return true;
     }
@@ -1745,20 +1749,15 @@ static bool PointIsClippedByAncestorClipNode(
 
 static bool PointIsClippedBySurfaceOrClipRect(
     const gfx::PointF& screen_space_point,
-    const LayerImpl* layer,
-    const TransformTree& transform_tree,
-    const ClipTree& clip_tree) {
+    const LayerImpl* layer) {
   // Walk up the layer tree and hit-test any render_surfaces and any layer
   // clip rects that are active.
-  return PointIsClippedByAncestorClipNode(screen_space_point, layer, clip_tree,
-                                          transform_tree);
+  return PointIsClippedByAncestorClipNode(screen_space_point, layer);
 }
 
 static bool PointHitsLayer(const LayerImpl* layer,
                            const gfx::PointF& screen_space_point,
-                           float* distance_to_intersection,
-                           const TransformTree& transform_tree,
-                           const ClipTree& clip_tree) {
+                           float* distance_to_intersection) {
   gfx::Rect content_rect(layer->bounds());
   if (!PointHitsRect(screen_space_point, layer->ScreenSpaceTransform(),
                      content_rect, distance_to_intersection)) {
@@ -1768,8 +1767,7 @@ static bool PointHitsLayer(const LayerImpl* layer,
   // At this point, we think the point does hit the layer, but we need to walk
   // up the parents to ensure that the layer was not clipped in such a way
   // that the hit point actually should not hit the layer.
-  if (PointIsClippedBySurfaceOrClipRect(screen_space_point, layer,
-                                        transform_tree, clip_tree))
+  if (PointIsClippedBySurfaceOrClipRect(screen_space_point, layer))
     return false;
 
   // Skip the HUD layer.
@@ -1793,8 +1791,6 @@ template <typename Functor>
 static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
                                      LayerImpl* root_layer,
                                      const Functor& func,
-                                     const TransformTree& transform_tree,
-                                     const ClipTree& clip_tree,
                                      FindClosestMatchingLayerState* state) {
   // We want to iterate from front to back when hit testing.
   for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
@@ -1804,11 +1800,10 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
     float distance_to_intersection = 0.f;
     bool hit = false;
     if (layer->Is3dSorted())
-      hit = PointHitsLayer(layer, screen_space_point, &distance_to_intersection,
-                           transform_tree, clip_tree);
+      hit =
+          PointHitsLayer(layer, screen_space_point, &distance_to_intersection);
     else
-      hit = PointHitsLayer(layer, screen_space_point, nullptr, transform_tree,
-                           clip_tree);
+      hit = PointHitsLayer(layer, screen_space_point, nullptr);
 
     if (!hit)
       continue;
@@ -1846,9 +1841,7 @@ LayerTreeImpl::FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_.empty() ? nullptr : layer_list_[0];
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           FindScrollingLayerOrScrollbarLayerFunctor(),
-                           property_trees_.transform_tree,
-                           property_trees_.clip_tree, &state);
+                           FindScrollingLayerOrScrollbarLayerFunctor(), &state);
   return state.closest_match;
 }
 
@@ -1870,15 +1863,12 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
   FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, layer_list_[0],
                            HitTestVisibleScrollableOrTouchableFunctor(),
-                           property_trees_.transform_tree,
-                           property_trees_.clip_tree, &state);
+                           &state);
   return state.closest_match;
 }
 
 static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
-                                         LayerImpl* layer_impl,
-                                         const TransformTree& transform_tree,
-                                         const ClipTree& clip_tree) {
+                                         LayerImpl* layer_impl) {
   if (layer_impl->touch_event_handler_region().IsEmpty())
     return false;
 
@@ -1890,8 +1880,7 @@ static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
   // on the layer, but we need to walk up the parents to ensure that the layer
   // was not clipped in such a way that the hit point actually should not hit
   // the layer.
-  if (PointIsClippedBySurfaceOrClipRect(screen_space_point, layer_impl,
-                                        transform_tree, clip_tree))
+  if (PointIsClippedBySurfaceOrClipRect(screen_space_point, layer_impl))
     return false;
 
   return true;
@@ -1899,12 +1888,9 @@ static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
 
 struct FindTouchEventLayerFunctor {
   bool operator()(LayerImpl* layer) const {
-    return LayerHasTouchEventHandlersAt(screen_space_point, layer,
-                                        transform_tree, clip_tree);
+    return LayerHasTouchEventHandlersAt(screen_space_point, layer);
   }
   const gfx::PointF screen_space_point;
-  const TransformTree& transform_tree;
-  const ClipTree& clip_tree;
 };
 
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
@@ -1914,13 +1900,9 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   bool update_lcd_text = false;
   if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
-  FindTouchEventLayerFunctor func = {screen_space_point,
-                                     property_trees_.transform_tree,
-                                     property_trees_.clip_tree};
+  FindTouchEventLayerFunctor func = {screen_space_point};
   FindClosestMatchingLayerState state;
-  FindClosestMatchingLayer(screen_space_point, layer_list_[0], func,
-                           property_trees_.transform_tree,
-                           property_trees_.clip_tree, &state);
+  FindClosestMatchingLayer(screen_space_point, layer_list_[0], func, &state);
   return state.closest_match;
 }
 
@@ -1931,9 +1913,7 @@ void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
 static gfx::SelectionBound ComputeViewportSelectionBound(
     const LayerSelectionBound& layer_bound,
     LayerImpl* layer,
-    float device_scale_factor,
-    const TransformTree& transform_tree,
-    const ClipTree& clip_tree) {
+    float device_scale_factor) {
   gfx::SelectionBound viewport_bound;
   viewport_bound.set_type(layer_bound.type);
 
@@ -1976,8 +1956,8 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
       MathUtil::MapPoint(screen_space_transform, visibility_point, &clipped);
 
   float intersect_distance = 0.f;
-  viewport_bound.set_visible(PointHitsLayer(
-      layer, visibility_point, &intersect_distance, transform_tree, clip_tree));
+  viewport_bound.set_visible(
+      PointHitsLayer(layer, visibility_point, &intersect_distance));
 
   return viewport_bound;
 }
@@ -1989,8 +1969,7 @@ void LayerTreeImpl::GetViewportSelection(
   selection->start = ComputeViewportSelectionBound(
       selection_.start,
       selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
-      device_scale_factor(), property_trees_.transform_tree,
-      property_trees_.clip_tree);
+      device_scale_factor());
   selection->is_editable = selection_.is_editable;
   selection->is_empty_text_form_control = selection_.is_empty_text_form_control;
   if (selection->start.type() == gfx::SelectionBound::CENTER ||
@@ -2000,8 +1979,7 @@ void LayerTreeImpl::GetViewportSelection(
     selection->end = ComputeViewportSelectionBound(
         selection_.end,
         selection_.end.layer_id ? LayerById(selection_.end.layer_id) : NULL,
-        device_scale_factor(), property_trees_.transform_tree,
-        property_trees_.clip_tree);
+        device_scale_factor());
   }
 }
 

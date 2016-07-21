@@ -148,15 +148,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                         int dest_id,
                         gfx::Transform* transform) const;
 
-  // Computes the change of basis transform from node |source_id| to |dest_id|,
-  // including any sublayer scale at |dest_id|.  The function returns false iff
-  // the inverse of a singular transform was used (and the result should,
-  // therefore, not be trusted).
-  bool ComputeTransformWithDestinationSurfaceContentsScale(
-      int source_id,
-      int dest_id,
-      gfx::Transform* transform) const;
-
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
@@ -241,9 +232,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   const std::vector<TransformCachedNodeData>& cached_data() const {
     return cached_data_;
   }
-
-  gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
-      int id) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto,
@@ -553,6 +541,9 @@ class CC_EXPORT PropertyTrees final {
                                     float starting_animation_scale);
   void ResetCachedData();
   void UpdateCachedNumber();
+  gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
+      int transform_id,
+      int effect_id) const;
 
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;

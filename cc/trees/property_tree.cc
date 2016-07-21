@@ -157,21 +157,6 @@ bool TransformTree::ComputeTransform(int source_id,
   return CombineInversesBetween(source_id, dest_id, transform);
 }
 
-bool TransformTree::ComputeTransformWithDestinationSurfaceContentsScale(
-    int source_id,
-    int dest_id,
-    gfx::Transform* transform) const {
-  bool success = ComputeTransform(source_id, dest_id, transform);
-
-  const TransformNode* dest_node = Node(dest_id);
-  if (!dest_node->needs_surface_contents_scale)
-    return success;
-
-  transform->matrix().postScale(dest_node->surface_contents_scale.x(),
-                                dest_node->surface_contents_scale.y(), 1.f);
-  return success;
-}
-
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
   return (source_to_parent_updates_allowed() &&
           node->parent_id != node->source_node_id);
@@ -423,8 +408,12 @@ void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
     // In order to include the root transform for the root surface, we walk up
     // to the root of the transform tree in ComputeTransform.
     int target_id = target_node->id;
-    ComputeTransformWithDestinationSurfaceContentsScale(
-        node->id, target_id, &target_space_transform);
+    ComputeTransform(node->id, target_id, &target_space_transform);
+    if (target_id != 0) {
+      target_space_transform.matrix().postScale(
+          target_node->surface_contents_scale.x(),
+          target_node->surface_contents_scale.y(), 1.f);
+    }
   }
 
   gfx::Transform from_target;
@@ -638,21 +627,6 @@ int TransformTree::ContentTargetId(int node_id) const {
 void TransformTree::SetContentTargetId(int node_id, int content_target_id) {
   DCHECK(static_cast<int>(cached_data_.size()) > node_id);
   cached_data_[node_id].content_target_id = content_target_id;
-}
-
-gfx::Transform TransformTree::ToScreenSpaceTransformWithoutSurfaceContentsScale(
-    int id) const {
-  DCHECK_GT(id, 0);
-  if (id == 1) {
-    return gfx::Transform();
-  }
-  const TransformNode* node = Node(id);
-  gfx::Transform screen_space_transform = ToScreen(id);
-  if (node->surface_contents_scale.x() != 0.0 &&
-      node->surface_contents_scale.y() != 0.0)
-    screen_space_transform.Scale(1.0 / node->surface_contents_scale.x(),
-                                 1.0 / node->surface_contents_scale.y());
-  return screen_space_transform;
 }
 
 bool TransformTree::operator==(const TransformTree& other) const {
@@ -906,9 +880,13 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
       source_id = 1;
     }
     gfx::Transform transform;
-    property_trees()
-        ->transform_tree.ComputeTransformWithDestinationSurfaceContentsScale(
-            source_id, destination_id, &transform);
+    property_trees()->transform_tree.ComputeTransform(source_id, destination_id,
+                                                      &transform);
+    if (destination_id != 0) {
+      transform.matrix().postScale(effect_node->surface_contents_scale.x(),
+                                   effect_node->surface_contents_scale.y(),
+                                   1.f);
+    }
     it->set_area(MathUtil::MapEnclosingClippedRect(transform, it->area()));
   }
 }
@@ -1879,6 +1857,23 @@ void PropertyTrees::ResetCachedData() {
 
 void PropertyTrees::UpdateCachedNumber() {
   cached_data_.property_tree_update_number++;
+}
+
+gfx::Transform PropertyTrees::ToScreenSpaceTransformWithoutSurfaceContentsScale(
+    int transform_id,
+    int effect_id) const {
+  DCHECK_GT(transform_id, 0);
+  if (transform_id == 1) {
+    return gfx::Transform();
+  }
+  gfx::Transform screen_space_transform = transform_tree.ToScreen(transform_id);
+  const EffectNode* effect_node = effect_tree.Node(effect_id);
+
+  if (effect_node->surface_contents_scale.x() != 0.0 &&
+      effect_node->surface_contents_scale.y() != 0.0)
+    screen_space_transform.Scale(1.0 / effect_node->surface_contents_scale.x(),
+                                 1.0 / effect_node->surface_contents_scale.y());
+  return screen_space_transform;
 }
 
 }  // namespace cc

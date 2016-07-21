@@ -828,8 +828,12 @@ class PropertyTreeTestComputeTransformWithSurfaceContentsScale
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected_transform_without_surface_contents_scale, transform);
 
-    success = tree.ComputeTransformWithDestinationSurfaceContentsScale(
-        grand_parent_id, grand_child_id, &transform);
+    success =
+        tree.ComputeTransform(grand_parent_id, grand_child_id, &transform);
+    const TransformNode* grand_child_node = tree.Node(grand_child_id);
+    transform.matrix().postScale(grand_child_node->surface_contents_scale.x(),
+                                 grand_child_node->surface_contents_scale.y(),
+                                 1.f);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected_transform_with_dest_surface_contents_scale, transform);
@@ -867,15 +871,17 @@ class PropertyTreeTestComputeTransformWithSurfaceContentsScale
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected_transform_without_surface_contents_scale, transform);
 
-    success = tree.ComputeTransformWithDestinationSurfaceContentsScale(
-        grand_child_id, grand_parent_id, &transform);
+    success =
+        tree.ComputeTransform(grand_child_id, grand_parent_id, &transform);
+    transform.matrix().postScale(grand_parent_node->surface_contents_scale.x(),
+                                 grand_parent_node->surface_contents_scale.y(),
+                                 1.f);
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected_transform_with_dest_surface_contents_scale, transform);
 
     success =
         tree.ComputeTransform(grand_child_id, grand_parent_id, &transform);
-    const TransformNode* grand_child_node = tree.Node(grand_child_id);
     EXPECT_NE(grand_child_node->surface_contents_scale.x(), 0.f);
     EXPECT_NE(grand_child_node->surface_contents_scale.y(), 0.f);
     transform.Scale(1.0 / grand_child_node->surface_contents_scale.x(),

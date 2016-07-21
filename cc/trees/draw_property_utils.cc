@@ -1470,9 +1470,9 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
   SetSurfaceDrawTransform(property_trees->transform_tree,
                           property_trees->effect_tree, render_surface);
   render_surface->SetScreenSpaceTransform(
-      property_trees->transform_tree
-          .ToScreenSpaceTransformWithoutSurfaceContentsScale(
-              render_surface->TransformTreeIndex()));
+      property_trees->ToScreenSpaceTransformWithoutSurfaceContentsScale(
+          render_surface->TransformTreeIndex(),
+          render_surface->EffectTreeIndex()));
 
   if (render_surface->HasReplica()) {
     gfx::Transform replica_to_surface = ReplicaToSurfaceTransform(
