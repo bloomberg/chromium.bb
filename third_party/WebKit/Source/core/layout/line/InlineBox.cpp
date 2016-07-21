@@ -67,12 +67,8 @@ void InlineBox::destroy()
     if (!m_lineLayoutItem.documentBeingDestroyed()) {
         setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-        // This object may have display items in a cached subsequence, but we are
-        // sure that the subsequence will be invalidated because m_lineLayoutItem has
-        // been setShouldFullPaintInvalidation(), so deletion of this object is safe.
-        endShouldKeepAlive();
-#endif
+        // TODO(crbug.com/619630): Make this fast.
+        m_lineLayoutItem.slowSetPaintingLayerNeedsRepaint();
     }
 
     delete this;

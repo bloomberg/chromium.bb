@@ -434,6 +434,11 @@ public:
         m_layoutObject->setShouldDoFullPaintInvalidation();
     }
 
+    void slowSetPaintingLayerNeedsRepaint()
+    {
+        m_layoutObject->slowSetPaintingLayerNeedsRepaint();
+    }
+
     struct LineLayoutItemHash {
         STATIC_ONLY(LineLayoutItemHash);
         static unsigned hash(const LineLayoutItem& key) { return WTF::PtrHash<LayoutObject>::hash(key.m_layoutObject); }

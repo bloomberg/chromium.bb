@@ -1363,6 +1363,10 @@ public:
         invalidateDisplayItemClient(client, reason);
     }
 
+    // This calls paintingLayer() which walks up the tree.
+    // If possible, use the faster paintInvalidationState.paintingLayer().setNeedsRepaint().
+    void slowSetPaintingLayerNeedsRepaint() const;
+
     // Sets painting layer needsRepaint, then calls invaldiateDisplayItemClient().
     // Should use this version when PaintInvalidationState is available.
     void setPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const PaintInvalidationState&, const DisplayItemClient&, PaintInvalidationReason) const;
@@ -1567,10 +1571,6 @@ protected:
     // parts which are invalidated separately (e.g. scrollbars).
     // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
     virtual void invalidateDisplayItemClients(PaintInvalidationReason) const;
-
-    // This calls paintingLayer() which walks up the tree.
-    // If possible, use the faster paintInvalidationState.paintingLayer().setNeedsRepaint().
-    void slowSetPaintingLayerNeedsRepaint() const;
 
     // Sets painting layer needsRepaint, then calls invalidateDisplayItemClients().
     // Should use this version when PaintInvalidationState is available.
