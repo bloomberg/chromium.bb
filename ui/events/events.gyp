@@ -349,7 +349,7 @@
             'keycodes/events_keycodes.gyp:keycodes_x11',
           ],
         }],
-        ['use_x11==1 or ozone_platform_ozonex==1', {
+        ['use_x11==1', {
           'dependencies': [
             'x/events_x.gyp:events_x',
           ],

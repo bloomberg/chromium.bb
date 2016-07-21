@@ -193,7 +193,7 @@
         },
       ],  # targets
     }],
-    [ 'use_x11==1 or ozone_platform_ozonex==1', {
+    [ 'use_x11==1', {
       # Hide X11 and related dependencies when use_x11=0
       'targets': [
         {

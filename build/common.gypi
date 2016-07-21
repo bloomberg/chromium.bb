@@ -1563,9 +1563,7 @@
     # Ozone platforms to include in the build.
     'ozone_platform_caca%': 0,
     'ozone_platform_cast%': 0,
-    'ozone_platform_egltest%': 0,
     'ozone_platform_gbm%': 0,
-    'ozone_platform_ozonex%': 0,
     'ozone_platform_headless%': 0,
     'ozone_platform_wayland%': 0,
 
@@ -2357,12 +2355,11 @@
             'ozone_platform_cast%': 1,
             'conditions': [
               # For desktop non-audio Chromecast builds, run with
-              # --ozone-platform=egltest
+              # --ozone-platform=x11
               # TODO(slan|halliwell): Make the default platform "cast" on
               # desktop non-audio builds too.
               ['is_cast_desktop_build==1 and disable_display==0', {
-                'ozone_platform_egltest%': 1,
-                'ozone_platform_ozonex%': 1,
+                # Use GN instead. 
               }, {
                 'ozone_platform%': 'cast',
               }],
@@ -2370,7 +2367,6 @@
           }, {  # chromecast!=1
             # Build all platforms whose deps are in install-build-deps.sh.
             # Only these platforms will be compile tested by buildbots.
-            'ozone_platform_egltest%': 1,
             'conditions': [
               ['chromeos==1', {
                 'ozone_platform_gbm%': 1,

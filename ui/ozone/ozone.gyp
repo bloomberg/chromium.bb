@@ -266,11 +266,6 @@
         'platform/cast/cast.gypi',
       ],
     }],
-    ['<(ozone_platform_egltest) == 1', {
-      'includes': [
-        'platform/egltest/egltest.gypi',
-      ],
-    }],
     ['<(ozone_platform_gbm) == 1', {
       'includes': [
         'platform/drm/gbm.gypi',

@@ -25,7 +25,7 @@ ninja -C out/Debug cast_shell
 ```
 
 ```shell
-out/Debug/cast_shell --ozone-platform=egltest http://google.com
+out/Debug/cast_shell --ozone-platform=x11 http://google.com
 ```
 
 ## Building/running cast\_shell\_apk (Android)

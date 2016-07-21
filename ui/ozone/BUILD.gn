@@ -19,11 +19,6 @@ ozone_platform_deps = []
 # Extra dependencies to pull into ozone_unittests for built platforms.
 ozone_platform_test_deps = []
 
-if (ozone_platform_egltest) {
-  ozone_platforms += [ "egltest" ]
-  ozone_platform_deps += [ "platform/egltest" ]
-}
-
 if (ozone_platform_headless) {
   ozone_platforms += [ "headless" ]
   ozone_platform_deps += [ "platform/headless" ]
