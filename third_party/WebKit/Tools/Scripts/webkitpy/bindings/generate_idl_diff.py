@@ -12,10 +12,9 @@ Usage: generate_idl_diff.py old_file.json new_file.json diff_file.json
 """
 
 import json
-import os
 import sys
 
-
+# pylint: disable=W0105
 """Data structure of input files of this script.
 The format of the json files is as follows. Each json file contains multiple
 "interface"s. Each "interface" contains 'ExtAttributes', 'Consts', 'Attributes'

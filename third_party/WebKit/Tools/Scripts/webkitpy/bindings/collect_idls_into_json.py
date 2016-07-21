@@ -10,10 +10,18 @@ This script collects and organizes interface information and that information du
 import json
 import os
 import sys
+
+_bindings_path = os.path.normpath(
+    os.path.join(os.path.dirname(__file__),
+                 os.pardir, os.pardir, os.pardir, os.pardir,
+                 'Source', 'bindings', 'scripts'))
+
+if _bindings_path not in sys.path:
+    sys.path.append(_bindings_path)
+
 import utilities
-
-
 from blink_idl_parser import parse_file, BlinkIDLParser
+
 
 _INTERFACE = 'Interface'
 _IMPLEMENT = 'Implements'

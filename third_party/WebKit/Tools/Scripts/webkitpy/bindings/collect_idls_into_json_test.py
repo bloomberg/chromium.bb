@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
+import os
 import unittest
-import collect_idls_into_json
+
+from webkitpy.bindings import collect_idls_into_json
 import utilities
 
 from blink_idl_parser import parse_file, BlinkIDLParser
 
-_FILE = 'Source/bindings/scripts/testdata/test_filepath.txt'
+testdata_path = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), 'testdata')
+_FILE = os.path.join(testdata_path, 'test_filepath.txt')
 _KEY_SET = set(['Operations', 'Name', 'FilePath', 'Inherit', 'Consts', 'ExtAttributes', 'Attributes'])
 _PARTIAL = {'Node': {'Operations': [], 'Name': 'Node', 'FilePath': 'Source/core/timing/WorkerGlobalScopePerformance.idl', 'Inherit': [], 'Consts': [], 'ExtAttributes': [], 'Attributes': [{'Static': False, 'Readonly': True, 'Type': 'WorkerPerformance', 'Name': 'performance', 'ExtAttributes': []}]}}
 
@@ -14,20 +18,17 @@ _PARTIAL = {'Node': {'Operations': [], 'Name': 'Node', 'FilePath': 'Source/core/
 class TestFunctions(unittest.TestCase):
     def setUp(self):
         parser = BlinkIDLParser()
-        path = utilities.read_file_to_list(_FILE)[0]
+        path = os.path.join(
+            testdata_path, utilities.read_file_to_list(_FILE)[0])
         definitions = parse_file(parser, path)
         self.definition = definitions.GetChildren()[0]
 
     def test_get_definitions(self):
         pathfile = utilities.read_file_to_list(_FILE)
+        pathfile = [os.path.join(testdata_path, filename)
+                    for filename in pathfile]
         for actual in collect_idls_into_json.get_definitions(pathfile):
             self.assertEqual(actual.GetName(), self.definition.GetName())
-
-    def test_is_non_partial(self):
-        if self.definition.GetClass() == 'Interface' and not self.definition.GetProperty('Partial'):
-            self.assertTrue(collect_idls_into_json.is_non_partial(self.definition))
-        else:
-            self.assertFalse(collect_idls_into_json.is_non_partial(self.definition))
 
     def test_is_partial(self):
         if self.definition.GetClass() == 'Interface' and self.definition.GetProperty('Partial'):
@@ -37,7 +38,6 @@ class TestFunctions(unittest.TestCase):
 
     def test_get_filepaths(self):
         filepath = collect_idls_into_json.get_filepath(self.definition)
-        self.assertTrue(filepath.startswith('Source'))
         self.assertTrue(filepath.endswith('.idl'))
 
     def test_const_node_to_dict(self):
@@ -105,7 +105,9 @@ class TestFunctions(unittest.TestCase):
 
     def test_merge_partial_dicts(self):
         key_name = self.definition.GetName()
-        self.assertEqual(collect_idls_into_json.merge_partial_dicts({key_name: collect_idls_into_json.interface_node_to_dict(self.definition)}, _PARTIAL)[key_name]['Partial_FilePaths'], ['Source/core/timing/WorkerGlobalScopePerformance.idl'])
+        merged = collect_idls_into_json.merge_partial_dicts({key_name: collect_idls_into_json.interface_node_to_dict(self.definition)}, _PARTIAL)[key_name]['Partial_FilePaths']
+        expected = ['Source/core/timing/WorkerGlobalScopePerformance.idl', 'Source/core/timing/WorkerGlobalScopePerformance.idl', 'Source/core/timing/WorkerGlobalScopePerformance.idl']
+        self.assertEqual(merged, expected)
 
 
 if __name__ == '__main__':

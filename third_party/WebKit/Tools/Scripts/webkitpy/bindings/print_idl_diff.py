@@ -16,16 +16,16 @@ Usage: print_idl_diff.py diff_file.json order
 """
 
 from collections import OrderedDict
-import json
 import sys
 
-from generate_idl_diff import load_json_file
-from generate_idl_diff import EXTATTRIBUTES_AND_MEMBER_TYPES
-from generate_idl_diff import DIFF_TAG
-from generate_idl_diff import DIFF_TAG_ADDED
-from generate_idl_diff import DIFF_TAG_DELETED
+from webkitpy.bindings.generate_idl_diff import load_json_file
+from webkitpy.bindings.generate_idl_diff import EXTATTRIBUTES_AND_MEMBER_TYPES
+from webkitpy.bindings.generate_idl_diff import DIFF_TAG
+from webkitpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
+from webkitpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
 
 
+# pylint: disable=W0105
 """Refer to the explanation of generate_idl_diff.py's input files.
 The deffference between the input structure of generate_idl_diff.py and
 that of print_diff.py is whether diffing tags are included or not.
@@ -190,8 +190,11 @@ def sort_interface_names_by_tags(interfaces):
     """
     interface_list = interfaces.values()
     removed, added, unspecified = group_by_tag(interface_list)
+    # pylint: disable=W0110
     removed = map(lambda interface: interface['Name'], removed)
+    # pylint: disable=W0110
     added = map(lambda interface: interface['Name'], added)
+    # pylint: disable=W0110
     unspecified = map(lambda interface: interface['Name'], unspecified)
     sorted_interface_names = removed + added + unspecified
     return sorted_interface_names

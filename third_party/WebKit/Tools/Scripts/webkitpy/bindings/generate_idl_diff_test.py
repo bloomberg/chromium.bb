@@ -3,27 +3,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import generate_idl_diff
 import os
-import sys
 import unittest
 
-from generate_idl_diff import DIFF_TAG
-from generate_idl_diff import DIFF_TAG_DELETED
-from generate_idl_diff import DIFF_TAG_ADDED
+from webkitpy.bindings import generate_idl_diff
+from webkitpy.bindings.generate_idl_diff import DIFF_TAG
+from webkitpy.bindings.generate_idl_diff import DIFF_TAG_DELETED
+from webkitpy.bindings.generate_idl_diff import DIFF_TAG_ADDED
 
 
 testdata_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), 'testdata')
-old_data_path = os.path.join(testdata_path, 'old_chrome.json')
-new_data_path = os.path.join(testdata_path, 'new_chrome.json')
+old_data_path = os.path.join(testdata_path, 'old_blink_idls.json')
+new_data_path = os.path.join(testdata_path, 'new_blink_idls.json')
 
 
 class TestGenerateIDLDiff(unittest.TestCase):
 
     def setUp(self):
-        old = generate_idl_diff.load_json_file('old_chrome.json')
-        new = generate_idl_diff.load_json_file('new_chrome.json')
+        old = generate_idl_diff.load_json_file(old_data_path)
+        new = generate_idl_diff.load_json_file(new_data_path)
         self.diff = generate_idl_diff.interfaces_diff(old, new)
 
     def test_deleted_interface(self):
