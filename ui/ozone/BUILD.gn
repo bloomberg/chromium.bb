@@ -102,6 +102,7 @@ component("ozone_base") {
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
+    "//ui/gl",
   ]
 
   visibility += [

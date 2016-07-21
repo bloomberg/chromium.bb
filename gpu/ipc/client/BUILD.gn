@@ -61,6 +61,7 @@ source_set("ipc_client_sources") {
     "//gpu/config:config_sources",
     "//gpu/ipc/common:ipc_common_sources",
     "//ipc",
+    "//ui/base/",
     "//ui/events/ipc",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",

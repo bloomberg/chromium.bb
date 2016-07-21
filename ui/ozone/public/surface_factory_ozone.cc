@@ -23,6 +23,29 @@ intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
 }
 
+bool SurfaceFactoryOzone::UseNewSurfaceAPI() {
+  return false;
+}
+
+scoped_refptr<gl::GLSurface> SurfaceFactoryOzone::CreateViewGLSurface(
+    gl::GLImplementation implementation,
+    gfx::AcceleratedWidget widget) {
+  return nullptr;
+}
+
+scoped_refptr<gl::GLSurface>
+SurfaceFactoryOzone::CreateSurfacelessViewGLSurface(
+    gl::GLImplementation implementation,
+    gfx::AcceleratedWidget widget) {
+  return nullptr;
+}
+
+scoped_refptr<gl::GLSurface> SurfaceFactoryOzone::CreateOffscreenGLSurface(
+    gl::GLImplementation implementation,
+    const gfx::Size& size) {
+  return nullptr;
+}
+
 std::unique_ptr<SurfaceOzoneEGL> SurfaceFactoryOzone::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   return nullptr;

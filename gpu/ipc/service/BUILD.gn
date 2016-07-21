@@ -51,6 +51,7 @@ target(link_target_type, "ipc_service_sources") {
   public_deps = [
     "//base",
     "//ipc",
+    "//ui/base",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
