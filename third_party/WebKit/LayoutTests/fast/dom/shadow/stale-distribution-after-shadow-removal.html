@@ -22,7 +22,7 @@
     // Create a stale pointer to the HTMLShadowElement.
     youngestShadowRoot.innerHTML = '';
 
-    // Trigger a sync attach() from innerHTML. The sync attach skips the
+    // Trigger a sync attachLayoutTree() from innerHTML. The sync attach skips the
     // recalcDistribution call and would access stale data.
     oldestShadowRoot.innerHTML = '<span></span>';
 </script>

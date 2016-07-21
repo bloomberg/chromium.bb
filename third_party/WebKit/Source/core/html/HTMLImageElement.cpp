@@ -773,7 +773,7 @@ void HTMLImageElement::ensurePrimaryContent()
 
 void HTMLImageElement::reattachFallbackContent()
 {
-    // This can happen inside of attach() in the middle of a recalcStyle so we need to
+    // This can happen inside of attachLayoutTree() in the middle of a recalcStyle so we need to
     // reattach synchronously here.
     if (document().inStyleRecalc())
         reattach();

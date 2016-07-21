@@ -947,7 +947,7 @@ void Node::reattach(const AttachContext& context)
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
-    // We only need to detach if the node has already been through attach().
+    // We only need to detach if the node has already been through attachLayoutTree().
     if (getStyleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     attachLayoutTree(reattachContext);

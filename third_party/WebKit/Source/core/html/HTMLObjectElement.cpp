@@ -346,7 +346,7 @@ const AtomicString HTMLObjectElement::imageSourceURL() const
 // TODO(schenney): crbug.com/572908 Remove this hack.
 void HTMLObjectElement::reattachFallbackContent()
 {
-    // This can happen inside of attach() in the middle of a recalcStyle so we need to
+    // This can happen inside of attachLayoutTree() in the middle of a recalcStyle so we need to
     // reattach synchronously here.
     if (document().inStyleRecalc())
         reattach();

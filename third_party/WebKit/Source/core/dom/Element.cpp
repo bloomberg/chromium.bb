@@ -1584,7 +1584,7 @@ void Element::detach(const AttachContext& context)
         ElementRareData* data = elementRareData();
         data->clearPseudoElements();
 
-        // attach() will clear the computed style for us when inside recalcStyle.
+        // attachLayoutTree() will clear the computed style for us when inside recalcStyle.
         if (!document().inStyleRecalc())
             data->clearComputedStyle();
 

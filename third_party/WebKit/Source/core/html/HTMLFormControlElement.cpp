@@ -243,7 +243,7 @@ void HTMLFormControlElement::attachLayoutTree(const AttachContext& context)
         return;
 
     // The call to updateFromElement() needs to go after the call through
-    // to the base class's attach() because that can sometimes do a close
+    // to the base class's attachLayoutTree() because that can sometimes do a close
     // on the layoutObject.
     layoutObject()->updateFromElement();
 
