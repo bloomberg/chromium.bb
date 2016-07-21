@@ -430,6 +430,7 @@
         # Note: sources list duplicated in GN build.
         'command_buffer/tests/compressed_texture_test.cc',
         'command_buffer/tests/es3_misc_functions_unittest.cc',
+        'command_buffer/tests/gl_bgra_mipmap_unittest.cc',
         'command_buffer/tests/gl_bind_uniform_location_unittest.cc',
         'command_buffer/tests/gl_chromium_framebuffer_mixed_samples_unittest.cc',
         'command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc',

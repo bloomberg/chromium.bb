@@ -36,9 +36,14 @@ static GLVersionInfo* g_version_info = NULL;
 namespace {
 
 static inline GLenum GetInternalFormat(GLenum internal_format) {
-  if (GetGLImplementation() != kGLImplementationEGLGLES2) {
+  if (!g_version_info->is_es) {
     if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
       return GL_RGBA8;
+  }
+  if (g_version_info->is_es3 && g_version_info->is_mesa) {
+    // Mesa bug workaround: Mipmapping does not work when using GL_BGRA_EXT
+    if (internal_format == GL_BGRA_EXT)
+      return GL_RGBA;
   }
   return internal_format;
 }
@@ -47,10 +52,10 @@ static inline GLenum GetInternalFormat(GLenum internal_format) {
 static inline GLenum GetTexInternalFormat(GLenum internal_format,
                                           GLenum format,
                                           GLenum type) {
+  DCHECK(g_version_info);
   GLenum gl_internal_format = GetInternalFormat(internal_format);
 
   // g_version_info must be initialized when this function is bound.
-  DCHECK(g_version_info);
   if (g_version_info->is_es3) {
     if (internal_format == GL_RED_EXT) {
       // GL_EXT_texture_rg case in ES2.
