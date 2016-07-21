@@ -55,11 +55,10 @@ CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
 # How old can the AFDO data be? (in days).
 AFDO_ALLOWED_STALE = 7
 
-# TODO(llozano): Currently using sandybridge boards. We should move to
-# a more modern platform.
 # Set of boards that can generate the AFDO profile (can generate 'perf'
-# data with LBR events).
-AFDO_DATA_GENERATORS = ('butterfly', 'lumpy', 'parrot', 'stumpy')
+# data with LBR events). Currently, it needs to be a device that has
+# at least 4GB of memory.
+AFDO_DATA_GENERATORS = ('samus', 'link', 'lumpy')
 
 # For a given architecture, which architecture is used to generate
 # the AFDO profile. Some architectures are not able to generate their
