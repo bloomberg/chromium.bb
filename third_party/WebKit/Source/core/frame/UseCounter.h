@@ -1257,6 +1257,9 @@ public:
         PointerDownFired= 1452,
         PointerDownFiredForTouch = 1453,
         PointerEventDispatchPointerDown = 1454,
+        SVGSMILBeginOrEndEventValue = 1455,
+        SVGSMILBeginOrEndSyncbaseValue = 1456,
+        SVGSMILElementInsertedAfterLoad = 1457,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

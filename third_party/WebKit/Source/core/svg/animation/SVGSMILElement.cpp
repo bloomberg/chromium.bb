@@ -317,6 +317,8 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
         return InsertionDone;
 
     Deprecation::countDeprecation(document(), UseCounter::SVGSMILElementInDocument);
+    if (document().isLoadCompleted())
+        UseCounter::count(&document(), UseCounter::SVGSMILElementInsertedAfterLoad);
 
     setAttributeName(constructQualifiedName(this, fastGetAttribute(SVGNames::attributeNameAttr)));
     SVGSVGElement* owner = ownerSVGElement();
@@ -472,12 +474,15 @@ bool SVGSMILElement::parseCondition(const String& value, BeginOrEnd beginOrEnd)
     } else if (nameString == "begin" || nameString == "end") {
         if (baseID.isEmpty())
             return false;
+        UseCounter::count(&document(), UseCounter::SVGSMILBeginOrEndSyncbaseValue);
         type = Condition::Syncbase;
     } else if (nameString.startsWith("accesskey(")) {
         // FIXME: accesskey() support.
         type = Condition::AccessKey;
-    } else
+    } else {
+        UseCounter::count(&document(), UseCounter::SVGSMILBeginOrEndEventValue);
         type = Condition::EventBase;
+    }
 
     m_conditions.append(Condition::create(type, beginOrEnd, baseID, nameString, offset, repeat));
 
