@@ -247,6 +247,8 @@ void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   // Hide the caption buttons in immersive fullscreen when the tab light bar
   // is visible because it's confusing when the user hovers or clicks in the
   // top-right of the screen and hits one.
+  // TODO(yiyix): Update |caption_button_container_|'s visibility calculation
+  // when Chrome OS MD is enabled by default.
   caption_button_container_->SetVisible(!UseImmersiveLightbarHeaderStyle());
   caption_button_container_->ResetWindowControls();
 }

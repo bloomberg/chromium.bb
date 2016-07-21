@@ -20,12 +20,18 @@ void AshMDTestBase::SetUp() {
   material_design_state_.reset(new test::MaterialDesignControllerTestAPI(
       MaterialDesignController::Mode::NON_MATERIAL));
   const int non_md_shelf_size = GetShelfConstant(SHELF_SIZE);
+  const int non_md_auto_hide_shelf_size =
+      GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
 
   material_design_state_.reset(
       new test::MaterialDesignControllerTestAPI(GetParam()));
   const int md_state_shelf_size = GetShelfConstant(SHELF_SIZE);
+  const int md_state_auto_hide_shelf_size =
+      GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
 
   md_maximized_window_height_offset_ = non_md_shelf_size - md_state_shelf_size;
+  md_auto_hidden_shelf_height_offset_ =
+      non_md_auto_hide_shelf_size - md_state_auto_hide_shelf_size;
 }
 
 void AshMDTestBase::TearDown() {
@@ -35,6 +41,10 @@ void AshMDTestBase::TearDown() {
 
 int AshMDTestBase::GetMdMaximizedWindowHeightOffset() {
   return md_maximized_window_height_offset_;
+}
+
+int AshMDTestBase::GetMdAutoHiddenShelfHeightOffset() {
+  return md_auto_hidden_shelf_height_offset_;
 }
 
 }  // namespace test

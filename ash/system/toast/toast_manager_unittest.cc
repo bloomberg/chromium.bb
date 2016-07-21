@@ -227,6 +227,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
   EXPECT_EQ(1, GetToastSerial());
 
   gfx::Rect toast_bounds = GetCurrentWidget()->GetWindowBoundsInScreen();
+  gfx::RectF precise_toast_bounds(toast_bounds);
   gfx::Rect root_bounds =
       ScreenUtil::GetShelfDisplayBoundsInRoot(Shell::GetPrimaryRootWindow());
 
@@ -238,9 +239,9 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
     // doesn't return correct value.
     gfx::Rect shelf_bounds = shelf->GetIdealBounds();
     EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
-    EXPECT_EQ(
-        shelf_bounds.right() + (root_bounds.width() - shelf_bounds.width()) / 2,
-        toast_bounds.CenterPoint().x());
+    EXPECT_EQ(round(shelf_bounds.right() +
+                    (root_bounds.width() - shelf_bounds.width()) / 2.0),
+              round(precise_toast_bounds.CenterPoint().x()));
   }
 }
 

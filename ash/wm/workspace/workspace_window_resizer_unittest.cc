@@ -14,7 +14,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_md_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -66,13 +66,13 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
 }  // namespace
 
-class WorkspaceWindowResizerTest : public test::AshTestBase {
+class WorkspaceWindowResizerTest : public test::AshMDTestBase {
  public:
   WorkspaceWindowResizerTest() : workspace_resizer_(nullptr) {}
   ~WorkspaceWindowResizerTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    AshMDTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("800x%d", kRootHeight));
     // Ignore the touch slop region.
     ui::GestureConfiguration::GetInstance()
@@ -118,7 +118,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     window3_.reset();
     window4_.reset();
     touch_resize_window_.reset();
-    AshTestBase::TearDown();
+    AshMDTestBase::TearDown();
   }
 
   // Returns a string identifying the z-order of each of the known child windows
@@ -202,9 +202,16 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTest);
 };
 
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    WorkspaceWindowResizerTest,
+    testing::Values(MaterialDesignController::NON_MATERIAL,
+                    MaterialDesignController::MATERIAL_NORMAL,
+                    MaterialDesignController::MATERIAL_EXPERIMENTAL));
+
 // Assertions around attached window resize dragging from the right with 2
 // windows.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
@@ -238,7 +245,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
 }
 
 // Assertions around collapsing and expanding.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_Compress) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_RIGHT_Compress) {
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
@@ -277,7 +284,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_Compress) {
 
 // Assertions around attached window resize dragging from the right with 3
 // windows.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3) {
   window_->SetBounds(gfx::Rect(100, 300, 200, 300));
   window2_->SetBounds(gfx::Rect(300, 300, 150, 200));
   window3_->SetBounds(gfx::Rect(450, 300, 100, 200));
@@ -318,7 +325,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3) {
 
 // Assertions around attached window resizing (collapsing and expanding) with
 // 3 windows.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3_Compress) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3_Compress) {
   window_->SetBounds(gfx::Rect(100, 300, 200, 300));
   window2_->SetBounds(gfx::Rect(300, 300, 200, 200));
   window3_->SetBounds(gfx::Rect(450, 300, 100, 200));
@@ -352,7 +359,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3_Compress) {
 }
 
 // Assertions around collapsing and expanding from the bottom.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_Compress) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_Compress) {
   window_->SetBounds(gfx::Rect(0, 100, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 400, 100, 200));
 
@@ -386,7 +393,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_Compress) {
 
 // Assertions around attached window resize dragging from the bottom with 2
 // windows.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
   window_->SetBounds(gfx::Rect(0, 50, 400, 200));
   window2_->SetBounds(gfx::Rect(0, 250, 200, 100));
 
@@ -419,16 +426,10 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
   EXPECT_EQ("0,250 200x100", window2_->bounds().ToString());
 }
 
-#if defined(OS_WIN)
-// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
-#define MAYBE_AttachedResize_BOTTOM_3 DISABLED_AttachedResize_BOTTOM_3
-#else
-#define MAYBE_AttachedResize_BOTTOM_3 AttachedResize_BOTTOM_3
-#endif
-
+#if defined(OS_CHROMEOS)
 // Assertions around attached window resize dragging from the bottom with 3
 // windows.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -470,10 +471,11 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
   EXPECT_EQ("300,300 200x150", window2_->bounds().ToString());
   EXPECT_EQ("300,450 200x100", window3_->bounds().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
 // Assertions around attached window resizing (collapsing and expanding) with
 // 3 windows.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
+TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
   window_->SetBounds(gfx::Rect(0, 0, 200, 200));
   window2_->SetBounds(gfx::Rect(10, 200, 200, 200));
   window3_->SetBounds(gfx::Rect(20, 400, 100, 100));
@@ -508,7 +510,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 
 // Tests that touch-dragging a window does not lock the mouse cursor
 // and therefore shows the cursor on a mousemove.
-TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
+TEST_P(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
@@ -545,7 +547,7 @@ TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
 }
 
 // Assertions around dragging to the left/right edge of the screen.
-TEST_F(WorkspaceWindowResizerTest, Edge) {
+TEST_P(WorkspaceWindowResizerTest, Edge) {
   if (!SupportsHostWindowResize())
     return;
 
@@ -628,7 +630,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
 }
 
 // Check that non resizable windows will not get resized.
-TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
+TEST_P(WorkspaceWindowResizerTest, NonResizableWindows) {
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
   window_->SetProperty(aura::client::kCanResizeKey, false);
 
@@ -640,7 +642,7 @@ TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
   EXPECT_EQ("0,30 50x60", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
+TEST_P(WorkspaceWindowResizerTest, CancelSnapPhantom) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -671,7 +673,7 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
 }
 
 // Verifies that dragging a snapped window unsnaps it.
-TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
+TEST_P(WorkspaceWindowResizerTest, DragSnapped) {
   wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
 
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
@@ -696,7 +698,7 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
 }
 
 // Verifies the behavior of resizing a side snapped window.
-TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
+TEST_P(WorkspaceWindowResizerTest, ResizeSnapped) {
   wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
 
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
@@ -755,7 +757,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
 }
 
 // Verifies windows are correctly restacked when reordering multiple windows.
-TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
+TEST_P(WorkspaceWindowResizerTest, RestackAttached) {
   window_->SetBounds(gfx::Rect(0, 0, 200, 300));
   window2_->SetBounds(gfx::Rect(200, 0, 100, 200));
   window3_->SetBounds(gfx::Rect(300, 0, 100, 100));
@@ -792,7 +794,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
 }
 
 // Makes sure we don't allow dragging below the work area.
-TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
+TEST_P(WorkspaceWindowResizerTest, DontDragOffBottom) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                                  gfx::Insets(0, 0, 10, 0));
 
@@ -810,7 +812,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
 }
 
 // Makes sure we don't allow dragging on the work area with multidisplay.
-TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
+TEST_P(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -876,7 +878,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
 }
 
 // Makes sure we don't allow dragging off the top of the work area.
-TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
+TEST_P(WorkspaceWindowResizerTest, DontDragOffTop) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                                  gfx::Insets(10, 0, 0, 0));
 
@@ -888,7 +890,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
   EXPECT_EQ("100,10 300x400", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
+TEST_P(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                                  gfx::Insets(0, 0, 50, 0));
 
@@ -900,7 +902,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
   EXPECT_EQ("100,200 300x380", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
+TEST_P(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                                  gfx::Insets(0, 0, 50, 0));
   int left = ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
@@ -917,7 +919,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
             window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
+TEST_P(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                                  gfx::Insets(0, 0, 50, 0));
   int right =
@@ -937,7 +939,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
             window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
+TEST_P(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                                  gfx::Insets(0, 0, 50, 0));
   int bottom =
@@ -958,7 +960,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
 
 // Verifies that 'outside' check of the resizer take into account the extended
 // desktop in case of repositions.
-TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
+TEST_P(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // Only primary display.  Changes the window position to fit within the
   // display.
   Shell::GetInstance()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
@@ -993,7 +995,7 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
 }
 
 // Verifies snapping to edges works.
-TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
+TEST_P(WorkspaceWindowResizerTest, SnapToEdge) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   // Click 50px to the right so that the mouse pointer does not leave the
@@ -1002,68 +1004,99 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
       window_.get(), window_->bounds().origin() + gfx::Vector2d(50, 0),
       HTCAPTION));
   ASSERT_TRUE(resizer.get());
+  int distance_to_left = window_->bounds().x();
+  int distance_to_right =
+      800 - window_->bounds().width() - window_->bounds().x();
+  int distance_to_bottom =
+      600 - window_->bounds().height() - window_->bounds().y();
+  int distance_to_top = window_->bounds().y();
+
+  // Test left side.
   // Move to an x-coordinate of 15, which should not snap.
-  resizer->Drag(CalculateDragPoint(*resizer, 15 - 96, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 15 - distance_to_left, 0), 0);
   // An x-coordinate of 7 should snap.
-  resizer->Drag(CalculateDragPoint(*resizer, 7 - 96, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 7 - distance_to_left, 0), 0);
   EXPECT_EQ("0,112 320x160", window_->bounds().ToString());
   // Move to -15, should still snap to 0.
-  resizer->Drag(CalculateDragPoint(*resizer, -15 - 96, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -15 - distance_to_left, 0), 0);
   EXPECT_EQ("0,112 320x160", window_->bounds().ToString());
   // At -32 should move past snap points.
-  resizer->Drag(CalculateDragPoint(*resizer, -32 - 96, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -32 - distance_to_left, 0), 0);
   EXPECT_EQ("-32,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, -33 - 96, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -33 - distance_to_left, 0), 0);
   EXPECT_EQ("-33,112 320x160", window_->bounds().ToString());
 
   // Right side should similarly snap.
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 - 15, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, distance_to_right - 15, 0), 0);
   EXPECT_EQ("465,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 - 7, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, distance_to_right - 7, 0), 0);
   EXPECT_EQ("480,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 + 15, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, distance_to_right + 15, 0), 0);
   EXPECT_EQ("480,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 + 32, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, distance_to_right + 32, 0), 0);
   EXPECT_EQ("512,112 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 800 - 320 - 96 + 33, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, distance_to_right + 33, 0), 0);
   EXPECT_EQ("513,112 320x160", window_->bounds().ToString());
 
+  // 3 pixels are reserved for auto-hidden shelf height in non-MD, and no space
+  // is reserved for auto hide shelf height in MD.
+  int auto_hidden_shelf_offset = GetMdAutoHiddenShelfHeightOffset();
+  int auto_hidden_shelf_height = GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
+
   // And the bottom should snap too.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 3 - 7), 0);
-  EXPECT_EQ("96,437 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 3 + 15), 0);
-  EXPECT_EQ("96,437 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 32), 0);
+  resizer->Drag(
+      CalculateDragPoint(*resizer, 0,
+                         distance_to_bottom - auto_hidden_shelf_height - 7),
+      0);
+  EXPECT_EQ(gfx::Rect(96, 437 + auto_hidden_shelf_offset, 320, 160).ToString(),
+            window_->bounds().ToString());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, 0,
+                         distance_to_bottom - auto_hidden_shelf_height + 15),
+      0);
+  EXPECT_EQ(gfx::Rect(96, 437 + auto_hidden_shelf_offset, 320, 160).ToString(),
+            window_->bounds().ToString());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, distance_to_bottom - 2 + 32),
+                0);
   EXPECT_EQ("96,470 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 600 - 160 - 112 - 2 + 33), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, distance_to_bottom - 2 + 33),
+                0);
   EXPECT_EQ("96,471 320x160", window_->bounds().ToString());
 
   // And the top should snap too.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, -112 + 20), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, -distance_to_top + 20), 0);
   EXPECT_EQ("96,20 320x160", window_->bounds().ToString());
-  resizer->Drag(CalculateDragPoint(*resizer, 0, -112 + 7), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, -distance_to_top + 7), 0);
   EXPECT_EQ("96,0 320x160", window_->bounds().ToString());
 
   // And bottom/left should snap too.
-  resizer->Drag(CalculateDragPoint(*resizer, 7 - 96, 600 - 160 - 112 - 3 - 7),
-                0);
-  EXPECT_EQ("0,437 320x160", window_->bounds().ToString());
   resizer->Drag(
-      CalculateDragPoint(*resizer, -15 - 96, 600 - 160 - 112 - 3 + 15), 0);
-  EXPECT_EQ("0,437 320x160", window_->bounds().ToString());
+      CalculateDragPoint(*resizer, 7 - distance_to_left,
+                         distance_to_bottom - auto_hidden_shelf_height - 7),
+      0);
+  EXPECT_EQ(gfx::Rect(0, 437 + auto_hidden_shelf_offset, 320, 160).ToString(),
+            window_->bounds().ToString());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, -15 - distance_to_left,
+                         distance_to_bottom - auto_hidden_shelf_height + 15),
+      0);
+  EXPECT_EQ(gfx::Rect(0, 437 + auto_hidden_shelf_offset, 320, 160).ToString(),
+            window_->bounds().ToString());
   // should move past snap points.
-  resizer->Drag(
-      CalculateDragPoint(*resizer, -32 - 96, 600 - 160 - 112 - 2 + 32), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -32 - distance_to_left,
+                                   distance_to_bottom - 2 + 32),
+                0);
   EXPECT_EQ("-32,470 320x160", window_->bounds().ToString());
-  resizer->Drag(
-      CalculateDragPoint(*resizer, -33 - 96, 600 - 160 - 112 - 2 + 33), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -33 - distance_to_left,
+                                   distance_to_bottom - 2 + 33),
+                0);
   EXPECT_EQ("-33,471 320x160", window_->bounds().ToString());
 
   // No need to test dragging < 0 as we force that to 0.
 }
 
 // Verifies a resize snap when dragging TOPLEFT.
-TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPLEFT) {
+TEST_P(WorkspaceWindowResizerTest, SnapToWorkArea_TOPLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTTOPLEFT));
@@ -1073,7 +1106,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPLEFT) {
 }
 
 // Verifies a resize snap when dragging TOPRIGHT.
-TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
+TEST_P(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   gfx::Rect work_area(
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
@@ -1089,7 +1122,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
 }
 
 // Verifies a resize snap when dragging BOTTOMRIGHT.
-TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
+TEST_P(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   gfx::Rect work_area(
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
@@ -1106,7 +1139,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
 }
 
 // Verifies a resize snap when dragging BOTTOMLEFT.
-TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
+TEST_P(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   gfx::Rect work_area(
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()));
@@ -1122,7 +1155,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
 }
 
 // Verifies window sticks to both window and work area.
-TEST_F(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
+TEST_P(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
   window_->SetBounds(gfx::Rect(10, 10, 20, 50));
   window_->Show();
   window2_->SetBounds(gfx::Rect(150, 160, 25, 1000));
@@ -1169,7 +1202,7 @@ TEST_F(WorkspaceWindowResizerTest, StickToBothEdgeAndWindow) {
   EXPECT_EQ(expected.ToString(), window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {
+TEST_P(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTBOTTOMRIGHT));
@@ -1181,7 +1214,7 @@ TEST_F(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {
 }
 
 // Verifies that a dragged, non-snapped window will clear restore bounds.
-TEST_F(WorkspaceWindowResizerTest, RestoreClearedOnResize) {
+TEST_P(WorkspaceWindowResizerTest, RestoreClearedOnResize) {
   window_->SetBounds(gfx::Rect(10, 10, 100, 100));
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(50, 50, 50, 50));
@@ -1197,7 +1230,7 @@ TEST_F(WorkspaceWindowResizerTest, RestoreClearedOnResize) {
 }
 
 // Verifies that a dragged window will restore to its pre-maximized size.
-TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
+TEST_P(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(96, 112, 320, 160));
@@ -1214,7 +1247,7 @@ TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
 }
 
 // Verifies that a dragged window will restore to its pre-maximized size.
-TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
+TEST_P(WorkspaceWindowResizerTest, RevertResizeOperation) {
   const gfx::Rect initial_bounds(0, 0, 200, 400);
   window_->SetBounds(initial_bounds);
 
@@ -1233,7 +1266,7 @@ TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
 }
 
 // Check that only usable sizes get returned by the resizer.
-TEST_F(WorkspaceWindowResizerTest, MagneticallyAttach) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyAttach) {
   window_->SetBounds(gfx::Rect(10, 10, 20, 30));
   window2_->SetBounds(gfx::Rect(150, 160, 25, 20));
   window2_->Show();
@@ -1263,7 +1296,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyAttach) {
 
 // The following variants verify magnetic snapping during resize when dragging a
 // particular edge.
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOP) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_TOP) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->SetBounds(gfx::Rect(99, 179, 10, 20));
   window2_->Show();
@@ -1275,7 +1308,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOP) {
   EXPECT_EQ("100,199 20x31", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPLEFT) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_TOPLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->SetBounds(gfx::Rect(99, 179, 10, 20));
   window2_->Show();
@@ -1300,7 +1333,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPLEFT) {
   }
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPRIGHT) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_TOPRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->Show();
 
@@ -1325,7 +1358,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPRIGHT) {
   }
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_RIGHT) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_RIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->SetBounds(gfx::Rect(121, 199, 10, 20));
   window2_->Show();
@@ -1337,7 +1370,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_RIGHT) {
   EXPECT_EQ("100,200 21x30", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMRIGHT) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->Show();
 
@@ -1362,7 +1395,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMRIGHT) {
   }
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOM) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOM) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->SetBounds(gfx::Rect(111, 233, 10, 20));
   window2_->Show();
@@ -1374,7 +1407,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOM) {
   EXPECT_EQ("100,200 20x33", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMLEFT) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->Show();
 
@@ -1399,7 +1432,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMLEFT) {
   }
 }
 
-TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
+TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
   window2_->SetBounds(gfx::Rect(89, 209, 10, 20));
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->Show();
@@ -1412,7 +1445,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
 }
 
 // Test that the user user moved window flag is getting properly set.
-TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
+TEST_P(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
   window_->SetBounds(gfx::Rect(0, 50, 400, 200));
   window_->SetProperty(aura::client::kCanMaximizeKey, true);
 
@@ -1444,7 +1477,7 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
 }
 
 // Test that a window with a specified max size doesn't exceed it when dragged.
-TEST_F(WorkspaceWindowResizerTest, TestMaxSizeEnforced) {
+TEST_P(WorkspaceWindowResizerTest, TestMaxSizeEnforced) {
   window_->SetBounds(gfx::Rect(0, 0, 400, 300));
   delegate_.set_max_size(gfx::Size(401, 301));
 
@@ -1456,7 +1489,7 @@ TEST_F(WorkspaceWindowResizerTest, TestMaxSizeEnforced) {
 }
 
 // Test that a window with a specified max width doesn't restrict its height.
-TEST_F(WorkspaceWindowResizerTest, TestPartialMaxSizeEnforced) {
+TEST_P(WorkspaceWindowResizerTest, TestPartialMaxSizeEnforced) {
   window_->SetBounds(gfx::Rect(0, 0, 400, 300));
   delegate_.set_max_size(gfx::Size(401, 0));
 
@@ -1468,7 +1501,7 @@ TEST_F(WorkspaceWindowResizerTest, TestPartialMaxSizeEnforced) {
 }
 
 // Test that a window with a specified max size can't be snapped.
-TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
+TEST_P(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
   {
     // With max size not set we get a phantom window controller for dragging off
     // the right hand side.
@@ -1509,7 +1542,7 @@ TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
   }
 }
 
-TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
+TEST_P(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1540,7 +1573,7 @@ TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
   EXPECT_EQ("375,100 125x100", window4_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
+TEST_P(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1569,7 +1602,7 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
   EXPECT_EQ("350,100 150x100", window4_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
+TEST_P(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1598,14 +1631,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
   EXPECT_EQ("100,350 100x150", window4_->bounds().ToString());
 }
 
-#if defined(OS_WIN)
-// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
-#define MAYBE_DontExceedMinHeight DISABLED_DontExceedMinHeight
-#else
-#define MAYBE_DontExceedMinHeight DontExceedMinHeight
-#endif
-
-TEST_F(WorkspaceWindowResizerTest, MAYBE_DontExceedMinHeight) {
+#if defined(OS_CHROMEOS)
+TEST_P(WorkspaceWindowResizerTest, DontExceedMinHeight) {
   UpdateDisplay("600x500");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1633,8 +1660,9 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_DontExceedMinHeight) {
   EXPECT_EQ("100,351 100x99", window3_->bounds().ToString());
   EXPECT_EQ("100,450 100x50", window4_->bounds().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
+TEST_P(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1660,7 +1688,7 @@ TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
   EXPECT_EQ("299,100 101x100", window3_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
+TEST_P(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   UpdateDisplay("600x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1687,14 +1715,8 @@ TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   EXPECT_EQ("249,100 101x100", window3_->bounds().ToString());
 }
 
-#if defined(OS_WIN)
-// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
-#define MAYBE_MainWindowHonoursMaxWidth DISABLED_MainWindowHonoursMaxWidth
-#else
-#define MAYBE_MainWindowHonoursMaxWidth MainWindowHonoursMaxWidth
-#endif
-
-TEST_F(WorkspaceWindowResizerTest, MAYBE_MainWindowHonoursMaxWidth) {
+#if defined(OS_CHROMEOS)
+TEST_P(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
   UpdateDisplay("400x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1720,8 +1742,9 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_MainWindowHonoursMaxWidth) {
   EXPECT_EQ("202,100 99x100", window2_->bounds().ToString());
   EXPECT_EQ("301,100 99x100", window3_->bounds().ToString());
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
+TEST_P(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
   UpdateDisplay("400x800");
   aura::Window* root = Shell::GetPrimaryRootWindow();
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
@@ -1748,7 +1771,7 @@ TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
 
 // The following variants test that windows are resized correctly to the edges
 // of the screen using touch, when touch point is off of the window border.
-TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
+TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTRIGHT);
@@ -1779,7 +1802,7 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
             touch_resize_window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
+TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTLEFT);
@@ -1810,7 +1833,7 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
             touch_resize_window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
+TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTTOP);
@@ -1838,7 +1861,7 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
             touch_resize_window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
+TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTBOTTOM);

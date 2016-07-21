@@ -6,6 +6,7 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -189,14 +190,21 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   EXPECT_LT(Tab::GetImmersiveHeight(),
             frame_view->header_painter_->GetHeaderHeightForPainting());
 
-  // Ending the reveal should hide the caption buttons and the header should
-  // be in the lightbar style.
+  // Ending the reveal. In MD, immersive browser should have the same behavior
+  // as full screen, i.e., no light bar and having an origin of (0,0). In
+  // non-MD, immersive browser will show a 3 dp light bar on the top.
   revealed_lock.reset();
-  EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  EXPECT_TRUE(frame_view->UseImmersiveLightbarHeaderStyle());
-  EXPECT_EQ(Tab::GetImmersiveHeight(),
-            frame_view->header_painter_->GetHeaderHeightForPainting());
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    EXPECT_FALSE(frame_view->ShouldPaint());
+    EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
+    EXPECT_EQ(0, frame_view->header_painter_->GetHeaderHeightForPainting());
+  } else {
+    EXPECT_TRUE(frame_view->ShouldPaint());
+    EXPECT_FALSE(frame_view->caption_button_container_->visible());
+    EXPECT_TRUE(frame_view->UseImmersiveLightbarHeaderStyle());
+    EXPECT_EQ(Tab::GetImmersiveHeight(),
+              frame_view->header_painter_->GetHeaderHeightForPainting());
+  }
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
