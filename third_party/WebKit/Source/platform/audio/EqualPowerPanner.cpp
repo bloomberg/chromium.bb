@@ -36,7 +36,7 @@ EqualPowerPanner::EqualPowerPanner(float sampleRate)
 {
 }
 
-void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess)
+void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation)
 {
     bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 || inputBus->numberOfChannels() == 2) && framesToProcess <= inputBus->length();
     ASSERT(isInputSafe);
@@ -153,7 +153,7 @@ void EqualPowerPanner::calculateDesiredGain(double& desiredGainL, double& desire
     desiredGainR = std::sin(piOverTwoDouble * desiredPanPosition);
 }
 
-void EqualPowerPanner::panWithSampleAccurateValues(double* azimuth, double* /*elevation*/, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess)
+void EqualPowerPanner::panWithSampleAccurateValues(double* azimuth, double* /*elevation*/, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation)
 {
     bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 || inputBus->numberOfChannels() == 2) && framesToProcess <= inputBus->length();
     DCHECK(isInputSafe);

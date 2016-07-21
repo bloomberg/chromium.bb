@@ -131,16 +131,10 @@ void PannerHandler::process(size_t framesToProcess)
     MutexTryLocker tryListenerLocker(listener()->listenerLock());
 
     if (tryLocker.locked() && tryListenerLocker.locked()) {
-        // HRTFDatabase should be loaded before proceeding when the panning model is HRTF.
-        if (m_panningModel == Panner::PanningModelHRTF && !listener()->isHRTFDatabaseLoaded()) {
-            if (context()->hasRealtimeConstraint()) {
-                // Realtime AudioContext's cannot block on the HRTFDatabase
-                // loader.  Instead, copy the input to the output so we can at
-                // least hear something until the database is ready.
-                destination->copyFrom(*source, m_channelInterpretation);
-                return;
-            }
-
+        if (!context()->hasRealtimeConstraint() && m_panningModel == Panner::PanningModelHRTF) {
+            // For an OfflineAudioContext, we need to make sure the HRTFDatabase
+            // is loaded before proceeding.  For realtime contexts, we don't
+            // have to wait.  The HRTF panner handles that case itself.
             listener()->waitForHRTFDatabaseLoaderThreadCompletion();
         }
 
@@ -161,7 +155,7 @@ void PannerHandler::process(size_t framesToProcess)
 
             azimuthElevation(&azimuth, &elevation);
 
-            m_panner->pan(azimuth, elevation, source, destination, framesToProcess);
+            m_panner->pan(azimuth, elevation, source, destination, framesToProcess, internalChannelInterpretation());
 
             // Get the distance and cone gain.
             float totalGain = distanceConeGain();
@@ -231,7 +225,7 @@ void PannerHandler::processSampleAccurateValues(AudioBus* destination, const Aud
         totalGain[k] = calculateDistanceConeGain(pannerPosition, orientation, listenerPosition);
     }
 
-    m_panner->panWithSampleAccurateValues(azimuth, elevation, source, destination, framesToProcess);
+    m_panner->panWithSampleAccurateValues(azimuth, elevation, source, destination, framesToProcess, internalChannelInterpretation());
     destination->copyWithSampleAccurateGainValuesFrom(*destination, totalGain, framesToProcess);
 }
 

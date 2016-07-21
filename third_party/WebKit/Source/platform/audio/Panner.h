@@ -30,6 +30,7 @@
 #define Panner_h
 
 #include "platform/PlatformExport.h"
+#include "platform/audio/AudioBus.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/build_config.h"
@@ -37,7 +38,6 @@
 
 namespace blink {
 
-class AudioBus;
 class HRTFDatabaseLoader;
 
 // Abstract base class for panning a mono or stereo source.
@@ -58,8 +58,8 @@ public:
 
     virtual ~Panner() { };
 
-    virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) = 0;
-    virtual void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) = 0;
+    virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation) = 0;
+    virtual void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation) = 0;
 
     virtual void reset() = 0;
 

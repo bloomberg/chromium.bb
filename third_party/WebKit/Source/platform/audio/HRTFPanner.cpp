@@ -117,7 +117,7 @@ int HRTFPanner::calculateDesiredAzimuthIndexAndBlend(double azimuth, double& azi
     return desiredAzimuthIndex;
 }
 
-void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess)
+void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation channelInterpretation)
 {
     unsigned numInputChannels = inputBus ? inputBus->numberOfChannels() : 0;
 
@@ -134,9 +134,8 @@ void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* in
     }
 
     HRTFDatabase* database = m_databaseLoader->database();
-    ASSERT(database);
     if (!database) {
-        outputBus->zero();
+        outputBus->copyFrom(*inputBus, channelInterpretation);
         return;
     }
 
@@ -292,7 +291,7 @@ void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* in
     }
 }
 
-void HRTFPanner::panWithSampleAccurateValues(double* desiredAzimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess)
+void HRTFPanner::panWithSampleAccurateValues(double* desiredAzimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation channelInterpretation)
 {
     // Sample-accurate (a-rate) HRTF panner is not implemented, just k-rate.  Just grab the current
     // azimuth/elevation and use that.
@@ -302,7 +301,7 @@ void HRTFPanner::panWithSampleAccurateValues(double* desiredAzimuth, double* ele
     // one output sample for each possibly different impulse response.  That N^2.  Previously, we
     // used an FFT to do them all at once for a complexity of N/log2(N).  Hence, N/log2(N) times
     // more complex.)
-    pan(desiredAzimuth[0], elevation[0], inputBus, outputBus, framesToProcess);
+    pan(desiredAzimuth[0], elevation[0], inputBus, outputBus, framesToProcess, channelInterpretation);
 }
 
 double HRTFPanner::tailTime() const

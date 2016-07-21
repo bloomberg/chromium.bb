@@ -35,8 +35,8 @@ class PLATFORM_EXPORT EqualPowerPanner final : public Panner {
 public:
     EqualPowerPanner(float sampleRate);
 
-    void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBuf, size_t framesToProcess) override;
-    void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) override;
+    void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBuf, size_t framesToProcess, AudioBus::ChannelInterpretation) override;
+    void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation) override;
 
     void reset() override { }
 
