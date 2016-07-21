@@ -85,11 +85,9 @@ NotificationSurface::NotificationSurface(NotificationSurfaceManager* manager,
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->set_owned_by_parent(false);
 
-  // TODO(xiyuan): Fix after Surface no longer has an auar::Window.
+  // TODO(xiyuan): Fix after Surface no longer has an aura::Window.
   window_->AddChild(surface_->window());
   surface_->window()->Show();
-
-  manager_->AddSurface(this);
 }
 
 NotificationSurface::~NotificationSurface() {
@@ -97,7 +95,8 @@ NotificationSurface::~NotificationSurface() {
     surface_->SetSurfaceDelegate(nullptr);
     surface_->RemoveSurfaceObserver(this);
   }
-  manager_->RemoveSurface(this);
+  if (added_to_manager_)
+    manager_->RemoveSurface(this);
 }
 
 gfx::Size NotificationSurface::GetSize() const {
@@ -112,6 +111,12 @@ void NotificationSurface::OnSurfaceCommit() {
   if (bounds.size() != surface_->content_size()) {
     bounds.set_size(surface_->content_size());
     window_->SetBounds(bounds);
+  }
+
+  // Defer AddSurface until there are contents to show.
+  if (!added_to_manager_ && !surface_->content_size().IsEmpty()) {
+    added_to_manager_ = true;
+    manager_->AddSurface(this);
   }
 }
 

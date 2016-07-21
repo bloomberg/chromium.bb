@@ -47,6 +47,7 @@ class NotificationSurface : public SurfaceDelegate, public SurfaceObserver {
   const std::string notification_id_;
 
   std::unique_ptr<aura::Window> window_;
+  bool added_to_manager_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationSurface);
 };
