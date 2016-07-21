@@ -933,6 +933,9 @@ def RunTestsInPlatformMode(args):
           json_results.GenerateJsonResultsFile(
               all_raw_results, args.json_results_file)
 
+  if args.command == 'perf' and (args.steps or args.single_step):
+    return 0
+
   return (0 if all(r.DidRunPass() for r in all_iteration_results)
           else constants.ERROR_EXIT_CODE)
 
