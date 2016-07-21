@@ -76,6 +76,9 @@
 253674 MAC : GL2Tests_glUniform_input_run = FAIL
 253674 MAC : GL2Tests_three_uniforms_input_run = FAIL
 
+630452 MAC NVIDIA : GL2FixedTests_color_ramp_input_run = SKIP
+630452 MAC NVIDIA : GL2FixedTests_buffer_color_input_run = SKIP
+
 393677 CHROMEOS INTEL 0xa011 : GL_acos_input_run = FAIL
 393677 CHROMEOS INTEL 0xa011 : GL_asin_input_run = FAIL
 393677 CHROMEOS INTEL 0xa011 : GL_atan_input_run = FAIL
