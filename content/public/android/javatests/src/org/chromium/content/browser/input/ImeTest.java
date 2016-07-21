@@ -24,7 +24,6 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -627,7 +626,6 @@ public class ImeTest extends ContentShellTestBase {
     @CommandLineFlags.Add("enable-features=ImeThread")
     @MediumTest
     @Feature({"TextInput"})
-    @FlakyTest
     public void testPasteLongText() throws Exception {
         int textLength = 25000;
         String text = new String(new char[textLength]).replace("\0", "a");
@@ -637,6 +635,7 @@ public class ImeTest extends ContentShellTestBase {
         selectAll();
         waitAndVerifyUpdateSelection(1, 0, textLength, -1, -1);
         copy();
+        assertClipboardContents(getActivity(), text);
 
         focusElement("textarea");
         waitAndVerifyUpdateSelection(2, 0, 0, -1, -1);
@@ -1435,6 +1434,8 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
+    // After calling this method, we should call assertClipboardContents() to wait for the clipboard
+    // to get updated. See cubug.com/621046
     private void copy() {
         final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
