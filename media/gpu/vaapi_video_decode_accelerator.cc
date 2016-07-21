@@ -811,10 +811,14 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     surfaces_available_.Signal();
   }
 
-  state_ = kDecoding;
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
-                            base::Unretained(this)));
+  // The resolution changing may happen while resetting or flushing. In this
+  // case we do not change state and post DecodeTask().
+  if (state_ != kResetting && state_ != kFlushing) {
+    state_ = kDecoding;
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
+                              base::Unretained(this)));
+  }
 }
 
 #if defined(USE_OZONE)
