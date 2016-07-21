@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -640,7 +641,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
         mIsUIUpdateScheduled = true;
         final List<DownloadProgress> progressToUpdate = new ArrayList<DownloadProgress>();
-        for (DownloadProgress progress : mDownloadProgressMap.values()) {
+        Iterator<Map.Entry<String, DownloadProgress>> iter =
+                mDownloadProgressMap.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String, DownloadProgress> entry = iter.next();
+            DownloadProgress progress = entry.getValue();
             if (progress.mIsUpdated) {
                 progressToUpdate.add(new DownloadProgress(progress));
                 progress.mIsUpdated = false;
@@ -650,7 +655,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     || progress.mDownloadItem.getDownloadInfo().isPaused())
                     && (progress.mDownloadStatus != DOWNLOAD_STATUS_INTERRUPTED
                             || !progress.mIsAutoResumable)) {
-                mDownloadProgressMap.remove(progress.mDownloadItem.getId());
+                iter.remove();
             }
         }
         if (progressToUpdate.isEmpty()) {
