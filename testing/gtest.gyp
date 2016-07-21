@@ -15,8 +15,8 @@
         '<@(gtest_sources)',
       ],
       'include_dirs': [
-        'third_party/googletest/googletest',
-        'third_party/googletest/googletest/include',
+        'gtest',
+        'gtest/include',
       ],
       'dependencies': [
         'gtest_prod',
@@ -158,7 +158,7 @@
           'UNIT_TEST',
         ],
         'include_dirs': [
-          'third_party/googletest/googletest/include',  # So that gtest headers can find themselves.
+          'gtest/include',  # So that gtest headers can find themselves.
         ],
         'target_conditions': [
           ['_type=="executable"', {
@@ -198,7 +198,7 @@
         'gtest',
       ],
       'sources': [
-        'third_party/googletest/googletest/src/gtest_main.cc',
+        'gtest/src/gtest_main.cc',
       ],
     },
     {
@@ -207,7 +207,6 @@
       'type': 'none',
       'sources': [
         'gtest/include/gtest/gtest_prod.h',
-        'third_party/googletest/googletest/include/gtest/gtest_prod.h',
       ],
     },
   ],

@@ -638,10 +638,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         # https://github.com/PyCQA/pylint/issues/894
         'UNKNOWN',
     ],
-    # Trivial script lacking a license. Not used by Chromium.
-    'testing/third_party/googletest/travis.sh': [
-        'UNKNOWN',
-    ],
 }
 
 EXCLUDED_PATHS = [
