@@ -4524,9 +4524,8 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(TexImageFunctionID fun
     if (!validateTexFunc(funcName, functionType, SourceImageBitmap, target, level, internalformat, bitmap->width(), bitmap->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
         return;
     ASSERT(bitmap->bitmapImage());
-    // TODO(xidachen): find out why GPU-GPU copy fails on r8_red, rg8_rg, rgb8_rgb, rgba8_rgba only.
-    if (functionID != TexSubImage3D && bitmap->isTextureBacked() && canUseTexImageByGPU(functionID, internalformat, type)
-        && internalformat != GL_R8 && internalformat != GL_RG8 && internalformat != GL_RGB8 && internalformat != GL_RGBA8) {
+
+    if (functionID != TexSubImage3D && bitmap->isTextureBacked() && canUseTexImageByGPU(functionID, internalformat, type)) {
         if (functionID == TexImage2D) {
             texImage2DBase(target, level, internalformat, bitmap->width(), bitmap->height(), 0, format, type, 0);
             texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat, type, 0, 0, 0, bitmap);
