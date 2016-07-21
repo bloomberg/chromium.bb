@@ -309,15 +309,16 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
 // by LOG() and LOG_IF, etc. Since these are used all over our code, it's
 // better to have compact code for these operations.
 #define COMPACT_GOOGLE_LOG_EX_INFO(ClassName, ...) \
-  logging::ClassName(__FILE__, __LINE__, logging::LOG_INFO , ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_EX_WARNING(ClassName, ...) \
-  logging::ClassName(__FILE__, __LINE__, logging::LOG_WARNING , ##__VA_ARGS__)
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_INFO, ##__VA_ARGS__)
+#define COMPACT_GOOGLE_LOG_EX_WARNING(ClassName, ...)              \
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_WARNING, \
+                       ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_EX_ERROR(ClassName, ...) \
-  logging::ClassName(__FILE__, __LINE__, logging::LOG_ERROR , ##__VA_ARGS__)
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_ERROR, ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_EX_FATAL(ClassName, ...) \
-  logging::ClassName(__FILE__, __LINE__, logging::LOG_FATAL , ##__VA_ARGS__)
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_FATAL, ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_EX_DFATAL(ClassName, ...) \
-  logging::ClassName(__FILE__, __LINE__, logging::LOG_DFATAL , ##__VA_ARGS__)
+  ::logging::ClassName(__FILE__, __LINE__, ::logging::LOG_DFATAL, ##__VA_ARGS__)
 
 #define COMPACT_GOOGLE_LOG_INFO \
   COMPACT_GOOGLE_LOG_EX_INFO(LogMessage)
@@ -378,7 +379,7 @@ const LogSeverity LOG_0 = LOG_ERROR;
 
 // The VLOG macros log with negative verbosities.
 #define VLOG_STREAM(verbose_level) \
-  logging::LogMessage(__FILE__, __LINE__, -verbose_level).stream()
+  ::logging::LogMessage(__FILE__, __LINE__, -verbose_level).stream()
 
 #define VLOG(verbose_level) \
   LAZY_STREAM(VLOG_STREAM(verbose_level), VLOG_IS_ON(verbose_level))
@@ -389,11 +390,11 @@ const LogSeverity LOG_0 = LOG_ERROR;
 
 #if defined (OS_WIN)
 #define VPLOG_STREAM(verbose_level) \
-  logging::Win32ErrorLogMessage(__FILE__, __LINE__, -verbose_level, \
+  ::logging::Win32ErrorLogMessage(__FILE__, __LINE__, -verbose_level, \
     ::logging::GetLastSystemErrorCode()).stream()
 #elif defined(OS_POSIX)
 #define VPLOG_STREAM(verbose_level) \
-  logging::ErrnoLogMessage(__FILE__, __LINE__, -verbose_level, \
+  ::logging::ErrnoLogMessage(__FILE__, __LINE__, -verbose_level, \
     ::logging::GetLastSystemErrorCode()).stream()
 #endif
 
@@ -495,8 +496,8 @@ class CheckOpResult {
 #else  // _PREFAST_
 
 // Do as much work as possible out of line to reduce inline code size.
-#define CHECK(condition)                                                    \
-  LAZY_STREAM(logging::LogMessage(__FILE__, __LINE__, #condition).stream(), \
+#define CHECK(condition)                                                      \
+  LAZY_STREAM(::logging::LogMessage(__FILE__, __LINE__, #condition).stream(), \
               !(condition))
 
 #define PCHECK(condition)                       \
@@ -513,12 +514,12 @@ class CheckOpResult {
 //   CHECK_EQ(2, a);
 #define CHECK_OP(name, op, val1, val2)                                         \
   switch (0) case 0: default:                                                  \
-  if (logging::CheckOpResult true_if_passed =                                  \
-      logging::Check##name##Impl((val1), (val2),                               \
-                                 #val1 " " #op " " #val2))                     \
+  if (::logging::CheckOpResult true_if_passed =                                \
+      ::logging::Check##name##Impl((val1), (val2),                             \
+                                   #val1 " " #op " " #val2))                   \
    ;                                                                           \
   else                                                                         \
-    logging::LogMessage(__FILE__, __LINE__, true_if_passed.message()).stream()
+    ::logging::LogMessage(__FILE__, __LINE__, true_if_passed.message()).stream()
 
 #endif  // !(OFFICIAL_BUILD && NDEBUG)
 
@@ -725,16 +726,16 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 // macro is used in an 'if' clause such as:
 // if (a == 1)
 //   DCHECK_EQ(2, a);
-#define DCHECK_OP(name, op, val1, val2)                               \
-  switch (0) case 0: default:                                         \
-  if (logging::CheckOpResult true_if_passed =                         \
-      DCHECK_IS_ON() ?                                                \
-      logging::Check##name##Impl((val1), (val2),                      \
-                                 #val1 " " #op " " #val2) : nullptr)  \
-   ;                                                                  \
-  else                                                                \
-    logging::LogMessage(__FILE__, __LINE__, ::logging::LOG_DCHECK,    \
-                        true_if_passed.message()).stream()
+#define DCHECK_OP(name, op, val1, val2)                                \
+  switch (0) case 0: default:                                          \
+  if (::logging::CheckOpResult true_if_passed =                        \
+      DCHECK_IS_ON() ?                                                 \
+      ::logging::Check##name##Impl((val1), (val2),                     \
+                                   #val1 " " #op " " #val2) : nullptr) \
+   ;                                                                   \
+  else                                                                 \
+    ::logging::LogMessage(__FILE__, __LINE__, ::logging::LOG_DCHECK,   \
+                          true_if_passed.message()).stream()
 
 // Equality/Inequality checks - compare two values, and log a
 // LOG_DCHECK message including the two values when the result is not
@@ -913,12 +914,14 @@ BASE_EXPORT void CloseLogFile();
 // Async signal safe logging mechanism.
 BASE_EXPORT void RawLog(int level, const char* message);
 
-#define RAW_LOG(level, message) logging::RawLog(logging::LOG_ ## level, message)
+#define RAW_LOG(level, message) \
+  ::logging::RawLog(::logging::LOG_##level, message)
 
-#define RAW_CHECK(condition)                                                   \
-  do {                                                                         \
-    if (!(condition))                                                          \
-      logging::RawLog(logging::LOG_FATAL, "Check failed: " #condition "\n");   \
+#define RAW_CHECK(condition)                               \
+  do {                                                     \
+    if (!(condition))                                      \
+      ::logging::RawLog(::logging::LOG_FATAL,              \
+                        "Check failed: " #condition "\n"); \
   } while (0)
 
 #if defined(OS_WIN)
