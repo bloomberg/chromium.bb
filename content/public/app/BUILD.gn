@@ -55,6 +55,12 @@ if (is_component_build) {
              "//content/app:both",
              "//content/public/browser:browser_sources",
            ]
+
+    allow_circular_includes_from = [
+      # This target is a pair with the non-public version. They always go
+      # together and include headers from each other.
+      "//content/app:both",
+    ]
   }
 
   # These all just forward to content, which in turn depends on "both_sources".
@@ -95,6 +101,12 @@ if (is_component_build) {
              "//content/public/browser",
              "//content/public/common",
            ]
+
+    allow_circular_includes_from = [
+      # This target is a pair with the non-public version. They always go
+      # together and include headers from each other.
+      "//content/app:both",
+    ]
   }
 
   if (is_multi_dll_chrome) {
@@ -111,6 +123,12 @@ if (is_component_build) {
                "//content/public/browser",
                "//content/public/common",
              ]
+
+      allow_circular_includes_from = [
+        # This target is a pair with the non-public version. They always go
+        # together and include headers from each other.
+        "//content/app:browser",
+      ]
     }
 
     source_set("child") {
@@ -125,6 +143,12 @@ if (is_component_build) {
                "//content/app:child",
                "//content/public/common",
              ]
+
+      allow_circular_includes_from = [
+        # This target is a pair with the non-public version. They always go
+        # together and include headers from each other.
+        "//content/app:child",
+      ]
     }
   } else {
     # When the multi-DLL build is disabled, there is only one type of the

@@ -96,6 +96,7 @@ if (is_component_build) {
 
     deps = [
       "//base",
+      "//sandbox/linux:sandbox",
     ]
   }
 } else {

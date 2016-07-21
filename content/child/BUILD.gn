@@ -25,6 +25,10 @@ target(link_target_type, "child") {
     "//content/utility/*",
     "//tools/ipc_fuzzer/*",
   ]
+  if (is_android) {
+    # See comment in content/app/BUILD.gn above content_app_deps.
+    visibility += [ "//content/app:*" ]
+  }
 
   sources = rebase_path(content_child_gypi_values.private_child_sources,
                         ".",

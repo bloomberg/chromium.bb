@@ -15,6 +15,10 @@ source_set("browser") {
     ":for_content_tests",  # See top of //content/BUILD.gn for why.
     "//content/public/browser:browser_sources",
   ]
+  if (is_android) {
+    # See comment in content/app/BUILD.gn above content_app_deps.
+    visibility += [ "//content/app:*" ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
