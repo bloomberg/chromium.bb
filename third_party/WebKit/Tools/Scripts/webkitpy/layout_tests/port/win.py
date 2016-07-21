@@ -125,7 +125,6 @@ class WinPort(base.Port):
             if e.errno != errno.ENOENT:
                 raise e
             # The key simply probably doesn't exist.
-            pass
 
         # Note that we write to HKCU so that we don't need privileged access
         # to the registry, and that will get reflected in HKCR when it is read, above.

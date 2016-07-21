@@ -618,7 +618,6 @@ class _FunctionState(object):
 
 class _IncludeError(Exception):
     """Indicates a problem with the include order in a file."""
-    pass
 
 
 class FileInfo:

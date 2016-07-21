@@ -147,7 +147,6 @@ class ServerBase(object):
     def _prepare_config(self):
         """This routine can be overridden by subclasses to do any sort
         of initialization required prior to starting the server that may fail."""
-        pass
 
     def _remove_stale_logs(self):
         """This routine can be overridden by subclasses to try and remove logs

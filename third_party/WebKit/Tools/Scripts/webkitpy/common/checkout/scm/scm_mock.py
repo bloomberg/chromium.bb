@@ -97,7 +97,6 @@ class MockSCM(object):
 
     def commit_locally_with_message(self, message):
         self._local_commits.append([message])
-        pass
 
     def local_commits(self):
         """For testing purposes, returns the internal recording of commits made via commit_locally_with_message.

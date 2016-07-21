@@ -720,7 +720,6 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
         """Swallow a message passed to stderr.write()."""
         # This is a mock stderr.write() for passing to the constructor
         # of the StyleProcessorConfiguration class.
-        pass
 
     def _create_carriage_checker_class(self):
 

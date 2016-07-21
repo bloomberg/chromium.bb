@@ -237,7 +237,6 @@ class FileSystem(object):
 
     class _WindowsError(exceptions.OSError):
         """Fake exception for Linux and Mac."""
-        pass
 
     def remove(self, path, osremove=os.remove):
         """On Windows, if a process was recently killed and it held on to a
