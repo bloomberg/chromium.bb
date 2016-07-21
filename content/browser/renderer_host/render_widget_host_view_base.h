@@ -426,6 +426,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Whether we are showing a context menu.
   bool showing_context_menu_;
 
+// TODO(ekaramad): In aura, text selection tracking for IME is done through the
+// TextInputManager. We still need the following variables for other platforms.
+// Remove them when tracking is done by TextInputManager on all platforms
+// (https://crbug.com/578168 and https://crbug.com/602427).
+#if !defined(USE_AURA)
   // A buffer containing the text inside and around the current selection range.
   base::string16 selection_text_;
 
@@ -435,6 +440,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // The current selection range relative to the start of the web page.
   gfx::Range selection_range_;
+#endif
 
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;

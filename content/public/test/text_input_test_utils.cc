@@ -65,6 +65,10 @@ class TextInputManagerTester::InternalObserver
     on_ime_composition_range_changed_callback_ = callback;
   }
 
+  void set_on_text_selection_changed_callback(const base::Closure& callback) {
+    on_text_selection_changed_callback_ = callback;
+  }
+
   const RenderWidgetHostView* GetUpdatedView() const { return updated_view_; }
 
   bool text_input_state_changed() const { return text_input_state_changed_; }
@@ -99,6 +103,13 @@ class TextInputManagerTester::InternalObserver
       on_ime_composition_range_changed_callback_.Run();
   }
 
+  void OnTextSelectionChanged(TextInputManager* text_input_manager,
+                              RenderWidgetHostViewBase* updated_view) override {
+    updated_view_ = updated_view;
+    if (!on_text_selection_changed_callback_.is_null())
+      on_text_selection_changed_callback_.Run();
+  }
+
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override { text_input_manager_ = nullptr; }
 
@@ -109,6 +120,7 @@ class TextInputManagerTester::InternalObserver
   base::Closure update_text_input_state_callback_;
   base::Closure on_selection_bounds_changed_callback_;
   base::Closure on_ime_composition_range_changed_callback_;
+  base::Closure on_text_selection_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalObserver);
 };
@@ -284,6 +296,11 @@ void TextInputManagerTester::SetOnImeCompositionRangeChangedCallback(
   observer_->set_on_ime_composition_range_changed_callback(callback);
 }
 
+void TextInputManagerTester::SetOnTextSelectionChangedCallback(
+    const base::Closure& callback) {
+  observer_->set_on_text_selection_changed_callback(callback);
+}
+
 bool TextInputManagerTester::GetTextInputType(ui::TextInputType* type) {
   DCHECK(observer_->text_input_manager());
   const TextInputState* state =
@@ -311,6 +328,16 @@ const RenderWidgetHostView* TextInputManagerTester::GetActiveView() {
 
 const RenderWidgetHostView* TextInputManagerTester::GetUpdatedView() {
   return observer_->GetUpdatedView();
+}
+
+bool TextInputManagerTester::GetCurrentTextSelectionLength(size_t* length) {
+  DCHECK(observer_->text_input_manager());
+
+  if (!observer_->text_input_manager()->GetActiveWidget())
+    return false;
+
+  *length = observer_->text_input_manager()->GetTextSelection()->text.size();
+  return true;
 }
 
 bool TextInputManagerTester::IsTextInputStateChanged() {

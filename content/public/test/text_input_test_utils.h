@@ -78,6 +78,10 @@ class TextInputManagerTester {
   // ImeCompositionRangeChanged on the TextInputManager that is being observed.
   void SetOnImeCompositionRangeChangedCallback(const base::Closure& callback);
 
+  // Sets a callback which is invoked when a RWHV calls SelectionChanged on the
+  // TextInputManager which is being observed.
+  void SetOnTextSelectionChangedCallback(const base::Closure& callback);
+
   // Returns true if there is a focused <input> and populates |type| with
   // |TextInputState.type| of the TextInputManager.
   bool GetTextInputType(ui::TextInputType* type);
@@ -85,6 +89,10 @@ class TextInputManagerTester {
   // Returns true if there is a focused <input> and populates |value| with
   // |TextInputState.value| of the TextInputManager.
   bool GetTextInputValue(std::string* value);
+
+  // Returns true if there is a focused <input> and populates |length| with the
+  // length of the selected text range in the focused view.
+  bool GetCurrentTextSelectionLength(size_t* length);
 
   // Returns the RenderWidgetHostView with a focused <input> element or nullptr
   // if none exists.

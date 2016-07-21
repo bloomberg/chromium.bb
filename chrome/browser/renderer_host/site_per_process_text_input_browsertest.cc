@@ -235,6 +235,36 @@ class ViewCompositionRangeChangedObserver
   DISALLOW_COPY_AND_ASSIGN(ViewCompositionRangeChangedObserver);
 };
 
+// This class observes the |expected_view| for a change in the text selection
+// that has a selection length of |expected_length|.
+class ViewTextSelectionObserver : public TextInputManagerObserverBase {
+ public:
+  ViewTextSelectionObserver(content::WebContents* web_contents,
+                            content::RenderWidgetHostView* expected_view,
+                            size_t expected_selection_length)
+      : TextInputManagerObserverBase(web_contents),
+        expected_view_(expected_view),
+        expected_selection_length_(expected_selection_length) {
+    tester()->SetOnTextSelectionChangedCallback(base::Bind(
+        &ViewTextSelectionObserver::VerifyChange, base::Unretained(this)));
+  }
+
+ private:
+  void VerifyChange() {
+    if (expected_view_ == tester()->GetUpdatedView()) {
+      size_t selection_length;
+      if (tester()->GetCurrentTextSelectionLength(&selection_length) &&
+          expected_selection_length_ == selection_length)
+        OnSuccess();
+    }
+  }
+
+  const content::RenderWidgetHostView* const expected_view_;
+  const size_t expected_selection_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewTextSelectionObserver);
+};
+
 }  // namespace
 
 // Main class for all TextInputState and IME related tests.
@@ -580,6 +610,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   for (auto view : views)
     send_tab_set_composition_wait_for_bounds_change(view);
+}
+
+// This test creates a page with multiple child frames and adds an <input> to
+// each frame. Then, sequentially, each <input> is focused by sending a tab key.
+// After focusing each input, the whole text is automatically selected and a
+// ViewHostMsg_SelectionChanged IPC sent back to the browser. This test verifies
+// that the browser tracks the text selection from all frames.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       TrackTextSelectionForAllFrames) {
+  // TODO(ekaramad): Since IME related methods in WebFrameWidgetImpl are not
+  // implemented yet, this test does not work on child frames. Add child frames
+  // to this test when IME methods in WebFramgeWidgetImpl are implemented
+  // (https://crbug.com/626746).
+  CreateIframePage("a()");
+  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{})};
+  std::vector<content::RenderWidgetHostView*> views;
+  for (auto frame : frames)
+    views.push_back(frame->GetView());
+  std::vector<std::string> input_text{"abc"};
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", input_text[i], false);
+
+  content::WebContents* web_contents = active_contents();
+
+  auto send_tab_and_wait_for_selection_change = [&web_contents](
+      content::RenderFrameHost* frame, size_t expected_length) {
+    ViewTextSelectionObserver text_selection_observer(
+        web_contents, frame->GetView(), expected_length);
+    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                     ui::VKEY_TAB, false, false, false, false);
+    text_selection_observer.Wait();
+  };
+
+  for (size_t i = 0; i < frames.size(); ++i)
+    send_tab_and_wait_for_selection_change(frames[i], input_text[i].size());
 }
 
 // TODO(ekaramad): The following tests are specifically written for Aura and are

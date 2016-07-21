@@ -1015,29 +1015,6 @@ void RenderWidgetHostViewAura::SetTooltipText(
   }
 }
 
-void RenderWidgetHostViewAura::SelectionChanged(const base::string16& text,
-                                                size_t offset,
-                                                const gfx::Range& range) {
-  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
-
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  if (text.empty() || range.is_empty())
-    return;
-  size_t pos = range.GetMin() - offset;
-  size_t n = range.length();
-
-  DCHECK(pos + n <= text.length()) << "The text can not fully cover range.";
-  if (pos >= text.length()) {
-    NOTREACHED() << "The text can not cover range.";
-    return;
-  }
-
-  // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
-  clipboard_writer.WriteText(text.substr(pos, n));
-#endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
-}
-
 gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
   return delegated_frame_host_->GetRequestedRendererSize();
 }
@@ -1551,8 +1528,16 @@ bool RenderWidgetHostViewAura::HasCompositionText() const {
 }
 
 bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
-  range->set_start(selection_text_offset_);
-  range->set_end(selection_text_offset_ + selection_text_.length());
+  if (!text_input_manager_)
+    return false;
+
+  const TextInputManager::TextSelection* selection =
+      text_input_manager_->GetTextSelection();
+  if (!selection)
+    return false;
+
+  range->set_start(selection->offset);
+  range->set_end(selection->offset + selection->text.length());
   return true;
 }
 
@@ -1564,8 +1549,16 @@ bool RenderWidgetHostViewAura::GetCompositionTextRange(
 }
 
 bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
-  range->set_start(selection_range_.start());
-  range->set_end(selection_range_.end());
+  if (!text_input_manager_)
+    return false;
+
+  const TextInputManager::TextSelection* selection =
+      text_input_manager_->GetTextSelection();
+  if (!selection)
+    return false;
+
+  range->set_start(selection->range.start());
+  range->set_end(selection->range.end());
   return true;
 }
 
@@ -1584,8 +1577,16 @@ bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
 bool RenderWidgetHostViewAura::GetTextFromRange(
     const gfx::Range& range,
     base::string16* text) const {
-  gfx::Range selection_text_range(selection_text_offset_,
-      selection_text_offset_ + selection_text_.length());
+  if (!text_input_manager_)
+    return false;
+
+  const TextInputManager::TextSelection* selection =
+      text_input_manager_->GetTextSelection();
+  if (!selection)
+    return false;
+
+  gfx::Range selection_text_range(selection->offset,
+                                  selection->offset + selection->text.length());
 
   if (!selection_text_range.Contains(range)) {
     text->clear();
@@ -1593,11 +1594,10 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
   }
   if (selection_text_range.EqualsIgnoringDirection(range)) {
     // Avoid calling substr whose performance is low.
-    *text = selection_text_;
+    *text = selection->text;
   } else {
-    *text = selection_text_.substr(
-        range.GetMin() - selection_text_offset_,
-        range.length());
+    *text = selection->text.substr(range.GetMin() - selection->offset,
+                                   range.length());
   }
   return true;
 }
@@ -3004,6 +3004,34 @@ void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
     RenderWidgetHostViewBase* updated_view) {
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
+}
+
+void RenderWidgetHostViewAura::OnTextSelectionChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  if (!GetTextInputManager() || !GetTextInputManager()->GetActiveWidget())
+    return;
+
+  const TextInputManager::TextSelection* text_selection =
+      GetTextInputManager()->GetTextSelection();
+
+  if (text_selection->text.empty() || text_selection->range.is_empty())
+    return;
+  size_t pos = text_selection->range.GetMin() - text_selection->offset;
+  size_t n = text_selection->range.length();
+
+  DCHECK(pos + n <= text_selection->text.length())
+      << "The text can not fully cover range.";
+  if (pos >= text_selection->text.length()) {
+    NOTREACHED() << "The text can not cover range.";
+    return;
+  }
+
+  // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
+  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
+  clipboard_writer.WriteText(text_selection->text.substr(pos, n));
+#endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

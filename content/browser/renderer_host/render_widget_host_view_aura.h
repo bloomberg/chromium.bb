@@ -146,9 +146,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
-  void SelectionChanged(const base::string16& text,
-                        size_t offset,
-                        const gfx::Range& range) override;
   gfx::Size GetRequestedRendererSize() const override;
   void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
@@ -472,6 +469,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnSelectionBoundsChanged(
       TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override;
+  void OnTextSelectionChanged(TextInputManager* text_input_mangager,
+                              RenderWidgetHostViewBase* updated_view) override;
 
   // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;

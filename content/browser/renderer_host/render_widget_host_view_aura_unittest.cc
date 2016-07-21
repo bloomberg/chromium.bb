@@ -4477,4 +4477,66 @@ TEST_F(InputMethodStateAuraTest, GetCompositionCharacterBounds) {
   }
 }
 
+// This test is for selected text.
+TEST_F(InputMethodStateAuraTest, GetSelectedText) {
+  base::string16 text = base::ASCIIToUTF16("some text of length 22");
+  size_t offset = 0U;
+  gfx::Range selection_range(20, 21);
+
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    views_[index]->SelectionChanged(text, offset, selection_range);
+    base::string16 expected_text = text.substr(
+        selection_range.GetMin() - offset, selection_range.length());
+
+    EXPECT_EQ(expected_text, views_[index]->GetSelectedText());
+
+    // Changing offset to make sure that the next view has a different text
+    // selection.
+    offset++;
+  }
+}
+
+// This test is for text range.
+TEST_F(InputMethodStateAuraTest, GetTextRange) {
+  base::string16 text = base::ASCIIToUTF16("some text of length 22");
+  size_t offset = 0U;
+  gfx::Range selection_range;
+
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    gfx::Range expected_range(offset, offset + text.length());
+    views_[index]->SelectionChanged(text, offset, selection_range);
+    gfx::Range range_from_client;
+
+    // For aura this always returns true.
+    EXPECT_TRUE(text_input_client()->GetTextRange(&range_from_client));
+    EXPECT_EQ(expected_range, range_from_client);
+
+    // Changing offset to make sure that the next view has a different text
+    // selection.
+    offset++;
+  }
+}
+
+// This test is for selection range.
+TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
+  base::string16 text;
+  gfx::Range expected_range(0U, 1U);
+
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    views_[index]->SelectionChanged(text, 0U, expected_range);
+    gfx::Range range_from_client;
+
+    // This method always returns true.
+    EXPECT_TRUE(text_input_client()->GetSelectionRange(&range_from_client));
+    EXPECT_EQ(expected_range, range_from_client);
+
+    // Changing range to make sure that the next view has a different text
+    // selection.
+    expected_range.set_end(expected_range.end() + 1U);
+  }
+}
+
 }  // namespace content
