@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/common/chrome_features.h"
 #include "components/offline_pages/offline_page_feature.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/common/content_features.h"
 #include "jni/ChromeFeatureList_jni.h"
 
@@ -46,6 +47,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabReparenting,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
+    &password_manager::features::kViewPasswords,
 };
 
 }  // namespace
