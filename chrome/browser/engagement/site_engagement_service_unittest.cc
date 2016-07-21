@@ -42,6 +42,7 @@ base::FilePath g_temp_history_dir;
 const int kMoreAccumulationsThanNeededToMaxDailyEngagement = 40;
 const int kMoreDaysThanNeededToMaxTotalEngagement = 40;
 const int kMorePeriodsThanNeededToDecayMaxScore = 40;
+const double kMaxRoundingDeviation = 0.0001;
 
 // Waits until a change is observed in site engagement content settings.
 class SiteEngagementChangeWaiter : public content_settings::Observer {
@@ -180,6 +181,10 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   void SetParamValue(SiteEngagementScore::Variation variation, double value) {
     SiteEngagementScore::GetParamValues()[variation].second = value;
+  }
+
+  void AssertInRange(double expected, double actual) {
+    EXPECT_NEAR(expected, actual, kMaxRoundingDeviation);
   }
 
  private:
@@ -956,14 +961,14 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScoresProportional) {
   clock->SetNow(current_day);
   std::map<GURL, double> score_map = service->GetScoreMap();
   EXPECT_EQ(2u, score_map.size());
-  EXPECT_EQ(0.5, service->GetScore(url1));
-  EXPECT_EQ(0.6, service->GetScore(url2));
+  AssertInRange(0.5, service->GetScore(url1));
+  AssertInRange(0.6, service->GetScore(url2));
 
   service->CleanupEngagementScores(false);
   score_map = service->GetScoreMap();
   EXPECT_EQ(1u, score_map.size());
   EXPECT_EQ(0, service->GetScore(url1));
-  EXPECT_EQ(0.6, service->GetScore(url2));
+  AssertInRange(0.6, service->GetScore(url2));
 }
 
 TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
@@ -1065,10 +1070,10 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   history->AddPage(origin4a, yesterday_afternoon, history::SOURCE_BROWSED);
   engagement->AddPoints(origin4, 5.0);
 
-  EXPECT_EQ(3.0, engagement->GetScore(origin1));
-  EXPECT_EQ(5.0, engagement->GetScore(origin2));
-  EXPECT_EQ(5.0, engagement->GetScore(origin3));
-  EXPECT_EQ(5.0, engagement->GetScore(origin4));
+  AssertInRange(3.0, engagement->GetScore(origin1));
+  AssertInRange(5.0, engagement->GetScore(origin2));
+  AssertInRange(5.0, engagement->GetScore(origin3));
+  AssertInRange(5.0, engagement->GetScore(origin4));
 
   {
     SiteEngagementChangeWaiter waiter(profile());
@@ -1084,11 +1089,11 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // cutting origin1's score by 1/3. origin3 is untouched. origin4 has 1 URL
     // deleted and 1 remaining, but its most recent visit is more than 1 week in
     // the past. Ensure that its scored is halved, and not decayed further.
-    EXPECT_EQ(2, engagement->GetScore(origin1));
+    AssertInRange(2, engagement->GetScore(origin1));
     EXPECT_EQ(0, engagement->GetScore(origin2));
-    EXPECT_EQ(5.0, engagement->GetScore(origin3));
-    EXPECT_EQ(2.5, engagement->GetScore(origin4));
-    EXPECT_EQ(9.5, engagement->GetTotalEngagementPoints());
+    AssertInRange(5.0, engagement->GetScore(origin3));
+    AssertInRange(2.5, engagement->GetScore(origin4));
+    AssertInRange(9.5, engagement->GetTotalEngagementPoints());
   }
 
   {
@@ -1108,11 +1113,11 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
 
     // origin1's score should be halved again. origin3 and origin4 remain
     // untouched.
-    EXPECT_EQ(1, engagement->GetScore(origin1));
+    AssertInRange(1, engagement->GetScore(origin1));
     EXPECT_EQ(0, engagement->GetScore(origin2));
-    EXPECT_EQ(5.0, engagement->GetScore(origin3));
-    EXPECT_EQ(2.5, engagement->GetScore(origin4));
-    EXPECT_EQ(8.5, engagement->GetTotalEngagementPoints());
+    AssertInRange(5.0, engagement->GetScore(origin3));
+    AssertInRange(2.5, engagement->GetScore(origin4));
+    AssertInRange(8.5, engagement->GetTotalEngagementPoints());
   }
 
   {
@@ -1133,9 +1138,9 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // origin1 should be removed. origin3 and origin4 remain untouched.
     EXPECT_EQ(0, engagement->GetScore(origin1));
     EXPECT_EQ(0, engagement->GetScore(origin2));
-    EXPECT_EQ(5.0, engagement->GetScore(origin3));
-    EXPECT_EQ(2.5, engagement->GetScore(origin4));
-    EXPECT_EQ(7.5, engagement->GetTotalEngagementPoints());
+    AssertInRange(5.0, engagement->GetScore(origin3));
+    AssertInRange(2.5, engagement->GetScore(origin4));
+    AssertInRange(7.5, engagement->GetTotalEngagementPoints());
   }
 }
 

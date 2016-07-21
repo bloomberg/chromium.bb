@@ -21,6 +21,7 @@ const int kLessDaysThanNeededToMaxTotalEngagement = 4;
 const int kMoreDaysThanNeededToMaxTotalEngagement = 40;
 const int kLessPeriodsThanNeededToDecayMaxScore = 2;
 const int kMorePeriodsThanNeededToDecayMaxScore = 40;
+const double kMaxRoundingDeviation = 0.0001;
 
 base::Time GetReferenceTime() {
   base::Time::Exploded exploded_reference_time;
@@ -443,5 +444,5 @@ TEST_F(SiteEngagementScoreTest, ProportionalDecay) {
   SetParamValue(SiteEngagementScore::DECAY_POINTS, 2.0);
   current_day += base::TimeDelta::FromDays(7);
   test_clock_.SetNow(current_day);
-  EXPECT_DOUBLE_EQ(1.0, score_.GetScore());
+  EXPECT_NEAR(1.0, score_.GetScore(), kMaxRoundingDeviation);
 }
