@@ -750,7 +750,8 @@ def get_dirty_files():
 def is_dirty_git_tree(cmd):
   dirty = get_dirty_files()
   if dirty:
-    print 'Cannot %s with a dirty tree. You must commit locally first.' % cmd
+    print 'Cannot %s with a dirty tree. '\
+          'Commit, freeze or stash your changes first.' % cmd
     print 'Uncommitted files: (git diff-index --name-status HEAD)'
     print dirty[:4096]
     if len(dirty) > 4096: # pragma: no cover
