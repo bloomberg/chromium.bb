@@ -416,7 +416,7 @@ class PasswordFormManagerTest : public testing::Test {
     password_manager_.reset(new PasswordManager(client_.get()));
     form_manager_.reset(new PasswordFormManager(
         password_manager_.get(), client_.get(), client_.get()->driver(),
-        observed_form_, base::WrapUnique(new MockFormSaver())));
+        observed_form_, base::WrapUnique(new NiceMock<MockFormSaver>())));
   }
 
   void TearDown() override {
@@ -458,9 +458,9 @@ class PasswordFormManagerTest : public testing::Test {
 
     form.form_data = observed_form_data;
 
-    PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), form,
-                                     base::WrapUnique(new MockFormSaver()));
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), form,
+        base::WrapUnique(new NiceMock<MockFormSaver>()));
     ScopedVector<PasswordForm> result;
     result.push_back(CreateSavedMatch(false));
     result[0]->generation_upload_status = status;
@@ -536,9 +536,9 @@ class PasswordFormManagerTest : public testing::Test {
     observed_form()->form_data.fields.push_back(field);
 
     client()->set_is_update_password_ui_enabled(true);
-    PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), *observed_form(),
-                                     base::WrapUnique(new MockFormSaver()));
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), *observed_form(),
+        base::WrapUnique(new NiceMock<MockFormSaver>()));
 
     SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
 
@@ -665,9 +665,9 @@ class PasswordFormManagerTest : public testing::Test {
           saved_match()->password_value + ASCIIToUTF16("1");
     }
 
-    PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), form,
-                                     base::WrapUnique(new MockFormSaver()));
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), form,
+        base::WrapUnique(new NiceMock<MockFormSaver>()));
 
     ScopedVector<PasswordForm> result;
     form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
@@ -1816,9 +1816,9 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
 TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   // For newly saved passwords, upload a password vote for autofill::PASSWORD.
   // Don't vote for the username field yet.
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *saved_match(),
-                                   base::WrapUnique(new MockFormSaver()));
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), *saved_match(),
+      base::WrapUnique(new NiceMock<MockFormSaver>()));
   SimulateMatchingPhase(&form_manager, RESULT_NO_MATCH);
 
   PasswordForm form_to_save(*saved_match());
@@ -1840,7 +1840,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   // Do not upload a vote if the user is blacklisting the form.
   PasswordFormManager blacklist_form_manager(
       password_manager(), client(), client()->driver(), *saved_match(),
-      base::WrapUnique(new MockFormSaver()));
+      base::WrapUnique(new NiceMock<MockFormSaver>()));
   SimulateMatchingPhase(&blacklist_form_manager, RESULT_NO_MATCH);
 
   expected_available_field_types.clear();
@@ -2831,9 +2831,9 @@ TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
     submitted_form.username_value = saved_match()->username_value;
     submitted_form.password_value = saved_match()->password_value;
 
-    PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), form,
-                                     base::WrapUnique(new MockFormSaver()));
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), form,
+        base::WrapUnique(new NiceMock<MockFormSaver>()));
     base::string16 generation_element = form.password_element;
     if (found_generation_element)
       form_manager.SaveGenerationFieldDetectedByClassifier(generation_element);
@@ -2924,9 +2924,9 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   PasswordForm form(*observed_form());
   form.form_data = saved_match()->form_data;
 
-  PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), form,
-                                   base::WrapUnique(new MockFormSaver()));
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), form,
+      base::WrapUnique(new NiceMock<MockFormSaver>()));
 
   PasswordForm form_to_save(form);
   form_to_save.preferred = true;
