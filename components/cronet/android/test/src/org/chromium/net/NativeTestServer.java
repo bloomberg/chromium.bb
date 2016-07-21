@@ -56,6 +56,11 @@ public final class NativeTestServer {
         return nativeGetSdchURL();
     }
 
+    // Returns a URL that the server will return an Exabyte of data
+    public static String getExabyteResponseURL() {
+        return nativeGetExabyteResponseURL();
+    }
+
     // The following URLs will make NativeTestServer serve a response based on
     // the contents of the corresponding file and its mock-http-headers file.
 
@@ -92,6 +97,7 @@ public final class NativeTestServer {
     private static native String nativeGetRedirectToEchoBody();
     private static native String nativeGetFileURL(String filePath);
     private static native String nativeGetSdchURL();
+    private static native String nativeGetExabyteResponseURL();
     private static native String nativeGetHostPort();
     private static native boolean nativeIsDataReductionProxySupported();
 }
