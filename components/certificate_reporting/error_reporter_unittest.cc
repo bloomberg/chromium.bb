@@ -14,10 +14,10 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/curve25519.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/report_sender.h"
@@ -82,8 +82,7 @@ class TestCertificateReporterNetworkDelegate : public net::NetworkDelegateImpl {
 
 class ErrorReporterTest : public ::testing::Test {
  public:
-  ErrorReporterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+  ErrorReporterTest() {
     memset(server_private_key_, 1, sizeof(server_private_key_));
     crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
   }
@@ -91,7 +90,7 @@ class ErrorReporterTest : public ::testing::Test {
   ~ErrorReporterTest() override {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForIO loop_;
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];
 

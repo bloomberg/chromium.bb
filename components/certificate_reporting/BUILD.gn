@@ -51,7 +51,6 @@ source_set("unit_tests") {
   deps = [
     ":certificate_reporting",
     "//base",
-    "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]

@@ -1,5 +1,4 @@
 include_rules = [
-  "+content/public/test",
   "+crypto",
   "+net"
 ]
