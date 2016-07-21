@@ -50,7 +50,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
     private NewTabPageRecyclerView mRecyclerView;
-    private boolean mWantsSnippets;
+    private int mServiceStatus;
 
     private SnippetsBridge mSnippetsBridge;
 
@@ -119,7 +119,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mHeaderListItem = new SnippetHeaderListItem();
         mItemTouchCallbacks = new ItemTouchCallbacks();
         mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
-        mWantsSnippets = true;
+        mServiceStatus = DisabledReason.NONE;
         mSnippetsBridge = snippetsBridge;
         mStatusListItem = StatusListItem.create(snippetsBridge.getDisabledReason(), this, manager);
 
@@ -134,7 +134,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     @Override
     public void onSnippetsReceived(List<SnippetArticleListItem> listSnippets) {
-        if (!mWantsSnippets) return;
+        // We never want to refresh the suggestions if we already have some content.
+        if (hasSuggestions()) return;
+
+        if (!(mServiceStatus == DisabledReason.NONE
+                    || mServiceStatus == DisabledReason.HISTORY_SYNC_STATE_UNKNOWN)) {
+            return;
+        }
 
         int newSnippetCount = listSnippets.size();
         Log.d(TAG, "Received %d new snippets.", newSnippetCount);
@@ -144,8 +150,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         loadSnippets(listSnippets);
 
-        // We don't want to get notified of other changes.
-        mWantsSnippets = false;
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
     }
 
@@ -154,18 +158,23 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         // Observers should not be registered for that state
         assert disabledReason != DisabledReason.EXPLICITLY_DISABLED;
 
-        mStatusListItem = StatusListItem.create(disabledReason, this, mNewTabPageManager);
-        if (getItemCount() > 4 /* above-the-fold + header + card + spacing */) {
+        mServiceStatus = disabledReason;
+        mStatusListItem = StatusListItem.create(mServiceStatus, this, mNewTabPageManager);
+
+        // We had suggestions but we just got notified about the service being enabled. Nothing to
+        // do then.
+        if (disabledReason == DisabledReason.NONE && hasSuggestions()) return;
+
+        if (hasSuggestions()) {
             // We had many items, implies that the service was previously enabled and just
-            // transitioned. to a disabled state. We now clear it.
+            // transitioned to a disabled state. We now clear it.
             loadSnippets(new ArrayList<SnippetArticleListItem>());
         } else {
             mNewTabPageListItems.set(FIRST_CARD_POSITION, mStatusListItem);
-            notifyItemRangeChanged(FIRST_CARD_POSITION, 2); // Update both the first card and the
-            // spacing item coming after it.
-        }
 
-        if (disabledReason == DisabledReason.NONE) mWantsSnippets = true;
+            // Update both the first card and the spacing item coming after it.
+            notifyItemRangeChanged(FIRST_CARD_POSITION, 2);
+        }
     }
 
     @Override
@@ -214,7 +223,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     /** Start a request for new snippets. */
     public void reloadSnippets() {
-        mWantsSnippets = true;
         SnippetsBridge.fetchSnippets();
     }
 
@@ -292,6 +300,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mHeaderListItem.setVisible(false);
             notifyDataSetChanged();
         }
+    }
+
+    /** Returns whether we have some suggested content to display. */
+    private boolean hasSuggestions() {
+        return getItemViewType(FIRST_CARD_POSITION) == NewTabPageListItem.VIEW_TYPE_SNIPPET;
     }
 
     List<NewTabPageListItem> getItemsForTesting() {
