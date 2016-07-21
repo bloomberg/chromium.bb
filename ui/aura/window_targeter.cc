@@ -107,6 +107,8 @@ Window* WindowTargeter::FindTargetForKeyEvent(Window* window,
                                               const ui::KeyEvent& key) {
   Window* root_window = window->GetRootWindow();
   client::FocusClient* focus_client = client::GetFocusClient(root_window);
+  if (!focus_client)
+    return window;
   Window* focused_window = focus_client->GetFocusedWindow();
   if (!focused_window)
     return window;
