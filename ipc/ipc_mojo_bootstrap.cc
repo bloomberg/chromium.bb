@@ -9,12 +9,12 @@
 #include <map>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
@@ -29,7 +29,6 @@
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
-#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
@@ -44,73 +43,39 @@ class ChannelAssociatedGroupController
       public mojo::MessageReceiver,
       public mojo::PipeControlMessageHandlerDelegate {
  public:
-  ChannelAssociatedGroupController(
-      bool set_interface_id_namespace_bit,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
+  ChannelAssociatedGroupController(bool set_interface_id_namespace_bit,
+                                   mojo::ScopedMessagePipeHandle handle)
       : mojo::AssociatedGroupController(base::ThreadTaskRunnerHandle::Get()),
-        task_runner_(ipc_task_runner),
-        proxy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        id_namespace_mask_(set_interface_id_namespace_bit ?
+              mojo::kInterfaceIdNamespaceMask : 0),
+        associated_group_(CreateAssociatedGroup()),
+        connector_(std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
+                   base::ThreadTaskRunnerHandle::Get()),
         header_validator_(
             "IPC::mojom::Bootstrap [master] MessageHeaderValidator", this),
         control_message_handler_(this),
-        control_message_proxy_thunk_(this),
-        control_message_proxy_(&control_message_proxy_thunk_) {
-    thread_checker_.DetachFromThread();
+        control_message_proxy_(&connector_) {
+    connector_.set_incoming_receiver(&header_validator_);
+    connector_.set_connection_error_handler(
+        base::Bind(&ChannelAssociatedGroupController::OnPipeError,
+                   base::Unretained(this)));
     control_message_handler_.SetDescription(
         "IPC::mojom::Bootstrap [master] PipeControlMessageHandler");
   }
 
-  void Bind(mojo::ScopedMessagePipeHandle handle) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(task_runner_->BelongsToCurrentThread());
-    connector_.reset(new mojo::Connector(
-        std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
-        task_runner_));
-    connector_->set_incoming_receiver(&header_validator_);
-    connector_->set_connection_error_handler(
-        base::Bind(&ChannelAssociatedGroupController::OnPipeError,
-                   base::Unretained(this)));
-
-    std::vector<std::unique_ptr<mojo::Message>> outgoing_messages;
-    std::swap(outgoing_messages, outgoing_messages_);
-    for (auto& message : outgoing_messages)
-      SendMessage(message.get());
-  }
-
-  void CreateChannelEndpoints(mojom::ChannelAssociatedPtr* sender,
-                              mojom::ChannelAssociatedRequest* receiver) {
-    mojo::InterfaceId sender_id, receiver_id;
-    if (set_interface_id_namespace_bit_) {
-      sender_id = 1 | mojo::kInterfaceIdNamespaceMask;
-      receiver_id = 1;
-    } else {
-      sender_id = 1;
-      receiver_id = 1 | mojo::kInterfaceIdNamespaceMask;
-    }
-
-    {
-      base::AutoLock locker(lock_);
-      Endpoint* sender_endpoint = new Endpoint(this, sender_id);
-      Endpoint* receiver_endpoint = new Endpoint(this, receiver_id);
-      endpoints_.insert({ sender_id, sender_endpoint });
-      endpoints_.insert({ receiver_id, receiver_endpoint });
-    }
-
-    mojo::ScopedInterfaceEndpointHandle sender_handle =
-        CreateScopedInterfaceEndpointHandle(sender_id, true);
-    mojo::ScopedInterfaceEndpointHandle receiver_handle =
-        CreateScopedInterfaceEndpointHandle(receiver_id, true);
-
-    sender->Bind(mojom::ChannelAssociatedPtrInfo(std::move(sender_handle), 0));
-    receiver->Bind(std::move(receiver_handle));
-  }
+  mojo::AssociatedGroup* associated_group() { return associated_group_.get(); }
 
   void ShutDown() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    connector_->CloseMessagePipe();
+    connector_.CloseMessagePipe();
     OnPipeError();
-    connector_.reset();
+    associated_group_.reset();
+  }
+
+  void SetProxyTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner) {
+    proxy_task_runner_ = proxy_task_runner;
   }
 
   // mojo::AssociatedGroupController:
@@ -121,10 +86,8 @@ class ChannelAssociatedGroupController
     uint32_t id = 0;
     do {
       if (next_interface_id_ >= mojo::kInterfaceIdNamespaceMask)
-        next_interface_id_ = 2;
-      id = next_interface_id_++;
-      if (set_interface_id_namespace_bit_)
-        id |= mojo::kInterfaceIdNamespaceMask;
+        next_interface_id_ = 1;
+      id = (next_interface_id_++) | id_namespace_mask_;
     } while (ContainsKey(endpoints_, id));
 
     Endpoint* endpoint = new Endpoint(this, id);
@@ -158,7 +121,7 @@ class ChannelAssociatedGroupController
     if (!is_local) {
       DCHECK(ContainsKey(endpoints_, id));
       DCHECK(!mojo::IsMasterInterfaceId(id));
-      control_message_proxy_.NotifyEndpointClosedBeforeSent(id);
+      NotifyEndpointClosedBeforeSent(id);
       return;
     }
 
@@ -169,7 +132,7 @@ class ChannelAssociatedGroupController
     MarkClosedAndMaybeRemove(endpoint);
 
     if (!mojo::IsMasterInterfaceId(id))
-      control_message_proxy_.NotifyPeerEndpointClosed(id);
+      NotifyPeerEndpointClosed(id);
   }
 
   mojo::InterfaceEndpointController* AttachEndpointClient(
@@ -208,7 +171,7 @@ class ChannelAssociatedGroupController
 
   void RaiseError() override {
     if (task_runner_->BelongsToCurrentThread()) {
-      connector_->RaiseError();
+      connector_.RaiseError();
     } else {
       task_runner_->PostTask(
           FROM_HERE,
@@ -218,9 +181,7 @@ class ChannelAssociatedGroupController
 
  private:
   class Endpoint;
-  class ControlMessageProxyThunk;
   friend class Endpoint;
-  friend class ControlMessageProxyThunk;
 
   class Endpoint : public base::RefCountedThreadSafe<Endpoint>,
                    public mojo::InterfaceEndpointController {
@@ -323,25 +284,9 @@ class ChannelAssociatedGroupController
     DISALLOW_COPY_AND_ASSIGN(Endpoint);
   };
 
-  class ControlMessageProxyThunk : public MessageReceiver {
-   public:
-    explicit ControlMessageProxyThunk(
-        ChannelAssociatedGroupController* controller)
-        : controller_(controller) {}
-
-   private:
-    // MessageReceiver:
-    bool Accept(mojo::Message* message) override {
-      return controller_->SendMessage(message);
-    }
-
-    ChannelAssociatedGroupController* controller_;
-
-    DISALLOW_COPY_AND_ASSIGN(ControlMessageProxyThunk);
-  };
-
   ~ChannelAssociatedGroupController() override {
     base::AutoLock locker(lock_);
+
     for (auto iter = endpoints_.begin(); iter != endpoints_.end();) {
       Endpoint* endpoint = iter->second.get();
       ++iter;
@@ -356,14 +301,7 @@ class ChannelAssociatedGroupController
   bool SendMessage(mojo::Message* message) {
     if (task_runner_->BelongsToCurrentThread()) {
       DCHECK(thread_checker_.CalledOnValidThread());
-      if (!connector_) {
-        // Pipe may not be bound yet, so we queue the message.
-        std::unique_ptr<mojo::Message> queued_message(new mojo::Message);
-        message->MoveTo(queued_message.get());
-        outgoing_messages_.emplace_back(std::move(queued_message));
-        return true;
-      }
-      return connector_->Accept(message);
+      return connector_.Accept(message);
     } else {
       // We always post tasks to the master endpoint thread when called from the
       // proxy thread in order to simulate IPC::ChannelProxy::Send behavior.
@@ -408,7 +346,7 @@ class ChannelAssociatedGroupController
     }
 
     for (auto& endpoint : endpoints_to_notify) {
-      // Because a notification may in turn detach any endpoint, we have to
+      // Because an notification may in turn detach any endpoint, we have to
       // check each client again here.
       if (endpoint->client())
         NotifyEndpointOfError(endpoint.get(), false /* force_async */);
@@ -452,6 +390,30 @@ class ChannelAssociatedGroupController
     endpoint->set_peer_closed();
     if (endpoint->closed() && endpoint->peer_closed())
       endpoints_.erase(endpoint->id());
+  }
+
+  void NotifyPeerEndpointClosed(mojo::InterfaceId id) {
+    if (task_runner_->BelongsToCurrentThread()) {
+      if (connector_.is_valid())
+        control_message_proxy_.NotifyPeerEndpointClosed(id);
+    } else {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&ChannelAssociatedGroupController
+              ::NotifyPeerEndpointClosed, this, id));
+    }
+  }
+
+  void NotifyEndpointClosedBeforeSent(mojo::InterfaceId id) {
+    if (task_runner_->BelongsToCurrentThread()) {
+      if (connector_.is_valid())
+        control_message_proxy_.NotifyEndpointClosedBeforeSent(id);
+    } else {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&ChannelAssociatedGroupController
+              ::NotifyEndpointClosedBeforeSent, this, id));
+    }
   }
 
   Endpoint* FindOrInsertEndpoint(mojo::InterfaceId id, bool* inserted) {
@@ -548,7 +510,7 @@ class ChannelAssociatedGroupController
     if (inserted) {
       MarkClosedAndMaybeRemove(endpoint);
       if (!mojo::IsMasterInterfaceId(id))
-        control_message_proxy_.NotifyPeerEndpointClosed(id);
+        NotifyPeerEndpointClosed(id);
       return nullptr;
     }
 
@@ -565,7 +527,6 @@ class ChannelAssociatedGroupController
     if (mojo::IsMasterInterfaceId(id))
       return false;
 
-    scoped_refptr<ChannelAssociatedGroupController> keepalive(this);
     base::AutoLock locker(lock_);
     scoped_refptr<Endpoint> endpoint = FindOrInsertEndpoint(id, nullptr);
     if (!endpoint->peer_closed()) {
@@ -596,83 +557,291 @@ class ChannelAssociatedGroupController
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
-  const bool set_interface_id_namespace_bit_;
-  std::unique_ptr<mojo::Connector> connector_;
+  const uint32_t id_namespace_mask_;
+  std::unique_ptr<mojo::AssociatedGroup> associated_group_;
+  mojo::Connector connector_;
   mojo::MessageHeaderValidator header_validator_;
   mojo::PipeControlMessageHandler control_message_handler_;
-  ControlMessageProxyThunk control_message_proxy_thunk_;
-  mojo::PipeControlMessageProxy control_message_proxy_;
-
-  // Outgoing messages that were sent before this controller was bound to a
-  // real message pipe.
-  std::vector<std::unique_ptr<mojo::Message>> outgoing_messages_;
 
   // Guards the fields below for thread-safe access.
   base::Lock lock_;
 
   bool encountered_error_ = false;
-
-  // ID #1 is reserved for the mojom::Channel interface.
-  uint32_t next_interface_id_ = 2;
-
+  uint32_t next_interface_id_ = 1;
   std::map<uint32_t, scoped_refptr<Endpoint>> endpoints_;
+  mojo::PipeControlMessageProxy control_message_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelAssociatedGroupController);
 };
 
-class MojoBootstrapImpl : public MojoBootstrap {
+class BootstrapMasterProxy {
  public:
-  MojoBootstrapImpl(
-      mojo::ScopedMessagePipeHandle handle,
-      Delegate* delegate,
-      const scoped_refptr<ChannelAssociatedGroupController> controller)
-            : controller_(controller),
-        handle_(std::move(handle)),
-        delegate_(delegate) {
-    associated_group_ = controller_->CreateAssociatedGroup();
+  BootstrapMasterProxy() {}
+  ~BootstrapMasterProxy() {
+    endpoint_client_.reset();
+    proxy_.reset();
+    if (controller_)
+      controller_->ShutDown();
   }
 
-  ~MojoBootstrapImpl() override {
-    controller_->ShutDown();
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    DCHECK(!controller_);
+    controller_ = new ChannelAssociatedGroupController(true, std::move(handle));
+    endpoint_client_.reset(new mojo::InterfaceEndpointClient(
+        controller_->CreateLocalEndpointHandle(mojo::kMasterInterfaceId),
+        nullptr,
+        base::MakeUnique<typename mojom::Bootstrap::ResponseValidator_>(),
+        false, base::ThreadTaskRunnerHandle::Get()));
+    proxy_.reset(new mojom::BootstrapProxy(endpoint_client_.get()));
+    proxy_->serialization_context()->group_controller = controller_;
+  }
+
+  void set_connection_error_handler(const base::Closure& handler) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->set_connection_error_handler(handler);
+  }
+
+  mojo::AssociatedGroup* associated_group() {
+    DCHECK(controller_);
+    return controller_->associated_group();
+  }
+
+  ChannelAssociatedGroupController* controller() {
+    DCHECK(controller_);
+    return controller_.get();
+  }
+
+  mojom::Bootstrap* operator->() {
+    DCHECK(proxy_);
+    return proxy_.get();
   }
 
  private:
-  // MojoBootstrap:
-  void Connect() override {
-    controller_->Bind(std::move(handle_));
-
-    IPC::mojom::ChannelAssociatedPtr sender;
-    IPC::mojom::ChannelAssociatedRequest receiver;
-    controller_->CreateChannelEndpoints(&sender, &receiver);
-
-    delegate_->OnPipesAvailable(std::move(sender), std::move(receiver));
-  }
-
-  mojo::AssociatedGroup* GetAssociatedGroup() override {
-    return associated_group_.get();
-  }
-
+  std::unique_ptr<mojom::BootstrapProxy> proxy_;
   scoped_refptr<ChannelAssociatedGroupController> controller_;
+  std::unique_ptr<mojo::InterfaceEndpointClient> endpoint_client_;
 
-  mojo::ScopedMessagePipeHandle handle_;
-  Delegate* delegate_;
-  std::unique_ptr<mojo::AssociatedGroup> associated_group_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoBootstrapImpl);
+  DISALLOW_COPY_AND_ASSIGN(BootstrapMasterProxy);
 };
 
+class BootstrapMasterBinding {
+ public:
+  explicit BootstrapMasterBinding(mojom::Bootstrap* impl) {
+    stub_.set_sink(impl);
+  }
+
+  ~BootstrapMasterBinding() {
+    endpoint_client_.reset();
+    if (controller_)
+      controller_->ShutDown();
+  }
+
+  void set_connection_error_handler(const base::Closure& handler) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->set_connection_error_handler(handler);
+  }
+
+  mojo::AssociatedGroup* associated_group() {
+    DCHECK(controller_);
+    return controller_->associated_group();
+  }
+
+  ChannelAssociatedGroupController* controller() {
+    DCHECK(controller_);
+    return controller_.get();
+  }
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    DCHECK(!controller_);
+    controller_ =
+        new ChannelAssociatedGroupController(false, std::move(handle));
+    stub_.serialization_context()->group_controller = controller_;
+
+    endpoint_client_.reset(new mojo::InterfaceEndpointClient(
+        controller_->CreateLocalEndpointHandle(mojo::kMasterInterfaceId),
+        &stub_,
+        base::MakeUnique<typename mojom::Bootstrap::RequestValidator_>(),
+        false, base::ThreadTaskRunnerHandle::Get()));
+  }
+
+ private:
+  mojom::BootstrapStub stub_;
+  scoped_refptr<ChannelAssociatedGroupController> controller_;
+  std::unique_ptr<mojo::InterfaceEndpointClient> endpoint_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(BootstrapMasterBinding);
+};
+
+// MojoBootstrap for the server process. You should create the instance
+// using MojoBootstrap::Create().
+class MojoServerBootstrap : public MojoBootstrap {
+ public:
+  MojoServerBootstrap();
+
+ private:
+  // MojoBootstrap implementation.
+  void Connect() override;
+
+  mojo::AssociatedGroup* GetAssociatedGroup() override {
+    return bootstrap_.associated_group();
+  }
+
+  void SetProxyTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+    bootstrap_.controller()->SetProxyTaskRunner(task_runner);
+  }
+
+  void OnInitDone(int32_t peer_pid);
+
+  BootstrapMasterProxy bootstrap_;
+  IPC::mojom::ChannelAssociatedPtrInfo send_channel_;
+  IPC::mojom::ChannelAssociatedRequest receive_channel_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoServerBootstrap);
+};
+
+MojoServerBootstrap::MojoServerBootstrap() = default;
+
+void MojoServerBootstrap::Connect() {
+  DCHECK_EQ(state(), STATE_INITIALIZED);
+
+  bootstrap_.Bind(TakeHandle());
+  bootstrap_.set_connection_error_handler(
+      base::Bind(&MojoServerBootstrap::Fail, base::Unretained(this)));
+
+  IPC::mojom::ChannelAssociatedRequest send_channel_request;
+  IPC::mojom::ChannelAssociatedPtrInfo receive_channel;
+
+  bootstrap_.associated_group()->CreateAssociatedInterface(
+      mojo::AssociatedGroup::WILL_PASS_REQUEST, &send_channel_,
+      &send_channel_request);
+  bootstrap_.associated_group()->CreateAssociatedInterface(
+      mojo::AssociatedGroup::WILL_PASS_PTR, &receive_channel,
+      &receive_channel_request_);
+
+  bootstrap_->Init(
+      std::move(send_channel_request), std::move(receive_channel),
+      GetSelfPID(),
+      base::Bind(&MojoServerBootstrap::OnInitDone, base::Unretained(this)));
+
+  set_state(STATE_WAITING_ACK);
+}
+
+void MojoServerBootstrap::OnInitDone(int32_t peer_pid) {
+  if (state() != STATE_WAITING_ACK) {
+    set_state(STATE_ERROR);
+    LOG(ERROR) << "Got inconsistent message from client.";
+    return;
+  }
+
+  set_state(STATE_READY);
+  bootstrap_.set_connection_error_handler(base::Closure());
+  delegate()->OnPipesAvailable(std::move(send_channel_),
+                               std::move(receive_channel_request_), peer_pid);
+}
+
+// MojoBootstrap for client processes. You should create the instance
+// using MojoBootstrap::Create().
+class MojoClientBootstrap : public MojoBootstrap, public mojom::Bootstrap {
+ public:
+  MojoClientBootstrap();
+
+ private:
+  // MojoBootstrap implementation.
+  void Connect() override;
+
+  mojo::AssociatedGroup* GetAssociatedGroup() override {
+    return binding_.associated_group();
+  }
+
+  void SetProxyTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+    binding_.controller()->SetProxyTaskRunner(task_runner);
+  }
+
+  // mojom::Bootstrap implementation.
+  void Init(mojom::ChannelAssociatedRequest receive_channel,
+            mojom::ChannelAssociatedPtrInfo send_channel,
+            int32_t peer_pid,
+            const InitCallback& callback) override;
+
+  BootstrapMasterBinding binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoClientBootstrap);
+};
+
+MojoClientBootstrap::MojoClientBootstrap() : binding_(this) {}
+
+void MojoClientBootstrap::Connect() {
+  binding_.Bind(TakeHandle());
+  binding_.set_connection_error_handler(
+      base::Bind(&MojoClientBootstrap::Fail, base::Unretained(this)));
+}
+
+void MojoClientBootstrap::Init(mojom::ChannelAssociatedRequest receive_channel,
+                               mojom::ChannelAssociatedPtrInfo send_channel,
+                               int32_t peer_pid,
+                               const InitCallback& callback) {
+  callback.Run(GetSelfPID());
+  set_state(STATE_READY);
+  binding_.set_connection_error_handler(base::Closure());
+  delegate()->OnPipesAvailable(std::move(send_channel),
+                               std::move(receive_channel), peer_pid);
+}
+
 }  // namespace
+
+// MojoBootstrap
 
 // static
 std::unique_ptr<MojoBootstrap> MojoBootstrap::Create(
     mojo::ScopedMessagePipeHandle handle,
     Channel::Mode mode,
-    Delegate* delegate,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
-  return base::MakeUnique<MojoBootstrapImpl>(
-      std::move(handle), delegate,
-      new ChannelAssociatedGroupController(mode == Channel::MODE_SERVER,
-                                           ipc_task_runner));
+    Delegate* delegate) {
+  CHECK(mode == Channel::MODE_CLIENT || mode == Channel::MODE_SERVER);
+  std::unique_ptr<MojoBootstrap> self =
+      mode == Channel::MODE_CLIENT
+          ? std::unique_ptr<MojoBootstrap>(new MojoClientBootstrap)
+          : std::unique_ptr<MojoBootstrap>(new MojoServerBootstrap);
+
+  self->Init(std::move(handle), delegate);
+  return self;
+}
+
+MojoBootstrap::MojoBootstrap() : delegate_(NULL), state_(STATE_INITIALIZED) {
+}
+
+MojoBootstrap::~MojoBootstrap() {}
+
+void MojoBootstrap::Init(mojo::ScopedMessagePipeHandle handle,
+                         Delegate* delegate) {
+  handle_ = std::move(handle);
+  delegate_ = delegate;
+}
+
+base::ProcessId MojoBootstrap::GetSelfPID() const {
+#if defined(OS_LINUX)
+  if (int global_pid = Channel::GetGlobalPid())
+    return global_pid;
+#endif  // OS_LINUX
+#if defined(OS_NACL)
+  return -1;
+#else
+  return base::GetCurrentProcId();
+#endif  // defined(OS_NACL)
+}
+
+void MojoBootstrap::Fail() {
+  set_state(STATE_ERROR);
+  delegate()->OnBootstrapError();
+}
+
+bool MojoBootstrap::HasFailed() const {
+  return state() == STATE_ERROR;
+}
+
+mojo::ScopedMessagePipeHandle MojoBootstrap::TakeHandle() {
+  return std::move(handle_);
 }
 
 }  // namespace IPC
