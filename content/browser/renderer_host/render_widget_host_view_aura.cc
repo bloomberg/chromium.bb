@@ -1613,14 +1613,14 @@ void RenderWidgetHostViewAura::OnInputMethodChanged() {
 
 bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) {
-  // TODO(wjmaclean): can host_ ever be null?
-  if (!host_)
+  if (!GetTextInputManager() && !GetTextInputManager()->GetActiveWidget())
     return false;
-  host_->UpdateTextDirection(
-      direction == base::i18n::RIGHT_TO_LEFT ?
-      blink::WebTextDirectionRightToLeft :
-      blink::WebTextDirectionLeftToRight);
-  host_->NotifyTextDirection();
+
+  GetTextInputManager()->GetActiveWidget()->UpdateTextDirection(
+      direction == base::i18n::RIGHT_TO_LEFT
+          ? blink::WebTextDirectionRightToLeft
+          : blink::WebTextDirectionLeftToRight);
+  GetTextInputManager()->GetActiveWidget()->NotifyTextDirection();
   return true;
 }
 
