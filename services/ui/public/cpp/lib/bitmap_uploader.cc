@@ -33,8 +33,7 @@ BitmapUploader::BitmapUploader(Window* window)
       width_(0),
       height_(0),
       format_(BGRA),
-      next_resource_id_(1u),
-      id_namespace_(0u) {}
+      next_resource_id_(1u) {}
 
 BitmapUploader::~BitmapUploader() {
 }
@@ -183,12 +182,6 @@ uint32_t BitmapUploader::BindTextureForSize(const gfx::Size& size) {
                  0, TextureFormat(), GL_UNSIGNED_BYTE, 0);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   return texture;
-}
-
-void BitmapUploader::SetIdNamespace(uint32_t id_namespace) {
-  id_namespace_ = id_namespace;
-  if (color_ != g_transparent_color || bitmap_.get())
-    Upload();
 }
 
 void BitmapUploader::OnResourcesReturned(

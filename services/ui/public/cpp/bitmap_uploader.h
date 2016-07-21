@@ -78,7 +78,6 @@ class BitmapUploader : public WindowSurfaceClient {
   Format format_;
   std::unique_ptr<std::vector<unsigned char>> bitmap_;
   uint32_t next_resource_id_;
-  uint32_t id_namespace_;
   base::hash_map<uint32_t, uint32_t> resource_to_texture_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapUploader);
