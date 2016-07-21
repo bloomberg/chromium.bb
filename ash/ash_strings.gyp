@@ -5,11 +5,11 @@
 {
   'targets': [
     {
-      # GN version: //ash/strings
+      # GN version: //ash/common/strings
       'target_name': 'ash_strings',
       'type': 'none',
       'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ash/strings',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ash/common/strings',
       },
       'actions': [
         {
@@ -24,7 +24,7 @@
     },
     {
       # Creates a pak file containing strings for ash_unittests, etc.
-      # GN version: //ash/strings:ash_test_strings
+      # GN version: //ash/common/strings:ash_test_strings
       'target_name': 'ash_test_strings',
       'type': 'none',
       'dependencies': [
@@ -37,7 +37,7 @@
           'variables': {
             'pak_output': '<(PRODUCT_DIR)/ash_test_strings.pak',
             'pak_inputs': [
-              '<(SHARED_INTERMEDIATE_DIR)/ash/strings/ash_strings_en-US.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ash/common/strings/ash_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],

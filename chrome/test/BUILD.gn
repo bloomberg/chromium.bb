@@ -1961,8 +1961,8 @@ test("unit_tests") {
                     "//chrome")
     deps += [
       "//ash:test_support",
+      "//ash/common/strings",
       "//ash/resources",
-      "//ash/strings",
     ]
 
     # We eventually want to compile both in Win Aura builds, see

@@ -152,18 +152,18 @@ mojo_application_manifest("manifest") {
 repack("resources") {
   output = "$root_out_dir/ash_mus_resources.pak"
   sources = [
+    "$root_gen_dir/ash/common/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ash/mus/resources/ash_mus_resources_100_percent.pak",
     "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
-    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
     "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
   ]
   deps = [
+    "//ash/common/strings",
     "//ash/mus/resources",
     "//ash/resources",
-    "//ash/strings",
     "//ui/resources",
     "//ui/strings",
     "//ui/views/mus:resources",

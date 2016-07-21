@@ -85,9 +85,9 @@ mojo_native_application("sysui") {
   ]
   deps = [
     ":lib",
+    "//ash/common/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
-    "//ash/strings:ash_test_strings",
     "//services/shell/public/cpp",
   ]
 

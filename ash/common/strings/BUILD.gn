@@ -6,7 +6,7 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 grit("strings") {
-  source = "../ash_strings.grd"
+  source = "../../ash_strings.grd"
   outputs = [
     "grit/ash_strings.h",
     "ash_strings_am.pak",
@@ -74,13 +74,13 @@ template("repack_one_locale_ash") {
   repack(target_name) {
     # Each input pak file should also have a deps line for completeness.
     sources = [
-      "$root_gen_dir/ash/strings/ash_strings_${locale}.pak",
+      "$root_gen_dir/ash/common/strings/ash_strings_${locale}.pak",
       "$root_gen_dir/ui/strings/app_locale_settings_${locale}.pak",
       "$root_gen_dir/ui/strings/ui_strings_${locale}.pak",
     ]
 
     deps = [
-      "//ash/strings",
+      "//ash/common/strings",
       "//ui/strings:app_locale_settings",
       "//ui/strings:ui_strings",
     ]

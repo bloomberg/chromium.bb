@@ -59,8 +59,9 @@ template("_repack_one_locale") {
     }
 
     if (use_ash) {
-      sources += [ "${root_gen_dir}/ash/strings/ash_strings_${locale}.pak" ]
-      deps += [ "//ash/strings" ]
+      sources +=
+          [ "${root_gen_dir}/ash/common/strings/ash_strings_${locale}.pak" ]
+      deps += [ "//ash/common/strings" ]
     }
     if (is_chromeos) {
       sources += [
