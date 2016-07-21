@@ -28,6 +28,10 @@ namespace metrics {
 class MetricsService;
 }
 
+namespace network_hints {
+class NetworkHintsImpl;
+}
+
 namespace chromecast {
 class CastService;
 
@@ -170,8 +174,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   }
 
  private:
-  void AddNetworkHintsMessageFilter(int render_process_id,
-                                    net::URLRequestContext* context);
+  void AddNetworkHintsImpl(int render_process_id,
+                           net::URLRequestContext* context);
 
   net::X509Certificate* SelectClientCertificateOnIOThread(
       GURL requesting_url,
@@ -192,6 +196,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;
   std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
+
+  std::unique_ptr<network_hints::NetworkHintsImpl> network_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };

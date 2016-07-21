@@ -38,7 +38,7 @@
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
-#include "components/network_hints/browser/network_hints_message_filter.h"
+#include "components/network_hints/browser/network_hints_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -52,6 +52,7 @@
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
@@ -209,15 +210,16 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
   // getting HostResolver.
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&net::URLRequestContextGetter::GetURLRequestContext,
-                 base::Unretained(
-                    url_request_context_factory_->GetSystemGetter())),
-      base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
+      base::Bind(
+          &net::URLRequestContextGetter::GetURLRequestContext,
+          base::Unretained(url_request_context_factory_->GetSystemGetter())),
+      base::Bind(&CastContentBrowserClient::AddNetworkHintsImpl,
                  base::Unretained(this), host->GetID()));
 }
 
-void CastContentBrowserClient::AddNetworkHintsMessageFilter(
-    int render_process_id, net::URLRequestContext* context) {
+void CastContentBrowserClient::AddNetworkHintsImpl(
+    int render_process_id,
+    net::URLRequestContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderProcessHost* host =
@@ -225,10 +227,15 @@ void CastContentBrowserClient::AddNetworkHintsMessageFilter(
   if (!host)
     return;
 
-  scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
-      new network_hints::NetworkHintsMessageFilter(
-          url_request_context_factory_->host_resolver()));
-  host->AddFilter(network_hints_message_filter.get());
+  network_hints_.reset(new network_hints::NetworkHintsImpl(
+      url_request_context_factory_->host_resolver()));
+  // The client outlives the host, which owns the registry, and thus
+  // |network_hints_| will outlive the registry.
+  host->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&network_hints::NetworkHintsImpl::Bind,
+                 base::Unretained(network_hints_.get())),
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO));
 }
 
 bool CastContentBrowserClient::IsHandledURL(const GURL& url) {

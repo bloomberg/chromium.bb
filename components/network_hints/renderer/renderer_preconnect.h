@@ -18,6 +18,7 @@
 #define COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_PRECONNECT_H_
 
 #include "base/macros.h"
+#include "components/network_hints/public/interfaces/network_hints.mojom.h"
 #include "url/gurl.h"
 
 namespace network_hints {
@@ -33,6 +34,11 @@ class RendererPreconnect {
   void Preconnect(const GURL& url, bool allow_credentials);
 
  private:
+  // Get a connected NetworkHints.
+  mojom::NetworkHints& GetNetworkHints();
+
+  // Don't use directly. Instead call |GetNetworkHints()|.
+  mojom::NetworkHintsPtr network_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPreconnect);
 };  // class RendererPreconnect

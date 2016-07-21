@@ -25,7 +25,6 @@
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/network_hints/common/network_hints_common.h"
-#include "components/network_hints/common/network_hints_messages.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -42,9 +41,8 @@ using content::BrowserThread;
 
 namespace {
 
-const uint32_t kFilteredMessageClasses[] = {
-    ChromeMsgStart, ContentSettingsMsgStart, NetworkHintsMsgStart,
-};
+const uint32_t kFilteredMessageClasses[] = {ChromeMsgStart,
+                                            ContentSettingsMsgStart};
 
 }  // namespace
 
@@ -64,8 +62,6 @@ ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
 bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
-    IPC_MESSAGE_HANDLER(NetworkHintsMsg_Preconnect, OnPreconnect)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -106,17 +102,17 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
   }
 }
 
-void ChromeRenderMessageFilter::OnDnsPrefetch(
+void ChromeRenderMessageFilter::DNSPrefetch(
     const network_hints::LookupRequest& request) {
   if (predictor_)
     predictor_->DnsPrefetchList(request.hostname_list);
 }
 
-void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
-                                             bool allow_credentials,
-                                             int count) {
+void ChromeRenderMessageFilter::Preconnect(const GURL& url,
+                                           bool allow_credentials,
+                                           int count) {
   if (count < 1) {
-    LOG(WARNING) << "NetworkHintsMsg_Preconnect IPC with invalid count: "
+    LOG(WARNING) << "NetworkHints::Preconnect IPC with invalid count: "
                  << count;
     return;
   }
@@ -126,6 +122,11 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
                               chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
                               allow_credentials, count);
   }
+}
+
+void ChromeRenderMessageFilter::BindNetworkHints(
+    network_hints::mojom::NetworkHintsRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(
