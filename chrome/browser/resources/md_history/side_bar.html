@@ -48,7 +48,7 @@
         color: #5a5a5a;
       }
 
-      iron-selector a {
+      iron-selector > a {
         @apply(--paper-font-subhead);
         -webkit-padding-start: 24px;
         align-items: center;
@@ -64,12 +64,12 @@
         text-decoration: none;
       }
 
-      iron-selector a:focus {
+      iron-selector > a:focus {
         outline: 0;
         position: relative;
       }
 
-      iron-selector a:focus::before {
+      iron-selector > a:focus::before {
         @apply(--layout-fit);
 
         background: currentColor;
@@ -78,7 +78,7 @@
         pointer-events: none;
       }
 
-      iron-selector a.iron-selected {
+      iron-selector > a.iron-selected {
         color: var(--google-blue-500);
         font-weight: 500;
       }
