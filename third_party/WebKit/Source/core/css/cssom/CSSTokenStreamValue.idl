@@ -6,6 +6,5 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM,
 ] interface CSSTokenStreamValue : CSSStyleValue {
-    iterable<DOMString>;
-// TODO(anthonyhkf): change to iterable<(DOMString or CSSVariableReferenceValue)>;
+    iterable<(DOMString or CSSVariableReferenceValue)>;
 };

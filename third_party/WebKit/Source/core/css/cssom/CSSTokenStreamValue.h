@@ -6,12 +6,13 @@
 #define CSSTokenStreamValue_h
 
 #include "bindings/core/v8/Iterable.h"
+#include "bindings/core/v8/StringOrCSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class CORE_EXPORT CSSTokenStreamValue final : public CSSStyleValue, public ValueIterable<String> {
+class CORE_EXPORT CSSTokenStreamValue final : public CSSStyleValue, public ValueIterable<StringOrCSSVariableReferenceValue> {
     WTF_MAKE_NONCOPYABLE(CSSTokenStreamValue);
     DEFINE_WRAPPERTYPEINFO();
 public:

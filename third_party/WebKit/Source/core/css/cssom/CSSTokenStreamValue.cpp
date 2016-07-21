@@ -12,25 +12,25 @@ namespace blink {
 
 namespace {
 
-class TokenStreamValueIterationSource final : public ValueIterable<String>::IterationSource {
+class TokenStreamValueIterationSource final : public ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource {
 public:
     explicit TokenStreamValueIterationSource(CSSTokenStreamValue* tokenStreamValue)
         : m_tokenStreamValue(tokenStreamValue)
     {
     }
 
-    bool next(ScriptState*, String& value, ExceptionState&) override
+    bool next(ScriptState*, StringOrCSSVariableReferenceValue& value, ExceptionState&) override
     {
         if (m_index >= m_tokenStreamValue->size())
             return false;
-        value = m_tokenStreamValue->fragmentAtIndex(m_index);
+        value.setString(m_tokenStreamValue->fragmentAtIndex(m_index));
         return true;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_tokenStreamValue);
-        ValueIterable<String>::IterationSource::trace(visitor);
+        ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource::trace(visitor);
     }
 
 private:
@@ -39,7 +39,7 @@ private:
 
 } // namespace
 
-ValueIterable<String>::IterationSource* CSSTokenStreamValue::startIteration(ScriptState*, ExceptionState&)
+ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource* CSSTokenStreamValue::startIteration(ScriptState*, ExceptionState&)
 {
     return new TokenStreamValueIterationSource(this);
 }
