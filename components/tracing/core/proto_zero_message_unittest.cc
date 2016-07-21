@@ -10,6 +10,7 @@
 
 #include "base/hash.h"
 #include "components/tracing/core/proto_utils.h"
+#include "components/tracing/core/proto_zero_message_handle.h"
 #include "components/tracing/test/fake_scattered_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,9 +22,8 @@ const uint8_t kTestBytes[] = {0, 0, 0, 0, 0x42, 1, 0x42, 0xff, 0x42, 0};
 const char kStartWatermark[] = {'a', 'b', 'c', 'd', '1', '2', '3', '\0'};
 const char kEndWatermark[] = {'9', '8', '7', '6', 'z', 'w', 'y', '\0'};
 
-class FakeMessage : public ProtoZeroMessage {
- public:
-};
+class FakeRootMessage : public ProtoZeroMessage {};
+class FakeChildMessage : public ProtoZeroMessage {};
 
 class ProtoZeroMessageTest : public ::testing::Test {
  public:
@@ -48,17 +48,17 @@ class ProtoZeroMessageTest : public ::testing::Test {
     buffer_.reset();
   }
 
-  ProtoZeroMessage* NewMessage() {
+  FakeRootMessage* NewMessage() {
     std::unique_ptr<uint8_t[]> mem(
-        new uint8_t[sizeof(kStartWatermark) + sizeof(ProtoZeroMessage) +
+        new uint8_t[sizeof(kStartWatermark) + sizeof(FakeRootMessage) +
                     sizeof(kEndWatermark)]);
     uint8_t* msg_start = mem.get() + sizeof(kStartWatermark);
     memcpy(mem.get(), kStartWatermark, sizeof(kStartWatermark));
-    memset(msg_start, 0, sizeof(ProtoZeroMessage));
-    memcpy(msg_start + sizeof(ProtoZeroMessage), kEndWatermark,
+    memset(msg_start, 0, sizeof(FakeRootMessage));
+    memcpy(msg_start + sizeof(FakeRootMessage), kEndWatermark,
            sizeof(kEndWatermark));
     messages_.push_back(std::move(mem));
-    ProtoZeroMessage* msg = reinterpret_cast<ProtoZeroMessage*>(msg_start);
+    FakeRootMessage* msg = reinterpret_cast<FakeRootMessage*>(msg_start);
     msg->Reset(stream_writer_.get());
     return msg;
   }
@@ -81,8 +81,9 @@ class ProtoZeroMessageTest : public ::testing::Test {
       msg->AppendBytes(i, kTestBytes, sizeof(kTestBytes));
 
     if (depth < ProtoZeroMessage::kMaxNestingDepth) {
-      auto* child_msg = msg->BeginNestedMessage<FakeMessage>(1 + depth * 10);
-      BuildNestedMessages(depth + 1, child_msg);
+      auto* nested_msg =
+          msg->BeginNestedMessage<FakeChildMessage>(1 + depth * 10);
+      BuildNestedMessages(depth + 1, nested_msg);
     }
 
     for (uint32_t i = 129; i <= 256; ++i)
@@ -131,12 +132,13 @@ TEST_F(ProtoZeroMessageTest, NestedMessagesSimple) {
   ProtoZeroMessage* root_msg = NewMessage();
   root_msg->AppendVarIntU32(1 /* field_id */, 1);
 
-  FakeMessage* nested_msg =
-      root_msg->BeginNestedMessage<FakeMessage>(128 /* field_id */);
+  FakeChildMessage* nested_msg =
+      root_msg->BeginNestedMessage<FakeChildMessage>(128 /* field_id */);
   ASSERT_EQ(0u, reinterpret_cast<uintptr_t>(nested_msg) % sizeof(void*));
   nested_msg->AppendVarIntU32(2 /* field_id */, 2);
 
-  nested_msg = root_msg->BeginNestedMessage<FakeMessage>(129 /* field_id */);
+  nested_msg =
+      root_msg->BeginNestedMessage<FakeChildMessage>(129 /* field_id */);
   nested_msg->AppendVarIntU32(4 /* field_id */, 2);
 
   root_msg->AppendVarIntU32(5 /* field_id */, 3);
@@ -170,15 +172,17 @@ TEST_F(ProtoZeroMessageTest, NestedMessagesSimple) {
 // on finalization.
 TEST_F(ProtoZeroMessageTest, BackfillSizeOnFinalization) {
   ProtoZeroMessage* root_msg = NewMessage();
-  uint8_t root_msg_size[proto::kMessageLengthFieldSize];
+  uint8_t root_msg_size[proto::kMessageLengthFieldSize] = {};
   root_msg->set_size_field(
       {&root_msg_size[0], &root_msg_size[proto::kMessageLengthFieldSize]});
   root_msg->AppendVarIntU32(1, 0x42);
 
-  FakeMessage* nested_msg_1 = root_msg->BeginNestedMessage<FakeMessage>(2);
+  FakeChildMessage* nested_msg_1 =
+      root_msg->BeginNestedMessage<FakeChildMessage>(2);
   nested_msg_1->AppendVarIntU32(3, 0x43);
 
-  FakeMessage* nested_msg_2 = nested_msg_1->BeginNestedMessage<FakeMessage>(4);
+  FakeChildMessage* nested_msg_2 =
+      nested_msg_1->BeginNestedMessage<FakeChildMessage>(4);
   uint8_t buf200[200];
   memset(buf200, 0x42, sizeof(buf200));
   nested_msg_2->AppendBytes(5, buf200, sizeof(buf200));
@@ -224,6 +228,97 @@ TEST_F(ProtoZeroMessageTest, StressTest) {
   std::string full_buf = GetNextSerializedBytes(GetNumSerializedBytes());
   uint32_t buf_hash = base::SuperFastHash(full_buf.data(), full_buf.size());
   EXPECT_EQ(0x14BC1BA3u, buf_hash);
+}
+
+TEST_F(ProtoZeroMessageTest, MessageHandle) {
+  FakeRootMessage* msg1 = NewMessage();
+  FakeRootMessage* msg2 = NewMessage();
+  FakeRootMessage* msg3 = NewMessage();
+  FakeRootMessage* ignored_msg = NewMessage();
+  uint8_t msg1_size[proto::kMessageLengthFieldSize] = {};
+  uint8_t msg2_size[proto::kMessageLengthFieldSize] = {};
+  uint8_t msg3_size[proto::kMessageLengthFieldSize] = {};
+  msg1->set_size_field(
+      {&msg1_size[0], &msg1_size[proto::kMessageLengthFieldSize]});
+  msg2->set_size_field(
+      {&msg2_size[0], &msg2_size[proto::kMessageLengthFieldSize]});
+  msg3->set_size_field(
+      {&msg3_size[0], &msg3_size[proto::kMessageLengthFieldSize]});
+
+  // Test that the handle going out of scope causes the finalization of the
+  // target message.
+  {
+    ProtoZeroMessageHandle<FakeRootMessage> handle1(msg1);
+    handle1->AppendBytes(1 /* field_id */, kTestBytes, 1 /* size */);
+    ASSERT_EQ(0u, msg1_size[0]);
+  }
+  ASSERT_EQ(0x83u, msg1_size[0]);
+
+  // Test that the handle can be late initialized.
+  ProtoZeroMessageHandle<FakeRootMessage> handle2(ignored_msg);
+  handle2 = ProtoZeroMessageHandle<FakeRootMessage>(msg2);
+  handle2->AppendBytes(1 /* field_id */, kTestBytes, 2 /* size */);
+  ASSERT_EQ(0u, msg2_size[0]);  // |msg2| should not be finalized yet.
+
+  // Test that std::move works and does NOT cause finalization of the moved
+  // message.
+  ProtoZeroMessageHandle<FakeRootMessage> handle_swp(ignored_msg);
+  handle_swp = std::move(handle2);
+  ASSERT_EQ(0u, msg2_size[0]);  // msg2 should be NOT finalized yet.
+  handle_swp->AppendBytes(2 /* field_id */, kTestBytes, 3 /* size */);
+
+  ProtoZeroMessageHandle<FakeRootMessage> handle3(msg3);
+  handle3->AppendBytes(1 /* field_id */, kTestBytes, 4 /* size */);
+  ASSERT_EQ(0u, msg3_size[0]);  // msg2 should be NOT finalized yet.
+
+  // Both |handle3| and |handle_swp| point to a valid message (respectively,
+  // |msg3| and |msg2|). Now move |handle3| into |handle_swp|.
+  handle_swp = std::move(handle3);
+  ASSERT_EQ(0x89u, msg2_size[0]);  // |msg2| should be finalized at this point.
+
+  // At this point writing into handle_swp should actually write into |msg3|.
+  ASSERT_EQ(msg3, &*handle_swp);
+  handle_swp->AppendBytes(2 /* field_id */, kTestBytes, 8 /* size */);
+  ProtoZeroMessageHandle<FakeRootMessage> another_handle(ignored_msg);
+  handle_swp = std::move(another_handle);
+  ASSERT_EQ(0x90u, msg3_size[0]);  // |msg3| should be finalized at this point.
+
+#if DCHECK_IS_ON()
+  // In developer builds w/ DCHECK on a finalized message should invalidate the
+  // handle, in order to early catch bugs in the client code.
+  FakeRootMessage* msg4 = NewMessage();
+  ProtoZeroMessageHandle<FakeRootMessage> handle4(msg4);
+  ASSERT_EQ(msg4, &*handle4);
+  msg4->Finalize();
+  ASSERT_EQ(nullptr, &*handle4);
+#endif
+
+  // Test also the behavior of handle with non-root (nested) messages.
+
+  ContiguousMemoryRange size_msg_2;
+  {
+    auto* nested_msg_1 = NewMessage()->BeginNestedMessage<FakeChildMessage>(3);
+    ProtoZeroMessageHandle<FakeChildMessage> child_handle_1(nested_msg_1);
+    ContiguousMemoryRange size_msg_1 = nested_msg_1->size_field();
+    memset(size_msg_1.begin, 0, size_msg_1.size());
+    child_handle_1->AppendVarIntU32(1, 0x11);
+
+    auto* nested_msg_2 = NewMessage()->BeginNestedMessage<FakeChildMessage>(2);
+    size_msg_2 = nested_msg_2->size_field();
+    memset(size_msg_2.begin, 0, size_msg_2.size());
+    ProtoZeroMessageHandle<FakeChildMessage> child_handle_2(nested_msg_2);
+    child_handle_2->AppendVarIntU32(2, 0xFF);
+
+    // |nested_msg_1| should not be finalized yet.
+    ASSERT_EQ(0u, size_msg_1.begin[0]);
+
+    // This move should cause |nested_msg_1| to be finalized, but not
+    // |nested_msg_2|, which will be finalized only after the current scope.
+    child_handle_1 = std::move(child_handle_2);
+    ASSERT_EQ(0x82u, size_msg_1.begin[0]);
+    ASSERT_EQ(0u, size_msg_2.begin[0]);
+  }
+  ASSERT_EQ(0x83u, size_msg_2.begin[0]);
 }
 
 }  // namespace v2

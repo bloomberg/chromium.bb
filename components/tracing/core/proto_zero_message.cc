@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "components/tracing/core/proto_utils.h"
+#include "components/tracing/core/proto_zero_message_handle.h"
 
 #if !defined(ARCH_CPU_LITTLE_ENDIAN)
 // The memcpy() for float and double below needs to be adjusted if we want to
@@ -44,6 +45,7 @@ void ProtoZeroMessage::Reset(ScatteredStreamWriter* stream_writer) {
   nesting_depth_ = 0;
 #if DCHECK_IS_ON()
   sealed_ = false;
+  handle_ = nullptr;
 #endif
 }
 
@@ -128,6 +130,8 @@ size_t ProtoZeroMessage::Finalize() {
 
 #if DCHECK_IS_ON()
   sealed_ = true;
+  if (handle_)
+    handle_->reset_message();
 #endif
 
   return size_;

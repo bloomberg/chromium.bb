@@ -45,6 +45,8 @@
         'tracing/core/proto_utils.h',
         'tracing/core/proto_zero_message.cc',
         'tracing/core/proto_zero_message.h',
+        'tracing/core/proto_zero_message_handle.cc',
+        'tracing/core/proto_zero_message_handle.h',
         'tracing/core/scattered_stream_writer.cc',
         'tracing/core/scattered_stream_writer.h',
         'tracing/core/trace_ring_buffer.cc',

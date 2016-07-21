@@ -19,6 +19,8 @@ component("tracing") {
     "core/proto_utils.h",
     "core/proto_zero_message.cc",
     "core/proto_zero_message.h",
+    "core/proto_zero_message_handle.cc",
+    "core/proto_zero_message_handle.h",
     "core/scattered_stream_writer.cc",
     "core/scattered_stream_writer.h",
     "core/trace_ring_buffer.cc",
