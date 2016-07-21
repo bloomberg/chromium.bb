@@ -67,7 +67,7 @@ class CC_SURFACES_EXPORT Surface {
   int frame_index() const { return frame_index_; }
 
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
-  void RunDrawCallbacks(SurfaceDrawStatus drawn);
+  void RunDrawCallbacks();
 
   base::WeakPtr<SurfaceFactory> factory() { return factory_; }
 

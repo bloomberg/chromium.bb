@@ -1737,7 +1737,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // Report that the surface is drawn to trigger an ACK.
   cc::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
   EXPECT_TRUE(surface);
-  surface->RunDrawCallbacks(cc::SurfaceDrawStatus::DRAWN);
+  surface->RunDrawCallbacks();
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);

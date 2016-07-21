@@ -436,14 +436,11 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
 }
 
 void CreateSurfaceDrawCallback(SurfaceFactory* factory,
-                               uint32_t* execute_count,
-                               SurfaceDrawStatus* result,
-                               SurfaceDrawStatus drawn) {
+                               uint32_t* execute_count) {
   SurfaceId new_id(kArbitraryClientId, 7, 0);
   factory->Create(new_id);
   factory->Destroy(new_id);
   *execute_count += 1;
-  *result = drawn;
 }
 
 TEST_F(SurfaceFactoryTest, AddDuringDestroy) {
@@ -453,22 +450,17 @@ TEST_F(SurfaceFactoryTest, AddDuringDestroy) {
   frame.delegated_frame_data.reset(new DelegatedFrameData);
 
   uint32_t execute_count = 0;
-  SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
   factory_->SubmitCompositorFrame(
       surface_id, std::move(frame),
       base::Bind(&CreateSurfaceDrawCallback, base::Unretained(factory_.get()),
-                 &execute_count, &drawn));
+                 &execute_count));
   EXPECT_EQ(0u, execute_count);
   factory_->Destroy(surface_id);
   EXPECT_EQ(1u, execute_count);
-  EXPECT_EQ(SurfaceDrawStatus::DRAW_SKIPPED, drawn);
 }
 
-void DrawCallback(uint32_t* execute_count,
-                  SurfaceDrawStatus* result,
-                  SurfaceDrawStatus drawn) {
+void DrawCallback(uint32_t* execute_count) {
   *execute_count += 1;
-  *result = drawn;
 }
 
 // Tests doing a DestroyAll before shutting down the factory;
@@ -484,15 +476,12 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   CompositorFrame frame;
   frame.delegated_frame_data = std::move(frame_data);
   uint32_t execute_count = 0;
-  SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
-
-  factory_->SubmitCompositorFrame(
-      id, std::move(frame), base::Bind(&DrawCallback, &execute_count, &drawn));
+  factory_->SubmitCompositorFrame(id, std::move(frame),
+                                  base::Bind(&DrawCallback, &execute_count));
 
   surface_id_ = SurfaceId();
   factory_->DestroyAll();
   EXPECT_EQ(1u, execute_count);
-  EXPECT_EQ(SurfaceDrawStatus::DRAW_SKIPPED, drawn);
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {

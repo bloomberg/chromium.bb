@@ -11,15 +11,6 @@
 namespace ui {
 namespace gpu {
 
-namespace {
-
-void CallCallback(
-    const mojom::CompositorFrameSink::SubmitCompositorFrameCallback& callback,
-    cc::SurfaceDrawStatus draw_status) {
-  callback.Run(static_cast<mojom::CompositorFrameDrawStatus>(draw_status));
-}
-}
-
 CompositorFrameSinkImpl::CompositorFrameSinkImpl(
     CompositorFrameSinkDelegate* delegate,
     int sink_id,
@@ -69,7 +60,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
     last_submitted_frame_size_ = frame_size;
   }
   factory_.SubmitCompositorFrame(surface_id_, std::move(compositor_frame),
-                                 base::Bind(&CallCallback, callback));
+                                 callback);
 }
 
 void CompositorFrameSinkImpl::ReturnResources(

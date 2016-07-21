@@ -539,8 +539,7 @@ void DelegatedFrameHost::SendReclaimCompositorResources(
   }
 }
 
-void DelegatedFrameHost::SurfaceDrawn(uint32_t output_surface_id,
-                                      cc::SurfaceDrawStatus drawn) {
+void DelegatedFrameHost::SurfaceDrawn(uint32_t output_surface_id) {
   SendReclaimCompositorResources(output_surface_id, true /* is_swap_ack */);
 }
 

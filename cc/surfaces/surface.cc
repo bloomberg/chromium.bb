@@ -35,7 +35,7 @@ Surface::~Surface() {
     UnrefFrameResources(current_frame_.delegated_frame_data.get());
   }
   if (!draw_callback_.is_null())
-    draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
+    draw_callback_.Run();
 }
 
 void Surface::SetPreviousFrameSurface(Surface* surface) {
@@ -76,7 +76,7 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
     UnrefFrameResources(previous_frame.delegated_frame_data.get());
 
   if (!draw_callback_.is_null())
-    draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
+    draw_callback_.Run();
   draw_callback_ = callback;
 
   bool referenced_surfaces_changed =
@@ -151,11 +151,11 @@ void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
   current_frame_.metadata.latency_info.clear();
 }
 
-void Surface::RunDrawCallbacks(SurfaceDrawStatus drawn) {
+void Surface::RunDrawCallbacks() {
   if (!draw_callback_.is_null()) {
     DrawCallback callback = draw_callback_;
     draw_callback_ = DrawCallback();
-    callback.Run(drawn);
+    callback.Run();
   }
 }
 

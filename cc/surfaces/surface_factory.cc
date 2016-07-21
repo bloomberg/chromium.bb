@@ -76,7 +76,7 @@ void SurfaceFactory::SubmitCompositorFrame(const SurfaceId& surface_id,
   it->second->QueueFrame(std::move(frame), callback);
   if (!manager_->SurfaceModified(surface_id)) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
-    it->second->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
+    it->second->RunDrawCallbacks();
   }
 }
 

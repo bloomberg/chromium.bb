@@ -7,15 +7,6 @@ module ui.gpu.mojom;
 import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/returned_resource.mojom";
 
-
-// Indicates whether the submitted CompositorFrame has been drawn to the display
-// or has been skipped (e.g. another frame may have been submitted before
-// vblank).
-enum CompositorFrameDrawStatus {
-  DRAW_SKIPPED,
-  DRAWN
-};
-
 // A CompositorFrameSinkFactory represents a single Display client.
 // The client (a process) can use this interface to create
 // CompositorFrameSinks.
@@ -42,12 +33,10 @@ interface CompositorFrameSinkFactory {
 // screen.
 interface CompositorFrameSink {
   // After the submitted frame is either drawn for the first time by the display
-  // compositor or discarded, the callback will be called with the status of the
-  // submitted frame. Clients should use this acknowledgement to ratelimit frame
-  // submissions.
+  // compositor or discarded, the callback will be called. Clients should use
+  // this acknowledgement to ratelimit frame submissions.
   // TODO(fsamuel): We should support identifying the CF in the callback.
-  SubmitCompositorFrame(cc.mojom.CompositorFrame frame) =>
-      (CompositorFrameDrawStatus status);
+  SubmitCompositorFrame(cc.mojom.CompositorFrame frame) => ();
 
   // Lets the display compositor know that the client wishes to receive the next
   // BeginFrame event.

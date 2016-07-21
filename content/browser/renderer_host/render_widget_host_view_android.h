@@ -46,7 +46,6 @@ class CopyOutputResult;
 class Layer;
 class SurfaceFactory;
 class SurfaceIdAllocator;
-enum class SurfaceDrawStatus;
 }
 
 namespace blink {
@@ -259,7 +258,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   static void OnContextLost();
 
  private:
-  void RunAckCallbacks(cc::SurfaceDrawStatus status);
+  void RunAckCallbacks();
 
   void DestroyDelegatedContent();
   void CheckOutputSurfaceChanged(uint32_t output_surface_id);

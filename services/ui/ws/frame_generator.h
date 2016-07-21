@@ -16,7 +16,6 @@ namespace cc {
 class CompositorFrame;
 class CopyOutputRequest;
 class RenderPass;
-enum class SurfaceDrawStatus;
 }
 
 namespace ui {
@@ -64,7 +63,7 @@ class FrameGenerator {
   // This is called after the DisplayCompositor has completed generating a new
   // frame for the display. TODO(fsamuel): Idle time processing should happen
   // here if there is budget for it.
-  void DidDraw(cc::SurfaceDrawStatus status);
+  void DidDraw();
 
   // Generates the CompositorFrame for the current |dirty_rect_|.
   cc::CompositorFrame GenerateCompositorFrame();

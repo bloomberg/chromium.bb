@@ -38,9 +38,8 @@ class DisplayCompositor : public cc::SurfaceFactoryClient,
   // display should be changed. A well-behaving embedder should only submit
   // a CompositorFrame once per BeginFrame tick. The callback is called the
   // first time this frame is used to draw, or if the frame is discarded.
-  void SubmitCompositorFrame(
-      cc::CompositorFrame frame,
-      const base::Callback<void(cc::SurfaceDrawStatus)>& callback);
+  void SubmitCompositorFrame(cc::CompositorFrame frame,
+                             const base::Callback<void()>& callback);
 
   // TODO(fsamuel): This is used for surface hittesting and should not be
   // exposed outside of DisplayCompositor.

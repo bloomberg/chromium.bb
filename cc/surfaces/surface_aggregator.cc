@@ -534,7 +534,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
       // Notify client of removed surface.
       Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
       if (surface_ptr) {
-        surface_ptr->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
+        surface_ptr->RunDrawCallbacks();
       }
     }
   }

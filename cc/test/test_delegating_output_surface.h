@@ -52,7 +52,7 @@ class TestDelegatingOutputSurface : public OutputSurface,
   void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
 
  private:
-  void DrawCallback(SurfaceDrawStatus);
+  void DrawCallback();
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.

@@ -153,7 +153,7 @@ void SurfaceDisplayOutputSurface::DisplaySetMemoryPolicy(
   SetMemoryPolicy(policy);
 }
 
-void SurfaceDisplayOutputSurface::SwapBuffersComplete(SurfaceDrawStatus drawn) {
+void SurfaceDisplayOutputSurface::SwapBuffersComplete() {
   // TODO(danakj): Why the lost check?
   if (!output_surface_lost_)
     client_->DidSwapBuffersComplete();

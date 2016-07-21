@@ -190,7 +190,7 @@ void SynchronousCompositorOutputSurface::Reshape(
   // Intentional no-op: surface size is controlled by the embedder.
 }
 
-static void NoOpDrawCallback(cc::SurfaceDrawStatus s) {}
+static void NoOpDrawCallback() {}
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame frame) {

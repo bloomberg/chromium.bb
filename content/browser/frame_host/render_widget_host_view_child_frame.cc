@@ -343,8 +343,7 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     frame_connector_->BubbleScrollEvent(event);
 }
 
-void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id,
-                                                  cc::SurfaceDrawStatus drawn) {
+void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id) {
   DCHECK_GT(ack_pending_count_, 0U);
   if (host_) {
     host_->Send(new ViewMsg_ReclaimCompositorResources(

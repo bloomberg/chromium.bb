@@ -83,7 +83,7 @@ void FrameGenerator::Draw() {
   dirty_rect_ = gfx::Rect();
 }
 
-void FrameGenerator::DidDraw(cc::SurfaceDrawStatus status) {
+void FrameGenerator::DidDraw() {
   frame_pending_ = false;
   delegate_->OnCompositorFrameDrawn();
   if (!dirty_rect_.IsEmpty())

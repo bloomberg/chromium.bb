@@ -62,7 +62,7 @@ Display::~Display() {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface)
-        surface->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
+        surface->RunDrawCallbacks();
     }
   }
 }
@@ -242,7 +242,7 @@ bool Display::DrawAndSwap() {
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
     Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
     if (surface)
-      surface->RunDrawCallbacks(SurfaceDrawStatus::DRAWN);
+      surface->RunDrawCallbacks();
   }
 
   DelegatedFrameData* frame_data = frame.delegated_frame_data.get();

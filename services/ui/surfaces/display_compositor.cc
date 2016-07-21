@@ -82,7 +82,7 @@ DisplayCompositor::~DisplayCompositor() {
 
 void DisplayCompositor::SubmitCompositorFrame(
     cc::CompositorFrame frame,
-    const base::Callback<void(cc::SurfaceDrawStatus)>& callback) {
+    const base::Callback<void()>& callback) {
   gfx::Size frame_size =
       frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != display_size_) {

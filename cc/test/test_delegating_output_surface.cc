@@ -118,7 +118,7 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
     display_->DrawAndSwap();
 }
 
-void TestDelegatingOutputSurface::DrawCallback(SurfaceDrawStatus) {
+void TestDelegatingOutputSurface::DrawCallback() {
   client_->DidSwapBuffersComplete();
 }
 

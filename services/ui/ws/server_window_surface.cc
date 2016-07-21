@@ -15,13 +15,6 @@
 
 namespace ui {
 namespace ws {
-namespace {
-
-void CallCallback(const base::Closure& callback, cc::SurfaceDrawStatus status) {
-  callback.Run();
-}
-
-}  // namespace
 
 ServerWindowSurface::ServerWindowSurface(
     ServerWindowSurfaceManager* manager,
@@ -72,7 +65,7 @@ void ServerWindowSurface::SubmitCompositorFrame(
     surface_factory_.Create(surface_id_);
   }
   surface_factory_.SubmitCompositorFrame(surface_id_, std::move(frame),
-                                         base::Bind(&CallCallback, callback));
+                                         callback);
   last_submitted_frame_size_ = frame_size;
   window()->delegate()->OnScheduleWindowPaint(window());
 }

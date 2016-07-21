@@ -33,7 +33,6 @@ class TickClock;
 
 namespace cc {
 class SurfaceFactory;
-enum class SurfaceDrawStatus;
 }
 
 namespace media {
@@ -239,7 +238,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   void SendReclaimCompositorResources(uint32_t output_surface_id,
                                       bool is_swap_ack);
-  void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
+  void SurfaceDrawn(uint32_t output_surface_id);
 
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.

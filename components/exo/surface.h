@@ -32,7 +32,6 @@ class TracedValue;
 
 namespace cc {
 class SurfaceFactory;
-enum class SurfaceDrawStatus;
 }
 
 namespace gfx {

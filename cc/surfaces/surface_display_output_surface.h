@@ -57,7 +57,7 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
 
  private:
-  void SwapBuffersComplete(SurfaceDrawStatus drawn);
+  void SwapBuffersComplete();
 
   // This class is only meant to be used on a single thread.
   base::ThreadChecker thread_checker_;

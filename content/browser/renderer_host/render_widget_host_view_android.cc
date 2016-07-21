@@ -592,7 +592,7 @@ void RenderWidgetHostViewAndroid::ReleaseLocksOnSurface() {
   while (locks_on_frame_count_ > 0) {
     UnlockCompositingSurface();
   }
-  RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
+  RunAckCallbacks();
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
@@ -1060,7 +1060,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   }
 
   if (host_->is_hidden())
-    RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
+    RunAckCallbacks();
   frame_evictor_->SwappedFrame(!host_->is_hidden());
 
   // As the metadata update may trigger view invalidation, always call it after
@@ -1337,7 +1337,7 @@ void RenderWidgetHostViewAndroid::HideInternal() {
   if (overscroll_controller_)
     overscroll_controller_->Disable();
 
-  RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
+  RunAckCallbacks();
 
   // Inform the renderer that we are being hidden so it can reduce its resource
   // utilization.
@@ -1746,8 +1746,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   }
 }
 
-void RenderWidgetHostViewAndroid::RunAckCallbacks(
-    cc::SurfaceDrawStatus status) {
+void RenderWidgetHostViewAndroid::RunAckCallbacks() {
   while (!ack_callbacks_.empty()) {
     ack_callbacks_.front().Run();
     ack_callbacks_.pop();
@@ -1774,7 +1773,7 @@ void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {
 }
 
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
-  RunAckCallbacks(cc::SurfaceDrawStatus::DRAWN);
+  RunAckCallbacks();
 }
 
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
@@ -1816,7 +1815,7 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(content_view_core_);
   DCHECK(using_browser_compositor_);
-  RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
+  RunAckCallbacks();
   overscroll_controller_.reset();
 }
 

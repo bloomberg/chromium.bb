@@ -30,7 +30,6 @@
 
 namespace cc {
 class SurfaceFactory;
-enum class SurfaceDrawStatus;
 }
 
 
@@ -170,7 +169,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // Declared 'public' instead of 'protected' here to allow derived classes
   // to Bind() to it.
-  void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
+  void SurfaceDrawn(uint32_t output_surface_id);
 
   // Exposed for tests.
   bool IsChildFrameForTesting() const override;
