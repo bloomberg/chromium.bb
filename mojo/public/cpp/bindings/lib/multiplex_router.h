@@ -102,14 +102,8 @@ class MultiplexRouter
   }
 
   // See Binding for details of pause/resume.
-  void PauseIncomingMethodCallProcessing() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    connector_.PauseIncomingMethodCallProcessing();
-  }
-  void ResumeIncomingMethodCallProcessing() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    connector_.ResumeIncomingMethodCallProcessing();
-  }
+  void PauseIncomingMethodCallProcessing();
+  void ResumeIncomingMethodCallProcessing();
 
   // Whether there are any associated interfaces running currently.
   bool HasAssociatedEndpoints() const;
@@ -228,6 +222,8 @@ class MultiplexRouter
   scoped_refptr<base::SingleThreadTaskRunner> posted_to_task_runner_;
 
   bool encountered_error_;
+
+  bool paused_;
 
   bool testing_mode_;
 

@@ -89,6 +89,8 @@ class Router : public MessageReceiverWithResponder {
   }
 
   // See Binding for details of pause/resume.
+  // Note: This doesn't strictly pause incoming calls. If there are
+  // queued messages, they may be dispatched during pause.
   void PauseIncomingMethodCallProcessing() {
     DCHECK(thread_checker_.CalledOnValidThread());
     connector_.PauseIncomingMethodCallProcessing();
