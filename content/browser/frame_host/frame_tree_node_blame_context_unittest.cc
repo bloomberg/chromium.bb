@@ -173,7 +173,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameCreation) {
 
   std::set<FrameTreeNode*> creation_traced;
   std::set<FrameTreeNode*> snapshot_traced;
-  for (auto event : events) {
+  for (auto* event : events) {
     ExpectFrameTreeNodeObject(event);
     FrameTreeNode* node =
         tree()->FindByID(strtol(event->id.c_str(), nullptr, 16));
@@ -226,7 +226,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameDeletion) {
 
   // The removal of all non-root nodes should be traced.
   EXPECT_EQ(6u, events.size());
-  for (auto event : events) {
+  for (auto* event : events) {
     ExpectFrameTreeNodeObject(event);
     int id = strtol(event->id.c_str(), nullptr, 16);
     EXPECT_TRUE(ContainsValue(node_ids, id));

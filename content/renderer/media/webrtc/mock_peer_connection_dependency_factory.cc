@@ -203,7 +203,7 @@ void MockWebRtcAudioTrack::UnregisterObserver(ObserverInterface* observer) {
 void MockWebRtcAudioTrack::SetEnded() {
   DCHECK_EQ(webrtc::MediaStreamTrackInterface::kLive, state_);
   state_ = webrtc::MediaStreamTrackInterface::kEnded;
-  for (auto& o : observers_)
+  for (auto* o : observers_)
     o->OnChanged();
 }
 
@@ -270,7 +270,7 @@ void MockWebRtcVideoTrack::UnregisterObserver(ObserverInterface* observer) {
 void MockWebRtcVideoTrack::SetEnded() {
   DCHECK_EQ(webrtc::MediaStreamTrackInterface::kLive, state_);
   state_ = webrtc::MediaStreamTrackInterface::kEnded;
-  for (auto& o : observers_)
+  for (auto* o : observers_)
     o->OnChanged();
 }
 

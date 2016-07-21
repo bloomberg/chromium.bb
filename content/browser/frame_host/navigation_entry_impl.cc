@@ -131,7 +131,7 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
       new NavigationEntryImpl::TreeNode(frame_entry->Clone()));
 
   // Recursively clone the children.
-  for (auto& child : children) {
+  for (auto* child : children) {
     copy->children.push_back(
         child->CloneAndReplace(frame_tree_node, frame_navigation_entry, false));
   }
@@ -776,7 +776,7 @@ NavigationEntryImpl::TreeNode* NavigationEntryImpl::FindFrameEntry(
       return node;
 
     // Enqueue any children and keep looking.
-    for (auto& child : node->children)
+    for (auto* child : node->children)
       work_queue.push(child);
   }
   return nullptr;

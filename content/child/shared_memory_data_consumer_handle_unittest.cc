@@ -816,7 +816,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, FailWhileTwoPhaseReadIsInProgress) {
 
   writer_->AddData(NewFixedData("Once "));
   result = reader->beginRead(&pointer, kNone, &size);
-  auto buffer = static_cast<const char*>(pointer);
+  auto* buffer = static_cast<const char*>(pointer);
 
   ASSERT_EQ(kOk, result);
   ASSERT_NE(nullptr, pointer);

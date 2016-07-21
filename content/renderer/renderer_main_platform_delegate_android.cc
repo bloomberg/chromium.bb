@@ -51,7 +51,7 @@ class RecordSeccompStatus {
 // Determines if the running device should support Seccomp, based on the Android
 // SDK version.
 bool IsSeccompBPFSupportedBySDK() {
-  const auto info = base::android::BuildInfo::GetInstance();
+  auto* info = base::android::BuildInfo::GetInstance();
   if (info->sdk_int() < 22) {
     // Seccomp was never available pre-Lollipop.
     return false;
@@ -62,7 +62,7 @@ bool IsSeccompBPFSupportedBySDK() {
         "manta", "shamu", "sprout",     "volantis",
     };
 
-    for (const auto& device : kDevices) {
+    for (auto* device : kDevices) {
       if (strcmp(device, info->device()) == 0) {
         return true;
       }

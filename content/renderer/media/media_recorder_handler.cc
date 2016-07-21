@@ -92,7 +92,7 @@ bool MediaRecorderHandler::canSupportMimeType(
   std::vector<std::string> codecs_list;
   media::ParseCodecString(web_codecs.utf8(), &codecs_list, true /* strip */);
   for (const auto& codec : codecs_list) {
-    const auto found = std::find_if(
+    auto* const* found = std::find_if(
         &codecs[0], &codecs[codecs_count], [&codec](const char* name) {
           return base::EqualsCaseInsensitiveASCII(codec, name);
         });
@@ -240,9 +240,9 @@ void MediaRecorderHandler::pause() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(recording_);
   recording_ = false;
-  for (const auto& video_recorder : video_recorders_)
+  for (auto* video_recorder : video_recorders_)
     video_recorder->Pause();
-  for (const auto& audio_recorder : audio_recorders_)
+  for (auto* audio_recorder : audio_recorders_)
     audio_recorder->Pause();
   webm_muxer_->Pause();
 }
@@ -251,9 +251,9 @@ void MediaRecorderHandler::resume() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
   recording_ = true;
-  for (const auto& video_recorder : video_recorders_)
+  for (auto* video_recorder : video_recorders_)
     video_recorder->Resume();
-  for (const auto& audio_recorder : audio_recorders_)
+  for (auto* audio_recorder : audio_recorders_)
     audio_recorder->Resume();
   webm_muxer_->Resume();
 }

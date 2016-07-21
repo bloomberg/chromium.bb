@@ -346,7 +346,7 @@ void SessionStorageDatabase::OnMemoryDump(
   bool res = base::StringToUint64(db_memory_usage, &size);
   DCHECK(res);
 
-  auto mad = pmd->CreateAllocatorDump(
+  auto* mad = pmd->CreateAllocatorDump(
       base::StringPrintf("dom_storage/session_storage_0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this)));
   mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

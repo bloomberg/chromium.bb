@@ -68,7 +68,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
 #if DCHECK_IS_ON()
     DCHECK(renderer_->CurrentThreadIsRenderingThread());
     if (!audio_renderer_thread_checker_.CalledOnValidThread()) {
-      for (const auto& sink : playout_sinks_)
+      for (auto* sink : playout_sinks_)
         sink->OnRenderThreadChanged();
     }
 #endif
@@ -134,7 +134,7 @@ void WebRtcAudioDeviceImpl::AudioRendererThreadStopped() {
   // Notify the playout sink of the change.
   // Not holding |lock_| because the caller must guarantee that the audio
   // renderer thread is dead, so no race is possible with |playout_sinks_|
-  for (const auto& sink : playout_sinks_)
+  for (auto* sink : playout_sinks_)
     sink->OnPlayoutDataSourceChanged();
 }
 

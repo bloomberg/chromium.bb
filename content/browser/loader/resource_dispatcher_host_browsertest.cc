@@ -828,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
   // All resources loaded directly by the top-level document (including the
   // top-level document itself) should have a |first_party| and |initiator|
   // that match the URL of the top-level document.
-  for (const auto& request : delegate_->data()) {
+  for (auto* request : delegate_->data()) {
     SCOPED_TRACE(request->url);
     EXPECT_EQ(top_url, request->first_party);
     EXPECT_EQ(top_origin, request->initiator);

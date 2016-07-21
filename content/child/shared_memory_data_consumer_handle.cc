@@ -89,7 +89,7 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   void ClearQueue() {
     lock_.AssertAcquired();
-    for (auto& data : queue_) {
+    for (auto* data : queue_) {
       delete data;
     }
     queue_.clear();
@@ -186,7 +186,7 @@ class SharedMemoryDataConsumerHandle::Context final
   void Consume(size_t s) {
     lock_.AssertAcquired();
     first_offset_ += s;
-    auto top = Top();
+    auto* top = Top();
     if (static_cast<size_t>(top->length()) <= first_offset_) {
       delete top;
       queue_.pop_front();
@@ -232,7 +232,7 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   void Clear() {
     lock_.AssertAcquired();
-    for (auto& data : queue_) {
+    for (auto* data : queue_) {
       delete data;
     }
     queue_.clear();
@@ -392,7 +392,7 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::read(
     return context_->result();
 
   while (!context_->IsEmpty() && total_read_size < size) {
-    const auto& top = context_->Top();
+    auto* top = context_->Top();
     size_t readable = top->length() - context_->first_offset();
     size_t writable = size - total_read_size;
     size_t read_size = std::min(readable, writable);
@@ -429,7 +429,7 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::beginRead(
     return context_->result() == Done ? Done : ShouldWait;
 
   context_->set_is_two_phase_read_in_progress(true);
-  const auto& top = context_->Top();
+  auto* top = context_->Top();
   *buffer = top->payload() + context_->first_offset();
   *available = top->length() - context_->first_offset();
 

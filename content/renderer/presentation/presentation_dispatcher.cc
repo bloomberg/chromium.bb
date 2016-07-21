@@ -325,7 +325,7 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(
   if (status->listening_state == ListeningState::WAITING)
     status->listening_state = ListeningState::ACTIVE;
 
-  for (auto observer : status->availability_observers)
+  for (auto* observer : status->availability_observers)
     observer->availabilityChanged(available);
 
   for (AvailabilityCallbacksMap::iterator iter(&status->availability_callbacks);

@@ -145,7 +145,7 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) const {
   }
 
   std::unique_ptr<base::ListValue> configs_list(new base::ListValue());
-  for (const auto& it : rules_) {
+  for (auto* it : rules_) {
     std::unique_ptr<base::DictionaryValue> config_dict(
         new base::DictionaryValue());
     DCHECK(it);

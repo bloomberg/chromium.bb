@@ -187,7 +187,7 @@ void SynchronousCompositorFilter::DidAddSynchronousHandlerProxy(
     if (entry != output_surface_map_.end())
       SetProxyOutputSurface(routing_id, entry->second);
   } else {
-    auto& mapped_synchronous_input_handler_proxy =
+    auto*& mapped_synchronous_input_handler_proxy =
         synchronous_input_handler_proxy_map_[routing_id];
     DCHECK(!mapped_synchronous_input_handler_proxy);
     mapped_synchronous_input_handler_proxy = synchronous_input_handler_proxy;

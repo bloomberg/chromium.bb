@@ -54,7 +54,7 @@ void BrowserPluginMessageFilter::OverrideThreadForMessage(
 void BrowserPluginMessageFilter::ForwardMessageToGuest(
     const IPC::Message& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto rph = RenderProcessHost::FromID(render_process_id_);
+  auto* rph = RenderProcessHost::FromID(render_process_id_);
   if (!rph)
     return;
 

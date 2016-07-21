@@ -308,7 +308,7 @@ void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
   base::Callback<void(RenderFrameHost*)> callback = base::Bind(
       RenderFrameDevToolsAgentHost::AppendAgentHostForFrameIfApplicable,
       base::Unretained(result));
-  for (const auto& wc : WebContentsImpl::GetAllWebContents())
+  for (auto* wc : WebContentsImpl::GetAllWebContents())
     wc->ForEachFrame(callback);
 }
 

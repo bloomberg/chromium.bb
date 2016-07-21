@@ -2454,7 +2454,7 @@ void RenderFrameHostManager::CreateOpenerProxies(
   // available when created due to cycles or back links in the opener chain.
   // They must have their openers updated as a separate step after proxy
   // creation.
-  for (const auto& node : nodes_with_back_links) {
+  for (auto* node : nodes_with_back_links) {
     RenderFrameProxyHost* proxy =
         node->render_manager()->GetRenderFrameProxyHost(instance);
     // If there is no proxy, the cycle may involve nodes in the same process,

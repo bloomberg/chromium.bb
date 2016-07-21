@@ -691,8 +691,8 @@ bool BrowserAccessibilityManager::FindIndicesInCommonParent(
     int* child_index1,
     int* child_index2) {
   DCHECK(common_parent && child_index1 && child_index2);
-  auto ancestor1 = const_cast<BrowserAccessibility*>(&object1);
-  auto ancestor2 = const_cast<BrowserAccessibility*>(&object2);
+  auto* ancestor1 = const_cast<BrowserAccessibility*>(&object1);
+  auto* ancestor2 = const_cast<BrowserAccessibility*>(&object2);
   do {
     *child_index1 = ancestor1->GetIndexInParent();
     ancestor1 = ancestor1->GetParent();

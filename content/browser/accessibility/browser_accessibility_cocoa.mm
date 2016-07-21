@@ -155,7 +155,7 @@ bool GetTextMarkerData(AXTextMarkerRef text_marker,
                        int* offset) {
   DCHECK(text_marker);
   DCHECK(object && offset);
-  auto marker_data = reinterpret_cast<const AXTextMarkerData*>(
+  const auto* marker_data = reinterpret_cast<const AXTextMarkerData*>(
       AXTextMarkerGetBytePtr(text_marker));
   if (!marker_data)
     return false;

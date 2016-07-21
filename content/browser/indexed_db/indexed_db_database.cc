@@ -789,7 +789,7 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
                                           int64_t object_store_id,
                                           blink::WebIDBOperationType type,
                                           const IndexedDBKeyRange& key_range) {
-  for (const auto& connection : connections_) {
+  for (auto* connection : connections_) {
     bool recorded = false;
     for (const auto& observer : connection->active_observers()) {
       if (!observer->IsRecordingType(type) ||
@@ -815,7 +815,7 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
 
 void IndexedDBDatabase::SendObservations(
     std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>> changes_map) {
-  for (const auto& conn : connections_) {
+  for (auto* conn : connections_) {
     auto it = changes_map.find(conn->id());
     if (it != changes_map.end())
       conn->callbacks()->OnDatabaseChange(it->first, std::move(it->second));

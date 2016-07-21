@@ -403,7 +403,7 @@ class URLRequestRecordingNetworkDelegate : public net::TestNetworkDelegate {
   }
 
   void OnURLRequestDestroyed(net::URLRequest* request) override {
-    for (auto& recorded_request : requests_) {
+    for (auto*& recorded_request : requests_) {
       if (recorded_request == request)
         recorded_request = nullptr;
     }

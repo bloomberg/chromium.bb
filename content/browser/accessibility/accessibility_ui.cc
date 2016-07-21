@@ -188,8 +188,8 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
   if (!rvh)
     return;
-  auto web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
+  auto* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   AccessibilityMode mode = web_contents->GetAccessibilityMode();
   if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete) {
     web_contents->AddAccessibilityMode(AccessibilityModeComplete);
@@ -236,8 +236,8 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   }
 
   std::unique_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
-  auto web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
+  auto* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   std::unique_ptr<AccessibilityTreeFormatter> formatter;
   if (g_show_internal_accessibility_tree)
     formatter.reset(new AccessibilityTreeFormatterBlink());

@@ -155,7 +155,7 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPersistence) {
   EXPECT_EQ(2U, cookies.size());
   bool found_foo_cookie = false;
   bool found_persistent_cookie = false;
-  for (const auto& cookie : cookies) {
+  for (auto* cookie : cookies) {
     if (cookie->Domain() == "foo.com")
       found_foo_cookie = true;
     else if (cookie->Domain() == "persistent.com")
@@ -216,7 +216,7 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPolicy) {
   CreateAndLoad(nullptr, &cookies);
 
   EXPECT_EQ(2U, cookies.size());
-  for (const auto& cookie : cookies) {
+  for (auto* cookie : cookies) {
     EXPECT_NE("nonpersistent.com", cookie->Domain());
   }
   STLDeleteElements(&cookies);

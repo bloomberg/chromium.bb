@@ -357,7 +357,7 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
       base::trace_event::MemoryDumpManager::GetInstance()
           ->system_allocator_pool_name();
   if (commit_batch_) {
-    auto commit_batch_mad = pmd->CreateAllocatorDump(name + "/commit_batch");
+    auto* commit_batch_mad = pmd->CreateAllocatorDump(name + "/commit_batch");
     commit_batch_mad->AddScalar(
         base::trace_event::MemoryAllocatorDump::kNameSize,
         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
@@ -370,7 +370,7 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   if (map_->bytes_used() < 1024)
     return;
 
-  auto map_mad = pmd->CreateAllocatorDump(name + "/storage_map");
+  auto* map_mad = pmd->CreateAllocatorDump(name + "/storage_map");
   map_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                      map_->bytes_used());

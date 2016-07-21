@@ -347,7 +347,7 @@ void BrowserCdmManager::OnSessionKeysChange(int render_frame_id,
                                             bool has_additional_usable_key,
                                             media::CdmKeysInfo keys_info) {
   std::vector<media::CdmKeyInformation> key_info_vector;
-  for (const auto& key_info : keys_info)
+  for (auto* key_info : keys_info)
     key_info_vector.push_back(*key_info);
   Send(new CdmMsg_SessionKeysChange(render_frame_id, cdm_id, session_id,
                                     has_additional_usable_key,

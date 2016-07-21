@@ -4927,7 +4927,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Simulate touch event to sub-frame.
   gfx::Point child_center(150, 150);
-  auto rwhv = static_cast<RenderWidgetHostViewAura*>(
+  auto* rwhv = static_cast<RenderWidgetHostViewAura*>(
       contents->GetRenderWidgetHostView());
   ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, child_center, 0, 0,
                              ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
@@ -4970,7 +4970,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  auto child_frame_host = root->child_at(0)->current_frame_host();
+  auto* child_frame_host = root->child_at(0)->current_frame_host();
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
@@ -5030,7 +5030,7 @@ void SendTouchTapWithExpectedTarget(
     const gfx::Point& touch_point,
     RenderWidgetHostViewBase*& router_touch_target,
     const RenderWidgetHostViewBase* expected_target) {
-  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
+  auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
   ui::TouchEvent touch_event_pressed(ui::ET_TOUCH_PRESSED, touch_point, 0,
                                      0, ui::EventTimeForNow(), 30.f, 30.f, 0.f,
                                      0.f);
@@ -5049,7 +5049,7 @@ void SendGestureTapSequenceWithExpectedTarget(
     RenderWidgetHostViewBase*& router_gesture_target,
     const RenderWidgetHostViewBase* old_expected_target,
     const RenderWidgetHostViewBase* expected_target) {
-  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
+  auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
   ui::GestureEventDetails gesture_begin_details(ui::ET_GESTURE_BEGIN);
   gesture_begin_details.set_device_type(
@@ -5108,7 +5108,7 @@ void SendTouchpadPinchSequenceWithExpectedTarget(
     const gfx::Point& gesture_point,
     RenderWidgetHostViewBase*& router_touchpad_gesture_target,
     RenderWidgetHostViewBase* expected_target) {
-  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
+  auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
   ui::GestureEventDetails pinch_begin_details(ui::ET_GESTURE_PINCH_BEGIN);
   pinch_begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
@@ -5139,7 +5139,7 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
     const gfx::Point& gesture_point,
     RenderWidgetHostViewBase*& router_touchpad_gesture_target,
     RenderWidgetHostViewBase* expected_target) {
-  auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
+  auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gesture_point,
                               ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
@@ -5168,11 +5168,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  auto child_frame_host = root->child_at(0)->current_frame_host();
+  auto* child_frame_host = root->child_at(0)->current_frame_host();
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
-  auto rwhv_child =
+  auto* rwhv_child =
       static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
   SurfaceHitTestReadyNotifier notifier(
       static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
@@ -5180,7 +5180,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // All touches & gestures are sent to the main frame's view, and should be
   // routed appropriately from there.
-  auto rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
+  auto* rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
       contents->GetRenderWidgetHostView());
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
@@ -5250,11 +5250,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  auto child_frame_host = root->child_at(0)->current_frame_host();
+  auto* child_frame_host = root->child_at(0)->current_frame_host();
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
-  auto rwhv_child =
+  auto* rwhv_child =
       static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
   SurfaceHitTestReadyNotifier notifier(
       static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
@@ -5262,7 +5262,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // All touches & gestures are sent to the main frame's view, and should be
   // routed appropriately from there.
-  auto rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
+  auto* rwhv_parent = static_cast<RenderWidgetHostViewBase*>(
       contents->GetRenderWidgetHostView());
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();

@@ -227,7 +227,7 @@ void MidiMessageFilter::HandleClientAdded(media::midi::Result result) {
   // A for-loop using iterators does not work because |client| may touch
   // |clients_waiting_session_queue_| in callbacks.
   while (!clients_waiting_session_queue_.empty()) {
-    auto client = clients_waiting_session_queue_.back();
+    auto* client = clients_waiting_session_queue_.back();
     clients_waiting_session_queue_.pop_back();
     if (result == media::midi::Result::OK) {
       // Add the client's input and output ports.
@@ -264,7 +264,7 @@ void MidiMessageFilter::HandleAddInputPort(media::midi::MidiPortInfo info) {
   const base::string16 version = base::UTF8ToUTF16(info.version);
   const blink::WebMIDIAccessorClient::MIDIPortState state =
       ToBlinkState(info.state);
-  for (auto client : clients_)
+  for (auto* client : clients_)
     client->didAddInputPort(id, manufacturer, name, version, state);
 }
 
@@ -277,7 +277,7 @@ void MidiMessageFilter::HandleAddOutputPort(media::midi::MidiPortInfo info) {
   const base::string16 version = base::UTF8ToUTF16(info.version);
   const blink::WebMIDIAccessorClient::MIDIPortState state =
       ToBlinkState(info.state);
-  for (auto client : clients_)
+  for (auto* client : clients_)
     client->didAddOutputPort(id, manufacturer, name, version, state);
 }
 
@@ -288,7 +288,7 @@ void MidiMessageFilter::HandleDataReceived(uint32_t port,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!data.empty());
 
-  for (auto client : clients_)
+  for (auto* client : clients_)
     client->didReceiveMIDIData(port, &data[0], data.size(), timestamp);
 }
 
@@ -304,7 +304,7 @@ void MidiMessageFilter::HandleSetInputPortState(
     media::midi::MidiPortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_[port].state = state;
-  for (auto client : clients_)
+  for (auto* client : clients_)
     client->didSetInputPortState(port, ToBlinkState(state));
 }
 
@@ -313,7 +313,7 @@ void MidiMessageFilter::HandleSetOutputPortState(
     media::midi::MidiPortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_[port].state = state;
-  for (auto client : clients_)
+  for (auto* client : clients_)
     client->didSetOutputPortState(port, ToBlinkState(state));
 }
 

@@ -85,7 +85,7 @@ class VideoCaptureImpl::ClientBuffer2
   friend class base::RefCountedThreadSafe<ClientBuffer2>;
 
   virtual ~ClientBuffer2() {
-    for (auto& buffer : buffers_)
+    for (auto* buffer : buffers_)
       buffer->Unmap();
   }
 

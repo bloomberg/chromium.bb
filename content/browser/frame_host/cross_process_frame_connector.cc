@@ -122,7 +122,7 @@ gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
 }
 
 void CrossProcessFrameConnector::GetScreenInfo(blink::WebScreenInfo* results) {
-  auto parent_view = GetParentRenderWidgetHostView();
+  auto* parent_view = GetParentRenderWidgetHostView();
   if (parent_view) {
     parent_view->GetScreenInfo(results);
   }
@@ -148,7 +148,7 @@ gfx::Point CrossProcessFrameConnector::TransformPointToRootCoordSpace(
 void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
     InputEventAckState ack_result) {
-  auto main_view = GetRootRenderWidgetHostView();
+  auto* main_view = GetRootRenderWidgetHostView();
   if (main_view)
     main_view->ProcessAckedTouchEvent(touch, ack_result);
 }
@@ -157,12 +157,12 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
     const blink::WebGestureEvent& event) {
   DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
          event.type == blink::WebInputEvent::GestureScrollEnd);
-  auto parent_view = GetParentRenderWidgetHostView();
+  auto* parent_view = GetParentRenderWidgetHostView();
 
   if (!parent_view)
     return;
 
-  auto event_router =
+  auto* event_router =
       RenderWidgetHostImpl::From(parent_view->GetRenderWidgetHost())
           ->delegate()
           ->GetInputEventRouter();

@@ -94,7 +94,7 @@ void WebContentsObserverProxy::DidStartLoading() {
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, web_contents()->GetVisibleURL().spec()));
-  if (auto entry = web_contents()->GetController().GetPendingEntry()) {
+  if (auto* entry = web_contents()->GetController().GetPendingEntry()) {
     base_url_of_last_started_data_url_ = entry->GetBaseURLForDataURL();
   }
   Java_WebContentsObserverProxy_didStartLoading(env, obj.obj(),

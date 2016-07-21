@@ -270,8 +270,8 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
 }
 
 TEST_F(DOMStorageContextImplTest, PurgeMemory) {
-  auto dom_namespace = context_->GetStorageNamespace(kLocalStorageNamespaceId);
-  auto area1 = dom_namespace->OpenStorageArea(kOrigin);
+  auto* dom_namespace = context_->GetStorageNamespace(kLocalStorageNamespaceId);
+  auto* area1 = dom_namespace->OpenStorageArea(kOrigin);
   area1->InitialImportIfNeeded();
 
   // PURGE_UNOPENED does not delete the open area.
@@ -287,7 +287,7 @@ TEST_F(DOMStorageContextImplTest, PurgeMemory) {
 
   // Add an item to the database and commit changes, and keep it open. So, cache
   // is kept alive.
-  auto area2 = dom_namespace->OpenStorageArea(kOrigin);
+  auto* area2 = dom_namespace->OpenStorageArea(kOrigin);
   base::NullableString16 old_value;
   area2->SetItem(kKey, kValue, &old_value);
   // Call commit directly instead of posting task.

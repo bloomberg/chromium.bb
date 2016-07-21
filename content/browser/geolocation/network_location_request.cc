@@ -253,7 +253,7 @@ void AddWifiData(const WifiData& wifi_data,
     access_points_by_signal_strength.insert(&ap_data);
 
   base::ListValue* wifi_access_point_list = new base::ListValue();
-  for (const auto& ap_data : access_points_by_signal_strength) {
+  for (auto* ap_data : access_points_by_signal_strength) {
     base::DictionaryValue* wifi_dict = new base::DictionaryValue();
     AddString("macAddress", base::UTF16ToUTF8(ap_data->mac_address), wifi_dict);
     AddInteger("signalStrength", ap_data->radio_signal_strength, wifi_dict);

@@ -544,7 +544,7 @@ void MediaStreamVideoSource::SetReadyState(
   DCHECK(CalledOnValidThread());
   if (!owner().isNull())
     owner().setReadyState(state);
-  for (const auto& track : tracks_)
+  for (auto* track : tracks_)
     track->OnReadyStateChanged(state);
 }
 

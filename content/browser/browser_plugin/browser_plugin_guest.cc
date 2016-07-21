@@ -332,7 +332,7 @@ void BrowserPluginGuest::InitInternal(
   DCHECK(GetWebContents()->GetRenderViewHost());
 
   // Initialize the device scale factor by calling |NotifyScreenInfoChanged|.
-  auto render_widget_host = RenderWidgetHostImpl::From(
+  auto* render_widget_host = RenderWidgetHostImpl::From(
       GetWebContents()->GetRenderViewHost()->GetWidget());
   render_widget_host->NotifyScreenInfoChanged();
 
@@ -803,7 +803,7 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
                                             blink::WebDragOperationsMask mask,
                                             const gfx::Point& location) {
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();
-  auto embedder = owner_web_contents_->GetBrowserPluginEmbedder();
+  auto* embedder = owner_web_contents_->GetBrowserPluginEmbedder();
   DropData filtered_data(drop_data);
   host->FilterDropData(&filtered_data);
   switch (drag_status) {

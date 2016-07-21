@@ -504,7 +504,7 @@ void ChildThreadImpl::Init(const Options& options) {
 #endif
 
   // Add filters passed here via options.
-  for (auto startup_filter : options.startup_filters) {
+  for (auto* startup_filter : options.startup_filters) {
     channel_->AddFilter(startup_filter);
   }
 

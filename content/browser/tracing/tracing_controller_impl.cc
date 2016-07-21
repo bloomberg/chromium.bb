@@ -416,7 +416,7 @@ void TracingControllerImpl::OnStopTracingDone() {
   pending_stop_tracing_filters_ = trace_message_filters_;
 
   pending_stop_tracing_ack_count_ += additional_tracing_agents_.size();
-  for (auto it : additional_tracing_agents_) {
+  for (auto* it : additional_tracing_agents_) {
     it->StopAgentTracing(
         base::Bind(&TracingControllerImpl::OnEndAgentTracingAcked,
                    base::Unretained(this)));
@@ -597,7 +597,7 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
 
 void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
 #if defined(OS_CHROMEOS)
-  auto debug_daemon =
+  auto* debug_daemon =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   if (agent_name == debug_daemon->GetTracingAgentName()) {
     additional_tracing_agents_.push_back(debug_daemon);
@@ -606,7 +606,7 @@ void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
     return;
   }
 #elif defined(OS_WIN)
-  auto etw_agent = EtwTracingAgent::GetInstance();
+  auto* etw_agent = EtwTracingAgent::GetInstance();
   if (agent_name == etw_agent->GetTracingAgentName()) {
     additional_tracing_agents_.push_back(etw_agent);
     return;
@@ -614,7 +614,7 @@ void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
 #endif
 
 #if defined(ENABLE_POWER_TRACING)
-  auto power_agent = PowerTracingAgent::GetInstance();
+  auto* power_agent = PowerTracingAgent::GetInstance();
   if (agent_name == power_agent->GetTracingAgentName()) {
     additional_tracing_agents_.push_back(power_agent);
     return;
@@ -886,7 +886,7 @@ void TracingControllerImpl::IssueClockSyncMarker() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(pending_clock_sync_ack_count_ == 0);
 
-  for (const auto& it : additional_tracing_agents_) {
+  for (auto* it : additional_tracing_agents_) {
     if (it->SupportsExplicitClockSync()) {
       it->RecordClockSyncMarker(
           base::GenerateGUID(),

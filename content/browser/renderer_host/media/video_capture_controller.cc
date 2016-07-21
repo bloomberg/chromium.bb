@@ -386,7 +386,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
              buffer->mapped_size())))
         << "VideoFrame does not appear to be backed by Buffer";
 
-    for (const auto& client : controller_clients_) {
+    for (auto* client : controller_clients_) {
       if (client->session_closed || client->paused)
         continue;
 
@@ -506,7 +506,7 @@ VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
     int session_id,
     const ControllerClients& clients) {
-  for (auto client : clients) {
+  for (auto* client : clients) {
     if (client->session_id == session_id)
       return client;
   }

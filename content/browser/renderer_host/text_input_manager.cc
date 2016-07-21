@@ -44,7 +44,7 @@ TextInputManager::~TextInputManager() {
   for (auto pair : text_input_state_map_)
     views.push_back(pair.first);
 
-  for (auto view : views)
+  for (auto* view : views)
     Unregister(view);
 }
 

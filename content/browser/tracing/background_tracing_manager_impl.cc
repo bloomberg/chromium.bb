@@ -52,7 +52,7 @@ void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
 
 // Tracing enabled callback for BENCHMARK_MEMORY_LIGHT category preset.
 void BenchmarkMemoryLight_TracingEnabledCallback() {
-  auto dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
+  auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
   dump_manager->RequestGlobalDump(
       base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
@@ -179,7 +179,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 
   if (config_) {
     DCHECK(!config_.get()->rules().empty());
-    for (auto& rule : config_.get()->rules())
+    for (auto* rule : config_.get()->rules())
       static_cast<BackgroundTracingRule*>(rule)->Install();
 
     if (!config_->enable_blink_features().empty()) {
@@ -243,7 +243,7 @@ BackgroundTracingManagerImpl::GetRuleAbleToTriggerTracing(
   }
 
   std::string trigger_name = GetTriggerNameFromHandle(handle);
-  for (const auto& rule : config_.get()->rules()) {
+  for (auto* rule : config_.get()->rules()) {
     if (static_cast<BackgroundTracingRule*>(rule)
             ->ShouldTriggerNamedEvent(trigger_name))
       return static_cast<BackgroundTracingRule*>(rule);
@@ -262,7 +262,7 @@ void BackgroundTracingManagerImpl::OnHistogramTrigger(
     return;
   }
 
-  for (const auto& rule : config_->rules()) {
+  for (auto* rule : config_->rules()) {
     if (rule->ShouldTriggerNamedEvent(histogram_name))
       OnRuleTriggered(rule, StartedFinalizingCallback());
   }

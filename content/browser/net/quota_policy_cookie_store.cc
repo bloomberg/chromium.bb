@@ -98,7 +98,7 @@ void QuotaPolicyCookieStore::Flush(const base::Closure& callback) {
 void QuotaPolicyCookieStore::OnLoad(
     const LoadedCallback& loaded_callback,
     const std::vector<net::CanonicalCookie*>& cookies) {
-  for (const auto& cookie : cookies) {
+  for (auto* cookie : cookies) {
     net::SQLitePersistentCookieStore::CookieOrigin origin(
         cookie->Domain(), cookie->IsSecure());
     ++cookies_per_origin_[origin];

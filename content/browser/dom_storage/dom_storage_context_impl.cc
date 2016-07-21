@@ -498,7 +498,7 @@ bool DOMStorageContextImpl::OnMemoryDump(
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     DOMStorageNamespace::UsageStatistics total_stats =
         GetTotalNamespaceStatistics(namespaces_);
-    auto mad = pmd->CreateAllocatorDump(
+    auto* mad = pmd->CreateAllocatorDump(
         base::StringPrintf("dom_storage/0x%" PRIXPTR "/cache_size",
                            reinterpret_cast<uintptr_t>(this)));
     mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

@@ -132,7 +132,7 @@ void ResourceDispatchThrottler::FlushAll() {
                "total_throttled_messages", throttled_messages_.size());
   std::deque<IPC::Message*> throttled_messages;
   throttled_messages.swap(throttled_messages_);
-  for (auto& message : throttled_messages)
+  for (auto* message : throttled_messages)
     ForwardMessage(message);
   // There shouldn't be re-entrancy issues when forwarding an IPC, but validate
   // as a safeguard.

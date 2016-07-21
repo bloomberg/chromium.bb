@@ -297,7 +297,7 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
   if (!node_ || !manager_ || child_index >= InternalChildCount())
     return nullptr;
 
-  const auto child_node = node_->ChildAtIndex(child_index);
+  auto* child_node = node_->ChildAtIndex(child_index);
   DCHECK(child_node);
   return manager_->GetFromAXNode(child_node);
 }

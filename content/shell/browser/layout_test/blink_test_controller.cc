@@ -734,7 +734,7 @@ void BlinkTestController::OnLayoutDumpResponse(RenderFrameHost* sender,
 
   // Stitch the frame-specific results in the right order.
   std::string stitched_layout_dump;
-  for (const auto& render_frame_host : web_contents()->GetAllFrames()) {
+  for (auto* render_frame_host : web_contents()->GetAllFrames()) {
     auto it =
         frame_to_layout_dump_map_.find(render_frame_host->GetFrameTreeNodeId());
     if (it != frame_to_layout_dump_map_.end()) {

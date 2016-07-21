@@ -67,7 +67,7 @@ WebRTCEventLogHost::WebRTCEventLogHost(int render_process_id)
       rtc_event_logging_enabled_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto webrtc_internals = WebRTCInternals::GetInstance();
+  auto* webrtc_internals = WebRTCInternals::GetInstance();
   if (webrtc_internals->IsEventLogRecordingsEnabled())
     StartWebRTCEventLog(webrtc_internals->GetEventLogFilePath());
 }

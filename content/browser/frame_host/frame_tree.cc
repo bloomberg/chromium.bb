@@ -269,7 +269,7 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   // new focused frame (since it initiated the focus change), and we notify the
   // new focused frame's SiteInstance (if it differs from |source|) separately
   // below.
-  for (const auto& instance : frame_tree_site_instances) {
+  for (auto* instance : frame_tree_site_instances) {
     if (instance != source && instance != current_instance) {
       DCHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
       RenderFrameProxyHost* proxy =
@@ -438,7 +438,7 @@ void FrameTree::ReplicatePageFocus(bool is_focused) {
   // about proxies in SiteInstances for frames in a different FrameTree (e.g.,
   // for window.open), so we can't just iterate over its proxy_hosts_ in
   // RenderFrameHostManager.
-  for (const auto& instance : frame_tree_site_instances)
+  for (auto* instance : frame_tree_site_instances)
     SetPageFocus(instance, is_focused);
 }
 
