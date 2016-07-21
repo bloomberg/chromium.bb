@@ -941,6 +941,12 @@ bool BaseRenderingContext2D::shouldDrawImageAntialiased(const FloatRect& destRec
     return destRect.width() * fabs(widthExpansion) < 1 || destRect.height() * fabs(heightExpansion) < 1;
 }
 
+static bool isDrawScalingDown(const FloatRect& srcRect, const FloatRect& dstRect, float xScaleSquared, float yScaleSquared)
+{
+    return dstRect.width() * dstRect.width() * xScaleSquared < srcRect.width() * srcRect.width()
+        && dstRect.height() * dstRect.height() * yScaleSquared < srcRect.height() * srcRect.height();
+}
+
 void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint* paint)
 {
     trackDrawCall(DrawImage);
@@ -971,6 +977,9 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* i
         imagePaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         imagePaint.setImageFilter(nullptr);
     }
+
+    if (!imageSmoothingEnabled() && isDrawScalingDown(srcRect, dstRect, state().transform().xScaleSquared(), state().transform().yScaleSquared()))
+        imagePaint.setFilterQuality(kLow_SkFilterQuality);
 
     if (!imageSource->isVideoElement()) {
         imagePaint.setAntiAlias(shouldDrawImageAntialiased(dstRect));

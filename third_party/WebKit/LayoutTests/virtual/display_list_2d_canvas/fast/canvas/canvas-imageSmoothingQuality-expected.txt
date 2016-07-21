@@ -16,7 +16,7 @@ PASS lowData is not mediumData
 PASS mediumData is highData
 PASS lowData is not highData
 
-PASS sampleAlpha(noFilterData) is > sampleAlpha(lowData)
+PASS sampleAlpha(noFilterData) is sampleAlpha(lowData)
 PASS sampleAlpha(lowData) is > sampleAlpha(mediumData)
 PASS sampleAlpha(mediumData) is sampleAlpha(highData)
 

@@ -85,7 +85,7 @@ shouldBe("mediumData", "highData");
 shouldNotBe("lowData", "highData");
 
 debug("");
-shouldBeGreaterThan("sampleAlpha(noFilterData)", "sampleAlpha(lowData)");
+shouldBe("sampleAlpha(noFilterData)", "sampleAlpha(lowData)");
 shouldBeGreaterThan("sampleAlpha(lowData)", "sampleAlpha(mediumData)");
 // Skia uses mipmaps when downscaling, for both high and medium quality
 shouldBe("sampleAlpha(mediumData)", "sampleAlpha(highData)");
