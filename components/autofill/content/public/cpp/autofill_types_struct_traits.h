@@ -120,6 +120,10 @@ struct StructTraits<autofill::mojom::FormFieldData, autofill::FormFieldData> {
     return r.placeholder;
   }
 
+  static const base::string16& css_classes(const autofill::FormFieldData& r) {
+    return r.css_classes;
+  }
+
   static uint64_t max_length(const autofill::FormFieldData& r) {
     return r.max_length;
   }

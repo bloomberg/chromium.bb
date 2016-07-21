@@ -326,6 +326,16 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   FormFieldData input;
   test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
                               kOptions, 4, &input);
+  // Set other attributes to check if they are passed correctly.
+  input.autocomplete_attribute = "on";
+  input.placeholder = base::ASCIIToUTF16("placeholder");
+  input.css_classes = base::ASCIIToUTF16("class1");
+  input.max_length = 12345;
+  input.is_autofilled = true;
+  input.check_status = FormFieldData::CHECKED;
+  input.should_autocomplete = true;
+  input.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  input.text_direction = base::i18n::RIGHT_TO_LEFT;
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

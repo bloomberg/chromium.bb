@@ -75,6 +75,7 @@ struct FormFieldData {
   string form_control_type;
   string autocomplete_attribute;
   string placeholder;
+  string css_classes;
 
   uint64 max_length;
   bool is_autofilled;
