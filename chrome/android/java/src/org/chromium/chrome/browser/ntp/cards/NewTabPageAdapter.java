@@ -16,7 +16,6 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
-import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
@@ -47,7 +46,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final NewTabPageLayout mNewTabPageLayout;
     private final AboveTheFoldListItem mAboveTheFoldListItem;
     private final SnippetHeaderListItem mHeaderListItem;
-    private final UiConfig mUiConfig;
     private StatusListItem mStatusListItem;
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
@@ -112,10 +110,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
      * @param newTabPageLayout the layout encapsulating all the above-the-fold elements
      *                         (logo, search box, most visited tiles)
      * @param snippetsBridge the bridge to interact with the snippets service.
-     * @param uiConfig the NTP UI configuration, to be passed to created views.
      */
     public NewTabPageAdapter(NewTabPageManager manager, NewTabPageLayout newTabPageLayout,
-            SnippetsBridge snippetsBridge, UiConfig uiConfig) {
+            SnippetsBridge snippetsBridge) {
         mNewTabPageManager = manager;
         mNewTabPageLayout = newTabPageLayout;
         mAboveTheFoldListItem = new AboveTheFoldListItem();
@@ -124,7 +121,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
         mServiceStatus = DisabledReason.NONE;
         mSnippetsBridge = snippetsBridge;
-        mUiConfig = uiConfig;
         mStatusListItem = StatusListItem.create(snippetsBridge.getDisabledReason(), this, manager);
 
         loadSnippets(new ArrayList<SnippetArticleListItem>());
@@ -196,12 +192,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_HEADER) {
-            return new SnippetHeaderViewHolder(mRecyclerView, mUiConfig);
+            return new SnippetHeaderViewHolder(
+                    SnippetHeaderListItem.createView(parent), mRecyclerView);
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
-            return new SnippetArticleViewHolder(
-                    mRecyclerView, mNewTabPageManager, mSnippetsBridge, mUiConfig);
+            return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager, mSnippetsBridge);
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_SPACING) {
@@ -209,7 +205,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_STATUS) {
-            return new StatusListItem.ViewHolder(mRecyclerView, mUiConfig);
+            return new StatusListItem.ViewHolder(mRecyclerView);
         }
 
         return null;

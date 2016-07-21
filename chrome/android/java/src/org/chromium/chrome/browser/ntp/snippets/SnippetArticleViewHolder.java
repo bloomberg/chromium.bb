@@ -24,12 +24,9 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
-import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
-import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
-import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -72,11 +69,10 @@ public class SnippetArticleViewHolder extends CardViewHolder {
      * @param parent The ViewGroup that is going to contain the newly created view.
      * @param manager The NTPManager object used to open an article
      * @param snippetsBridge The SnippetsBridge used to retrieve the snippet thumbnails.
-     * @param uiConfig The NTP UI configuration object used to adjust the article UI.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
-            SnippetsBridge snippetsBridge, UiConfig uiConfig) {
-        super(R.layout.new_tab_page_snippets_card, parent, uiConfig);
+            SnippetsBridge snippetsBridge) {
+        super(R.layout.new_tab_page_snippets_card, parent);
 
         mNewTabPageManager = manager;
         mSnippetsBridge = snippetsBridge;
@@ -109,19 +105,6 @@ public class SnippetArticleViewHolder extends CardViewHolder {
             @Override
             public void onViewDetachedFromWindow(View v) {
                 itemView.getViewTreeObserver().removeOnPreDrawListener(mPreDrawObserver);
-            }
-        });
-
-        new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
-            @Override
-            public void onDisplayStyleChanged(@UiConfig.DisplayStyle int newDisplayStyle) {
-                if (newDisplayStyle == UiConfig.DISPLAY_STYLE_NARROW) {
-                    mHeadlineTextView.setMaxLines(4);
-                    mArticleSnippetTextView.setVisibility(View.GONE);
-                } else {
-                    mHeadlineTextView.setMaxLines(2);
-                    mArticleSnippetTextView.setVisibility(View.VISIBLE);
-                }
             }
         });
 

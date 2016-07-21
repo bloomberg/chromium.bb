@@ -63,8 +63,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetLoading() {
-        NewTabPageAdapter ntpa =
-                new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge, null);
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         assertEquals(4, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
@@ -96,8 +95,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetLoadingInitiallyEmpty() {
-        NewTabPageAdapter ntpa =
-                new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge, null);
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         // If we don't get anything, we should be in the same situation as the initial one.
         mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticleListItem>());
@@ -130,8 +128,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetClearing() {
-        NewTabPageAdapter ntpa =
-                new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge, null);
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge);
 
         List<SnippetArticleListItem> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);

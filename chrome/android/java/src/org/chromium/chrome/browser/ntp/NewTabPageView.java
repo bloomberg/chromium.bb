@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -96,7 +95,6 @@ public class NewTabPageView extends FrameLayout
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
     private NewTabPageManager mManager;
-    private UiConfig mUiConfig;
     private MostVisitedDesign mMostVisitedDesign;
     private MostVisitedItem[] mMostVisitedItems;
     private boolean mFirstShow = true;
@@ -240,7 +238,6 @@ public class NewTabPageView extends FrameLayout
     public void initialize(NewTabPageManager manager, boolean searchProviderHasLogo,
             SnippetsBridge snippetsBridge) {
         mManager = manager;
-        mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
 
         mUseCardsUi = snippetsBridge != null;
@@ -291,8 +288,7 @@ public class NewTabPageView extends FrameLayout
 
         // Set up snippets
         if (mUseCardsUi) {
-            mNewTabPageAdapter =
-                    new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge, mUiConfig);
+            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
 
             // Set up swipe-to-dismiss
@@ -1087,18 +1083,6 @@ public class NewTabPageView extends FrameLayout
             mRecyclerView.updatePeekingCard();
             mRecyclerView.updateSnippetsHeaderDisplay();
         }
-    }
-
-    @Override
-    protected void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        // When the viewport configuration changes, we want to update the display style so that the
-        // observers are aware of the new available space. Another moment to do this update could
-        // be through a OnLayoutChangeListener, but then we get notified of the change after the
-        // layout pass, which means that the new style will only be visible after layout happens
-        // again. We prefer updating here to avoid having to require that additional layout pass.
-        mUiConfig.updateDisplayStyle();
     }
 
     private int getVerticalScroll() {

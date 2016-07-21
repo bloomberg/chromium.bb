@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.cards.MarginResizer;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -27,17 +27,20 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
 
     private SnippetHeaderListItem mHeader;
 
-    public SnippetHeaderViewHolder(final NewTabPageRecyclerView recyclerView, UiConfig config) {
-        super(LayoutInflater.from(recyclerView.getContext())
-                        .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
-        mMaxSnippetHeaderHeight = itemView.getResources().getDimensionPixelSize(
+    public static View createView(ViewGroup parent) {
+        return LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.new_tab_page_snippets_card, parent, false);
+    }
+
+    public SnippetHeaderViewHolder(final View cardView, final NewTabPageRecyclerView recyclerView) {
+        super(cardView);
+        mMaxSnippetHeaderHeight = cardView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_article_header_height);
 
-        mMaxPeekPadding = itemView.getResources().getDimensionPixelSize(
+        mMaxPeekPadding = cardView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_padding_and_peeking_card_height);
 
         mRecyclerView = recyclerView;
-        MarginResizer.createWithViewAdapter(itemView, config);
     }
 
     @Override
