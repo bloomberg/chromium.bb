@@ -91,7 +91,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   page_bounds += offset_;
   page_bounds -= scroll_;
   page_bounds.Scale(zoom_ / GetDeviceScaleFactor());
-  page_node->location = gfx::ToEnclosingRect(page_bounds);
+  page_node->location = page_bounds;
   doc_node_->location.Union(page_node->location);
   doc_node_->child_ids.push_back(page_node->id);
 
@@ -141,7 +141,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     gfx::RectF text_run_bounds = ToGfxRectF(text_run.bounds);
     text_run_bounds.Scale(zoom_ / GetDeviceScaleFactor());
     text_run_bounds += page_bounds.OffsetFromOrigin();
-    inline_text_box_node->location = gfx::ToEnclosingRect(text_run_bounds);
+    inline_text_box_node->location = text_run_bounds;
     inline_text_box_node->AddIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS,
                                               char_offsets);
 

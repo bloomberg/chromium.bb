@@ -119,7 +119,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   root.id = 1;
   root.role = AX_ROLE_DIALOG;
   root.state = 1 << AX_STATE_FOCUSABLE;
-  root.location = gfx::Rect(0, 0, 800, 600);
+  root.location = gfx::RectF(0, 0, 800, 600);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -127,13 +127,13 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   button.id = 2;
   button.role = AX_ROLE_BUTTON;
   button.state = 0;
-  button.location = gfx::Rect(20, 20, 200, 30);
+  button.location = gfx::RectF(20, 20, 200, 30);
 
   AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.role = AX_ROLE_CHECK_BOX;
   checkbox.state = 0;
-  checkbox.location = gfx::Rect(20, 50, 200, 30);
+  checkbox.location = gfx::RectF(20, 50, 200, 30);
 
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

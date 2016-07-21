@@ -24,6 +24,7 @@
 #include "ipc/message_filter.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace extensions {
 
@@ -85,7 +86,7 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
 // Compute the bounding box of a node, fixing nodes with empty bounds by
 // unioning the bounds of their children.
 static gfx::Rect ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
-  gfx::Rect bounds = node->data().location;
+  gfx::Rect bounds = gfx::ToEnclosingRect(node->data().location);
   if (bounds.width() > 0 && bounds.height() > 0)
     return bounds;
 

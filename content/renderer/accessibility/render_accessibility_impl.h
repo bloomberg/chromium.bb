@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 struct AccessibilityHostMsg_EventParams;
 
@@ -152,7 +153,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   PdfAXTreeSource* pdf_tree_source_;
 
   // Current location of every object, so we can detect when it moves.
-  base::hash_map<int, gfx::Rect> locations_;
+  base::hash_map<int, gfx::RectF> locations_;
 
   // The most recently observed scroll offset of the root document element.
   // TODO(dmazzoni): remove once https://bugs.webkit.org/show_bug.cgi?id=73460

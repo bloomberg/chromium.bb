@@ -16,7 +16,7 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
 class Transform;
@@ -114,7 +114,7 @@ struct AX_EXPORT AXNodeData {
   std::vector<int32_t> child_ids;
 
   // The object's location relative to its window or frame.
-  gfx::Rect location;
+  gfx::RectF location;
 
   // An additional transform to apply to position this object and its subtree.
   // NOTE: this member is a std::unique_ptr because it's rare and gfx::Transform

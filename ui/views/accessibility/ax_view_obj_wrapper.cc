@@ -58,7 +58,7 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   if (!view_->visible())
     out_node_data->state |= 1 << ui::AX_STATE_INVISIBLE;
 
-  out_node_data->location = view_->GetBoundsInScreen();
+  out_node_data->location = gfx::RectF(view_->GetBoundsInScreen());
 
   out_node_data->AddStringAttribute(
       ui::AX_ATTR_NAME, base::UTF16ToUTF8(view_data.name));

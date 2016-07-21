@@ -85,7 +85,7 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_LocationChangeParams)
 
   // The object's new location, in frame-relative coordinates (same
   // as the coordinates in AccessibilityNodeData).
-  IPC_STRUCT_MEMBER(gfx::Rect, new_location)
+  IPC_STRUCT_MEMBER(gfx::RectF, new_location)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_FindInPageResultParams)

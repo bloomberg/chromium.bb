@@ -53,7 +53,7 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->AddStringAttribute(ui::AX_ATTR_NAME,
                                     base::UTF16ToUTF8(window_->title()));
   out_node_data->state = 0;
-  out_node_data->location = window_->bounds();
+  out_node_data->location = gfx::RectF(window_->bounds());
 }
 
 int32_t AXWindowObjWrapper::GetID() {

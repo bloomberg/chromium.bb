@@ -261,7 +261,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                                       AXContentNodeData* dst) const {
   dst->role = AXRoleFromBlink(src.role());
   dst->state = AXStateFromBlink(src);
-  dst->location = src.boundingBoxRect();
+  dst->location = gfx::RectF(src.boundingBoxRect());
   dst->id = src.axID();
 
   blink::WebAXNameFrom nameFrom;

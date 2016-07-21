@@ -46,7 +46,7 @@ void AXWidgetObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
       ui::AX_ATTR_NAME,
       base::UTF16ToUTF8(
           widget_->widget_delegate()->GetAccessibleWindowTitle()));
-  out_node_data->location = widget_->GetWindowBoundsInScreen();
+  out_node_data->location = gfx::RectF(widget_->GetWindowBoundsInScreen());
   out_node_data->state = 0;
 }
 

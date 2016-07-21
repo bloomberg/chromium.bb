@@ -160,7 +160,7 @@ TEST(CombineAXTreesTest, Coordinates) {
   parent_tree.nodes[0].child_ids.push_back(3);
   parent_tree.nodes[1].id = 2;
   parent_tree.nodes[1].role = AX_ROLE_BUTTON;
-  parent_tree.nodes[1].location = gfx::Rect(50, 10, 200, 100);
+  parent_tree.nodes[1].location = gfx::RectF(50, 10, 200, 100);
   parent_tree.nodes[2].id = 3;
   parent_tree.nodes[2].role = AX_ROLE_IFRAME;
   parent_tree.nodes[2].AddIntAttribute(AX_ATTR_CHILD_TREE_ID, 2);
@@ -180,7 +180,7 @@ TEST(CombineAXTreesTest, Coordinates) {
 
   child_tree.nodes[1].id = 2;
   child_tree.nodes[1].role = AX_ROLE_BUTTON;
-  child_tree.nodes[1].location = gfx::Rect(50, 10, 200, 100);
+  child_tree.nodes[1].location = gfx::RectF(50, 10, 200, 100);
 
   AXTreeCombiner combiner;
   combiner.AddTree(parent_tree, true);

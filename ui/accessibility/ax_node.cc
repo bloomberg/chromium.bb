@@ -18,7 +18,7 @@ void AXNode::SetData(const AXNodeData& src) {
   data_ = src;
 }
 
-void AXNode::SetLocation(const gfx::Rect& new_location) {
+void AXNode::SetLocation(const gfx::RectF& new_location) {
   data_.location = new_location;
 }
 

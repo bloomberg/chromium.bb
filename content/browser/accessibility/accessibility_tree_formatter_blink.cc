@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace content {
@@ -42,7 +43,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
 
   dict->SetString("internalRole", ui::ToString(node.GetData().role));
 
-  gfx::Rect bounds = node.GetData().location;
+  gfx::Rect bounds = gfx::ToEnclosingRect(node.GetData().location);
   dict->SetInteger("boundsX", bounds.x());
   dict->SetInteger("boundsY", bounds.y());
   dict->SetInteger("boundsWidth", bounds.width());

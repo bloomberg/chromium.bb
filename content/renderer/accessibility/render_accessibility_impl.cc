@@ -362,7 +362,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     return;
 
   // Do a breadth-first explore of the whole blink AX tree.
-  base::hash_map<int, gfx::Rect> new_locations;
+  base::hash_map<int, gfx::RectF> new_locations;
   std::queue<WebAXObject> objs_to_explore;
   objs_to_explore.push(root);
   while (objs_to_explore.size()) {
@@ -372,12 +372,12 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     // See if we had a previous location. If not, this whole subtree must
     // be new, so don't continue to explore this branch.
     int id = obj.axID();
-    base::hash_map<int, gfx::Rect>::iterator iter = locations_.find(id);
+    base::hash_map<int, gfx::RectF>::iterator iter = locations_.find(id);
     if (iter == locations_.end())
       continue;
 
     // If the location has changed, append it to the IPC message.
-    gfx::Rect new_location = obj.boundingBoxRect();
+    gfx::RectF new_location = gfx::RectF(obj.boundingBoxRect());
     if (iter != locations_.end() && iter->second != new_location) {
       AccessibilityHostMsg_LocationChangeParams message;
       message.id = id;

@@ -231,7 +231,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleLocation) {
   AXNodeData root;
   root.id = 1;
-  root.location = gfx::Rect(10, 40, 800, 600);
+  root.location = gfx::RectF(10, 40, 800, 600);
   Init(root);
 
   TestAXNodeWrapper::SetGlobalCoordinateOffset(gfx::Vector2d(100, 200));

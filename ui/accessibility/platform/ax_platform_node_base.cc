@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
 
@@ -21,7 +22,7 @@ const AXNodeData& AXPlatformNodeBase::GetData() const {
 
 gfx::Rect AXPlatformNodeBase::GetBoundsInScreen() const {
   CHECK(delegate_);
-  gfx::Rect bounds = GetData().location;
+  gfx::Rect bounds = gfx::ToEnclosingRect(GetData().location);
   bounds.Offset(delegate_->GetGlobalCoordinateOffset());
   return bounds;
 }

@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -60,7 +61,8 @@ TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {
 }
 
 TEST_F(NativeViewAccessibilityTest, BoundsShouldMatch) {
-  gfx::Rect bounds = button_accessibility_->GetData().location;
+  gfx::Rect bounds = gfx::ToEnclosingRect(
+      button_accessibility_->GetData().location);
   bounds.Offset(button_accessibility_->GetGlobalCoordinateOffset());
   EXPECT_EQ(button_->GetBoundsInScreen(), bounds);
 }

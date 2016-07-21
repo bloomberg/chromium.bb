@@ -44,7 +44,7 @@ class AX_EXPORT AXNode {
   // Update this node's location. This is separate from SetData just because
   // changing only the location is common and should be more efficient than
   // re-copying all of the data.
-  void SetLocation(const gfx::Rect& new_location);
+  void SetLocation(const gfx::RectF& new_location);
 
   // Set the index in parent, for example if siblings were inserted or deleted.
   void SetIndexInParent(int index_in_parent);

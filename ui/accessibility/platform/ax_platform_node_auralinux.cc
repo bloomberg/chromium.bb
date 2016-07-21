@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 //
 // ax_platform_node_auralinux AtkObject definition and implementation.
@@ -528,7 +529,7 @@ void AXPlatformNodeAuraLinux::GetPosition(gint* x, gint* y,
 }
 
 void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
-  gfx::Rect rect_size = GetData().location;
+  gfx::Rect rect_size = gfx::ToEnclosingRect(GetData().location);
   if (width)
     *width = rect_size.width();
   if (height)

@@ -208,10 +208,7 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
 
     // Apply the transformation to the object's bounds to put it in
     // the coordinate space of the root frame.
-    gfx::RectF boundsf(node.location);
-    transform_.TransformRect(&boundsf);
-    node.location = gfx::Rect(boundsf.x(), boundsf.y(),
-                              boundsf.width(), boundsf.height());
+    transform_.TransformRect(&node.location);
 
     // See if this node has a child tree. As a sanity check make sure the
     // child tree lists this tree as its parent tree id.

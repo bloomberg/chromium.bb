@@ -56,7 +56,7 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   data_ = ui::AXNodeData();
   data_.role = state.role;
   data_.state = state.state();
-  data_.location = view_->GetBoundsInScreen();
+  data_.location = gfx::RectF(view_->GetBoundsInScreen());
   data_.AddStringAttribute(ui::AX_ATTR_NAME, base::UTF16ToUTF8(state.name));
   data_.AddStringAttribute(ui::AX_ATTR_VALUE, base::UTF16ToUTF8(state.value));
   data_.AddStringAttribute(ui::AX_ATTR_ACTION,
