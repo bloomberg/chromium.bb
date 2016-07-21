@@ -36,6 +36,7 @@ static const struct TestOsWithFamily {
   { { "MAVERICKS", GPUTestConfig::kOsMacMavericks }, kOsFamilyMac },
   { { "YOSEMITE", GPUTestConfig::kOsMacYosemite }, kOsFamilyMac },
   { { "ELCAPITAN", GPUTestConfig::kOsMacElCapitan }, kOsFamilyMac },
+  { { "SIERRA", GPUTestConfig::kOsMacSierra }, kOsFamilyMac },
   { { "LINUX", GPUTestConfig::kOsLinux },
     { "LINUX", GPUTestConfig::kOsLinux } },
   { { "CHROMEOS", GPUTestConfig::kOsChromeOS },

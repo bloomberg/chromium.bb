@@ -32,13 +32,14 @@ class GPU_EXPORT GPUTestConfig {
     kOsMacMavericks = 1 << 8,
     kOsMacYosemite = 1 << 9,
     kOsMacElCapitan = 1 << 10,
+    kOsMacSierra = 1 << 11,
     kOsMac = kOsMacLeopard | kOsMacSnowLeopard | kOsMacLion |
              kOsMacMountainLion | kOsMacMavericks | kOsMacYosemite |
-             kOsMacElCapitan,
-    kOsLinux = 1 << 11,
-    kOsChromeOS = 1 << 12,
-    kOsAndroid = 1 << 13,
-    kOsWin10 = 1 << 14,
+             kOsMacElCapitan | kOsMacSierra,
+    kOsLinux = 1 << 12,
+    kOsChromeOS = 1 << 13,
+    kOsAndroid = 1 << 14,
+    kOsWin10 = 1 << 15,
     kOsWin = kOsWinXP | kOsWinVista | kOsWin7 | kOsWin8 | kOsWin10,
   };
 
