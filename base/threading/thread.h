@@ -173,9 +173,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Returns the name of this thread (for display in debugger too).
   const std::string& thread_name() const { return name_; }
 
-  // The native thread handle.
-  PlatformThreadHandle thread_handle() { return thread_; }
-
   // Returns the thread ID.  Should not be called before the first Start*()
   // call.  Keeps on returning the same ID even after a Stop() call. The next
   // Start*() call renews the ID.

@@ -13,16 +13,15 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   TestTimeouts::Initialize();
 
-  base::Thread* dbus_thread = new base::Thread("D-Bus Thread");
+  base::Thread dbus_thread("D-Bus Thread");
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  CHECK(dbus_thread->StartWithOptions(thread_options));
+  CHECK(dbus_thread.StartWithOptions(thread_options));
 
   dbus::TestService::Options options;
-  options.dbus_task_runner = dbus_thread->task_runner();
+  options.dbus_task_runner = dbus_thread.task_runner();
   dbus::TestService* test_service = new dbus::TestService(options);
   CHECK(test_service->StartService());
   CHECK(test_service->WaitUntilServiceIsStarted());
   CHECK(test_service->HasDBusThread());
-  base::PlatformThread::Join(dbus_thread->thread_handle());
 }
