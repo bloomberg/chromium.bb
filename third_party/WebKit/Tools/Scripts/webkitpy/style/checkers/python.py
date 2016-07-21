@@ -79,6 +79,7 @@ class PythonChecker(object):
             wkf.path_from_webkit_base('Tools', 'Scripts'),
             wkf.path_from_webkit_base('Source', 'build', 'scripts'),
             wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty'),
+            wkf.path_from_webkit_base('Source', 'bindings', 'scripts'),
         ])
         return executive.run_command([
             sys.executable,

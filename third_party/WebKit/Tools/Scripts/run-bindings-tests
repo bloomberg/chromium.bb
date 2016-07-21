@@ -25,7 +25,7 @@
 
 import sys
 
-from webkitpy.bindings.main import run_bindings_tests
+from webkitpy.bindings.bindings_tests import run_bindings_tests
 
 
 def main(argv):

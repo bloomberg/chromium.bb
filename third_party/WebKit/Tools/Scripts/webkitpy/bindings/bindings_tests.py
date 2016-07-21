@@ -37,19 +37,16 @@ from webkitpy.common.system.executive import Executive
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
                                             os.pardir, os.pardir, 'Source'))
-sys.path.append(source_path)  # for Source/bindings imports
+bindings_script_path = os.path.join(source_path, 'bindings', 'scripts')
+sys.path.append(bindings_script_path)  # for Source/bindings imports
 
-from bindings.scripts.code_generator_v8 import CodeGeneratorUnionType
-import bindings.scripts.compute_interfaces_info_individual
-from bindings.scripts.compute_interfaces_info_individual import InterfaceInfoCollector
-import bindings.scripts.compute_interfaces_info_overall
-from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
-from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
-from bindings.scripts.idl_reader import IdlReader
-from bindings.scripts.utilities import ComponentInfoProviderCore
-from bindings.scripts.utilities import ComponentInfoProviderModules
-from bindings.scripts.utilities import idl_filename_to_component
-from bindings.scripts.utilities import write_file
+from code_generator_v8 import CodeGeneratorUnionType
+from compute_interfaces_info_individual import InterfaceInfoCollector
+from compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
+from idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
+from utilities import ComponentInfoProviderCore
+from utilities import ComponentInfoProviderModules
+from utilities import write_file
 
 
 PASS_MESSAGE = 'All tests PASS!'
@@ -105,7 +102,7 @@ def TemporaryDirectory():
         shutil.rmtree(name)
 
 
-def generate_interface_dependencies(output_directory):
+def generate_interface_dependencies():
     def idl_paths_recursive(directory):
         # This is slow, especially on Windows, due to os.walk making
         # excess stat() calls. Faster versions may appear in Python 3.5 or
@@ -279,7 +276,7 @@ def bindings_tests(output_directory, verbose):
             write_file(output_code, output_path, only_if_changed=True)
 
     try:
-        generate_interface_dependencies(output_directory)
+        generate_interface_dependencies()
         for component in COMPONENT_DIRECTORY:
             output_dir = os.path.join(output_directory, component)
             if not os.path.exists(output_dir):
