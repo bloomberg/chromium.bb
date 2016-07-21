@@ -408,8 +408,6 @@ test("events_unittests") {
     "//third_party/mesa:osmesa",
   ]
 
-  include_dirs = [ "//testing/gmock/include" ]
-
   if (use_x11) {
     sources += [
       "devices/x11/device_data_manager_x11_unittest.cc",
