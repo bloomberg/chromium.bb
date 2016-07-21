@@ -18,11 +18,13 @@ void DeviceSensorHost<MojoInterface, consumer_type>::Create(
 template <typename MojoInterface, ConsumerType consumer_type>
 DeviceSensorHost<MojoInterface, consumer_type>::DeviceSensorHost(
     mojo::InterfaceRequest<MojoInterface> request)
-    : is_started_(false), binding_(this, std::move(request)) {}
+    : is_started_(false), binding_(this, std::move(request)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 template <typename MojoInterface, ConsumerType consumer_type>
 DeviceSensorHost<MojoInterface, consumer_type>::~DeviceSensorHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (is_started_)
     DeviceSensorService::GetInstance()->RemoveConsumer(consumer_type);
 }
@@ -30,7 +32,7 @@ DeviceSensorHost<MojoInterface, consumer_type>::~DeviceSensorHost() {
 template <typename MojoInterface, ConsumerType consumer_type>
 void DeviceSensorHost<MojoInterface, consumer_type>::DeviceSensorHost::
     StartPolling(const typename MojoInterface::StartPollingCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!is_started_);
   if (is_started_)
     return;
@@ -43,7 +45,7 @@ void DeviceSensorHost<MojoInterface, consumer_type>::DeviceSensorHost::
 template <typename MojoInterface, ConsumerType consumer_type>
 void DeviceSensorHost<MojoInterface,
                       consumer_type>::DeviceSensorHost::StopPolling() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(is_started_);
   if (!is_started_)
     return;

@@ -36,6 +36,8 @@ class DeviceSensorHost : public MojoInterface {
 
   mojo::StrongBinding<MojoInterface> binding_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceSensorHost);
 };
 
