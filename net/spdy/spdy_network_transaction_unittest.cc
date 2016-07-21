@@ -109,8 +109,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
                             : std::move(session_deps)),
           session_(
               SpdySessionDependencies::SpdyCreateSession(session_deps_.get())),
-          log_(log),
-          spdy_enabled_(true) {}
+          log_(log) {}
 
     ~NormalSpdyTransactionHelper() {
       // Any test which doesn't close the socket by sending it an EOF will
@@ -122,10 +121,6 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
       // Forcefully close existing sessions here.
       session()->spdy_session_pool()->CloseAllSessions();
-    }
-
-    void SetSpdyDisabled() {
-      spdy_enabled_ = false;
     }
 
     void RunPreTestSetup() {
@@ -159,25 +154,11 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
       const HttpResponseInfo* response = trans_->GetResponseInfo();
       ASSERT_TRUE(response);
       ASSERT_TRUE(response->headers);
-      if (HttpStreamFactory::spdy_enabled()) {
-        EXPECT_EQ(HttpResponseInfo::ConnectionInfoFromNextProto(kProtoHTTP2),
-                  response->connection_info);
-      } else {
-        EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
-                  response->connection_info);
-      }
-      if (spdy_enabled_) {
-        EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
-        EXPECT_TRUE(response->was_fetched_via_spdy);
-        EXPECT_TRUE(response->was_npn_negotiated);
-      } else {
-        EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
-        EXPECT_FALSE(response->was_fetched_via_spdy);
-        // If SPDY is disabled, an HTTP request should not be diverted
-        // over an SSL session.
-        EXPECT_EQ(request_.url.SchemeIs("https"),
-                  response->was_npn_negotiated);
-      }
+      EXPECT_EQ(HttpResponseInfo::ConnectionInfoFromNextProto(kProtoHTTP2),
+                response->connection_info);
+      EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+      EXPECT_TRUE(response->was_fetched_via_spdy);
+      EXPECT_TRUE(response->was_npn_negotiated);
       EXPECT_EQ("127.0.0.1", response->socket_address.host());
       EXPECT_EQ(443, response->socket_address.port());
       output_.status_line = response->headers->GetStatusLine();
@@ -277,7 +258,6 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     DataVector data_vector_;
     AlternateVector alternate_vector_;
     const BoundNetLog log_;
-    bool spdy_enabled_;
   };
 
   void ConnectStatusHelperWithExpectedStatus(const MockRead& status,
@@ -4254,61 +4234,8 @@ TEST_F(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
   }
 }
 
-// Test that turning SPDY on and off works properly.
-TEST_F(SpdyNetworkTransactionTest, DISABLED_SpdyOnOffToggle) {
-  HttpStreamFactory::set_spdy_enabled(true);
-  SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
-
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
-  MockRead spdy_reads[] = {
-      CreateMockRead(resp, 1), CreateMockRead(body, 2),
-      MockRead(ASYNC, 0, 3)  // EOF
-  };
-
-  SequencedSocketData data(spdy_reads, arraysize(spdy_reads), spdy_writes,
-                           arraysize(spdy_writes));
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), NULL);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsOk());
-  EXPECT_EQ("HTTP/1.1 200", out.status_line);
-  EXPECT_EQ("hello!", out.response_data);
-
-  HttpStreamFactory::set_spdy_enabled(false);
-  MockWrite http_writes[] = {
-      MockWrite(SYNCHRONOUS, 0,
-                "GET / HTTP/1.1\r\n"
-                "Host: www.example.org\r\n"
-                "Connection: keep-alive\r\n\r\n"),
-  };
-
-  MockRead http_reads[] = {
-      MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 OK\r\n\r\n"),
-      MockRead(SYNCHRONOUS, 2, "hello from http"),
-      MockRead(SYNCHRONOUS, OK, 3),
-  };
-  SequencedSocketData data2(http_reads, arraysize(http_reads), http_writes,
-                            arraysize(http_writes));
-  NormalSpdyTransactionHelper helper2(CreateGetRequest(), DEFAULT_PRIORITY,
-                                      BoundNetLog(), NULL);
-  helper2.SetSpdyDisabled();
-  helper2.RunToCompletion(&data2);
-  TransactionHelperResult out2 = helper2.output();
-  EXPECT_THAT(out2.rv, IsOk());
-  EXPECT_EQ("HTTP/1.1 200 OK", out2.status_line);
-  EXPECT_EQ("hello from http", out2.response_data);
-
-  HttpStreamFactory::set_spdy_enabled(true);
-}
-
 // Tests that Basic authentication works over SPDY
 TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
-  HttpStreamFactory::set_spdy_enabled(true);
-
   // The first request will be a bare GET, the second request will be a
   // GET with an Authorization header.
   SpdySerializedFrame req_get(

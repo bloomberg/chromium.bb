@@ -1338,26 +1338,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisableSpdy) {
-  // Verifies that SPDY can be disable by policy.
-  EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
-  PolicyMap policies;
-  policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
-  UpdateProviderPolicy(policies);
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
-  // Verify that it can be force-enabled too.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableSpdy, true);
-  policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
-}
-
 namespace {
 
 // The following helpers retrieve whether https:// URL stripping is

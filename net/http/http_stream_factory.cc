@@ -21,18 +21,7 @@
 
 namespace net {
 
-// WARNING: If you modify or add any static flags, you must keep them in sync
-// with |ResetStaticSettingsToInit|. This is critical for unit test isolation.
-
-// static
-bool HttpStreamFactory::spdy_enabled_ = true;
-
 HttpStreamFactory::~HttpStreamFactory() {}
-
-// static
-void HttpStreamFactory::ResetStaticSettingsToInit() {
-  spdy_enabled_ = true;
-}
 
 void HttpStreamFactory::ProcessAlternativeServices(
     HttpNetworkSession* session,

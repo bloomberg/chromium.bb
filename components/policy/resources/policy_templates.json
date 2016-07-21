@@ -475,11 +475,14 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 8,
       'caption': '''Disable SPDY protocol''',
       'tags': [],
-      'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy is deprecated, because SPDY/3.1 support is removed.
+
+      Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 

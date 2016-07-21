@@ -26,10 +26,6 @@ class NetPrefObserver {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  void ApplySettings();
-
-  BooleanPrefMember spdy_disabled_;
-
   DISALLOW_COPY_AND_ASSIGN(NetPrefObserver);
 };
 

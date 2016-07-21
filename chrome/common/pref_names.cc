@@ -433,7 +433,8 @@ const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
 const char kDnsPrefetchingHostReferralList[] =
     "dns_prefetching.host_referral_list";
 
-// Disables the SPDY protocol.
+// Disables the SPDY/3.1 protocol.
+// DEPRECATED: SPDY/3.1 is not supported any more.
 const char kDisableSpdy[] = "spdy.disabled";
 
 // Prefs for persisting HttpServerProperties.

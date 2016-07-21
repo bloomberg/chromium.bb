@@ -750,10 +750,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
 
     if (alternative_service.protocol >= NPN_SPDY_MINIMUM_VERSION &&
         alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
-      if (alternative_service.protocol == NPN_SPDY_3_1 &&
-          !HttpStreamFactory::spdy_enabled())
-        continue;
-
       if (origin.host() != alternative_service.host &&
           !session_->params()
                .enable_http2_alternative_service_with_different_host) {
