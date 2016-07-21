@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/android/ui_android_export.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {
@@ -23,7 +24,8 @@ class WindowAndroidCompositor;
 class WindowAndroidObserver;
 
 // Android implementation of the activity window.
-class UI_ANDROID_EXPORT WindowAndroid {
+// WindowAndroid is also the root of a ViewAndroid tree.
+class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
  public:
   WindowAndroid(JNIEnv* env, jobject obj);
 
@@ -81,7 +83,10 @@ class UI_ANDROID_EXPORT WindowAndroid {
       const base::android::JavaRef<jobject>& jimage);
 
  private:
-  ~WindowAndroid();
+  ~WindowAndroid() override;
+
+  // ViewAndroid overrides.
+  WindowAndroid* GetWindowAndroid() const override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
   gfx::Vector2dF content_offset_;

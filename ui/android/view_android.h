@@ -20,25 +20,18 @@ namespace ui {
 class WindowAndroid;
 
 // A simple container for a UI layer.
-// At the root of the hierarchy is a WindowAndroid.
-//
+// At the root of the hierarchy is a WindowAndroid, when attached.
 class UI_ANDROID_EXPORT ViewAndroid {
  public:
-  // Used to construct a root view.
-  ViewAndroid(const base::android::JavaRef<jobject>& delegate,
-              WindowAndroid* root_window);
-
-  // Used to construct a child view.
+  // A ViewAndroid may have its own delegate or otherwise will
+  // use the next available parent's delegate.
+  ViewAndroid(const base::android::JavaRef<jobject>& delegate);
   ViewAndroid();
-  ~ViewAndroid();
+  virtual ~ViewAndroid();
 
   // Returns the window at the root of this hierarchy, or |null|
   // if disconnected.
-  WindowAndroid* GetWindowAndroid() const;
-
-  // Set the root |WindowAndroid|. This is only valid for root
-  // nodes and must not be called for children.
-  void SetWindowAndroid(WindowAndroid* root_window);
+  virtual WindowAndroid* GetWindowAndroid() const;
 
   // Returns the Java delegate for this view. This is used to delegate work
   // up to the embedding view (or the embedder that can deal with the
@@ -49,17 +42,22 @@ class UI_ANDROID_EXPORT ViewAndroid {
   cc::Layer* GetLayer() const;
   void SetLayer(scoped_refptr<cc::Layer> layer);
 
-  // Add/remove this view as a child of another view.
+  // Adds this view as a child of another view.
   void AddChild(ViewAndroid* child);
-  void RemoveChild(ViewAndroid* child);
+
+  // Detaches this view from its parent.
+  void RemoveFromParent();
 
   void StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
                         const base::android::JavaRef<jobject>& jimage);
 
- private:
+ protected:
   ViewAndroid* parent_;
+
+ private:
+  void RemoveChild(ViewAndroid* child);
+
   std::list<ViewAndroid*> children_;
-  WindowAndroid* window_;
   scoped_refptr<cc::Layer> layer_;
   base::android::ScopedJavaGlobalRef<jobject> delegate_;
 

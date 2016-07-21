@@ -363,8 +363,7 @@ CompositorImpl::SharedVulkanContextProviderAndroid() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : root_layer_(cc::Layer::Create()),
-      surface_id_allocator_(CreateSurfaceIdAllocator()),
+    : surface_id_allocator_(CreateSurfaceIdAllocator()),
       resource_manager_(root_window),
       has_transparent_background_(false),
       device_scale_factor_(1),
@@ -380,6 +379,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
+  DCHECK(root_window->GetLayer() == nullptr);
+  root_window->SetLayer(cc::Layer::Create());
   root_window->AttachCompositor(this);
   CreateLayerTreeHost();
   resource_manager_.Init(host_.get());
@@ -387,6 +388,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
 
 CompositorImpl::~CompositorImpl() {
   root_window_->DetachCompositor();
+  root_window_->SetLayer(nullptr);
   // Clean-up any surface references.
   SetSurface(NULL);
 }
@@ -404,9 +406,9 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
     subroot_layer_->RemoveFromParent();
     subroot_layer_ = NULL;
   }
-  if (root_layer.get()) {
-    subroot_layer_ = root_layer;
-    root_layer_->AddChild(root_layer);
+  if (root_window_->GetLayer()) {
+    subroot_layer_ = root_window_->GetLayer();
+    root_window_->GetLayer()->AddChild(root_layer);
   }
 }
 
@@ -472,7 +474,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.animation_host = cc::AnimationHost::CreateMainInstance();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->visible());
-  host_->SetRootLayer(root_layer_);
+  host_->SetRootLayer(root_window_->GetLayer());
   host_->set_surface_client_id(surface_id_allocator_->client_id());
   host_->SetViewportSize(size_);
   host_->set_has_transparent_background(has_transparent_background_);
@@ -514,7 +516,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
     host_->SetViewportSize(size);
   if (display_)
     display_->Resize(size);
-  root_layer_->SetBounds(size);
+  root_window_->GetLayer()->SetBounds(size);
 }
 
 void CompositorImpl::SetHasTransparentBackground(bool flag) {
@@ -777,7 +779,7 @@ void CompositorImpl::DidCommit() {
 
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
     std::unique_ptr<cc::CopyOutputRequest> request) {
-  root_layer_->RequestCopyOfOutput(std::move(request));
+  root_window_->GetLayer()->RequestCopyOfOutput(std::move(request));
 }
 
 void CompositorImpl::OnVSync(base::TimeTicks frame_time,

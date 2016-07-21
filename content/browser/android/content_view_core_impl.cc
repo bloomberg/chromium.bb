@@ -218,7 +218,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     jobject java_bridge_retained_object_set)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
-      view_(view_android_delegate, window_android),
+      view_(view_android_delegate),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       page_scale_(1),
       dpi_scale_(ui::GetScaleFactorForNativeView(&view_)),
@@ -228,6 +228,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       "A ContentViewCoreImpl should be created with a valid WebContents.";
   DCHECK(window_android);
   DCHECK(!view_android_delegate.is_null());
+  window_android->AddChild(&view_);
   view_.SetLayer(cc::SolidColorLayer::Create());
   view_.GetLayer()->SetBackgroundColor(GetBackgroundColor(env, obj));
   gfx::Size physical_size(
@@ -285,8 +286,9 @@ void ContentViewCoreImpl::UpdateWindowAndroid(
     jlong window_android) {
   if (window_android) {
     DCHECK(!view_.GetWindowAndroid());
-    view_.SetWindowAndroid(
-        reinterpret_cast<ui::WindowAndroid*>(window_android));
+    ui::WindowAndroid* window =
+        reinterpret_cast<ui::WindowAndroid*>(window_android);
+    window->AddChild(&view_);
     FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
                       observer_list_,
                       OnAttachedToWindow());
@@ -294,7 +296,7 @@ void ContentViewCoreImpl::UpdateWindowAndroid(
     FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
                       observer_list_,
                       OnDetachedFromWindow());
-    view_.SetWindowAndroid(nullptr);
+    view_.RemoveFromParent();
   }
 }
 

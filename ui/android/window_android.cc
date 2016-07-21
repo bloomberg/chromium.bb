@@ -37,6 +37,7 @@ bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {
 }
 
 WindowAndroid::~WindowAndroid() {
+  DCHECK(parent_ == nullptr) << "WindowAndroid must be a root view.";
   DCHECK(!compositor_);
 }
 
@@ -151,6 +152,11 @@ void WindowAndroid::StartDragAndDrop(
   Java_WindowAndroid_startDragAndDrop(env, GetJavaObject().obj(),
                                       jview_android_delegate.obj(), jtext.obj(),
                                       jimage.obj());
+}
+
+WindowAndroid* WindowAndroid::GetWindowAndroid() const {
+  DCHECK(parent_ == nullptr);
+  return const_cast<WindowAndroid*>(this);
 }
 
 // ----------------------------------------------------------------------------

@@ -1683,7 +1683,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
       resize = true;
     if (content_view_core_) {
       content_view_core_->RemoveObserver(this);
-      content_view_core_->GetViewAndroid()->RemoveChild(&view_);
+      view_.RemoveFromParent();
     }
     if (content_view_core) {
       content_view_core->AddObserver(this);

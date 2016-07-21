@@ -15,15 +15,13 @@ namespace ui {
 
 using base::android::JavaRef;
 
-ViewAndroid::ViewAndroid(const JavaRef<jobject>& delegate,
-                         WindowAndroid* root_window)
-    : parent_(nullptr), window_(root_window), delegate_(delegate) {}
+ViewAndroid::ViewAndroid(const JavaRef<jobject>& delegate)
+    : parent_(nullptr), delegate_(delegate) {}
 
-ViewAndroid::ViewAndroid() : parent_(nullptr), window_(nullptr) {}
+ViewAndroid::ViewAndroid() : parent_(nullptr) {}
 
 ViewAndroid::~ViewAndroid() {
-  if (parent_)
-    parent_->RemoveChild(this);
+  RemoveFromParent();
 
   for (std::list<ViewAndroid*>::iterator it = children_.begin();
        it != children_.end(); it++) {
@@ -34,14 +32,18 @@ ViewAndroid::~ViewAndroid() {
 
 void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
-  DCHECK(child->window_ == nullptr) << "Children shouldn't have a root window";
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
          children_.end());
 
   children_.push_back(child);
   if (child->parent_)
-    child->parent_->RemoveChild(child);
+    child->RemoveFromParent();
   child->parent_ = this;
+}
+
+void ViewAndroid::RemoveFromParent() {
+  if (parent_)
+    parent_->RemoveChild(this);
 }
 
 void ViewAndroid::RemoveChild(ViewAndroid* child) {
@@ -56,15 +58,7 @@ void ViewAndroid::RemoveChild(ViewAndroid* child) {
 }
 
 WindowAndroid* ViewAndroid::GetWindowAndroid() const {
-  if (window_)
-    return window_;
-
   return parent_ ? parent_->GetWindowAndroid() : nullptr;
-}
-
-void ViewAndroid::SetWindowAndroid(WindowAndroid* root_window) {
-  window_ = root_window;
-  DCHECK(parent_ == nullptr) << "Children shouldn't have a root window";
 }
 
 const JavaRef<jobject>& ViewAndroid::GetViewAndroidDelegate()
