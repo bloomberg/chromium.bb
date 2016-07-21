@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
+#include "chrome/browser/ui/cocoa/spinner_view.h"
 #include "chrome/grit/generated_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -18,10 +19,13 @@
 namespace {
 
 // Chooser width.
-const CGFloat kChooserWidth = 320.0f;
+const CGFloat kChooserWidth = 350.0f;
 
 // Chooser height.
-const CGFloat kChooserHeight = 280.0f;
+const CGFloat kChooserHeight = 300.0f;
+
+// Spinner size.
+const CGFloat kSpinnerSize = 24.0f;
 
 // Distance between the chooser border and the view that is closest to the
 // border.
@@ -40,11 +44,14 @@ const CGFloat kSeparatorHeight = 1.0f;
 
 }  // namespace
 
-class TableViewController : public ChooserController::View {
+class ChooserContentViewController : public ChooserController::View {
  public:
-  TableViewController(ChooserController* chooser_controller,
-                      NSTableView* table_view);
-  ~TableViewController() override;
+  ChooserContentViewController(ChooserController* chooser_controller,
+                               NSTableView* table_view,
+                               SpinnerView* spinner,
+                               NSTextField* status,
+                               NSButton* rescan_button);
+  ~ChooserContentViewController() override;
 
   // ChooserController::View:
   void OnOptionsInitialized() override;
@@ -58,31 +65,45 @@ class TableViewController : public ChooserController::View {
  private:
   ChooserController* chooser_controller_;
   NSTableView* table_view_;
+  SpinnerView* spinner_;
+  NSTextField* status_;
+  NSButton* rescan_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(TableViewController);
+  DISALLOW_COPY_AND_ASSIGN(ChooserContentViewController);
 };
 
-TableViewController::TableViewController(ChooserController* chooser_controller,
-                                         NSTableView* table_view)
-    : chooser_controller_(chooser_controller), table_view_(table_view) {
+ChooserContentViewController::ChooserContentViewController(
+    ChooserController* chooser_controller,
+    NSTableView* table_view,
+    SpinnerView* spinner,
+    NSTextField* status,
+    NSButton* rescan_button)
+    : chooser_controller_(chooser_controller),
+      table_view_(table_view),
+      spinner_(spinner),
+      status_(status),
+      rescan_button_(rescan_button) {
   DCHECK(chooser_controller_);
   DCHECK(table_view_);
+  DCHECK(spinner_);
+  DCHECK(status_);
+  DCHECK(rescan_button_);
   chooser_controller_->set_view(this);
 }
 
-TableViewController::~TableViewController() {
+ChooserContentViewController::~ChooserContentViewController() {
   chooser_controller_->set_view(nullptr);
 }
 
-void TableViewController::OnOptionsInitialized() {
+void ChooserContentViewController::OnOptionsInitialized() {
   UpdateTableView();
 }
 
-void TableViewController::OnOptionAdded(size_t index) {
+void ChooserContentViewController::OnOptionAdded(size_t index) {
   UpdateTableView();
 }
 
-void TableViewController::OnOptionRemoved(size_t index) {
+void ChooserContentViewController::OnOptionRemoved(size_t index) {
   // |table_view_| will automatically select the removed item's next item.
   // So here it tracks if the removed item is the item that was currently
   // selected, if so, deselect it. Also if the removed item is before the
@@ -100,11 +121,40 @@ void TableViewController::OnOptionRemoved(size_t index) {
   UpdateTableView();
 }
 
-void TableViewController::OnAdapterEnabledChanged(bool enabled) {}
+void ChooserContentViewController::OnAdapterEnabledChanged(bool enabled) {
+  // No row is selected since the adapter status has changed.
+  // This will also disable the OK button if it was enabled because
+  // of a previously selected row.
+  [table_view_ deselectAll:nil];
+  UpdateTableView();
+  [table_view_ setHidden:NO];
 
-void TableViewController::OnRefreshStateChanged(bool refreshing) {}
+  [spinner_ setHidden:YES];
 
-void TableViewController::UpdateTableView() {
+  [status_ setHidden:YES];
+  // When adapter is enabled, show |rescan_button_|; otherwise hide it.
+  [rescan_button_ setHidden:enabled ? NO : YES];
+}
+
+void ChooserContentViewController::OnRefreshStateChanged(bool refreshing) {
+  // No row is selected since the chooser is refreshing or just refreshed.
+  // This will also disable the OK button if it was enabled because
+  // of a previously selected row.
+  [table_view_ deselectAll:nil];
+  UpdateTableView();
+  // When refreshing, hide |table_view_|. When complete, show |table_view_|.
+  [table_view_ setHidden:refreshing ? YES : NO];
+
+  // When refreshing, show |spinner_|. When complete, hide |spinner_|.
+  [spinner_ setHidden:refreshing ? NO : YES];
+
+  // When refreshing, show |status_| and hide |rescan_button_|.
+  // When complete, show |rescan_button_| and hide |status_|.
+  [status_ setHidden:refreshing ? NO : YES];
+  [rescan_button_ setHidden:refreshing ? YES : NO];
+}
+
+void ChooserContentViewController::UpdateTableView() {
   [table_view_ setEnabled:chooser_controller_->NumOptions() > 0];
   [table_view_ reloadData];
 }
@@ -142,6 +192,15 @@ void TableViewController::UpdateTableView() {
     titleView_ = [self createChooserTitle:chooserTitle];
     CGFloat titleHeight = NSHeight([titleView_ frame]);
 
+    // Status.
+    status_ = [self createTextField:l10n_util::GetNSString(
+                                        IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING)];
+
+    // Re-scan button.
+    rescanButton_ =
+        [self createHyperlinkButtonWithText:
+                  l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN)];
+
     // Connect button.
     connectButton_ = [self createConnectButton];
     CGFloat connectButtonWidth = NSWidth([connectButton_ frame]);
@@ -155,22 +214,27 @@ void TableViewController::UpdateTableView() {
     separator_ = [self createSeparator];
 
     // Message.
-    message_ = [self createMessage];
+    message_ = [self createTextField:l10n_util::GetNSStringF(
+                                         IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT,
+                                         base::string16())];
     CGFloat messageWidth = NSWidth([message_ frame]);
     CGFloat messageHeight = NSHeight([message_ frame]);
 
     // Help button.
-    helpButton_ = [self createHelpButton];
+    helpButton_ = [self
+        createHyperlinkButtonWithText:
+            l10n_util::GetNSString(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT)];
 
     // ScollView embedding with TableView.
     CGFloat scrollViewWidth = kChooserWidth - 2 * kMarginX;
     CGFloat scrollViewHeight = kChooserHeight - 2 * kMarginY -
                                4 * kVerticalPadding - titleHeight -
                                connectButtonHeight - messageHeight;
-    NSRect scrollFrame = NSMakeRect(
-        kMarginX,
-        kMarginY + messageHeight + 3 * kVerticalPadding + connectButtonHeight,
-        scrollViewWidth, scrollViewHeight);
+    CGFloat scrollViewOriginX = kMarginX;
+    CGFloat scrollViewOriginY =
+        kMarginY + messageHeight + 3 * kVerticalPadding + connectButtonHeight;
+    NSRect scrollFrame = NSMakeRect(scrollViewOriginX, scrollViewOriginY,
+                                    scrollViewWidth, scrollViewHeight);
     scrollView_.reset([[NSScrollView alloc] initWithFrame:scrollFrame]);
     [scrollView_ setBorderType:NSBezelBorder];
     [scrollView_ setHasVerticalScroller:YES];
@@ -186,6 +250,16 @@ void TableViewController::UpdateTableView() {
     [tableView_ setHeaderView:nil];
     [tableView_ setFocusRingType:NSFocusRingTypeNone];
 
+    // Spinner.
+    // Set the spinner in the center of the scroll view.
+    CGFloat spinnerOriginX =
+        scrollViewOriginX + (scrollViewWidth - kSpinnerSize) / 2;
+    CGFloat spinnerOriginY =
+        scrollViewOriginY + (scrollViewHeight - kSpinnerSize) / 2;
+    spinner_.reset([[SpinnerView alloc]
+        initWithFrame:NSMakeRect(spinnerOriginX, spinnerOriginY, kSpinnerSize,
+                                 kSpinnerSize)]);
+
     // Lay out the views.
     // Title.
     CGFloat titleOriginX = kMarginX;
@@ -193,9 +267,25 @@ void TableViewController::UpdateTableView() {
     [titleView_ setFrameOrigin:NSMakePoint(titleOriginX, titleOriginY)];
     [self addSubview:titleView_];
 
-    // ScollView.
+    // ScollView and Spinner. Only one of them is shown.
     [scrollView_ setDocumentView:tableView_];
     [self addSubview:scrollView_];
+    [spinner_ setHidden:YES];
+    [self addSubview:spinner_];
+
+    // Status text field and Re-scan button. Only one of them is shown.
+    CGFloat statusOriginX = kMarginX;
+    // Bottom-align with the text on the buttons.
+    CGFloat statusOriginY = kMarginY + messageHeight + 2 * kVerticalPadding +
+                            (connectButtonHeight - [NSFont systemFontSize]) / 2;
+    [status_ setFrameOrigin:NSMakePoint(statusOriginX, statusOriginY)];
+    [self addSubview:status_];
+    [status_ setHidden:YES];
+    [rescanButton_ setFrameOrigin:NSMakePoint(statusOriginX, statusOriginY)];
+    [rescanButton_ setTarget:self];
+    [rescanButton_ setAction:@selector(onRescan:)];
+    [self addSubview:rescanButton_];
+    [rescanButton_ setHidden:YES];
 
     // Connect button.
     CGFloat connectButtonOriginX = kChooserWidth - kMarginX -
@@ -237,8 +327,9 @@ void TableViewController::UpdateTableView() {
     [helpButton_ setAction:@selector(onHelpPressed:)];
     [self addSubview:helpButton_];
 
-    tableViewController_.reset(
-        new TableViewController(chooserController_.get(), tableView_.get()));
+    chooserContentViewController_.reset(new ChooserContentViewController(
+        chooserController_.get(), tableView_.get(), spinner_.get(),
+        status_.get(), rescanButton_.get()));
   }
 
   return self;
@@ -289,27 +380,25 @@ void TableViewController::UpdateTableView() {
   return spacer;
 }
 
-- (base::scoped_nsobject<NSTextField>)createMessage {
-  base::scoped_nsobject<NSTextField> messageView(
+- (base::scoped_nsobject<NSTextField>)createTextField:(NSString*)text {
+  base::scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  [messageView setDrawsBackground:NO];
-  [messageView setBezeled:NO];
-  [messageView setEditable:NO];
-  [messageView setSelectable:NO];
-  [messageView
-      setStringValue:l10n_util::GetNSStringF(IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT,
-                                             base::string16())];
-  [messageView setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
-  [messageView sizeToFit];
-  return messageView;
+  [textField setDrawsBackground:NO];
+  [textField setBezeled:NO];
+  [textField setEditable:NO];
+  [textField setSelectable:NO];
+  [textField setStringValue:text];
+  [textField setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+  [textField sizeToFit];
+  return textField;
 }
 
-- (base::scoped_nsobject<NSButton>)createHelpButton {
+- (base::scoped_nsobject<NSButton>)createHyperlinkButtonWithText:
+    (NSString*)text {
   base::scoped_nsobject<NSButton> button(
       [[NSButton alloc] initWithFrame:NSZeroRect]);
-  base::scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc]
-      initTextCell:l10n_util::GetNSString(
-                       IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT)]);
+  base::scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc] initTextCell:text]);
   [button setCell:cell.get()];
   [button sizeToFit];
   return button;
@@ -343,7 +432,7 @@ void TableViewController::UpdateTableView() {
       static_cast<NSInteger>(chooserController_->NumOptions());
   if (numOptions == 0) {
     DCHECK_EQ(0, index);
-    return l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+    return base::SysUTF16ToNSString(chooserController_->GetNoOptionsText());
   }
 
   DCHECK_GE(index, 0);
@@ -354,7 +443,7 @@ void TableViewController::UpdateTableView() {
 }
 
 - (void)updateTableView {
-  tableViewController_->UpdateTableView();
+  chooserContentViewController_->UpdateTableView();
 }
 
 - (void)accept {
@@ -367,6 +456,10 @@ void TableViewController::UpdateTableView() {
 
 - (void)close {
   chooserController_->Close();
+}
+
+- (void)onRescan:(id)sender {
+  chooserController_->RefreshOptions();
 }
 
 - (void)onHelpPressed:(id)sender {

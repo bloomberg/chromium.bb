@@ -12,7 +12,8 @@
 #include "base/mac/scoped_nsobject.h"
 
 class ChooserController;
-class TableViewController;
+@class SpinnerView;
+class ChooserContentViewController;
 
 // A chooser content view class that user can select an option.
 @interface ChooserContentViewCocoa : NSView {
@@ -21,13 +22,16 @@ class TableViewController;
   base::scoped_nsobject<NSScrollView> scrollView_;
   base::scoped_nsobject<NSTableColumn> tableColumn_;
   base::scoped_nsobject<NSTableView> tableView_;
+  base::scoped_nsobject<SpinnerView> spinner_;
+  base::scoped_nsobject<NSTextField> status_;
+  base::scoped_nsobject<NSButton> rescanButton_;
   base::scoped_nsobject<NSButton> connectButton_;
   base::scoped_nsobject<NSButton> cancelButton_;
   base::scoped_nsobject<NSBox> separator_;
   base::scoped_nsobject<NSTextField> message_;
   base::scoped_nsobject<NSButton> helpButton_;
   std::unique_ptr<ChooserController> chooserController_;
-  std::unique_ptr<TableViewController> tableViewController_;
+  std::unique_ptr<ChooserContentViewController> chooserContentViewController_;
 }
 
 // Designated initializer.
@@ -50,11 +54,12 @@ class TableViewController;
 // Creates the separator.
 - (base::scoped_nsobject<NSBox>)createSeparator;
 
-// Creates the message.
-- (base::scoped_nsobject<NSTextField>)createMessage;
+// Creates a text field with |text|.
+- (base::scoped_nsobject<NSTextField>)createTextField:(NSString*)text;
 
-// Creates the "Get help" button.
-- (base::scoped_nsobject<NSButton>)createHelpButton;
+// Creates a hyperlink button with |text|.
+- (base::scoped_nsobject<NSButton>)createHyperlinkButtonWithText:
+    (NSString*)text;
 
 // Gets the table view for the chooser.
 - (NSTableView*)tableView;
@@ -85,6 +90,9 @@ class TableViewController;
 
 // Called when the chooser is closed.
 - (void)close;
+
+// Called when "Re-scan" button is pressed.
+- (void)onRescan:(id)sender;
 
 // Called when the "Get help" button is pressed.
 - (void)onHelpPressed:(id)sender;
