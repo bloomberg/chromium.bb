@@ -42,7 +42,24 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
   new_handle.type = gfx::OZONE_NATIVE_PIXMAP;
   new_handle.id = id;
   new_handle.native_pixmap_handle = pixmap->ExportHandle();
+
+  // TODO(reveman): Remove this once crbug.com/628334 has been fixed.
+  {
+    base::AutoLock lock(native_pixmaps_lock_);
+    NativePixmapMapKey key(id.id, client_id);
+    DCHECK(native_pixmaps_.find(key) == native_pixmaps_.end());
+    native_pixmaps_[key] = pixmap;
+  }
+
   return new_handle;
+}
+
+void GpuMemoryBufferFactoryOzoneNativePixmap::DestroyGpuMemoryBuffer(
+    gfx::GpuMemoryBufferId id,
+    int client_id) {
+  base::AutoLock lock(native_pixmaps_lock_);
+  NativePixmapMapKey key(id.id, client_id);
+  native_pixmaps_.erase(key);
 }
 
 ImageFactory* GpuMemoryBufferFactoryOzoneNativePixmap::AsImageFactory() {
