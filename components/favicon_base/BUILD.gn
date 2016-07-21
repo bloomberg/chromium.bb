@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("favicon_base") {
+static_library("favicon_base") {
   sources = [
     "fallback_icon_style.cc",
     "fallback_icon_style.h",

@@ -68,7 +68,7 @@ static_library("drive") {
   ]
 }
 
-source_set("drive_chromeos") {
+static_library("drive_chromeos") {
   sources = [
     "chromeos/change_list_loader.cc",
     "chromeos/change_list_loader.h",

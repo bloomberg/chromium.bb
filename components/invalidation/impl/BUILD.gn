@@ -6,7 +6,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("impl") {
+static_library("impl") {
   sources = [
     "invalidation_logger.cc",
     "invalidation_logger.h",

@@ -6,7 +6,7 @@ import("//services/shell/public/cpp/service.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
-source_set("lib") {
+static_library("lib") {
   sources = [
     "directory_impl.cc",
     "directory_impl.h",

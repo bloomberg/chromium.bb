@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("image_fetcher") {
+static_library("image_fetcher") {
   sources = [
     "image_data_fetcher.cc",
     "image_data_fetcher.h",

@@ -111,7 +111,7 @@ static_library("metrics") {
 
 if (!is_ios) {
   # GYP version: components/metrics.gypi:metrics_gpu
-  source_set("gpu") {
+  static_library("gpu") {
     sources = [
       "gpu/gpu_metrics_provider.cc",
       "gpu/gpu_metrics_provider.h",
@@ -188,7 +188,7 @@ static_library("profiler") {
 }
 
 # GYP version: components/metrics.gypi:metrics_ui
-source_set("ui") {
+static_library("ui") {
   sources = [
     "ui/screen_info_metrics_provider.cc",
     "ui/screen_info_metrics_provider.h",

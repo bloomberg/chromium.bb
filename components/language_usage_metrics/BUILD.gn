@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("language_usage_metrics") {
+static_library("language_usage_metrics") {
   sources = [
     "language_usage_metrics.cc",
     "language_usage_metrics.h",

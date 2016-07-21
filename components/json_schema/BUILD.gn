@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("json_schema") {
+static_library("json_schema") {
   sources = [
     "json_schema_constants.cc",
     "json_schema_constants.h",

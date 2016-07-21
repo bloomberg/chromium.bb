@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("flags_ui") {
+static_library("flags_ui") {
   sources = [
     "feature_entry.cc",
     "feature_entry.h",
@@ -31,7 +31,7 @@ source_set("flags_ui") {
 
 # This is a separate target so that the dependencies of
 # //chrome/common can be kept minimal.
-source_set("switches") {
+static_library("switches") {
   sources = [
     "flags_ui_switches.cc",
     "flags_ui_switches.h",
