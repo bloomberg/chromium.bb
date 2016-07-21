@@ -530,6 +530,7 @@
       'browser/media/cdm_service_impl_unittest.cc',
       'browser/media/media_internals_unittest.cc',
       'browser/media/midi_host_unittest.cc',
+      'browser/media/session/audio_focus_manager_unittest.cc',
       'browser/media/session/media_session_controller_unittest.cc',
       'browser/media/session/media_session_uma_helper_unittest.cc',
       'browser/net/quota_policy_cookie_store_unittest.cc',

@@ -20,6 +20,7 @@ class MediaSessionBrowserTest;
 
 namespace content {
 
+class AudioFocusManagerTest;
 class MediaSessionDelegate;
 class MediaSessionObserver;
 class MediaSessionStateObserver;
@@ -125,6 +126,7 @@ class MediaSession : public WebContentsObserver,
   friend class content::WebContentsUserData<MediaSession>;
   friend class ::MediaSessionBrowserTest;
   friend class content::MediaSessionVisibilityBrowserTest;
+  friend class content::AudioFocusManagerTest;
   friend class content::MediaSessionStateObserver;
 
   CONTENT_EXPORT void SetDelegateForTests(

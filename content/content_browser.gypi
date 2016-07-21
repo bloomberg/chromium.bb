@@ -1084,6 +1084,8 @@
       'browser/media/media_web_contents_observer.h',
       'browser/media/midi_host.cc',
       'browser/media/midi_host.h',
+      'browser/media/session/audio_focus_manager.cc',
+      'browser/media/session/audio_focus_manager.h',
       'browser/media/session/media_session.cc',
       'browser/media/session/media_session.h',
       'browser/media/session/media_session_controller.cc',
