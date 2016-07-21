@@ -91,6 +91,21 @@ class CastPage(page.Page):
     self._WaitForResult(action_runner, verify_func, error_message,
                         timeout=timeout)
 
+  def WaitUntilDialogLoaded(self, action_runner, tab):
+    """Waits until dialog is fully loaded."""
+
+    self._WaitForResult(
+        action_runner,
+        lambda: tab.EvaluateJavaScript(
+             '!!window.document.getElementById('
+             '"media-router-container") &&'
+             'window.document.getElementById('
+             '"media-router-container").sinksToShow_ &&'
+             'window.document.getElementById('
+             '"media-router-container").sinksToShow_.length'),
+        'The dialog is not fully loaded within 15s.',
+         timeout=15)
+
   def _WaitForResult(self, action_runner, verify_func, error_message,
                      timeout=5):
     """Waits until the function finishes or timeout."""

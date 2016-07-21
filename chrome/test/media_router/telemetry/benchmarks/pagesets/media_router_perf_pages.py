@@ -92,11 +92,10 @@ class CastFlingingPage(media_router_page.CastPage):
           lambda: len(action_runner.tab.browser.tabs) >= 2,
           'MR dialog never showed up.')
 
-      # Wait for 2s to make sure the dialog is fully loaded.
-      action_runner.Wait(2)
       for tab in action_runner.tab.browser.tabs:
         # Choose sink
         if tab.url == 'chrome://media-router/':
+          self.WaitUntilDialogLoaded(action_runner, tab)
           self.ChooseSink(tab, sink_name)
 
       self._WaitForResult(
@@ -121,7 +120,8 @@ class CastFlingingPage(media_router_page.CastPage):
           action_runner,
           'stopSession();',
           lambda: not action_runner.EvaluateJavaScript('currentSession'),
-          'Failed to stop session')
+          'Failed to stop session',
+          timeout=30)
 
 
 class CastMirroringPage(media_router_page.CastPage):
@@ -147,11 +147,10 @@ class CastMirroringPage(media_router_page.CastPage):
           lambda: len(action_runner.tab.browser.tabs) >= 2,
           'MR dialog never showed up.')
 
-      # Wait for 2s to make sure the dialog is fully loaded.
-      action_runner.Wait(2)
       for tab in action_runner.tab.browser.tabs:
         # Choose sink
         if tab.url == 'chrome://media-router/':
+          self.WaitUntilDialogLoaded(action_runner, tab)
           self.ChooseSink(tab, sink_name)
 
       # Wait for 5s to make sure the route is created.
