@@ -1341,8 +1341,13 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     destinationIndex = TextIterator::rangeLength(Position::firstPositionInNode(document().documentElement()), destination.toParentAnchoredPosition(), true);
 
-    setEndingSelection(VisibleSelection(destination, originalIsDirectional));
-    DCHECK(!endingSelection().isNone());
+    VisibleSelection destinationSelection(destination, originalIsDirectional);
+    if (endingSelection().isNone()) {
+        // We abort executing command since |destination| becomes invisible.
+        editingState->abort();
+        return;
+    }
+    setEndingSelection(destinationSelection);
     ReplaceSelectionCommand::CommandOptions options = ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MovingParagraph;
     if (shouldPreserveStyle == DoNotPreserveStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
