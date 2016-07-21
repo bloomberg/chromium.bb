@@ -1,0 +1,301 @@
+
+<html>
+<head>
+  <script type="text/javascript" src="webrtc_test_utilities.js"></script>
+  <script type="text/javascript" src="webrtc_test_common.js"></script>
+  <script type="text/javascript" src="webrtc_test_audio.js"></script>
+  <script type="text/javascript">
+  $ = function(id) {
+    return document.getElementById(id);
+  };
+
+  window.onerror = function(errorMsg, url, lineNumber, column, errorObj) {
+    failTest('Error: ' + errorMsg + '\nScript: ' + url +
+             '\nLine: ' + lineNumber + '\nColumn: ' + column +
+             '\nStackTrace: ' + errorObj);
+  }
+
+  var gFirstConnection = null;
+  var gSecondConnection = null;
+  var gTestWithoutMsid = false;
+  var gLocalStream = null;
+
+  var gRemoteStreams = {};
+
+  // When using external SDES, the crypto key is chosen by javascript.
+  var EXTERNAL_SDES_LINES = {
+    'audio': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
+        'inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR',
+    'video': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
+        'inline:d0RmdmcmVCspeEc3QGZiNWpVLFJhQX1cfHAwJSoj',
+    'data': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
+        'inline:NzB4d1BINUAvLEw6UzF3WSJ+PSdFcGdUJShpX1Zj'
+  };
+
+  setAllEventsOccuredHandler(reportTestSuccess);
+
+  // Test that we can setup call with legacy settings.
+  function callWithLegacySdp() {
+    transformSdp = function(sdp) {
+      return removeBundle(useGice(useExternalSdes(sdp)));
+    };
+    createConnections({
+      'mandatory': {'RtpDataChannels': true, 'DtlsSrtpKeyAgreement': false}
+    });
+    setupDataChannel({reliable: false});
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
+  }
+
+  // Test only a data channel.
+  function callWithDataOnly() {
+    createConnections({optional:[{RtpDataChannels: true}]});
+    setupDataChannel({reliable: false});
+    negotiate();
+  }
+
+  function callWithSctpDataOnly() {
+    createConnections({optional: [{DtlsSrtpKeyAgreement: true}]});
+    setupSctpDataChannel({reliable: true});
+    negotiate();
+  }
+
+  // Test call with audio, video and a data channel.
+  function callWithDataAndMedia() {
+    createConnections({optional:[{RtpDataChannels: true}]});
+    setupDataChannel({reliable: false});
+    navigator.webkitGetUserMedia({audio: true, video: true},
+      addStreamToBothConnectionsAndNegotiate,
+      printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
+  }
+
+  function callWithSctpDataAndMedia() {
+    createConnections({optional: [{DtlsSrtpKeyAgreement: true}]});
+    setupSctpDataChannel({reliable: true});
+    navigator.webkitGetUserMedia({audio: true, video: true},
+      addStreamToBothConnectionsAndNegotiate,
+      printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
+  }
+
+  // Test call with a data channel and later add audio and video.
+  function callWithDataAndLaterAddMedia() {
+    createConnections({optional:[{RtpDataChannels: true}]});
+    setupDataChannel({reliable: false});
+    negotiate();
+
+    // Set an event handler for when the data channel has been closed.
+    setAllEventsOccuredHandler(function() {
+      // When the video is flowing the test is done.
+      setAllEventsOccuredHandler(reportTestSuccess);
+      navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+      waitForVideo('remote-view-1');
+      waitForVideo('remote-view-2');
+    });
+  }
+
+  // This function is used for setting up a test that:
+  // 1. Creates a data channel on |gFirstConnection| and sends data to
+  //    |gSecondConnection|.
+  // 2. When data is received on |gSecondConnection| a message
+  //    is sent to |gFirstConnection|.
+  // 3. When data is received on |gFirstConnection|, the data
+  //    channel is closed. The test passes when the state transition completes.
+  function setupDataChannel(params) {
+    var sendDataString = "send some text on a data channel."
+    firstDataChannel = gFirstConnection.createDataChannel(
+        "sendDataChannel", params);
+    assertEquals('connecting', firstDataChannel.readyState);
+
+    // When |firstDataChannel| transition to open state, send a text string.
+    firstDataChannel.onopen = function() {
+      assertEquals('open', firstDataChannel.readyState);
+      firstDataChannel.send(sendDataString);
+    }
+
+    // When |firstDataChannel| receive a message, close the channel and
+    // initiate a new offer/answer exchange to complete the closure.
+    firstDataChannel.onmessage = function(event) {
+      assertEquals(event.data, sendDataString);
+      firstDataChannel.close();
+      negotiate();
+    }
+
+    // When |firstDataChannel| transition to closed state, the test pass.
+    addExpectedEvent();
+    firstDataChannel.onclose = function() {
+      assertEquals('closed', firstDataChannel.readyState);
+      eventOccured();
+    }
+
+    // Event handler for when |gSecondConnection| receive a new dataChannel.
+    gSecondConnection.ondatachannel = function (event) {
+      // Make secondDataChannel global to make sure it's not gc'd.
+      secondDataChannel = event.channel;
+
+      // When |secondDataChannel| receive a message, send a message back.
+      secondDataChannel.onmessage = function(event) {
+        assertEquals(event.data, sendDataString);
+        console.log("gSecondConnection received data");
+        assertEquals('open', secondDataChannel.readyState);
+        secondDataChannel.send(sendDataString);
+      }
+    }
+  }
+
+  // SCTP data channel setup is slightly different then RTP based
+  // channels. Due to a bug in libjingle, we can't send data immediately
+  // after channel becomes open. So for that reason in SCTP,
+  // we are sending data from second channel, when ondatachannel event is
+  // received. So data flow happens 2 -> 1 -> 2.
+  function setupSctpDataChannel(params) {
+    var sendDataString = "send some text on a data channel."
+    firstDataChannel = gFirstConnection.createDataChannel(
+        "sendDataChannel", params);
+    assertEquals('connecting', firstDataChannel.readyState);
+
+    // When |firstDataChannel| transition to open state, send a text string.
+    firstDataChannel.onopen = function() {
+      assertEquals('open', firstDataChannel.readyState);
+    }
+
+    // When |firstDataChannel| receive a message, send message back.
+    // initiate a new offer/answer exchange to complete the closure.
+    firstDataChannel.onmessage = function(event) {
+      assertEquals('open', firstDataChannel.readyState);
+      assertEquals(event.data, sendDataString);
+      firstDataChannel.send(sendDataString);
+    }
+
+    // Event handler for when |gSecondConnection| receive a new dataChannel.
+    gSecondConnection.ondatachannel = function (event) {
+      // Make secondDataChannel global to make sure it's not gc'd.
+      secondDataChannel = event.channel;
+      secondDataChannel.onopen = function() {
+        secondDataChannel.send(sendDataString);
+      }
+
+      // When |secondDataChannel| receive a message, close the channel and
+      // initiate a new offer/answer exchange to complete the closure.
+      secondDataChannel.onmessage = function(event) {
+        assertEquals(event.data, sendDataString);
+        assertEquals('open', secondDataChannel.readyState);
+        secondDataChannel.close();
+        negotiate();
+      }
+
+      // When |secondDataChannel| transition to closed state, the test pass.
+      addExpectedEvent();
+      secondDataChannel.onclose = function() {
+        assertEquals('closed', secondDataChannel.readyState);
+        eventOccured();
+      }
+    }
+  }
+
+  function addStreamToBothConnectionsAndNegotiate(localStream) {
+    displayAndRemember(localStream);
+    gFirstConnection.addStream(localStream);
+    gSecondConnection.addStream(localStream);
+    negotiate();
+  }
+
+  function createConnections(constraints) {
+    gFirstConnection = createConnection(constraints, 'remote-view-1');
+    assertEquals('stable', gFirstConnection.signalingState);
+
+    gSecondConnection = createConnection(constraints, 'remote-view-2');
+    assertEquals('stable', gSecondConnection.signalingState);
+  }
+
+  function createConnection(constraints, remoteView) {
+    var pc = new webkitRTCPeerConnection(null, constraints);
+    pc.onaddstream = function(event) {
+      onRemoteStream(event, remoteView);
+    }
+    return pc;
+  }
+
+  function displayAndRemember(localStream) {
+    var localStreamUrl = URL.createObjectURL(localStream);
+    $('local-view').src = localStreamUrl;
+
+    gLocalStream = localStream;
+  }
+
+  function negotiate() {
+    negotiateBetween(gFirstConnection, gSecondConnection);
+  }
+
+  function onRemoteStream(e, target) {
+    console.log("Receiving remote stream...");
+    if (gTestWithoutMsid && e.stream.id != "default") {
+      failTest('a default remote stream was expected but instead ' +
+          e.stream.id + ' was received.');
+    }
+    gRemoteStreams[target] = e.stream;
+    var remoteStreamUrl = URL.createObjectURL(e.stream);
+    var remoteVideo = $(target);
+    remoteVideo.src = remoteStreamUrl;
+  }
+
+  function connectOnIceCandidate(caller, callee) {
+    caller.onicecandidate = function(event) { onIceCandidate(event, callee); }
+    callee.onicecandidate = function(event) { onIceCandidate(event, caller); }
+  }
+
+  function onIceCandidate(event, target) {
+    if (event.candidate) {
+      var candidate = new RTCIceCandidate(event.candidate);
+      target.addIceCandidate(candidate);
+    }
+  }
+
+  function removeBundle(sdp) {
+    return sdp.replace(/a=group:BUNDLE .*\r\n/g, '');
+  }
+
+  function useGice(sdp) {
+    sdp = sdp.replace(/t=.*\r\n/g, function(subString) {
+      return subString + 'a=ice-options:google-ice\r\n';
+    });
+    return sdp;
+  }
+
+  function useExternalSdes(sdp) {
+    // Remove current crypto specification.
+    sdp = sdp.replace(/a=crypto.*\r\n/g, '');
+    sdp = sdp.replace(/a=fingerprint.*\r\n/g, '');
+    // Add external crypto.  This is not compatible with |removeMsid|.
+    sdp = sdp.replace(/a=mid:(\w+)\r\n/g, function(subString, group) {
+      return subString + EXTERNAL_SDES_LINES[group] + '\r\n';
+    });
+    return sdp;
+  }
+
+  </script>
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td><video width="320" height="240" id="local-view" style="display:none"
+          autoplay muted></video></td>
+      <td><video width="320" height="240" id="remote-view-1"
+          style="display:none" autoplay></video></td>
+      <td><video width="320" height="240" id="remote-view-2"
+          style="display:none" autoplay></video></td>
+      <!-- Canvases are named after their corresponding video elements. -->
+      <td><canvas width="320" height="240" id="remote-view-1-canvas"
+          style="display:none"></canvas></td>
+      <td><canvas width="320" height="240" id="remote-view-2-canvas"
+          style="display:none"></canvas></td>
+    </tr>
+  </table>
+</body>
+</html>

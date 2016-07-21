@@ -41,6 +41,16 @@ function failTest(reason) {
   window.domAutomationController.send(error.stack);
 }
 
+// Called if getUserMedia fails.
+function printGetUserMediaError(error) {
+  var message = 'getUserMedia request unexpectedly failed:';
+  if (error.constraintName)
+    message += ' could not satisfy constraint ' + error.constraintName;
+  else
+    message += ' devices not working/user denied access.';
+  failTest(message);
+}
+
 function detectVideoPlaying(videoElementName, callback) {
   detectVideo(videoElementName, isVideoPlaying, callback);
 }

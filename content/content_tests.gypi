@@ -312,6 +312,7 @@
     'content_browsertests_webrtc_sources': [
       'browser/media/webrtc/webrtc_audio_debug_recordings_browsertest.cc',
       'browser/media/webrtc/webrtc_browsertest.cc',
+      'browser/media/webrtc/webrtc_browsertest_data.cc',
       'browser/media/webrtc/webrtc_capture_from_element_browsertest.cc',
       'browser/media/webrtc/webrtc_datachannel_browsertest.cc',
       'browser/media/webrtc/webrtc_getusermedia_browsertest.cc',

@@ -198,54 +198,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, NegotiateOfferWithBLine) {
   MakeTypicalPeerConnectionCall("negotiateOfferWithBLine();");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupLegacyCall) {
-  MakeTypicalPeerConnectionCall("callWithLegacySdp();");
-}
-
-// This test will make a PeerConnection-based call and test an unreliable text
-// dataChannel.
-// TODO(mallinath) - Remove this test after rtp based data channel is disabled.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallWithDataOnly) {
-  MakeTypicalPeerConnectionCall("callWithDataOnly();");
-}
-
-#if defined(MEMORY_SANITIZER)
-// Fails under MemorySanitizer: http://crbug.com/405951
-#define MAYBE_CallWithSctpDataOnly DISABLED_CallWithSctpDataOnly
-#else
-#define MAYBE_CallWithSctpDataOnly CallWithSctpDataOnly
-#endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CallWithSctpDataOnly) {
-  MakeTypicalPeerConnectionCall("callWithSctpDataOnly();");
-}
-
-// This test will make a PeerConnection-based call and test an unreliable text
-// dataChannel and audio and video tracks.
-// TODO(mallinath) - Remove this test after rtp based data channel is disabled.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallWithDataAndMedia) {
-  MakeTypicalPeerConnectionCall("callWithDataAndMedia();");
-}
-
-
-#if defined(MEMORY_SANITIZER)
-// Fails under MemorySanitizer: http://crbug.com/405951
-#define MAYBE_CallWithSctpDataAndMedia DISABLED_CallWithSctpDataAndMedia
-#else
-#define MAYBE_CallWithSctpDataAndMedia CallWithSctpDataAndMedia
-#endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CallWithSctpDataAndMedia) {
-  MakeTypicalPeerConnectionCall("callWithSctpDataAndMedia();");
-}
-
-// This test will make a PeerConnection-based call and test an unreliable text
-// dataChannel and later add an audio and video track.
-// Doesn't work, therefore disabled: https://crbug.com/293252.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       DISABLED_CallWithDataAndLaterAddMedia) {
-  MakeTypicalPeerConnectionCall("callWithDataAndLaterAddMedia();");
-}
-
 // This test will make a PeerConnection-based call and send a new Video
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia.
