@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -32,7 +32,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("session") {
+service("session") {
   output_name = "mash_session"
 
   sources = [
@@ -54,7 +54,7 @@ mojo_native_application("session") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "mash_session"
+service_manifest("manifest") {
+  name = "mash_session"
   source = "manifest.json"
 }

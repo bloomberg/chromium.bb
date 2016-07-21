@@ -161,12 +161,12 @@
     'target_name': 'catalog_manifest',
     'type': 'none',
     'variables': {
-      'application_type': 'mojo',
-      'application_name': 'catalog',
+      'type': 'mojo',
+      'name': 'catalog',
       'source_manifest': '<(DEPTH)/services/catalog/manifest.json',
     },
     'includes': [
-      '../../mojo/public/mojo_application_manifest.gypi',
+      '../shell/public/service_manifest.gypi',
     ],
     'hard_dependency': 1,
   }, {

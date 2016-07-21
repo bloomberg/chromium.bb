@@ -19,7 +19,7 @@ class DictionaryValue;
 
 namespace catalog {
 
-// Static information about an application package known to the Catalog.
+// Static information about a service package known to the Catalog.
 class Entry {
  public:
   Entry();
@@ -31,7 +31,7 @@ class Entry {
 
   // If the constructed Entry is a package that provides other Entrys, the
   // caller must assume ownership of the tree of Entrys by enumerating
-  // applications().
+  // services().
   static std::unique_ptr<Entry> Deserialize(const base::DictionaryValue& value);
 
   bool ProvidesClass(const std::string& clazz) const;
@@ -55,7 +55,7 @@ class Entry {
   }
   const Entry* package() const { return package_; }
   void set_package(Entry* package) { package_ = package; }
-  const std::set<Entry*>& applications() { return applications_; }
+  const std::set<Entry*>& services() { return services_; }
 
  private:
   std::string name_;
@@ -64,7 +64,7 @@ class Entry {
   std::string display_name_;
   shell::CapabilitySpec capabilities_;
   Entry* package_ = nullptr;
-  std::set<Entry*> applications_;
+  std::set<Entry*> services_;
 };
 
 }  // namespace catalog

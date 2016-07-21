@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -43,22 +43,22 @@ mojom("interfaces") {
   use_new_wrapper_types = false
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "connect_unittests"
+service_manifest("manifest") {
+  name = "connect_unittests"
   source = "connect_unittests_manifest.json"
 }
 
-mojo_application_manifest("connect_test_a_manifest") {
-  application_name = "connect_test_a"
+service_manifest("connect_test_a_manifest") {
+  name = "connect_test_a"
   source = "connect_test_app_a_manifest.json"
 }
 
-mojo_application_manifest("connect_test_b_manifest") {
-  application_name = "connect_test_b"
+service_manifest("connect_test_b_manifest") {
+  name = "connect_test_b"
   source = "connect_test_app_b_manifest.json"
 }
 
-mojo_native_application("connect_test_package") {
+service("connect_test_package") {
   testonly = true
   sources = [
     "connect_test_package.cc",
@@ -75,20 +75,20 @@ mojo_native_application("connect_test_package") {
   ]
 }
 
-mojo_application_manifest("connect_test_package_manifest") {
-  application_name = "connect_test_package"
+service_manifest("connect_test_package_manifest") {
+  name = "connect_test_package"
   source = "connect_test_package_manifest.json"
   deps = [
     ":connect_test_a_manifest",
     ":connect_test_b_manifest",
   ]
-  packaged_applications = [
+  packaged_services = [
     "connect_test_a",
     "connect_test_b",
   ]
 }
 
-mojo_native_application("connect_test_app") {
+service("connect_test_app") {
   testonly = true
   sources = [
     "connect_test_app.cc",
@@ -105,12 +105,12 @@ mojo_native_application("connect_test_app") {
   ]
 }
 
-mojo_application_manifest("connect_test_app_manifest") {
-  application_name = "connect_test_app"
+service_manifest("connect_test_app_manifest") {
+  name = "connect_test_app"
   source = "connect_test_app_manifest.json"
 }
 
-mojo_native_application("connect_test_class_app") {
+service("connect_test_class_app") {
   testonly = true
   sources = [
     "connect_test_class_app.cc",
@@ -127,12 +127,12 @@ mojo_native_application("connect_test_class_app") {
   ]
 }
 
-mojo_application_manifest("connect_test_class_app_manifest") {
-  application_name = "connect_test_class_app"
+service_manifest("connect_test_class_app_manifest") {
+  name = "connect_test_class_app"
   source = "connect_test_class_app_manifest.json"
 }
 
-mojo_native_application("connect_test_singleton_app") {
+service("connect_test_singleton_app") {
   testonly = true
   sources = [
     "connect_test_singleton_app.cc",
@@ -147,8 +147,8 @@ mojo_native_application("connect_test_singleton_app") {
   ]
 }
 
-mojo_application_manifest("connect_test_singleton_app_manifest") {
-  application_name = "connect_test_singleton_app"
+service_manifest("connect_test_singleton_app_manifest") {
+  name = "connect_test_singleton_app"
   source = "connect_test_singleton_app_manifest.json"
 }
 
@@ -173,9 +173,9 @@ executable("connect_test_driver") {
   ]
 }
 
-mojo_application_manifest("connect_test_driver_manifest") {
+service_manifest("connect_test_driver_manifest") {
   type = "exe"
-  application_name = "connect_test_driver"
+  name = "connect_test_driver"
   source = "connect_test_driver_manifest.json"
 }
 
@@ -199,8 +199,8 @@ executable("connect_test_exe") {
   ]
 }
 
-mojo_application_manifest("connect_test_exe_manifest") {
+service_manifest("connect_test_exe_manifest") {
   type = "exe"
-  application_name = "connect_test_exe"
+  name = "connect_test_exe"
   source = "connect_test_exe_manifest.json"
 }

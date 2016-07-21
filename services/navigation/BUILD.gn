@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -99,15 +99,15 @@ test("navigation_unittests") {
   ]
 }
 
-mojo_application_manifest("manifest") {
+service_manifest("manifest") {
   type = "exe"
-  application_name = "navigation"
+  name = "navigation"
   source = "manifest.json"
 }
 
-mojo_application_manifest("unittest_manifest") {
+service_manifest("unittest_manifest") {
   type = "exe"
-  application_name = "navigation_unittests"
+  name = "navigation_unittests"
   source = "unittest_manifest.json"
 }
 

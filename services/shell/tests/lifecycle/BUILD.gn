@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -40,18 +40,18 @@ mojom("interfaces") {
   use_new_wrapper_types = false
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "lifecycle_unittest"
+service_manifest("manifest") {
+  name = "lifecycle_unittest"
   source = "lifecycle_unittest_manifest.json"
 }
 
-mojo_application_manifest("lifecycle_unittest_package_app_a_manifest") {
-  application_name = "lifecycle_unittest_package_app_a"
+service_manifest("lifecycle_unittest_package_app_a_manifest") {
+  name = "lifecycle_unittest_package_app_a"
   source = "package_app_a_manifest.json"
 }
 
-mojo_application_manifest("lifecycle_unittest_package_app_b_manifest") {
-  application_name = "lifecycle_unittest_package_app_b"
+service_manifest("lifecycle_unittest_package_app_b_manifest") {
+  name = "lifecycle_unittest_package_app_b"
   source = "package_app_b_manifest.json"
 }
 
@@ -68,7 +68,7 @@ source_set("app_client") {
   ]
 }
 
-mojo_native_application("lifecycle_unittest_package") {
+service("lifecycle_unittest_package") {
   testonly = true
   sources = [
     "package.cc",
@@ -85,20 +85,20 @@ mojo_native_application("lifecycle_unittest_package") {
   ]
 }
 
-mojo_application_manifest("lifecycle_unittest_package_manifest") {
-  application_name = "lifecycle_unittest_package"
+service_manifest("lifecycle_unittest_package_manifest") {
+  name = "lifecycle_unittest_package"
   source = "package_manifest.json"
   deps = [
     ":lifecycle_unittest_package_app_a_manifest",
     ":lifecycle_unittest_package_app_b_manifest",
   ]
-  packaged_applications = [
+  packaged_services = [
     "lifecycle_unittest_package_app_a",
     "lifecycle_unittest_package_app_b",
   ]
 }
 
-mojo_native_application("lifecycle_unittest_app") {
+service("lifecycle_unittest_app") {
   testonly = true
   sources = [
     "app.cc",
@@ -115,12 +115,12 @@ mojo_native_application("lifecycle_unittest_app") {
   ]
 }
 
-mojo_application_manifest("lifecycle_unittest_app_manifest") {
-  application_name = "lifecycle_unittest_app"
+service_manifest("lifecycle_unittest_app_manifest") {
+  name = "lifecycle_unittest_app"
   source = "app_manifest.json"
 }
 
-mojo_native_application("lifecycle_unittest_parent") {
+service("lifecycle_unittest_parent") {
   testonly = true
   sources = [
     "parent.cc",
@@ -136,8 +136,8 @@ mojo_native_application("lifecycle_unittest_parent") {
   ]
 }
 
-mojo_application_manifest("lifecycle_unittest_parent_manifest") {
-  application_name = "lifecycle_unittest_parent"
+service_manifest("lifecycle_unittest_parent_manifest") {
+  name = "lifecycle_unittest_parent"
   source = "parent_manifest.json"
 }
 
@@ -159,8 +159,8 @@ executable("lifecycle_unittest_exe") {
   ]
 }
 
-mojo_application_manifest("lifecycle_unittest_exe_manifest") {
+service_manifest("lifecycle_unittest_exe_manifest") {
   type = "exe"
-  application_name = "lifecycle_unittest_exe"
+  name = "lifecycle_unittest_exe"
   source = "exe_manifest.json"
 }

@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//media/media_options.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
 config("mojo_media_config") {
@@ -126,7 +126,7 @@ component("services") {
   }
 }
 
-mojo_native_application("media") {
+service("media") {
   testonly = true
 
   sources = [
@@ -172,13 +172,13 @@ test("media_mojo_shell_unittests") {
   ]
 }
 
-mojo_application_manifest("media_manifest") {
-  application_name = "media"
+service_manifest("media_manifest") {
+  name = "media"
   source = "media_manifest.json"
 }
 
-mojo_application_manifest("test_manifest") {
-  application_name = "media_mojo_shell_unittests"
+service_manifest("test_manifest") {
+  name = "media_mojo_shell_unittests"
   type = "exe"
   source = "test_manifest.json"
 }
@@ -197,8 +197,8 @@ test("media_pipeline_integration_unittests") {
   ]
 }
 
-mojo_application_manifest("pipeline_test_manifest") {
-  application_name = "media_pipeline_integration_unittests"
+service_manifest("pipeline_test_manifest") {
+  name = "media_pipeline_integration_unittests"
   type = "exe"
   source = "pipeline_test_manifest.json"
 }

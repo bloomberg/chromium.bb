@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -34,7 +34,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("filesystem") {
+service("filesystem") {
   sources = [
     "file_system_app.cc",
     "file_system_app.h",
@@ -57,8 +57,8 @@ mojo_native_application("filesystem") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "filesystem"
+service_manifest("manifest") {
+  name = "filesystem"
   source = "manifest.json"
 }
 
@@ -87,8 +87,8 @@ test("filesystem_service_unittests") {
   ]
 }
 
-mojo_application_manifest("test_manifest") {
+service_manifest("test_manifest") {
   type = "exe"
-  application_name = "filesystem_service_unittests"
+  name = "filesystem_service_unittests"
   source = "test_manifest.json"
 }

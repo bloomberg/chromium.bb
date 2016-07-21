@@ -5,23 +5,23 @@
 {
   'variables': {
     'variables': {
-      'application_name%': '<(application_name)',
-      'application_type%': '<(application_type)',
+      'name%': '<(name)',
+      'type%': '<(type)',
       'base_manifest%': 'none',
       'packaged_manifests%': []
     },
-    'application_type%': '<(application_type)',
-    'application_name%': '<(application_name)',
+    'type%': '<(type)',
+    'name%': '<(name)',
     'base_manifest%': '<(base_manifest)',
     'manifest_collator_script%':
-        '<(DEPTH)/mojo/public/tools/manifest/manifest_collator.py',
+        '<(DEPTH)/services/shell/public/tools/manifest/manifest_collator.py',
     'packaged_manifests%': '<(packaged_manifests)',
     'source_manifest%': '<(source_manifest)',
     'conditions': [
-      ['application_type=="mojo"', {
-        'output_manifest%': '<(PRODUCT_DIR)/Mojo Applications/<(application_name)/manifest.json',
+      ['type=="mojo"', {
+        'output_manifest%': '<(PRODUCT_DIR)/Mojo Applications/<(name)/manifest.json',
       }, {
-        'output_manifest%': '<(PRODUCT_DIR)/<(application_name)_manifest.json',
+        'output_manifest%': '<(PRODUCT_DIR)/<(name)_manifest.json',
       }],
       ['base_manifest!="none"', {
         'extra_args%': [
@@ -47,7 +47,7 @@
     'action': [
       'python',
       '<(manifest_collator_script)',
-      '--application-name', '<(application_name)',
+      '--name', '<(name)',
       '--parent=<(source_manifest)',
       '--output=<(output_manifest)',
       '<@(extra_args)',

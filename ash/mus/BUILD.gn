@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//tools/grit/repack.gni")
 
 source_set("lib") {
@@ -119,7 +119,7 @@ source_set("lib") {
   }
 }
 
-mojo_native_application("mus") {
+service("mus") {
   output_name = "ash"
 
   sources = [
@@ -142,8 +142,8 @@ mojo_native_application("mus") {
   resources = [ "$root_out_dir/ash_mus_resources.pak" ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "ash"
+service_manifest("manifest") {
+  name = "ash"
   source = "manifest.json"
 }
 

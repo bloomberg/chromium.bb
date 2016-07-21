@@ -4,8 +4,8 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 
 static_library("lib") {
   sources = [
@@ -243,7 +243,7 @@ test("mus_ws_unittests") {
   ]
 }
 
-mojo_application_manifest("mus_ws_unittests_app_manifest") {
-  application_name = "mus_ws_unittests_app"
+service_manifest("mus_ws_unittests_app_manifest") {
+  name = "mus_ws_unittests_app"
   source = "mus_ws_unittests_app_manifest.json"
 }

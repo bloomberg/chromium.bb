@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 
-mojo_native_application("test_wm") {
+service("test_wm") {
   sources = [
     "test_wm.cc",
   ]
@@ -25,7 +25,7 @@ mojo_native_application("test_wm") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "test_wm"
+service_manifest("manifest") {
+  name = "test_wm"
   source = "manifest.json"
 }

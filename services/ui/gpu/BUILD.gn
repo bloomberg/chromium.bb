@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("gpu") {
@@ -59,7 +59,7 @@ test("mus_gpu_unittests") {
   ]
 }
 
-mojo_application_manifest("mus_gpu_unittests_app_manifest") {
-  application_name = "mus_gpu_unittests_app"
+service_manifest("mus_gpu_unittests_app_manifest") {
+  name = "mus_gpu_unittests_app"
   source = "mus_gpu_unittests_app_manifest.json"
 }

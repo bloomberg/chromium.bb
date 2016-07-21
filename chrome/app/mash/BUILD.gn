@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/service_manifest.gni")
 
 source_set("mash") {
   sources = [
@@ -38,9 +38,9 @@ source_set("mash") {
   }
 }
 
-mojo_application_manifest("manifest") {
+service_manifest("manifest") {
   type = "exe"
-  application_name = "chrome_mash"
+  name = "chrome_mash"
   source = "chrome_mash_manifest.json"
   deps = [
     "//ash/mus:manifest",
@@ -51,7 +51,7 @@ mojo_application_manifest("manifest") {
     "//mash/task_viewer:manifest",
     "//services/ui:manifest",
   ]
-  packaged_applications = [
+  packaged_services = [
     "app_driver",
     "ash",
     "ash_sysui",
@@ -63,6 +63,6 @@ mojo_application_manifest("manifest") {
 
   if (is_linux && !is_android) {
     deps += [ "//components/font_service:manifest" ]
-    packaged_applications += [ "font_service" ]
+    packaged_services += [ "font_service" ]
   }
 }

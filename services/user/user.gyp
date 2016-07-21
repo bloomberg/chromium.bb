@@ -82,12 +82,12 @@
       'target_name': 'user_app_manifest',
       'type': 'none',
       'variables': {
-        'application_type': 'mojo',
-        'application_name': 'user',
+        'type': 'mojo',
+        'name': 'user',
         'source_manifest': '<(DEPTH)/services/user/manifest.json',
       },
       'includes': [
-        '../../mojo/public/mojo_application_manifest.gypi',
+        '../shell/public/service_manifest.gypi',
       ],
       'hard_dependency': 1,
     },

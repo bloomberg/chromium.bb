@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
-mojo_native_application("mus_demo") {
+service("mus_demo") {
   sources = [
     "main.cc",
     "mus_demo.cc",
@@ -30,14 +30,14 @@ mojo_native_application("mus_demo") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "mus_demo"
+service_manifest("manifest") {
+  name = "mus_demo"
   source = "manifest.json"
 }
 
-mojo_application_manifest("test_manifest") {
+service_manifest("test_manifest") {
   type = "exe"
-  application_name = "mus_demo_unittests"
+  name = "mus_demo_unittests"
   source = "test_manifest.json"
 }
 

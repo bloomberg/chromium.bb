@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -26,7 +26,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("font_service") {
+service("font_service") {
   sources = [
     "main.cc",
   ]
@@ -43,7 +43,7 @@ mojo_native_application("font_service") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "font_service"
+service_manifest("manifest") {
+  name = "font_service"
   source = "manifest.json"
 }

@@ -25,6 +25,6 @@ const char Store::kCapabilities_ClassesKey[] = "classes";
 // static
 const char Store::kCapabilities_InterfacesKey[] = "interfaces";
 // static
-const char Store::kApplicationsKey[] = "applications";
+const char Store::kServicesKey[] = "services";
 
 }  // namespace catalog

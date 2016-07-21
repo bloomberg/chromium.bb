@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
 # Target that builders build.
@@ -55,8 +55,8 @@ test("mash_unittests") {
   ]
 }
 
-mojo_application_manifest("unittests_manifest") {
+service_manifest("unittests_manifest") {
   type = "exe"
-  application_name = "mash_unittests"
+  name = "mash_unittests"
   source = "unittests_manifest.json"
 }

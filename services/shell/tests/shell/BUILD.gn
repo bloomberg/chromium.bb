@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -38,8 +38,8 @@ mojom("interfaces") {
   use_new_wrapper_types = false
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "shell_unittest"
+service_manifest("manifest") {
+  name = "shell_unittest"
   source = "shell_unittest_manifest.json"
 }
 
@@ -67,9 +67,9 @@ executable("shell_unittest_driver") {
   ]
 }
 
-mojo_application_manifest("driver_manifest") {
+service_manifest("driver_manifest") {
   type = "exe"
-  application_name = "shell_unittest_driver"
+  name = "shell_unittest_driver"
   source = "driver_manifest.json"
 }
 
@@ -93,8 +93,8 @@ executable("shell_unittest_target") {
   ]
 }
 
-mojo_application_manifest("target_manifest") {
+service_manifest("target_manifest") {
   type = "exe"
-  application_name = "shell_unittest_target"
+  name = "shell_unittest_target"
   source = "target_manifest.json"
 }

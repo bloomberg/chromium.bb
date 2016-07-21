@@ -4,9 +4,9 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
-import("//mojo/public/mojo_constants.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
+import("//services/shell/public/constants.gni")
 import("//tools/grit/repack.gni")
 
 group("all") {
@@ -17,7 +17,7 @@ group("all") {
   ]
 }
 
-mojo_native_application("ui") {
+service("ui") {
   sources = [
     "main.cc",
   ]
@@ -46,8 +46,8 @@ mojo_native_application("ui") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "ui"
+service_manifest("manifest") {
+  name = "ui"
   source = "manifest.json"
 }
 
@@ -64,7 +64,7 @@ if (is_win) {
     ]
 
     outputs = [
-      "$root_out_dir/$mojo_application_subdir/ui/{{source_file_part}}",
+      "$root_out_dir/$packages_directory/ui/{{source_file_part}}",
     ]
   }
 }

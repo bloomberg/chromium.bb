@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" A collator for Mojo Application Manifests """
+""" A collator for Service Manifests """
 
 import argparse
 import json
@@ -12,7 +12,7 @@ import shutil
 import sys
 import urlparse
 
-eater_relative = '../../../../../tools/json_comment_eater'
+eater_relative = '../../../../../../tools/json_comment_eater'
 eater_relative = os.path.join(os.path.abspath(__file__), eater_relative)
 sys.path.insert(0, os.path.normpath(eater_relative))
 try:
@@ -47,10 +47,10 @@ def MergeDicts(left, right):
 def MergeBaseManifest(parent, base):
   MergeDicts(parent["capabilities"], base["capabilities"])
 
-  if "applications" in base:
-    if "applications" not in parent:
-      parent["applications"] = []
-    parent["applications"].extend(base["applications"])
+  if "services" in base:
+    if "services" not in parent:
+      parent["services"] = []
+    parent["services"].extend(base["services"])
 
   if "process-group" in base:
     parent["process-group"] = base["process-group"]
@@ -58,10 +58,10 @@ def MergeBaseManifest(parent, base):
 
 def main():
   parser = argparse.ArgumentParser(
-      description="Collate Mojo application manifests.")
+      description="Collate Service Manifests.")
   parser.add_argument("--parent")
   parser.add_argument("--output")
-  parser.add_argument("--application-name")
+  parser.add_argument("--name")
   parser.add_argument("--base-manifest", default=None)
   args, children = parser.parse_known_args()
 
@@ -75,25 +75,25 @@ def main():
       return 1
     MergeBaseManifest(parent, base)
 
-  app_path = parent['name'].split(':')[1]
-  if app_path.startswith('//'):
-    raise ValueError("Application name path component '%s' must not start " \
-                     "with //" % app_path)
+  service_path = parent['name'].split(':')[1]
+  if service_path.startswith('//'):
+    raise ValueError("Service name path component '%s' must not start " \
+                     "with //" % service_path)
 
-  if args.application_name != app_path:
-    raise ValueError("Application name '%s' specified in build file does not " \
-                     "match application name '%s' specified in manifest." %
-                     (args.application_name, app_path))
+  if args.name != service_path:
+    raise ValueError("Service name '%s' specified in build file does not " \
+                     "match name '%s' specified in manifest." %
+                     (args.name, service_path))
 
-  applications = []
+  services = []
   for child in children:
-    application = ParseJSONFile(child)
-    if application == None:
+    service = ParseJSONFile(child)
+    if service == None:
       return 1
-    applications.append(application)
+    services.append(service)
 
-  if len(applications) > 0:
-    parent['applications'] = applications
+  if len(services) > 0:
+    parent['services'] = services
 
   with open(args.output, 'w') as output_file:
     json.dump(parent, output_file)

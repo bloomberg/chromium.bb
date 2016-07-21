@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -29,7 +29,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("leveldb") {
+service("leveldb") {
   sources = [
     "leveldb_app.cc",
     "leveldb_app.h",
@@ -51,8 +51,8 @@ mojo_native_application("leveldb") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "leveldb"
+service_manifest("manifest") {
+  name = "leveldb"
   source = "manifest.json"
 }
 
@@ -83,8 +83,8 @@ test("leveldb_service_unittests") {
   ]
 }
 
-mojo_application_manifest("test_manifest") {
+service_manifest("test_manifest") {
   type = "exe"
-  application_name = "leveldb_service_unittests"
+  name = "leveldb_service_unittests"
   source = "test_manifest.json"
 }

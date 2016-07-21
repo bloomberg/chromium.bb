@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -31,7 +31,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("app_driver") {
+service("app_driver") {
   sources = [
     "main.cc",
   ]
@@ -50,7 +50,7 @@ mojo_native_application("app_driver") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "app_driver"
+service_manifest("manifest") {
+  name = "app_driver"
   source = "manifest.json"
 }

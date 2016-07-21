@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -39,17 +39,17 @@ mojom("interfaces") {
   use_new_wrapper_types = false
 }
 
-mojo_application_manifest("shutdown_unittest_manifest") {
-  application_name = "shutdown_unittest"
+service_manifest("shutdown_unittest_manifest") {
+  name = "shutdown_unittest"
   source = "shutdown_unittest_manifest.json"
 }
 
-mojo_application_manifest("shutdown_service_manifest") {
-  application_name = "shutdown_service"
+service_manifest("shutdown_service_manifest") {
+  name = "shutdown_service"
   source = "shutdown_service_manifest.json"
 }
 
-mojo_native_application("shutdown_service") {
+service("shutdown_service") {
   testonly = true
   sources = [
     "shutdown_service_app.cc",
@@ -65,12 +65,12 @@ mojo_native_application("shutdown_service") {
   ]
 }
 
-mojo_application_manifest("shutdown_client_manifest") {
-  application_name = "shutdown_client"
+service_manifest("shutdown_client_manifest") {
+  name = "shutdown_client"
   source = "shutdown_client_manifest.json"
 }
 
-mojo_native_application("shutdown_client") {
+service("shutdown_client") {
   testonly = true
   sources = [
     "shutdown_client_app.cc",

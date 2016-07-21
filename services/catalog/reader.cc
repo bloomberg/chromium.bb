@@ -36,13 +36,13 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
 }
 
 
-base::FilePath GetPackagePath(const base::FilePath& package_dir,
-                              const std::string& name) {
+base::FilePath GetExecutablePath(const base::FilePath& package_dir,
+                                 const std::string& name) {
   std::string type = shell::GetNameType(name);
   if (type == shell::kNameType_Mojo) {
     // It's still a mojo: URL, use the default mapping scheme.
     const std::string host = shell::GetNamePath(name);
-    return package_dir.AppendASCII(host + "/" + host + ".mojo");
+    return package_dir.AppendASCII(host + "/" + host + ".library");
   }
   if (type == shell::kNameType_Exe) {
 #if defined OS_WIN
@@ -69,7 +69,7 @@ std::unique_ptr<Entry> ProcessManifest(
   std::unique_ptr<Entry> entry = Entry::Deserialize(*dictionary);
   if (!entry)
     return nullptr;
-  entry->set_path(GetPackagePath(package_dir, entry->name()));
+  entry->set_path(GetExecutablePath(package_dir, entry->name()));
   return entry;
 }
 
@@ -106,7 +106,7 @@ void ScanDir(
     // Skip over subdirs that contain only manifests, they're artifacts of the
     // build (e.g. for applications that are packaged into others) and are not
     // valid standalone packages.
-    base::FilePath package_path = GetPackagePath(package_dir, entry->name());
+    base::FilePath package_path = GetExecutablePath(package_dir, entry->name());
     if (entry->name() != "mojo:shell" && entry->name() != "mojo:catalog" &&
         !base::PathExists(package_path)) {
       continue;
@@ -126,14 +126,14 @@ std::unique_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
       GetManifestPath(package_dir, mojo_name), package_dir);
   if (!entry) {
     entry.reset(new Entry(mojo_name));
-    entry->set_path(GetPackagePath(
+    entry->set_path(GetExecutablePath(
         package_dir.AppendASCII(kMojoApplicationsDirName), mojo_name));
   }
   return entry;
 }
 
 void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
-  for (auto* child : entry->applications())
+  for (auto* child : entry->services())
     AddEntryToCache(cache, base::WrapUnique(child));
   (*cache)[entry->name()] = std::move(entry);
 }

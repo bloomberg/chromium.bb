@@ -73,7 +73,7 @@ mojom::ServicePtr ChildProcessHost::Start(
       base::CommandLine::ForCurrentProcess();
   base::FilePath target_path = parent_command_line->GetProgram();
   // |app_path_| can be empty in tests.
-  if (!app_path_.MatchesExtension(FILE_PATH_LITERAL(".mojo")) &&
+  if (!app_path_.MatchesExtension(FILE_PATH_LITERAL(".library")) &&
       !app_path_.empty()) {
     target_path = app_path_;
   }

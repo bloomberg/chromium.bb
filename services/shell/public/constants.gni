@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # Mojo application directories are created within this subdirectory.
-  mojo_application_subdir = "Mojo Applications"
+  # Service package directories are created within this subdirectory.
+  packages_directory = "Mojo Applications"
 }

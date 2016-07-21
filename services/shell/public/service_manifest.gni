@@ -2,26 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_constants.gni")
+import("//services/shell/public/constants.gni")
 
-# Used to produce a Mojo Application Manifest for an application.
+# Used to produce a Service Manifest for a Service.
 #
 # Parameters:
 #
 #   source
-#       The manifest file template for this application, must be valid JSON with
-#       a valid 'url' key matching application_name.
+#       The manifest file template for this service, must be valid JSON with
+#       a valid 'url' key matching name.
 #
 #   base_manifest (optional)
 #       A manifest file template to use as a base for |source|. Any properties
 #       defined in |source| will overwrite or be merged with properties defined
 #       in |base_manifest|.
 #
-#   application_name
-#       The host portion of the mojo: URL of the application. The script
-#       validates that the value of this parameter matches the host name portion
-#       of the 'url' property set in the manifest and throws a ValueError if
-#       they do not.
+#   name
+#       The host portion of the mojo: URL of the service. A script validates
+#       that the value of this parameter matches the host name portion of the
+#       'url' property set in the manifest and throws a ValueError if they do
+#       not.
 #
 #   base_deps (optional)
 #       Dependencies required to generate |base_manifest| if applicable.
@@ -30,8 +30,8 @@ import("//mojo/public/mojo_constants.gni")
 #       An array of dependent instances of this template. This template enforces
 #       that dependencies can only be instances of this template.
 #
-#   packaged_applications (optional)
-#       An array of application_names of the dependent applications.
+#   packaged_services (optional)
+#       An array of names of the dependent services.
 #
 #   type (default is mojo)
 #       Possible values are 'mojo' and 'exe'. Default is 'mojo'.
@@ -39,23 +39,23 @@ import("//mojo/public/mojo_constants.gni")
 # Outputs:
 #
 #   An instantiation of this template produces in
-#       $outdir/<application_name>/manifest.json
+#       $outdir/<name>/manifest.json
 #   a meta manifest from the source template and the output manifest of all
 #   dependent children.
 #
-template("mojo_application_manifest") {
+template("service_manifest") {
   assert(defined(invoker.source),
          "\"source\" must be defined for the $target_name template")
-  assert(defined(invoker.application_name),
-         "\"application_name\" must be defined for the $target_name template")
+  assert(defined(invoker.name),
+         "\"name\" must be defined for the $target_name template")
   if (defined(invoker.deps)) {
-    assert(defined(invoker.packaged_applications),
-           "\"packaged_applications\" listing the directory containing the " +
-               "manifest.json of dependent applications must be provided.")
+    assert(defined(invoker.packaged_services),
+           "\"packaged_services\" listing the directory containing the " +
+               "manifest.json of dependent services must be provided.")
   }
-  if (defined(invoker.packaged_applications)) {
+  if (defined(invoker.packaged_services)) {
     assert(defined(invoker.deps),
-           "\"deps\" building the dependent packaged applications must be " +
+           "\"deps\" building the dependent packaged services must be " +
                "provided.")
   }
   if (defined(invoker.type)) {
@@ -64,22 +64,22 @@ template("mojo_application_manifest") {
   }
 
   action(target_name) {
-    script = "//mojo/public/tools/manifest/manifest_collator.py"
+    script = "//services/shell/public/tools/manifest/manifest_collator.py"
 
     type = "mojo"
     if (defined(invoker.type)) {
       type = invoker.type
     }
 
-    application_name = invoker.application_name
+    name = invoker.name
     inputs = [
       invoker.source,
     ]
 
     if (type == "mojo") {
-      output = "$root_out_dir/$mojo_application_subdir/$application_name/manifest.json"
+      output = "$root_out_dir/$packages_directory/$name/manifest.json"
     } else {
-      output = "$root_out_dir/${application_name}_manifest.json"
+      output = "$root_out_dir/${name}_manifest.json"
     }
     outputs = [
       output,
@@ -89,7 +89,7 @@ template("mojo_application_manifest") {
     rebase_output = rebase_path(output, root_build_dir)
 
     args = [
-      "--application-name=$application_name",
+      "--name=$name",
       "--parent=$rebase_parent",
       "--output=$rebase_output",
     ]
@@ -99,9 +99,9 @@ template("mojo_application_manifest") {
       args += [ "--base-manifest=$rebase_base" ]
     }
 
-    if (defined(invoker.packaged_applications)) {
-      foreach(application_name, invoker.packaged_applications) {
-        input = "$root_out_dir/$mojo_application_subdir/$application_name/manifest.json"
+    if (defined(invoker.packaged_services)) {
+      foreach(name, invoker.packaged_services) {
+        input = "$root_out_dir/$packages_directory/$name/manifest.json"
         inputs += [ input ]
         args += [ rebase_path(input, root_build_dir) ]
       }
@@ -123,17 +123,17 @@ template("mojo_application_manifest") {
     all_deps += invoker.deps
   }
 
-  group("${target_name}__is_mojo_application_manifest") {
+  group("${target_name}__is_service_manifest") {
   }
 
-  # Explicitly ensure that all dependencies are mojo_application_manifest
+  # Explicitly ensure that all dependencies are service_manifest
   # targets themselves.
-  group("${target_name}__check_deps_are_all_mojo_application_manifest") {
+  group("${target_name}__check_deps_are_all_service_manifest") {
     deps = []
     foreach(d, all_deps) {
       name = get_label_info(d, "label_no_toolchain")
       toolchain = get_label_info(d, "toolchain")
-      deps += [ "${name}__is_mojo_application_manifest(${toolchain})" ]
+      deps += [ "${name}__is_service_manifest(${toolchain})" ]
     }
   }
 }

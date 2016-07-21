@@ -11,7 +11,7 @@
 
 namespace catalog {
 
-// Implemented by an object that provides storage for the application catalog
+// Implemented by an object that provides storage for the service catalog
 // (e.g. in Chrome, preferences). The Catalog is the canonical owner of the
 // contents of the store, so no one else must modify its contents.
 class Store {
@@ -35,18 +35,18 @@ class Store {
   // Value is a list.
   static const char kCapabilities_InterfacesKey[];
   // Value is a list.
-  static const char kApplicationsKey[];
+  static const char kServicesKey[];
 
   virtual ~Store() {}
 
   // Called during initialization to construct the Catalog's catalog.
-  // Returns a serialized list of the apps. Each entry in the returned list
+  // Returns a serialized list of the services. Each entry in the returned list
   // corresponds to an app (as a dictionary). Each dictionary has a name,
   // display name and capabilities. The return value is owned by the caller.
   virtual const base::ListValue* GetStore() = 0;
 
   // Write the catalog to the store. Called when the Catalog learns of a newly
-  // encountered application.
+  // encountered service.
   virtual void UpdateStore(std::unique_ptr<base::ListValue> store) = 0;
 };
 

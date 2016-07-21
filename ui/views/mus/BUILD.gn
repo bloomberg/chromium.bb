@@ -4,8 +4,8 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -296,14 +296,14 @@ test("views_mus_interactive_ui_tests") {
   }
 }
 
-mojo_application_manifest("unittests_manifest") {
+service_manifest("unittests_manifest") {
   type = "exe"
-  application_name = "views_mus_unittests"
+  name = "views_mus_unittests"
   source = "unittests_manifest.json"
 }
 
-mojo_application_manifest("interactive_ui_tests_manifest") {
+service_manifest("interactive_ui_tests_manifest") {
   type = "exe"
-  application_name = "views_mus_interactive_ui_tests"
+  name = "views_mus_interactive_ui_tests"
   source = "interactive_ui_tests_manifest.json"
 }

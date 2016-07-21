@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -28,7 +28,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("quick_launch") {
+service("quick_launch") {
   sources = [
     "main.cc",
   ]
@@ -47,7 +47,7 @@ mojo_native_application("quick_launch") {
   ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "quick_launch"
+service_manifest("manifest") {
+  name = "quick_launch"
   source = "manifest.json"
 }

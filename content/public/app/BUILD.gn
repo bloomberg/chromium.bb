@@ -21,7 +21,7 @@
 #       //content/public/app:both_sources (source set)
 
 import("//build/config/chrome_build.gni")
-import("//mojo/public/mojo_application_manifest.gni")
+import("//services/shell/public/service_manifest.gni")
 
 public_app_shared_sources = [
   "content_jni_onload.h",
@@ -142,11 +142,11 @@ if (is_component_build) {
   }
 }
 
-mojo_application_manifest("browser_manifest") {
+service_manifest("browser_manifest") {
   type = "exe"
-  application_name = "content_browser"
+  name = "content_browser"
   source = "mojo/content_browser_manifest.json"
-  packaged_applications = [
+  packaged_services = [
     "media",
     "user",
   ]
@@ -156,20 +156,20 @@ mojo_application_manifest("browser_manifest") {
   ]
 }
 
-mojo_application_manifest("gpu_manifest") {
+service_manifest("gpu_manifest") {
   type = "exe"
-  application_name = "content_gpu"
+  name = "content_gpu"
   source = "mojo/content_gpu_manifest.json"
 }
 
-mojo_application_manifest("renderer_manifest") {
+service_manifest("renderer_manifest") {
   type = "exe"
-  application_name = "content_renderer"
+  name = "content_renderer"
   source = "mojo/content_renderer_manifest.json"
 }
 
-mojo_application_manifest("utility_manifest") {
+service_manifest("utility_manifest") {
   type = "exe"
-  application_name = "content_utility"
+  name = "content_utility"
   source = "mojo/content_utility_manifest.json"
 }

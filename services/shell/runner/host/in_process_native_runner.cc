@@ -85,7 +85,7 @@ void InProcessNativeRunner::Run() {
 std::unique_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
   // Non-Mojo apps are always run in a new process.
-  if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".mojo"))) {
+  if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".library"))) {
     return base::WrapUnique(
         new OutOfProcessNativeRunner(launch_process_runner_, nullptr));
   }
