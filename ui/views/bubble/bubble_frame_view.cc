@@ -99,15 +99,15 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
 BubbleFrameView::~BubbleFrameView() {}
 
 // static
-LabelButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
+ImageButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  LabelButton* close = new LabelButton(listener, base::string16());
+  ImageButton* close = new ImageButton(listener);
   close->SetImage(CustomButton::STATE_NORMAL,
-                  *rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
+                  rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
   close->SetImage(CustomButton::STATE_HOVERED,
-                  *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
+                  rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
   close->SetImage(CustomButton::STATE_PRESSED,
-                  *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
+                  rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
   close->SetBorder(nullptr);
   close->SetSize(close->GetPreferredSize());
 #if !defined(OS_WIN)
@@ -245,7 +245,9 @@ gfx::Insets BubbleFrameView::GetInsets() const {
   const int title_padding = has_title ? title_margins_.height() : 0;
   const int title_height = std::max(icon_height, label_height) + title_padding;
   const int close_height = close_->visible() ? close_->height() : 0;
-  insets += gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
+  const int min_height = !has_title ? close_->height() : 0;
+  insets +=
+      gfx::Insets(std::max({title_height, close_height, min_height}), 0, 0, 0);
   return insets;
 }
 
