@@ -273,7 +273,8 @@ cr.define('options', function() {
      */
     updateCounter_: function(pref_name, text) {
       var counter = document.querySelector(
-          'input[pref="' + pref_name + '"] ~ .clear-browser-data-counter');
+          'input[pref="' + pref_name +
+          '"] ~ span > .clear-browser-data-counter');
       counter.textContent = text;
     }
   };

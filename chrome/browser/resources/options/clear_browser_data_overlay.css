@@ -37,10 +37,10 @@
 }
 
 .clear-browser-data-counter:not(:empty)::before {
-  content: '–\00a0\00a0';
+  content: '\00a0–\00a0\00a0';
 }
 
-input[type=checkbox]:not(:checked) ~ .clear-browser-data-counter {
+input[type=checkbox]:not(:checked) ~ span > .clear-browser-data-counter {
   display: none;
 }
 
