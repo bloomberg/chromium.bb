@@ -1306,7 +1306,7 @@ TEST_F(FilePathTest, GetHFSDecomposedFormWithInvalidInput) {
     FPL("\xf0\x28\x8c\xbc"),
     FPL("\xf0\x28\x8c\x28"),
   };
-  for (const auto& invalid_input : cases) {
+  for (auto* invalid_input : cases) {
     FilePath::StringType observed = FilePath::GetHFSDecomposedForm(
         invalid_input);
     EXPECT_TRUE(observed.empty());

@@ -66,7 +66,7 @@ bool InternalRunThreadTest() {
   ::CloseHandle(ready_event);
 
   if (threads_.size() != kNumThreads) {
-    for (const auto& thread : threads_)
+    for (auto* thread : threads_)
       ::CloseHandle(thread);
     ::CloseHandle(start_event);
     return false;
@@ -74,7 +74,7 @@ bool InternalRunThreadTest() {
 
   ::SetEvent(start_event);
   ::CloseHandle(start_event);
-  for (const auto& thread : threads_) {
+  for (auto* thread : threads_) {
     ::WaitForSingleObject(thread, INFINITE);
     ::CloseHandle(thread);
   }
