@@ -358,33 +358,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   }
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
-
-  if (!last_image_ || video_frame->timestamp() != last_timestamp_) {
-    ResetCache();
-    // Generate a new image.
-    // Note: Skia will hold onto |video_frame| via |video_generator| only when
-    // |video_frame| is software.
-    // Holding |video_frame| longer than this call when using GPUVideoDecoder
-    // could cause problems since the pool of VideoFrames has a fixed size.
-    if (video_frame->HasTextures()) {
-      DCHECK(context_3d.gr_context);
-      DCHECK(gl);
-      if (media::VideoFrame::NumPlanes(video_frame->format()) > 1) {
-        last_image_ =
-            NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d);
-      } else {
-        last_image_ =
-            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d);
-      }
-    } else {
-      auto* video_generator = new VideoImageGenerator(video_frame);
-      last_image_ = SkImage::MakeFromGenerator(video_generator);
-    }
-    if (!last_image_)  // Couldn't create the SkImage.
-      return;
-    last_timestamp_ = video_frame->timestamp();
-  }
-  last_image_deleting_timer_.Reset();
+  if (!UpdateLastImage(video_frame, context_3d))
+    return;
 
   paint.setXfermodeMode(mode);
   paint.setFilterQuality(kLow_SkFilterQuality);
@@ -671,11 +646,112 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
+bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
+    const Context3D& context_3d,
+    gpu::gles2::GLES2Interface* destination_gl,
+    const scoped_refptr<VideoFrame>& video_frame,
+    unsigned int texture,
+    unsigned int internal_format,
+    unsigned int type,
+    bool premultiply_alpha,
+    bool flip_y) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(video_frame);
+  DCHECK(video_frame->HasTextures());
+  if (media::VideoFrame::NumPlanes(video_frame->format()) > 1) {
+    if (!context_3d.gr_context)
+      return false;
+    if (!UpdateLastImage(video_frame, context_3d))
+      return false;
+
+    const GrGLTextureInfo* texture_info =
+        skia::GrBackendObjectToGrGLTextureInfo(
+            last_image_->getTextureHandle(true));
+
+    gpu::gles2::GLES2Interface* canvas_gl = context_3d.gl;
+    gpu::MailboxHolder mailbox_holder;
+    mailbox_holder.texture_target = texture_info->fTarget;
+    canvas_gl->GenMailboxCHROMIUM(mailbox_holder.mailbox.name);
+    canvas_gl->ProduceTextureDirectCHROMIUM(texture_info->fID,
+                                            mailbox_holder.texture_target,
+                                            mailbox_holder.mailbox.name);
+
+    // Wait for mailbox creation on canvas context before consuming it and
+    // copying from it on the consumer context.
+    const GLuint64 fence_sync = canvas_gl->InsertFenceSyncCHROMIUM();
+    canvas_gl->ShallowFlushCHROMIUM();
+    canvas_gl->GenSyncTokenCHROMIUM(fence_sync,
+                                    mailbox_holder.sync_token.GetData());
+
+    destination_gl->WaitSyncTokenCHROMIUM(
+        mailbox_holder.sync_token.GetConstData());
+    uint32_t intermediate_texture =
+        destination_gl->CreateAndConsumeTextureCHROMIUM(
+            mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+
+    destination_gl->CopyTextureCHROMIUM(intermediate_texture, texture,
+                                        internal_format, type, flip_y,
+                                        premultiply_alpha, false);
+    destination_gl->DeleteTextures(1, &intermediate_texture);
+
+    // Wait for destination context to consume mailbox before deleting it in
+    // canvas context.
+    const GLuint64 dest_fence_sync = destination_gl->InsertFenceSyncCHROMIUM();
+    destination_gl->ShallowFlushCHROMIUM();
+    gpu::SyncToken dest_sync_token;
+    destination_gl->GenSyncTokenCHROMIUM(dest_fence_sync,
+                                         dest_sync_token.GetData());
+    canvas_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
+
+    SyncTokenClientImpl client(canvas_gl);
+    video_frame->UpdateReleaseSyncToken(&client);
+  } else {
+    CopyVideoFrameSingleTextureToGLTexture(destination_gl, video_frame.get(),
+                                           texture, internal_format, type,
+                                           premultiply_alpha, flip_y);
+  }
+
+  return true;
+}
+
 void SkCanvasVideoRenderer::ResetCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Clear cached values.
   last_image_ = nullptr;
   last_timestamp_ = kNoTimestamp;
+}
+
+bool SkCanvasVideoRenderer::UpdateLastImage(
+    const scoped_refptr<VideoFrame>& video_frame,
+    const Context3D& context_3d) {
+  if (!last_image_ || video_frame->timestamp() != last_timestamp_) {
+    ResetCache();
+    // Generate a new image.
+    // Note: Skia will hold onto |video_frame| via |video_generator| only when
+    // |video_frame| is software.
+    // Holding |video_frame| longer than this call when using GPUVideoDecoder
+    // could cause problems since the pool of VideoFrames has a fixed size.
+    if (video_frame->HasTextures()) {
+      DCHECK(context_3d.gr_context);
+      DCHECK(context_3d.gl);
+      if (media::VideoFrame::NumPlanes(video_frame->format()) > 1) {
+        last_image_ =
+            NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d);
+      } else {
+        last_image_ =
+            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d);
+      }
+    } else {
+      auto* video_generator = new VideoImageGenerator(video_frame);
+      last_image_ = SkImage::MakeFromGenerator(video_generator);
+    }
+    if (!last_image_)  // Couldn't create the SkImage.
+      return false;
+    last_timestamp_ = video_frame->timestamp();
+  }
+  last_image_deleting_timer_.Reset();
+  DCHECK(!!last_image_);
+  return true;
 }
 
 }  // namespace media

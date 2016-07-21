@@ -78,6 +78,22 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
+  // Copy the contents of texture of |video_frame| to texture |texture| in
+  // context |destination_gl|.
+  // |level|, |internal_format|, |type| specify target texture |texture|.
+  // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
+  // |context_3d| has a GrContext that may be used during the copy.
+  // Returns true on success.
+  bool CopyVideoFrameTexturesToGLTexture(
+      const Context3D& context_3d,
+      gpu::gles2::GLES2Interface* destination_gl,
+      const scoped_refptr<VideoFrame>& video_frame,
+      unsigned int texture,
+      unsigned int internal_format,
+      unsigned int type,
+      bool premultiply_alpha,
+      bool flip_y);
+
   // In general, We hold the most recently painted frame to increase the
   // performance for the case that the same frame needs to be painted
   // repeatedly. Call this function if you are sure the most recent frame will
@@ -85,6 +101,11 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   void ResetCache();
 
  private:
+  // Update the cache holding the most-recently-painted frame. Returns false
+  // if the image couldn't be updated.
+  bool UpdateLastImage(const scoped_refptr<VideoFrame>& video_frame,
+                       const Context3D& context_3d);
+
   // Last image used to draw to the canvas.
   sk_sp<SkImage> last_image_;
   // Timestamp of the videoframe used to generate |last_image_|.

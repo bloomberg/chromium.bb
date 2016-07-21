@@ -465,15 +465,20 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
   scoped_refptr<media::VideoFrame> video_frame =
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
 
-  if (!video_frame.get() || !video_frame->HasTextures() ||
-      media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
+  if (!video_frame.get() || !video_frame->HasTextures())
     return false;
-  }
 
-  media::SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-      gl, video_frame.get(), texture, internal_format, type, premultiply_alpha,
-      flip_y);
-  return true;
+  media::Context3D context_3d;
+  auto* provider =
+      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+  // GPU Process crashed.
+  if (!provider)
+    return false;
+  context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
+  DCHECK(context_3d.gl);
+  return video_renderer_.CopyVideoFrameTexturesToGLTexture(
+      context_3d, gl, video_frame.get(), texture, internal_format, type,
+      premultiply_alpha, flip_y);
 }
 
 void WebMediaPlayerMS::OnFrameAvailable(

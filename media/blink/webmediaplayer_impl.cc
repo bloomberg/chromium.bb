@@ -819,15 +819,16 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
 
   scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
 
-  if (!video_frame.get() || !video_frame->HasTextures() ||
-      media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
+  if (!video_frame.get() || !video_frame->HasTextures()) {
     return false;
   }
 
-  SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-      gl, video_frame.get(), texture, internal_format, type, premultiply_alpha,
-      flip_y);
-  return true;
+  Context3D context_3d;
+  if (!context_3d_cb_.is_null())
+    context_3d = context_3d_cb_.Run();
+  return skcanvas_video_renderer_.CopyVideoFrameTexturesToGLTexture(
+      context_3d, gl, video_frame.get(), texture, internal_format, type,
+      premultiply_alpha, flip_y);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
