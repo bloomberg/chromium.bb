@@ -13,40 +13,16 @@
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/shell/test/app/navigation_test_util.h"
 #include "ios/web/shell/test/app/web_view_interaction_test_util.h"
+#import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 // Navigation test cases for the web shell. These are Earl Grey integration
 // tests, which are based on XCTest.
-@interface CRWWebShellNavigationTest : XCTestCase
+@interface CRWWebShellNavigationTest : ShellBaseTestCase
 
 @end
 
 @implementation CRWWebShellNavigationTest
-
-// Set up called once for the class.
-+ (void)setUp {
-  [super setUp];
-  [[EarlGrey selectElementWithMatcher:web::webViewContainingText("Chromium")]
-      assertWithMatcher:grey_notNil()];
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  server.StartOrDie();
-  DCHECK(server.IsRunning());
-}
-
-// Tear down called once for the class.
-+ (void)tearDown {
-  [super tearDown];
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  server.Stop();
-  DCHECK(!server.IsRunning());
-}
-
-// Tear down called after each test.
-- (void)tearDown {
-  [super tearDown];
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  server.RemoveAllResponseProviders();
-}
 
 // Tests clicking a link to about:blank.
 - (void)testNavigationLinkToAboutBlank {
@@ -54,8 +30,6 @@
       "http://ios/web/shell/test/http_server_files/basic_navigation_test.html");
   web::test::SetUpFileBasedHttpServer();
 
-  // TODO(crbug.com/611515): Create web shell utility that only requires URL,
-  // and gets the web state and passes it in to the web view utility.
   web::shell_test_util::LoadUrl(URL);
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
       assertWithMatcher:grey_notNil()];

@@ -116,6 +116,8 @@
         'shell/test/app/web_shell_test_util.mm',
         'shell/test/app/web_view_interaction_test_util.h',
         'shell/test/app/web_view_interaction_test_util.mm',
+        'shell/test/earl_grey/shell_base_test_case.h',
+        'shell/test/earl_grey/shell_base_test_case.mm',
         'shell/test/earl_grey/shell_matchers.h',
         'shell/test/earl_grey/shell_matchers.mm',
       ],

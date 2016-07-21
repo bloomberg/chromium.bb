@@ -10,6 +10,7 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/shell/test/app/navigation_test_util.h"
+#import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -51,30 +52,11 @@ using web::test::HttpServer;
 using web::webViewContainingText;
 
 // Page state test cases for the web shell.
-@interface CRWWebShellPageStateTest : XCTestCase
+@interface CRWWebShellPageStateTest : ShellBaseTestCase
+
 @end
 
 @implementation CRWWebShellPageStateTest
-
-// Set up called once for the class.
-+ (void)setUp {
-  [super setUp];
-  [[EarlGrey selectElementWithMatcher:webViewContainingText("Chromium")]
-      assertWithMatcher:grey_notNil()];
-  HttpServer::GetSharedInstance().StartOrDie();
-}
-
-// Tear down called once for the class.
-+ (void)tearDown {
-  [super tearDown];
-  HttpServer::GetSharedInstance().Stop();
-}
-
-// Tear down called after each test.
-- (void)tearDown {
-  [super tearDown];
-  HttpServer::GetSharedInstance().RemoveAllResponseProviders();
-}
 
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
