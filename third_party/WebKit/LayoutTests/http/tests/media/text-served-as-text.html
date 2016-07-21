@@ -1,39 +1,18 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>text file served as 'text/plain'</title>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../media-resources/video-test.js></script>
-        <script>
-            function loadedmetadata(evt)
-            {
-                logResult(false, "loaded text file served as text");
-                endTest();
-            }
+<title>Tests that a text file is served as "text/plain".</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-            function error(evt)
-            {
-                logResult(true, "failed trying to load text file served as text");
-                endTest();
-            }
+    var watcher = new EventWatcher(t, video, ["loadstart", "loadedmetadata", "error"]);
+    watcher.wait_for(["loadstart", "error"]).then(t.step_func_done());
+    assert_equals(video.error, null);
 
-            function start()
-            {
-                findMediaElement();
-
-                waitForEvent('loadedmetadata', loadedmetadata);
-                waitForEvent("error", error);
-                waitForEvent("loadstart");
-                testExpected("video.error", null);
-
-                var movie = "resources/test.txt";
-                video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + movie + "&throttle=99999&type=text/plain";
-            }
-        </script>
-    </head>
-
-    <body onload="start()">
-        <video controls></video>
-    </body>
-</html>
+    var movie = "resources/test.txt";
+    video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + movie + "&throttle=99999&type=text/plain";
+});
+</script>
