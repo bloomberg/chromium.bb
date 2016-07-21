@@ -266,11 +266,8 @@ if (is_android) {
 
   # ABI ------------------------------------------------------------------------
 
-  # Intentionally do not define android_app_secondary_abi for 64-bit
-  # android_app_abi, since they are not used.
   if (current_cpu == "x86") {
     android_app_abi = "x86"
-    android_app_secondary_abi = "x86_64"
   } else if (current_cpu == "arm") {
     import("//build/config/arm.gni")
     if (arm_version < 7) {
@@ -278,10 +275,8 @@ if (is_android) {
     } else {
       android_app_abi = "armeabi-v7a"
     }
-    android_app_secondary_abi = "arm64-v8a"
   } else if (current_cpu == "mipsel") {
     android_app_abi = "mips"
-    android_app_secondary_abi = "mips64"
   } else if (current_cpu == "x64") {
     android_app_abi = "x86_64"
   } else if (current_cpu == "arm64") {
@@ -294,5 +289,38 @@ if (is_android) {
 
   if (android_libcpp_lib_dir == "") {
     android_libcpp_lib_dir = "${android_libcpp_root}/libs/${android_app_abi}"
+  }
+
+  # Secondary ABI -------------------------------------------------------------
+  if (target_cpu == "arm64" || target_cpu == "x64" || target_cpu == "mips64el") {
+    android_64bit_target_cpu = true
+  } else if (target_cpu == "arm" || target_cpu == "x86" ||
+             target_cpu == "mipsel") {
+    android_64bit_target_cpu = false
+  } else {
+    assert(false, "Unknown target CPU: $target_cpu")
+  }
+
+  # Intentionally do not define android_app_secondary_abi_cpu and
+  # android_app_secondary_abi for 32-bit target_cpu, since they are not used.
+  if (target_cpu == "arm64") {
+    android_secondary_abi_cpu = "arm"
+    android_app_secondary_abi = "armeabi-v7a"
+  } else if (target_cpu == "x64") {
+    android_secondary_abi_cpu = "x86"
+    android_app_secondary_abi = "x86"
+  } else if (target_cpu == "mips64el") {
+    android_secondary_abi_cpu = "mipsel"
+    android_app_secondary_abi = "mips"
+  }
+
+  if (defined(android_secondary_abi_cpu)) {
+    if (is_clang) {
+      android_secondary_abi_toolchain =
+          "//build/toolchain/android:clang_${android_secondary_abi_cpu}"
+    } else {
+      android_secondary_abi_toolchain =
+          "//build/toolchain/android:${android_secondary_abi_cpu}"
+    }
   }
 }

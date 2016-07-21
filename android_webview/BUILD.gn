@@ -374,7 +374,7 @@ shared_library("libwebviewchromium") {
   configs -= [ "//build/config/android:hide_native_jni_exports" ]
 }
 
-if (defined(webview_only_libmonochrome) && webview_only_libmonochrome) {
+if (android_64bit_target_cpu) {
   shared_library("monochrome") {
     deps = [
       ":webview_entry_point",
