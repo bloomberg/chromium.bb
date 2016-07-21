@@ -33,32 +33,35 @@ WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state,
                            BOOL use_desktop_user_agent) {
-  WKWebView* web_view = CreateWKWebView(frame, configuration, browser_state);
+  VerifyWKWebViewCreationPreConditions(browser_state, configuration);
+
+  GetWebClient()->PreWebViewCreation();
+  WKWebView* web_view =
+      [[WKWebView alloc] initWithFrame:frame configuration:configuration];
+
+  // Set the user agent.
   web_view.customUserAgent = base::SysUTF8ToNSString(
       web::GetWebClient()->GetUserAgent(use_desktop_user_agent));
+
+  // By default the web view uses a very sluggish scroll speed. Set it to a more
+  // reasonable value.
+  web_view.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
+
+  // Starting in iOS10, |allowsLinkPreview| defaults to YES.  This should be
+  // disabled since the default implementation will open the link in Safari.
+  // TODO(crbug.com/622746): Remove once web// link preview implementation is
+  // created.
+  web_view.allowsLinkPreview = NO;
+
   return web_view;
 }
 
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state) {
-  VerifyWKWebViewCreationPreConditions(browser_state, configuration);
-
-  GetWebClient()->PreWebViewCreation();
-  WKWebView* result =
-      [[WKWebView alloc] initWithFrame:frame configuration:configuration];
-
-  // By default the web view uses a very sluggish scroll speed. Set it to a more
-  // reasonable value.
-  result.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
-
-  // Starting in iOS10, |allowsLinkPreview| defaults to YES.  This should be
-  // disabled since the default implementation will open the link in Safari.
-  // TODO(crbug.com/622746): Remove once web// link preview implementation is
-  // created.
-  result.allowsLinkPreview = NO;
-
-  return result;
+  BOOL use_desktop_user_agent = NO;
+  return CreateWKWebView(frame, configuration, browser_state,
+                         use_desktop_user_agent);
 }
 
 }  // namespace web
