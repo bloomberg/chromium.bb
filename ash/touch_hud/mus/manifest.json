@@ -1,0 +1,12 @@
+{
+  "manifest_version":  1,
+  "name": "mojo:touch_hud",
+  "display_name": "Touch Hud",
+  "capabilities": {
+    "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
+    "required": {
+      "*": { "classes": [ "app" ] },
+      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+    }
+  }
+}

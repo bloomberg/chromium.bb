@@ -173,6 +173,18 @@ display::Display WmTestBase::GetSecondaryDisplay() {
   return window;
 }
 
+::ui::Window* WmTestBase::CreateFullscreenTestWindow() {
+  std::map<std::string, std::vector<uint8_t>> properties;
+  properties[::ui::mojom::WindowManager::kShowState_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));
+  ::ui::Window* window =
+      GetRootsOrderedByDisplayId()[0]->window_manager()->NewTopLevelWindow(
+          &properties);
+  window->SetVisible(true);
+  return window;
+}
+
 ::ui::Window* WmTestBase::CreateChildTestWindow(::ui::Window* parent,
                                                 const gfx::Rect& bounds) {
   std::map<std::string, std::vector<uint8_t>> properties;

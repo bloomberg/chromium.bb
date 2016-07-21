@@ -178,6 +178,7 @@ source_set("unittests") {
     "accelerator_registrar_unittest.cc",
     "app_launch_unittest.cc",
     "layout_manager_unittest.cc",
+    "root_window_controller_unittest.cc",
     "test/wm_test_base.cc",
     "test/wm_test_base.h",
     "test/wm_test_helper.cc",

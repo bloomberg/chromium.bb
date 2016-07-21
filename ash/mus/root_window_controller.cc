@@ -183,6 +183,10 @@ gfx::Rect RootWindowController::CalculateDefaultBounds(
         ::ui::mojom::WindowManager::kInitialBounds_Property);
   }
 
+  if (GetWindowShowState(window) == ui::mojom::ShowState::FULLSCREEN) {
+    return gfx::Rect(0, 0, root_->bounds().width(), root_->bounds().height());
+  }
+
   int width, height;
   const gfx::Size pref = GetWindowPreferredSize(window);
   if (pref.IsEmpty()) {

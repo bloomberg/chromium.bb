@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,24 +6,26 @@ import("//build/config/ui.gni")
 import("//services/shell/public/cpp/service.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
-    "app_driver.cc",
-    "app_driver.h",
+    "touch_hud_application.cc",
+    "touch_hud_application.h",
   ]
 
   deps = [
-    "//mash/public/interfaces",
-    "//services/ui/common:mus_common",
-  ]
-
-  public_deps = [
+    "//ash/public/interfaces",
+    "//ash/touch_hud",
     "//base",
-    "//services/catalog/public/interfaces",
+    "//mash/public/interfaces",
+    "//mojo/common",
+    "//mojo/public/cpp/bindings",
+    "//services/shell/public/cpp",
     "//services/shell/public/cpp:sources",
+    "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//ui/views",
+    "//ui/views/mus:for_mojo_application",
   ]
 
   data_deps = [
@@ -31,7 +33,7 @@ source_set("lib") {
   ]
 }
 
-service("app_driver") {
+service("touch_hud") {
   sources = [
     "main.cc",
   ]
@@ -42,16 +44,17 @@ service("app_driver") {
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/shell/public/cpp:sources",
+    "//ui/views/mus:for_mojo_application",
   ]
+
+  resources = [ "$root_out_dir/views_mus_resources.pak" ]
 
   data_deps = [
     ":manifest",
-    "//ash/touch_hud/mus:touch_hud",
-    "//mash/task_viewer",
   ]
 }
 
 service_manifest("manifest") {
-  name = "app_driver"
+  name = "touch_hud"
   source = "manifest.json"
 }

@@ -1,0 +1,9 @@
+include_rules = [
+  "-ash",
+  "+ash/public",
+  "+ash/touch_hud",
+  "+mash/public/interfaces",
+  "+mojo/public",
+  "+services/shell/public",
+  "+services/ui/public",
+]

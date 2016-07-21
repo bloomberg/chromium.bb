@@ -6,6 +6,7 @@
 
 #include "ash/mus/window_manager_application.h"
 #include "ash/sysui/sysui_application.h"
+#include "ash/touch_hud/mus/touch_hud_application.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -88,6 +89,8 @@ class DefaultService : public shell::Service,
       return base::WrapUnique(new ash::sysui::SysUIApplication);
     if (name == "mojo:ash")
       return base::WrapUnique(new ash::mus::WindowManagerApplication);
+    if (name == "mojo:touch_hud")
+      return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
     if (name == "mojo:mash_session")
       return base::WrapUnique(new mash::session::Session);
     if (name == "mojo:ui")

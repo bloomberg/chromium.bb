@@ -57,6 +57,7 @@ class WmTestBase : public testing::Test {
   ::ui::Window* CreateTestWindow(const gfx::Rect& bounds);
   ::ui::Window* CreateTestWindow(const gfx::Rect& bounds,
                                  ui::wm::WindowType window_type);
+  ::ui::Window* CreateFullscreenTestWindow();
 
   // Creates a window parented to |parent|. The returned window is visible.
   ::ui::Window* CreateChildTestWindow(::ui::Window* parent,
