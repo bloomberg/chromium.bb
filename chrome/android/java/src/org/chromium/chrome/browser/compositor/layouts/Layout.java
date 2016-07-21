@@ -811,6 +811,13 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * Called when a tab is restored (created FROM_RESTORE).
+     * @param time  The current time of the app in ms.
+     * @param tabId The id of the restored tab.
+     */
+    public void onTabRestored(long time, int tabId) { }
+
+    /**
      * Called when the TabModelSelector has been initialized with an accurate tab count.
      */
     public void onTabStateInitialized() {

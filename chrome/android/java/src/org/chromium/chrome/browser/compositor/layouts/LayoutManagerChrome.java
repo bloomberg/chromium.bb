@@ -98,7 +98,9 @@ public class LayoutManagerChrome
         @Override
         public void didAddTab(Tab tab, TabLaunchType launchType) {
             int tabId = tab.getId();
-            if (launchType != TabLaunchType.FROM_RESTORE) {
+            if (launchType == TabLaunchType.FROM_RESTORE) {
+                getActiveLayout().onTabRestored(time(), tabId);
+            } else {
                 boolean incognito = tab.isIncognito();
                 boolean willBeSelected = launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                         || (!getTabModelSelector().isIncognitoSelected() && incognito);

@@ -1490,9 +1490,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      */
     @VisibleForTesting
     public void maybeMergeTabs() {
-        // TODO(twellington): Handle merging while the tab switcher is showing. Currently the tabs
-        // are merged but the tab switcher view doesn't update.
-
         if (!FeatureUtilities.isTabModelMergingEnabled()) return;
 
         Class<?> otherWindowActivityClass =

@@ -344,6 +344,14 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     @Override
+    public void onTabRestored(long time, int tabId) {
+        super.onTabRestored(time, tabId);
+        // Call show() so that new stack tabs and potentially new stacks get created.
+        // TODO(twellington): add animation for showing the restored tab.
+        show(time, false);
+    }
+
+    @Override
     public void onTabModelSwitched(boolean toIncognitoTabModel) {
         flingStacks(toIncognitoTabModel);
         mFlingFromModelChange = true;
