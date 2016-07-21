@@ -171,7 +171,8 @@
   },
   "clipboard": {
     "channel": "dev",
-    "extension_types": ["platform_app"]
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"]
   },
   "declarativeWebRequest": {
       "channel": "beta",
