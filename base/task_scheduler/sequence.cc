@@ -36,16 +36,27 @@ const Task* Sequence::PeekTask() const {
 }
 
 bool Sequence::PopTask() {
-  AutoSchedulerLock auto_lock(lock_);
-  DCHECK(!queue_.empty());
+  // Delete the popped task outside the scope of |lock_|. This prevents a double
+  // acquisition of |lock_| if the task's destructor tries to post a task to
+  // this Sequence and reduces contention.
+  std::unique_ptr<Task> delete_outside_lock_scope;
+  bool sequence_empty_after_pop = false;
 
-  const int priority_index =
-      static_cast<int>(queue_.front()->traits.priority());
-  DCHECK_GT(num_tasks_per_priority_[priority_index], 0U);
-  --num_tasks_per_priority_[priority_index];
+  {
+    AutoSchedulerLock auto_lock(lock_);
+    DCHECK(!queue_.empty());
 
-  queue_.pop();
-  return queue_.empty();
+    const int priority_index =
+        static_cast<int>(queue_.front()->traits.priority());
+    DCHECK_GT(num_tasks_per_priority_[priority_index], 0U);
+    --num_tasks_per_priority_[priority_index];
+
+    delete_outside_lock_scope = std::move(queue_.front());
+    queue_.pop();
+    sequence_empty_after_pop = queue_.empty();
+  }
+
+  return sequence_empty_after_pop;
 }
 
 SequenceSortKey Sequence::GetSortKey() const {

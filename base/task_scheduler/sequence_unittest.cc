@@ -4,7 +4,11 @@
 
 #include "base/task_scheduler/sequence.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,6 +16,31 @@ namespace base {
 namespace internal {
 
 namespace {
+
+// A class that pushes a Task to a Sequence in its destructor.
+class PushTaskInDestructor {
+ public:
+  explicit PushTaskInDestructor(scoped_refptr<Sequence> sequence)
+      : sequence_(std::move(sequence)) {}
+  PushTaskInDestructor(PushTaskInDestructor&&) = default;
+  PushTaskInDestructor& operator=(PushTaskInDestructor&&) = default;
+
+  ~PushTaskInDestructor() {
+    // |sequence_| may be nullptr in a temporary instance of this class.
+    if (sequence_) {
+      EXPECT_FALSE(sequence_->PeekTask());
+      sequence_->PushTask(WrapUnique(
+          new Task(FROM_HERE, Closure(), TaskTraits(), TimeDelta())));
+    }
+  }
+
+ private:
+  scoped_refptr<Sequence> sequence_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushTaskInDestructor);
+};
+
+void DoNothing(const PushTaskInDestructor&) {}
 
 class TaskSchedulerSequenceTest : public testing::Test {
  public:
@@ -183,6 +212,22 @@ TEST_F(TaskSchedulerSequenceTest, GetSortKey) {
   sequence->PopTask();
   EXPECT_EQ(SequenceSortKey(TaskPriority::BACKGROUND, task_e_->sequenced_time),
             sequence->GetSortKey());
+}
+
+TEST_F(TaskSchedulerSequenceTest, CanPushTaskInTaskDestructor) {
+  scoped_refptr<Sequence> sequence(new Sequence);
+  sequence->PushTask(WrapUnique(
+      new Task(FROM_HERE, Bind(&DoNothing, PushTaskInDestructor(sequence)),
+               TaskTraits(), TimeDelta())));
+
+  // PushTask() is invoked on |sequence| when the popped Task is destroyed. If
+  // PopTask() destroys the Task outside the scope of its lock as expected, no
+  // deadlock will occur when PushTask() tries to acquire the Sequence's lock.
+  sequence->PopTask();
+
+  // Verify that |sequence| contains exactly one Task.
+  EXPECT_TRUE(sequence->PeekTask());
+  EXPECT_TRUE(sequence->PopTask());
 }
 
 }  // namespace internal
