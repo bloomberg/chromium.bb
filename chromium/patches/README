@@ -1,4 +1,5 @@
 Upstream cherry-picks:
+  d59820f6fec3fd112436fb7712e4f9d6d768b664 - avformat/matroskadec seek bug fix.
   8efaee3710baa87af40556a622bf2d96a27c6425 - avformat/oggparseopus security fix.
   542f725964e52201000ec34e2f23229cf534ad3a - avformat/oggdec security fix.
   ea791c080dd5494b3bee0c618a3f52e371b5f320 - avformat/utils security fix.
