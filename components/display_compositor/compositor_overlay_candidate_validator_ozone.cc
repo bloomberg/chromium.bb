@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "cc/output/overlay_strategy_fullscreen.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
@@ -29,8 +30,10 @@ static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
 
 CompositorOverlayCandidateValidatorOzone::
     CompositorOverlayCandidateValidatorOzone(
-        std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates)
+        std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
+        bool single_fullscreen)
     : overlay_candidates_(std::move(overlay_candidates)),
+      single_fullscreen_(single_fullscreen),
       software_mirror_active_(false) {}
 
 CompositorOverlayCandidateValidatorOzone::
@@ -38,10 +41,15 @@ CompositorOverlayCandidateValidatorOzone::
 
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  strategies->push_back(
-      base::WrapUnique(new cc::OverlayStrategySingleOnTop(this)));
-  strategies->push_back(
-      base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
+  if (single_fullscreen_) {
+    strategies->push_back(
+        base::WrapUnique(new cc::OverlayStrategyFullscreen()));
+  } else {
+    strategies->push_back(
+        base::WrapUnique(new cc::OverlayStrategySingleOnTop(this)));
+    strategies->push_back(
+        base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
+  }
 }
 
 bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {

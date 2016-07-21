@@ -237,13 +237,16 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 #if defined(USE_OZONE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
+    std::string enable_overlay_flag =
+        command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays);
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
         ui::OzonePlatform::GetInstance()
             ->GetOverlayManager()
             ->CreateOverlayCandidates(widget);
     validator.reset(
         new display_compositor::CompositorOverlayCandidateValidatorOzone(
-            std::move(overlay_candidates)));
+            std::move(overlay_candidates),
+            enable_overlay_flag == "single-fullscreen"));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.

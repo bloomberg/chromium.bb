@@ -21,8 +21,9 @@ namespace display_compositor {
 class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorOzone
     : public CompositorOverlayCandidateValidator {
  public:
-  explicit CompositorOverlayCandidateValidatorOzone(
-      std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates);
+  CompositorOverlayCandidateValidatorOzone(
+      std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
+      bool single_fullscreen);
   ~CompositorOverlayCandidateValidatorOzone() override;
 
   // cc::OverlayCandidateValidator implementation.
@@ -35,6 +36,7 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorOzone
 
  private:
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
+  bool single_fullscreen_;
   bool software_mirror_active_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorOzone);
