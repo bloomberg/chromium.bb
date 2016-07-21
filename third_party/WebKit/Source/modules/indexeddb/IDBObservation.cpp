@@ -11,8 +11,9 @@
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBAny.h"
-#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBValue.h"
+#include "public/platform/modules/indexeddb/WebIDBObservation.h"
 
 namespace blink {
 
@@ -20,19 +21,18 @@ IDBObservation::~IDBObservation() {}
 
 ScriptValue IDBObservation::key(ScriptState* scriptState)
 {
-    return ScriptValue::from(scriptState, m_key);
+    if (!m_keyRange)
+        return ScriptValue::from(scriptState, v8::Undefined(scriptState->isolate()));
+
+    return ScriptValue::from(scriptState, m_keyRange);
 }
 
 ScriptValue IDBObservation::value(ScriptState* scriptState)
 {
-    IDBAny* value;
-    if (!m_value) {
-        value = IDBAny::createUndefined();
-    } else {
-        value = IDBAny::create(m_value);
-    }
-    ScriptValue scriptValue = ScriptValue::from(scriptState, value);
-    return scriptValue;
+    if (!m_value)
+        return ScriptValue::from(scriptState, v8::Undefined(scriptState->isolate()));
+
+    return ScriptValue::from(scriptState, IDBAny::create(m_value));
 }
 
 WebIDBOperationType IDBObservation::stringToOperationType(const String& type)
@@ -71,21 +71,21 @@ const String& IDBObservation::type() const
     }
 }
 
-IDBObservation* IDBObservation::create(IDBKey* key, PassRefPtr<IDBValue> value, WebIDBOperationType type)
+IDBObservation* IDBObservation::create(const WebIDBObservation& observation)
 {
-    return new IDBObservation(key, value, type);
+    return new IDBObservation(observation);
 }
 
-IDBObservation::IDBObservation(IDBKey* key, PassRefPtr<IDBValue> value, WebIDBOperationType type)
-    : m_key(key)
-    , m_value(value)
-    , m_operationType(type)
+IDBObservation::IDBObservation(const WebIDBObservation& observation)
+    : m_keyRange(observation.keyRange)
+    , m_value(IDBValue::create(observation.value))
+    , m_operationType(observation.type)
 {
 }
 
 DEFINE_TRACE(IDBObservation)
 {
-    visitor->trace(m_key);
+    visitor->trace(m_keyRange);
 }
 
 } // namespace blink

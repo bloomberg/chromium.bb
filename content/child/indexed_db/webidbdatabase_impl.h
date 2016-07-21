@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabase.h"
@@ -48,9 +50,8 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
 
   int32_t addObserver(std::unique_ptr<blink::WebIDBObserver>,
                       long long transactionId) override;
-  bool containsObserverId(int32_t id) const override;
   void removeObservers(
-      const std::vector<int32_t>& observer_ids_to_remove) override;
+      const blink::WebVector<int32_t>& observer_ids_to_remove) override;
 
   void get(long long transactionId,
            long long objectStoreId,

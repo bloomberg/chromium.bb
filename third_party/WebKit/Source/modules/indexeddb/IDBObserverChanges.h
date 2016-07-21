@@ -8,19 +8,20 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBObservation.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
 class ScriptState;
-class IDBObserverChangesRecord;
 
-class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>, public ScriptWrappable {
+class IDBObserverChanges final : public GarbageCollectedFinalized<IDBObserverChanges>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static IDBObserverChanges* create(IDBDatabase*, IDBTransaction*, IDBAny* records);
+    static IDBObserverChanges* create(IDBDatabase*, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
 
     DECLARE_TRACE();
 
@@ -30,12 +31,14 @@ public:
     ScriptValue records(ScriptState*);
 
 private:
-    IDBObserverChanges(IDBDatabase*, IDBTransaction*, IDBAny* records);
+    IDBObserverChanges(IDBDatabase*, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
+
+    void extractChanges(const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
 
     Member<IDBDatabase> m_database;
     Member<IDBTransaction> m_transaction;
-    // TODO(palakj) : change to appropriate type Map<String, sequence<IDBObserverChangesRecord>>.
-    Member<IDBAny> m_records;
+    // Map objectStoreId to IDBObservation list.
+    HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> m_records;
 };
 
 } // namespace blink

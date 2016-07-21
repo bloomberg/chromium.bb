@@ -35,9 +35,12 @@ struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 struct IndexedDBMsg_CallbacksSuccessArray_Params;
 struct IndexedDBMsg_CallbacksSuccessValue_Params;
 struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
+struct IndexedDBMsg_Observation;
+struct IndexedDBMsg_ObserverChanges;
 
 namespace blink {
 class WebData;
+struct WebIDBObservation;
 }
 
 namespace content {
@@ -69,6 +72,8 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   static blink::WebIDBMetadata ConvertMetadata(
       const IndexedDBDatabaseMetadata& idb_metadata);
+  static std::vector<blink::WebIDBObservation> ConvertObservations(
+      const std::vector<IndexedDBMsg_Observation>& idb_observation);
 
   void OnMessageReceived(const IPC::Message& msg);
 
@@ -257,6 +262,10 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   void OnComplete(int32_t ipc_thread_id,
                   int32_t ipc_database_id,
                   int64_t transaction_id);
+  void OnDatabaseChanges(int32_t ipc_thread_id,
+                         int32_t ipc_database_id,
+                         const IndexedDBMsg_ObserverChanges&);
+
   void OnForcedClose(int32_t ipc_thread_id, int32_t ipc_database_id);
   void OnVersionChange(int32_t ipc_thread_id,
                        int32_t ipc_database_id,

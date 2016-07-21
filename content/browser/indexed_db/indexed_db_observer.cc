@@ -9,7 +9,7 @@ namespace content {
 IndexedDBObserver::Options::Options(bool include_transaction,
                                     bool no_records,
                                     bool values,
-                                    unsigned short types)
+                                    uint16_t types)
     : include_transaction(include_transaction),
       no_records(no_records),
       values(values),

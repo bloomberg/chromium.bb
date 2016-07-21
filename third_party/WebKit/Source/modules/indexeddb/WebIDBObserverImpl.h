@@ -5,12 +5,14 @@
 #ifndef WebIDBObserverImpl_h
 #define WebIDBObserverImpl_h
 
+#include "modules/indexeddb/IDBObserver.h"
 #include "platform/heap/Persistent.h"
 #include "public/platform/modules/indexeddb/WebIDBObserver.h"
 
 namespace blink {
 
 class IDBObserver;
+struct WebIDBObservation;
 
 class WebIDBObserverImpl final : public WebIDBObserver {
     USING_FAST_MALLOC(WebIDBObserverImpl);
@@ -21,6 +23,12 @@ public:
     ~WebIDBObserverImpl() override;
 
     void setId(int32_t);
+
+    bool transaction() const { return m_observer->transaction(); }
+    bool noRecords() const { return m_observer->noRecords(); }
+    bool values() const { return m_observer->values(); }
+    const std::bitset<WebIDBOperationTypeCount>& operationTypes() const { return m_observer->operationTypes(); }
+    void onChange(const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
 
 private:
     enum { kInvalidObserverId = -1 };

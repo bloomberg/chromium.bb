@@ -32,8 +32,6 @@
 #include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 #include "public/platform/modules/indexeddb/WebIDBObserver.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include <set>
-#include <vector>
 
 namespace blink {
 
@@ -66,8 +64,7 @@ public:
     typedef WebVector<WebIDBKey> WebIndexKeys;
 
     virtual int32_t addObserver(std::unique_ptr<WebIDBObserver>, long long transactionId) = 0;
-    virtual bool containsObserverId(int32_t id) const = 0;
-    virtual void removeObservers(const std::vector<int32_t>& observerIdsToRemove) = 0;
+    virtual void removeObservers(const WebVector<int32_t>& observerIdsToRemove) = 0;
     virtual void get(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, bool keyOnly, WebIDBCallbacks*) = 0;
     virtual void getAll(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, long long maxCount, bool keyOnly, WebIDBCallbacks*) = 0;
     virtual void put(long long transactionId, long long objectStoreId, const WebData& value, const WebVector<WebBlobInfo>&, const WebIDBKey&, WebIDBPutMode, WebIDBCallbacks*, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) = 0;

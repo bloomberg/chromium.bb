@@ -108,6 +108,13 @@ IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(
     key_range.upperOpen());
 }
 
+WebIDBKeyRange WebIDBKeyRangeBuilder::Build(
+    const IndexedDBKeyRange& key_range) {
+  return WebIDBKeyRange(WebIDBKeyBuilder::Build(key_range.lower()),
+                        WebIDBKeyBuilder::Build(key_range.upper()),
+                        key_range.lower_open(), key_range.upper_open());
+}
+
 IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
     const blink::WebIDBKeyPath& key_path) {
   switch (key_path.keyPathType()) {

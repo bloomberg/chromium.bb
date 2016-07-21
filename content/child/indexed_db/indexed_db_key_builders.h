@@ -44,6 +44,14 @@ class CONTENT_EXPORT IndexedDBKeyRangeBuilder {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyRangeBuilder);
 };
 
+class CONTENT_EXPORT WebIDBKeyRangeBuilder {
+ public:
+  static blink::WebIDBKeyRange Build(const content::IndexedDBKeyRange& key);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebIDBKeyRangeBuilder);
+};
+
 class CONTENT_EXPORT IndexedDBKeyPathBuilder {
  public:
   static IndexedDBKeyPath Build(const blink::WebIDBKeyPath& key_path);

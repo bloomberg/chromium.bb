@@ -38,6 +38,7 @@ class WebIDBKeyRange {
 public:
     ~WebIDBKeyRange() { reset(); }
 
+    WebIDBKeyRange() {}
     WebIDBKeyRange(const WebIDBKeyRange& keyRange) { assign(keyRange); }
     WebIDBKeyRange(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen) { assign(lower, upper, lowerOpen, upperOpen); }
 
@@ -48,6 +49,13 @@ public:
 
     BLINK_EXPORT void assign(const WebIDBKeyRange&);
     BLINK_EXPORT void assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen);
+
+    WebIDBKeyRange& operator=(const WebIDBKeyRange& e)
+    {
+        assign(e);
+        return *this;
+    }
+
 // FIXME: when compiling core or modules, use inline for reset.
 // when compiling WebIDBKeyRange.cpp, don't use inline to avoid redefinition.
 #if !BLINK_WEB_IMPLEMENTATION && BLINK_IMPLEMENTATION && defined(COMPONENT_BUILD)

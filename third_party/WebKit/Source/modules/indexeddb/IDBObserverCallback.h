@@ -11,10 +11,12 @@ namespace blink {
 
 class ExecutionContext;
 class IDBObserver;
+class IDBObserverChanges;
 
 class IDBObserverCallback : public GarbageCollectedFinalized<IDBObserverCallback> {
 public:
     virtual ~IDBObserverCallback() {}
+    virtual void handleChanges(IDBObserverChanges&, IDBObserver&) = 0;
     virtual ExecutionContext* getExecutionContext() const = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

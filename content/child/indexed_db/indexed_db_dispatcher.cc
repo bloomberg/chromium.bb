@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObservation.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 
 using blink::WebBlobInfo;
@@ -30,6 +31,7 @@ using blink::WebIDBDatabaseCallbacks;
 using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBMetadata;
+using blink::WebIDBObservation;
 using blink::WebIDBObserver;
 using blink::WebIDBValue;
 using blink::WebString;
@@ -125,6 +127,21 @@ WebIDBMetadata IndexedDBDispatcher::ConvertMetadata(
   return web_metadata;
 }
 
+std::vector<WebIDBObservation> IndexedDBDispatcher::ConvertObservations(
+    const std::vector<IndexedDBMsg_Observation>& idb_observations) {
+  std::vector<WebIDBObservation> web_observations;
+  for (const auto& idb_observation : idb_observations) {
+    WebIDBObservation web_observation;
+    web_observation.objectStoreId = idb_observation.object_store_id;
+    web_observation.type = idb_observation.type;
+    web_observation.keyRange =
+        WebIDBKeyRangeBuilder::Build(idb_observation.key_range);
+    // TODO(palakj): Assign value to web_observation.
+    web_observations.push_back(std::move(web_observation));
+  }
+  return web_observations;
+}
+
 void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcher, msg)
@@ -156,6 +173,8 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnVersionChange)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksComplete, OnComplete)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksChanges,
+                        OnDatabaseChanges)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // If a message gets here, IndexedDBMessageFilter already determined that it
@@ -172,9 +191,15 @@ int32_t IndexedDBDispatcher::AddIDBObserver(
     int32_t ipc_database_id,
     int64_t transaction_id,
     std::unique_ptr<WebIDBObserver> observer) {
-  int32_t observer_id = observers_.Add(observer.release());
   IndexedDBHostMsg_DatabaseObserve_Params params;
-  // TODO(palakj): Other params are assigned values as a part of next cl.
+  static_assert(blink::WebIDBOperationTypeCount < sizeof(uint16_t) * CHAR_BIT,
+                "WebIDBOperationType Count exceeds size of uint16_t");
+  params.operation_types =
+      static_cast<uint16_t>(observer->operationTypes().to_ulong());
+  params.include_transaction = observer->transaction();
+  params.no_records = observer->noRecords();
+  params.values = observer->values();
+  int32_t observer_id = observers_.Add(observer.release());
   params.ipc_database_id = ipc_database_id;
   params.transaction_id = transaction_id;
   params.observer_id = observer_id;
@@ -799,6 +824,24 @@ void IndexedDBDispatcher::OnComplete(int32_t ipc_thread_id,
   if (!callbacks)
     return;
   callbacks->onComplete(transaction_id);
+}
+
+void IndexedDBDispatcher::OnDatabaseChanges(
+    int32_t ipc_thread_id,
+    int32_t ipc_database_id,
+    const IndexedDBMsg_ObserverChanges& changes) {
+  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
+  std::vector<WebIDBObservation> observations(
+      ConvertObservations(changes.observations));
+  for (auto& it : changes.observation_index) {
+    WebIDBObserver* observer = observers_.Lookup(it.first);
+    // An observer can be removed from the renderer, but still exist in the
+    // backend. Moreover, observer might have recorded some changes before being
+    // removed from the backend and thus, have its id be present in changes.
+    if (!observer)
+      continue;
+    observer->onChange(observations, std::move(it.second));
+  }
 }
 
 void IndexedDBDispatcher::OnForcedClose(int32_t ipc_thread_id,

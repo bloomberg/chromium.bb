@@ -170,6 +170,13 @@ DOMStringList* IDBDatabase::objectStoreNames() const
     return objectStoreNames;
 }
 
+const String& IDBDatabase::getObjectStoreName(int64_t objectStoreId) const
+{
+    const auto& it = m_metadata.objectStores.find(objectStoreId);
+    DCHECK(it != m_metadata.objectStores.end());
+    return it->value.name;
+}
+
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");

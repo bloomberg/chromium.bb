@@ -115,19 +115,18 @@ int32_t WebIDBDatabaseImpl::addObserver(
   return observer_id;
 }
 
-bool WebIDBDatabaseImpl::containsObserverId(int32_t id) const {
-  return ContainsValue(observer_ids_, id);
-}
-
 void WebIDBDatabaseImpl::removeObservers(
-    const std::vector<int32_t>& observer_ids_to_remove) {
+    const WebVector<int32_t>& observer_ids_to_remove) {
+  std::vector<int32_t> remove_observer_ids(
+      observer_ids_to_remove.data(),
+      observer_ids_to_remove.data() + observer_ids_to_remove.size());
   for (int32_t id : observer_ids_to_remove)
     observer_ids_.erase(id);
 
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RemoveIDBObserversFromDatabase(ipc_database_id_,
-                                             observer_ids_to_remove);
+                                             remove_observer_ids);
 }
 
 void WebIDBDatabaseImpl::get(long long transaction_id,

@@ -6,27 +6,44 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/indexeddb/IDBAny.h"
+#include "modules/indexeddb/IDBObservation.h"
+#include "public/platform/modules/indexeddb/WebIDBObservation.h"
 
 namespace blink {
 
 ScriptValue IDBObserverChanges::records(ScriptState* scriptState)
 {
-    return ScriptValue::from(scriptState, m_records);
+    v8::Local<v8::Context> context(scriptState->context());
+    v8::Isolate* isolate(scriptState->isolate());
+    v8::Local<v8::Map> map = v8::Map::New(isolate);
+    for (const auto& it : m_records) {
+        v8::Local<v8::String> key = v8String(isolate, m_database->getObjectStoreName(it.key));
+        v8::Local<v8::Value> value = toV8(it.value, context->Global(), isolate);
+        v8CallOrCrash(map->Set(context, key, value));
+    }
+    return ScriptValue::from(scriptState, map);
 }
 
-IDBObserverChanges* IDBObserverChanges::create(IDBDatabase* database, IDBTransaction* transaction, IDBAny* records)
+IDBObserverChanges* IDBObserverChanges::create(IDBDatabase* database, const WebVector<WebIDBObservation>& observations, const WebVector<int32_t>& observationIndex)
 {
-    return new IDBObserverChanges(database, transaction, records);
+    return new IDBObserverChanges(database, observations, observationIndex);
 }
 
-IDBObserverChanges::IDBObserverChanges(IDBDatabase* database, IDBTransaction* transaction, IDBAny* records)
+IDBObserverChanges::IDBObserverChanges(IDBDatabase* database, const WebVector<WebIDBObservation>& observations, const WebVector<int32_t>& observationIndex)
     : m_database(database)
-    , m_transaction(transaction)
-    , m_records(records)
 {
+    extractChanges(observations, observationIndex);
+}
+
+void IDBObserverChanges::extractChanges(const WebVector<WebIDBObservation>& observations, const WebVector<int32_t>& observationIndex)
+{
+    // TODO(dmurph): Avoid getting and setting repeated times.
+    for (const auto& idx : observationIndex)
+        m_records.add(observations[idx].objectStoreId, HeapVector<Member<IDBObservation>>()).storedValue->value.append(IDBObservation::create(observations[idx]));
 }
 
 DEFINE_TRACE(IDBObserverChanges)

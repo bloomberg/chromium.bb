@@ -194,7 +194,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseObserve_Params)
   IPC_STRUCT_MEMBER(bool, include_transaction)
   IPC_STRUCT_MEMBER(bool, no_records)
   IPC_STRUCT_MEMBER(bool, values)
-  IPC_STRUCT_MEMBER(unsigned short, operation_types)
+  IPC_STRUCT_MEMBER(uint16_t, operation_types)
 IPC_STRUCT_END()
 
 // Used to set a value in an object store.

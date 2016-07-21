@@ -10,4 +10,5 @@
     boolean transaction = false;
     boolean values = false;
     boolean noRecords = false;
+    sequence<IDBObservationType> operationTypes = [];
 };

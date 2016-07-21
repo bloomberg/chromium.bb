@@ -31,8 +31,7 @@ class CONTENT_EXPORT IndexedDBObserver {
     bool include_transaction;
     bool no_records;
     bool values;
-    // Each bit in operation type corresponds to blink::WebIDBOperationType
-    // values.
+    // Operation type bits are set corresponding to WebIDBOperationType.
     std::bitset<blink::WebIDBOperationTypeCount> operation_types;
   };
   IndexedDBObserver(int32_t observer_id,

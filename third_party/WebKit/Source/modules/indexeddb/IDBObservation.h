@@ -13,16 +13,17 @@
 
 namespace blink {
 
-class IDBKey;
+class IDBKeyRange;
 class IDBValue;
 class ScriptState;
+struct WebIDBObservation;
 
 class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
     static WebIDBOperationType stringToOperationType(const String&);
-    static IDBObservation* create(IDBKey*, PassRefPtr<IDBValue>, WebIDBOperationType);
+    static IDBObservation* create(const WebIDBObservation&);
     ~IDBObservation();
 
     DECLARE_TRACE();
@@ -33,8 +34,8 @@ public:
     const String& type() const;
 
 private:
-    IDBObservation(IDBKey*, PassRefPtr<IDBValue>, WebIDBOperationType);
-    Member<IDBKey> m_key;
+    IDBObservation(const WebIDBObservation&);
+    Member<IDBKeyRange> m_keyRange;
     RefPtr<IDBValue> m_value;
     const WebIDBOperationType m_operationType;
 };

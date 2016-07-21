@@ -4,7 +4,6 @@
 
 #include "modules/indexeddb/WebIDBObserverImpl.h"
 
-#include "modules/indexeddb/IDBObserver.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -32,6 +31,11 @@ void WebIDBObserverImpl::setId(int32_t id)
 {
     DCHECK_EQ(kInvalidObserverId, m_id);
     m_id = id;
+}
+
+void WebIDBObserverImpl::onChange(const WebVector<WebIDBObservation>& observations, const WebVector<int32_t>& observationIndex)
+{
+    m_observer->onChange(m_id, observations, std::move(observationIndex));
 }
 
 } // namespace blink

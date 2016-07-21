@@ -21,6 +21,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    void handleChanges(IDBObserverChanges&, IDBObserver&) override;
     ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 private:
     ScopedPersistent<v8::Function> m_callback;
