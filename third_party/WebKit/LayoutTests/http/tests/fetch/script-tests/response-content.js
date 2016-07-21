@@ -115,6 +115,23 @@ promise_test(function() {
   }, 'Behavior of Response with FormData content');
 
 promise_test(function() {
+    const urlSearchParams = new URLSearchParams();
+    urlSearchParams.append('sample string', '1234567890');
+    urlSearchParams.append('sample string 2', '1234567890 & 2');
+    var response = new Response(urlSearchParams);
+    assert_equals(
+      response.headers.get('Content-Type'),
+      'application/x-www-form-urlencoded;charset=UTF-8',
+      'A Response constructed with a URLSearchParams should have a Content-Type.');
+    return response.text()
+      .then(function(result) {
+          assert_equals(
+            result, 'sample+string=1234567890&sample+string+2=1234567890+%26+2',
+            'Creating a Response with URLSearchParams body must succeed.');
+        });
+  }, 'Behavior of Response with URLSearchParams content');
+
+promise_test(function() {
     var headers = new Headers;
     headers.set('Content-Language', 'ja');
     var response = new Response(

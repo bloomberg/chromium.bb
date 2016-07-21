@@ -13,8 +13,10 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8URLSearchParams.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
+#include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
 #include "core/streams/ReadableStreamOperations.h"
@@ -143,6 +145,10 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
         bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(executionContext, formData.release()));
+    } else if (V8URLSearchParams::hasInstance(body, isolate)) {
+        RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(body.As<v8::Object>())->toEncodedFormData();
+        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(executionContext, formData.release()));
+        contentType = "application/x-www-form-urlencoded;charset=UTF-8";
     } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
         if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
             bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
@@ -165,7 +171,6 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(string));
         contentType = "text/plain;charset=UTF-8";
     }
-    // TODO(yhirano): Add the URLSearchParams case.
     Response* response = create(scriptState, bodyBuffer, contentType, ResponseInit(init, exceptionState), exceptionState);
     if (!exceptionState.hadException() && !reader.isEmpty()) {
         // Add a hidden reference so that the weak persistent in the
