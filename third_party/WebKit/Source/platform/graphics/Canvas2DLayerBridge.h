@@ -191,8 +191,6 @@ private:
     void unregisterTaskObserver();
     void reportSurfaceCreationFailure();
 
-    void disableAcceleration();
-
     // WebThread::TaskOberver implementation
     void willProcessTask() override;
     void didProcessTask() override;

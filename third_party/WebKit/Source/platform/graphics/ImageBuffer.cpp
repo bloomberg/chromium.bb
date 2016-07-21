@@ -34,6 +34,7 @@
 
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -321,8 +322,11 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     }
 
     DCHECK(canvas());
-    AccelerationHint hint = (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration) ? ForceNoAcceleration : PreferNoAcceleration;
-    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(hint, SnapshotReasonGetImageData);
+
+    if (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration && !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled())
+        const_cast<ImageBuffer*>(this)->disableAcceleration();
+
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonGetImageData);
     if (!snapshot)
         return false;
 
@@ -414,9 +418,8 @@ public:
 
 void ImageBuffer::disableAcceleration()
 {
-    if (!isAccelerated()) {
+    if (!isAccelerated())
         return;
-    }
 
     // Get current frame.
     SkImage* image = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint).get();

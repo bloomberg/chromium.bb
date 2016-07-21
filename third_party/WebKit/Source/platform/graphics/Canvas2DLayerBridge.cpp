@@ -461,37 +461,10 @@ void Canvas2DLayerBridge::reportSurfaceCreationFailure()
     }
 }
 
-void Canvas2DLayerBridge::disableAcceleration()
-{
-    DCHECK(isAccelerated());
-    bool surfaceIsAccelerated;
-    RefPtr<SkSurface> newSurface = createSkSurface(nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
-    if (newSurface) {
-        DCHECK(!surfaceIsAccelerated);
-        flush();
-        SkPaint copyPaint;
-        copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        m_surface->draw(newSurface->getCanvas(), 0, 0, &copyPaint); // GPU readback here
-        m_accelerationMode = DisableAcceleration; // Acceleration gets permanently disabled
-        GraphicsLayer::unregisterContentsLayer(m_layer->layer());
-        m_layer->clearTexture();
-        m_layer->layer()->removeFromParent();
-        m_surface = newSurface;
-        if (m_imageBuffer)
-            m_imageBuffer->didDisableAcceleration();
-    }
-}
-
 SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
 {
-    if (m_surface) {
-        // Note: in layout tests, canvas2dFixedRenderingMode is set to true to inhibit
-        // mode switching so that we continue to get test coverage for GPU acceleration
-        // despite the use of getImageData in tests
-        if (hint == ForceNoAcceleration && isAccelerated() && !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled())
-            disableAcceleration();
+    if (m_surface)
         return m_surface.get();
-    }
 
     if (m_layer && !isHibernating() && hint == PreferAcceleration && m_accelerationMode != DisableAcceleration) {
         return nullptr; // re-creation will happen through restore()

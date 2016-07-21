@@ -779,7 +779,7 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration)
     std::unique_ptr<Canvas2DImageBufferSurface> surface(new Canvas2DImageBufferSurface(bridge, size));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
-    EXPECT_TRUE(bridge->isAccelerated());
+    EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
     EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
     EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
 
@@ -788,11 +788,11 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration)
 
     EXPECT_FALSE(exceptionState.hadException());
     if (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration) {
-        EXPECT_FALSE(bridge->isAccelerated());
+        EXPECT_FALSE(canvasElement().buffer()->isAccelerated());
         EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
         EXPECT_EQ(0, getGlobalGPUMemoryUsage());
     } else {
-        EXPECT_TRUE(bridge->isAccelerated());
+        EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
         EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
         EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
     }

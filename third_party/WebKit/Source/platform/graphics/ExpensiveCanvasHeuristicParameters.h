@@ -65,7 +65,7 @@ enum {
     // Disable Acceleration heuristic parameters
     //===========================================
 
-    GetImageDataForcesNoAcceleration = 0, // Disabled for crbug.com/626188
+    GetImageDataForcesNoAcceleration = 1,
 
 }; // enum
 
