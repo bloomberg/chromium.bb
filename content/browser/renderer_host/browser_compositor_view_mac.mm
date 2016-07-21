@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/resize_lock.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -27,12 +28,21 @@ bool g_has_shut_down = false;
 
 // The number of placeholder objects allocated. If this reaches zero, then
 // the RecyclableCompositorMac being held on to for recycling,
-// |g_spare_recyclable_compositor|, will be freed.
+// |g_spare_recyclable_compositors|, will be freed.
 uint32_t g_browser_compositor_count = 0;
 
 // A spare RecyclableCompositorMac kept around for recycling.
-base::LazyInstance<std::unique_ptr<RecyclableCompositorMac>>
-    g_spare_recyclable_compositor;
+base::LazyInstance<std::deque<std::unique_ptr<RecyclableCompositorMac>>>
+    g_spare_recyclable_compositors;
+
+void ReleaseSpareCompositors() {
+  // Allow at most one spare recyclable compositor.
+  while (g_spare_recyclable_compositors.Get().size() > 1)
+    g_spare_recyclable_compositors.Get().pop_front();
+
+  if (!g_browser_compositor_count)
+    g_spare_recyclable_compositors.Get().clear();
+}
 
 }  // namespace
 
@@ -120,8 +130,12 @@ void RecyclableCompositorMac::OnCompositingDidCommit(
 // static
 std::unique_ptr<RecyclableCompositorMac> RecyclableCompositorMac::Create() {
   DCHECK(ui::WindowResizeHelperMac::Get()->task_runner());
-  if (g_spare_recyclable_compositor.Get())
-    return std::move(g_spare_recyclable_compositor.Get());
+  if (!g_spare_recyclable_compositors.Get().empty()) {
+    std::unique_ptr<RecyclableCompositorMac> result;
+    result = std::move(g_spare_recyclable_compositors.Get().front());
+    g_spare_recyclable_compositors.Get().pop_front();
+    return result;
+  }
   return std::unique_ptr<RecyclableCompositorMac>(new RecyclableCompositorMac);
 }
 
@@ -137,12 +151,13 @@ void RecyclableCompositorMac::Recycle(
   CHECK(!g_has_shut_down);
 
   // Make this RecyclableCompositorMac recyclable for future instances.
-  g_spare_recyclable_compositor.Get().swap(compositor);
+  g_spare_recyclable_compositors.Get().push_back(std::move(compositor));
 
-  // If there are no placeholders allocated, destroy the recyclable
-  // RecyclableCompositorMac that we just populated.
-  if (!g_browser_compositor_count)
-    g_spare_recyclable_compositor.Get().reset();
+  // Post a task to free up the spare ui::Compositors when needed. Post this
+  // to the browser main thread so that we won't free any compositors while
+  // in a nested loop waiting to put up a new frame.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(&ReleaseSpareCompositors));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +195,7 @@ BrowserCompositorMac::~BrowserCompositorMac() {
   // If there are no compositors allocated, destroy the recyclable
   // RecyclableCompositorMac.
   if (!g_browser_compositor_count)
-    g_spare_recyclable_compositor.Get().reset();
+    g_spare_recyclable_compositors.Get().clear();
 }
 
 ui::AcceleratedWidgetMac* BrowserCompositorMac::GetAcceleratedWidgetMac() {
@@ -367,7 +382,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
 // static
 void BrowserCompositorMac::DisableRecyclingForShutdown() {
   g_has_shut_down = true;
-  g_spare_recyclable_compositor.Get().reset();
+  g_spare_recyclable_compositors.Get().clear();
 }
 
 void BrowserCompositorMac::SetNeedsBeginFrames(bool needs_begin_frames) {
