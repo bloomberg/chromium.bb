@@ -580,7 +580,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   ColorSpace color_space = config_.color_space();
   if (vpx_image->cs == VPX_CS_BT_709)
     color_space = COLOR_SPACE_HD_REC709;
-  else if (vpx_image->cs == VPX_CS_BT_601)
+  else if (vpx_image->cs == VPX_CS_BT_601 || vpx_image->cs == VPX_CS_SMPTE_170)
     color_space = COLOR_SPACE_SD_REC601;
   (*video_frame)
       ->metadata()
