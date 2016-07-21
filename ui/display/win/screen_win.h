@@ -92,6 +92,9 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   // Returns the result of GetSystemMetrics for |metric| scaled to |hwnd|'s DPI.
   static int GetSystemMetricsForHwnd(HWND hwnd, int metric);
 
+  // Returns |hwnd|'s scale factor.
+  static float GetScaleFactorForHWND(HWND hwnd);
+
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(gfx::NativeView window) const;
 
@@ -158,8 +161,6 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   ScreenWinDisplay GetPrimaryScreenWinDisplay() const;
 
   ScreenWinDisplay GetScreenWinDisplay(const MONITORINFOEX& monitor_info) const;
-
-  static float GetScaleFactorForHWND(HWND hwnd);
 
   // Returns the result of calling |getter| with |value| on the global
   // ScreenWin if it exists, otherwise return the default ScreenWinDisplay.

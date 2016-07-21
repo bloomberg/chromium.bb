@@ -29,6 +29,7 @@
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
 #include "ui/display/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
@@ -322,6 +323,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       restored_enabled_(false),
       current_cursor_(NULL),
       previous_cursor_(NULL),
+      dpi_(0),
       active_mouse_tracking_flags_(0),
       is_right_mouse_pressed_on_caption_(false),
       lock_updates_count_(0),
@@ -1367,6 +1369,9 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
       base::Bind(&HWNDMessageHandler::OnSessionChange,
                  base::Unretained(this))));
 
+  float scale_factor = display::win::ScreenWin::GetScaleFactorForHWND(hwnd());
+  dpi_ = display::win::GetDPIFromScalingFactor(scale_factor);
+
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
 }
@@ -1412,9 +1417,18 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
   if (LOWORD(w_param) != HIWORD(w_param))
     NOTIMPLEMENTED() << "Received non-square scaling factors";
 
+  // The first WM_DPICHANGED originates from EnableChildWindowDpiMessage during
+  // initialization. We don't want to propagate this as the client is already
+  // set at the current scale factor and may cause the window to display too
+  // soon. See http://crbug.com/625076.
+  int dpi = LOWORD(w_param);
+  if (dpi_ == dpi)
+    return 0;
+
+  dpi_ = dpi;
   SetBoundsInternal(gfx::Rect(*reinterpret_cast<RECT*>(l_param)), false);
   delegate_->HandleWindowScaleFactorChanged(
-      display::win::GetScalingFactorFromDPI(LOWORD(w_param)));
+      display::win::GetScalingFactorFromDPI(dpi_));
   return 0;
 }
 

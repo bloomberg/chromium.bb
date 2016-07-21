@@ -562,6 +562,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // The icon created from the bitmap image of the app icon.
   base::win::ScopedHICON app_icon_;
 
+  // The current DPI.
+  int dpi_;
+
   // Event handling ------------------------------------------------------------
 
   // The flags currently being used with TrackMouseEvent to track mouse

@@ -313,6 +313,18 @@ int ScreenWin::GetSystemMetricsForHwnd(HWND hwnd, int metric) {
       system_metrics_result * metrics_relative_scale_factor));
 }
 
+// static
+float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
+  if (!g_screen_win_instance)
+    return ScreenWinDisplay().display().device_scale_factor();
+
+  DCHECK(hwnd);
+  HWND rootHwnd = g_screen_win_instance->GetRootWindow(hwnd);
+  ScreenWinDisplay screen_win_display =
+      g_screen_win_instance->GetScreenWinDisplayNearestHWND(rootHwnd);
+  return screen_win_display.display().device_scale_factor();
+}
+
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   NOTREACHED();
   return nullptr;
@@ -526,18 +538,6 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplay(
   // default display.
   DCHECK_EQ(screen_win_displays_.size(), 0u);
   return ScreenWinDisplay();
-}
-
-// static
-float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
-  if (!g_screen_win_instance)
-    return ScreenWinDisplay().display().device_scale_factor();
-
-  DCHECK(hwnd);
-  HWND rootHwnd = g_screen_win_instance->GetRootWindow(hwnd);
-  ScreenWinDisplay screen_win_display =
-      g_screen_win_instance->GetScreenWinDisplayNearestHWND(rootHwnd);
-  return screen_win_display.display().device_scale_factor();
 }
 
 // static
