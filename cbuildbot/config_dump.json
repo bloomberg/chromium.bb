@@ -6516,24 +6516,6 @@
         ],
         "vm_tests": []
     },
-    "cyan-pre-flight-branch": {
-        "_template": "pre-flight-branch",
-        "afdo_generate": true,
-        "afdo_update_ebuild": true,
-        "android_rev": "latest_release",
-        "boards": [
-            "cyan"
-        ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 4800,\n    \"warn_only\": true\n}"
-        ],
-        "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 4800,\n    \"warn_only\": true\n}"
-        ],
-        "master": true,
-        "push_overlays": "both",
-        "vm_tests": []
-    },
     "cyan-release": {
         "_template": "release",
         "active_waterfall": "chromeos",
@@ -19680,6 +19662,24 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": []
+    },
+    "samus-pre-flight-branch": {
+        "_template": "pre-flight-branch",
+        "afdo_generate": true,
+        "afdo_update_ebuild": true,
+        "android_rev": "latest_release",
+        "boards": [
+            "samus"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 4800,\n    \"warn_only\": true\n}"
+        ],
+        "hw_tests_override": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 4800,\n    \"warn_only\": true\n}"
+        ],
+        "master": true,
+        "push_overlays": "both",
         "vm_tests": []
     },
     "samus-release": {
