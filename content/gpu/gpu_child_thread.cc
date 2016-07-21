@@ -220,18 +220,6 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   if (!in_browser_process_)
     media::SetMediaClientAndroid(GetContentClient()->GetMediaClientAndroid());
 #endif
-
-  // Only set once per process instance.
-  process_control_.reset(new GpuProcessControlImpl());
-
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
-
-  if (GetContentClient()->gpu()) {  // NULL in tests.
-    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
-        GetInterfaceRegistry());
-  }
-
   // We don't want to process any incoming interface requests until
   // OnInitialize() is invoked.
   GetInterfaceRegistry()->PauseBinding();
@@ -348,8 +336,6 @@ void GpuChildThread::StoreShaderToDisk(int32_t client_id,
 }
 
 void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
-  GetInterfaceRegistry()->ResumeBinding();
-
   gpu_preferences_ = gpu_preferences;
 
   gpu_info_.video_decode_accelerator_capabilities =
@@ -408,6 +394,19 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
       ->GetGpuPlatformSupport()
       ->OnChannelEstablished(this);
 #endif
+
+  // Only set once per process instance.
+  process_control_.reset(new GpuProcessControlImpl());
+
+  GetInterfaceRegistry()->AddInterface(base::Bind(
+      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
+
+  if (GetContentClient()->gpu()) {  // NULL in tests.
+    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
+        GetInterfaceRegistry());
+  }
+
+  GetInterfaceRegistry()->ResumeBinding();
 }
 
 void GpuChildThread::OnFinalize() {
