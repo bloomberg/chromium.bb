@@ -17,6 +17,8 @@
 #include "ash/common/wm_window.h"
 #include "base/command_line.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
@@ -66,6 +68,129 @@ class ScopedShowWindow : public WmWindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedShowWindow);
 };
 
+// This view represents a single WmWindow by displaying a title and a thumbnail
+// of the window's contents.
+class WindowPreviewView : public views::View {
+ public:
+  explicit WindowPreviewView(WmWindow* window)
+      : window_title_(new views::Label),
+        preview_background_(new views::View),
+        mirror_view_(window->CreateViewWithRecreatedLayers().release()) {
+    window_title_->SetText(window->GetTitle());
+    window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    window_title_->SetEnabledColor(SK_ColorWHITE);
+    window_title_->SetAutoColorReadabilityEnabled(false);
+    // The base font is 12pt (for English) so this comes out to 14pt.
+    const int kLabelSizeDelta = 2;
+    window_title_->SetFontList(
+        window_title_->font_list().DeriveWithSizeDelta(kLabelSizeDelta));
+    const int kAboveLabelPadding = 5;
+    const int kBelowLabelPadding = 10;
+    window_title_->SetBorder(views::Border::CreateEmptyBorder(
+        kAboveLabelPadding, 0, kBelowLabelPadding, 0));
+    AddChildView(window_title_);
+
+    // Preview padding is black at 50% opacity.
+    preview_background_->set_background(
+        views::Background::CreateSolidBackground(
+            SkColorSetA(SK_ColorBLACK, 0xFF / 2)));
+    AddChildView(preview_background_);
+
+    AddChildView(mirror_view_);
+  }
+  ~WindowPreviewView() override {}
+
+  // views::View:
+  gfx::Size GetPreferredSize() const override {
+    gfx::Size size = GetSizeForPreviewArea();
+    size.Enlarge(0, window_title_->GetPreferredSize().height());
+    return size;
+  }
+
+  void Layout() override {
+    const gfx::Size preview_area_size = GetSizeForPreviewArea();
+    // The window title is positioned above the preview area.
+    window_title_->SetBounds(0, 0, width(),
+                             height() - preview_area_size.height());
+
+    gfx::Rect preview_area_bounds(preview_area_size);
+    preview_area_bounds.set_y(height() - preview_area_size.height());
+    mirror_view_->SetSize(GetMirrorViewScaledSize());
+    if (mirror_view_->size() == preview_area_size) {
+      // Padding is not needed, hide the background and set the mirror view
+      // to take up the entire preview area.
+      mirror_view_->SetPosition(preview_area_bounds.origin());
+      preview_background_->SetVisible(false);
+      return;
+    }
+
+    // Padding is needed, so show the background and set the mirror view to be
+    // centered within it.
+    preview_background_->SetBoundsRect(preview_area_bounds);
+    preview_background_->SetVisible(true);
+    preview_area_bounds.ClampToCenteredSize(mirror_view_->size());
+    mirror_view_->SetPosition(preview_area_bounds.origin());
+  }
+
+ private:
+  // The maximum width of a window preview.
+  static const int kMaxPreviewWidth = 512;
+  // All previews are the same height (this is achieved via a combination of
+  // scaling and padding).
+  static const int kFixedPreviewHeight = 256;
+
+  // Returns the size for the mirror view, scaled to fit within the max bounds.
+  // Scaling is always 1:1 and we only scale down, never up.
+  gfx::Size GetMirrorViewScaledSize() const {
+    gfx::Size mirror_pref_size = mirror_view_->GetPreferredSize();
+
+    if (mirror_pref_size.width() > kMaxPreviewWidth ||
+        mirror_pref_size.height() > kFixedPreviewHeight) {
+      float scale = std::min(
+          kMaxPreviewWidth / static_cast<float>(mirror_pref_size.width()),
+          kFixedPreviewHeight / static_cast<float>(mirror_pref_size.height()));
+      mirror_pref_size =
+          gfx::ScaleToFlooredSize(mirror_pref_size, scale, scale);
+    }
+
+    return mirror_pref_size;
+  }
+
+  // Returns the size for the entire preview area (mirror view and additional
+  // padding). All previews will be the same height, so if the mirror view isn't
+  // tall enough we will add top and bottom padding. Previews can range in width
+  // from kMaxPreviewWidth down to half that value. Again, padding will be added
+  // to the sides to achieve this if the preview is too narrow.
+  gfx::Size GetSizeForPreviewArea() const {
+    gfx::Size mirror_size = GetMirrorViewScaledSize();
+    float aspect_ratio =
+        static_cast<float>(mirror_size.width()) / mirror_size.height();
+    gfx::Size preview_size = mirror_size;
+    // Very narrow windows get vertical bars of padding on the sides.
+    if (aspect_ratio < 0.5f)
+      preview_size.set_width(mirror_size.height() / 2);
+
+    // All previews are the same height (this may add padding on top and
+    // bottom).
+    preview_size.set_height(kFixedPreviewHeight);
+    // Previews should never be narrower than half their max width (128dip).
+    preview_size.set_width(
+        std::max(preview_size.width(), kMaxPreviewWidth / 2));
+
+    return preview_size;
+  }
+
+  // Displays the title of the window above the preview.
+  views::Label* window_title_;
+  // When visible, shows a darkened background area behind |mirror_view_|
+  // (effectively padding the preview to fit the desired bounds).
+  views::View* preview_background_;
+  // The view that actually renders a thumbnail version of the window.
+  views::View* mirror_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowPreviewView);
+};
+
 // A view that shows a collection of windows the user can tab through.
 class WindowCycleView : public views::View {
  public:
@@ -97,7 +222,7 @@ class WindowCycleView : public views::View {
 
     for (WmWindow* window : windows) {
       // |mirror_container_| owns |view|.
-      views::View* view = window->CreateViewWithRecreatedLayers().release();
+      views::View* view = new WindowPreviewView(window);
       window_view_map_[window] = view;
       mirror_container_->AddChildView(view);
     }
