@@ -20,7 +20,7 @@
 namespace {
 const int kTestConnectionId = 1;
 const char kNonexistentIpcChannelName[] = "Nonexistent_IPC_Channel";
-const char kValidIpcChannelName[] = "Security_Key_Ipc_Client_Test_Channel.";
+const char kValidIpcChannelName[] = "SecurityKeyIpcClientTest";
 const int kLargeMessageSizeBytes = 256 * 1024;
 }  // namespace
 

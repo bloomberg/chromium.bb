@@ -4,8 +4,14 @@
 
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 
-#include "base/environment.h"
 #include "base/lazy_instance.h"
+#include "build/build_config.h"
+
+#if defined(OS_POSIX)
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/logging.h"
+#endif  // defined(OS_POSIX)
 
 namespace {
 base::LazyInstance<std::string> g_security_key_ipc_channel_name =
@@ -17,7 +23,7 @@ const char kSecurityKeyIpcChannelName[] = "security_key_ipc_channel";
 
 namespace remoting {
 
-extern const char kSecurityKeyConnectionError[] = "ssh_connection_error";
+const char kSecurityKeyConnectionError[] = "ssh_connection_error";
 
 const std::string& GetSecurityKeyIpcChannelName() {
   if (g_security_key_ipc_channel_name.Get().empty()) {
@@ -32,14 +38,16 @@ void SetSecurityKeyIpcChannelNameForTest(const std::string& channel_name) {
 }
 
 std::string GetChannelNamePathPrefixForTest() {
-  std::string path_prefix;
-#if defined(OS_LINUX)
-  path_prefix = "/dev/socket/";
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if (env->GetVar(base::env_vars::kHome, &path_prefix))
-    path_prefix += "/";
-#endif
-  return path_prefix;
+  std::string base_path;
+#if defined(OS_POSIX)
+  base::FilePath base_file_path;
+  if (base::GetTempDir(&base_file_path)) {
+    base_path = base_file_path.AsEndingWithSeparator().value();
+  } else {
+    LOG(ERROR) << "Failed to retrieve temporary directory.";
+  }
+#endif  // defined(OS_POSIX)
+  return base_path;
 }
 
 }  // namespace remoting
