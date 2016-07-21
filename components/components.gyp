@@ -139,7 +139,6 @@
         'web_cache.gypi',
         'web_contents_delegate_android.gypi',
         'web_modal.gypi',
-        'webmessaging.gypi',
         'zoom.gypi',
       ],
     }],

@@ -163,6 +163,7 @@ mojom("mojo_bindings") {
     "platform/mime_registry.mojom",
     "platform/modules/background_sync/background_sync.mojom",
     "platform/modules/bluetooth/web_bluetooth.mojom",
+    "platform/modules/broadcastchannel/broadcast_channel.mojom",
     "platform/modules/geolocation/geolocation.mojom",
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/notifications/notification.mojom",
@@ -179,6 +180,7 @@ mojom("mojo_bindings") {
     ":android_mojo_bindings",
     "//cc/ipc:interfaces_surfaceid_only",
     "//device/bluetooth/public/interfaces:bluetooth_mojom_bluetooth_uuid",
+    "//url/mojo:url_mojom_origin",
   ]
 
   use_new_wrapper_types = false

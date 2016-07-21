@@ -39,7 +39,6 @@
     # GN version: //third_party/WebKit/Source/modules:modules
     'target_name': 'modules',
     'dependencies': [
-      '<(DEPTH)/components/components.gyp:webmessaging_mojo_bindings_for_blink',
       '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings_for_blink',
       '<(DEPTH)/device/nfc/nfc.gyp:device_nfc_mojo_bindings_for_blink',
       '<(DEPTH)/device/usb/usb.gyp:device_usb_mojo_bindings_for_blink',

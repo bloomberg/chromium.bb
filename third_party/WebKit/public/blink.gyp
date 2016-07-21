@@ -37,6 +37,7 @@
             'platform/mime_registry.mojom',
             'platform/modules/background_sync/background_sync.mojom',
             'platform/modules/bluetooth/web_bluetooth.mojom',
+            'platform/modules/broadcastchannel/broadcast_channel.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/hyphenation/hyphenation.mojom',
             'platform/modules/notifications/notification.mojom',
@@ -119,13 +120,14 @@
                 'mojom_typemaps': [
                     '<(DEPTH)/cc/ipc/surface_id.typemap',
                     '<(DEPTH)/cc/ipc/surface_sequence.typemap',
-
+                    '../Source/platform/mojo/SecurityOrigin.typemap',
                 ],
                 'for_blink': 'true',
                 'use_new_wrapper_types': 'false',
             },
             'dependencies' : [
                 '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces_blink',
+                '<(DEPTH)/url/url.gyp:url_mojom_for_blink',
             ],
             'includes': [
                 '../../../mojo/mojom_bindings_generator_explicit.gypi',
@@ -144,11 +146,13 @@
                   '../../../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
                     '<(DEPTH)/cc/ipc/surface_id.typemap',
                     '<(DEPTH)/cc/ipc/surface_sequence.typemap',
+                    '<(DEPTH)/url/mojo/origin.typemap',
                 ],
                 'use_new_wrapper_types': 'false',
             },
             'dependencies' : [
                 '<(DEPTH)/cc/ipc/cc_ipc.gyp:interfaces',
+                '<(DEPTH)/url/url.gyp:url_mojom',
             ],
             'includes': [
                 '../../../mojo/mojom_bindings_generator_explicit.gypi',

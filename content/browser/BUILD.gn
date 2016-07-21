@@ -43,7 +43,6 @@ source_set("browser") {
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/url_formatter",
-    "//components/webmessaging",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",

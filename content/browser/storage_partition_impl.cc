@@ -374,8 +374,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
     BackgroundSyncContext* background_sync_context,
-    scoped_refptr<webmessaging::BroadcastChannelProvider>
-        broadcast_channel_provider)
+    scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -510,8 +509,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new BackgroundSyncContext();
   background_sync_context->Init(service_worker_context);
 
-  scoped_refptr<webmessaging::BroadcastChannelProvider>
-      broadcast_channel_provider = new webmessaging::BroadcastChannelProvider();
+  scoped_refptr<BroadcastChannelProvider>
+      broadcast_channel_provider = new BroadcastChannelProvider();
 
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),
@@ -595,8 +594,7 @@ BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
 }
 
-webmessaging::BroadcastChannelProvider*
-StoragePartitionImpl::GetBroadcastChannelProvider() {
+BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {
   return broadcast_channel_provider_.get();
 }
 

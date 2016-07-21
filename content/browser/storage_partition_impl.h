@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/webmessaging/broadcast_channel_provider.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/host_zoom_level_context.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
 
   BackgroundSyncContext* GetBackgroundSyncContext();
-  webmessaging::BroadcastChannelProvider* GetBroadcastChannelProvider();
+  BroadcastChannelProvider* GetBroadcastChannelProvider();
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
@@ -172,8 +172,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
       HostZoomLevelContext* host_zoom_level_context,
       PlatformNotificationContextImpl* platform_notification_context,
       BackgroundSyncContext* background_sync_context,
-      scoped_refptr<webmessaging::BroadcastChannelProvider>
-          broadcast_channel_provider);
+      scoped_refptr<BroadcastChannelProvider>broadcast_channel_provider);
 
   // We will never have both remove_origin be populated and a cookie_matcher.
   void ClearDataImpl(uint32_t remove_mask,
@@ -218,8 +217,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundSyncContext> background_sync_context_;
-  scoped_refptr<webmessaging::BroadcastChannelProvider>
-      broadcast_channel_provider_;
+  scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider_;
 
   mojo::BindingSet<mojom::StoragePartitionService> bindings_;
 

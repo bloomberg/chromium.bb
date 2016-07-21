@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webmessaging/broadcast_channel_provider.h"
+#include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -10,19 +10,19 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace webmessaging {
+namespace content {
 
 // There is a one-to-one mapping of BroadcastChannel instances in the renderer
 // and Connection instances in the browser. The Connection is owned by a
 // BroadcastChannelProvider.
 class BroadcastChannelProvider::Connection
-    : public mojom::BroadcastChannelClient {
+    : public blink::mojom::BroadcastChannelClient {
  public:
   Connection(const url::Origin& origin,
              const mojo::String& name,
-             mojom::BroadcastChannelClientAssociatedPtrInfo client,
-             mojom::BroadcastChannelClientAssociatedRequest connection,
-             webmessaging::BroadcastChannelProvider* service);
+             blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
+             blink::mojom::BroadcastChannelClientAssociatedRequest connection,
+             BroadcastChannelProvider* service);
 
   void OnMessage(const mojo::String& message) override;
   void MessageToClient(const mojo::String& message) const {
@@ -37,10 +37,10 @@ class BroadcastChannelProvider::Connection
   }
 
  private:
-  mojo::AssociatedBinding<mojom::BroadcastChannelClient> binding_;
-  mojom::BroadcastChannelClientAssociatedPtr client_;
+  mojo::AssociatedBinding<blink::mojom::BroadcastChannelClient> binding_;
+  blink::mojom::BroadcastChannelClientAssociatedPtr client_;
 
-  webmessaging::BroadcastChannelProvider* service_;
+  BroadcastChannelProvider* service_;
   url::Origin origin_;
   std::string name_;
 };
@@ -48,9 +48,9 @@ class BroadcastChannelProvider::Connection
 BroadcastChannelProvider::Connection::Connection(
     const url::Origin& origin,
     const mojo::String& name,
-    mojom::BroadcastChannelClientAssociatedPtrInfo client,
-    mojom::BroadcastChannelClientAssociatedRequest connection,
-    webmessaging::BroadcastChannelProvider* service)
+    blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
+    blink::mojom::BroadcastChannelClientAssociatedRequest connection,
+    BroadcastChannelProvider* service)
     : binding_(this, std::move(connection)),
       service_(service),
       origin_(origin),
@@ -66,15 +66,15 @@ void BroadcastChannelProvider::Connection::OnMessage(
 BroadcastChannelProvider::BroadcastChannelProvider() {}
 
 void BroadcastChannelProvider::Connect(
-    mojo::InterfaceRequest<mojom::BroadcastChannelProvider> request) {
+    mojo::InterfaceRequest<blink::mojom::BroadcastChannelProvider> request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void BroadcastChannelProvider::ConnectToChannel(
     const url::Origin& origin,
     const mojo::String& name,
-    mojom::BroadcastChannelClientAssociatedPtrInfo client,
-    mojom::BroadcastChannelClientAssociatedRequest connection) {
+    blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
+    blink::mojom::BroadcastChannelClientAssociatedRequest connection) {
   std::unique_ptr<Connection> c(new Connection(origin, name, std::move(client),
                                                std::move(connection), this));
   c->set_connection_error_handler(
@@ -112,4 +112,4 @@ void BroadcastChannelProvider::ReceivedMessageOnConnection(
   }
 }
 
-}  // namespace webmessaging
+}  // namespace content

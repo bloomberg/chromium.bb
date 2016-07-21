@@ -48,13 +48,13 @@
 #include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/scheduler/common/scheduler_switches.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/webmessaging/broadcast_channel_provider.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
@@ -1089,7 +1089,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(this)));
 
   GetInterfaceRegistry()->AddInterface(
-      base::Bind(&webmessaging::BroadcastChannelProvider::Connect,
+      base::Bind(&BroadcastChannelProvider::Connect,
                  base::Unretained(
                      storage_partition_impl_->GetBroadcastChannelProvider())));
 
