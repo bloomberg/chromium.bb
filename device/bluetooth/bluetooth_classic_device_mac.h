@@ -36,6 +36,7 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
   uint16_t GetProductID() const override;
   uint16_t GetDeviceID() const override;
   uint16_t GetAppearance() const override;
+  base::Optional<std::string> GetName() const override;
   bool IsPaired() const override;
   bool IsConnected() const override;
   bool IsGattConnected() const override;
@@ -80,7 +81,6 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
 
  protected:
   // BluetoothDevice override
-  std::string GetDeviceName() const override;
   void CreateGattConnectionImpl() override;
   void DisconnectGatt() override;
 

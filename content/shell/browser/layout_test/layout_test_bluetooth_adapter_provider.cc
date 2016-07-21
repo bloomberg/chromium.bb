@@ -832,10 +832,9 @@ LayoutTestBluetoothAdapterProvider::GetGenericAccessService(
                 BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
     // Read response.
-    std::string device_name_str = device->GetDeviceName();
-    std::vector<uint8_t> device_name_value(device_name_str.begin(),
-                                           device_name_str.end());
-
+    std::vector<uint8_t> device_name_value;
+    if (base::Optional<std::string> name = device->GetName())
+      device_name_value.assign(name.value().begin(), name.value().end());
     ON_CALL(*device_name, ReadRemoteCharacteristic(_, _))
         .WillByDefault(RunCallback<0>(device_name_value));
 

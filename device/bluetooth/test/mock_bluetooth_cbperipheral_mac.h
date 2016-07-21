@@ -27,8 +27,9 @@ class BluetoothTestMac;
 @property(nonatomic, assign) device::BluetoothTestMac* bluetoothTestMac;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithIdentifier:(NSUUID*)identifier;
 - (instancetype)initWithUTF8StringIdentifier:(const char*)identifier;
+- (instancetype)initWithUTF8StringIdentifier:(const char*)identifier
+                                        name:(NSString*)name;
 - (instancetype)initWithIdentifier:(NSUUID*)identifier
                               name:(NSString*)name NS_DESIGNATED_INITIALIZER;
 

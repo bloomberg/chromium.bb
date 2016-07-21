@@ -17,6 +17,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -236,6 +237,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Returns the appearance of the device.
   virtual uint16_t GetAppearance() const = 0;
+
+  // Returns the name of the device, which may be empty.
+  virtual base::Optional<std::string> GetName() const = 0;
 
   // Returns the name of the device suitable for displaying, this may
   // be a synthesized string containing the address and localized type name
@@ -498,15 +502,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                            BluetoothGattConnection_ErrorAfterConnection);
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest,
                            BluetoothGattConnection_DisconnectGatt_Cleanup);
-  FRIEND_TEST_ALL_PREFIXES(BluetoothTest, GetDeviceName_NullName);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothTest, GetName_NullName);
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest, RemoveOutdatedDevices);
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest, RemoveOutdatedDeviceGattConnect);
 
   BluetoothDevice(BluetoothAdapter* adapter);
-
-  // Returns the internal name of the Bluetooth device, used by
-  // GetNameForDisplay().
-  virtual std::string GetDeviceName() const = 0;
 
   // Implements platform specific operations to initiate a GATT connection.
   // Subclasses must also call DidConnectGatt, DidFailToConnectGatt, or

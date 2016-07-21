@@ -61,10 +61,12 @@ scoped_nsobject<NSDictionary> CreateAdvertisementData(NSString* name,
                                                       NSArray* uuids) {
   NSMutableDictionary* advertisement_data(
       [NSMutableDictionary dictionaryWithDictionary:@{
-        CBAdvertisementDataLocalNameKey : name,
         CBAdvertisementDataServiceDataKey : @{},
         CBAdvertisementDataIsConnectable : @(YES),
       }]);
+  if (name) {
+    [advertisement_data setObject:name forKey:CBAdvertisementDataLocalNameKey];
+  }
   if (uuids) {
     [advertisement_data setObject:uuids
                            forKey:CBAdvertisementDataServiceUUIDsKey];
@@ -132,69 +134,58 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
   CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
   BluetoothLowEnergyCentralManagerDelegate* central_manager_delegate =
       adapter_mac_->low_energy_central_manager_delegate_;
+
+  const char* identifier;
+  NSString* name;
+  NSArray* uuids;
+
   switch (device_ordinal) {
-    case 1: {
-      scoped_nsobject<MockCBPeripheral> mock_peripheral(
-          [[MockCBPeripheral alloc]
-              initWithUTF8StringIdentifier:kTestPeripheralUUID1.c_str()]);
-      mock_peripheral.get().bluetoothTestMac = this;
-      NSArray* uuids = @[
+    case 1:
+      identifier = kTestPeripheralUUID1.c_str();
+      name = @(kTestDeviceName.c_str());
+      uuids = @[
         [CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())],
         [CBUUID UUIDWithString:@(kTestUUIDGenericAttribute.c_str())]
       ];
-      scoped_nsobject<NSDictionary> advertisement_data =
-          CreateAdvertisementData(@(kTestDeviceName.c_str()), uuids);
-      [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:mock_peripheral.get().peripheral
-                             advertisementData:advertisement_data
-                                          RSSI:@(0)];
       break;
-    }
-    case 2: {
-      scoped_nsobject<MockCBPeripheral> mock_peripheral(
-          [[MockCBPeripheral alloc]
-              initWithUTF8StringIdentifier:kTestPeripheralUUID1.c_str()]);
-      mock_peripheral.get().bluetoothTestMac = this;
-      NSArray* uuids = @[
+    case 2:
+      identifier = kTestPeripheralUUID1.c_str();
+      name = @(kTestDeviceName.c_str());
+      uuids = @[
         [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())],
         [CBUUID UUIDWithString:@(kTestUUIDLinkLoss.c_str())]
       ];
-      scoped_nsobject<NSDictionary> advertisement_data =
-          CreateAdvertisementData(@(kTestDeviceName.c_str()), uuids);
-      [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:mock_peripheral.get().peripheral
-                             advertisementData:advertisement_data
-                                          RSSI:@(0)];
       break;
-    }
-    case 3: {
-      scoped_nsobject<MockCBPeripheral> mock_peripheral(
-          [[MockCBPeripheral alloc]
-              initWithUTF8StringIdentifier:kTestPeripheralUUID1.c_str()]);
-      mock_peripheral.get().bluetoothTestMac = this;
-      scoped_nsobject<NSDictionary> advertisement_data(
-          CreateAdvertisementData(@(kTestDeviceNameEmpty.c_str()), nil));
-      [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:mock_peripheral.get().peripheral
-                             advertisementData:advertisement_data
-                                          RSSI:@(0)];
+    case 3:
+      identifier = kTestPeripheralUUID1.c_str();
+      name = @(kTestDeviceNameEmpty.c_str());
+      uuids = nil;
       break;
-    }
-    case 4: {
-      scoped_nsobject<MockCBPeripheral> mock_peripheral(
-          [[MockCBPeripheral alloc]
-              initWithUTF8StringIdentifier:kTestPeripheralUUID2.c_str()]);
-      mock_peripheral.get().bluetoothTestMac = this;
-      NSArray* uuids = nil;
-      scoped_nsobject<NSDictionary> advertisement_data =
-          CreateAdvertisementData(@(kTestDeviceNameEmpty.c_str()), uuids);
-      [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:mock_peripheral.get().peripheral
-                             advertisementData:advertisement_data
-                                          RSSI:@(0)];
+    case 4:
+      identifier = kTestPeripheralUUID2.c_str();
+      name = @(kTestDeviceNameEmpty.c_str());
+      uuids = nil;
       break;
-    }
+    case 5:
+      identifier = kTestPeripheralUUID1.c_str();
+      name = nil;
+      uuids = nil;
+      break;
+    default:
+      NOTREACHED() << "SimulateLowEnergyDevice not implemented for "
+                   << device_ordinal;
+      identifier = nil;
+      name = nil;
+      uuids = nil;
   }
+  scoped_nsobject<MockCBPeripheral> mock_peripheral([[MockCBPeripheral alloc]
+      initWithUTF8StringIdentifier:identifier
+                              name:name]);
+  mock_peripheral.get().bluetoothTestMac = this;
+  [central_manager_delegate centralManager:central_manager
+                     didDiscoverPeripheral:mock_peripheral.get().peripheral
+                         advertisementData:CreateAdvertisementData(name, uuids)
+                                      RSSI:@(0)];
   return observer.last_device();
 }
 

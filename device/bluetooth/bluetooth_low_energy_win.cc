@@ -467,14 +467,10 @@ bool CollectBluetoothLowEnergyDeviceInfo(
           device_info_handle, &device_info_data, result, error)) {
     return false;
   }
-  if (!CollectBluetoothLowEnergyDeviceFriendlyName(
-          device_info_handle, &device_info_data, result, error)) {
-    // Only fail if not the GATT service device interface, which doesn't have a
-    // friendly name.
-    if (device_interface_data->InterfaceClassGuid !=
-        GUID_BLUETOOTH_GATT_SERVICE_DEVICE_INTERFACE)
-      return false;
-  }
+  // Get the friendly name. If it fails it is OK to leave the
+  // device_info_data.friendly_name as nullopt indicating the name not read.
+  CollectBluetoothLowEnergyDeviceFriendlyName(device_info_handle,
+                                              &device_info_data, result, error);
   if (!CollectBluetoothLowEnergyDeviceAddress(
           device_info_handle, &device_info_data, result, error)) {
     return false;

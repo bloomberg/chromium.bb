@@ -49,7 +49,7 @@ class BluetoothDeviceWinTest : public testing::Test {
 
     // Add device with audio/video services.
     device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
-    device_state_->name = kDeviceName;
+    device_state_->name = std::string(kDeviceName);
     device_state_->address = kDeviceAddress;
 
     BluetoothTaskManagerWin::ServiceRecordState* audio_state =
@@ -70,7 +70,7 @@ class BluetoothDeviceWinTest : public testing::Test {
 
     // Add empty device.
     empty_device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
-    empty_device_state_->name = kDeviceName;
+    empty_device_state_->name = std::string(kDeviceName);
     empty_device_state_->address = kDeviceAddress;
     empty_device_.reset(new BluetoothDeviceWin(NULL, *empty_device_state_,
                                                ui_task_runner, socket_thread,

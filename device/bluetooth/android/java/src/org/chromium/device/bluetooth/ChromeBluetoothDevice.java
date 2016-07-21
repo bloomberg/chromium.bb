@@ -104,6 +104,12 @@ final class ChromeBluetoothDevice {
         return mDevice.getAddress();
     }
 
+    // Implements BluetoothDeviceAndroid::GetName.
+    @CalledByNative
+    private String getName() {
+        return mDevice.getName();
+    }
+
     // Implements BluetoothDeviceAndroid::IsPaired.
     @CalledByNative
     private boolean isPaired() {
@@ -136,12 +142,6 @@ final class ChromeBluetoothDevice {
     private void disconnectGatt() {
         Log.i(TAG, "BluetoothGatt.disconnect");
         if (mBluetoothGatt != null) mBluetoothGatt.disconnect();
-    }
-
-    // Implements BluetoothDeviceAndroid::GetDeviceName.
-    @CalledByNative
-    private String getDeviceName() {
-        return mDevice.getName();
     }
 
     // Implements callbacks related to a GATT connection.

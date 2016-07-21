@@ -103,6 +103,14 @@ uint16_t BluetoothDeviceAndroid::GetAppearance() const {
   return 0;
 }
 
+base::Optional<std::string> BluetoothDeviceAndroid::GetName() const {
+  auto name = Java_ChromeBluetoothDevice_getName(AttachCurrentThread(),
+                                                 j_device_.obj());
+  if (name.is_null())
+    return base::nullopt;
+  return ConvertJavaStringToUTF8(name);
+}
+
 bool BluetoothDeviceAndroid::IsPaired() const {
   return Java_ChromeBluetoothDevice_isPaired(AttachCurrentThread(),
                                              j_device_.obj());
@@ -279,16 +287,6 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
 
 BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)
     : BluetoothDevice(adapter) {}
-
-std::string BluetoothDeviceAndroid::GetDeviceName() const {
-  auto device_name = Java_ChromeBluetoothDevice_getDeviceName(
-      AttachCurrentThread(), j_device_.obj());
-
-  if (device_name.is_null()) {
-    return "";
-  }
-  return ConvertJavaStringToUTF8(device_name);
-}
 
 void BluetoothDeviceAndroid::CreateGattConnectionImpl() {
   Java_ChromeBluetoothDevice_createGattConnectionImpl(

@@ -33,13 +33,14 @@ using base::scoped_nsobject;
 }
 
 - (instancetype)initWithUTF8StringIdentifier:(const char*)utf8Identifier {
-  scoped_nsobject<NSUUID> identifier(
-      [[NSUUID alloc] initWithUUIDString:@(utf8Identifier)]);
-  return [self initWithIdentifier:identifier name:nil];
+  return [self initWithUTF8StringIdentifier:utf8Identifier name:nil];
 }
 
-- (instancetype)initWithIdentifier:(NSUUID*)identifier {
-  return [self initWithIdentifier:identifier name:nil];
+- (instancetype)initWithUTF8StringIdentifier:(const char*)utf8Identifier
+                                        name:(NSString*)name {
+  scoped_nsobject<NSUUID> identifier(
+      [[NSUUID alloc] initWithUUIDString:@(utf8Identifier)]);
+  return [self initWithIdentifier:identifier name:name];
 }
 
 - (instancetype)initWithIdentifier:(NSUUID*)identifier name:(NSString*)name {
@@ -48,9 +49,6 @@ using base::scoped_nsobject;
     _identifier.reset([identifier retain]);
     if (name) {
       _name.reset([name retain]);
-    } else {
-      _name.reset(
-          [@(device::BluetoothTestBase::kTestDeviceName.c_str()) retain]);
     }
     _state = CBPeripheralStateDisconnected;
   }

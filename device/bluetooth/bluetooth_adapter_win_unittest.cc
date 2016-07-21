@@ -456,7 +456,7 @@ TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
   EXPECT_EQ(0, observer_.device_changed_count());
 
   // Change a device name
-  android_phone_state->name = "phone2";
+  android_phone_state->name = std::string("phone2");
   observer_.Reset();
   adapter_win_->DevicesPolled(devices);
   EXPECT_EQ(0, observer_.device_added_count());

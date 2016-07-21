@@ -42,6 +42,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(GetProductID, uint16_t());
   MOCK_CONST_METHOD0(GetDeviceID, uint16_t());
   MOCK_CONST_METHOD0(GetAppearance, uint16_t());
+  MOCK_CONST_METHOD0(GetName, base::Optional<std::string>());
   MOCK_CONST_METHOD0(GetNameForDisplay, base::string16());
   MOCK_CONST_METHOD0(GetDeviceType, BluetoothDevice::DeviceType());
   MOCK_CONST_METHOD0(IsPaired, bool());
@@ -96,7 +97,6 @@ class MockBluetoothDevice : public BluetoothDevice {
                      std::vector<BluetoothRemoteGattService*>());
   MOCK_CONST_METHOD1(GetGattService,
                      BluetoothRemoteGattService*(const std::string&));
-  MOCK_CONST_METHOD0(GetDeviceName, std::string());
   MOCK_METHOD0(CreateGattConnectionImpl, void());
   MOCK_METHOD0(DisconnectGatt, void());
 
