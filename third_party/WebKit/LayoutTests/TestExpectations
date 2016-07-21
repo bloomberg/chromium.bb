@@ -192,8 +192,6 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.htm
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 
-crbug.com/627305 fast/table/dynamic-descendant-percentage-height.html [ NeedsRebaseline ]
-
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
