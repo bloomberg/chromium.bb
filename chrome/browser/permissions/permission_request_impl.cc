@@ -43,6 +43,7 @@ gfx::VectorIconId PermissionRequestImpl::GetVectorIconId() const {
       return gfx::VectorIconId::LOCATION_ON;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
       return gfx::VectorIconId::NOTIFICATIONS;
 #endif
 #if defined(OS_CHROMEOS)
@@ -70,6 +71,7 @@ int PermissionRequestImpl::GetIconId() const {
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
       icon_id = IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
       break;
 #endif
@@ -91,14 +93,12 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
       message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
       break;
 #endif
     case content::PermissionType::MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
-      break;
-    case content::PermissionType::PUSH_MESSAGING:
-      message_id = IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT;
       break;
 #if defined(OS_CHROMEOS)
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:

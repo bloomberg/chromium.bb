@@ -34,7 +34,8 @@ void DoNothing2(blink::mojom::PermissionStatus status) {}
 class TestNotificationPermissionContext : public NotificationPermissionContext {
  public:
   explicit TestNotificationPermissionContext(Profile* profile)
-      : NotificationPermissionContext(profile),
+      : NotificationPermissionContext(profile,
+                                      content::PermissionType::NOTIFICATIONS),
         permission_set_count_(0),
         last_permission_set_persisted_(false),
         last_permission_set_setting_(CONTENT_SETTING_DEFAULT) {}
@@ -75,6 +76,8 @@ class TestNotificationPermissionContext : public NotificationPermissionContext {
   ContentSetting last_permission_set_setting_;
 };
 
+}  // namespace
+
 class NotificationPermissionContextTest
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -95,11 +98,17 @@ class NotificationPermissionContextTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
+ protected:
+  void UpdateContentSetting(NotificationPermissionContext* context,
+                            const GURL& requesting_origin,
+                            const GURL& embedding_origin,
+                            ContentSetting setting) {
+    context->UpdateContentSetting(requesting_origin, embedding_origin, setting);
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> old_task_runner_;
 };
-
-}  // namespace
 
 // Web Notification permission requests will completely ignore the embedder
 // origin. See https://crbug.com/416894.
@@ -108,10 +117,10 @@ TEST_F(NotificationPermissionContextTest, IgnoresEmbedderOrigin) {
   GURL embedding_origin("https://chrome.com");
   GURL different_origin("https://foobar.com");
 
-  NotificationPermissionContext context(profile());
-  context.UpdateContentSetting(requesting_origin,
-                               embedding_origin,
-                               CONTENT_SETTING_ALLOW);
+  NotificationPermissionContext context(profile(),
+                                        content::PermissionType::NOTIFICATIONS);
+  UpdateContentSetting(&context, requesting_origin, embedding_origin,
+                       CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
       context.GetPermissionStatus(requesting_origin, embedding_origin));
@@ -128,19 +137,71 @@ TEST_F(NotificationPermissionContextTest, IgnoresEmbedderOrigin) {
       context.GetPermissionStatus(requesting_origin, different_origin));
 }
 
+// Push messaging permission requests should only succeed for top level origins
+// (embedding origin == requesting origin).
+TEST_F(NotificationPermissionContextTest, PushTopLevelOriginOnly) {
+  GURL requesting_origin("https://example.com");
+  GURL embedding_origin("https://chrome.com");
+
+  NotificationPermissionContext context(
+      profile(), content::PermissionType::PUSH_MESSAGING);
+  UpdateContentSetting(&context, requesting_origin, embedding_origin,
+                       CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            context.GetPermissionStatus(requesting_origin, embedding_origin));
+
+  context.ResetPermission(requesting_origin, embedding_origin);
+
+  UpdateContentSetting(&context, embedding_origin, embedding_origin,
+                       CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            context.GetPermissionStatus(embedding_origin, embedding_origin));
+
+  context.ResetPermission(embedding_origin, embedding_origin);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            context.GetPermissionStatus(embedding_origin, embedding_origin));
+}
+
 // Web Notifications do not require a secure origin when requesting permission.
 // See https://crbug.com/404095.
 TEST_F(NotificationPermissionContextTest, NoSecureOriginRequirement) {
   GURL origin("http://example.com");
 
-  NotificationPermissionContext context(profile());
+  NotificationPermissionContext context(profile(),
+                                        content::PermissionType::NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_ASK,
             context.GetPermissionStatus(origin, origin));
 
-  context.UpdateContentSetting(origin, origin, CONTENT_SETTING_ALLOW);
+  UpdateContentSetting(&context, origin, origin, CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             context.GetPermissionStatus(origin, origin));
+}
+
+// Push notifications requires a secure origin to acquire permission.
+TEST_F(NotificationPermissionContextTest, PushSecureOriginRequirement) {
+  GURL origin("http://example.com");
+  GURL secure_origin("https://example.com");
+
+  NotificationPermissionContext context(
+      profile(), content::PermissionType::PUSH_MESSAGING);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, context.GetPermissionStatus(origin, origin));
+
+  UpdateContentSetting(&context, origin, origin, CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, context.GetPermissionStatus(origin, origin));
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            context.GetPermissionStatus(secure_origin, secure_origin));
+
+  UpdateContentSetting(&context, secure_origin, secure_origin,
+                       CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            context.GetPermissionStatus(secure_origin, secure_origin));
 }
 
 // Tests auto-denial after a time delay in incognito.
