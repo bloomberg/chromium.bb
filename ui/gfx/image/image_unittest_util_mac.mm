@@ -17,7 +17,8 @@ SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
   [image lockFocus];
   NSColor* color = NSReadPixel(NSMakePoint(x, y));
   [image unlockFocus];
-  return skia::NSDeviceColorToSkColor(color);
+  return skia::NSDeviceColorToSkColor(
+      [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]]);
 }
 
 }  // namespace test
