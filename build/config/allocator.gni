@@ -29,9 +29,21 @@ declare_args() {
   use_experimental_allocator_shim = _default_use_experimental_allocator_shim
 }
 
+if (is_nacl) {
+  # Turn off the build flag for NaCL builds to minimize confusion, as NaCL
+  # doesn't support the heap shim.
+  use_experimental_allocator_shim = false
+}
+
 assert(use_allocator == "none" || use_allocator == "tcmalloc")
 
 assert(!is_win || use_allocator == "none", "Tcmalloc doesn't work on Windows.")
+
 assert(
-    !use_experimental_allocator_shim || is_linux || is_android,
-    "use_experimental_allocator_shim supported only on Linux and Android targets")
+    !use_experimental_allocator_shim || is_linux || is_android || is_win,
+    "use_experimental_allocator_shim supported only on Linux, Android and Windows targets")
+
+if (is_win && use_experimental_allocator_shim) {
+  assert(!is_component_build,
+         "The allocator shim doesn't work for the component build on Windows.")
+}
