@@ -358,9 +358,9 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
 void FrameLoader::receivedMainResourceRedirect(const KURL& newURL)
 {
     client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-    // If a back/forward navigation redirects cross-origin, don't reuse any state from the HistoryItem.
-    if (m_provisionalItem && !SecurityOrigin::create(m_provisionalItem->url())->isSameSchemeHostPort(SecurityOrigin::create(newURL).get()))
-        m_provisionalItem.clear();
+
+    // If a back/forward navigation redirects, don't reuse any state from the HistoryItem.
+    m_provisionalItem.clear();
 }
 
 void FrameLoader::setHistoryItemStateForCommit(FrameLoadType loadType, HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
