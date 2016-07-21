@@ -340,9 +340,6 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     // incorrectly using sub-pixel values that won't be present in the painted tile.
     setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
 
-    setDestRect(LayoutRect(pixelSnappedIntRect(m_destRect)));
-
-
     EFillRepeat backgroundRepeatX = fillLayer.repeatX();
     EFillRepeat backgroundRepeatY = fillLayer.repeatY();
     LayoutUnit unsnappedAvailableWidth = positioningAreaSize.width() - fillTileSize.width();
@@ -423,7 +420,6 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     // Snap as-yet unsnapped values.
     DCHECK(m_phase == LayoutPoint(roundedIntPoint(m_phase)));
     setDestRect(LayoutRect(pixelSnappedIntRect(m_destRect)));
-
 }
 
 } // namespace blink
