@@ -327,6 +327,10 @@
 #include "media/mojo/services/mojo_media_application_factory.h"  // nogncheck
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
+#endif
+
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
 using content::AccessTokenStore;
@@ -2793,6 +2797,11 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
       base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create));
+
+#if defined(OS_CHROMEOS)
+  registry->AddInterface<metrics::mojom::LeakDetector>(
+      base::Bind(&metrics::LeakDetectorRemoteController::Create));
+#endif
 }
 
 void ChromeContentBrowserClient::RegisterFrameMojoShellInterfaces(

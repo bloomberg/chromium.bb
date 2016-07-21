@@ -128,35 +128,6 @@ if (!is_ios) {
   }
 }
 
-if (is_chromeos) {
-  # GYP version: components/metrics.gypi:metrics_leak_detector
-  static_library("leak_detector") {
-    sources = [
-      "leak_detector/call_stack_manager.cc",
-      "leak_detector/call_stack_manager.h",
-      "leak_detector/call_stack_table.cc",
-      "leak_detector/call_stack_table.h",
-      "leak_detector/custom_allocator.cc",
-      "leak_detector/custom_allocator.h",
-      "leak_detector/leak_analyzer.cc",
-      "leak_detector/leak_analyzer.h",
-      "leak_detector/leak_detector.cc",
-      "leak_detector/leak_detector.h",
-      "leak_detector/leak_detector_impl.cc",
-      "leak_detector/leak_detector_impl.h",
-      "leak_detector/leak_detector_value_type.cc",
-      "leak_detector/leak_detector_value_type.h",
-      "leak_detector/ranked_set.cc",
-      "leak_detector/ranked_set.h",
-    ]
-
-    deps = [
-      "//base",
-      "//components/metrics/proto:proto",
-    ]
-  }
-}
-
 # GYP version: components/metrics.gypi:metrics_net
 static_library("net") {
   sources = [
@@ -304,28 +275,6 @@ if (is_linux) {
   }
 }
 
-if (is_chromeos) {
-  source_set("leak_detector_unit_tests") {
-    testonly = true
-    sources = [
-      "leak_detector/call_stack_manager_unittest.cc",
-      "leak_detector/call_stack_table_unittest.cc",
-      "leak_detector/leak_analyzer_unittest.cc",
-      "leak_detector/leak_detector_impl_unittest.cc",
-      "leak_detector/leak_detector_unittest.cc",
-      "leak_detector/ranked_set_unittest.cc",
-    ]
-
-    deps = [
-      ":leak_detector",
-      "//base",
-      "//components/metrics/proto:proto",
-      "//content/test:test_support",
-      "//testing/gtest",
-    ]
-  }
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -371,6 +320,6 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos) {
-    deps += [ ":leak_detector_unit_tests" ]
+    deps += [ "leak_detector:unit_tests" ]
   }
 }

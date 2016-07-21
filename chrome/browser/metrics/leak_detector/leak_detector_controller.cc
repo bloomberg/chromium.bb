@@ -103,21 +103,42 @@ LeakDetectorController::~LeakDetectorController() {
   LeakDetector::GetInstance()->RemoveObserver(this);
 }
 
+void LeakDetectorController::GetLeakReports(
+    std::vector<MemoryLeakReportProto>* reports) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  reports->swap(stored_reports_);
+  stored_reports_.clear();
+}
+
 void LeakDetectorController::OnLeaksFound(
     const std::vector<MemoryLeakReportProto>& reports) {
+  StoreLeakReports(reports, MemoryLeakReportProto::BROWSER_PROCESS);
+}
+
+MemoryLeakReportProto_Params LeakDetectorController::GetParams() const {
+  return params_;
+}
+
+void LeakDetectorController::SendLeakReports(
+    const std::vector<MemoryLeakReportProto>& reports) {
+  StoreLeakReports(reports, MemoryLeakReportProto::RENDERER_PROCESS);
+}
+
+void LeakDetectorController::OnRemoteProcessShutdown() {
+  // TODO(sque): Handle remote process shutdown.
+}
+
+void LeakDetectorController::StoreLeakReports(
+    const std::vector<MemoryLeakReportProto>& reports,
+    MemoryLeakReportProto::ProcessType process_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (const auto& report : reports) {
     // Store the report and insert stored parameters.
     stored_reports_.push_back(report);
     stored_reports_.back().mutable_params()->CopyFrom(params_);
+    stored_reports_.back().set_source_process(process_type);
   }
-}
-
-void LeakDetectorController::GetLeakReports(
-    std::vector<MemoryLeakReportProto>* reports) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  *reports = std::move(stored_reports_);
 }
 
 }  // namespace metrics

@@ -3730,9 +3730,12 @@
           'sources': [
             'browser/metrics/leak_detector/leak_detector_controller.cc',
             'browser/metrics/leak_detector/leak_detector_controller.h',
+            'browser/metrics/leak_detector/leak_detector_remote_controller.cc',
+            'browser/metrics/leak_detector/leak_detector_remote_controller.h',
           ],
           'dependencies': [
             '../components/components.gyp:metrics_leak_detector',
+            '../components/components.gyp:metrics_mojo_bindings',
           ],
         }],
         ['use_cups==1', {
