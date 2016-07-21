@@ -89,7 +89,7 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
     if (m_persistedPluginWidget) {
         if (m_persistedPluginWidget->isPluginView()) {
             m_persistedPluginWidget->hide();
-            m_persistedPluginWidget->dispose();
+            disposeWidgetSoon(m_persistedPluginWidget.release());
         } else {
             ASSERT(m_persistedPluginWidget->isFrameView() || m_persistedPluginWidget->isRemoteFrameView());
         }
