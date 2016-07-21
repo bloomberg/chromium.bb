@@ -343,7 +343,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             public boolean onLongClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager) mContext
                         .getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("url", mUrlTitle.getText());
+                ClipData clip = ClipData.newPlainText("url", mFullUrl);
                 clipboard.setPrimaryClip(clip);
                 Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
                 return true;
