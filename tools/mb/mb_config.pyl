@@ -94,9 +94,10 @@
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
       'Browser Side Navigation Linux': 'gn_release_bot',
-      'CFI Linux CF': 'gn_cfi_diag_release_static',
-      'CFI Linux ToT': 'gn_cfi_clang_tot_release_static',
+      'CFI Linux CF': 'gn_cfi_full_cfi_diag_release_static',
+      'CFI Linux ToT': 'gn_cfi_full_clang_tot_release_static',
       'CFI Linux': 'gn_cfi_release_static',
+      'CFI Linux Full': 'gn_cfi_full_release_static',
       'Chromium Linux Goma Canary': 'gn_release_bot',
       'Chromium Linux Goma Canary (clobber)': 'gn_release_bot',
       'Chromium Linux Precise Goma LinkTest': 'gn_release_bot',
@@ -729,7 +730,8 @@
       'linux_chromium_blimp_variable': 'findit',
       'linux_chromium_browser_side_navigation_rel': 'gn_release_trybot',
       'linux_chromium_cast_variable': 'findit',
-      'linux_chromium_cfi_rel_ng': 'gn_cfi_release_static_dcheck_always_on',
+      'linux_chromium_cfi_rel_ng':
+        'gn_cfi_full_release_static_dcheck_always_on',
       'linux_chromium_chromeos_asan_rel_ng':
         'swarming_asan_lsan_chromeos_gn_release_trybot',
       'linux_chromium_chromeos_asan_variable': 'findit',
@@ -1091,20 +1093,24 @@
       'error',
     ],
 
-    'gn_cfi_diag_release_static': [
-      'gn', 'cfi', 'cfi_diag', 'release', 'static',
+    'gn_cfi_full_cfi_diag_release_static': [
+      'gn', 'cfi_full', 'cfi_diag', 'release', 'static',
     ],
 
     'gn_cfi_release_static': [
       'gn', 'cfi', 'release', 'static',
     ],
 
-    'gn_cfi_clang_tot_release_static': [
-      'gn', 'cfi', 'clang_tot', 'release', 'static',
+    'gn_cfi_full_release_static': [
+      'gn', 'cfi_full', 'release', 'static',
     ],
 
-    'gn_cfi_release_static_dcheck_always_on': [
-      'gn', 'cfi', 'release', 'static', 'dcheck_always_on',
+    'gn_cfi_full_clang_tot_release_static': [
+      'gn', 'cfi_full', 'clang_tot', 'release', 'static',
+    ],
+
+    'gn_cfi_full_release_static_dcheck_always_on': [
+      'gn', 'cfi_full', 'release', 'static', 'dcheck_always_on',
     ],
 
     'gn_debug_bot': [
@@ -1937,6 +1943,12 @@
     'cfi': {
       'gn_args': 'is_cfi=true',
       'gyp_defines': 'cfi_vptr=1',
+    },
+
+    'cfi_full': {
+      'gn_args': 'use_cfi_cast=true',
+      'gyp_defines': 'cfi_cast=1',
+      'mixins': ['cfi'],
     },
 
     'cfi_diag': {
