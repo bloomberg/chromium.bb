@@ -42,7 +42,6 @@ using namespace HTMLNames;
 
 LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
     : LayoutPart(element)
-    , m_showsUnavailablePluginIndicator(false)
 {
     view()->frameView()->setIsVisuallyNonEmpty();
 }
@@ -63,27 +62,27 @@ PaintLayerType LayoutEmbeddedObject::layerTypeRequired() const
     return LayoutPart::layerTypeRequired();
 }
 
-static String localizedUnavailablePluginReplacementText(Node* node, LayoutEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
+static String localizedUnavailablePluginReplacementText(Node* node, LayoutEmbeddedObject::PluginAvailability availability)
 {
     Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();
-    switch (pluginUnavailabilityReason) {
+    switch (availability) {
+    case LayoutEmbeddedObject::PluginAvailable:
+        break;
     case LayoutEmbeddedObject::PluginMissing:
         return locale.queryString(WebLocalizedString::MissingPluginText);
     case LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy:
         return locale.queryString(WebLocalizedString::BlockedPluginText);
     }
-
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
-void LayoutEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityReason pluginUnavailabilityReason)
+void LayoutEmbeddedObject::setPluginAvailability(PluginAvailability availability)
 {
-    ASSERT(!m_showsUnavailablePluginIndicator);
-    m_showsUnavailablePluginIndicator = true;
-    m_pluginUnavailabilityReason = pluginUnavailabilityReason;
+    DCHECK_EQ(PluginAvailable, m_pluginAvailability);
+    m_pluginAvailability = availability;
 
-    m_unavailablePluginReplacementText = localizedUnavailablePluginReplacementText(node(), pluginUnavailabilityReason);
+    m_unavailablePluginReplacementText = localizedUnavailablePluginReplacementText(node(), availability);
 
     // node() is nullptr when LayoutPart is being destroyed.
     if (node())
@@ -92,7 +91,7 @@ void LayoutEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityRea
 
 bool LayoutEmbeddedObject::showsUnavailablePluginIndicator() const
 {
-    return m_showsUnavailablePluginIndicator;
+    return m_pluginAvailability != PluginAvailable;
 }
 
 void LayoutEmbeddedObject::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const

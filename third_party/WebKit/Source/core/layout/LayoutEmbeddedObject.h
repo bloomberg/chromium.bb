@@ -36,11 +36,12 @@ public:
     LayoutEmbeddedObject(Element*);
     ~LayoutEmbeddedObject() override;
 
-    enum PluginUnavailabilityReason {
+    enum PluginAvailability {
+        PluginAvailable,
         PluginMissing,
         PluginBlockedByContentSecurityPolicy,
     };
-    void setPluginUnavailabilityReason(PluginUnavailabilityReason);
+    void setPluginAvailability(PluginAvailability);
     bool showsUnavailablePluginIndicator() const;
 
     const char* name() const override { return "LayoutEmbeddedObject"; }
@@ -64,8 +65,7 @@ private:
 
     CompositingReasons additionalCompositingReasons() const override;
 
-    bool m_showsUnavailablePluginIndicator;
-    PluginUnavailabilityReason m_pluginUnavailabilityReason;
+    PluginAvailability m_pluginAvailability = PluginAvailable;
     String m_unavailablePluginReplacementText;
 };
 

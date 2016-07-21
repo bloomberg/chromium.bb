@@ -27,9 +27,9 @@ public:
 
     LayoutEmbeddedItem() { }
 
-    void setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginUnavailabilityReason reason)
+    void setPluginAvailability(LayoutEmbeddedObject::PluginAvailability availability)
     {
-        toEmbeddedObject()->setPluginUnavailabilityReason(reason);
+        toEmbeddedObject()->setPluginAvailability(availability);
     }
 
     bool showsUnavailablePluginIndicator() const

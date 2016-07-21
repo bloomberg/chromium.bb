@@ -140,6 +140,10 @@ private:
     mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
+    // Represents |layoutObject() && layoutObject()->isEmbeddedObject() &&
+    // !layoutEmbeddedItem().showsUnavailablePluginIndicator()|.  We want to
+    // avoid accessing |layoutObject()| in layoutObjectIsFocusable().
+    bool m_pluginIsAvailable = false;
 
     // Normally the Widget is stored in HTMLFrameOwnerElement::m_widget.
     // However, plugins can persist even when not rendered. In order to
