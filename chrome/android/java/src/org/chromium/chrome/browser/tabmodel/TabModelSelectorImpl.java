@@ -289,9 +289,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     /**
      * Load the saved tab state. This should be called before any new tabs are created. The saved
      * tabs shall not be restored until {@link #restoreTabs} is called.
+     * @param ignoreIncognitoFiles Whether to skip loading incognito tabs.
      */
-    public void loadState() {
-        mTabSaver.loadState();
+    public void loadState(boolean ignoreIncognitoFiles) {
+        mTabSaver.loadState(ignoreIncognitoFiles);
     }
 
     /**

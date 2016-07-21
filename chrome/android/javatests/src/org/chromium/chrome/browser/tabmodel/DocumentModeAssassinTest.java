@@ -445,7 +445,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
 
         // Load up the TabModel metadata.
         int numExpectedTabs = TEST_INFO.numRegularTabs + TEST_INFO.numIncognitoTabs;
-        store.loadState();
+        store.loadState(false /* ignoreIncognitoFiles */);
         mockObserver.initializedCallback.waitForCallback(0, 1);
         assertEquals(numExpectedTabs, mockObserver.mTabCountAtStartup);
         mockObserver.detailsReadCallback.waitForCallback(0, TEST_INFO.contents.length);

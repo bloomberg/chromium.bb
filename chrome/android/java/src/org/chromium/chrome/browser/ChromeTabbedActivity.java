@@ -567,7 +567,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             Intent intent = getIntent();
 
-            CipherFactory.getInstance().restoreFromBundle(getSavedInstanceState());
+            boolean hadCipherData =
+                    CipherFactory.getInstance().restoreFromBundle(getSavedInstanceState());
 
             boolean noRestoreState =
                     CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_RESTORE_STATE);
@@ -578,7 +579,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 // State should be clear when we start first run and hence we do not need to load
                 // a previous state. This may change the current Model, watch out for initialization
                 // based on the model.
-                mTabModelSelectorImpl.loadState();
+                // Never attempt to restore incognito tabs when this activity was previously swiped
+                // away in Recents. http://crbug.com/626629
+                boolean ignoreIncognitoFiles = !hadCipherData;
+                mTabModelSelectorImpl.loadState(ignoreIncognitoFiles);
             }
 
             mIntentWithEffect = false;

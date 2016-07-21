@@ -379,8 +379,9 @@ public class TabPersistentStore extends TabPersister {
 
     /**
      * Restore saved state. Must be called before any tabs are added to the list.
+     * @param ignoreIncognitoFiles Whether to skip loading incognito tabs.
      */
-    public void loadState() {
+    public void loadState(boolean ignoreIncognitoFiles) {
         long time = SystemClock.uptimeMillis();
 
         // If a cleanup task is in progress, cancel it before loading state.
@@ -392,7 +393,7 @@ public class TabPersistentStore extends TabPersister {
         logExecutionTime("LoadStateTime", time);
 
         mCancelNormalTabLoads = false;
-        mCancelIncognitoTabLoads = false;
+        mCancelIncognitoTabLoads = ignoreIncognitoFiles;
         mNormalTabsRestored = new SparseIntArray();
         mIncognitoTabsRestored = new SparseIntArray();
         try {
