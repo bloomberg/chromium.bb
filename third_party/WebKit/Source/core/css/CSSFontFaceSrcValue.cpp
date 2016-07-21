@@ -116,6 +116,7 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document) cons
 
     FetchRequest request(ResourceRequest(resourceURL), FetchInitiatorTypeNames::css);
     request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextFont);
     MixedContentChecker::shouldBlockFetch(document->frame(), m_fetched->resource()->lastResourceRequest(),
         m_fetched->resource()->lastResourceRequest().url(), MixedContentChecker::SendReport);
     document->fetcher()->requestLoadStarted(m_fetched->resource()->identifier(), m_fetched->resource(), request, ResourceFetcher::ResourceLoadingFromCache);
