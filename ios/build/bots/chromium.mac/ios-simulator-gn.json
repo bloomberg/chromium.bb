@@ -4,7 +4,9 @@
     "smut"
   ],
   "comments": [
-    "GN + Ninja simulator build."
+    "Tests for 32- and 64-bit iOS 9.0 simulators.",
+    "Tests run on iPhone 5s (64-bit) and iPad Retina (32-bit).",
+    "Build is performed with gn+ninja."
   ],
   "xcode version": "7.0",
   "GYP_DEFINES": [
@@ -12,14 +14,18 @@
     "chromium_ios_signing=0",
     "component=static_library",
     "use_goma=1",
-    "gomadir=$(goma_dir)"
+    "gomadir=$(goma_dir)",
+    "target_subarch=both"
   ],
   "gn_args": [
-    "target_os=\"ios\"",
-    "target_cpu=\"x64\"",
     "is_debug=true",
+    "target_os=\"ios\"",
+    "ios_enable_code_signing=false",
+    "is_component_build=false",
     "use_goma=true",
-    "goma_dir=\"$(goma_dir)\""
+    "goma_dir=\"$(goma_dir)\"",
+    "target_cpu=\"x64\"",
+    "additional_target_cpus=[\"x86\"]"
   ],
   "mb_type": "gn",
   "compiler": "ninja",
@@ -34,7 +40,7 @@
     },
     {
       "include": "common_tests.json",
-      "device type": "iPad Air",
+      "device type": "iPad Retina",
       "os": "9.0"
     }
   ]

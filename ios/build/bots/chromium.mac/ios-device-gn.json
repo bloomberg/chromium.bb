@@ -4,7 +4,8 @@
     "smut"
   ],
   "comments": [
-    "GN + Ninja 32-bit builder."
+    "Builder for 32-bit devices.",
+    "Build is performed with gn+ninja."
   ],
   "xcode version": "7.0",
   "GYP_DEFINES": [
@@ -16,10 +17,13 @@
     "target_subarch=arm32"
   ],
   "gn_args": [
-    "ios_enable_code_signing=false",
-    "target_cpu=\"arm\"",
+    "is_debug=true",
     "target_os=\"ios\"",
-    "use_goma=true"
+    "ios_enable_code_signing=false",
+    "is_component_build=false",
+    "use_goma=true",
+    "goma_dir=\"$(goma_dir)\"",
+    "target_cpu=\"arm\""
   ],
   "mb_type": "gn",
   "compiler": "ninja",

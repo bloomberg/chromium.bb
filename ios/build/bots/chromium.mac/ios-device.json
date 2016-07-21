@@ -1,9 +1,11 @@
 {
   "owners": [
+    "dpranke",
     "smut"
   ],
   "comments": [
-    "Builder for 32-bit devices."
+    "Builder for 32-bit devices.",
+    "Build is performed with gyp+ninja."
   ],
   "xcode version": "7.0",
   "GYP_DEFINES": [
@@ -13,6 +15,15 @@
     "use_goma=1",
     "gomadir=$(goma_dir)",
     "target_subarch=arm32"
+  ],
+  "gn_args": [
+    "is_debug=true",
+    "target_os=\"ios\"",
+    "ios_enable_code_signing=false",
+    "is_component_build=false",
+    "use_goma=true",
+    "goma_dir=\"$(goma_dir)\"",
+    "target_cpu=\"arm\""
   ],
   "mb_type": "gyp",
   "compiler": "ninja",
