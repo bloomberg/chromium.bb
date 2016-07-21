@@ -7,17 +7,15 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/search_provider.h"
-#include "content/public/renderer/render_view.h"
+#include "chrome/common/search_provider.mojom.h"
+#include "content/public/renderer/render_thread.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
 using blink::WebLocalFrame;
 using blink::WebView;
-using content::RenderView;
 
 namespace extensions_v8 {
 
@@ -46,9 +44,6 @@ class ExternalExtensionWrapper : public v8::Extension {
       v8::Isolate* isolate,
       v8::Local<v8::String> name) override;
 
-  // Helper function to find the RenderView. May return NULL.
-  static RenderView* GetRenderView();
-
   // Implementation of window.external.IsSearchProviderInstalled.
   static void IsSearchProviderInstalled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -74,21 +69,6 @@ ExternalExtensionWrapper::GetNativeFunctionTemplate(
 }
 
 // static
-RenderView* ExternalExtensionWrapper::GetRenderView() {
-  WebLocalFrame* webframe = WebLocalFrame::frameForCurrentContext();
-  DCHECK(webframe) << "There should be an active frame since we just got "
-      "a native function called.";
-  if (!webframe)
-    return NULL;
-
-  WebView* webview = webframe->view();
-  if (!webview)
-    return NULL;  // can happen during closing
-
-  return RenderView::FromWebView(webview);
-}
-
-// static
 void ExternalExtensionWrapper::IsSearchProviderInstalled(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (!args.Length() || !args[0]->IsString())
@@ -99,24 +79,25 @@ void ExternalExtensionWrapper::IsSearchProviderInstalled(
     return;
 
   std::string name(*utf8name);
-  RenderView* render_view = GetRenderView();
-  if (!render_view)
-    return;
 
   WebLocalFrame* webframe = WebLocalFrame::frameForCurrentContext();
   if (!webframe)
     return;
 
-  search_provider::InstallState install = search_provider::DENIED;
+  chrome::mojom::InstallState install = chrome::mojom::InstallState::DENIED;
   GURL inquiry_url = GURL(webframe->document().url()).Resolve(name);
   if (!inquiry_url.is_empty()) {
     webframe->didCallIsSearchProviderInstalled();
-    render_view->Send(new ChromeViewHostMsg_GetSearchProviderInstallState(
-        render_view->GetRoutingID(), webframe->document().url(), inquiry_url,
-        &install));
+    chrome::mojom::SearchProviderInstallStatePtr search_provider_service;
+    content::RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&search_provider_service));
+    if (!search_provider_service->GetInstallState(webframe->document().url(),
+                                                  inquiry_url, &install)) {
+      DLOG(ERROR) << "Can't fetch search provider install state";
+    }
   }
 
-  if (install == search_provider::DENIED) {
+  if (install == chrome::mojom::InstallState::DENIED) {
     // FIXME: throw access denied exception.
     v8::Isolate* isolate = args.GetIsolate();
     isolate->ThrowException(v8::Exception::Error(v8::String::Empty(isolate)));

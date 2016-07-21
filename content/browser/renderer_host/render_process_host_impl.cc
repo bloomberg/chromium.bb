@@ -138,6 +138,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/owned_interface.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
@@ -2098,6 +2099,11 @@ IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
 
 void RenderProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   channel_->AddFilter(filter->GetFilter());
+}
+
+void RenderProcessHostImpl::AddOwnedInterface(
+    std::unique_ptr<OwnedInterface> impl) {
+  owned_interface_impls_.push_back(std::move(impl));
 }
 
 bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {

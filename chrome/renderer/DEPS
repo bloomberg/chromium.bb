@@ -38,6 +38,7 @@ include_rules = [
   "+content/app/resources/grit",  # For generated headers
   "+content/app/strings/grit",  # For generated headers
   "+content/public/child",
+  "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",
   "+extensions/renderer",

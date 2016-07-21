@@ -639,6 +639,24 @@
       'includes': [ '../build/protoc.gypi' ],
     },
     {
+      # GN version: //chrome/common:search_provider_mojom
+      'target_name': 'common_search_provider_mojom',
+      'type': 'static_library',
+      'sources': [
+        'common/search_provider.mojom',
+      ],
+      'variables': {
+        'mojom_typemaps': [
+          '../url/mojo/gurl.typemap',
+        ],
+      },
+      'dependencies': [
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../url/url.gyp:url_mojom',
+      ],
+      'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
+    },
+    {
       'target_name': 'common_mojo_bindings_mojom',
       'type': 'none',
       'variables': {

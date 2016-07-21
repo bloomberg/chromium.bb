@@ -243,6 +243,7 @@
       'dependencies': [
         'common',
         'common_mojo_bindings',
+        'common_search_provider_mojom',
         'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',

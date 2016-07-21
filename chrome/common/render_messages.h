@@ -71,9 +71,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
 IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusState, OMNIBOX_FOCUS_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(search_provider::OSDDType,
                           search_provider::OSDD_TYPE_LAST)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(search_provider::InstallState,
-                              search_provider::DENIED,
-                              search_provider::INSTALLED_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
                           THEME_BKGRND_IMAGE_ALIGN_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)
@@ -453,13 +450,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_AppBannerDismissed,
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PageHasOSDD,
                     GURL /* page_url */,
                     GURL /* osdd_url */)
-
-// Find out if the given url's security origin is installed as a search
-// provider.
-IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetSearchProviderInstallState,
-                           GURL /* page url */,
-                           GURL /* inquiry url */,
-                           search_provider::InstallState /* install */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
