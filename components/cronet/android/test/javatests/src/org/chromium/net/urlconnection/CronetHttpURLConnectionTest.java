@@ -846,17 +846,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testServerHangsUp() throws Exception {
-        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        URL url = new URL(NativeTestServer.getExabyteResponseURL());
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        // Make the server echo a large request body, so it exceeds the internal
-        // read buffer.
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        byte[] largeData = TestUtil.getLargeData();
-        connection.setFixedLengthStreamingMode(largeData.length);
-        OutputStream out = connection.getOutputStream();
-        out.write(largeData);
-
         InputStream in = connection.getInputStream();
         // Read one byte and shut down the server.
         assertTrue(in.read() != 1);
