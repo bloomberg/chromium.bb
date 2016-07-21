@@ -179,7 +179,7 @@ CommonDecoder::Bucket* CommonDecoder::CreateBucket(uint32_t bucket_id) {
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket) {
     bucket = new Bucket();
-    buckets_[bucket_id] = linked_ptr<Bucket>(bucket);
+    buckets_[bucket_id] = std::unique_ptr<Bucket>(bucket);
   }
   return bucket;
 }

@@ -19,7 +19,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -521,6 +520,8 @@ class BackFramebuffer {
 
 struct FenceCallback {
   FenceCallback() : fence(gl::GLFence::Create()) { DCHECK(fence); }
+  FenceCallback(FenceCallback&&) = default;
+  FenceCallback& operator=(FenceCallback&&) = default;
   std::vector<base::Closure> callbacks;
   std::unique_ptr<gl::GLFence> fence;
 };
@@ -2251,7 +2252,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool gpu_trace_commands_;
   bool gpu_debug_commands_;
 
-  std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
+  std::queue<FenceCallback> pending_readpixel_fences_;
 
   // After a second fence is inserted, both the GpuChannelMessageQueue and
   // CommandExecutor are descheduled. Once the first fence has completed, both
@@ -10561,8 +10562,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         // PIXEL_PACK_BUFFER is bound, and all these settings haven't been
         // sent to GL.
         glReadPixels(x, y, width, height, format, type, 0);
-        pending_readpixel_fences_.push(linked_ptr<FenceCallback>(
-            new FenceCallback()));
+        pending_readpixel_fences_.push(FenceCallback());
         WaitForReadPixels(base::Bind(&GLES2DecoderImpl::FinishReadPixels,
                                      base::AsWeakPtr(this), c, buffer));
         glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
@@ -14412,7 +14412,7 @@ void GLES2DecoderImpl::ProcessPendingQueries(bool did_finish) {
 // this function will call the callback immediately.
 void GLES2DecoderImpl::WaitForReadPixels(base::Closure callback) {
   if (features().use_async_readpixels && !pending_readpixel_fences_.empty()) {
-    pending_readpixel_fences_.back()->callbacks.push_back(callback);
+    pending_readpixel_fences_.back().callbacks.push_back(callback);
   } else {
     callback.Run();
   }
@@ -14424,9 +14424,9 @@ void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
   // that's not guaranteed by all GLFence implementations.
   while (!pending_readpixel_fences_.empty() &&
          (did_finish ||
-          pending_readpixel_fences_.front()->fence->HasCompleted())) {
+          pending_readpixel_fences_.front().fence->HasCompleted())) {
     std::vector<base::Closure> callbacks =
-        pending_readpixel_fences_.front()->callbacks;
+        std::move(pending_readpixel_fences_.front().callbacks);
     pending_readpixel_fences_.pop();
     for (size_t i = 0; i < callbacks.size(); i++) {
       callbacks[i].Run();

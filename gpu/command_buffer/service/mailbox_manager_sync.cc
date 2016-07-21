@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <queue>
 
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -28,7 +28,7 @@ namespace {
 base::LazyInstance<base::Lock> g_lock = LAZY_INSTANCE_INITIALIZER;
 
 #if !defined(OS_MACOSX)
-typedef std::map<SyncToken, linked_ptr<gl::GLFence>> SyncTokenToFenceMap;
+typedef std::map<SyncToken, std::unique_ptr<gl::GLFence>> SyncTokenToFenceMap;
 base::LazyInstance<SyncTokenToFenceMap> g_sync_point_to_fence =
     LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::queue<SyncTokenToFenceMap::iterator>> g_sync_points =
@@ -50,13 +50,12 @@ void CreateFenceLocked(const SyncToken& sync_token) {
       sync_points.pop();
     }
     // Need to use EGL fences since we are likely not in a single share group.
-    linked_ptr<gl::GLFence> fence(make_linked_ptr(new gl::GLFenceEGL));
-    if (fence.get()) {
-      std::pair<SyncTokenToFenceMap::iterator, bool> result =
-          sync_point_to_fence.insert(std::make_pair(sync_token, fence));
-      DCHECK(result.second);
-      sync_points.push(result.first);
-    }
+    auto fence = base::MakeUnique<gl::GLFenceEGL>();
+    std::pair<SyncTokenToFenceMap::iterator, bool> result =
+        sync_point_to_fence.insert(
+            std::make_pair(sync_token, std::move(fence)));
+    DCHECK(result.second);
+    sync_points.push(result.first);
     DCHECK(sync_points.size() == sync_point_to_fence.size());
   }
 #endif

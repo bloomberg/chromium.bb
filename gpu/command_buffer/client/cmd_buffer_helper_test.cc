@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -164,17 +164,17 @@ class CommandBufferHelperTest : public testing::Test {
     int arg_count = cmd_size - 1;
 
     // Allocate array for args.
-    linked_ptr<std::vector<CommandBufferEntry> > args_ptr(
-        new std::vector<CommandBufferEntry>(arg_count ? arg_count : 1));
+    auto args_ptr =
+        base::MakeUnique<CommandBufferEntry[]>(arg_count ? arg_count : 1);
 
     for (int32_t ii = 0; ii < arg_count; ++ii) {
-      (*args_ptr)[ii].value_uint32 = 0xF00DF00D + ii;
+      args_ptr[ii].value_uint32 = 0xF00DF00D + ii;
     }
 
     // Add command and save args in test_command_args_ until the test completes.
     AddCommandWithExpect(
-        _return, test_command_next_id_++, arg_count, &(*args_ptr)[0]);
-    test_command_args_.insert(test_command_args_.end(), args_ptr);
+        _return, test_command_next_id_++, arg_count, args_ptr.get());
+    test_command_args_.push_back(std::move(args_ptr));
   }
 
   void TestCommandWrappingFull(int32_t cmd_size, int32_t start_commands) {
@@ -264,7 +264,7 @@ class CommandBufferHelperTest : public testing::Test {
   std::unique_ptr<CommandBufferServiceLocked> command_buffer_;
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<CommandBufferHelper> helper_;
-  std::list<linked_ptr<std::vector<CommandBufferEntry> > > test_command_args_;
+  std::vector<std::unique_ptr<CommandBufferEntry[]>> test_command_args_;
   unsigned int test_command_next_id_;
   Sequence sequence_;
   base::MessageLoop message_loop_;
