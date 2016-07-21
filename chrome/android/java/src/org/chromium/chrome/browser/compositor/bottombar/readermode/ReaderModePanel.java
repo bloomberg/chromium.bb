@@ -312,7 +312,10 @@ public class ReaderModePanel extends OverlayPanel {
 
     @Override
     public void onLayoutChanged(float width, float height, float visibleViewportOffsetY) {
+        if (width != getWidth()) destroyReaderModeBarControl();
+
         super.onLayoutChanged(width, height, visibleViewportOffsetY);
+
         if (mManagerDelegate != null) {
             mManagerDelegate.onLayoutChanged();
         }
