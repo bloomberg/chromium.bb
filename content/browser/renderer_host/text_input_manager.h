@@ -76,13 +76,13 @@ class CONTENT_EXPORT TextInputManager {
 
   // Returns the currently stored TextInputState. An state of nullptr can be
   // interpreted as a ui::TextInputType of ui::TEXT_INPUT_TYPE_NONE.
-  const TextInputState* GetTextInputState();
+  const TextInputState* GetTextInputState() const;
 
   // Returns the rect between selection bounds.
-  gfx::Rect GetSelectionBoundsRect();
+  gfx::Rect GetSelectionBoundsRect() const;
 
   // Returns a vector of rects representing the character bounds.
-  const std::vector<gfx::Rect>* GetCompositionCharacterBounds();
+  const std::vector<gfx::Rect>* GetCompositionCharacterBounds() const;
 
   // ---------------------------------------------------------------------------
   // The following methods are called by RWHVs on the tab to update their IME-
@@ -171,9 +171,10 @@ class CONTENT_EXPORT TextInputManager {
   // cannot have a |TextInputState.type| of ui::TEXT_INPUT_TYPE_NONE.
   RenderWidgetHostViewBase* active_view_;
 
+  // The following maps track corresponding IME state for views. For each view,
+  // the values in the map are initialized and cleared in Register and
+  // Unregister methods, respectively.
   ViewMap<TextInputState> text_input_state_map_;
-
-  // Text selection bounds information for registered views.
   ViewMap<SelectionRegion> selection_region_map_;
   ViewMap<CompositionRangeInfo> composition_range_info_map_;
 
