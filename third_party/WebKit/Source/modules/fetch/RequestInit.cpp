@@ -98,7 +98,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
             // hop between the browser and renderer processes to deal with service workers is equally
             // painful. There should be no developer-visible difference in behavior with this option,
             // except that the `Content-Type` header will be set early. That seems reasonable.
-            PasswordCredential* credential = V8PasswordCredential::toImpl(v8::Local<v8::Object>::Cast(v8Credential));
+            PasswordCredential* credential = V8PasswordCredential::toImpl(v8Credential.As<v8::Object>());
             attachedCredential = credential->encodeFormData(contentType);
             credentials = "password";
         } else if (v8Credential->IsString()) {
@@ -110,21 +110,21 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         return;
 
     if (v8Body->IsArrayBuffer()) {
-        body = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Body)));
+        body = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(v8Body.As<v8::Object>()));
     } else if (v8Body->IsArrayBufferView()) {
-        body = FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Body)));
+        body = FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(v8Body.As<v8::Object>()));
     } else if (V8Blob::hasInstance(v8Body, isolate)) {
-        RefPtr<BlobDataHandle> blobDataHandle = V8Blob::toImpl(v8::Local<v8::Object>::Cast(v8Body))->blobDataHandle();
+        RefPtr<BlobDataHandle> blobDataHandle = V8Blob::toImpl(v8Body.As<v8::Object>())->blobDataHandle();
         contentType = blobDataHandle->type();
         body = FetchBlobDataConsumerHandle::create(context, blobDataHandle.release());
     } else if (V8FormData::hasInstance(v8Body, isolate)) {
-        RefPtr<EncodedFormData> formData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeMultiPartFormData();
+        RefPtr<EncodedFormData> formData = V8FormData::toImpl(v8Body.As<v8::Object>())->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (V8URLSearchParams::hasInstance(v8Body, isolate)) {
-        RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->toEncodedFormData();
+        RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8Body.As<v8::Object>())->toEncodedFormData();
         contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (v8Body->IsString()) {
