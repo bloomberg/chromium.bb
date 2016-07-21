@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
@@ -132,6 +133,7 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
+#include "components/subresource_filter/content/browser/subresource_filter_navigation_throttle.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
@@ -2980,6 +2982,20 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (!handle->IsInMainFrame())
     throttles.push_back(new extensions::ExtensionNavigationThrottle(handle));
 #endif
+
+  subresource_filter::ContentSubresourceFilterDriverFactory*
+      subresource_filter_driver_factory =
+          subresource_filter::ContentSubresourceFilterDriverFactory::
+              FromWebContents(handle->GetWebContents());
+  if (subresource_filter_driver_factory && handle->IsInMainFrame() &&
+      handle->GetURL().SchemeIsHTTPOrHTTPS()) {
+    // TODO(melandory): Activation logic should be moved to the
+    // WebContentsObserver, once ReadyToCommitNavigation is available on
+    // pre-PlzNavigate world (tracking bug: https://crbug.com/621856).
+    throttles.push_back(
+        subresource_filter::SubresourceFilterNavigationThrottle::Create(
+            handle));
+  }
 
   return throttles;
 }

@@ -206,6 +206,8 @@
             'subresource_filter/content/browser/content_subresource_filter_driver.h',
             'subresource_filter/content/browser/content_subresource_filter_driver_factory.cc',
             'subresource_filter/content/browser/content_subresource_filter_driver_factory.h',
+            'subresource_filter/content/browser/subresource_filter_navigation_throttle.cc',
+            'subresource_filter/content/browser/subresource_filter_navigation_throttle.h',
           ],
         },
       ],

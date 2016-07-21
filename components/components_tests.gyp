@@ -799,6 +799,7 @@
     'subresource_filter_content_browser_unittest_sources': [
       'subresource_filter/content/browser/content_ruleset_distributor_unittest.cc',
       'subresource_filter/content/browser/content_subresource_filter_driver_factory_unittest.cc',
+      'subresource_filter/content/browser/subresource_filter_navigation_throttle_unittests.cc',
     ],
     'subresource_filter_content_renderer_unittest_sources': [
       'subresource_filter/content/renderer/document_subresource_filter_unittest.cc',
@@ -1380,6 +1381,7 @@
             'components.gyp:subresource_filter_content_browser',
             'components.gyp:subresource_filter_content_common',
             'components.gyp:subresource_filter_content_renderer',
+            'components.gyp:subresource_filter_core_browser',
             'components.gyp:test_database_manager',
             'components.gyp:url_matcher',
             'components.gyp:visitedlink_browser',

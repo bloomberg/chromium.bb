@@ -192,6 +192,10 @@ class CONTENT_EXPORT NavigationHandle {
                                     const GURL& new_referrer_url,
                                     bool new_is_external_protocol) = 0;
 
+  // Simulates the reception of the network response.
+  virtual NavigationThrottle::ThrottleCheckResult
+  CallWillProcessResponseForTesting(RenderFrameHost* render_frame_host) = 0;
+
   // The NavigationData that the embedder returned from
   // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
   // be a clone of the NavigationData.

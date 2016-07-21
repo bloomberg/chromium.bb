@@ -63,15 +63,30 @@ void ContentSubresourceFilterDriverFactory::
         safe_browsing::ThreatPatternType threat_type) {
   if (threat_type != safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS)
     return;
-  activate_on_origins_.insert(url.host());
-  for (const auto& url : redirect_urls) {
-    activate_on_origins_.insert(url.host());
-  }
+  AddOriginOfURLToActivationSet(url);
+  for (const auto& url : redirect_urls)
+    AddOriginOfURLToActivationSet(url);
 }
 
 bool ContentSubresourceFilterDriverFactory::ShouldActivateForURL(
-    const GURL& url) {
+    const GURL& url) const {
   return activation_set().find(url.host()) != activation_set().end();
+}
+
+void ContentSubresourceFilterDriverFactory::AddOriginOfURLToActivationSet(
+    const GURL& url) {
+  if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
+    activate_on_origins_.insert(url.host());
+}
+
+void ContentSubresourceFilterDriverFactory::SetDriverForFrameHostForTesting(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<ContentSubresourceFilterDriver> driver) {
+  auto iterator_and_inserted =
+      frame_drivers_.insert(std::make_pair(render_frame_host, nullptr));
+  if (iterator_and_inserted.second) {
+    iterator_and_inserted.first->second = std::move(driver);
+  }
 }
 
 ContentSubresourceFilterDriver*

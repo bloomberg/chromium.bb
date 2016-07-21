@@ -20,11 +20,11 @@ class ContentSubresourceFilterDriver {
  public:
   explicit ContentSubresourceFilterDriver(
       content::RenderFrameHost* render_frame_host);
-  ~ContentSubresourceFilterDriver();
+  virtual ~ContentSubresourceFilterDriver();
 
   // Instructs the agent on the renderer to set up the subresource filter for
   // the currently ongoing provisional document load in the frame.
-  void ActivateForProvisionalLoad(ActivationState activation_state);
+  virtual void ActivateForProvisionalLoad(ActivationState activation_state);
 
  private:
   // The RenderFrameHost that this driver belongs to.

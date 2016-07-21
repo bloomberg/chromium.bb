@@ -3447,6 +3447,7 @@
             '../components/components.gyp:sessions_content',
             '../components/components.gyp:ssl_config',
             '../components/components.gyp:storage_monitor',
+            '../components/components.gyp:subresource_filter_content_browser',
             '../components/components.gyp:syncable_prefs',
             '../components/components.gyp:translate_content_browser',
             '../components/components.gyp:upload_list',

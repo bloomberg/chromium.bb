@@ -33,6 +33,9 @@ class ContentSubresourceFilterDriver;
 
 // Controls the activation of subresource filtering for each page load in a
 // WebContents and manufactures the per-frame ContentSubresourceFilterDrivers.
+// TODO(melandory): Once https://crbug.com/621856 is fixed this class should
+// take care of passing the activation information not only to the main frame,
+// but also to the subframes.
 class ContentSubresourceFilterDriverFactory
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver {
@@ -49,19 +52,26 @@ class ContentSubresourceFilterDriverFactory
       const GURL& url,
       const std::vector<GURL>& redirect_urls,
       safe_browsing::ThreatPatternType threat_type);
-  const OriginSet& activation_set() { return activate_on_origins_; }
-  bool ShouldActivateForURL(const GURL& url);
+  const OriginSet& activation_set() const { return activate_on_origins_; }
+  bool ShouldActivateForURL(const GURL& url) const;
+  void AddOriginOfURLToActivationSet(const GURL& url);
+
+  ContentSubresourceFilterDriver* DriverFromFrameHost(
+      content::RenderFrameHost* render_frame_host);
 
  private:
+  friend class SubresourceFilterNavigationThrottleTest;
+
   typedef std::map<content::RenderFrameHost*,
                    std::unique_ptr<ContentSubresourceFilterDriver>>
       FrameHostToOwnedDriverMap;
 
+  void SetDriverForFrameHostForTesting(
+      content::RenderFrameHost* render_frame_host,
+      std::unique_ptr<ContentSubresourceFilterDriver> driver);
+
   void CreateDriverForFrameHostIfNeeded(
       content::RenderFrameHost* render_frame_host);
-  ContentSubresourceFilterDriver* DriverFromFrameHost(
-      content::RenderFrameHost* render_frame_host);
-
   // content::WebContentsObserver:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;

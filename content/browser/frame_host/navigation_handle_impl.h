@@ -114,6 +114,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_method_is_post,
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
+  NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
+      RenderFrameHost* render_frame_host) override;
+
   NavigationData* GetNavigationData() override;
 
   NavigatorDelegate* GetDelegate() const;

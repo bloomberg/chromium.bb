@@ -294,6 +294,19 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
   return result;
 }
 
+NavigationThrottle::ThrottleCheckResult
+NavigationHandleImpl::CallWillProcessResponseForTesting(
+    content::RenderFrameHost* render_frame_host) {
+  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
+                      scoped_refptr<net::HttpResponseHeaders>(),
+                      base::Bind(&UpdateThrottleCheckResult, &result));
+
+  // Reset the callback to ensure it will not be called later.
+  complete_callback_.Reset();
+  return result;
+}
+
 NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
 }

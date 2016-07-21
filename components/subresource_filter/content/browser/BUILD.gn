@@ -10,6 +10,8 @@ source_set("browser") {
     "content_subresource_filter_driver.h",
     "content_subresource_filter_driver_factory.cc",
     "content_subresource_filter_driver_factory.h",
+    "subresource_filter_navigation_throttle.cc",
+    "subresource_filter_navigation_throttle.h",
   ]
   deps = [
     "//base",
@@ -29,12 +31,15 @@ source_set("unit_tests") {
   sources = [
     "content_ruleset_distributor_unittest.cc",
     "content_subresource_filter_driver_factory_unittest.cc",
+    "subresource_filter_navigation_throttle_unittests.cc",
   ]
   deps = [
     ":browser",
     "//base/test:test_support",
     "//components/safe_browsing_db:util",
     "//components/subresource_filter/content/common",
+    "//components/subresource_filter/core/browser",
+    "//components/subresource_filter/core/browser:test_support",
     "//content/test:test_support",
     "//ipc",
     "//ipc:test_support",
