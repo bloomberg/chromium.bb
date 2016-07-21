@@ -96,10 +96,6 @@
     "dependencies": ["permission:appview"],
     "contexts": ["blessed_extension"]
   },
-  "audioModem": {
-    "dependencies": ["permission:audioModem"],
-    "contexts": ["blessed_extension"]
-  },
   "autofillPrivate": [{
     "dependencies": ["permission:autofillPrivate"],
     "contexts": ["blessed_extension"]
@@ -267,10 +263,6 @@
   },
   "cookies": {
     "dependencies": ["permission:cookies"],
-    "contexts": ["blessed_extension"]
-  },
-  "copresencePrivate": {
-    "dependencies": ["permission:copresencePrivate"],
     "contexts": ["blessed_extension"]
   },
   "cryptotokenPrivate": {

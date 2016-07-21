@@ -63,7 +63,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kAccessibilityPrivate, "accessibilityPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kActiveTab, "activeTab"},
-      {APIPermission::kAudioModem, "audioModem"},
       {APIPermission::kBookmark, "bookmarks"},
       {APIPermission::kBrailleDisplayPrivate, "brailleDisplayPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
@@ -72,7 +71,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kContentSettings, "contentSettings"},
       {APIPermission::kContextMenus, "contextMenus"},
       {APIPermission::kCookie, "cookies"},
-      {APIPermission::kCopresencePrivate, "copresencePrivate"},
       {APIPermission::kCryptotokenPrivate, "cryptotokenPrivate"},
       {APIPermission::kDataReductionProxy, "dataReductionProxy",
        APIPermissionInfo::kFlagImpliesFullURLAccess |
