@@ -427,8 +427,6 @@
             '../media/cast/cast.gyp:cast_testing_tools',
             '../media/cast/cast.gyp:tap_proxy',
             '../net/net.gyp:disk_cache_memory_test',
-            '../net/net.gyp:flip_in_mem_edsm_server',
-            '../net/net.gyp:flip_in_mem_edsm_server_unittests',
             '../net/net.gyp:epoll_quic_client',
             '../net/net.gyp:epoll_quic_server',
             '../net/net.gyp:hpack_example_generator',

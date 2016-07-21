@@ -463,8 +463,6 @@ group("both_gn_and_gyp") {
       "//chrome:manpage",
       "//chrome:xdg_mime",
       "//net:disk_cache_memory_test",
-      "//net:flip_in_mem_edsm_server",
-      "//net:flip_in_mem_edsm_server_unittests",
       "//net:quic_client",
       "//net:quic_server",
       "//sandbox/linux:chrome_sandbox",

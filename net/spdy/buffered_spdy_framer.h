@@ -191,14 +191,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFramer::SpdyState state() const;
   bool MessageFullyRead();
   bool HasError();
-  SpdySerializedFrame* CreateSynStream(SpdyStreamId stream_id,
-                                       SpdyStreamId associated_stream_id,
-                                       SpdyPriority priority,
-                                       SpdyControlFlags flags,
-                                       SpdyHeaderBlock headers);
-  SpdySerializedFrame* CreateSynReply(SpdyStreamId stream_id,
-                                      SpdyControlFlags flags,
-                                      SpdyHeaderBlock headers);
   SpdySerializedFrame* CreateRstStream(SpdyStreamId stream_id,
                                        SpdyRstStreamStatus status) const;
   SpdySerializedFrame* CreateSettings(const SettingsMap& values) const;

@@ -1077,87 +1077,6 @@ if (is_linux) {
     ]
   }
 
-  static_library("flip_in_mem_edsm_server_base") {
-    testonly = true
-    sources = [
-      "tools/flip_server/acceptor_thread.cc",
-      "tools/flip_server/acceptor_thread.h",
-      "tools/flip_server/constants.h",
-      "tools/flip_server/flip_config.cc",
-      "tools/flip_server/flip_config.h",
-      "tools/flip_server/http_interface.cc",
-      "tools/flip_server/http_interface.h",
-      "tools/flip_server/mem_cache.cc",
-      "tools/flip_server/mem_cache.h",
-      "tools/flip_server/output_ordering.cc",
-      "tools/flip_server/output_ordering.h",
-      "tools/flip_server/ring_buffer.cc",
-      "tools/flip_server/ring_buffer.h",
-      "tools/flip_server/sm_connection.cc",
-      "tools/flip_server/sm_connection.h",
-      "tools/flip_server/sm_interface.h",
-      "tools/flip_server/spdy_interface.cc",
-      "tools/flip_server/spdy_interface.h",
-      "tools/flip_server/spdy_ssl.cc",
-      "tools/flip_server/spdy_ssl.h",
-      "tools/flip_server/spdy_util.cc",
-      "tools/flip_server/spdy_util.h",
-      "tools/flip_server/streamer_interface.cc",
-      "tools/flip_server/streamer_interface.h",
-      "tools/flip_server/tcp_socket_util.cc",
-      "tools/flip_server/tcp_socket_util.h",
-      "tools/flip_server/url_to_filename_encoder.cc",
-      "tools/flip_server/url_to_filename_encoder.h",
-      "tools/flip_server/url_utilities.cc",
-      "tools/flip_server/url_utilities.h",
-    ]
-    deps = [
-      ":balsa",
-      ":epoll_server",
-      ":net",
-      "//base",
-      "//third_party/boringssl",
-    ]
-  }
-
-  executable("flip_in_mem_edsm_server_unittests") {
-    testonly = true
-    sources = [
-      "tools/flip_server/flip_test_utils.cc",
-      "tools/flip_server/flip_test_utils.h",
-      "tools/flip_server/http_interface_test.cc",
-      "tools/flip_server/mem_cache_test.cc",
-      "tools/flip_server/run_all_tests.cc",
-      "tools/flip_server/spdy_interface_test.cc",
-      "tools/flip_server/url_to_filename_encoder_unittest.cc",
-      "tools/flip_server/url_utilities_unittest.cc",
-    ]
-    deps = [
-      ":balsa",
-      ":flip_in_mem_edsm_server_base",
-      ":net",
-      ":test_support",
-      "//build/config/sanitizers:deps",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/boringssl",
-    ]
-  }
-
-  executable("flip_in_mem_edsm_server") {
-    testonly = true
-    sources = [
-      "tools/flip_server/flip_in_mem_edsm_server.cc",
-    ]
-    deps = [
-      ":balsa",
-      ":flip_in_mem_edsm_server_base",
-      ":net",
-      "//base",
-      "//build/config/sanitizers:deps",
-    ]
-  }
-
   source_set("epoll_quic_tools") {
     sources = [
       "tools/quic/quic_client.cc",
@@ -1472,7 +1391,6 @@ test("net_unittests") {
     deps += [
       ":epoll_quic_tools",
       ":epoll_server",
-      ":flip_in_mem_edsm_server_base",
     ]
   }
 
