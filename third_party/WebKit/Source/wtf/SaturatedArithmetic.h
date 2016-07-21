@@ -73,6 +73,13 @@ ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b)
     return result;
 }
 
+ALWAYS_INLINE int32_t saturatedNegative(int32_t a)
+{
+    if (UNLIKELY(a == std::numeric_limits<int>::min()))
+        return std::numeric_limits<int>::max();
+    return -a;
+}
+
 inline int getMaxSaturatedSetResultForTesting(int FractionalShift)
 {
     // For C version the set function maxes out to max int, this differs from

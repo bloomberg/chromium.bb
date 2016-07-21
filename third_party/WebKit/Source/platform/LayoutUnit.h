@@ -644,12 +644,8 @@ inline float operator-(const float a, const LayoutUnit& b)
 
 inline LayoutUnit operator-(const LayoutUnit& a)
 {
-    // -min() is saturated to max().
-    if (a == LayoutUnit::min())
-        return LayoutUnit::max();
-
     LayoutUnit returnVal;
-    returnVal.setRawValue(-a.rawValue());
+    returnVal.setRawValue(saturatedNegative(a.rawValue()));
     return returnVal;
 }
 

@@ -33,6 +33,11 @@ ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b)
     return result;
 }
 
+ALWAYS_INLINE int32_t saturatedNegative(int32_t a)
+{
+    return saturatedSubtraction(0, a);
+}
+
 inline int getMaxSaturatedSetResultForTesting(int FractionalShift)
 {
     // For ARM Asm version the set function maxes out to the biggest
