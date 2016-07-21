@@ -70245,6 +70245,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CrashExitCodes" type="int">
+  <int value="1" label="RESULT_CODE_KILLED"/>
   <int value="2" label="RESULT_CODE_HUNG"/>
   <int value="3" label="RESULT_CODE_KILLED_BAD_MESSAGE"/>
   <int value="4" label="RESULT_CODE_INVALID_CMDLINE_URL"/>
@@ -70272,6 +70273,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="28" label="RESULT_CODE_SXS_MIGRATION_FAILED"/>
   <int value="29" label="RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
   <int value="30" label="RESULT_CODE_INVALID_SANDBOX_STATE"/>
+  <int value="258" label="WAIT_TIMEOUT"/>
   <int value="7006" label="SBOX_FATAL_INTEGRITY"/>
   <int value="7007" label="SBOX_FATAL_DROPTOKEN"/>
   <int value="7008" label="SBOX_FATAL_FLUSHANDLES"/>
@@ -70285,11 +70287,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="85436397" label="Crashpad_SimulatedCrash"/>
   <int value="529697949" label="CPP_EH_EXCEPTION"/>
   <int value="533692099" label="STATUS_GUARD_PAGE_VIOLATION"/>
-  <int value="536870904" label="EXCEPTION_OUT_OF_MEMORY"/>
+  <int value="536870904" label="Out of Memory"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
+  <int value="1073740940" label="STATUS_HEAP_CORRUPTION"/>
+  <int value="1073741502" label="STATUS_DLL_INIT_FAILED"/>
   <int value="1073741510" label="STATUS_CONTROL_C_EXIT"/>
   <int value="1073741515" label="STATUS_DLL_NOT_FOUND"/>
   <int value="1073741571" label="STATUS_STACK_OVERFLOW"/>
+  <int value="1073741659" label="STATUS_BAD_IMPERSONATION_LEVEL"/>
   <int value="1073741674" label="STATUS_PRIVILEGED_INSTRUCTION"/>
   <int value="1073741675" label="STATUS_INTEGER_OVERFLOW"/>
   <int value="1073741676" label="STATUS_INTEGER_DIVIDE_BY_ZERO"/>
@@ -70305,13 +70310,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1073741786" label="STATUS_INVALID_DISPOSITION"/>
   <int value="1073741787" label="STATUS_NONCONTINUABLE_EXCEPTION"/>
   <int value="1073741790" label="STATUS_ACCESS_DENIED"/>
+  <int value="1073741794" label="STATUS_INVALID_LOCK_SEQUENCE"/>
   <int value="1073741795" label="STATUS_ILLEGAL_INSTRUCTION"/>
+  <int value="1073741800" label="STATUS_CONFLICTING_ADDRESSES"/>
   <int value="1073741801" label="STATUS_NO_MEMORY"/>
   <int value="1073741811" label="STATUS_INVALID_PARAMETER"/>
   <int value="1073741816" label="STATUS_INVALID_HANDLE"/>
   <int value="1073741818" label="STATUS_IN_PAGE_ERROR"/>
   <int value="1073741819" label="STATUS_ACCESS_VIOLATION"/>
   <int value="1073741829" label="STATUS_SEGMENT_NOTIFICATION"/>
+  <int value="1073741845" label="STATUS_FATAL_APP_EXIT"/>
   <int value="2147483644" label="STATUS_SINGLE_STEP"/>
   <int value="2147483645" label="STATUS_BREAKPOINT"/>
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
