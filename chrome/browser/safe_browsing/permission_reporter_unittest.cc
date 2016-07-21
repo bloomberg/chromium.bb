@@ -33,6 +33,7 @@ const char kDummyOriginTwo[] = "http://example2.test/";
 const PermissionType kDummyPermissionOne = PermissionType::GEOLOCATION;
 const PermissionType kDummyPermissionTwo = PermissionType::NOTIFICATIONS;
 const PermissionAction kDummyAction = GRANTED;
+const PermissionSourceUI kDummySourceUI = PermissionSourceUI::PROMPT;
 
 const char kDummyTrialOne[] = "trial one";
 const char kDummyGroupOne[] = "group one";
@@ -106,13 +107,14 @@ class PermissionReporterTest : public ::testing::Test {
 // SafeBrowsing CSD servers.
 TEST_F(PermissionReporterTest, SendReport) {
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
 
   PermissionReport permission_report;
   ASSERT_TRUE(
       permission_report.ParseFromString(mock_report_sender_->latest_report()));
   EXPECT_EQ(PermissionReport::GEOLOCATION, permission_report.permission());
   EXPECT_EQ(PermissionReport::GRANTED, permission_report.action());
+  EXPECT_EQ(PermissionReport::PROMPT, permission_report.source_ui());
   EXPECT_EQ(kDummyOriginOne, permission_report.origin());
 #if defined(OS_ANDROID)
   EXPECT_EQ(PermissionReport::ANDROID_PLATFORM,
@@ -159,7 +161,7 @@ TEST_F(PermissionReporterTest, SendReportWithFieldTrials) {
   EXPECT_TRUE(base::FieldTrialList::IsTrialActive(trial_two->trial_name()));
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
 
   PermissionReport permission_report;
   ASSERT_TRUE(
@@ -189,29 +191,29 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
   int reports_to_send = kMaximumReportsPerOriginPerPermissionPerMinute;
   while (reports_to_send--)
     permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                     kDummyAction);
+                                     kDummyAction, kDummySourceUI);
   EXPECT_EQ(5, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
   EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionTwo,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginTwo), kDummyPermissionOne,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMinutes(1));
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
   EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction);
+                                   kDummyAction, kDummySourceUI);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMinutes(1));
@@ -219,7 +221,7 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
   while (reports_to_send--) {
     clock_->Advance(base::TimeDelta::FromSeconds(5));
     permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                     kDummyAction);
+                                     kDummyAction, kDummySourceUI);
   }
   EXPECT_EQ(kMaximumReportsPerOriginPerPermissionPerMinute,
             mock_report_sender_->GetAndResetNumberOfReportsSent());

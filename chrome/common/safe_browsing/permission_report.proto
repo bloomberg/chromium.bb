@@ -53,8 +53,6 @@ message PermissionReport {
   // User Permission Actions. This enum is intentionally different with 
   // the one in src/chrome/browser/permissions/permission_uma_util.h
   enum Action {
-    // TODO(stefanocs): Add ACTION_UNSPECIFIED to the corresponding Safe
-    // Browsing logs proto.
     ACTION_UNSPECIFIED = 0;
     GRANTED = 1;
     DENIED = 2;
@@ -68,9 +66,8 @@ message PermissionReport {
     SOURCE_UI_UNSPECIFIED = 0;
     PROMPT = 1;
     OIB = 2;
-    // TODO(stefanocs): Remove CONTENT_SETTINGS from the corresponding Safe
-    // Browsing logs proto.
     SITE_SETTINGS = 3;
+    PAGE_ACTION = 4;
   }
 
   // The various types of permissions. This should stay in sync with the

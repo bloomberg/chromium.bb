@@ -197,28 +197,33 @@ void PermissionUmaUtil::PermissionRequested(PermissionType permission,
 void PermissionUmaUtil::PermissionGranted(PermissionType permission,
                                           const GURL& requesting_origin,
                                           Profile* profile) {
-  RecordPermissionAction(permission, GRANTED, requesting_origin, profile);
+  RecordPermissionAction(permission, GRANTED, PermissionSourceUI::PROMPT,
+                         requesting_origin, profile);
 }
 
 void PermissionUmaUtil::PermissionDenied(PermissionType permission,
                                          const GURL& requesting_origin,
                                          Profile* profile) {
-  RecordPermissionAction(permission, DENIED, requesting_origin, profile);
+  RecordPermissionAction(permission, DENIED, PermissionSourceUI::PROMPT,
+                         requesting_origin, profile);
 }
 
 void PermissionUmaUtil::PermissionDismissed(PermissionType permission,
                                             const GURL& requesting_origin,
                                             Profile* profile) {
-  RecordPermissionAction(permission, DISMISSED, requesting_origin, profile);
+  RecordPermissionAction(permission, DISMISSED, PermissionSourceUI::PROMPT,
+                         requesting_origin, profile);
 }
 
 void PermissionUmaUtil::PermissionIgnored(PermissionType permission,
                                           const GURL& requesting_origin,
                                           Profile* profile) {
-  RecordPermissionAction(permission, IGNORED, requesting_origin, profile);
+  RecordPermissionAction(permission, IGNORED, PermissionSourceUI::PROMPT,
+                         requesting_origin, profile);
 }
 
 void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
+                                          PermissionSourceUI source_ui,
                                           const GURL& revoked_origin,
                                           Profile* profile) {
   // TODO(tsergeant): Expand metrics definitions for revocation to include all
@@ -227,7 +232,8 @@ void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
       permission == PermissionType::GEOLOCATION ||
       permission == PermissionType::AUDIO_CAPTURE ||
       permission == PermissionType::VIDEO_CAPTURE) {
-    RecordPermissionAction(permission, REVOKED, revoked_origin, profile);
+    RecordPermissionAction(permission, REVOKED, source_ui, revoked_origin,
+                           profile);
   }
 }
 
@@ -330,6 +336,7 @@ bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
 
 void PermissionUmaUtil::RecordPermissionAction(PermissionType permission,
                                                PermissionAction action,
+                                               PermissionSourceUI source_ui,
                                                const GURL& requesting_origin,
                                                Profile* profile) {
   if (IsOptedIntoPermissionActionReporting(profile)) {
@@ -337,7 +344,8 @@ void PermissionUmaUtil::RecordPermissionAction(PermissionType permission,
     // sent.
     g_browser_process->safe_browsing_service()
         ->ui_manager()
-        ->ReportPermissionAction(requesting_origin, permission, action);
+        ->ReportPermissionAction(requesting_origin, permission, action,
+                                 source_ui);
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

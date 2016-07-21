@@ -100,8 +100,11 @@ void PermissionUtil::SetContentSettingAndRecordRevocation(
       final_value != CONTENT_SETTING_ALLOW) {
     PermissionType permission_type;
     if (PermissionUtil::GetPermissionType(content_type, &permission_type)) {
-      PermissionUmaUtil::PermissionRevoked(permission_type, primary_url,
-                                           profile);
+      // TODO(stefanocs): Report revocations from page action as PAGE_ACTION
+      // source UI instead of SITE_SETTINGS source UI.
+      PermissionUmaUtil::PermissionRevoked(permission_type,
+                                           PermissionSourceUI::SITE_SETTINGS,
+                                           primary_url, profile);
     }
   }
 }

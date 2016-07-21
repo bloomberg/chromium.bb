@@ -154,7 +154,8 @@ class SafeBrowsingUIManager
   // thread.
   void ReportPermissionAction(const GURL& origin,
                               content::PermissionType permission,
-                              PermissionAction action);
+                              PermissionAction action,
+                              PermissionSourceUI source_ui);
 
   // Add and remove observers.  These methods must be invoked on the UI thread.
   void AddObserver(Observer* observer);
@@ -179,7 +180,8 @@ class SafeBrowsingUIManager
   // Report permission action to SafeBrowsing servers.
   void ReportPermissionActionOnIOThread(const GURL& origin,
                                         content::PermissionType permission,
-                                        PermissionAction action);
+                                        PermissionAction action,
+                                        PermissionSourceUI source_ui);
 
   // Updates the whitelist state.  Called on the UI thread.
   void AddToWhitelist(const UnsafeResource& resource);

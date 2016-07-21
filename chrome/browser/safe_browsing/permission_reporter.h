@@ -55,7 +55,8 @@ class PermissionReporter {
   // //src/chrome/common/safe_browsing/permission_report.proto
   void SendReport(const GURL& origin,
                   content::PermissionType permission,
-                  PermissionAction action);
+                  PermissionAction action,
+                  PermissionSourceUI source_ui);
 
  private:
   friend class PermissionReporterTest;
@@ -73,6 +74,7 @@ class PermissionReporter {
   static bool BuildReport(const GURL& origin,
                           content::PermissionType permission,
                           PermissionAction action,
+                          PermissionSourceUI source_ui,
                           std::string* output);
 
   // Returns false if the number of reports sent in the last one minute per

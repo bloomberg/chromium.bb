@@ -80,6 +80,24 @@ PermissionReport::Action PermissionActionForReport(PermissionAction action) {
   return PermissionReport::ACTION_UNSPECIFIED;
 }
 
+PermissionReport::SourceUI SourceUIForReport(PermissionSourceUI source_ui) {
+  switch (source_ui) {
+    case PermissionSourceUI::PROMPT:
+      return PermissionReport::PROMPT;
+    case PermissionSourceUI::OIB:
+      return PermissionReport::OIB;
+    case PermissionSourceUI::SITE_SETTINGS:
+      return PermissionReport::SITE_SETTINGS;
+    case PermissionSourceUI::PAGE_ACTION:
+      return PermissionReport::PAGE_ACTION;
+    case PermissionSourceUI::SOURCE_UI_NUM:
+      break;
+  }
+
+  NOTREACHED();
+  return PermissionReport::SOURCE_UI_UNSPECIFIED;
+}
+
 }  // namespace
 
 bool PermissionAndOrigin::operator==(const PermissionAndOrigin& other) const {
@@ -112,11 +130,12 @@ PermissionReporter::~PermissionReporter() {}
 
 void PermissionReporter::SendReport(const GURL& origin,
                                     content::PermissionType permission,
-                                    PermissionAction action) {
+                                    PermissionAction action,
+                                    PermissionSourceUI source_ui) {
   if (IsReportThresholdExceeded(permission, origin))
     return;
   std::string serialized_report;
-  BuildReport(origin, permission, action, &serialized_report);
+  BuildReport(origin, permission, action, source_ui, &serialized_report);
   permission_report_sender_->Send(GURL(kPermissionActionReportingUploadUrl),
                                   serialized_report);
 }
@@ -125,11 +144,13 @@ void PermissionReporter::SendReport(const GURL& origin,
 bool PermissionReporter::BuildReport(const GURL& origin,
                                      PermissionType permission,
                                      PermissionAction action,
+                                     PermissionSourceUI source_ui,
                                      std::string* output) {
   PermissionReport report;
   report.set_origin(origin.spec());
   report.set_permission(PermissionTypeForReport(permission));
   report.set_action(PermissionActionForReport(action));
+  report.set_source_ui(SourceUIForReport(source_ui));
 
   // Collect platform data.
 #if defined(OS_ANDROID)

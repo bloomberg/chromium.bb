@@ -138,8 +138,9 @@ void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
 void SafeBrowsingPingManager::ReportPermissionAction(
     const GURL& origin,
     content::PermissionType permission,
-    PermissionAction action) {
-  permission_reporter_->SendReport(origin, permission, action);
+    PermissionAction action,
+    PermissionSourceUI source_ui) {
+  permission_reporter_->SendReport(origin, permission, action, source_ui);
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
