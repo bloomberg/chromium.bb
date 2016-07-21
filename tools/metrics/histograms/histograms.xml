@@ -79335,8 +79335,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="Hresult" type="int">
   <int value="-2147467262" label="E_NOINTERFACE"/>
+  <int value="-2147467259" label="E_FAIL"/>
   <int value="-2147417848" label="RPC_E_DISCONNECTED"/>
   <int value="-2147221164" label="REGDB_E_CLASSNOTREG"/>
+  <int value="-2147219455" label="GOOPDATE_E_NO_NETWORK"/>
   <int value="-2147219437" label="GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY"/>
   <int value="-2147219198" label="GOOPDATEINSTALL_E_INSTALLER_FAILED"/>
   <int value="-2147024894" label="ERROR_FILE_NOT_FOUND"/>
@@ -79350,8 +79352,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-2147023436" label="ERROR_TIMEOUT"/>
   <int value="-2147023179" label="RPC_S_UNKNOWN_IF"/>
   <int value="-2147023174" label="RPC_S_SERVER_UNAVAILABLE"/>
+  <int value="-2147012894" label="WININET_E_TIMEOUT"/>
+  <int value="-2147012889" label="WININET_E_NAME_NOT_RESOLVED"/>
+  <int value="-2147012867" label="WININET_E_CANNOT_CONNECT"/>
+  <int value="-2147012866" label="WININET_E_CONNECTION_ABORTED"/>
   <int value="-2147009295" label="ERROR_INSTALL_PACKAGE_NOT_FOUND"/>
   <int value="-2146959355" label="CO_E_SERVER_EXEC_FAILURE"/>
+  <int value="-1606219753" label="GOOPDATE_E_NON_BLOCKING_CALL_PENDING"/>
+  <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
 </enum>
 
 <enum name="HttpAuthCount" type="int">
