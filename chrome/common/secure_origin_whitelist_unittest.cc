@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/scoped_command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/origin_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,16 +13,23 @@ using content::IsOriginSecure;
 
 namespace chrome {
 
-TEST(SecureOriginWhiteList, UnsafelyTreatInsecureOriginAsSecure) {
+class SecureOriginWhiteListTest : public testing::Test {
+  void TearDown() override {
+    // Ensure that we reset the whitelisted origins without any flags applied.
+    content::ResetSchemesAndOriginsWhitelistForTesting();
+  };
+};
+
+TEST_F(SecureOriginWhiteListTest, UnsafelyTreatInsecureOriginAsSecure) {
   EXPECT_FALSE(content::IsOriginSecure(GURL("http://example.com/a.html")));
   EXPECT_FALSE(
       content::IsOriginSecure(GURL("http://127.example.com/a.html")));
-
   // Add http://example.com and http://127.example.com to whitelist by
   // command-line and see if they are now considered secure origins.
   // (The command line is applied via
   // ChromeContentClient::AddSecureSchemesAndOrigins)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitchASCII(
       switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");

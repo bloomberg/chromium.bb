@@ -21,6 +21,9 @@ class SchemeAndOriginWhitelist {
   ~SchemeAndOriginWhitelist() {}
 
   void Reset() {
+    secure_schemes_.clear();
+    secure_origins_.clear();
+    service_worker_schemes_.clear();
     GetContentClient()->AddSecureSchemesAndOrigins(&secure_schemes_,
                                                    &secure_origins_);
     GetContentClient()->AddServiceWorkerSchemes(&service_worker_schemes_);
