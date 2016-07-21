@@ -28,6 +28,8 @@
 
 namespace {
 
+const char kNotificationOriginUrl[] = "chrome://hats";
+
 // Returns true if the given |profile| interacted with HaTS by either
 // dismissing the notification or taking the survey within a given threshold
 // days |threshold_days|.
@@ -96,7 +98,6 @@ void HatsNotificationController::Initialize(bool is_new_device) {
 }
 
 // static
-// TODO(malaykeshav): Add check for @google accounts.
 bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   // Do not show the survey if the HaTS feature is disabled for the device. This
   // flag is controlled by finch and is enabled only when the device has been
@@ -185,7 +186,7 @@ Notification* HatsNotificationController::CreateNotification() {
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  ash::system_notifier::kNotifierHats),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
-      GURL() /* Send an empty invalid url */, kNotificationId, optional, this);
+      GURL(kNotificationOriginUrl), kNotificationId, optional, this);
 }
 
 void HatsNotificationController::UpdateLastInteractionTime() {
