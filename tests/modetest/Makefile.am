@@ -22,5 +22,3 @@ modetest_LDADD = \
 	$(top_builddir)/tests/util/libutil.la \
 	$(CAIRO_LIBS) \
 	-lpthread
-
-EXTRA_DIST = Android.mk

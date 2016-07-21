@@ -120,8 +120,6 @@ libdrm_la_SOURCES = $(LIBDRM_FILES)
 libdrmincludedir = ${includedir}
 libdrminclude_HEADERS = $(LIBDRM_H_FILES)
 
-EXTRA_DIST = Android.mk
-
 klibdrmincludedir = ${includedir}/libdrm
 klibdrminclude_HEADERS = $(LIBDRM_INCLUDE_H_FILES)
 

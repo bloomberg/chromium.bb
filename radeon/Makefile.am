@@ -44,4 +44,4 @@ pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_radeon.pc
 
 TESTS = radeon-symbol-check
-EXTRA_DIST = Android.mk $(LIBDRM_RADEON_BOF_FILES) $(TESTS)
+EXTRA_DIST = $(LIBDRM_RADEON_BOF_FILES) $(TESTS)

@@ -27,4 +27,4 @@ pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_freedreno.pc
 
 TESTS = freedreno-symbol-check
-EXTRA_DIST = Android.mk $(TESTS)
+EXTRA_DIST = $(TESTS)
