@@ -35,6 +35,7 @@
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
+#include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "net/websockets/websocket_mux.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -695,10 +696,17 @@ class MockWebSocketStream : public WebSocketStream {
   MOCK_METHOD0(AsWebSocketStream, WebSocketStream*());
 };
 
-struct ArgumentCopyingWebSocketStreamCreator {
+class MockWebSocketStreamRequest : public WebSocketStreamRequest {
+ public:
+  MOCK_METHOD1(OnHandshakeStreamCreated,
+               void(WebSocketHandshakeStreamBase* handshake_stream));
+  MOCK_METHOD1(OnFailure, void(const std::string& message));
+};
+
+struct WebSocketStreamCreationCallbackArgumentSaver {
   std::unique_ptr<WebSocketStreamRequest> Create(
       const GURL& socket_url,
-      const std::vector<std::string>& requested_subprotocols,
+      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
       const url::Origin& origin,
       const GURL& first_party_for_cookies,
       const std::string& additional_headers,
@@ -706,19 +714,19 @@ struct ArgumentCopyingWebSocketStreamCreator {
       const BoundNetLog& net_log,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
     this->socket_url = socket_url;
-    this->requested_subprotocols = requested_subprotocols;
+    this->create_helper = std::move(create_helper);
     this->origin = origin;
     this->first_party_for_cookies = first_party_for_cookies;
     this->url_request_context = url_request_context;
     this->net_log = net_log;
     this->connect_delegate = std::move(connect_delegate);
-    return base::WrapUnique(new WebSocketStreamRequest);
+    return base::WrapUnique(new MockWebSocketStreamRequest);
   }
 
   GURL socket_url;
+  std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper;
   url::Origin origin;
   GURL first_party_for_cookies;
-  std::vector<std::string> requested_subprotocols;
   URLRequestContext* url_request_context;
   BoundNetLog net_log;
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate;
@@ -751,8 +759,8 @@ class WebSocketChannelTest : public ::testing::Test {
     channel_->SendAddChannelRequestForTesting(
         connect_data_.socket_url, connect_data_.requested_subprotocols,
         connect_data_.origin, connect_data_.first_party_for_cookies, "",
-        base::Bind(&ArgumentCopyingWebSocketStreamCreator::Create,
-                   base::Unretained(&connect_data_.creator)));
+        base::Bind(&WebSocketStreamCreationCallbackArgumentSaver::Create,
+                   base::Unretained(&connect_data_.argument_saver)));
   }
 
   // Same as CreateChannelAndConnect(), but calls the on_success callback as
@@ -762,7 +770,8 @@ class WebSocketChannelTest : public ::testing::Test {
     // Most tests aren't concerned with flow control from the renderer, so allow
     // MAX_INT quota units.
     EXPECT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
-    connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+    connect_data_.argument_saver.connect_delegate->OnSuccess(
+        std::move(stream_));
   }
 
   // Returns a WebSocketEventInterface to be passed to the WebSocketChannel.
@@ -800,8 +809,7 @@ class WebSocketChannelTest : public ::testing::Test {
     // First party for cookies for the request.
     GURL first_party_for_cookies;
 
-    // A fake WebSocketStreamCreator that just records its arguments.
-    ArgumentCopyingWebSocketStreamCreator creator;
+    WebSocketStreamCreationCallbackArgumentSaver argument_saver;
   };
   ConnectData connect_data_;
 
@@ -990,7 +998,8 @@ class WebSocketChannelFlowControlTest
   void CreateChannelAndConnectWithQuota(int64_t quota) {
     CreateChannelAndConnect();
     EXPECT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(quota));
-    connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+    connect_data_.argument_saver.connect_delegate->OnSuccess(
+        std::move(stream_));
   }
 
   virtual void CreateChannelAndConnectSuccesfully() { NOTREACHED(); }
@@ -1008,8 +1017,8 @@ class WebSocketChannelReceiveUtf8Test : public WebSocketChannelStreamTest {
   }
 };
 
-// Simple test that everything that should be passed to the creator function is
-// passed to the creator function.
+// Simple test that everything that should be passed to the stream creation
+// callback is passed to the argument saver.
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
   connect_data_.origin = url::Origin(GURL("http://example.com"));
@@ -1018,13 +1027,12 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
 
   CreateChannelAndConnect();
 
-  const ArgumentCopyingWebSocketStreamCreator& actual = connect_data_.creator;
+  const WebSocketStreamCreationCallbackArgumentSaver& actual =
+      connect_data_.argument_saver;
 
   EXPECT_EQ(&connect_data_.url_request_context, actual.url_request_context);
 
   EXPECT_EQ(connect_data_.socket_url, actual.socket_url);
-  EXPECT_EQ(connect_data_.requested_subprotocols,
-            actual.requested_subprotocols);
   EXPECT_EQ(connect_data_.origin.Serialize(), actual.origin.Serialize());
   EXPECT_EQ(connect_data_.first_party_for_cookies,
             actual.first_party_for_cookies);
@@ -1046,7 +1054,7 @@ TEST_F(WebSocketChannelTest, SendFlowControlDuringHandshakeOkay) {
 TEST_F(WebSocketChannelDeletingTest, OnAddChannelResponseFail) {
   CreateChannelAndConnect();
   EXPECT_TRUE(channel_);
-  connect_data_.creator.connect_delegate->OnFailure("bye");
+  connect_data_.argument_saver.connect_delegate->OnFailure("bye");
   EXPECT_EQ(nullptr, channel_.get());
 }
 
@@ -1335,7 +1343,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectSuccessReported) {
 
   CreateChannelAndConnect();
 
-  connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ConnectFailureReported) {
@@ -1343,7 +1351,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectFailureReported) {
 
   CreateChannelAndConnect();
 
-  connect_data_.creator.connect_delegate->OnFailure("hello");
+  connect_data_.argument_saver.connect_delegate->OnFailure("hello");
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, NonWebSocketSchemeRejected) {
@@ -1358,7 +1366,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ProtocolPassed) {
 
   CreateChannelAndConnect();
 
-  connect_data_.creator.connect_delegate->OnSuccess(
+  connect_data_.argument_saver.connect_delegate->OnSuccess(
       base::WrapUnique(new FakeWebSocketStream("Bob", "")));
 }
 
@@ -1369,7 +1377,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ExtensionsPassed) {
 
   CreateChannelAndConnect();
 
-  connect_data_.creator.connect_delegate->OnSuccess(
+  connect_data_.argument_saver.connect_delegate->OnSuccess(
       base::WrapUnique(new FakeWebSocketStream("", "extension1, extension2")));
 }
 
@@ -1966,7 +1974,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, StartHandshakeRequest) {
   std::unique_ptr<WebSocketHandshakeRequestInfo> request_info(
       new WebSocketHandshakeRequestInfo(GURL("ws://www.example.com/"),
                                         base::Time()));
-  connect_data_.creator.connect_delegate->OnStartOpeningHandshake(
+  connect_data_.argument_saver.connect_delegate->OnStartOpeningHandshake(
       std::move(request_info));
 
   base::RunLoop().RunUntilIdle();
@@ -1987,7 +1995,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FinishHandshakeRequest) {
   std::unique_ptr<WebSocketHandshakeResponseInfo> response_info(
       new WebSocketHandshakeResponseInfo(GURL("ws://www.example.com/"), 200,
                                          "OK", response_headers, base::Time()));
-  connect_data_.creator.connect_delegate->OnFinishOpeningHandshake(
+  connect_data_.argument_saver.connect_delegate->OnFinishOpeningHandshake(
       std::move(response_info));
   base::RunLoop().RunUntilIdle();
 }
@@ -2003,7 +2011,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FailJustAfterHandshake) {
   CreateChannelAndConnect();
 
   WebSocketStream::ConnectDelegate* connect_delegate =
-      connect_data_.creator.connect_delegate.get();
+      connect_data_.argument_saver.connect_delegate.get();
   GURL url("ws://www.example.com/");
   std::unique_ptr<WebSocketHandshakeRequestInfo> request_info(
       new WebSocketHandshakeRequestInfo(url, base::Time()));
@@ -2214,7 +2222,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlEarly) {
   CreateChannelAndConnect();
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
   checkpoint.Call(1);
-  connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(2);
 }
 
@@ -2237,7 +2245,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlLate) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(1);
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(kPlentyOfQuota));
   checkpoint.Call(2);
@@ -2256,7 +2264,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlStopsReadFrames) {
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(4));
-  connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
 }
 
 // Providing extra quota causes ReadFrames() to be called again.
@@ -2279,7 +2287,7 @@ TEST_F(WebSocketChannelStreamTest, FlowControlStartsWithMoreQuota) {
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(4));
-  connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(1);
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(4));
 }
@@ -2306,7 +2314,7 @@ TEST_F(WebSocketChannelStreamTest, ReadFramesNotCalledUntilQuotaAvailable) {
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(2));
-  connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
   checkpoint.Call(1);
   ASSERT_EQ(CHANNEL_ALIVE, channel_->SendFlowControl(2));
   checkpoint.Call(2);
@@ -3308,7 +3316,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnSSLCertificateErrorCalled) {
               OnSSLCertificateErrorCalled(NotNull(), wss_url, _, fatal));
 
   CreateChannelAndConnect();
-  connect_data_.creator.connect_delegate->OnSSLCertificateError(
+  connect_data_.argument_saver.connect_delegate->OnSSLCertificateError(
       std::move(fake_callbacks), ssl_info, fatal);
 }
 
@@ -3374,7 +3382,8 @@ class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
     channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
-    connect_data_.creator.connect_delegate->OnSuccess(std::move(stream_));
+    connect_data_.argument_saver.connect_delegate->OnSuccess(
+        std::move(stream_));
   }
 };
 

@@ -28,6 +28,8 @@
 
 using net::test::IsOk;
 
+using ::testing::_;
+
 namespace net {
 namespace {
 
@@ -75,6 +77,13 @@ class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
       bool fatal) override {}
 };
 
+class MockWebSocketStreamRequest : public WebSocketStreamRequest {
+ public:
+  MOCK_METHOD1(OnHandshakeStreamCreated,
+               void(WebSocketHandshakeStreamBase* handshake_stream));
+  MOCK_METHOD1(OnFailure, void(const std::string& message));
+};
+
 class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
  protected:
   std::unique_ptr<WebSocketStream> CreateAndInitializeStream(
@@ -84,7 +93,11 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     static const char kOrigin[] = "http://localhost";
     WebSocketHandshakeStreamCreateHelper create_helper(&connect_delegate_,
                                                        sub_protocols);
-    create_helper.set_failure_message(&failure_message_);
+
+    EXPECT_CALL(stream_request, OnHandshakeStreamCreated(_)).Times(1);
+    EXPECT_CALL(stream_request, OnFailure(_)).Times(0);
+
+    create_helper.set_stream_request(&stream_request);
 
     std::unique_ptr<ClientSocketHandle> socket_handle =
         socket_handle_factory_.CreateClientSocketHandle(
@@ -139,7 +152,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
 
   MockClientSocketHandleFactory socket_handle_factory_;
   TestConnectDelegate connect_delegate_;
-  std::string failure_message_;
+  MockWebSocketStreamRequest stream_request;
 };
 
 // Confirm that the basic case works as expected.

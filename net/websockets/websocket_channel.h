@@ -36,6 +36,7 @@ class IOBuffer;
 class URLRequestContext;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
+class WebSocketHandshakeStreamCreateHelper;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -48,14 +49,14 @@ class NET_EXPORT WebSocketChannel {
   // WebSocketStream::CreateAndConnectStream().
   typedef base::Callback<std::unique_ptr<WebSocketStreamRequest>(
       const GURL&,
-      const std::vector<std::string>&,
+      std::unique_ptr<WebSocketHandshakeStreamCreateHelper>,
       const url::Origin&,
       const GURL&,
       const std::string&,
       URLRequestContext*,
       const BoundNetLog&,
       std::unique_ptr<WebSocketStream::ConnectDelegate>)>
-      WebSocketStreamCreator;
+      WebSocketStreamRequestCreationCallback;
 
   // Methods which return a value of type ChannelState may delete |this|. If the
   // return value is CHANNEL_DELETED, then the caller must return without making
@@ -127,7 +128,7 @@ class NET_EXPORT WebSocketChannel {
       const url::Origin& origin,
       const GURL& first_party_for_cookies,
       const std::string& additional_headers,
-      const WebSocketStreamCreator& creator);
+      const WebSocketStreamRequestCreationCallback& callback);
 
   // The default timout for the closing handshake is a sensible value (see
   // kClosingHandshakeTimeoutSeconds in websocket_channel.cc). However, we can
@@ -214,14 +215,15 @@ class NET_EXPORT WebSocketChannel {
   // connection process.
   class ConnectDelegate;
 
-  // Starts the connection process, using the supplied creator callback.
-  void SendAddChannelRequestWithSuppliedCreator(
+  // Starts the connection process, using the supplied stream request creation
+  // callback.
+  void SendAddChannelRequestWithSuppliedCallback(
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const GURL& first_party_for_cookies,
       const std::string& additional_headers,
-      const WebSocketStreamCreator& creator);
+      const WebSocketStreamRequestCreationCallback& callback);
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports
   // success to the event interface. May delete |this|.
