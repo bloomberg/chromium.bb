@@ -45,7 +45,10 @@ namespace ntp_snippets {
 
 namespace {
 
-const char kApiScope[] = "https://www.googleapis.com/auth/webhistory";
+const char kChromeReaderApiScope[] =
+    "https://www.googleapis.com/auth/webhistory";
+const char kContentSuggestionsApiScope[] =
+    "https://www.googleapis.com/auth/chrome-content-suggestions";
 const char kChromeReaderServer[] =
     "https://chromereader-pa.googleapis.com/v1/fetch";
 const char kContentSuggestionsServer[] =
@@ -400,7 +403,9 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
 
 void NTPSnippetsFetcher::StartTokenRequest() {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kApiScope);
+  scopes.insert(fetch_api_ == CHROME_CONTENT_SUGGESTIONS_API
+                    ? kContentSuggestionsApiScope
+                    : kChromeReaderApiScope);
   oauth_request_ = token_service_->StartRequest(
       signin_manager_->GetAuthenticatedAccountId(), scopes, this);
 }
