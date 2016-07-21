@@ -126,7 +126,7 @@
           <listitem>
             <para><emphasis>Framebuffers</emphasis> are abstract memory objects
                   that provide a source of pixel data to scanout to a CRTC.
-                  Applications explicitely request the creation of framebuffers
+                  Applications explicitly request the creation of framebuffers
                   and can control their behavior. Framebuffers rely on the
                   underneath memory manager for low-level memory operations.
                   When creating a framebuffer, applications pass a memory handle
