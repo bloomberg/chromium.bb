@@ -1563,7 +1563,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  SwapBuffers();
+  SwapBuffersWithoutComplete();
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
@@ -1571,7 +1571,8 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->FinishDrawingFrame(&frame2);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   Mock::VerifyAndClearExpectations(&scheduler_);
@@ -1582,7 +1583,8 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
@@ -1598,7 +1600,8 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
@@ -1610,14 +1613,16 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
@@ -1626,7 +1631,8 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->BeginDrawingFrame(&frame_no_overlays);
   renderer_->FinishDrawingFrame(&frame_no_overlays);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
@@ -1635,7 +1641,8 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->BeginDrawingFrame(&frame_no_overlays);
   renderer_->FinishDrawingFrame(&frame_no_overlays);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
+  SwapBuffersComplete();
+  SwapBuffersWithoutComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   Mock::VerifyAndClearExpectations(&scheduler_);
 }

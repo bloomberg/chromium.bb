@@ -2765,10 +2765,10 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
 }
 
 void GLRenderer::SwapBuffersComplete() {
-  // Once a resouce has been swap-ACKed, send a query to the GPU process to ask
-  // if the resource is no longer being consumed by the system compositor. The
-  // response will come with the next swap-ACK.
   if (settings_->release_overlay_resources_after_gpu_query) {
+    // Once a resource has been swap-ACKed, send a query to the GPU process to
+    // ask if the resource is no longer being consumed by the system compositor.
+    // The response will come with the next swap-ACK.
     if (!swapping_overlay_resources_.empty()) {
       for (OverlayResourceLock& lock : swapping_overlay_resources_.front()) {
         unsigned texture = lock->texture_id();
@@ -2788,6 +2788,12 @@ void GLRenderer::SwapBuffersComplete() {
       }
       gl_->ScheduleCALayerInUseQueryCHROMIUM(textures.size(), textures.data());
     }
+  } else if (swapping_overlay_resources_.size() > 1) {
+    // If a query is not needed to release the overlay buffers, we can
+    // assume that once a swap buffer is completed only the last set of
+    // submitted overlay buffers are still in use by GL/Hardware Display.
+    DCHECK_EQ(2u, swapping_overlay_resources_.size());
+    swapping_overlay_resources_.pop_front();
   }
 }
 
