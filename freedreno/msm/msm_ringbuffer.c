@@ -232,10 +232,10 @@ static uint32_t bo2idx(struct fd_ringbuffer *ring, struct fd_bo *bo, uint32_t fl
 
 		if (!drmHashLookup(msm_ring->bo_table, bo->handle, &val)) {
 			/* found */
-			idx = (uint32_t)val;
+			idx = (uint32_t)(uintptr_t)val;
 		} else {
 			idx = append_bo(ring, bo);
-			val = (void *)idx;
+			val = (void *)(uintptr_t)idx;
 			drmHashInsert(msm_ring->bo_table, bo->handle, val);
 		}
 		msm_bo->current_ring_seqno = msm_ring->seqno;
