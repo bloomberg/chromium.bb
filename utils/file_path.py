@@ -775,7 +775,12 @@ def is_same_filesystem(path1, path2):
 
 
 def get_free_space(path):
-  """Returns the number of free bytes."""
+  """Returns the number of free bytes.
+
+  On POSIX platforms, this returns the free space as visible by the current
+  user. On some systems, there's a percentage of the free space on the partition
+  that is only accessible as the root user.
+  """
   if sys.platform == 'win32':
     free_bytes = ctypes.c_ulonglong(0)
     ctypes.windll.kernel32.GetDiskFreeSpaceExW(
