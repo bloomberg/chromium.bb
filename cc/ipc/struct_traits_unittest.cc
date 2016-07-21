@@ -666,6 +666,33 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(surface_quad->surface_id, out_surface_quad->surface_id);
 }
 
+TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
+  const RenderPassId id(3, 2);
+  const gfx::Rect output_rect(45, 22, 120, 13);
+  const gfx::Transform transform_to_root =
+      gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
+  const gfx::Rect damage_rect(56, 123, 19, 43);
+  const bool has_transparent_background = true;
+  std::unique_ptr<RenderPass> input = RenderPass::Create();
+  input->SetAll(id, output_rect, damage_rect, transform_to_root,
+                has_transparent_background);
+
+  // Unlike the previous test, don't add any quads to the list; we need to
+  // verify that the serialization code can deal with that.
+  std::unique_ptr<RenderPass> output;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  proxy->EchoRenderPass(input, &output);
+
+  EXPECT_EQ(input->quad_list.size(), output->quad_list.size());
+  EXPECT_EQ(input->shared_quad_state_list.size(),
+            output->shared_quad_state_list.size());
+  EXPECT_EQ(id, output->id);
+  EXPECT_EQ(output_rect, output->output_rect);
+  EXPECT_EQ(damage_rect, output->damage_rect);
+  EXPECT_EQ(transform_to_root, output->transform_to_root_target);
+  EXPECT_EQ(has_transparent_background, output->has_transparent_background);
+}
+
 TEST_F(StructTraitsTest, RenderPassId) {
   const int layer_id = 1337;
   const uint32_t index = 0xdeadbeef;

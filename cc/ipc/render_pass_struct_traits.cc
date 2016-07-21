@@ -71,7 +71,8 @@ bool StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::Read(
     if (!(*it)->shared_quad_state)
       return false;
   }
-  return sqs_iter.index() == (*out)->shared_quad_state_list.size() - 1;
+  return (*out)->shared_quad_state_list.empty() ||
+         sqs_iter.index() == (*out)->shared_quad_state_list.size() - 1;
 }
 
 }  // namespace mojo
