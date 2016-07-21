@@ -683,7 +683,8 @@ const FeatureEntry kFeatureEntries[] = {
                                switches::kDisableDisplayList2dCanvas)},
     {"enable-canvas-2d-dynamic-rendering-mode-switching",
      IDS_FLAGS_ENABLE_2D_CANVAS_DYNAMIC_RENDERING_MODE_SWITCHING_NAME,
-     IDS_FLAGS_ENABLE_2D_CANVAS_DYNAMIC_RENDERING_MODE_SWITCHING_DESCRIPTION, kOsAll,
+     IDS_FLAGS_ENABLE_2D_CANVAS_DYNAMIC_RENDERING_MODE_SWITCHING_DESCRIPTION,
+     kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableCanvas2dDynamicRenderingModeSwitching)},
     {"composited-layer-borders", IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
      IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION, kOsAll,
@@ -1691,6 +1692,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_NAME,
      IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesBackgroundLoadingFeature)},
+    {"offline-pages-sharing", IDS_FLAGS_OFFLINE_PAGES_SHARING_NAME,
+     IDS_FLAGS_OFFLINE_PAGES_SHARING_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesSharingFeature)},
 #endif  // defined(OS_ANDROID)
     {"disallow-doc-written-script-loads",
      IDS_FLAGS_DISALLOW_DOC_WRITTEN_SCRIPTS_UI_NAME,
@@ -2020,8 +2024,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_WEB_PAYMENTS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kWebPayments)},
 #endif  // defined(OS_ANDROID)
-    // NOTE: Adding new command-line switches requires adding corresponding
-    // entries to enum "LoginCustomFlags" in histograms.xml. See note in
+        // NOTE: Adding new command-line switches requires adding corresponding
+        // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
 };
 

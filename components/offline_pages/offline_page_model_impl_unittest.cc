@@ -1113,4 +1113,27 @@ TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
   EXPECT_TRUE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
 }
 
+TEST(CommandLineFlagsTest, OfflinePagesSharing) {
+  // Enable offline bookmarks feature first.
+  // TODO(dimich): once offline pages are enabled by default, remove this.
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOfflineBookmarksFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  // This feature is still disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflinePagesSharingEnabled());
+
+  // Check if feature is correctly enabled by command-line flag.
+  base::FeatureList::ClearInstanceForTesting();
+  std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
+  feature_list2->InitializeFromCommandLine(
+      std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
+          offline_pages::kOfflinePagesSharingFeature.name,
+      "");
+  base::FeatureList::SetInstance(std::move(feature_list2));
+  EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
+}
+
 }  // namespace offline_pages

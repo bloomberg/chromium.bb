@@ -138,7 +138,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 offlinePage.getOfflineUrl().endsWith(".mhtml"));
         assertTrue("Offline page item offline file doesn't have the right name.",
                 offlinePage.getOfflineUrl().contains("About"));
-
         assertNull("Offline page is not supposed to exist",
                 getPageByClientId(new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "-42")));
     }
@@ -163,6 +162,18 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             public void run() {
                 assertFalse("If background loading is off, we should see the feature disabled",
                         OfflinePageBridge.isBackgroundLoadingEnabled());
+            }
+        });
+    }
+
+    @CommandLineFlags.Add("disable-features=OfflinePagesSharing")
+    @SmallTest
+    public void testPageSharingSwitch() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse("If offline page sharing is off, we should see the feature disabled",
+                        OfflinePageBridge.isPageSharingEnabled());
             }
         });
     }

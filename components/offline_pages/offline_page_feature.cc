@@ -26,9 +26,13 @@ const base::Feature kOfflinePagesCTFeature {
    "OfflinePagesCT", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+const base::Feature kOfflinePagesSharingFeature{
+    "OfflinePagesSharing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsOfflinePagesEnabled() {
   return IsOfflineBookmarksEnabled() || IsOffliningRecentPagesEnabled() ||
-         IsOfflinePagesBackgroundLoadingEnabled() || IsOfflinePagesCTEnabled();
+         IsOfflinePagesBackgroundLoadingEnabled() ||
+         IsOfflinePagesCTEnabled() || IsOfflinePagesSharingEnabled();
 }
 
 bool IsOfflineBookmarksEnabled() {
@@ -45,6 +49,10 @@ bool IsOfflinePagesBackgroundLoadingEnabled() {
 
 bool IsOfflinePagesCTEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesCTFeature);
+}
+
+bool IsOfflinePagesSharingEnabled() {
+  return base::FeatureList::IsEnabled(kOfflinePagesSharingFeature);
 }
 
 }  // namespace offline_pages

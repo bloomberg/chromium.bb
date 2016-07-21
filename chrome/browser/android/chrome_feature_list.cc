@@ -46,6 +46,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabReparenting,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
+    &offline_pages::kOfflinePagesSharingFeature,
 };
 
 }  // namespace
