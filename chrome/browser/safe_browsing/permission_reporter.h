@@ -50,13 +50,15 @@ class PermissionReporter {
   // Sends a serialized permission report to the report collection server.
   // The permission report includes |origin| as the origin of
   // the site requesting permission, |permission| as the type of permission
-  // requested, and |action| as the action taken. The report will be serialized
-  // using protobuf defined in
+  // requested, |action| as the action taken, and |user_gesture| in the list of
+  // request triggers if the action occurred after a user gesture. The report
+  // will be serialized using protobuf defined in
   // //src/chrome/common/safe_browsing/permission_report.proto
   void SendReport(const GURL& origin,
                   content::PermissionType permission,
                   PermissionAction action,
-                  PermissionSourceUI source_ui);
+                  PermissionSourceUI source_ui,
+                  bool user_gesture);
 
  private:
   friend class PermissionReporterTest;
@@ -75,6 +77,7 @@ class PermissionReporter {
                           content::PermissionType permission,
                           PermissionAction action,
                           PermissionSourceUI source_ui,
+                          bool user_gesture,
                           std::string* output);
 
   // Returns false if the number of reports sent in the last one minute per

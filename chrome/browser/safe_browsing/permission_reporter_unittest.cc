@@ -107,7 +107,8 @@ class PermissionReporterTest : public ::testing::Test {
 // SafeBrowsing CSD servers.
 TEST_F(PermissionReporterTest, SendReport) {
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
 
   PermissionReport permission_report;
   ASSERT_TRUE(
@@ -116,6 +117,7 @@ TEST_F(PermissionReporterTest, SendReport) {
   EXPECT_EQ(PermissionReport::GRANTED, permission_report.action());
   EXPECT_EQ(PermissionReport::PROMPT, permission_report.source_ui());
   EXPECT_EQ(kDummyOriginOne, permission_report.origin());
+  EXPECT_TRUE(permission_report.request_trigger().empty());
 #if defined(OS_ANDROID)
   EXPECT_EQ(PermissionReport::ANDROID_PLATFORM,
             permission_report.platform_type());
@@ -127,6 +129,22 @@ TEST_F(PermissionReporterTest, SendReport) {
 
   EXPECT_EQ(GURL(kPermissionActionReportingUploadUrl),
             mock_report_sender_->latest_report_uri());
+}
+
+// Test that PermissionReporter::SendReport sends a serialized report string
+// with request trigger to SafeBrowsing CSD servers.
+TEST_F(PermissionReporterTest, SendReportWithRequestTrigger) {
+  permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
+                                   kDummyAction, kDummySourceUI,
+                                   true /* user_gesture */);
+
+  PermissionReport permission_report;
+  ASSERT_TRUE(
+      permission_report.ParseFromString(mock_report_sender_->latest_report()));
+  EXPECT_EQ(1, permission_report.request_trigger().size());
+  EXPECT_EQ(PermissionReport::AFTER_GESTURE,
+            static_cast<PermissionReport::RequestTrigger>(
+                permission_report.request_trigger(0)));
 }
 
 // Test that PermissionReporter::SendReport sends a serialized report string
@@ -161,7 +179,8 @@ TEST_F(PermissionReporterTest, SendReportWithFieldTrials) {
   EXPECT_TRUE(base::FieldTrialList::IsTrialActive(trial_two->trial_name()));
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
 
   PermissionReport permission_report;
   ASSERT_TRUE(
@@ -191,29 +210,35 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
   int reports_to_send = kMaximumReportsPerOriginPerPermissionPerMinute;
   while (reports_to_send--)
     permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                     kDummyAction, kDummySourceUI);
+                                     kDummyAction, kDummySourceUI,
+                                     false /* user_gesture */);
   EXPECT_EQ(5, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
   EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionTwo,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginTwo), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMinutes(1));
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
   EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI);
+                                   kDummyAction, kDummySourceUI,
+                                   false /* user_gesture */);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMinutes(1));
@@ -221,7 +246,8 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
   while (reports_to_send--) {
     clock_->Advance(base::TimeDelta::FromSeconds(5));
     permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                     kDummyAction, kDummySourceUI);
+                                     kDummyAction, kDummySourceUI,
+                                     false /* user_gesture */);
   }
   EXPECT_EQ(kMaximumReportsPerOriginPerPermissionPerMinute,
             mock_report_sender_->GetAndResetNumberOfReportsSent());

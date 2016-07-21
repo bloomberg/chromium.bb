@@ -342,10 +342,11 @@ void PermissionUmaUtil::RecordPermissionAction(PermissionType permission,
   if (IsOptedIntoPermissionActionReporting(profile)) {
     // TODO(stefanocs): Add browsertests to make sure the reports are being
     // sent.
+    // TODO(stefanocs): Get the actual |user_gesture| from permission layer.
     g_browser_process->safe_browsing_service()
         ->ui_manager()
         ->ReportPermissionAction(requesting_origin, permission, action,
-                                 source_ui);
+                                 source_ui, false /* user_gesture */);
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

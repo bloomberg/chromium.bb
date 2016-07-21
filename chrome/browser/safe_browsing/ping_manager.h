@@ -68,7 +68,8 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   void ReportPermissionAction(const GURL& origin,
                               content::PermissionType permission,
                               PermissionAction action,
-                              PermissionSourceUI source_ui);
+                              PermissionSourceUI source_ui,
+                              bool user_gesture);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
