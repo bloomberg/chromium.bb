@@ -237,7 +237,7 @@ bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
   static const char* kMediaPlayerExtensions[] = {
       ".3gp",  ".ts",    ".flac", ".mid", ".xmf",
       ".mxmf", ".rtttl", ".rtx",  ".ota", ".imy"};
-  for (const auto& extension : kMediaPlayerExtensions) {
+  for (auto* extension : kMediaPlayerExtensions) {
     if (base::EndsWith(url.path(), extension,
                        base::CompareCase::INSENSITIVE_ASCII)) {
       return true;

@@ -450,7 +450,7 @@ void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
 }
 
 void BrowserViewRenderer::ReleaseHardware() {
-  for (auto compositor_frame_consumer : compositor_frame_consumers_) {
+  for (auto* compositor_frame_consumer : compositor_frame_consumers_) {
     ReturnUnusedResource(compositor_frame_consumer->PassUncommittedFrameOnUI());
     ReturnResourceFromParent(compositor_frame_consumer);
     DCHECK(compositor_frame_consumer->ReturnedResourcesEmptyOnUI());
