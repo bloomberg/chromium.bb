@@ -312,12 +312,13 @@ password_manager::PasswordManagerClient* CredentialManager::client() const {
   return client_;
 }
 
-autofill::PasswordForm CredentialManager::GetSynthesizedFormForOrigin() const {
-  autofill::PasswordForm synthetic_form;
-  synthetic_form.origin = web_state()->GetLastCommittedURL().GetOrigin();
-  synthetic_form.signon_realm = synthetic_form.origin.spec();
-  synthetic_form.scheme = autofill::PasswordForm::SCHEME_HTML;
-  return synthetic_form;
+password_manager::PasswordStore::FormDigest
+CredentialManager::GetSynthesizedFormForOrigin() const {
+  password_manager::PasswordStore::FormDigest form = {
+      autofill::PasswordForm::SCHEME_HTML, std::string(),
+      web_state()->GetLastCommittedURL().GetOrigin()};
+  form.signon_realm = form.origin.spec();
+  return form;
 }
 
 void CredentialManager::OnProvisionalSaveComplete() {

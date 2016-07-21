@@ -1028,7 +1028,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
 }
 
 bool LoginDatabase::GetLogins(
-    const PasswordForm& form,
+    const PasswordStore::FormDigest& form,
     ScopedVector<autofill::PasswordForm>* forms) const {
   DCHECK(forms);
   const GURL signon_realm(form.signon_realm);
@@ -1181,7 +1181,7 @@ std::string LoginDatabase::GetEncryptedPassword(
 // static
 bool LoginDatabase::StatementToForms(
     sql::Statement* statement,
-    const autofill::PasswordForm* matched_form,
+    const PasswordStore::FormDigest* matched_form,
     ScopedVector<autofill::PasswordForm>* forms) {
   PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
 

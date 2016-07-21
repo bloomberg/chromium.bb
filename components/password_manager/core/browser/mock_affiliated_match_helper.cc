@@ -19,14 +19,14 @@ MockAffiliatedMatchHelper::MockAffiliatedMatchHelper()
 MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() {}
 
 void MockAffiliatedMatchHelper::ExpectCallToGetAffiliatedAndroidRealms(
-    const autofill::PasswordForm& expected_observed_form,
+    const PasswordStore::FormDigest& expected_observed_form,
     const std::vector<std::string>& results_to_return) {
   EXPECT_CALL(*this, OnGetAffiliatedAndroidRealmsCalled(expected_observed_form))
       .WillOnce(testing::Return(results_to_return));
 }
 
 void MockAffiliatedMatchHelper::ExpectCallToGetAffiliatedWebRealms(
-    const autofill::PasswordForm& expected_android_form,
+    const PasswordStore::FormDigest& expected_android_form,
     const std::vector<std::string>& results_to_return) {
   EXPECT_CALL(*this, OnGetAffiliatedWebRealmsCalled(expected_android_form))
       .WillOnce(testing::Return(results_to_return));
@@ -39,7 +39,7 @@ void MockAffiliatedMatchHelper::ExpectCallToInjectAffiliatedWebRealms(
 }
 
 void MockAffiliatedMatchHelper::GetAffiliatedAndroidRealms(
-    const autofill::PasswordForm& observed_form,
+    const PasswordStore::FormDigest& observed_form,
     const AffiliatedRealmsCallback& result_callback) {
   std::vector<std::string> affiliated_android_realms =
       OnGetAffiliatedAndroidRealmsCalled(observed_form);
@@ -47,7 +47,7 @@ void MockAffiliatedMatchHelper::GetAffiliatedAndroidRealms(
 }
 
 void MockAffiliatedMatchHelper::GetAffiliatedWebRealms(
-    const autofill::PasswordForm& android_form,
+    const PasswordStore::FormDigest& android_form,
     const AffiliatedRealmsCallback& result_callback) {
   std::vector<std::string> affiliated_web_realms =
       OnGetAffiliatedWebRealmsCalled(android_form);

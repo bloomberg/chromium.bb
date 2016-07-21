@@ -45,7 +45,7 @@ class TestPasswordStore : public PasswordStore {
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const autofill::PasswordForm& form) override;
+      const FormDigest& form) override;
 
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,

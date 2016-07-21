@@ -35,6 +35,7 @@ using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
 using namespace password_manager::metrics_util;
+using password_manager::PasswordStore;
 
 namespace {
 const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
@@ -181,8 +182,9 @@ std::unique_ptr<PasswordForm> FormFromAttributes(
 // kept. PSL matched results get their signon_realm, origin, and action
 // rewritten to those of |lookup_form_|, with the original signon_realm saved
 // into the result's original_signon_realm data member.
-ScopedVector<PasswordForm> ConvertFormList(GList* found,
-                                           const PasswordForm* lookup_form) {
+ScopedVector<PasswordForm> ConvertFormList(
+    GList* found,
+    const PasswordStore::FormDigest* lookup_form) {
   ScopedVector<PasswordForm> forms;
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
@@ -289,7 +291,7 @@ class GKRMethod : public GnomeKeyringLoader {
   void AddLogin(const PasswordForm& form, const char* app_string);
   void LoginSearch(const PasswordForm& form, const char* app_string);
   void RemoveLogin(const PasswordForm& form, const char* app_string);
-  void GetLogins(const PasswordForm& form, const char* app_string);
+  void GetLogins(const PasswordStore::FormDigest& form, const char* app_string);
   void GetLoginsList(uint32_t blacklisted_by_user, const char* app_string);
   void GetAllLogins(const char* app_string);
 
@@ -335,14 +337,14 @@ class GKRMethod : public GnomeKeyringLoader {
   base::WaitableEvent event_;
   GnomeKeyringResult result_;
   ScopedVector<PasswordForm> forms_;
-  // If the credential search is specified by a single form and needs to use PSL
-  // matching, then the specifying form is stored in |lookup_form_|. If PSL
-  // matching is used to find a result, then the results signon realm, origin
-  // and action are stored are replaced by those of |lookup_form_|.
-  // Additionally, |lookup_form_->signon_realm| is also used to narrow down the
-  // found logins to those which indeed PSL-match the look-up. And finally,
-  // |lookup_form_| set to NULL means that PSL matching is not required.
-  std::unique_ptr<PasswordForm> lookup_form_;
+  // If the credential search is specified by a single form and needs to use
+  // PSL matching, then the specifying form is stored in |lookup_form_|. If
+  // PSL matching is used to find a result, then the results signon realm and
+  // origin are stored are replaced by those of |lookup_form_|. Additionally,
+  // |lookup_form_->signon_realm| is also used to narrow down the found logins
+  // to those which indeed PSL-match the look-up. And finally, |lookup_form_|
+  // set to NULL means that PSL matching is not required.
+  std::unique_ptr<const PasswordStore::FormDigest> lookup_form_;
 };
 
 void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
@@ -428,9 +430,10 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
       nullptr);
 }
 
-void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
+void GKRMethod::GetLogins(const PasswordStore::FormDigest& form,
+                          const char* app_string) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  lookup_form_.reset(new PasswordForm(form));
+  lookup_form_.reset(new PasswordStore::FormDigest(form));
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   if (!password_manager::ShouldPSLDomainMatchingApply(
@@ -714,7 +717,7 @@ bool NativeBackendGnome::DisableAutoSignInForOrigins(
   return true;
 }
 
-bool NativeBackendGnome::GetLogins(const PasswordForm& form,
+bool NativeBackendGnome::GetLogins(const PasswordStore::FormDigest& form,
                                    ScopedVector<PasswordForm>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   GKRMethod method;

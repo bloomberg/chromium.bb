@@ -27,6 +27,7 @@
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
+using password_manager::PasswordStore;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using testing::Pointee;
@@ -426,15 +427,13 @@ class NativeBackendLibsecretTest : public testing::Test {
 
     VerifiedAdd(&backend, credentials);
 
-    PasswordForm target_form;
-    target_form.origin = url;
-    target_form.signon_realm = url.spec();
+    PasswordStore::FormDigest target_form = {PasswordForm::SCHEME_HTML,
+                                             url.spec(), url};
     if (scheme != PasswordForm::SCHEME_HTML) {
       // For non-HTML forms, the realm used for authentication
       // (http://tools.ietf.org/html/rfc1945#section-10.2) is appended to the
       // signon_realm. Just use a default value for now.
       target_form.signon_realm.append("Realm");
-      target_form.scheme = scheme;
     }
     ScopedVector<autofill::PasswordForm> form_list;
     EXPECT_TRUE(backend.GetLogins(target_form, &form_list));
@@ -465,9 +464,8 @@ class NativeBackendLibsecretTest : public testing::Test {
 
     // Get the PSL-matched copy of the saved login for m.facebook.
     const GURL kMobileURL("http://m.facebook.com/");
-    PasswordForm m_facebook_lookup;
-    m_facebook_lookup.origin = kMobileURL;
-    m_facebook_lookup.signon_realm = kMobileURL.spec();
+    PasswordStore::FormDigest m_facebook_lookup = {
+        PasswordForm::SCHEME_HTML, kMobileURL.spec(), kMobileURL};
     ScopedVector<autofill::PasswordForm> form_list;
     EXPECT_TRUE(backend.GetLogins(m_facebook_lookup, &form_list));
 
@@ -514,7 +512,8 @@ class NativeBackendLibsecretTest : public testing::Test {
     form_list.clear();
 
     // Check that www.facebook.com login was modified by the update.
-    EXPECT_TRUE(backend.GetLogins(form_facebook_, &form_list));
+    EXPECT_TRUE(backend.GetLogins(PasswordStore::FormDigest(form_facebook_),
+                                  &form_list));
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
     index_non_psl = 0;

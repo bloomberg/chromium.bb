@@ -21,7 +21,7 @@ class MockPasswordStore : public PasswordStore {
 
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(GetLogins,
-               void(const autofill::PasswordForm&, PasswordStoreConsumer*));
+               void(const PasswordStore::FormDigest&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(UpdateLoginWithPrimaryKey,
@@ -49,7 +49,7 @@ class MockPasswordStore : public PasswordStore {
       DisableAutoSignInForOriginsImpl,
       PasswordStoreChangeList(const base::Callback<bool(const GURL&)>&));
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const autofill::PasswordForm& form) override {
+      const PasswordStore::FormDigest& form) override {
     return ScopedVector<autofill::PasswordForm>();
   }
   MOCK_METHOD1(FillAutofillableLogins,

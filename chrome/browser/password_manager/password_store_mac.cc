@@ -1236,7 +1236,7 @@ bool PasswordStoreMac::RemoveStatisticsCreatedBetweenImpl(
 }
 
 ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
-    const autofill::PasswordForm& form) {
+    const FormDigest& form) {
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
       false);
 
@@ -1345,7 +1345,8 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
   DCHECK(login_metadata_db_);
   bool has_match = false;
   ScopedVector<autofill::PasswordForm> database_forms;
-  if (!login_metadata_db_->GetLogins(form, &database_forms))
+  if (!login_metadata_db_->GetLogins(
+          password_manager::PasswordStore::FormDigest(form), &database_forms))
     return false;
   for (const autofill::PasswordForm* db_form : database_forms) {
     // Below we filter out fuzzy matched forms because we are only interested

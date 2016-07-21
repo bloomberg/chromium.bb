@@ -78,7 +78,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     // The three methods below overwrite |forms| with all stored credentials
     // matching |form|, all stored non-blacklisted credentials, and all stored
     // blacklisted credentials, respectively. On success, they return true.
-    virtual bool GetLogins(const autofill::PasswordForm& form,
+    virtual bool GetLogins(const FormDigest& form,
                            ScopedVector<autofill::PasswordForm>* forms)
         WARN_UNUSED_RESULT = 0;
     virtual bool GetAutofillableLogins(
@@ -121,7 +121,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   password_manager::PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::Callback<bool(const GURL&)>& origin_filter) override;
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const autofill::PasswordForm& form) override;
+      const FormDigest& form) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(

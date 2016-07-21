@@ -25,14 +25,14 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
   // |expected_observed_form|, and will cause the result callback supplied to
   // GetAffiliatedAndroidRealms() to be invoked with |results_to_return|.
   void ExpectCallToGetAffiliatedAndroidRealms(
-      const autofill::PasswordForm& expected_observed_form,
+      const PasswordStore::FormDigest& expected_observed_form,
       const std::vector<std::string>& results_to_return);
 
   // Expects GetAffiliatedWebRealms() to be called with the
   // |expected_android_form|, and will cause the result callback supplied to
   // GetAffiliatedWebRealms() to be invoked with |results_to_return|.
   void ExpectCallToGetAffiliatedWebRealms(
-      const autofill::PasswordForm& expected_android_form,
+      const PasswordStore::FormDigest& expected_android_form,
       const std::vector<std::string>& results_to_return);
 
   void ExpectCallToInjectAffiliatedWebRealms(
@@ -40,16 +40,16 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
 
  private:
   MOCK_METHOD1(OnGetAffiliatedAndroidRealmsCalled,
-               std::vector<std::string>(const autofill::PasswordForm&));
+               std::vector<std::string>(const PasswordStore::FormDigest&));
   MOCK_METHOD1(OnGetAffiliatedWebRealmsCalled,
-               std::vector<std::string>(const autofill::PasswordForm&));
+               std::vector<std::string>(const PasswordStore::FormDigest&));
   MOCK_METHOD0(OnInjectAffiliatedWebRealmsCalled, std::vector<std::string>());
 
   void GetAffiliatedAndroidRealms(
-      const autofill::PasswordForm& observed_form,
+      const PasswordStore::FormDigest& observed_form,
       const AffiliatedRealmsCallback& result_callback) override;
   void GetAffiliatedWebRealms(
-      const autofill::PasswordForm& android_form,
+      const PasswordStore::FormDigest& android_form,
       const AffiliatedRealmsCallback& result_callback) override;
 
   void InjectAffiliatedWebRealms(

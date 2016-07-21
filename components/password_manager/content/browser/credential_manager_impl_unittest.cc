@@ -1216,7 +1216,7 @@ TEST_F(CredentialManagerImplTest,
 }
 
 TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {
-  autofill::PasswordForm synthesized =
+  PasswordStore::FormDigest synthesized =
       cm_service_impl_->GetSynthesizedFormForOrigin();
   EXPECT_EQ(kTestWebOrigin, synthesized.origin.spec());
   EXPECT_EQ(kTestWebOrigin, synthesized.signon_realm);

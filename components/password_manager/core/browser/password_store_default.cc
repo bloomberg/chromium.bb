@@ -172,7 +172,7 @@ bool PasswordStoreDefault::RemoveStatisticsCreatedBetweenImpl(
 }
 
 ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
-    const autofill::PasswordForm& form) {
+    const FormDigest& form) {
   ScopedVector<autofill::PasswordForm> matched_forms;
   if (login_db_ && !login_db_->GetLogins(form, &matched_forms))
     return ScopedVector<autofill::PasswordForm>();

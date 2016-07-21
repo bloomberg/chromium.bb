@@ -264,13 +264,13 @@ PasswordManagerClient* CredentialManagerImpl::client() const {
   return client_;
 }
 
-autofill::PasswordForm CredentialManagerImpl::GetSynthesizedFormForOrigin()
+PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
     const {
-  autofill::PasswordForm synthetic_form;
-  synthetic_form.origin = web_contents()->GetLastCommittedURL().GetOrigin();
-  synthetic_form.signon_realm = synthetic_form.origin.spec();
-  synthetic_form.scheme = autofill::PasswordForm::SCHEME_HTML;
-  return synthetic_form;
+  PasswordStore::FormDigest digest = {
+      autofill::PasswordForm::SCHEME_HTML, std::string(),
+      web_contents()->GetLastCommittedURL().GetOrigin()};
+  digest.signon_realm = digest.origin.spec();
+  return digest;
 }
 
 void CredentialManagerImpl::DoneRequiringUserMediation() {

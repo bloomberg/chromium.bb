@@ -82,7 +82,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
 }
 
 ScopedVector<autofill::PasswordForm> TestPasswordStore::FillMatchingLogins(
-    const autofill::PasswordForm& form) {
+    const FormDigest& form) {
   ScopedVector<autofill::PasswordForm> matched_forms;
   for (const auto& elements : stored_passwords_) {
     if (elements.first == form.signon_realm ||

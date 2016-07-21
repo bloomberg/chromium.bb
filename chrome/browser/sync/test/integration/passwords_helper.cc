@@ -95,8 +95,8 @@ void UpdateLogin(PasswordStore* store, const PasswordForm& form) {
 
 ScopedVector<PasswordForm> GetLogins(PasswordStore* store) {
   EXPECT_TRUE(store);
-  PasswordForm matcher_form;
-  matcher_form.signon_realm = kFakeSignonRealm;
+  password_manager::PasswordStore::FormDigest matcher_form = {
+      PasswordForm::SCHEME_HTML, kFakeSignonRealm, GURL()};
   PasswordStoreConsumerHelper consumer;
   store->GetLogins(matcher_form, &consumer);
   content::RunMessageLoop();

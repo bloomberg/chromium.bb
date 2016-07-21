@@ -45,7 +45,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   void ShutdownOnDBThread();
 
   // password_manager::PasswordStore:
-  void GetLoginsImpl(const autofill::PasswordForm& form,
+  void GetLoginsImpl(const password_manager::PasswordStore::FormDigest& form,
                      std::unique_ptr<GetLoginsRequest> request) override;
 
   std::unique_ptr<DBHandler> db_handler_;

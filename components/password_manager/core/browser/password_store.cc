@@ -74,6 +74,21 @@ void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
                             consumer_weak_, base::Passed(&passed_stats)));
 }
 
+PasswordStore::FormDigest::FormDigest(autofill::PasswordForm::Scheme new_scheme,
+                                      const std::string& new_signon_realm,
+                                      const GURL& new_origin)
+    : scheme(new_scheme), signon_realm(new_signon_realm), origin(new_origin) {}
+
+PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
+    : scheme(form.scheme),
+      signon_realm(form.signon_realm),
+      origin(form.origin) {}
+
+bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
+  return scheme == other.scheme && signon_realm == other.signon_realm &&
+         origin == other.origin;
+}
+
 PasswordStore::PasswordStore(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
@@ -162,7 +177,7 @@ void PasswordStore::TrimAffiliationCache() {
     affiliated_match_helper_->TrimAffiliationCache();
 }
 
-void PasswordStore::GetLogins(const PasswordForm& form,
+void PasswordStore::GetLogins(const FormDigest& form,
                               PasswordStoreConsumer* consumer) {
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
@@ -286,7 +301,7 @@ PasswordStore::GetBackgroundTaskRunner() {
   return db_thread_runner_;
 }
 
-void PasswordStore::GetLoginsImpl(const autofill::PasswordForm& form,
+void PasswordStore::GetLoginsImpl(const FormDigest& form,
                                   std::unique_ptr<GetLoginsRequest> request) {
   request->NotifyConsumerWithResults(FillMatchingLogins(form));
 }
@@ -305,14 +320,16 @@ void PasswordStore::LogStatsForBulkDeletionDuringRollback(int num_deletions) {
 PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form) {
   // There is no good way to check if the password is actually up to date, or
   // at least to check if it was actually changed. Assume it is.
-  if (AffiliatedMatchHelper::IsValidAndroidCredential(form))
+  if (AffiliatedMatchHelper::IsValidAndroidCredential(
+          PasswordStore::FormDigest(form)))
     ScheduleFindAndUpdateAffiliatedWebLogins(form);
   return AddLoginImpl(form);
 }
 
 PasswordStoreChangeList PasswordStore::UpdateLoginSync(
     const PasswordForm& form) {
-  if (AffiliatedMatchHelper::IsValidAndroidCredential(form)) {
+  if (AffiliatedMatchHelper::IsValidAndroidCredential(
+          PasswordStore::FormDigest(form))) {
     // Ideally, a |form| would not be updated in any way unless it was ensured
     // that it, as a whole, can be used for a successful login. This, sadly, can
     // not be guaranteed. It might be that |form| just contains updates to some
@@ -481,21 +498,20 @@ void PasswordStore::NotifySiteStats(const GURL& origin_domain,
 }
 
 void PasswordStore::GetLoginsWithAffiliationsImpl(
-    const PasswordForm& form,
+    const FormDigest& form,
     std::unique_ptr<GetLoginsRequest> request,
     const std::vector<std::string>& additional_android_realms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   ScopedVector<PasswordForm> results(FillMatchingLogins(form));
   for (const std::string& realm : additional_android_realms) {
-    PasswordForm android_form;
-    android_form.scheme = PasswordForm::SCHEME_HTML;
-    android_form.signon_realm = realm;
-    ScopedVector<PasswordForm> more_results(FillMatchingLogins(android_form));
-    for (PasswordForm* form : more_results)
-      form->is_affiliation_based_match = true;
+    ScopedVector<PasswordForm> more_results(
+        FillMatchingLogins({PasswordForm::SCHEME_HTML, realm, GURL()}));
+    for (PasswordForm* result : more_results)
+      result->is_affiliation_based_match = true;
     ScopedVector<PasswordForm>::iterator it_first_federated = std::partition(
-        more_results.begin(), more_results.end(),
-        [](PasswordForm* form) { return form->federation_origin.unique(); });
+        more_results.begin(), more_results.end(), [](PasswordForm* result) {
+          return result->federation_origin.unique();
+        });
     more_results.erase(it_first_federated, more_results.end());
     password_manager_util::TrimUsernameOnlyCredentials(&more_results);
     results.insert(results.end(), more_results.begin(), more_results.end());
@@ -518,7 +534,7 @@ void PasswordStore::InjectAffiliatedWebRealms(
 }
 
 void PasswordStore::ScheduleGetLoginsWithAffiliations(
-    const PasswordForm& form,
+    const FormDigest& form,
     std::unique_ptr<GetLoginsRequest> request,
     const std::vector<std::string>& additional_android_realms) {
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsWithAffiliationsImpl, this,
@@ -529,7 +545,8 @@ void PasswordStore::ScheduleGetLoginsWithAffiliations(
 std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
     const PasswordForm& primary_key) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  ScopedVector<PasswordForm> candidates(FillMatchingLogins(primary_key));
+  ScopedVector<PasswordForm> candidates(
+      FillMatchingLogins(FormDigest(primary_key)));
   for (PasswordForm*& candidate : candidates) {
     if (ArePasswordFormUniqueKeyEqual(*candidate, primary_key) &&
         !candidate->is_public_suffix_match) {
@@ -548,7 +565,7 @@ void PasswordStore::FindAndUpdateAffiliatedWebLogins(
     return;
   }
   affiliated_match_helper_->GetAffiliatedWebRealms(
-      added_or_updated_android_form,
+      PasswordStore::FormDigest(added_or_updated_android_form),
       base::Bind(&PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl, this,
                  added_or_updated_android_form));
 }
@@ -566,16 +583,14 @@ void PasswordStore::UpdateAffiliatedWebLoginsImpl(
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   PasswordStoreChangeList all_changes;
   for (const std::string& affiliated_web_realm : affiliated_web_realms) {
-    PasswordForm web_form_template;
-    web_form_template.scheme = PasswordForm::SCHEME_HTML;
-    web_form_template.signon_realm = affiliated_web_realm;
-    ScopedVector<PasswordForm> web_logins(
-        FillMatchingLogins(web_form_template));
+    ScopedVector<PasswordForm> web_logins(FillMatchingLogins(
+        {PasswordForm::SCHEME_HTML, affiliated_web_realm, GURL()}));
     for (PasswordForm* web_login : web_logins) {
       // Do not update HTTP logins, logins saved under insecure conditions, and
       // non-HTML login forms; PSL matches; logins with a different username;
       // and logins with the same password (to avoid generating no-op updates).
-      if (!AffiliatedMatchHelper::IsValidWebCredential(*web_login) ||
+      if (!AffiliatedMatchHelper::IsValidWebCredential(
+              FormDigest(*web_login)) ||
           web_login->is_public_suffix_match ||
           web_login->username_value != updated_android_form.username_value ||
           web_login->password_value == updated_android_form.password_value)

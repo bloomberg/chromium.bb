@@ -419,7 +419,7 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
     NOTREACHED();
     return;
   }
-  password_store->GetLogins(observed_form_, this);
+  password_store->GetLogins(PasswordStore::FormDigest(observed_form_), this);
 
 // The statistics isn't needed on mobile, only on desktop. Let's save some
 // processor cycles.

@@ -32,6 +32,7 @@ using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
+using password_manager::PasswordStore;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using testing::Pointee;
@@ -523,15 +524,12 @@ class NativeBackendGnomeTest : public testing::Test {
                    base::Unretained(&backend),
                    credentials));
 
-    PasswordForm target_form;
-    target_form.origin = url;
-    target_form.signon_realm = url.spec();
+    PasswordStore::FormDigest target_form = {scheme, url.spec(), url};
     if (scheme != PasswordForm::SCHEME_HTML) {
       // For non-HTML forms, the realm used for authentication
       // (http://tools.ietf.org/html/rfc1945#section-10.2) is appended to the
       // signon_realm. Just use a default value for now.
       target_form.signon_realm.append("Realm");
-      target_form.scheme = scheme;
     }
     ScopedVector<autofill::PasswordForm> form_list;
     BrowserThread::PostTaskAndReplyWithResult(
@@ -580,9 +578,8 @@ class NativeBackendGnomeTest : public testing::Test {
 
     // Get the PSL-matched copy of the saved login for m.facebook.
     const GURL kMobileURL("http://m.facebook.com/");
-    PasswordForm m_facebook_lookup;
-    m_facebook_lookup.origin = kMobileURL;
-    m_facebook_lookup.signon_realm = kMobileURL.spec();
+    PasswordStore::FormDigest m_facebook_lookup = {
+        PasswordForm::SCHEME_HTML, kMobileURL.spec(), kMobileURL};
     ScopedVector<autofill::PasswordForm> form_list;
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::DB,
@@ -672,12 +669,9 @@ class NativeBackendGnomeTest : public testing::Test {
 
     // Check that www.facebook.com login was modified by the update.
     BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&NativeBackendGnome::GetLogins,
-                   base::Unretained(&backend),
-                   form_facebook_,
-                   &form_list),
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&NativeBackendGnome::GetLogins, base::Unretained(&backend),
+                   PasswordStore::FormDigest(form_facebook_), &form_list),
         base::Bind(&CheckTrue));
     RunBothThreads();
     // There should be two results -- the exact one, and the PSL-matched one.
@@ -1136,15 +1130,15 @@ TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  PasswordForm observed_android_form;
-  observed_android_form.scheme = PasswordForm::SCHEME_HTML;
-  observed_android_form.signon_realm =
+  PasswordForm saved_android_form;
+  saved_android_form.scheme = PasswordForm::SCHEME_HTML;
+  saved_android_form.signon_realm =
       "android://7x7IDboo8u9YKraUsbmVkuf1-@net.rateflix.app/";
-  PasswordForm saved_android_form = observed_android_form;
   saved_android_form.username_value = base::UTF8ToUTF16("randomusername");
   saved_android_form.password_value = base::UTF8ToUTF16("password");
   saved_android_form.date_created = base::Time::Now();
 
+  PasswordStore::FormDigest observed_android_form(saved_android_form);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendGnome::AddLogin,

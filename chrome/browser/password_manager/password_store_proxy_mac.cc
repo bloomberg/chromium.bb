@@ -203,7 +203,7 @@ bool PasswordStoreProxyMac::RemoveStatisticsCreatedBetweenImpl(
 }
 
 ScopedVector<autofill::PasswordForm> PasswordStoreProxyMac::FillMatchingLogins(
-    const autofill::PasswordForm& form) {
+    const FormDigest& form) {
   return GetBackend()->FillMatchingLogins(form);
 }
 

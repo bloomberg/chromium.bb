@@ -67,7 +67,7 @@ class CredentialManagerImpl
   void SendPasswordForm(const SendCredentialCallback& send_callback,
                         const autofill::PasswordForm* form) override;
   PasswordManagerClient* client() const override;
-  autofill::PasswordForm GetSynthesizedFormForOrigin() const override;
+  PasswordStore::FormDigest GetSynthesizedFormForOrigin() const override;
 
   // CredentialManagerPendingSignedOutTaskDelegate:
   PasswordStore* GetPasswordStore() override;

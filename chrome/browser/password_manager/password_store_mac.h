@@ -94,7 +94,7 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   bool RemoveStatisticsCreatedBetweenImpl(base::Time delete_begin,
                                           base::Time delete_end) override;
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const autofill::PasswordForm& form) override;
+      const FormDigest& form) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(

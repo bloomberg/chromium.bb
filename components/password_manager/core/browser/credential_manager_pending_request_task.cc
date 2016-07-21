@@ -95,7 +95,8 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
       local_results.push_back(form);
       form = nullptr;
     } else if (affiliated_realms_.count(form->signon_realm) &&
-               AffiliatedMatchHelper::IsValidAndroidCredential(*form)) {
+               AffiliatedMatchHelper::IsValidAndroidCredential(
+                   PasswordStore::FormDigest(*form))) {
       form->is_affiliation_based_match = true;
       affiliated_results.push_back(form);
       form = nullptr;

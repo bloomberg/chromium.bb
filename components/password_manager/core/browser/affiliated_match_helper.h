@@ -71,7 +71,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // |observed_form| if it is web-based. Otherwise, yields the empty list. The
   // |result_callback| will be invoked in both cases, on the same thread.
   virtual void GetAffiliatedAndroidRealms(
-      const autofill::PasswordForm& observed_form,
+      const PasswordStore::FormDigest& observed_form,
       const AffiliatedRealmsCallback& result_callback);
 
   // Retrieves realms of web sites affiliated with the Android application that
@@ -82,7 +82,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // long as the |android_form| is from the PasswordStore, this should rarely
   // happen as affiliation information for those applications are prefetched.
   virtual void GetAffiliatedWebRealms(
-      const autofill::PasswordForm& android_form,
+      const PasswordStore::FormDigest& android_form,
       const AffiliatedRealmsCallback& result_callback);
 
   // Retrieves realms of web sites affiliated with the Android credentials in
@@ -98,11 +98,11 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   void TrimAffiliationCache();
 
   // Returns whether or not |form| represents an Android credential.
-  static bool IsValidAndroidCredential(const autofill::PasswordForm& form);
+  static bool IsValidAndroidCredential(const PasswordStore::FormDigest& form);
 
   // Returns whether or not |form| represents a valid Web credential for the
   // purposes of affiliation-based matching.
-  static bool IsValidWebCredential(const autofill::PasswordForm& form);
+  static bool IsValidWebCredential(const PasswordStore::FormDigest& form);
 
   // Sets the task runner to be used to delay I/O heavy initialization. Should
   // be called before Initialize(). Used only for testing.

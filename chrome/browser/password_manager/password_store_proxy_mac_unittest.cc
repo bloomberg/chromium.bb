@@ -34,6 +34,7 @@ namespace {
 using autofill::PasswordForm;
 using content::BrowserThread;
 using password_manager::MigrationStatus;
+using password_manager::PasswordStore;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using testing::_;
@@ -178,7 +179,8 @@ void PasswordStoreProxyMacTest::FinishAsyncProcessing() {
   // Do a store-level query to wait for all the previously enqueued operations
   // to finish.
   MockPasswordStoreConsumer consumer;
-  store_->GetLogins(PasswordForm(), &consumer);
+  store_->GetLogins({PasswordForm::SCHEME_HTML, std::string(), GURL()},
+                    &consumer);
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(_))
       .WillOnce(QuitUIMessageLoop());
   base::RunLoop().Run();
@@ -314,7 +316,7 @@ TEST_P(PasswordStoreProxyMacTest, FillLogins) {
   AddForm(blacklisted_form);
 
   MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(password_form, &mock_consumer);
+  store()->GetLogins(PasswordStore::FormDigest(password_form), &mock_consumer);
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
                                  ElementsAre(Pointee(password_form))))
       .WillOnce(QuitUIMessageLoop());
@@ -373,7 +375,7 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Get all logins; autofillable logins; blacklisted logins.
   MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(*form, &mock_consumer);
+  store()->GetLogins(PasswordStore::FormDigest(*form), &mock_consumer);
   ON_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(_))
       .WillByDefault(QuitUIMessageLoop());
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
@@ -467,7 +469,7 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
         ->set_locked(false);
   }
   MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(form, &mock_consumer);
+  store()->GetLogins(PasswordStore::FormDigest(form), &mock_consumer);
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(ElementsAre(Pointee(form))))
       .WillOnce(QuitUIMessageLoop());

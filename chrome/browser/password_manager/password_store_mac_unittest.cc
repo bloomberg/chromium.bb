@@ -1351,9 +1351,7 @@ class PasswordStoreMacTest : public testing::Test {
       ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
       EXPECT_EQ(form, returned_form);
 
-      PasswordForm query_form = form;
-      query_form.password_value.clear();
-      query_form.username_value.clear();
+      PasswordStore::FormDigest query_form(form);
       EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
           .WillOnce(
               DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
@@ -1505,7 +1503,8 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
       EXPECT_EQ(0U, matching_items.size()) << "iteration " << i;
     }
 
-    EXPECT_TRUE(login_db()->GetLogins(*query_form, &matching_items));
+    EXPECT_TRUE(login_db()->GetLogins(PasswordStore::FormDigest(*query_form),
+                                      &matching_items));
     EXPECT_EQ(updates[i].password ? 1U : 0U, matching_items.size())
         << "iteration " << i;
   }
@@ -1552,7 +1551,7 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   m_form.origin = GURL("http://m.facebook.com/index.html");
 
   MockPasswordStoreConsumer consumer;
-  store_->GetLogins(m_form, &consumer);
+  store_->GetLogins(PasswordStore::FormDigest(m_form), &consumer);
   PasswordForm returned_form;
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
       .WillOnce(
@@ -1576,13 +1575,15 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
       owned_keychain_adapter.PasswordsFillingForm(www_form->signon_realm,
                                                   www_form->scheme);
   EXPECT_EQ(0u, matching_items.size());
-  EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
+  EXPECT_TRUE(login_db()->GetLogins(PasswordStore::FormDigest(*www_form),
+                                    &matching_items));
   EXPECT_EQ(0u, matching_items.size());
   // No trace of m.facebook.com.
   matching_items = owned_keychain_adapter.PasswordsFillingForm(
       m_form.signon_realm, m_form.scheme);
   EXPECT_EQ(0u, matching_items.size());
-  EXPECT_TRUE(login_db()->GetLogins(m_form, &matching_items));
+  EXPECT_TRUE(login_db()->GetLogins(PasswordStore::FormDigest(m_form),
+                                    &matching_items));
   EXPECT_EQ(0u, matching_items.size());
 }
 
@@ -1856,7 +1857,8 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
   FinishAsyncProcessing();
 
   ScopedVector<PasswordForm> matching_items;
-  EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
+  EXPECT_TRUE(login_db()->GetLogins(PasswordStore::FormDigest(*www_form),
+                                    &matching_items));
   EXPECT_EQ(1u, matching_items.size());
 
   store_->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
@@ -1864,7 +1866,8 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
   FinishAsyncProcessing();
 
   // Check the second facebook form is gone.
-  EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
+  EXPECT_TRUE(login_db()->GetLogins(PasswordStore::FormDigest(*www_form),
+                                    &matching_items));
   EXPECT_EQ(0u, matching_items.size());
 
   // Check the first facebook form is still there.
@@ -1917,7 +1920,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   // The PSL-matched form isn't returned because there is no actual password in
   // the keychain.
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  store_->GetLogins(m_form, &consumer);
+  store_->GetLogins(PasswordStore::FormDigest(m_form), &consumer);
   base::RunLoop().Run();
   ScopedVector<autofill::PasswordForm> all_forms;
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
@@ -1931,7 +1934,7 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
       password_manager::PasswordStoreChange::REMOVE, *www_form));
   EXPECT_CALL(mock_observer, OnLoginsChanged(list));
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  store_->GetLogins(*www_form, &consumer);
+  store_->GetLogins(PasswordStore::FormDigest(*www_form), &consumer);
   base::RunLoop().Run();
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
   EXPECT_EQ(0u, all_forms.size());
@@ -1998,15 +2001,18 @@ TEST_F(PasswordStoreMacTest, ImportFromKeychain) {
 
   // The password should be stored in the database by now.
   ScopedVector<PasswordForm> matching_items;
-  EXPECT_TRUE(login_db()->GetLogins(form1, &matching_items));
+  EXPECT_TRUE(
+      login_db()->GetLogins(PasswordStore::FormDigest(form1), &matching_items));
   ASSERT_EQ(1u, matching_items.size());
   EXPECT_EQ(form1, *matching_items[0]);
 
-  EXPECT_TRUE(login_db()->GetLogins(form2, &matching_items));
+  EXPECT_TRUE(
+      login_db()->GetLogins(PasswordStore::FormDigest(form2), &matching_items));
   ASSERT_EQ(1u, matching_items.size());
   EXPECT_EQ(form2, *matching_items[0]);
 
-  EXPECT_TRUE(login_db()->GetLogins(blacklisted_form, &matching_items));
+  EXPECT_TRUE(login_db()->GetLogins(PasswordStore::FormDigest(blacklisted_form),
+                                    &matching_items));
   ASSERT_EQ(1u, matching_items.size());
   EXPECT_EQ(blacklisted_form, *matching_items[0]);
 
@@ -2035,7 +2041,8 @@ TEST_F(PasswordStoreMacTest, ImportFederatedFromLockedKeychain) {
   FinishAsyncProcessing();
 
   ScopedVector<PasswordForm> matching_items;
-  EXPECT_TRUE(login_db()->GetLogins(form1, &matching_items));
+  EXPECT_TRUE(
+      login_db()->GetLogins(PasswordStore::FormDigest(form1), &matching_items));
   ASSERT_EQ(1u, matching_items.size());
   EXPECT_EQ(form1, *matching_items[0]);
 }
@@ -2066,7 +2073,8 @@ TEST_F(PasswordStoreMacTest, ImportFromLockedKeychainError) {
   FinishAsyncProcessing();
 
   ScopedVector<PasswordForm> matching_items;
-  EXPECT_TRUE(login_db()->GetLogins(form1, &matching_items));
+  EXPECT_TRUE(
+      login_db()->GetLogins(PasswordStore::FormDigest(form1), &matching_items));
   ASSERT_EQ(1u, matching_items.size());
   EXPECT_EQ(base::string16(), matching_items[0]->password_value);
 

@@ -957,14 +957,15 @@ TEST_P(NativeBackendKWalletTest, AndroidCredentials) {
   NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
-  PasswordForm observed_android_form;
-  observed_android_form.scheme = PasswordForm::SCHEME_HTML;
-  observed_android_form.signon_realm =
+  PasswordForm saved_android_form;
+  saved_android_form.scheme = PasswordForm::SCHEME_HTML;
+  saved_android_form.signon_realm =
       "android://7x7IDboo8u9YKraUsbmVkuf1-@net.rateflix.app/";
-  PasswordForm saved_android_form = observed_android_form;
   saved_android_form.username_value = base::UTF8ToUTF16("randomusername");
   saved_android_form.password_value = base::UTF8ToUTF16("password");
 
+  password_manager::PasswordStore::FormDigest observed_android_form(
+      saved_android_form);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&NativeBackendKWalletStub::AddLogin,

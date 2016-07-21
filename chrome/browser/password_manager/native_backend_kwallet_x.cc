@@ -527,7 +527,7 @@ bool NativeBackendKWallet::DisableAutoSignInForOrigins(
 }
 
 bool NativeBackendKWallet::GetLogins(
-    const PasswordForm& form,
+    const password_manager::PasswordStore::FormDigest& form,
     ScopedVector<autofill::PasswordForm>* forms) {
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)

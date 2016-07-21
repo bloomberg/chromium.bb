@@ -46,7 +46,8 @@ void CredentialManagerPendingRequireUserMediationTask::
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     if (registrable_domains_.count(form_registrable_domain) ||
         (affiliated_realms_.count(form->signon_realm) &&
-         AffiliatedMatchHelper::IsValidAndroidCredential(*form))) {
+         AffiliatedMatchHelper::IsValidAndroidCredential(
+             PasswordStore::FormDigest(*form)))) {
       form->skip_zero_click = true;
       // Note that UpdateLogin ends up copying the form while posting a task to
       // update the PasswordStore, so it's fine to let |results| delete the

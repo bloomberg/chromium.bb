@@ -46,7 +46,7 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   bool DisableAutoSignInForOrigins(
       const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override;
-  bool GetLogins(const autofill::PasswordForm& form,
+  bool GetLogins(const password_manager::PasswordStore::FormDigest& form,
                  ScopedVector<autofill::PasswordForm>* forms) override;
   bool GetAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
@@ -76,10 +76,10 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   // Retrieves credentials matching |options| from the keyring into |forms|,
   // overwriting the original contents of |forms|. If |lookup_form| is not NULL,
   // only retrieves credentials PSL-matching it. Returns true on success.
-  bool GetLoginsList(const autofill::PasswordForm* lookup_form,
-                     GetLoginsListOptions options,
-                     ScopedVector<autofill::PasswordForm>* forms)
-      WARN_UNUSED_RESULT;
+  bool GetLoginsList(
+      const password_manager::PasswordStore::FormDigest* lookup_form,
+      GetLoginsListOptions options,
+      ScopedVector<autofill::PasswordForm>* forms) WARN_UNUSED_RESULT;
 
   // Retrieves password created/synced in the time interval into |forms|,
   // overwriting the original contents of |forms|. Returns true on success.
@@ -96,10 +96,11 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
                            TimestampToCompare date_to_compare,
                            password_manager::PasswordStoreChangeList* changes);
 
-  // convert data get from Libsecret to Passwordform
+  // Convert data get from Libsecret to Passwordform. Uses |lookup_form| for
+  // additional (PSL) matching, if present.
   ScopedVector<autofill::PasswordForm> ConvertFormList(
       GList* found,
-      const autofill::PasswordForm* lookup_form);
+      const password_manager::PasswordStore::FormDigest* lookup_form);
 
   // The app string, possibly based on the local profile id.
   std::string app_string_;

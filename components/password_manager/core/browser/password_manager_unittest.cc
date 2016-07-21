@@ -1348,7 +1348,8 @@ TEST_F(PasswordManagerTest,
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   PasswordStoreConsumer* consumer = nullptr;
-  EXPECT_CALL(*store_, GetLogins(form, _)).WillOnce(SaveArg<1>(&consumer));
+  EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _))
+      .WillOnce(SaveArg<1>(&consumer));
   manager()->SetGenerationElementAndReasonForForm(&driver_, form,
                                                   base::string16(), false);
   PasswordFormManager* form_manager =

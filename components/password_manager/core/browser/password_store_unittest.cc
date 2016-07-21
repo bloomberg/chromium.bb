@@ -151,24 +151,21 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   // Theoretically these should never actually exist since there are no longer
   // any login forms on www.google.com to save, but we technically allow them.
   // We should not get back the older saved password though.
-  PasswordForm www_google;
-  www_google.scheme = PasswordForm::SCHEME_HTML;
-  www_google.signon_realm = "https://www.google.com";
+  const PasswordStore::FormDigest www_google = {
+      PasswordForm::SCHEME_HTML, "https://www.google.com", GURL()};
   std::vector<PasswordForm*> www_google_expected;
   www_google_expected.push_back(all_forms[2]);
 
   // We should still get the accounts.google.com login even though it's older
   // than our cutoff - this is the new location of all Google login forms.
-  PasswordForm accounts_google;
-  accounts_google.scheme = PasswordForm::SCHEME_HTML;
-  accounts_google.signon_realm = "https://accounts.google.com";
+  const PasswordStore::FormDigest accounts_google = {
+      PasswordForm::SCHEME_HTML, "https://accounts.google.com", GURL()};
   std::vector<PasswordForm*> accounts_google_expected;
   accounts_google_expected.push_back(all_forms[3]);
 
   // Same thing for a generic saved login.
-  PasswordForm bar_example;
-  bar_example.scheme = PasswordForm::SCHEME_HTML;
-  bar_example.signon_realm = "http://bar.example.com";
+  const PasswordStore::FormDigest bar_example = {
+      PasswordForm::SCHEME_HTML, "http://bar.example.com", GURL()};
   std::vector<PasswordForm*> bar_example_expected;
   bar_example_expected.push_back(all_forms[4]);
 
@@ -412,10 +409,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
     base::RunLoop().RunUntilIdle();
   }
 
-  PasswordForm observed_form;
-  observed_form.scheme = PasswordForm::SCHEME_HTML;
-  observed_form.origin = GURL(kTestWebOrigin1);
-  observed_form.signon_realm = kTestWebRealm1;
+  PasswordStore::FormDigest observed_form = {
+      PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
   MockPasswordStoreConsumer mock_consumer;
   ScopedVector<PasswordForm> expected_results;
@@ -518,10 +513,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
     base::RunLoop().RunUntilIdle();
   }
 
-  PasswordForm observed_form;
-  observed_form.scheme = PasswordForm::SCHEME_HTML;
-  observed_form.origin = GURL(kTestWebOrigin1);
-  observed_form.signon_realm = kTestWebRealm1;
+  PasswordStore::FormDigest observed_form = {
+      PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
   MockPasswordStoreConsumer mock_consumer;
   ScopedVector<PasswordForm> expected_results;
@@ -727,7 +720,8 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
         affiliated_web_realms.push_back(kTestWebRealm3);
         affiliated_web_realms.push_back(kTestWebRealm5);
         mock_helper->ExpectCallToGetAffiliatedWebRealms(
-            *expected_credentials_after_update[0], affiliated_web_realms);
+            PasswordStore::FormDigest(*expected_credentials_after_update[0]),
+            affiliated_web_realms);
       }
 
       // Explicitly update the Android credential, wait until things calm down,

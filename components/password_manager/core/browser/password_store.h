@@ -64,6 +64,20 @@ class PasswordStore : protected PasswordStoreSync,
     virtual ~Observer() {}
   };
 
+  // Represents a subset of autofill::PasswordForm needed for credential
+  // retrievals.
+  struct FormDigest {
+    FormDigest(autofill::PasswordForm::Scheme scheme,
+               const std::string& signon_realm,
+               const GURL& origin);
+    explicit FormDigest(const autofill::PasswordForm& form);
+    bool operator==(const FormDigest& other) const;
+
+    autofill::PasswordForm::Scheme scheme;
+    std::string signon_realm;
+    GURL origin;
+  };
+
   PasswordStore(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
@@ -153,7 +167,7 @@ class PasswordStore : protected PasswordStoreSync,
   // TODO(engedy): Currently, this will not return federated logins saved from
   // Android applications that are affiliated with the realm of |form|. Need to
   // decide if this is the desired behavior. See: https://crbug.com/539844.
-  virtual void GetLogins(const autofill::PasswordForm& form,
+  virtual void GetLogins(const FormDigest& form,
                          PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
@@ -281,7 +295,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Note: subclasses should implement FillMatchingLogins() instead. This needs
   // to be virtual only because asynchronous behavior in PasswordStoreWin.
   // TODO(engedy): Make this non-virtual once https://crbug.com/78830 is fixed.
-  virtual void GetLoginsImpl(const autofill::PasswordForm& form,
+  virtual void GetLoginsImpl(const FormDigest& form,
                              std::unique_ptr<GetLoginsRequest> request);
 
   // Synchronous implementation provided by subclasses to add the given login.
@@ -301,7 +315,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds and returns all PasswordForms with the same signon_realm as |form|,
   // or with a signon_realm that is a PSL-match to that of |form|.
   virtual ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const autofill::PasswordForm& form) = 0;
+      const FormDigest& form) = 0;
 
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
@@ -413,7 +427,7 @@ class PasswordStore : protected PasswordStoreSync,
   //  * is one of those in |additional_android_realms|,
   // and takes care of notifying the consumer with the results when done.
   void GetLoginsWithAffiliationsImpl(
-      const autofill::PasswordForm& form,
+      const FormDigest& form,
       std::unique_ptr<GetLoginsRequest> request,
       const std::vector<std::string>& additional_android_realms);
 
@@ -424,7 +438,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Schedules GetLoginsWithAffiliationsImpl() to be run on the DB thread.
   void ScheduleGetLoginsWithAffiliations(
-      const autofill::PasswordForm& form,
+      const FormDigest& form,
       std::unique_ptr<GetLoginsRequest> request,
       const std::vector<std::string>& additional_android_realms);
 

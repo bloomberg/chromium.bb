@@ -246,8 +246,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       true,
       1,
   };
-  std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(form_data);
+  PasswordStore::FormDigest form(
+      *CreatePasswordFormFromDataForTesting(form_data));
 
   // The returned form will not have 'action' or '*_element' fields set. This
   // is because credentials imported from IE don't have this information.
@@ -273,7 +273,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_forms.get())));
 
-  store_->GetLogins(*form, &consumer);
+  store_->GetLogins(form, &consumer);
   base::MessageLoop::current()->Run();
 }
 
@@ -294,11 +294,11 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
       true,
       1,
   };
-  std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(form_data);
+  PasswordStore::FormDigest form(
+      *CreatePasswordFormFromDataForTesting(form_data));
 
   MockPasswordStoreConsumer consumer;
-  store_->GetLogins(*form, &consumer);
+  store_->GetLogins(form, &consumer);
 
   // Release the PSW and the WDS before the query can return.
   store_->ShutdownOnUIThread();
@@ -349,8 +349,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       true,
       1,
   };
-  std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(form_data);
+  PasswordStore::FormDigest form(
+      *CreatePasswordFormFromDataForTesting(form_data));
 
   PasswordFormData expected_form_data = {
       PasswordForm::SCHEME_HTML,
@@ -374,7 +374,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_forms.get())));
 
-  store_->GetLogins(*form, &password_consumer);
+  store_->GetLogins(form, &password_consumer);
 
   MockWebDataServiceConsumer wds_consumer;
 
@@ -407,8 +407,8 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
       true,
       1,
   };
-  std::unique_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(form_data);
+  PasswordStore::FormDigest form(
+      *CreatePasswordFormFromDataForTesting(form_data));
 
   MockPasswordStoreConsumer consumer;
 
@@ -418,7 +418,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
 
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
 
-  store_->GetLogins(*form, &consumer);
+  store_->GetLogins(form, &consumer);
   base::MessageLoop::current()->Run();
 }
 

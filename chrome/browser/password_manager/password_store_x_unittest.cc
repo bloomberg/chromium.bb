@@ -106,7 +106,7 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
     return forms;
   }
 
-  bool GetLogins(const PasswordForm& form,
+  bool GetLogins(const PasswordStore::FormDigest& form,
                  ScopedVector<autofill::PasswordForm>* forms) override {
     *forms = CreateTrashForms();
     return false;
@@ -198,7 +198,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     return true;
   }
 
-  bool GetLogins(const PasswordForm& form,
+  bool GetLogins(const PasswordStore::FormDigest& form,
                  ScopedVector<autofill::PasswordForm>* forms) override {
     for (size_t i = 0; i < all_forms_.size(); ++i)
       if (all_forms_[i].signon_realm == form.signon_realm)

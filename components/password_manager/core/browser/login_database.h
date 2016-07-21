@@ -87,7 +87,7 @@ class LoginDatabase {
 
   // Gets a list of credentials matching |form|, including blacklisted matches
   // and federated credentials.
-  bool GetLogins(const autofill::PasswordForm& form,
+  bool GetLogins(const PasswordStore::FormDigest& form,
                  ScopedVector<autofill::PasswordForm>* forms) const
       WARN_UNUSED_RESULT;
 
@@ -191,7 +191,7 @@ class LoginDatabase {
   // |matched_form| is not null, filters out all results but those PSL-matching
   // |*matched_form| or federated credentials for it. On success returns true.
   static bool StatementToForms(sql::Statement* statement,
-                               const autofill::PasswordForm* matched_form,
+                               const PasswordStore::FormDigest* matched_form,
                                ScopedVector<autofill::PasswordForm>* forms);
 
   // Initializes all the *_statement_ data members with appropriate SQL
