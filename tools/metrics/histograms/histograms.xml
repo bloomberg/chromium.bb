@@ -41519,6 +41519,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeConnect" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from domanLookupEnd to connectStart based on Navigation Timing.
@@ -41526,6 +41529,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeDomainLookup" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from fetchStart to domainLookupStart based on Navigation Timing.
@@ -41533,6 +41539,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeDomLoading" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016. Replaced by
+    PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from responseStart to domLoading based on Navigation Timing.
@@ -41540,6 +41550,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeFetch" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from navigationStart to fetchStart based on Navigation Timing when no
@@ -41548,6 +41561,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeFetchRedirect" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from navigationStart to fetchStart excluding time spent on redirects
@@ -41556,6 +41572,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeLoadEvent" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016. Replaced by
+    PageLoad.DocumentTiming.NavigationToLoadEventFired.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from domContentLoadedEventEnd to loadEventStart based on Navigation
@@ -41564,6 +41584,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_DelayBeforeRequest" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from connectEnd to requestStart based on Navigation Timing.
@@ -41608,6 +41631,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_Redirect" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from redirectStart to redirectEnd based on Navigation Timing when
@@ -41616,6 +41642,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_Request" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016. Replaced by
+    PageLoad.ParseTiming.NavigationToParseStart.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from requestStart to responseStart based on Navigation Timing.
@@ -41623,6 +41653,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.NT_Response" units="ms">
+  <obsolete>
+    Deprecated as of 7/19/2016. Replaced by PageLoad.ParseTiming.ParseDuration.
+  </obsolete>
   <owner>bolian@chromium.org</owner>
   <summary>
     Time from responseStart to responseEnd based on Navigation Timing.

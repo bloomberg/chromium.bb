@@ -242,16 +242,12 @@ void DumpHistograms(const WebPerformance& performance,
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
-  Time redirect_start = Time::FromDoubleT(performance.redirectStart());
-  Time redirect_end = Time::FromDoubleT(performance.redirectEnd());
-  Time fetch_start = Time::FromDoubleT(performance.fetchStart());
   Time domain_lookup_start = Time::FromDoubleT(performance.domainLookupStart());
   Time domain_lookup_end = Time::FromDoubleT(performance.domainLookupEnd());
   Time connect_start = Time::FromDoubleT(performance.connectStart());
   Time connect_end = Time::FromDoubleT(performance.connectEnd());
   Time request_start = Time::FromDoubleT(performance.requestStart());
   Time response_start = Time::FromDoubleT(performance.responseStart());
-  Time response_end = Time::FromDoubleT(performance.responseEnd());
   Time dom_loading = Time::FromDoubleT(performance.domLoading());
   Time dom_interactive = Time::FromDoubleT(performance.domInteractive());
   Time dom_content_loaded_start =
@@ -285,57 +281,15 @@ void DumpHistograms(const WebPerformance& performance,
     return;
   document_state->set_web_timing_histograms_recorded(true);
 
-  if (!redirect_start.is_null() && !redirect_end.is_null()) {
-    PLT_HISTOGRAM_DRP("PLT.NT_Redirect",
-                      redirect_end - redirect_start,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-    PLT_HISTOGRAM_DRP(
-        "PLT.NT_DelayBeforeFetchRedirect",
-        (fetch_start - navigation_start) - (redirect_end - redirect_start),
-        data_reduction_proxy_was_used,
-        scheme_type);
-  } else {
-    PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeFetch",
-                      fetch_start - navigation_start,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-  }
-  PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeDomainLookup",
-                    domain_lookup_start - fetch_start,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
   PLT_HISTOGRAM_DRP("PLT.NT_DomainLookup",
                     domain_lookup_end - domain_lookup_start,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
-  PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeConnect",
-                    connect_start - domain_lookup_end,
                     data_reduction_proxy_was_used,
                     scheme_type);
   PLT_HISTOGRAM_DRP("PLT.NT_Connect",
                     connect_end - connect_start,
                     data_reduction_proxy_was_used,
                     scheme_type);
-  PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeRequest",
-                    request_start - connect_end,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
-  PLT_HISTOGRAM_DRP("PLT.NT_Request",
-                    response_start - request_start,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
-  PLT_HISTOGRAM_DRP("PLT.NT_Response",
-                    response_end - response_start,
-                    data_reduction_proxy_was_used,
-                    scheme_type);
 
-  if (!dom_loading.is_null()) {
-    PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeDomLoading",
-                      dom_loading - response_start,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-  }
   if (!dom_interactive.is_null() && !dom_loading.is_null()) {
     PLT_HISTOGRAM_DRP("PLT.NT_DomLoading",
                       dom_interactive - dom_loading,
@@ -352,12 +306,6 @@ void DumpHistograms(const WebPerformance& performance,
       !dom_content_loaded_end.is_null() ) {
     PLT_HISTOGRAM_DRP("PLT.NT_DomContentLoaded",
                       dom_content_loaded_end - dom_content_loaded_start,
-                      data_reduction_proxy_was_used,
-                      scheme_type);
-  }
-  if (!dom_content_loaded_end.is_null() && !load_event_start.is_null()) {
-    PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeLoadEvent",
-                      load_event_start - dom_content_loaded_end,
                       data_reduction_proxy_was_used,
                       scheme_type);
   }
