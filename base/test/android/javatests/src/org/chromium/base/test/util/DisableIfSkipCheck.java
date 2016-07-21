@@ -28,7 +28,7 @@ public class DisableIfSkipCheck extends SkipCheck {
         if (method == null) return true;
 
         for (DisableIf.Build v : getAnnotations(method, DisableIf.Build.class)) {
-            if (abi(v) && hardware(v) && sdk(v)) {
+            if (abi(v) && hardware(v) && product(v) && sdk(v)) {
                 if (!v.message().isEmpty()) {
                     Log.i(TAG, "%s is disabled: %s", testCase.toString(), v.message());
                 }
