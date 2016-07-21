@@ -179,6 +179,8 @@
         'test/env_test_helper.h',
         'test/event_generator_delegate_aura.cc',
         'test/event_generator_delegate_aura.h',
+        'test/input_method_glue.cc',
+        'test/input_method_glue.h',
         'test/test_cursor_client.cc',
         'test/test_cursor_client.h',
         'test/test_focus_client.cc',

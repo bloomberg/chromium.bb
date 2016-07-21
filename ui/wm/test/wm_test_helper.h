@@ -13,6 +13,7 @@
 #include "ui/aura/window_tree_host.h"
 
 namespace aura {
+class InputMethodGlue;
 class Window;
 class WindowTreeHost;
 namespace client {
@@ -52,7 +53,7 @@ class WMTestHelper : public aura::client::WindowTreeClient {
 
  private:
   std::unique_ptr<aura::WindowTreeHost> host_;
-
+  std::unique_ptr<aura::InputMethodGlue> input_method_glue_;
   std::unique_ptr<wm::CompoundEventFilter> root_window_event_filter_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<aura::client::FocusClient> focus_client_;

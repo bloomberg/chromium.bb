@@ -6,6 +6,7 @@
 
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/input_method_glue.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -18,6 +19,7 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
   aura::Env::GetInstance()->set_context_factory(context_factory);
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
   host_->InitHost();
+  input_method_glue_.reset(new aura::InputMethodGlue(host_.get()));
   aura::client::SetWindowTreeClient(host_->window(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
