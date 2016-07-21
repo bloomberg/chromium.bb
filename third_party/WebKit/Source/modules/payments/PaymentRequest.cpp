@@ -458,10 +458,13 @@ void PaymentRequest::onUpdatePaymentDetails(const ScriptValue& detailsScriptValu
 
 void PaymentRequest::onUpdatePaymentDetailsFailure(const ScriptValue& error)
 {
+    String message;
+    error.toString(message);
+
     if (m_showResolver)
-        m_showResolver->reject(error);
+        m_showResolver->reject(DOMException::create(AbortError, message));
     if (m_completeResolver)
-        m_completeResolver->reject(error);
+        m_completeResolver->reject(DOMException::create(AbortError, message));
     clearResolversAndCloseMojoConnection();
 }
 

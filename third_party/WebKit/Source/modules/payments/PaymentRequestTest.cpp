@@ -329,9 +329,13 @@ TEST(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure)
     PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
+    String errorMessage;
+    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
     request->onUpdatePaymentDetailsFailure(ScriptValue::from(scope.getScriptState(), "oops"));
+
+    v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
+    EXPECT_EQ("AbortError: oops", errorMessage);
 }
 
 TEST(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
@@ -344,9 +348,13 @@ TEST(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
     request->show(scope.getScriptState()).then(funcs.expectCall(), funcs.expectNoCall());
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(buildPaymentResponseForTest());
 
-    request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall());
+    String errorMessage;
+    request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
     request->onUpdatePaymentDetailsFailure(ScriptValue::from(scope.getScriptState(), "oops"));
+
+    v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
+    EXPECT_EQ("AbortError: oops", errorMessage);
 }
 
 TEST(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved)
