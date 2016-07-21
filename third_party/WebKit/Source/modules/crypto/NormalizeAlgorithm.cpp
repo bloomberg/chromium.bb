@@ -497,13 +497,9 @@ bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext con
 // Defined by the WebCrypto spec as:
 //
 //    dictionary HmacImportParams : Algorithm {
-//      HashAlgorithmIdentifier hash;
+//      required HashAlgorithmIdentifier hash;
 //      [EnforceRange] unsigned long length;
 //    };
-//
-// FIXME: http://crbug.com/438475: The current implementation differs from the
-// spec in that the "hash" parameter is required. This seems more sensible, and
-// is being proposed as a change to the spec. (https://www.w3.org/Bugs/Public/show_bug.cgi?id=27448).
 bool parseHmacImportParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     WebCryptoAlgorithm hash;
