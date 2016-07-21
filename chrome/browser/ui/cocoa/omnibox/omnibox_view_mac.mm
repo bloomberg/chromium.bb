@@ -562,6 +562,11 @@ void OmniboxViewMac::ApplyTextStyle(
   [paragraph_style setMaximumLineHeight:line_height];
   [paragraph_style setMinimumLineHeight:line_height];
   [paragraph_style setLineBreakMode:NSLineBreakByTruncatingTail];
+  // If this is a URL, set the top-level paragraph direction to LTR (avoids RTL
+  // characters from making the URL render from right to left, as per RFC 3987
+  // Section 4.1).
+  if (model()->CurrentTextIsURL())
+    [paragraph_style setBaseWritingDirection:NSWritingDirectionLeftToRight];
   [attributedString addAttribute:NSParagraphStyleAttributeName
                            value:paragraph_style
                            range:NSMakeRange(0, [attributedString length])];

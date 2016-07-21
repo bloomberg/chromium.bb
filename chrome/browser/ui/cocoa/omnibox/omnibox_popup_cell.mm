@@ -152,6 +152,19 @@ NSFont* SmallFont() {
   return OmniboxViewMac::GetSmallFont();
 }
 
+// Sets the writing direction to |direction| for a given |range| of
+// |attributedString|.
+void SetTextDirectionForRange(NSMutableAttributedString* attributedString,
+                              NSWritingDirection direction,
+                              NSRange range) {
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraph_style(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraph_style setBaseWritingDirection:direction];
+  [attributedString addAttribute:NSParagraphStyleAttributeName
+                           value:paragraph_style
+                           range:range];
+}
+
 NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
                                              NSInteger style_type,
                                              bool is_bold,
@@ -363,6 +376,10 @@ NSAttributedString* CreateClassifiedAttributedString(
     }
 
     if (0 != (i->style & ACMatchClassification::URL)) {
+      // URLs have their text direction set to to LTR (avoids RTL characters
+      // making the URL render from right to left, as per RFC 3987 Section 4.1).
+      SetTextDirectionForRange(attributedString, NSWritingDirectionLeftToRight,
+                               range);
       [attributedString addAttribute:NSForegroundColorAttributeName
                                value:URLTextColor(is_dark_theme)
                                range:range];
