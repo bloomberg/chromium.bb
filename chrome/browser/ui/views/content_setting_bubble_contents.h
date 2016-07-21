@@ -27,7 +27,6 @@ class ContentSettingBubbleViewsBridge;
 }
 
 namespace views {
-class LabelButton;
 class RadioButton;
 }
 
@@ -59,6 +58,8 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // views::BubbleDialogDelegateView:
   void Init() override;
   View* CreateExtraView() override;
+  bool Accept() override;
+  bool Close() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
@@ -116,7 +117,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   views::Link* custom_link_;
   views::Link* manage_link_;
   views::Link* learn_more_link_;
-  views::LabelButton* close_button_;
 
   // Combobox models the bubble owns.
   std::list<MediaComboboxModel> combobox_models_;

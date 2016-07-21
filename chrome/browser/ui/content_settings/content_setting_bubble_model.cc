@@ -226,7 +226,9 @@ ContentSettingSingleRadioGroup::ContentSettingSingleRadioGroup(
     WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
-    : ContentSettingSimpleBubbleModel(delegate, web_contents, profile,
+    : ContentSettingSimpleBubbleModel(delegate,
+                                      web_contents,
+                                      profile,
                                       content_type),
       block_setting_(CONTENT_SETTING_BLOCK),
       selected_item_(0) {
@@ -1007,6 +1009,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
                                       profile,
                                       CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS),
       selected_item_(0),
+      interacted_(false),
       registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
@@ -1068,10 +1071,25 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   set_radio_group(radio_group);
 }
 
+ContentSettingRPHBubbleModel::~ContentSettingRPHBubbleModel() {
+  if (!web_contents() || !interacted_)
+    return;
+
+  // The user has one chance to deal with the RPH content setting UI,
+  // then we remove it.
+  TabSpecificContentSettings::FromWebContents(web_contents())->
+      ClearPendingProtocolHandler();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(web_contents()),
+      content::NotificationService::NoDetails());
+}
+
 void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
   if (selected_item_ == radio_index)
     return;
 
+  interacted_ = true;
   selected_item_ = radio_index;
 
   if (radio_index == RPH_ALLOW)
@@ -1085,17 +1103,7 @@ void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
 }
 
 void ContentSettingRPHBubbleModel::OnDoneClicked() {
-  if (!web_contents())
-    return;
-
-  // The user has one chance to deal with the RPH content setting UI,
-  // then we remove it.
-  TabSpecificContentSettings::FromWebContents(web_contents())->
-      ClearPendingProtocolHandler();
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  interacted_ = true;
 }
 
 void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {

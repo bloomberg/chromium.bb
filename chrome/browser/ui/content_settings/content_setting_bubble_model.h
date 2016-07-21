@@ -260,6 +260,7 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
                                content::WebContents* web_contents,
                                Profile* profile,
                                ProtocolHandlerRegistry* registry);
+  ~ContentSettingRPHBubbleModel() override;
 
   void OnRadioClicked(int radio_index) override;
   void OnDoneClicked() override;
@@ -271,6 +272,9 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
   void ClearOrSetPreviousHandler();
 
   int selected_item_;
+  // Initially false, set to true if the user explicitly interacts with the
+  // bubble.
+  bool interacted_;
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler pending_handler_;
   ProtocolHandler previous_handler_;

@@ -29,7 +29,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -162,8 +161,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       content_setting_bubble_model_(content_setting_bubble_model),
       custom_link_(NULL),
       manage_link_(NULL),
-      learn_more_link_(NULL),
-      close_button_(NULL) {
+      learn_more_link_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
@@ -380,6 +378,15 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   return manage_link_;
 }
 
+bool ContentSettingBubbleContents::Accept() {
+  content_setting_bubble_model_->OnDoneClicked();
+  return true;
+}
+
+bool ContentSettingBubbleContents::Close() {
+  return true;
+}
+
 int ContentSettingBubbleContents::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
@@ -394,7 +401,6 @@ void ContentSettingBubbleContents::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // Content settings are based on the main frame, so if it switches then
   // close up shop.
-  content_setting_bubble_model_->OnDoneClicked();
   GetWidget()->Close();
 }
 
@@ -402,13 +408,8 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   RadioGroup::const_iterator i(
       std::find(radio_group_.begin(), radio_group_.end(), sender));
-  if (i != radio_group_.end()) {
-    content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
-    return;
-  }
-  DCHECK_EQ(sender, close_button_);
-  content_setting_bubble_model_->OnDoneClicked();
-  GetWidget()->Close();
+  DCHECK(i != radio_group_.end());
+  content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
 }
 
 void ContentSettingBubbleContents::LinkClicked(views::Link* source,
