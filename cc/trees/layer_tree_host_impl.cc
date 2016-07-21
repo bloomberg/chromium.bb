@@ -644,7 +644,7 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
         render_surface->layer_list(), render_surface,
         render_surface->SurfacePropertyChangedOnlyFromDescendant(),
         render_surface->content_rect(), render_surface->MaskLayer(),
-        render_surface_layer->filters());
+        render_surface->Filters());
   }
 }
 
@@ -3996,6 +3996,32 @@ void LayerTreeHostImpl::ElementOpacityIsAnimatingChanged(
       case AnimationChangeType::BOTH:
         layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
         layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
+}
+
+void LayerTreeHostImpl::ElementFilterIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  LayerTreeImpl* tree =
+      list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
+  if (!tree)
+    return;
+  LayerImpl* layer = tree->LayerByElementId(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
         break;
     }
   }

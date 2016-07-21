@@ -1440,7 +1440,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
                                false, true);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(10.0f));
-  parent->SetFilters(filters);
+  parent->test_properties()->filters = filters;
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -1474,7 +1474,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilter) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(
       SkOffsetImageFilter::Make(50, 50, nullptr)));
-  child->SetFilters(filters);
+  child->test_properties()->filters = filters;
 
   ExecuteCalculateDrawProperties(root);
 
@@ -1503,7 +1503,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(
       SkOffsetImageFilter::Make(50, 50, nullptr)));
-  child->SetFilters(filters);
+  child->test_properties()->filters = filters;
 
   ExecuteCalculateDrawProperties(root, device_scale_factor);
 
@@ -8527,9 +8527,8 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
   EXPECT_TRUE(child->has_render_surface());
   EXPECT_FALSE(grandchild->has_render_surface());
 
-  EXPECT_TRUE(root->filters().IsEmpty());
-  EXPECT_TRUE(child->filters().IsEmpty());
-  EXPECT_TRUE(grandchild->filters().IsEmpty());
+  EXPECT_TRUE(root->render_surface()->Filters().IsEmpty());
+  EXPECT_TRUE(child->render_surface()->Filters().IsEmpty());
 
   EXPECT_FALSE(root->FilterIsAnimating());
   EXPECT_TRUE(child->FilterIsAnimating());
@@ -8576,9 +8575,8 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   EXPECT_TRUE(child->has_render_surface());
   EXPECT_FALSE(grandchild->has_render_surface());
 
-  EXPECT_TRUE(root->filters().IsEmpty());
-  EXPECT_TRUE(child->filters().IsEmpty());
-  EXPECT_TRUE(grandchild->filters().IsEmpty());
+  EXPECT_TRUE(root->render_surface()->Filters().IsEmpty());
+  EXPECT_TRUE(child->render_surface()->Filters().IsEmpty());
 
   EXPECT_FALSE(root->FilterIsAnimating());
   EXPECT_FALSE(root->HasPotentiallyRunningFilterAnimation());

@@ -33,6 +33,8 @@ void TestLayer::ClearMutatedProperties() {
   transform_is_currently_animating_ = false;
   has_potential_opacity_animation_ = false;
   opacity_is_currently_animating_ = false;
+  has_potential_filter_animation_ = false;
+  filter_is_currently_animating_ = false;
 
   for (int i = 0; i <= TargetProperty::LAST_TARGET_PROPERTY; ++i)
     mutated_properties_[i] = false;
@@ -168,6 +170,28 @@ void TestHostClient::ElementOpacityIsAnimatingChanged(
   }
 }
 
+void TestHostClient::ElementFilterIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->set_has_potential_filter_animation(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->set_filter_is_currently_animating(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->set_has_potential_filter_animation(is_animating);
+        layer->set_filter_is_currently_animating(is_animating);
+        break;
+    }
+  }
+}
+
 void TestHostClient::SetScrollOffsetForAnimation(
     const gfx::ScrollOffset& scroll_offset) {
   scroll_offset_ = scroll_offset;
@@ -270,6 +294,22 @@ bool TestHostClient::GetHasPotentialOpacityAnimation(
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->has_potential_opacity_animation();
+}
+
+bool TestHostClient::GetFilterIsCurrentlyAnimating(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->filter_is_currently_animating();
+}
+
+bool TestHostClient::GetHasPotentialFilterAnimation(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->has_potential_filter_animation();
 }
 
 void TestHostClient::ExpectFilterPropertyMutated(ElementId element_id,

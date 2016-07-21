@@ -38,6 +38,7 @@ struct CC_EXPORT LayerImplTestProperties {
   int num_descendants_that_draw_content;
   size_t num_unclipped_descendants;
   float opacity;
+  FilterOperations filters;
   FilterOperations background_filters;
   LayerPositionConstraint position_constraint;
   gfx::Point3F transform_origin;

@@ -86,7 +86,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 21
+// NEXT ID: 25
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -96,7 +96,9 @@ message EffectNodeData {
   optional bool double_sided = 13;
   optional bool is_drawn = 6;
   optional bool subtree_hidden = 15;
+  optional bool has_potential_filter_animation = 21;
   optional bool has_potential_opacity_animation = 7;
+  optional bool is_currently_animating_filter = 22;
   optional bool is_currently_animating_opacity = 16;
   optional bool effect_changed = 11;
   optional int64 num_copy_requests_in_subtree = 8;
@@ -107,6 +109,9 @@ message EffectNodeData {
   optional int64 replica_layer_id = 18;
   optional int64 replica_mask_layer_id = 19;
   optional Vector2dF surface_contents_scale = 20;
+  // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
+  // repeated FilterOperation filters = 23;
+  // repeated FilterOperation background_filters = 24;
 }
 
 // Proto for struct ScrollNodeData

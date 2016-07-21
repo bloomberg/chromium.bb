@@ -151,6 +151,7 @@ class CC_EXPORT RenderSurfaceImpl {
   LayerImpl* ReplicaMaskLayer();
   bool HasReplicaMask() const;
 
+  const FilterOperations& Filters() const;
   const FilterOperations& BackgroundFilters() const;
 
   bool HasCopyRequest() const;

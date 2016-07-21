@@ -923,17 +923,17 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
     blur_layer->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(10.f));
-    blur_layer->SetFilters(filters);
+    blur_layer->test_properties()->filters = filters;
 
     opaque_layer->test_properties()->force_render_surface = true;
     filters.Clear();
     filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
-    opaque_layer->SetFilters(filters);
+    opaque_layer->test_properties()->filters = filters;
 
     opacity_layer->test_properties()->force_render_surface = true;
     filters.Clear();
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-    opacity_layer->SetFilters(filters);
+    opacity_layer->test_properties()->filters = filters;
 
     this->CalcDrawEtc(parent);
 

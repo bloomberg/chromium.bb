@@ -564,6 +564,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
   void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
   void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
+  void OnFilterIsCurrentlyAnimatingChanged(bool is_currently_animating);
+  void OnFilterIsPotentiallyAnimatingChanged(bool has_potential_animation);
 
   bool FilterIsAnimating() const;
   bool TransformIsAnimating() const;

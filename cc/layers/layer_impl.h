@@ -102,6 +102,8 @@ class CC_EXPORT LayerImpl {
   void OnTransformIsPotentiallyAnimatingChanged(bool has_potential_animation);
   void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
   void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
+  void OnFilterIsCurrentlyAnimatingChanged(bool is_currently_animating);
+  void OnFilterIsPotentiallyAnimatingChanged(bool has_potential_animation);
   bool IsActive() const;
 
   void DistributeScroll(ScrollState* scroll_state);
@@ -192,8 +194,6 @@ class CC_EXPORT LayerImpl {
   // non-opaque color.  Tries to return background_color(), if possible.
   SkColor SafeOpaqueBackgroundColor() const;
 
-  void SetFilters(const FilterOperations& filters);
-  const FilterOperations& filters() const { return filters_; }
   bool FilterIsAnimating() const;
   bool HasPotentiallyRunningFilterAnimation() const;
 
@@ -552,8 +552,6 @@ class CC_EXPORT LayerImpl {
   int effect_tree_index_;
   int clip_tree_index_;
   int scroll_tree_index_;
-
-  FilterOperations filters_;
 
  protected:
   friend class TreeSynchronizer;

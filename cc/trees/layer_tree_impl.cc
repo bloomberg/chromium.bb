@@ -553,6 +553,11 @@ void LayerTreeImpl::AddToTransformAnimationsMap(int id,
   transform_animations_map_[id] = transform;
 }
 
+void LayerTreeImpl::AddToFilterAnimationsMap(int id,
+                                             const FilterOperations& filters) {
+  filter_animations_map_[id] = filters;
+}
+
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
   return InnerViewportScrollLayer()
              ? InnerViewportScrollLayer()->scroll_clip_layer()
@@ -659,6 +664,24 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   }
   for (auto id : layer_ids_to_remove)
     transform_animations_map_.erase(id);
+  layer_ids_to_remove.clear();
+
+  for (auto& layer_id_to_filters : filter_animations_map_) {
+    const int id = layer_id_to_filters.first;
+    if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id)) {
+      EffectNode* node = property_trees_.effect_tree.Node(
+          property_trees_.effect_id_to_index_map[id]);
+      if (!node->is_currently_animating_filter ||
+          node->filters == layer_id_to_filters.second) {
+        layer_ids_to_remove.push_back(id);
+        continue;
+      }
+      node->filters = layer_id_to_filters.second;
+      property_trees_.effect_tree.set_needs_update(true);
+    }
+  }
+  for (auto id : layer_ids_to_remove)
+    filter_animations_map_.erase(id);
 
   LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
     layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();

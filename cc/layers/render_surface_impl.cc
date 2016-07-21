@@ -76,11 +76,12 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
     return gfx::RectF();
 
   gfx::Rect surface_content_rect = content_rect();
-  if (!owning_layer_->filters().IsEmpty()) {
+  const FilterOperations& filters = Filters();
+  if (!filters.IsEmpty()) {
     const gfx::Transform& owning_layer_draw_transform =
         owning_layer_->DrawTransform();
     DCHECK(owning_layer_draw_transform.IsScale2d());
-    surface_content_rect = owning_layer_->filters().MapRect(
+    surface_content_rect = filters.MapRect(
         surface_content_rect, owning_layer_draw_transform.matrix());
   }
   gfx::RectF drawable_content_rect = MathUtil::MapClippedRect(
@@ -88,7 +89,7 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   if (HasReplica()) {
     drawable_content_rect.Union(MathUtil::MapClippedRect(
         replica_draw_transform(), gfx::RectF(surface_content_rect)));
-  } else if (!owning_layer_->filters().IsEmpty() && is_clipped()) {
+  } else if (!filters.IsEmpty() && is_clipped()) {
     // Filter could move pixels around, but still need to be clipped.
     drawable_content_rect.Intersect(gfx::RectF(clip_rect()));
   }
@@ -155,6 +156,10 @@ LayerImpl* RenderSurfaceImpl::ReplicaMaskLayer() {
 
 bool RenderSurfaceImpl::HasReplicaMask() const {
   return OwningEffectNode()->replica_mask_layer_id != -1;
+}
+
+const FilterOperations& RenderSurfaceImpl::Filters() const {
+  return OwningEffectNode()->filters;
 }
 
 const FilterOperations& RenderSurfaceImpl::BackgroundFilters() const {
@@ -396,8 +401,8 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
                render_pass_id, mask_resource_id, mask_uv_scale,
-               mask_texture_size, owning_layer_->filters(),
-               owning_layer_to_target_scale, BackgroundFilters());
+               mask_texture_size, Filters(), owning_layer_to_target_scale,
+               BackgroundFilters());
 }
 
 }  // namespace cc

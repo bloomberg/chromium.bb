@@ -22,7 +22,9 @@ EffectNode::EffectNode()
       double_sided(false),
       is_drawn(true),
       subtree_hidden(false),
+      has_potential_filter_animation(false),
       has_potential_opacity_animation(false),
+      is_currently_animating_filter(false),
       is_currently_animating_opacity(false),
       effect_changed(false),
       num_copy_requests_in_subtree(0),
@@ -42,13 +44,17 @@ bool EffectNode::operator==(const EffectNode& other) const {
          screen_space_opacity == other.screen_space_opacity &&
          has_render_surface == other.has_render_surface &&
          has_copy_request == other.has_copy_request &&
+         filters == other.filters &&
          background_filters == other.background_filters &&
          surface_contents_scale == other.surface_contents_scale &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
          subtree_hidden == other.subtree_hidden &&
+         has_potential_filter_animation ==
+             other.has_potential_filter_animation &&
          has_potential_opacity_animation ==
              other.has_potential_opacity_animation &&
+         is_currently_animating_filter == other.is_currently_animating_filter &&
          is_currently_animating_opacity ==
              other.is_currently_animating_opacity &&
          effect_changed == other.effect_changed &&
@@ -74,7 +80,9 @@ void EffectNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_double_sided(double_sided);
   data->set_is_drawn(is_drawn);
   data->set_subtree_hidden(subtree_hidden);
+  data->set_has_potential_filter_animation(has_potential_filter_animation);
   data->set_has_potential_opacity_animation(has_potential_opacity_animation);
+  data->set_is_currently_animating_filter(is_currently_animating_filter);
   data->set_is_currently_animating_opacity(is_currently_animating_opacity);
   data->set_effect_changed(effect_changed);
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
@@ -104,7 +112,9 @@ void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
   double_sided = data.double_sided();
   is_drawn = data.is_drawn();
   subtree_hidden = data.subtree_hidden();
+  has_potential_filter_animation = data.has_potential_filter_animation();
   has_potential_opacity_animation = data.has_potential_opacity_animation();
+  is_currently_animating_filter = data.is_currently_animating_filter();
   is_currently_animating_opacity = data.is_currently_animating_opacity();
   effect_changed = data.effect_changed();
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
@@ -126,6 +136,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_copy_request", has_copy_request);
   value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("is_drawn", is_drawn);
+  value->SetBoolean("has_potential_filter_animation",
+                    has_potential_filter_animation);
   value->SetBoolean("has_potential_opacity_animation",
                     has_potential_opacity_animation);
   value->SetBoolean("effect_changed", effect_changed);

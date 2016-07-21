@@ -992,6 +992,9 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
   void SetupTree() override {
     root_ = Layer::Create();
     layer_tree_host()->SetRootLayer(root_);
+    blur_filter_.Append(FilterOperation::CreateBlurFilter(0.5f));
+    brightness_filter_.Append(FilterOperation::CreateBrightnessFilter(0.25f));
+    sepia_filter_.Append(FilterOperation::CreateSepiaFilter(0.75f));
     LayerTreeHostTest::SetupTree();
   }
 
@@ -1014,6 +1017,21 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
       case 4:
         node->opacity = 0.25f;
         node->is_currently_animating_opacity = true;
+        break;
+      case 5:
+        node->filters = blur_filter_;
+        node->is_currently_animating_filter = true;
+        break;
+      case 6:
+        node->is_currently_animating_filter = true;
+        break;
+      case 7:
+        node->is_currently_animating_filter = false;
+        break;
+      case 8:
+        node->filters = sepia_filter_;
+        node->is_currently_animating_filter = true;
+        break;
     }
   }
 
@@ -1041,6 +1059,26 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 4:
         EXPECT_EQ(node->opacity, 0.25f);
+        impl->sync_tree()->root_layer_for_testing()->OnFilterAnimated(
+            brightness_filter_);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 5:
+        EXPECT_EQ(node->filters, brightness_filter_);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 6:
+        EXPECT_EQ(node->filters, brightness_filter_);
+        impl->sync_tree()->root_layer_for_testing()->OnFilterAnimated(
+            brightness_filter_);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 7:
+        EXPECT_EQ(node->filters, blur_filter_);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 8:
+        EXPECT_EQ(node->filters, sepia_filter_);
         EndTest();
         break;
     }
@@ -1050,6 +1088,9 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
  private:
   scoped_refptr<Layer> root_;
+  FilterOperations blur_filter_;
+  FilterOperations brightness_filter_;
+  FilterOperations sepia_filter_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestEffectTreeSync);

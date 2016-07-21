@@ -319,7 +319,10 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
                                       layer->NoteLayerPropertyChanged());
 
   // Unrelated functions, set to the same values, no needs update.
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
+  layer->test_properties()->filters = arbitrary_filters;
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->OnFilterAnimated(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

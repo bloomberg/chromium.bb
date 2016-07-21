@@ -1144,8 +1144,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_ || layer_property_changed_)
     layer->NoteLayerPropertyChanged();
-  if (!FilterIsAnimating())
-    layer->SetFilters(inputs_.filters);
   layer->SetMasksToBounds(inputs_.masks_to_bounds);
   layer->set_main_thread_scrolling_reasons(
       inputs_.main_thread_scrolling_reasons);
@@ -1731,6 +1729,27 @@ void Layer::OnOpacityIsPotentiallyAnimatingChanged(
   node->has_potential_opacity_animation =
       has_potential_animation || OpacityCanAnimateOnImplThread();
   property_trees->effect_tree.set_needs_update(true);
+}
+
+void Layer::OnFilterIsCurrentlyAnimatingChanged(bool is_currently_animating) {
+  DCHECK(layer_tree_host_);
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
+    return;
+  DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
+  EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
+  node->is_currently_animating_filter = is_currently_animating;
+}
+
+void Layer::OnFilterIsPotentiallyAnimatingChanged(
+    bool has_potential_animation) {
+  DCHECK(layer_tree_host_);
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
+    return;
+  DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
+  EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
+  node->has_potential_filter_animation = has_potential_animation;
 }
 
 bool Layer::HasActiveAnimationForTesting() const {

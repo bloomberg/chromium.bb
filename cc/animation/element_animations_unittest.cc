@@ -3083,6 +3083,223 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
       element_id_, ElementListType::ACTIVE));
 }
 
+TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
+  CreateTestLayer(true, true);
+  AttachTimelinePlayerLayer();
+  CreateImplTimelineAndPlayer();
+
+  scoped_refptr<ElementAnimations> animations = element_animations();
+  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
+
+  auto events = host_impl_->CreateEvents();
+
+  EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 1: An animation that's allowed to run until its finish point.
+  AddAnimatedFilterToElementAnimations(animations.get(), 1.0, 0.f, 1.f);
+  EXPECT_TRUE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                     ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime);
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationStarted(events->events_[0]);
+  events->events_.clear();
+
+  // Finish the animation.
+  animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  animations->UpdateState(true, nullptr);
+  EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+
+  // animations_impl hasn't yet ticked at/past the end of the animation.
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(1000));
+  animations_impl->UpdateState(true, events.get());
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 2: An animation that's removed before it finishes.
+  int animation_id =
+      AddAnimatedFilterToElementAnimations(animations.get(), 10.0, 0.f, 1.f);
+  EXPECT_TRUE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                     ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(2000));
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationStarted(events->events_[0]);
+  events->events_.clear();
+
+  animations->RemoveAnimation(animation_id);
+  EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 3: An animation that's aborted before it finishes.
+  animation_id =
+      AddAnimatedFilterToElementAnimations(animations.get(), 10.0, 0.f, 0.5f);
+  EXPECT_TRUE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                     ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(2000));
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationStarted(events->events_[0]);
+  events->events_.clear();
+
+  animations_impl->AbortAnimations(TargetProperty::FILTER);
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(4000));
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationAborted(events->events_[0]);
+  EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+
+  // Case 4 : An animation that's not in effect.
+  animation_id =
+      AddAnimatedFilterToElementAnimations(animations.get(), 1.0, 0.f, 0.5f);
+  animations->GetAnimationById(animation_id)
+      ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
+  animations->GetAnimationById(animation_id)
+      ->set_fill_mode(Animation::FillMode::NONE);
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+}
+
 TEST_F(ElementAnimationsTest, ClippedOpacityValues) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();

@@ -294,6 +294,7 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
     }
   };
 
+  struct PropertyAnimationState filter_animation_state_;
   struct PropertyAnimationState opacity_animation_state_;
   struct PropertyAnimationState transform_animation_state_;
 

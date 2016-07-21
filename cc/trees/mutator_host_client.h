@@ -53,6 +53,11 @@ class MutatorHostClient {
                                                 AnimationChangeType change_type,
                                                 bool is_animating) = 0;
 
+  virtual void ElementFilterIsAnimatingChanged(ElementId element_id,
+                                               ElementListType list_type,
+                                               AnimationChangeType change_type,
+                                               bool is_animating) = 0;
+
   virtual void ScrollOffsetAnimationFinished() = 0;
   virtual gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const = 0;

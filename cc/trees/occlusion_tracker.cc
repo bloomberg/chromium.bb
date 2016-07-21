@@ -192,7 +192,7 @@ void OcclusionTracker::FinishedRenderTarget(const LayerImpl* finished_target) {
   if (surface->MaskLayer() || surface->draw_opacity() < 1 ||
       !finished_target->uses_default_blend_mode() ||
       target_is_only_for_copy_request ||
-      finished_target->filters().HasFilterThatAffectsOpacity()) {
+      surface->Filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
     stack_.back().occlusion_from_inside_target.Clear();
   }

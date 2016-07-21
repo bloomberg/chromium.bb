@@ -156,6 +156,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void AddToOpacityAnimationsMap(int id, float opacity);
   void AddToTransformAnimationsMap(int id, gfx::Transform transform);
+  void AddToFilterAnimationsMap(int id, const FilterOperations& filters);
 
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {
@@ -506,6 +507,7 @@ class CC_EXPORT LayerTreeImpl {
 
   std::unordered_map<int, float> opacity_animations_map_;
   std::unordered_map<int, gfx::Transform> transform_animations_map_;
+  std::unordered_map<int, FilterOperations> filter_animations_map_;
 
   // Maps from clip layer ids to scroll layer ids.  Note that this only includes
   // the subset of clip layers that act as scrolling containers.  (This is

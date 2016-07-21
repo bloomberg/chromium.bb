@@ -33,6 +33,7 @@ struct CC_EXPORT EffectNode {
   float opacity;
   float screen_space_opacity;
 
+  FilterOperations filters;
   FilterOperations background_filters;
 
   gfx::Vector2dF surface_contents_scale;
@@ -46,7 +47,9 @@ struct CC_EXPORT EffectNode {
   // TODO(jaydasika) : Delete this after implementation of
   // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)
   bool subtree_hidden;
+  bool has_potential_filter_animation;
   bool has_potential_opacity_animation;
+  bool is_currently_animating_filter;
   bool is_currently_animating_opacity;
   // We need to track changes to effects on the compositor to compute damage
   // rect.

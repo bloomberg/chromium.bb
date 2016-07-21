@@ -67,9 +67,8 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
     target_surface->damage_tracker()->UpdateDamageTrackingState(
         target_surface->layer_list(), target_surface,
         target_surface->SurfacePropertyChangedOnlyFromDescendant(),
-        target_surface->content_rect(),
-        render_surface_layer_list[index]->render_surface()->MaskLayer(),
-        render_surface_layer_list[index]->filters());
+        target_surface->content_rect(), target_surface->MaskLayer(),
+        target_surface->Filters());
   }
 
   root->layer_tree_impl()->ResetAllChangeTracking();
@@ -542,7 +541,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root);
-  surface->SetFilters(filters);
+  surface->test_properties()->filters = filters;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
@@ -594,7 +593,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   // CASE 1: Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root);
   child->SetUpdateRect(gfx::Rect(1, 1));
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
   root_damage_rect =
@@ -651,7 +649,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   // Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root);
   child->SetUpdateRect(gfx::Rect(30, 30));
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
   root_damage_rect =
