@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.util.MathUtils;
 
 /**
@@ -26,6 +27,9 @@ import org.chromium.chrome.browser.util.MathUtils;
  * - When peeking, tapping on cards will make them request a scroll up (see
  *   {@link NewTabPageRecyclerView#showCardsFrom(int)}). Tap events in non-peeking state will be
  *   routed through {@link #onCardTapped()} for subclasses to override.
+ *
+ * - Cards will get some lateral margins when the viewport is sufficiently wide.
+ *   (see {@link UiConfig#DISPLAY_STYLE_WIDE})
  *
  * Note: If a subclass overrides {@link #onBindViewHolder(NewTabPageListItem)}, it should call the
  * parent implementation to reset the private state when a card is recycled.
@@ -45,6 +49,10 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     private final NewTabPageRecyclerView mRecyclerView;
 
+    private final UiConfig mUiConfig;
+    private final int mWideMarginSizePixels;
+    private final DisplayStyleObserverAdapter mDisplayStyleObserverAdapter;
+
     /**
      * Current padding value. The padding and the margins are manipulated together to create the
      * shrunk/peeking appearance of the cards. When the padding is low, the margins are high and
@@ -57,9 +65,13 @@ public class CardViewHolder extends NewTabPageViewHolder {
     /**
      * @param layoutId resource id of the layout to inflate and to use as card.
      * @param recyclerView ViewGroup that will contain the newly created view.
+     * @param uiConfig The NTP UI configuration object used to adjust the card UI.
      */
-    public CardViewHolder(int layoutId, final NewTabPageRecyclerView recyclerView) {
+    public CardViewHolder(
+            int layoutId, final NewTabPageRecyclerView recyclerView, UiConfig uiConfig) {
         super(inflateView(layoutId, recyclerView));
+        mWideMarginSizePixels = itemView.getResources().getDimensionPixelSize(
+                R.dimen.ntp_wide_card_lateral_margins);
 
         mCards9PatchAdjustment = recyclerView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_card_9_patch_adjustment);
@@ -81,6 +93,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
                 }
             }
         });
+
+        mUiConfig = uiConfig;
+        mDisplayStyleObserverAdapter = MarginResizer.createWithViewAdapter(itemView, mUiConfig);
     }
 
     /**
@@ -164,13 +179,23 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
         // Modify the padding so as the margin increases, the padding decreases, keeping the card's
         // contents in the same position. The top and bottom remain the same.
-        itemView.setPadding(mPeekPadding, mMaxPeekPadding, mPeekPadding, mMaxPeekPadding);
+        int lateralPadding;
+        int lateralMargin;
+        if (mDisplayStyleObserverAdapter.getDisplayStyle() != UiConfig.DISPLAY_STYLE_WIDE) {
+            lateralPadding = mPeekPadding;
+            lateralMargin = mMaxPeekPadding - (mPeekPadding + mCards9PatchAdjustment);
+        } else {
+            lateralPadding = mMaxPeekPadding;
+            lateralMargin = mWideMarginSizePixels;
+        }
+
+        itemView.setPadding(lateralPadding, mMaxPeekPadding, lateralPadding, mMaxPeekPadding);
 
         // This mCards9PatchAdjustment value will be used to adjust the padding so the card width
         // is the actual width not including the elevation shadow so we can have full bleed.
         RecyclerView.LayoutParams params = getParams();
-        params.leftMargin = mMaxPeekPadding - (mPeekPadding + mCards9PatchAdjustment);
-        params.rightMargin = mMaxPeekPadding - (mPeekPadding + mCards9PatchAdjustment);
+        params.leftMargin = lateralMargin;
+        params.rightMargin = lateralMargin;
 
         // Set the opacity of the card content to be 0 when peeking and 1 when full width.
         int itemViewChildCount = ((ViewGroup) itemView).getChildCount();

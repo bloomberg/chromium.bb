@@ -13,6 +13,7 @@ import android.widget.TextView;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
@@ -33,8 +34,8 @@ public abstract class StatusListItem implements NewTabPageListItem {
         private final TextView mBodyView;
         private final Button mActionView;
 
-        public ViewHolder(NewTabPageRecyclerView parent) {
-            super(R.layout.new_tab_page_status_card, parent);
+        public ViewHolder(NewTabPageRecyclerView parent, UiConfig config) {
+            super(R.layout.new_tab_page_status_card, parent, config);
             mTitleView = (TextView) itemView.findViewById(R.id.status_title);
             mBodyView = (TextView) itemView.findViewById(R.id.status_body);
             mActionView = (Button) itemView.findViewById(R.id.status_action_button);
