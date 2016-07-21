@@ -46,7 +46,7 @@ with spaces and passed to GYP, or a dict that will be similarly converted),
 'mb_type' field that says whether to use GN or GYP. Bot config files
 require the full list of settings to be given explicitly.
 
-If no mathcing bot config file is found, `mb` looks in the
+If no matching bot config file is found, `mb` looks in the
 `//tools/mb/mb_config.pyl` config file to determine whether to use GYP or GN
 for a particular build directory, and what set of flags (`GYP_DEFINES` or `gn
 args`) to use.
@@ -424,16 +424,3 @@ config file change, however.
   [CR tool](https://code.google.com/p/chromium/wiki/CRUserManual). Not
   only is it only intended to replace the gyp\_chromium part of `'gclient
   runhooks'`, it is not really meant as a developer-facing tool.
-
-### Open issues
-
-* Some common flags (goma\_dir being the obvious one) may need to be
-  specified via the user, and it's unclear how to integrate this with
-  the concept of build\_configs.
-
-  Right now, MB has hard-coded support for a few flags (i.e., you can
-  pass the --goma-dir flag, and it will know to expand "${goma\_dir}" in
-  the string before calling out to the tool. We may want to generalize
-  this to a common key/value approach (perhaps then meeting the
-  ChromeOS non-goal, above), or we may want to keep this very strictly
-  limited for simplicity.

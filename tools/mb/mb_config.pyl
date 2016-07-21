@@ -110,8 +110,14 @@
       'Chromium Mac 10.9 Goma Canary (clobber)': 'gn_release_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)': 'gn_debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gn_debug_bot',
-      'Chromium Win PGO Builder': 'gyp_official_winpgo',
-      'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
+      'Chromium Win PGO Builder': [
+        'gyp_official_chrome_pgo_phase_1_x86',
+        'gyp_official_chrome_pgo_phase_2_x86'
+      ],
+      'Chromium Win x64 PGO Builder': [
+        'gyp_official_chrome_pgo_phase_1_x64',
+        'gyp_official_chrome_pgo_phase_2_x64',
+      ],
       'Chromium Windows Analyze': 'gn_windows_analyze',
       'CrWin7Goma': 'gn_release_bot_minimal_symbols_x86',
       'CrWin7Goma(clbr)': 'gn_shared_release_bot_minimal_symbols_x86',
@@ -623,9 +629,15 @@
       # but it's not clear if that's actually used anywhere.
       'win': 'gyp_official',
       'win-asan': 'gyp_official_syzyasan',
-      'win-pgo': 'gyp_official_winpgo',
+      'win-pgo': [
+        'gyp_official_chrome_pgo_phase_1_x86',
+        'gyp_official_chrome_pgo_phase_2_x86',
+      ],
       'win64': 'gyp_official_x64',
-      'win64-pgo': 'gyp_official_winpgo_x64',
+      'win64-pgo': [
+        'gyp_official_chrome_pgo_phase_1_x64',
+        'gyp_official_chrome_pgo_phase_2_x64',
+      ],
     },
 
     'official.desktop.continuous': {
@@ -900,7 +912,10 @@
       'win_nacl_sdk_build': 'gyp_release_bot_minimal_symbols_x86',
       'win_optional_gpu_tests_rel':
         'swarming_gpu_tests_deqp_gles_gn_release_trybot_x86',
-      'win_pgo': 'gyp_official_winpgo',
+      'win_pgo': [
+        'gyp_official_chrome_pgo_phase_1_x86',
+        'gyp_official_chrome_pgo_phase_2_x86',
+      ],
       'win_upload_clang': 'gn_release_bot',
       'win_chrome_official': 'gn_official_goma_minimal_symbols_x86',
       'win_x64_chromium_variable_builder': 'findit',
@@ -1344,14 +1359,20 @@
       'gyp', 'official', 'six_concurrent_links',
     ],
 
-    # TODO(crbug.com/595947) - figure out how to handle PGO, which needs
-    # to invoke GYP/GN twice, with two different sets of flags, apparently.
-    'gyp_official_winpgo': [
-      'gyp', 'error',
+    'gyp_official_chrome_pgo_phase_1_x64': [
+      'gyp', 'official', 'chrome_pgo_phase_1', 'x64',
     ],
 
-    'gyp_official_winpgo_x64': [
-      'gyp', 'error', 'x64',
+    'gyp_official_chrome_pgo_phase_2_x64': [
+      'gyp', 'official', 'chrome_pgo_phase_2', 'x64',
+    ],
+
+    'gyp_official_chrome_pgo_phase_1_x86': [
+      'gyp', 'official', 'chrome_pgo_phase_1', 'x86',
+    ],
+
+    'gyp_official_chrome_pgo_phase_2_x86': [
+      'gyp', 'official', 'chrome_pgo_phase_2', 'x86',
     ],
 
     'gyp_official_x64': [
@@ -1940,6 +1961,16 @@
     'cfi_diag': {
       'gn_args': 'use_cfi_diag=true',
       'gyp_defines': 'cfi_diag=1',
+    },
+
+    'chrome_pgo_phase_1': {
+      'gn_args': 'chrome_pgo_phase=1',
+      'gyp_defines': 'chrome_pgo_phase=1',
+    },
+
+    'chrome_pgo_phase_2': {
+      'gn_args': 'chrome_pgo_phase=2',
+      'gyp_defines': 'chrome_pgo_phase=2',
     },
 
     'chrome_with_codecs': {
