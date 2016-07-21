@@ -287,6 +287,8 @@ interface BluetoothHost {
   [MinVersion=1] ReadRemoteRssi@28(BluetoothAddress remote_addr)
       => (int32 rssi);
 
+  [MinVersion=2] OpenBluetoothSocket@29()
+      => (handle sock);
 };
 
 interface BluetoothInstance {

@@ -192,6 +192,9 @@ class ArcBluetoothBridge
   void ReadRemoteRssi(mojom::BluetoothAddressPtr remote_addr,
                       const ReadRemoteRssiCallback& callback) override;
 
+  void OpenBluetoothSocket(
+      const OpenBluetoothSocketCallback& callback) override;
+
   // Chrome observer callbacks
   void OnPoweredOn(
       const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
