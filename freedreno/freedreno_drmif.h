@@ -33,9 +33,9 @@
 #include <stdint.h>
 
 #if defined(__GNUC__)
-#  define deprecated __attribute__((__deprecated__))
+#  define drm_deprecated __attribute__((__deprecated__))
 #else
-#  define deprecated
+#  define drm_deprecated
 #endif
 
 /* an empty marker for things that will be deprecated in the future: */
