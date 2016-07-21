@@ -37,10 +37,6 @@ config("compiler") {
     "/Gy",  # Enable function-level linking.
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
-
-    # Tell the compiler to crash on failures. This is undocumented
-    # and unsupported but very handy.
-    "/d2FastFail",
   ]
 
   # Force C/C++ mode for the given GN detected file type. This is necessary
@@ -48,6 +44,15 @@ config("compiler") {
   # modes.
   cflags_c = [ "/TC" ]
   cflags_cc = [ "/TP" ]
+
+  # Flags not supported in version 2013.
+  if (visual_studio_version != "2013" && visual_studio_version != "2013e") {
+    cflags += [
+      # Tell the compiler to crash on failures. This is undocumented
+      # and unsupported but very handy.
+      "/d2FastFail",
+    ]
+  }
 
   if (visual_studio_version == "2015") {
     cflags += [
@@ -260,10 +265,15 @@ config("common_linker_setup") {
     # which started happening more regularly after VS2013 Update 4.
     # Needs to be a bit lower for VS2015, or else errors out.
     "/maxilksize:0x7ff00000",
-
-    # Tell the linker to crash on failures.
-    "/fastfail",
   ]
+
+  # Flags not supported in version 2013.
+  if (visual_studio_version != "2013" && visual_studio_version != "2013e") {
+    ldflags += [
+      # Tell the linker to crash on failures.
+      "/fastfail",
+    ]
+  }
 
   # ASLR makes debugging with windbg difficult because Chrome.exe and
   # Chrome.dll share the same base name. As result, windbg will name the
