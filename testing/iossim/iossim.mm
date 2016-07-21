@@ -259,18 +259,22 @@ void RunApplication(NSString* app_path,
     @"test-without-building"
   ]] autorelease];
 
-  // The following stderr messages are meaningless on iossim when not running
-  // xctests and can be safely stripped.
   if (!xctest_path) {
+    // The following stderr messages are meaningless on iossim when not running
+    // xctests and can be safely stripped.
+    NSArray* ignore_strings = @[
+      @"IDETestOperationsObserverErrorDomain", @"** TEST EXECUTE FAILED **"
+    ];
     NSPipe* stderr_pipe = [NSPipe pipe];
     stderr_pipe.fileHandleForReading.readabilityHandler =
         ^(NSFileHandle* handle) {
           NSString* log = [[[NSString alloc] initWithData:handle.availableData
                                                  encoding:NSUTF8StringEncoding]
               autorelease];
-          if ([log containsString:@"IDETestOperationsObserverErrorDomain"] ||
-              [log containsString:@"** TEST EXECUTE FAILED **"]) {
-            return;
+          for (NSString* ignore_string in ignore_strings) {
+            if ([log rangeOfString:ignore_string].location != NSNotFound) {
+              return;
+            }
           }
           printf("%s", [log UTF8String]);
         };
