@@ -405,7 +405,7 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(
   gfx::Canvas canvas(
       gfx::Size(kBatteryCanvasSizeMd, kBatteryCanvasSizeMd),
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor(),
-      true);
+      false);
 
   // Paint the battery's base (background) color.
   PaintVectorIcon(&canvas, gfx::VectorIconId::SYSTEM_TRAY_BATTERY,
