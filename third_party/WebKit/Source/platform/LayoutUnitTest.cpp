@@ -256,4 +256,19 @@ TEST(LayoutUnitTest, LayoutUnitFloatOverflow)
     EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0).toInt());
 }
 
+TEST(LayoutUnitTest, UnaryMinus)
+{
+    EXPECT_EQ(LayoutUnit(), -LayoutUnit());
+    EXPECT_EQ(LayoutUnit(999), -LayoutUnit(-999));
+    EXPECT_EQ(LayoutUnit(-999), -LayoutUnit(999));
+
+    LayoutUnit negativeMax;
+    negativeMax.setRawValue(LayoutUnit::min().rawValue() + 1);
+    EXPECT_EQ(negativeMax, -LayoutUnit::max());
+    EXPECT_EQ(LayoutUnit::max(), -negativeMax);
+
+    // -LayoutUnit::min() is saturated to LayoutUnit::max()
+    EXPECT_EQ(LayoutUnit::max(), -LayoutUnit::min());
+}
+
 } // namespace blink
