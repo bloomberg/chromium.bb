@@ -44,7 +44,7 @@ namespace remoting {
 // -----------------------------------------------------------------------------
 // NOTE: Make sure SecurityKeyMessage::MessageTypeFromValue is updated when new
 //       enum values are added/removed.
-enum class RemoteSecurityKeyMessageType : uint8_t {
+enum class SecurityKeyMessageType : uint8_t {
   INVALID = 0,
 
   // Sent to the remote_security_key process to ask it to establish a
@@ -115,32 +115,32 @@ class SecurityKeyMessage final {
   // length is within the allowable size range.
   static bool IsValidMessageSize(uint32_t message_size);
 
-  // Returns a RemoteSecurityKeyMessageType enum value corresponding to the
+  // Returns a SecurityKeyMessageType enum value corresponding to the
   // value passed in if it is valid, otherwise INVALID is returned.
-  static RemoteSecurityKeyMessageType MessageTypeFromValue(int value);
+  static SecurityKeyMessageType MessageTypeFromValue(int value);
 
   // Creates a message from the passed in values, no validation is done as this
   // method is only expected to be called from test code.
   static std::unique_ptr<SecurityKeyMessage> CreateMessageForTest(
-      RemoteSecurityKeyMessageType type,
+      SecurityKeyMessageType type,
       const std::string& payload);
 
   // Parses |message_data| and initializes the internal members.  Returns true
   // if |message_data| was parsed and the instance was initialized successfully.
   bool ParseMessage(const std::string& message_data);
 
-  RemoteSecurityKeyMessageType type() { return type_; }
+  SecurityKeyMessageType type() { return type_; }
 
   const std::string& payload() { return payload_; }
 
  private:
-  RemoteSecurityKeyMessageType type_ = RemoteSecurityKeyMessageType::INVALID;
+  SecurityKeyMessageType type_ = SecurityKeyMessageType::INVALID;
   std::string payload_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyMessage);
 };
 
-// Used to pass remote security key message data between classes.
+// Used to pass security key message data between classes.
 typedef base::Callback<void(std::unique_ptr<SecurityKeyMessage> message)>
     SecurityKeyMessageCallback;
 

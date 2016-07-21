@@ -14,7 +14,7 @@
 
 namespace {
 
-// Limit remote security key messages to 256KB.
+// Limit security key messages to 256KB.
 const uint32_t kMaxSecurityKeyMessageByteCount = 256 * 1024;
 
 }  // namespace
@@ -33,30 +33,29 @@ bool SecurityKeyMessage::IsValidMessageSize(uint32_t message_size) {
   return message_size > 0 && message_size <= kMaxSecurityKeyMessageByteCount;
 }
 
-RemoteSecurityKeyMessageType SecurityKeyMessage::MessageTypeFromValue(
-    int value) {
+SecurityKeyMessageType SecurityKeyMessage::MessageTypeFromValue(int value) {
   // Note: The static_cast from enum value to int should be safe since the enum
   // type is an unsigned 8bit value.
   switch (value) {
-    case static_cast<int>(RemoteSecurityKeyMessageType::CONNECT):
-    case static_cast<int>(RemoteSecurityKeyMessageType::CONNECT_RESPONSE):
-    case static_cast<int>(RemoteSecurityKeyMessageType::CONNECT_ERROR):
-    case static_cast<int>(RemoteSecurityKeyMessageType::REQUEST):
-    case static_cast<int>(RemoteSecurityKeyMessageType::REQUEST_RESPONSE):
-    case static_cast<int>(RemoteSecurityKeyMessageType::REQUEST_ERROR):
-    case static_cast<int>(RemoteSecurityKeyMessageType::UNKNOWN_COMMAND):
-    case static_cast<int>(RemoteSecurityKeyMessageType::UNKNOWN_ERROR):
-    case static_cast<int>(RemoteSecurityKeyMessageType::INVALID):
-      return static_cast<RemoteSecurityKeyMessageType>(value);
+    case static_cast<int>(SecurityKeyMessageType::CONNECT):
+    case static_cast<int>(SecurityKeyMessageType::CONNECT_RESPONSE):
+    case static_cast<int>(SecurityKeyMessageType::CONNECT_ERROR):
+    case static_cast<int>(SecurityKeyMessageType::REQUEST):
+    case static_cast<int>(SecurityKeyMessageType::REQUEST_RESPONSE):
+    case static_cast<int>(SecurityKeyMessageType::REQUEST_ERROR):
+    case static_cast<int>(SecurityKeyMessageType::UNKNOWN_COMMAND):
+    case static_cast<int>(SecurityKeyMessageType::UNKNOWN_ERROR):
+    case static_cast<int>(SecurityKeyMessageType::INVALID):
+      return static_cast<SecurityKeyMessageType>(value);
 
     default:
       LOG(ERROR) << "Unknown message type passed in: " << value;
-      return RemoteSecurityKeyMessageType::INVALID;
+      return SecurityKeyMessageType::INVALID;
   }
 }
 
 std::unique_ptr<SecurityKeyMessage> SecurityKeyMessage::CreateMessageForTest(
-    RemoteSecurityKeyMessageType type,
+    SecurityKeyMessageType type,
     const std::string& payload) {
   std::unique_ptr<SecurityKeyMessage> message(new SecurityKeyMessage());
   message->type_ = type;
@@ -72,7 +71,7 @@ bool SecurityKeyMessage::ParseMessage(const std::string& message_data) {
 
   // The first char of the message is the message type.
   type_ = MessageTypeFromValue(message_data[0]);
-  if (type_ == RemoteSecurityKeyMessageType::INVALID) {
+  if (type_ == SecurityKeyMessageType::INVALID) {
     return false;
   }
 

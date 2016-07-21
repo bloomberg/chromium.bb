@@ -186,7 +186,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
         r"^remoting[\\\/]host[\\\/]security_key[\\\/]"
-            "gnubby_auth_handler_linux\.cc$",
+            "security_key_auth_handler_linux\.cc$",
         r"^ui[\\\/]base[\\\/]material_design[\\\/]"
             "material_design_controller\.cc$",
         r"^ui[\\\/]gl[\\\/]init[\\\/]gl_initializer_mac\.cc$",

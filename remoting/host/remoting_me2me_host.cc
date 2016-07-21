@@ -72,8 +72,8 @@
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/policy_watcher.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
-#include "remoting/host/security_key/gnubby_extension.h"
+#include "remoting/host/security_key/security_key_auth_handler.h"
+#include "remoting/host/security_key/security_key_extension.h"
 #include "remoting/host/service_urls.h"
 #include "remoting/host/shutdown_watchdog.h"
 #include "remoting/host/signaling_connector.h"
@@ -151,7 +151,7 @@ const char kStdinConfigPath[] = "-";
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
 // The command line switch used to pass name of the unix domain socket used to
-// listen for gnubby requests.
+// listen for security key requests.
 const char kAuthSocknameSwitchName[] = "ssh-auth-sockname";
 #endif  // defined(OS_LINUX)
 
@@ -374,8 +374,8 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   bool curtain_required_ = false;
   ThirdPartyAuthConfig third_party_auth_config_;
-  bool gnubby_auth_policy_enabled_ = false;
-  bool gnubby_extension_supported_ = false;
+  bool security_key_auth_policy_enabled_ = false;
+  bool security_key_extension_supported_ = false;
 
   // Boolean to change flow, where necessary, if we're
   // capturing a window instead of the entire desktop.
@@ -816,15 +816,17 @@ void HostProcess::StartOnUiThread() {
         context_->audio_task_runner(), audio_pipe_name);
   }
 
-  base::FilePath gnubby_socket_name = base::CommandLine::ForCurrentProcess()->
-      GetSwitchValuePath(kAuthSocknameSwitchName);
-  if (!gnubby_socket_name.empty()) {
-    remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);
-    gnubby_extension_supported_ = true;
+  base::FilePath security_key_socket_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          kAuthSocknameSwitchName);
+  if (!security_key_socket_name.empty()) {
+    remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(
+        security_key_socket_name);
+    security_key_extension_supported_ = true;
   }
 #elif defined(OS_WIN)
   // TODO(joedow): Remove the conditional once this is supported on OSX.
-  gnubby_extension_supported_ = true;
+  security_key_extension_supported_ = true;
 #endif  // defined(OS_WIN)
 
   // Create a desktop environment factory appropriate to the build type &
@@ -1317,14 +1319,14 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (!policies->GetBoolean(policy::key::kRemoteAccessHostAllowGnubbyAuth,
-                            &gnubby_auth_policy_enabled_)) {
+                            &security_key_auth_policy_enabled_)) {
     return false;
   }
 
-  if (gnubby_auth_policy_enabled_) {
-    HOST_LOG << "Policy enables gnubby auth.";
+  if (security_key_auth_policy_enabled_) {
+    HOST_LOG << "Policy enables security key auth.";
   } else {
-    HOST_LOG << "Policy disables gnubby auth.";
+    HOST_LOG << "Policy disables security key auth.";
   }
 
   return true;
@@ -1458,8 +1460,8 @@ void HostProcess::StartHost() {
                                  context_->audio_task_runner(),
                                  context_->video_encode_task_runner()));
 
-  if (gnubby_auth_policy_enabled_ && gnubby_extension_supported_) {
-    host_->AddExtension(base::WrapUnique(new GnubbyExtension()));
+  if (security_key_auth_policy_enabled_ && security_key_extension_supported_) {
+    host_->AddExtension(base::WrapUnique(new SecurityKeyExtension()));
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
