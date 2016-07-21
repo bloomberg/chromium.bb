@@ -6,14 +6,14 @@
 
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
+#include "ash/common/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -122,9 +122,6 @@ void ExitWarningHandler::HandleAccelerator() {
       break;
     case EXITING:
       break;
-    default:
-      NOTREACHED();
-      break;
   }
 }
 
@@ -149,9 +146,9 @@ void ExitWarningHandler::CancelTimer() {
 void ExitWarningHandler::Show() {
   if (widget_)
     return;
-  aura::Window* root_window = Shell::GetTargetRootWindow();
+  WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
   ExitWarningWidgetDelegateView* delegate = new ExitWarningWidgetDelegateView;
-  gfx::Size rs = root_window->bounds().size();
+  gfx::Size rs = root_window->GetBounds().size();
   gfx::Size ps = delegate->GetPreferredSize();
   gfx::Rect bounds((rs.width() - ps.width()) / 2,
                    (rs.height() - ps.height()) / 3, ps.width(), ps.height());
@@ -164,12 +161,12 @@ void ExitWarningHandler::Show() {
   params.remove_standard_frame = true;
   params.delegate = delegate;
   params.bounds = bounds;
-  params.parent =
-      Shell::GetContainer(root_window, kShellWindowId_SettingBubbleContainer);
+  params.name = "ExitWarningWindow";
   widget_.reset(new views::Widget);
+  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+      widget_.get(), kShellWindowId_SettingBubbleContainer, &params);
   widget_->Init(params);
   widget_->SetContentsView(delegate);
-  widget_->GetNativeView()->SetName("ExitWarningWindow");
   widget_->Show();
 
   delegate->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
