@@ -43,13 +43,13 @@ typedef (File or USVString) FormDataEntryValue;
     [CallWith=ExecutionContext] void append(USVString name, Blob value, optional USVString filename);
     void append(USVString name, USVString value);
 
-    [RuntimeEnabled=FormDataNewMethods, ImplementedAs=deleteEntry] void delete(USVString name);
-    [RuntimeEnabled=FormDataNewMethods] FormDataEntryValue? get(USVString name);
-    [RuntimeEnabled=FormDataNewMethods] sequence<FormDataEntryValue> getAll(USVString name);
-    [RuntimeEnabled=FormDataNewMethods] boolean has(USVString name);
+    [ImplementedAs=deleteEntry] void delete(USVString name);
+    FormDataEntryValue? get(USVString name);
+    sequence<FormDataEntryValue> getAll(USVString name);
+    boolean has(USVString name);
     // TODO(foolip): The value argument should be FormDataEntryValue and there
     // should be no optional filename argument.
-    [RuntimeEnabled=FormDataNewMethods] void set(USVString name, Blob value, optional USVString filename);
-    [RuntimeEnabled=FormDataNewMethods] void set(USVString name, USVString value);
-    [RuntimeEnabled=FormDataNewMethods] iterable<USVString, FormDataEntryValue>;
+    void set(USVString name, Blob value, optional USVString filename);
+    void set(USVString name, USVString value);
+    iterable<USVString, FormDataEntryValue>;
 };
