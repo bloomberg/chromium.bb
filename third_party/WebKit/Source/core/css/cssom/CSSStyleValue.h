@@ -28,6 +28,7 @@ public:
         NumberType,
         PositionType,
         SimpleLengthType,
+        TokenStreamType,
         TransformType,
     };
 

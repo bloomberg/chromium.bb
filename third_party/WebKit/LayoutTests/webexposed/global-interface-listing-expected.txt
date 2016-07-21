@@ -621,6 +621,14 @@ interface CSSSupportsRule : CSSRule
     method constructor
     method deleteRule
     method insertRule
+interface CSSTokenStreamValue : CSSStyleValue
+    attribute @@toStringTag
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method keys
+    method values
 interface CSSTransformComponent
     attribute @@toStringTag
     getter cssText
