@@ -129,7 +129,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
   /**
    * Helper method used to test for a url in a list of passwords.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
-   * @param {!string} url The URL that is being searched for.
+   * @param {string} url The URL that is being searched for.
    */
   listContainsUrl(passwordList, url) {
     for (var i = 0; i < passwordList.length; ++i) {
@@ -142,7 +142,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
   /**
    * Helper method used to test for a url in a list of passwords.
    * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
-   * @param {!string} url The URL that is being searched for.
+   * @param {string} url The URL that is being searched for.
    */
   exceptionsListContainsUrl(exceptionList, url) {
     for (var i = 0; i < exceptionList.length; ++i) {
@@ -266,6 +266,58 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       // Start removing.
       clickRemoveButton();
+    });
+
+    test('verifyFilterPasswords', function() {
+      var passwordList = [
+        FakeDataMaker.passwordEntry('one.com', 'show', 5),
+        FakeDataMaker.passwordEntry('two.com', 'shower', 3),
+        FakeDataMaker.passwordEntry('three.com/show', 'four', 1),
+        FakeDataMaker.passwordEntry('four.com', 'three', 2),
+        FakeDataMaker.passwordEntry('five.com', 'two', 4),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6),
+      ];
+
+      var passwordsSection = self.createPasswordsSection_(passwordList, []);
+      passwordsSection.filter = 'show';
+      Polymer.dom.flush();
+
+      var expectedPasswordList = [
+        FakeDataMaker.passwordEntry('one.com', 'show', 5),
+        FakeDataMaker.passwordEntry('two.com', 'shower', 3),
+        FakeDataMaker.passwordEntry('three.com/show', 'four', 1),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6),
+      ];
+
+      self.validatePasswordList(
+          self.getIronListChildren_(passwordsSection.$.passwordList),
+          expectedPasswordList);
+    });
+
+    test('verifyFilterPasswordExceptions', function() {
+      var exceptionList = [
+        FakeDataMaker.exceptionEntry('docsshow.google.com'),
+        FakeDataMaker.exceptionEntry('showmail.com'),
+        FakeDataMaker.exceptionEntry('google.com'),
+        FakeDataMaker.exceptionEntry('inbox.google.com'),
+        FakeDataMaker.exceptionEntry('mapsshow.google.com'),
+        FakeDataMaker.exceptionEntry('plus.google.comshow'),
+      ];
+
+      var passwordsSection = self.createPasswordsSection_([], exceptionList);
+      passwordsSection.filter = 'show';
+      Polymer.dom.flush();
+
+      var expectedExceptionList = [
+        FakeDataMaker.exceptionEntry('docsshow.google.com'),
+        FakeDataMaker.exceptionEntry('showmail.com'),
+        FakeDataMaker.exceptionEntry('mapsshow.google.com'),
+        FakeDataMaker.exceptionEntry('plus.google.comshow'),
+      ];
+
+      self.validateExceptionList_(
+          self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),
+          expectedExceptionList);
     });
 
     test('verifyPasswordExceptions', function() {

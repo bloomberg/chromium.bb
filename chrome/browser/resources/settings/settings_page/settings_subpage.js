@@ -20,11 +20,25 @@ Polymer({
 
   properties: {
     pageTitle: String,
+
+    /** Setting a |searchLabel| will enable search. */
+    searchLabel: String,
+
+    searchTerm: {
+      type: String,
+      notify: true,
+      value: '',
+    },
   },
 
   /** @private */
   onTapBack_: function() {
     // Event is caught by settings-animated-pages.
     this.fire('subpage-back');
+  },
+
+  /** @private */
+  onSearchChanged_: function(e) {
+    this.searchTerm = e.detail;
   },
 });

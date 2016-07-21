@@ -331,6 +331,9 @@ Polymer({
      */
     passwordExceptions: Array,
 
+    /** @private Filter applied to passwords and password exceptions. */
+    passwordFilter_: String,
+
      /**
      * An array of saved addresses.
      * @type {!Array<!AutofillManager.AddressEntry>}

@@ -53,6 +53,12 @@ Polymer({
      * @private {?chrome.passwordsPrivate.PasswordUiEntry}
      */
     activePassword: Object,
+
+    /** Filter on the saved passwords and exceptions. */
+    filter: {
+      type: String,
+      value: '',
+    },
   },
 
   listeners: {
@@ -88,6 +94,37 @@ Polymer({
     var expectedDialog = this.$$('password-edit-dialog').$.dialog;
     if (Polymer.dom(e).rootTarget == expectedDialog)
       this.activePassword = null;
+  },
+
+  /**
+   * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} savedPasswords
+   * @param {string} filter
+   * @return {!Array<!chrome.passwordsPrivate.PasswordUiEntry>}
+   * @private
+   */
+  getFilteredPasswords_: function(savedPasswords, filter) {
+    if (!filter)
+      return savedPasswords;
+
+    return savedPasswords.filter(function(password) {
+      return password.loginPair.originUrl.includes(filter) ||
+             password.loginPair.username.includes(filter);
+    });
+  },
+
+  /**
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} passwordExceptions
+   * @param {string} filter
+   * @return {!Array<!chrome.passwordsPrivate.ExceptionPair>}
+   * @private
+   */
+  getFilteredExceptions_: function(passwordExceptions, filter) {
+    if (!filter)
+      return passwordExceptions;
+
+    return passwordExceptions.filter(function(exception) {
+      return exception.exceptionUrl.includes(filter);
+    });
   },
 
   /**

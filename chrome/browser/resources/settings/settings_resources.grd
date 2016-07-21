@@ -204,6 +204,12 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_SUBPAGE_JS"
                  file="settings_page/settings_subpage.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBPAGE_SEARCH_HTML"
+                 file="settings_page/settings_subpage_search.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBPAGE_SEARCH_JS"
+                 file="settings_page/settings_subpage_search.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS_HTML"
                  file="settings_page_css.html"
                  type="chrome_html" />
