@@ -328,7 +328,6 @@
       'dependencies': [
         '../media/media.gyp:media',
         '../media/media.gyp:mf_initializer',
-        '../third_party/libyuv/libyuv.gyp:libyuv',
         '../ui/gl/gl.gyp:gl',
         '../ui/gl/init/gl_init.gyp:gl_init',
       ],
@@ -359,8 +358,6 @@
         'gpu/dxva_picture_buffer_win.h',
         'gpu/dxva_video_decode_accelerator_win.cc',
         'gpu/dxva_video_decode_accelerator_win.h',
-        'gpu/media_foundation_video_encode_accelerator_win.cc',
-        'gpu/media_foundation_video_encode_accelerator_win.h',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',

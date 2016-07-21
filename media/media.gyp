@@ -1739,8 +1739,6 @@
           'include_dirs': [ '..', ],
           'defines': [ 'MF_INITIALIZER_IMPLEMENTATION', ],
           'sources': [
-            'base/win/mf_helpers.cc',
-            'base/win/mf_helpers.h',
             'base/win/mf_initializer_export.h',
             'base/win/mf_initializer.cc',
             'base/win/mf_initializer.h',
@@ -2134,7 +2132,7 @@
         }
       ]
     }],
-    ['chromeos==1 or OS=="mac" or OS=="win"', {
+    ['chromeos==1 or OS=="mac"', {
       'targets': [
         {
           'target_name': 'video_encode_accelerator_unittest',
@@ -2164,11 +2162,6 @@
             ['OS=="mac"', {
               'dependencies': [
                 '../third_party/webrtc/common_video/common_video.gyp:common_video',
-              ],
-            }],
-            ['OS=="win"', {
-              'dependencies': [
-                '../media/media.gyp:mf_initializer',
               ],
             }],
             ['use_x11==1', {

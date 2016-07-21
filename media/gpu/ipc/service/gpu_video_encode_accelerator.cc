@@ -35,9 +35,6 @@
 #include "media/gpu/android_video_encode_accelerator.h"
 #elif defined(OS_MACOSX)
 #include "media/gpu/vt_video_encode_accelerator_mac.h"
-#elif defined(OS_WIN)
-#include "media/base/media_switches.h"
-#include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #endif
 
 namespace media {
@@ -211,13 +208,6 @@ GpuVideoEncodeAccelerator::CreateVEAFps(
 #if defined(OS_MACOSX)
   create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVTVEA);
 #endif
-#if defined(OS_WIN)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMFH264Encoding)) {
-    create_vea_fps.push_back(
-        &GpuVideoEncodeAccelerator::CreateMediaFoundationVEA);
-  }
-#endif
   return create_vea_fps;
 }
 
@@ -257,15 +247,6 @@ std::unique_ptr<VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateVTVEA() {
   return base::WrapUnique<VideoEncodeAccelerator>(
       new VTVideoEncodeAccelerator());
-}
-#endif
-
-#if defined(OS_WIN)
-// static
-std::unique_ptr<media::VideoEncodeAccelerator>
-GpuVideoEncodeAccelerator::CreateMediaFoundationVEA() {
-  return base::WrapUnique<media::VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator());
 }
 #endif
 

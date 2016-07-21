@@ -27,7 +27,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -62,8 +61,6 @@
 #endif  // defined(ARCH_CPU_X86_FAMILY)
 #elif defined(OS_MACOSX)
 #include "media/gpu/vt_video_encode_accelerator_mac.h"
-#elif defined(OS_WIN)
-#include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #else
 #error The VideoEncodeAcceleratorUnittest is not supported on this platform.
 #endif
@@ -113,8 +110,6 @@ const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 // "in_filename:width:height:profile:out_filename:requested_bitrate
 //  :requested_framerate:requested_subsequent_bitrate
 //  :requested_subsequent_framerate"
-// Instead of ":", "," can be used as a seperator as well. Note that ":" does
-// not work on Windows as it interferes with file paths.
 // - |in_filename| must be an I420 (YUV planar) raw stream
 //   (see http://www.fourcc.org/yuv.php#IYUV).
 // - |width| and |height| are in pixels.
@@ -135,14 +130,11 @@ const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 //                                    of the stream.
 //   Bitrate is only forced for tests that test bitrate.
 const char* g_default_in_filename = "bear_320x192_40frames.yuv";
-
-#if defined(OS_CHROMEOS)
-const base::FilePath::CharType* g_default_in_parameters =
-    FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
-#elif defined(OS_MACOSX) || defined(OS_WIN)
-const base::FilePath::CharType* g_default_in_parameters =
-    FILE_PATH_LITERAL(",320,192,0,out.h264,200000");
-#endif  // defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX)
+const char* g_default_in_parameters = ":320:192:1:out.h264:200000";
+#else
+const char* g_default_in_parameters = ":320:192:0:out.h264:200000";
+#endif
 
 // Enabled by including a --fake_encoder flag to the command line invoking the
 // test.
@@ -248,25 +240,6 @@ static bool IsVP8(VideoCodecProfile profile) {
   return profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX;
 }
 
-// Helper functions to do string conversions.
-static base::FilePath::StringType StringToFilePathStringType(
-    const std::string& str) {
-#if defined(OS_WIN)
-  return base::UTF8ToWide(str);
-#else
-  return str;
-#endif  // defined(OS_WIN)
-}
-
-static std::string FilePathStringTypeToString(
-    const base::FilePath::StringType& str) {
-#if defined(OS_WIN)
-  return base::WideToUTF8(str);
-#else
-  return str;
-#endif  // defined(OS_WIN)
-}
-
 // ARM performs CPU cache management with CPU cache line granularity. We thus
 // need to ensure our buffers are CPU cache line-aligned (64 byte-aligned).
 // Otherwise newer kernels will refuse to accept them, and on older kernels
@@ -317,7 +290,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     padding_sizes[i] = padding_rows * coded_bpl[i] + Align64Bytes(size) - size;
   }
 
-  base::FilePath src_file(StringToFilePathStringType(test_stream->in_filename));
+  base::FilePath src_file(test_stream->in_filename);
   int64_t src_file_size = 0;
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
@@ -355,13 +328,11 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   }
   src.Close();
 
-#if defined(OS_POSIX)
   // Assert that memory mapped of file starts at 64 byte boundary. So each
   // plane of frames also start at 64 byte boundary.
   ASSERT_EQ(reinterpret_cast<off_t>(&test_stream->aligned_in_file_data[0]) & 63,
             0)
       << "File should be mapped at a 64 byte boundary";
-#endif  // defined(OS_POSIX)
 
   LOG_ASSERT(test_stream->num_frames > 0UL);
 }
@@ -379,19 +350,13 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
   // Parse each test stream data and read the input file.
   for (size_t index = 0; index < test_streams_data.size(); ++index) {
     std::vector<base::FilePath::StringType> fields = base::SplitString(
-        test_streams_data[index], base::FilePath::StringType(1, ','),
+        test_streams_data[index], base::FilePath::StringType(1, ':'),
         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    // Try using ":" as the seperator if "," isn't used.
-    if (fields.size() == 1U) {
-      fields = base::SplitString(test_streams_data[index],
-                                 base::FilePath::StringType(1, ':'),
-                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    }
     LOG_ASSERT(fields.size() >= 4U) << data;
     LOG_ASSERT(fields.size() <= 9U) << data;
     TestStream* test_stream = new TestStream();
 
-    test_stream->in_filename = FilePathStringTypeToString(fields[0]);
+    test_stream->in_filename = fields[0];
     int width, height;
     bool result = base::StringToInt(fields[1], &width);
     LOG_ASSERT(result);
@@ -407,7 +372,7 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
     test_stream->requested_profile = static_cast<VideoCodecProfile>(profile);
 
     if (fields.size() >= 5 && !fields[4].empty())
-      test_stream->out_filename = FilePathStringTypeToString(fields[4]);
+      test_stream->out_filename = fields[4];
 
     if (fields.size() >= 6 && !fields[5].empty())
       LOG_ASSERT(
@@ -670,7 +635,7 @@ class VideoFrameQualityValidator {
   void VerifyOutputFrame(const scoped_refptr<VideoFrame>& output_frame);
   void Decode();
 
-  enum State { UNINITIALIZED, INITIALIZED, DECODING, DECODER_ERROR };
+  enum State { UNINITIALIZED, INITIALIZED, DECODING, ERROR };
 
   const VideoCodecProfile profile_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
@@ -733,7 +698,7 @@ void VideoFrameQualityValidator::InitializeCB(bool success) {
     decoder_state_ = INITIALIZED;
     Decode();
   } else {
-    decoder_state_ = DECODER_ERROR;
+    decoder_state_ = ERROR;
     if (IsH264(profile_))
       LOG(ERROR) << "Chromium does not support H264 decode. Try Chrome.";
     FAIL() << "Decoder initialization error";
@@ -751,7 +716,7 @@ void VideoFrameQualityValidator::DecodeDone(DecodeStatus status) {
     decoder_state_ = INITIALIZED;
     Decode();
   } else {
-    decoder_state_ = DECODER_ERROR;
+    decoder_state_ = ERROR;
     FAIL() << "Unexpected decode status = " << status << ". Stop decoding.";
     decode_error_cb_.Run();
   }
@@ -762,7 +727,7 @@ void VideoFrameQualityValidator::FlushDone(DecodeStatus status) {
 }
 
 void VideoFrameQualityValidator::Flush() {
-  if (decoder_state_ != DECODER_ERROR) {
+  if (decoder_state_ != ERROR) {
     decode_buffers_.push(DecoderBuffer::CreateEOSBuffer());
     Decode();
   }
@@ -770,7 +735,7 @@ void VideoFrameQualityValidator::Flush() {
 
 void VideoFrameQualityValidator::AddDecodeBuffer(
     const scoped_refptr<DecoderBuffer>& buffer) {
-  if (decoder_state_ != DECODER_ERROR) {
+  if (decoder_state_ != ERROR) {
     decode_buffers_.push(buffer);
     Decode();
   }
@@ -806,18 +771,15 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
         VideoFrame::Columns(plane, kInputFormat, visible_size.width());
     size_t stride = original_frame->stride(plane);
 
-    for (size_t i = 0; i < rows; i++) {
-      for (size_t j = 0; j < columns; j++) {
+    for (size_t i = 0; i < rows; i++)
+      for (size_t j = 0; j < columns; j++)
         difference += std::abs(original_plane[stride * i + j] -
                                output_plane[stride * i + j]);
-      }
-    }
   }
-
   // Divide the difference by the size of frame.
   difference /= VideoFrame::AllocationSize(kInputFormat, visible_size);
   EXPECT_TRUE(difference <= kDecodeSimilarityThreshold)
-      << "difference = " << difference << "  > decode similarity threshold";
+      << "differrence = " << difference << "  > decode similarity threshold";
 }
 
 class VEAClient : public VideoEncodeAccelerator::Client {
@@ -856,7 +818,6 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA();
   std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA();
   std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA();
-  std::unique_ptr<VideoEncodeAccelerator> CreateMFVEA();
 
   void SetState(ClientState new_state);
 
@@ -1089,11 +1050,7 @@ VEAClient::VEAClient(TestStream* test_stream,
 
   if (save_to_file_) {
     LOG_ASSERT(!test_stream_->out_filename.empty());
-#if defined(OS_POSIX)
     base::FilePath out_filename(test_stream_->out_filename);
-#elif defined(OS_WIN)
-    base::FilePath out_filename(base::UTF8ToWide(test_stream_->out_filename));
-#endif
     // This creates or truncates out_filename.
     // Without it, AppendToFile() will not work.
     EXPECT_EQ(0, base::WriteFile(out_filename, NULL, 0));
@@ -1145,22 +1102,12 @@ std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateVTVEA() {
   return encoder;
 }
 
-std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateMFVEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-#if defined(OS_WIN)
-  MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
-  encoder.reset(new MediaFoundationVideoEncodeAccelerator());
-#endif
-  return encoder;
-}
-
 void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
 
   std::unique_ptr<VideoEncodeAccelerator> encoders[] = {
-      CreateFakeVEA(), CreateV4L2VEA(), CreateVaapiVEA(), CreateVTVEA(),
-      CreateMFVEA()};
+      CreateFakeVEA(), CreateV4L2VEA(), CreateVaapiVEA(), CreateVTVEA()};
 
   DVLOG(1) << "Profile: " << test_stream_->requested_profile
            << ", initial bitrate: " << requested_bitrate_;
@@ -1750,7 +1697,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   encoder_thread.Stop();
 }
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
@@ -1808,7 +1755,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         std::make_tuple(1, false, 0, false, false, false, false, false, true)));
 
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#else
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
@@ -1833,15 +1780,7 @@ INSTANTIATE_TEST_CASE_P(MultipleEncoders,
                                                           false,
                                                           false,
                                                           false)));
-#if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
-    ForceBitrate,
-    VideoEncodeAcceleratorTest,
-    ::testing::Values(
-        std::make_tuple(1, false, 0, true, false, false, false, false, false)));
-#endif  // defined(OS_WIN)
-
-#endif  // defined(OS_CHROMEOS)
+#endif
 
 // TODO(posciak): more tests:
 // - async FeedEncoderWithOutput
@@ -1861,8 +1800,8 @@ int main(int argc, char** argv) {
 
   std::unique_ptr<base::FilePath::StringType> test_stream_data(
       new base::FilePath::StringType(
-          media::GetTestDataFilePath(media::g_default_in_filename).value()));
-  test_stream_data->append(media::g_default_in_parameters);
+          media::GetTestDataFilePath(media::g_default_in_filename).value() +
+          media::g_default_in_parameters));
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
