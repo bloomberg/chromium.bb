@@ -27,6 +27,25 @@ Polymer({
     },
 
 <if expr="chromeos">
+    autoClickDelayOptions_: {
+      readOnly: true,
+      type: Array,
+      value: function() {
+        return [
+          {value: 600,
+           name: loadTimeData.getString('delayBeforeClickExtremelyShort')},
+          {value: 800,
+           name: loadTimeData.getString('delayBeforeClickVeryShort')},
+          {value: 1000,
+           name: loadTimeData.getString('delayBeforeClickShort')},
+          {value: 2000,
+           name: loadTimeData.getString('delayBeforeClickLong')},
+          {value: 4000,
+           name: loadTimeData.getString('delayBeforeClickVeryLong')},
+        ];
+      },
+    },
+
     /**
      * Whether to show experimental accessibility features.
      * @private {boolean}

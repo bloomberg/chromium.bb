@@ -136,19 +136,19 @@
       Delay before click:
     </message>
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_EXTREMELY_SHORT" desc="Description of an extremely short delay before clicks.">
-      extremely short
+      extremely short (600ms)
     </message>
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_SHORT" desc="Description of a very short delay before clicks.">
-      very short
+      very short (800ms)
     </message>
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_SHORT" desc="Description of a short delay before clicks.">
-      short
+      short (1000ms)
     </message>
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_LONG" desc="Description of a long delay before clicks.">
-      long
+      long (2000ms)
     </message>
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG" desc="Description of a very long delay before clicks.">
-      very long
+      very long (4000ms)
     </message>
     <message name="IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL" desc="Label for checkbox which enables an on-screen keyboard.">
       Enable on-screen keyboard
