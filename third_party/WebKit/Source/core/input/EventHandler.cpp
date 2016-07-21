@@ -307,6 +307,11 @@ void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
     }
 }
 
+void EventHandler::immediatelyProcessPendingPointerCapture(int pointerId)
+{
+    m_pointerEventManager.immediatelyProcessPendingPointerCapture(pointerId);
+}
+
 WebInputEventResult EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMousePressEvent");

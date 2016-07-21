@@ -208,16 +208,16 @@ PointerEvent* PointerEventFactory::createPointerCancelEvent(
 }
 
 PointerEvent* PointerEventFactory::createPointerCaptureEvent(
-    PointerEvent* pointerEvent,
+    const int pointerId,
     const AtomicString& type)
 {
     ASSERT(type == EventTypeNames::gotpointercapture
         || type == EventTypeNames::lostpointercapture);
 
+    // See https://github.com/w3c/pointerevents/issues/113 as why we don't set
+    // any other attributes for got/lostpointercapture.
     PointerEventInit pointerEventInit;
-    pointerEventInit.setPointerId(pointerEvent->pointerId());
-    pointerEventInit.setPointerType(pointerEvent->pointerType());
-    pointerEventInit.setIsPrimary(pointerEvent->isPrimary());
+    pointerEventInit.setPointerId(pointerId);
     pointerEventInit.setBubbles(true);
     pointerEventInit.setCancelable(false);
 
@@ -294,12 +294,12 @@ int PointerEventFactory::addIdAndActiveButtons(const IncomingId p,
     bool isActiveButtons)
 {
     // Do not add extra mouse pointer as it was added in initialization
-    if (p.pointerType() == toInt(WebPointerProperties::PointerType::Mouse)) {
+    if (p.pointerType() == WebPointerProperties::PointerType::Mouse) {
         m_pointerIdMapping.set(s_mouseId, PointerAttributes(p, isActiveButtons));
         return s_mouseId;
     }
 
-    int type = p.pointerType();
+    int type = p.pointerTypeInt();
     if (m_pointerIncomingIdMapping.contains(p)) {
         int mappedId = m_pointerIncomingIdMapping.get(p);
         m_pointerIdMapping.set(mappedId, PointerAttributes(p, isActiveButtons));
@@ -322,7 +322,7 @@ bool PointerEventFactory::remove(const int mappedId)
         return false;
 
     IncomingId p = m_pointerIdMapping.get(mappedId).incomingId;
-    int type = p.pointerType();
+    int type = p.pointerTypeInt();
     m_pointerIdMapping.remove(mappedId);
     m_pointerIncomingIdMapping.remove(p);
     if (m_primaryId[type] == mappedId)
@@ -338,7 +338,7 @@ Vector<int> PointerEventFactory::getPointerIdsOfType(
 
     for (auto iter = m_pointerIdMapping.begin(); iter != m_pointerIdMapping.end(); ++iter) {
         int mappedId = iter->key;
-        if (iter->value.incomingId.pointerType() == static_cast<int>(pointerType))
+        if (iter->value.incomingId.pointerType() == pointerType)
             mappedIds.append(mappedId);
     }
 
@@ -353,7 +353,7 @@ bool PointerEventFactory::isPrimary(int mappedId) const
         return false;
 
     IncomingId p = m_pointerIdMapping.get(mappedId).incomingId;
-    return m_primaryId[p.pointerType()] == mappedId;
+    return m_primaryId[p.pointerTypeInt()] == mappedId;
 }
 
 bool PointerEventFactory::isActive(const int pointerId) const

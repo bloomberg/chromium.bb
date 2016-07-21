@@ -70,6 +70,12 @@ public:
     // |m_touchIdsForCanceledPointerdowns|.
     bool primaryPointerdownCanceled(uint32_t uniqueTouchEventId);
 
+    // Try to immediately send the got/lostpointercapture without boundary
+    // events.
+    // TODO(crbug.com/629935): This function should be private as soon as PointerEventManager
+    // a GC managed object and postTask can be done internally in this class.
+    void immediatelyProcessPendingPointerCapture(int pointerId);
+
 private:
     typedef HeapHashMap<int, Member<EventTarget>, WTF::IntHash<int>,
         WTF::UnsignedWithZeroKeyHashTraits<int>> PointerCapturingMap;
@@ -150,7 +156,11 @@ private:
         EventTarget*,
         PointerEvent*,
         bool checkForListener = false);
-    void releasePointerCapture(int);
+    void modifyPendingPointerCapture(int pointerId, EventTarget*);
+    // Returns true if capture target and pending capture target were different.
+    bool getPointerCaptureState(int pointerId,
+        EventTarget** pointerCaptureTarget,
+        EventTarget** pendingPointerCaptureTarget);
 
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |PointerEventManager::clear()|.

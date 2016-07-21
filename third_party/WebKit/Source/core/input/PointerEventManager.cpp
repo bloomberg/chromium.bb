@@ -5,6 +5,7 @@
 #include "core/input/PointerEventManager.h"
 
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
@@ -369,7 +370,7 @@ void PointerEventManager::blockTouchPointers()
             getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
             pointerEvent);
 
-        releasePointerCapture(pointerEvent->pointerId());
+        modifyPendingPointerCapture(pointerEvent->pointerId(), nullptr);
 
         // Sending the leave/out events and lostpointercapture
         // because the next touch event will have a different id. So delayed
@@ -515,7 +516,7 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 
     if (pointerEvent->type() == EventTypeNames::pointerup
         || pointerEvent->type() == EventTypeNames::pointercancel) {
-        releasePointerCapture(pointerEvent->pointerId());
+        modifyPendingPointerCapture(pointerEvent->pointerId(), nullptr);
 
         // Sending the leave/out events and lostpointercapture
         // because the next touch event will have a different id. So delayed
@@ -581,7 +582,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     }
 
     if (pointerEvent->buttons() == 0) {
-        releasePointerCapture(pointerEvent->pointerId());
+        modifyPendingPointerCapture(pointerEvent->pointerId(), nullptr);
         if (pointerEvent->isPrimary()) {
             m_preventMouseEventForPointerType[toPointerTypeIndex(
                 mouseEvent.pointerProperties().pointerType)] = false;
@@ -615,6 +616,25 @@ void PointerEventManager::clear()
     m_pendingPointerCaptureTarget.clear();
 }
 
+bool PointerEventManager::getPointerCaptureState(int pointerId,
+    EventTarget** pointerCaptureTarget,
+    EventTarget** pendingPointerCaptureTarget)
+{
+    PointerCapturingMap::iterator it;
+
+    it = m_pointerCaptureTarget.find(pointerId);
+    EventTarget* pointercaptureTargetTemp = (it != m_pointerCaptureTarget.end()) ? it->value : nullptr;
+    it = m_pendingPointerCaptureTarget.find(pointerId);
+    EventTarget* pendingPointercaptureTargetTemp = (it != m_pendingPointerCaptureTarget.end()) ? it->value : nullptr;
+
+    if (pointerCaptureTarget)
+        *pointerCaptureTarget = pointercaptureTargetTemp;
+    if (pendingPointerCaptureTarget)
+        *pendingPointerCaptureTarget = pendingPointercaptureTargetTemp;
+
+    return pointercaptureTargetTemp != pendingPointercaptureTargetTemp;
+}
+
 void PointerEventManager::processCaptureAndPositionOfPointerEvent(
     PointerEvent* pointerEvent,
     EventTarget* hitTestTarget,
@@ -639,23 +659,56 @@ void PointerEventManager::processCaptureAndPositionOfPointerEvent(
     }
 }
 
+void PointerEventManager::immediatelyProcessPendingPointerCapture(int pointerId)
+{
+    EventTarget* pointerCaptureTarget;
+    EventTarget* pendingPointerCaptureTarget;
+    const bool isCaptureChanged = getPointerCaptureState(pointerId,
+        &pointerCaptureTarget, &pendingPointerCaptureTarget);
+
+    if (!isCaptureChanged)
+        return;
+
+    if (pointerCaptureTarget) {
+        // Re-target lostpointercapture to the document when the element is
+        // no longer participating in the tree.
+        EventTarget* target = pointerCaptureTarget;
+        if (target->toNode()
+            && !target->toNode()->isConnected()) {
+            target = target->toNode()->ownerDocument();
+        }
+        dispatchPointerEvent(target,
+            m_pointerEventFactory.createPointerCaptureEvent(
+                pointerId, EventTypeNames::lostpointercapture));
+    }
+    dispatchPointerEvent(pendingPointerCaptureTarget,
+        m_pointerEventFactory.createPointerCaptureEvent(
+            pointerId, EventTypeNames::gotpointercapture));
+
+    // Setting |m_pointerCaptureTarget| comes at the end to prevent the infinite
+    // loop if js calls set/releasepointercapture in got/lostpointercapture
+    // handlers.
+    if (pendingPointerCaptureTarget)
+        m_pointerCaptureTarget.set(pointerId, pendingPointerCaptureTarget);
+    else
+        m_pointerCaptureTarget.remove(pointerId);
+}
+
+// TODO(crbug.com/629921): This function should be merged with |immediatelyProcessPendingPointerCapture|
+// when we stop hit-testing while a pointer is captured.
 bool PointerEventManager::processPendingPointerCapture(
     PointerEvent* pointerEvent,
     EventTarget* hitTestTarget,
     const PlatformMouseEvent& mouseEvent, bool sendMouseEvent)
 {
     int pointerId = pointerEvent->pointerId();
-    EventTarget* pointerCaptureTarget =
-        m_pointerCaptureTarget.contains(pointerId)
-        ? m_pointerCaptureTarget.get(pointerId) : nullptr;
-    EventTarget* pendingPointerCaptureTarget =
-        m_pendingPointerCaptureTarget.contains(pointerId)
-        ? m_pendingPointerCaptureTarget.get(pointerId) : nullptr;
+    EventTarget* pointerCaptureTarget;
+    EventTarget* pendingPointerCaptureTarget;
+    const bool isCaptureChanged = getPointerCaptureState(pointerId,
+        &pointerCaptureTarget, &pendingPointerCaptureTarget);
     const EventTargetAttributes &nodeUnderPointerAtt =
         m_nodeUnderPointer.contains(pointerId)
         ? m_nodeUnderPointer.get(pointerId) : EventTargetAttributes();
-    const bool isCaptureChanged =
-        pointerCaptureTarget != pendingPointerCaptureTarget;
 
     if (isCaptureChanged) {
         if ((hitTestTarget != nodeUnderPointerAtt.target
@@ -681,7 +734,7 @@ bool PointerEventManager::processPendingPointerCapture(
             }
             dispatchPointerEvent(target,
                 m_pointerEventFactory.createPointerCaptureEvent(
-                pointerEvent, EventTypeNames::lostpointercapture));
+                    pointerId, EventTypeNames::lostpointercapture));
         }
     }
 
@@ -697,7 +750,7 @@ bool PointerEventManager::processPendingPointerCapture(
     if (isCaptureChanged) {
         dispatchPointerEvent(pendingPointerCaptureTarget,
             m_pointerEventFactory.createPointerCaptureEvent(
-            pointerEvent, EventTypeNames::gotpointercapture));
+                pointerId, EventTypeNames::gotpointercapture));
         if ((pendingPointerCaptureTarget == hitTestTarget
             || !pendingPointerCaptureTarget)
             && (nodeUnderPointerAtt.target != hitTestTarget
@@ -754,8 +807,9 @@ void PointerEventManager::elementRemoved(EventTarget* target)
 void PointerEventManager::setPointerCapture(int pointerId, EventTarget* target)
 {
     UseCounter::count(m_frame->document(), UseCounter::PointerEventSetCapture);
-    if (m_pointerEventFactory.isActiveButtonsState(pointerId))
-        m_pendingPointerCaptureTarget.set(pointerId, target);
+    if (m_pointerEventFactory.isActiveButtonsState(pointerId)) {
+        modifyPendingPointerCapture(pointerId, target);
+    }
 }
 
 void PointerEventManager::releasePointerCapture(int pointerId, EventTarget* target)
@@ -768,12 +822,30 @@ void PointerEventManager::releasePointerCapture(int pointerId, EventTarget* targ
     // very next pointer event. They will be the same if there was no change in
     // capturing of a particular |pointerId|. See crbug.com/614481.
     if (m_pendingPointerCaptureTarget.get(pointerId) == target)
-        releasePointerCapture(pointerId);
+        modifyPendingPointerCapture(pointerId, nullptr);
 }
 
-void PointerEventManager::releasePointerCapture(int pointerId)
+void PointerEventManager::modifyPendingPointerCapture(
+    int pointerId, EventTarget* target)
 {
-    m_pendingPointerCaptureTarget.remove(pointerId);
+    bool wasCaptureStationary = !getPointerCaptureState(pointerId, nullptr, nullptr);
+
+    if (target)
+        m_pendingPointerCaptureTarget.set(pointerId, target);
+    else
+        m_pendingPointerCaptureTarget.remove(pointerId);
+
+    // Only queue the processing pending pointer capture if the pending
+    // capture target and capture target were the same to prevent infinite
+    // got/lostpointercapture event sequence.
+    // See https://github.com/w3c/pointerevents/issues/32.
+    if (wasCaptureStationary) {
+        m_frame->document()->postTask(
+            BLINK_FROM_HERE,
+            createSameThreadTask(
+                &EventHandler::immediatelyProcessPendingPointerCapture,
+                wrapWeakPersistent(&m_frame->eventHandler()), pointerId));
+    }
 }
 
 bool PointerEventManager::isActive(const int pointerId) const

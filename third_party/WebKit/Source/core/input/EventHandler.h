@@ -233,6 +233,10 @@ public:
     //             If not, use the current focus or last clicked node.
     bool logicalScroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr);
 
+    // TODO(crbug.com/629935): This function is only used by PointerEventManager
+    // and should be removed as soon as PointerEventManager is a GC object.
+    void immediatelyProcessPendingPointerCapture(int pointerId);
+
 private:
     static DragState& dragState();
 
