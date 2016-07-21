@@ -290,7 +290,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     }
 
     private void setEnableKeygen(final String origin, final boolean enabled) {
-        Website website = new Website(WebsiteAddress.create(origin));
+        WebsiteAddress address = WebsiteAddress.create(origin);
+        Website website = new Website(address, address);
         website.setKeygenInfo(new KeygenInfo(origin, origin, false));
         final Preferences preferenceActivity = startSingleWebsitePreferences(website);
 
@@ -438,7 +439,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Website site = new Website(WebsiteAddress.create(origin));
+                WebsiteAddress address = WebsiteAddress.create(origin);
+                Website site = new Website(address, address);
                 site.setKeygenInfo(new KeygenInfo(origin, origin, false));
                 assertEquals(site.getKeygenPermission(), ContentSetting.BLOCK);
             }
@@ -458,7 +460,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Website site = new Website(WebsiteAddress.create(origin));
+                WebsiteAddress address = WebsiteAddress.create(origin);
+                Website site = new Website(address, address);
                 site.setKeygenInfo(new KeygenInfo(origin, origin, false));
                 assertEquals(site.getKeygenPermission(), ContentSetting.ALLOW);
             }
@@ -515,7 +518,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     public void testResetCrash600232() throws Exception {
-        Website website = new Website(WebsiteAddress.create("example.com"));
+        WebsiteAddress address = WebsiteAddress.create("example.com");
+        Website website = new Website(address, address);
         final Preferences preferenceActivity = startSingleWebsitePreferences(website);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

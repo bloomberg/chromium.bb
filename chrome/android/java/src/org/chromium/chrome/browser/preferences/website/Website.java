@@ -23,9 +23,8 @@ public class Website implements Serializable {
     static final int MICROPHONE_AND_CAMERA_ACCESS_DENIED = 5;
     static final int MICROPHONE_ACCESS_DENIED = 6;
 
-    private final WebsiteAddress mAddress;
-    private final String mTitle;
-    private String mSummary;
+    private final WebsiteAddress mOrigin;
+    private final WebsiteAddress mEmbedder;
 
     private ContentSettingException mAutoplayExceptionInfo;
     private ContentSettingException mBackgroundSyncExceptionInfo;
@@ -44,25 +43,37 @@ public class Website implements Serializable {
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
 
-    public Website(WebsiteAddress address) {
-        mAddress = address;
-        mTitle = address.getTitle();
+    public Website(WebsiteAddress origin, WebsiteAddress embedder) {
+        mOrigin = origin;
+        mEmbedder = embedder;
     }
 
     public WebsiteAddress getAddress() {
-        return mAddress;
+        return mOrigin;
     }
 
     public String getTitle() {
-        return mTitle;
+        return mOrigin.getTitle();
     }
 
     public String getSummary() {
-        return mSummary;
+        if (mEmbedder == null) return null;
+        return mEmbedder.getTitle();
     }
 
+    /**
+     * A comparison function for sorting by address (first by origin and then
+     * by embedder).
+     */
     public int compareByAddressTo(Website to) {
-        return this == to ? 0 : mAddress.compareTo(to.mAddress);
+        if (this == to) return 0;
+        int originComparison = mOrigin.compareTo(to.mOrigin);
+        if (originComparison == 0) {
+            if (mEmbedder == null) return to.mEmbedder == null ? 0 : -1;
+            if (to.mEmbedder == null) return 1;
+            return mEmbedder.compareTo(to.mEmbedder);
+        }
+        return originComparison;
     }
 
     /**
@@ -127,10 +138,6 @@ public class Website implements Serializable {
      */
     public void setCameraInfo(CameraInfo info) {
         mCameraInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     public CameraInfo getCameraInfo() {
@@ -185,10 +192,6 @@ public class Website implements Serializable {
      */
     public void setFullscreenInfo(FullscreenInfo info) {
         mFullscreenInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     /**
@@ -221,10 +224,6 @@ public class Website implements Serializable {
      */
     public void setGeolocationInfo(GeolocationInfo info) {
         mGeolocationInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     public GeolocationInfo getGeolocationInfo() {
@@ -275,10 +274,6 @@ public class Website implements Serializable {
      */
     public void setKeygenInfo(KeygenInfo info) {
         mKeygenInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     public KeygenInfo getKeygenInfo() {
@@ -306,10 +301,6 @@ public class Website implements Serializable {
      */
     public void setMicrophoneInfo(MicrophoneInfo info) {
         mMicrophoneInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     public MicrophoneInfo getMicrophoneInfo() {
@@ -335,10 +326,6 @@ public class Website implements Serializable {
      */
     public void setMidiInfo(MidiInfo info) {
         mMidiInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     public MidiInfo getMidiInfo() {
@@ -421,10 +408,6 @@ public class Website implements Serializable {
      */
     public void setProtectedMediaIdentifierInfo(ProtectedMediaIdentifierInfo info) {
         mProtectedMediaIdentifierInfo = info;
-        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-        if (embedder != null) {
-            mSummary = embedder.getTitle();
-        }
     }
 
     public ProtectedMediaIdentifierInfo getProtectedMediaIdentifierInfo() {

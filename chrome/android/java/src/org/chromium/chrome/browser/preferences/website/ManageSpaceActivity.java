@@ -39,9 +39,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * This is the target activity for the "Manage Storage" button in the Android Settings UI. This is
@@ -274,31 +272,9 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         mUnimportantSiteDataSizeText.setText(Formatter.formatFileSize(this, unimportantSize));
     }
 
-    /** This function takes sites by origin and host and adds them all to one set. */
-    private static Set<Website> collapseAllSites(
-            Map<String, Set<Website>> sitesByOrigin, Map<String, Set<Website>> sitesByHost) {
-        Set<Website> sites = new HashSet<>();
-        // Add sites by origins.
-        for (Map.Entry<String, Set<Website>> element : sitesByOrigin.entrySet()) {
-            for (Website site : element.getValue()) {
-                sites.add(site);
-            }
-        }
-        // Add sites accessible by host name.
-        for (Map.Entry<String, Set<Website>> element : sitesByHost.entrySet()) {
-            for (Website site : element.getValue()) {
-                sites.add(site);
-            }
-        }
-        return sites;
-    }
-
     private class SizeCalculator implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
         @Override
-        public void onWebsitePermissionsAvailable(
-                Map<String, Set<Website>> sitesByOrigin, Map<String, Set<Website>> sitesByHost) {
-            Set<Website> sites = collapseAllSites(sitesByOrigin, sitesByHost);
-
+        public void onWebsitePermissionsAvailable(Collection<Website> sites) {
             long siteStorageSize = 0;
             long importantSiteStorageTotal = 0;
             for (Website site : sites) {
@@ -337,10 +313,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         }
 
         @Override
-        public void onWebsitePermissionsAvailable(
-                Map<String, Set<Website>> sitesByOrigin, Map<String, Set<Website>> sitesByHost) {
-            Set<Website> sites = collapseAllSites(sitesByOrigin, sitesByHost);
-
+        public void onWebsitePermissionsAvailable(Collection<Website> sites) {
             long siteStorageLeft = 0;
             for (Website site : sites) {
                 if (site.getLocalStorageInfo() == null

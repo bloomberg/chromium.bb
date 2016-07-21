@@ -48,11 +48,9 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Shows a list of sites in a particular Site Settings category. For example, this could show all
@@ -122,33 +120,17 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
     private class ResultsPopulator implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
         @Override
-        public void onWebsitePermissionsAvailable(
-                Map<String, Set<Website>> sitesByOrigin, Map<String, Set<Website>> sitesByHost) {
+        public void onWebsitePermissionsAvailable(Collection<Website> sites) {
             // This method may be called after the activity has been destroyed.
             // In that case, bail out.
             if (getActivity() == null) return;
             mWebsites = null;
 
-            // First we scan origins to get settings from there.
+            // Find origins matching the current search.
             List<WebsitePreference> websites = new ArrayList<>();
-            Set<Website> displayedSites = new HashSet<>();
-            for (Map.Entry<String, Set<Website>> element : sitesByOrigin.entrySet()) {
-                for (Website site : element.getValue()) {
-                    if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                        websites.add(new WebsitePreference(getActivity(), site, mCategory));
-                        displayedSites.add(site);
-                    }
-                }
-            }
-            // Next we add sites that are only accessible by host name.
-            for (Map.Entry<String, Set<Website>> element : sitesByHost.entrySet()) {
-                for (Website site : element.getValue()) {
-                    if (!displayedSites.contains(site)) {
-                        if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                            websites.add(new WebsitePreference(getActivity(), site, mCategory));
-                            displayedSites.add(site);
-                        }
-                    }
+            for (Website site : sites) {
+                if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
+                    websites.add(new WebsitePreference(getActivity(), site, mCategory));
                 }
             }
 
