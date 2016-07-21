@@ -27,6 +27,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/SelectionEditor.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -39,8 +40,9 @@
 
 namespace blink {
 
-FrameCaret::FrameCaret(LocalFrame* frame)
-    : m_frame(frame)
+FrameCaret::FrameCaret(LocalFrame* frame, const SelectionEditor& selectionEditor)
+    : m_selectionEditor(&selectionEditor)
+    , m_frame(frame)
     , m_previousCaretVisibility(CaretVisibility::Hidden)
     , m_caretBlinkTimer(this, &FrameCaret::caretBlinkTimerFired)
     , m_caretRectDirty(true)
@@ -55,22 +57,18 @@ FrameCaret::~FrameCaret() = default;
 
 DEFINE_TRACE(FrameCaret)
 {
+    visitor->trace(m_selectionEditor);
     visitor->trace(m_frame);
     visitor->trace(m_previousCaretNode);
-    visitor->trace(m_caretPosition);
     CaretBase::trace(visitor);
 }
 
-void FrameCaret::setCaretPosition(const PositionWithAffinity& position)
+const PositionWithAffinity FrameCaret::caretPosition() const
 {
-    m_caretPosition = position;
-    setCaretRectNeedsUpdate();
-}
-
-void FrameCaret::clear()
-{
-    m_caretPosition = PositionWithAffinity();
-    setCaretRectNeedsUpdate();
+    const VisibleSelection& selection = m_selectionEditor->visibleSelection<EditingStrategy>();
+    if (!selection.isCaret())
+        return PositionWithAffinity();
+    return PositionWithAffinity(selection.start(), selection.affinity());
 }
 
 inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame)
@@ -82,7 +80,7 @@ void FrameCaret::updateAppearance()
 {
     // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
     // the FrameSelection will paint a blinking caret as usual).
-    bool paintBlockCursor = m_shouldShowBlockCursor && isActive() && !isLogicalEndOfLine(createVisiblePosition(m_caretPosition));
+    bool paintBlockCursor = m_shouldShowBlockCursor && isActive() && !isLogicalEndOfLine(createVisiblePosition(caretPosition()));
 
     bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
@@ -145,8 +143,8 @@ bool FrameCaret::caretPositionIsValidForDocument(const Document& document) const
     if (!isActive())
         return true;
 
-    return m_caretPosition.position().document() == document
-        && !m_caretPosition.position().isOrphan();
+    return caretPosition().position().document() == document
+        && !caretPosition().position().isOrphan();
 }
 
 void FrameCaret::invalidateCaretRect()
@@ -159,7 +157,7 @@ void FrameCaret::invalidateCaretRect()
     LayoutObject* layoutObject = nullptr;
     LayoutRect newRect;
     if (isActive())
-        newRect = localCaretRectOfPosition(m_caretPosition, layoutObject);
+        newRect = localCaretRectOfPosition(caretPosition(), layoutObject);
     Node* newNode = layoutObject ? layoutObject->node() : nullptr;
 
     if (!m_caretBlinkTimer.isActive()
@@ -185,12 +183,16 @@ IntRect FrameCaret::absoluteCaretBounds()
     if (!isActive()) {
         clearCaretRect();
     }  else {
-        if (enclosingTextFormControl(m_caretPosition.position()))
-            updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(m_caretPosition.position()) ? m_caretPosition.position() : Position(), m_caretPosition.affinity()));
-        else
-            updateCaretRect(createVisiblePosition(m_caretPosition));
+        if (enclosingTextFormControl(caretPosition().position())) {
+            if (isVisuallyEquivalentCandidate(caretPosition().position()))
+                updateCaretRect(caretPosition());
+            else
+                updateCaretRect(createVisiblePosition(caretPosition()));
+        } else {
+            updateCaretRect(createVisiblePosition(caretPosition()));
+        }
     }
-    return absoluteBoundsForLocalRect(m_caretPosition.position().anchorNode(), localCaretRectWithoutUpdate());
+    return absoluteBoundsForLocalRect(caretPosition().position().anchorNode(), localCaretRectWithoutUpdate());
 }
 
 void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor)
@@ -207,8 +209,8 @@ void FrameCaret::paintCaret(GraphicsContext& context, const LayoutPoint& paintOf
     if (!(isActive() && m_shouldPaintCaret))
         return;
 
-    updateCaretRect(m_caretPosition);
-    CaretBase::paintCaret(m_caretPosition.position().anchorNode(), context, paintOffset);
+    updateCaretRect(caretPosition());
+    CaretBase::paintCaret(caretPosition().position().anchorNode(), context, paintOffset);
 }
 
 void FrameCaret::dataWillChange(const CharacterData& node)
@@ -234,7 +236,6 @@ void FrameCaret::nodeWillBeRemoved(Node& node)
 
 void FrameCaret::documentDetached()
 {
-    m_caretPosition = PositionWithAffinity();
     m_caretBlinkTimer.stop();
     m_previousCaretNode.clear();
 }
@@ -247,7 +248,7 @@ bool FrameCaret::shouldBlinkCaret() const
     if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
         return false;
 
-    Element* root = rootEditableElementOf(m_caretPosition.position());
+    Element* root = rootEditableElementOf(caretPosition().position());
     if (!root)
         return false;
 
@@ -255,7 +256,7 @@ bool FrameCaret::shouldBlinkCaret() const
     if (!focusedElement)
         return false;
 
-    return focusedElement->isShadowIncludingInclusiveAncestorOf(m_caretPosition.position().anchorNode());
+    return focusedElement->isShadowIncludingInclusiveAncestorOf(caretPosition().position().anchorNode());
 }
 
 void FrameCaret::caretBlinkTimerFired(Timer<FrameCaret>*)

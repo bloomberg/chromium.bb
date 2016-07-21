@@ -9,6 +9,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/FrameCaret.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
@@ -38,6 +39,11 @@ protected:
 
     bool shouldPaintCaretForTesting() const { return selection().shouldPaintCaretForTesting(); }
     bool isPreviousCaretDirtyForTesting() const { return selection().isPreviousCaretDirtyForTesting(); }
+
+    PositionWithAffinity caretPosition() const
+    {
+        return selection().m_frameCaret->caretPosition();
+    }
 
 private:
     Persistent<Text> m_textNode;
@@ -271,6 +277,28 @@ TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot)
     document().replaceChild(select, document().documentElement());
     selection().selectAll();
     EXPECT_TRUE(selection().isNone()) << "Nothing should be selected if the content of the documentElement is not selctable.";
+}
+
+TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret)
+{
+    setBodyContent("<style id=sample></style>");
+    document().setDesignMode("on");
+    Element* sample = document().getElementById("sample");
+    setSelection(VisibleSelection(Position(sample, 0)));
+    EXPECT_EQ(Position(document().body(), 0), selection().start());
+    EXPECT_EQ(selection().start(), caretPosition().position());
+    document().body()->remove();
+    // TODO(yosin): Once lazy canonicalization implemented, selection.start
+    // should be Position(HTML, 0).
+    EXPECT_EQ(Position(document().documentElement(), 1), selection().start());
+    EXPECT_EQ(selection().start(), caretPosition().position());
+    selection().updateIfNeeded();
+
+    // TODO(yosin): Once lazy canonicalization implemented, selection.start
+    // should be Position(HTML, 0).
+    EXPECT_EQ(Position(), selection().start())
+        << "updateIfNeeded() makes selection to null.";
+    EXPECT_EQ(selection().start(), caretPosition().position());
 }
 
 } // namespace blink

@@ -26,19 +26,20 @@
 #ifndef FrameCaret_h
 #define FrameCaret_h
 
+#include "core/CoreExport.h"
 #include "core/editing/CaretBase.h"
 #include "platform/geometry/IntRect.h"
 
 namespace blink {
 
-class FrameCaret final : public CaretBase {
+class SelectionEditor;
+
+class CORE_EXPORT FrameCaret final : public CaretBase {
 public:
-    FrameCaret(LocalFrame*);
+    FrameCaret(LocalFrame*, const SelectionEditor&);
     ~FrameCaret() override;
 
-    void setCaretPosition(const PositionWithAffinity&);
-    void clear();
-    bool isActive() const { return m_caretPosition.isNotNull(); }
+    bool isActive() const { return caretPosition().isNotNull(); }
 
     void updateAppearance();
 
@@ -71,11 +72,15 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class FrameSelectionTest;
+
+    const PositionWithAffinity caretPosition() const;
+
     bool shouldBlinkCaret() const;
     void caretBlinkTimerFired(Timer<FrameCaret>*);
     bool caretPositionIsValidForDocument(const Document&) const;
 
-    PositionWithAffinity m_caretPosition;
+    const Member<const SelectionEditor> m_selectionEditor;
     const Member<LocalFrame> m_frame;
     // The last node which painted the caret. Retained for clearing the old
     // caret when it moves.
