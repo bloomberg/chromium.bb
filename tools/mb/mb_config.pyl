@@ -776,8 +776,15 @@
       'linux_chromium_webkit_msan_variable': 'findit',
       'linux_chromium_webkit_variable': 'findit',
       'linux_chromiumos_full_variable': 'findit',
-      'linux_nacl_sdk': 'gn_release_bot',
+
+      # This is 'release_bot' rather than 'release_trybot' because
+      # 'release_trybot' includes 'dcheck_always_on', which might cause
+      # some layout test results to be different than for normal release
+      # builds (and we only store baselines for release builds).
+      'linux_layout_tests_slimming_paint_v2': 'swarming_gn_release_bot',
+
       'linux_nacl_sdk_build': 'gn_release_bot',
+      'linux_nacl_sdk': 'gn_release_bot',
       'linux_optional_gpu_tests_rel':
         'swarming_gpu_fyi_tests_gn_release_trybot',
       'linux_site_isolation': 'gn_release_trybot',
