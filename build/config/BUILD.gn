@@ -389,6 +389,8 @@ config("executable_config") {
       "//build/config/mac:mac_dynamic_flags",
       "//build/config/mac:mac_executable_flags",
     ]
+  } else if (is_ios) {
+    configs += [ "//build/config/ios:ios_dynamic_flags" ]
   } else if (is_linux || is_android) {
     configs += [ "//build/config/gcc:executable_ldconfig" ]
     if (is_android) {
@@ -418,6 +420,8 @@ config("shared_library_config") {
     configs += _windows_linker_configs
   } else if (is_mac) {
     configs += [ "//build/config/mac:mac_dynamic_flags" ]
+  } else if (is_ios) {
+    configs += [ "//build/config/ios:ios_dynamic_flags" ]
   } else if (is_chromecast) {
     configs += [ "//build/config/chromecast:shared_library_config" ]
   }

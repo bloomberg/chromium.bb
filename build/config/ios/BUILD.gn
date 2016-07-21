@@ -37,3 +37,7 @@ config("runtime_library") {
     ]
   }
 }
+
+config("ios_dynamic_flags") {
+  ldflags = [ "-Wl,-ObjC" ]  # Always load Objective-C categories and class.
+}

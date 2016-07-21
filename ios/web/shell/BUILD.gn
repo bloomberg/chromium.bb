@@ -20,13 +20,6 @@ ios_app_bundle("ios_web_shell") {
     "//build/config/sanitizers:deps",
   ]
 
-  ldflags = [
-    "-Xlinker",
-    "-objc_abi_version",
-    "-Xlinker",
-    "2",
-  ]
-
   configs += [ "//build/config/compiler:enable_arc" ]
 
   assert_no_deps = ios_assert_no_deps

@@ -176,10 +176,6 @@ template("ios_app_bundle") {
         libs = []
       }
       libs += [ "UIKit.framework" ]
-      if (!defined(ldflags)) {
-        ldflags = []
-      }
-      ldflags += [ "-ObjC" ]
     }
   } else {
     # This is either a thin build or the default toolchain of a fat-build.
@@ -263,10 +259,6 @@ template("ios_app_bundle") {
         libs = []
       }
       libs += [ "UIKit.framework" ]
-      if (!defined(ldflags)) {
-        ldflags = []
-      }
-      ldflags += [ "-ObjC" ]
     }
 
     if (_is_fat_build) {
