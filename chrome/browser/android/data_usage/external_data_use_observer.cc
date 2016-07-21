@@ -67,6 +67,7 @@ ExternalDataUseObserver::ExternalDataUseObserver(
           new ExternalDataUseReporter(kExternalDataUseObserverFieldTrial,
                                       data_use_tab_model_,
                                       external_data_use_observer_bridge_)),
+      io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       last_matching_rules_fetch_time_(base::TimeTicks::Now()),
       fetch_matching_rules_duration_(
@@ -75,7 +76,7 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(data_use_aggregator_);
-  DCHECK(io_task_runner);
+  DCHECK(io_task_runner_);
   DCHECK(ui_task_runner_);
 
   // Initialize the ExternalDataUseReporter object. It is okay to use
@@ -92,7 +93,7 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserverBridge::Init,
                  base::Unretained(external_data_use_observer_bridge_),
-                 io_task_runner, GetWeakPtr(), data_use_tab_model_));
+                 io_task_runner_, GetWeakPtr(), data_use_tab_model_));
 }
 
 ExternalDataUseObserver::~ExternalDataUseObserver() {
@@ -126,6 +127,22 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(registered_as_data_use_observer_);
 
+  if (!data_use_list_) {
+    data_use_list_.reset(new std::deque<const data_usage::DataUse>());
+    // Post a task to the same IO thread, that will get invoked when some of the
+    // data use objects are batched.
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ExternalDataUseObserver::OnDataUseBatchComplete,
+                              GetWeakPtr()));
+  }
+
+  data_use_list_->push_back(data_use);
+}
+
+void ExternalDataUseObserver::OnDataUseBatchComplete() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(data_use_list_);
+
   const base::TimeTicks now_ticks = base::TimeTicks::Now();
 
   // If the time when the matching rules were last fetched is more than
@@ -138,9 +155,10 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   // It is okay to use base::Unretained here since |external_data_use_reporter_|
   // is owned by |this|, and is destroyed on UI thread when |this| is destroyed.
   ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalDataUseReporter::OnDataUse,
-                 base::Unretained(external_data_use_reporter_), data_use));
+      FROM_HERE, base::Bind(&ExternalDataUseReporter::OnDataUse,
+                            base::Unretained(external_data_use_reporter_),
+                            base::Passed(&data_use_list_)));
+  DCHECK(!data_use_list_);
 }
 
 void ExternalDataUseObserver::OnReportDataUseDone(bool success) {

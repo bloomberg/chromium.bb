@@ -130,20 +130,25 @@ ExternalDataUseReporter::~ExternalDataUseReporter() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void ExternalDataUseReporter::OnDataUse(const data_usage::DataUse& data_use) {
+void ExternalDataUseReporter::OnDataUse(
+    std::unique_ptr<const std::deque<const data_usage::DataUse>>
+        data_use_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(data_use_list);
 
   const base::Time now_time = base::Time::Now();
   DataUseTabModel::TrackingInfo tracking_info;
 
-  if (!data_use_tab_model_->GetTrackingInfoForTabAtTime(
-          data_use.tab_id, data_use.request_start, &tracking_info)) {
-    return;
-  }
+  for (const auto& data_use : *data_use_list) {
+    if (!data_use_tab_model_->GetTrackingInfoForTabAtTime(
+            data_use.tab_id, data_use.request_start, &tracking_info)) {
+      continue;
+    }
 
-  BufferDataUseReport(data_use, tracking_info.label, tracking_info.tag,
-                      previous_report_time_, now_time);
-  SubmitBufferedDataUseReport(false);
+    BufferDataUseReport(data_use, tracking_info.label, tracking_info.tag,
+                        previous_report_time_, now_time);
+    SubmitBufferedDataUseReport(false);
+  }
   previous_report_time_ = now_time;
 }
 
