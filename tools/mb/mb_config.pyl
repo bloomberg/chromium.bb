@@ -102,13 +102,13 @@
       'Chromium Linux Goma Canary (clobber)': 'gn_release_bot',
       'Chromium Linux Precise Goma LinkTest': 'gn_release_bot',
       'Chromium Linux32 Goma Canary (clobber)': 'gn_release_bot_x86',
-      'Chromium Mac 10.10 MacViews': 'mac_views_browser_gyp_release_bot',
-      'Chromium Mac 10.11': 'gyp_release_bot',
-      'Chromium Mac 10.11 Force Mac Toolchain': 'gyp_release_bot',
-      'Chromium Mac 10.9 Goma Canary': 'gyp_release_bot',
-      'Chromium Mac 10.9 Goma Canary (clobber)': 'gyp_release_bot',
-      'Chromium Mac 10.9 Goma Canary (dbg)': 'gyp_debug_bot',
-      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gyp_debug_bot',
+      'Chromium Mac 10.10 MacViews': 'mac_views_browser_gn_release_bot',
+      'Chromium Mac 10.11': 'gn_release_bot',
+      'Chromium Mac 10.11 Force Mac Toolchain': 'gn_release_bot',
+      'Chromium Mac 10.9 Goma Canary': 'gn_release_bot',
+      'Chromium Mac 10.9 Goma Canary (clobber)': 'gn_release_bot',
+      'Chromium Mac 10.9 Goma Canary (dbg)': 'gn_debug_bot',
+      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gn_debug_bot',
       'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
       'Chromium Windows Analyze': 'gn_windows_analyze',
@@ -142,10 +142,10 @@
       'ClangToTLinuxUBSanVptr':
         'swarming_gn_clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ClangToTLinuxUBSanVptr tester': 'none',
-      'ClangToTMac': 'swarming_gyp_clang_tot_minimal_symbols_shared_release',
+      'ClangToTMac': 'swarming_gn_clang_tot_minimal_symbols_shared_release',
       'ClangToTMac tester': 'none',
       'ClangToTMac (dbg)':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_debug',
+        'swarming_gn_clang_tot_minimal_symbols_shared_debug',
       'ClangToTMacASan':
         'swarming_gyp_asan_clang_tot_full_symbols_static_release',
       'ClangToTMacASan tester': 'none',
@@ -800,7 +800,7 @@
       'ios-simulator-cronet': 'ios_gyp',
       'ios-simulator-gn': 'ios_gn',
       'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
-      'mac_chromium_10.10_macviews': 'mac_views_browser_gyp_release_trybot',
+      'mac_chromium_10.10_macviews': 'mac_views_browser_gn_release_trybot',
       'mac_chromium_archive_rel_ng': 'noswarming_gn_release_bot_mac_strip',
       'mac_chromium_asan_rel_ng': 'swarming_asan_dcheck_gyp_release_bot',
       'mac_chromium_asan_variable': 'findit',
@@ -1306,10 +1306,6 @@
       'gyp', 'clang', 'minimal_symbols', 'shared_release_bot', 'x86',
     ],
 
-    'gyp_debug_bot': [
-      'gyp', 'debug_bot',
-    ],
-
     'gyp_debug_bot_minimal_symbols_x64': [
       'gyp', 'debug_bot_minimal_symbols', 'x64',
     ],
@@ -1372,10 +1368,6 @@
       'gyp', 'official', 'x64', 'six_concurrent_links',
     ],
 
-    'gyp_release_bot': [
-      'gyp', 'release_bot',
-    ],
-
     'gyp_release_bot_minimal_symbols_x86': [
       'gyp', 'release_bot_minimal_symbols', 'x86'
     ],
@@ -1417,12 +1409,12 @@
 
     'ios_gyp': ['gyp', 'error'],
 
-    'mac_views_browser_gyp_release_bot': [
-      'mac_views_browser', 'gyp', 'release_bot',
+    'mac_views_browser_gn_release_bot': [
+      'mac_views_browser', 'gn', 'release_bot',
     ],
 
-    'mac_views_browser_gyp_release_trybot': [
-      'mac_views_browser', 'gyp', 'release_trybot',
+    'mac_views_browser_gn_release_trybot': [
+      'mac_views_browser', 'gn', 'release_trybot',
     ],
 
     # This is used for tracking purposes; any bot that uses this config
@@ -1789,8 +1781,8 @@
       'swarming', 'gn', 'clang_tot', 'full_symbols', 'shared', 'release',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_debug': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
+    'swarming_gn_clang_tot_minimal_symbols_shared_debug': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
     ],
 
     'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x64': [
@@ -1823,8 +1815,8 @@
       'use_lld', 'x86',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_release': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'release',
+    'swarming_gn_clang_tot_minimal_symbols_shared_release': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'release',
     ],
 
     'swarming_gn_clang_tot_minimal_symbols_shared_release_x64': [
