@@ -99,6 +99,14 @@ public class SysUtils {
         return sLowEndDevice.booleanValue();
     }
 
+    /**
+     * Resets the cached value, if any.
+     */
+    @VisibleForTesting
+    public static void reset() {
+        sLowEndDevice = null;
+    }
+
     private static boolean detectLowEndDevice() {
         assert CommandLine.isInitialized();
         if (CommandLine.getInstance().hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)) {

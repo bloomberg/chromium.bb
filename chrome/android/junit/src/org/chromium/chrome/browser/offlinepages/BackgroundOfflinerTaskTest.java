@@ -13,17 +13,24 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
 import com.google.android.gms.gcm.Task;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.CommandLine;
+import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
 import org.chromium.net.ConnectionType;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +51,8 @@ public class BackgroundOfflinerTaskTest {
     private static final boolean REQUIRE_UNMETERED = true;
     private static final boolean POWER_CONNECTED = true;
     private static final int MINIMUM_BATTERY_LEVEL = 33;
+    private static final String IS_LOW_END_DEVICE_SWITCH =
+            "--" + BaseSwitches.ENABLE_LOW_END_DEVICE_MODE;
 
     @Mock
     private OfflinePageUtils mOfflinePageUtils;
@@ -55,6 +64,7 @@ public class BackgroundOfflinerTaskTest {
             new TriggerConditions(!REQUIRE_POWER, MINIMUM_BATTERY_LEVEL, REQUIRE_UNMETERED);
     private DeviceConditions mDeviceConditions = new DeviceConditions(
             !POWER_CONNECTED, MINIMUM_BATTERY_LEVEL + 5, ConnectionType.CONNECTION_3G);
+    private Activity mTestActivity;
 
     @Before
     public void setUp() throws Exception {
@@ -71,6 +81,23 @@ public class BackgroundOfflinerTaskTest {
         mStubBackgroundSchedulerProcessor = new StubBackgroundSchedulerProcessor();
         RecordHistogram.disableForTests();
         ShadowGcmNetworkManager.clear();
+
+        // Run tests as a low-end device.
+        CommandLine.init(new String[] {"testcommand", IS_LOW_END_DEVICE_SWITCH});
+
+        // Set up single, stopped Activity.
+        ApplicationStatus.destroyForJUnitTests();
+        mTestActivity = new Activity();
+        ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.CREATED);
+        ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STOPPED);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        // Clean up static state for subsequent Robolectric tests.
+        CommandLine.reset();
+        SysUtils.reset();
+        ApplicationStatus.destroyForJUnitTests();
     }
 
     @Test
@@ -133,6 +160,35 @@ public class BackgroundOfflinerTaskTest {
                 POWER_CONNECTED, MINIMUM_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI);
         when(mOfflinePageUtils.getDeviceConditionsImpl(any(Context.class)))
                 .thenReturn(deviceConditionsPowerConnected);
+        BackgroundOfflinerTask task2 =
+                new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
+        ChromeBackgroundServiceWaiter waiter2 = new ChromeBackgroundServiceWaiter(1);
+        assertTrue(task2.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter2));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testStartBackgroundRequestsForRunningActivityOnLowEndDevice() {
+        BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
+        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
+        assertNull("Nothing scheduled", ShadowGcmNetworkManager.getScheduledTask());
+
+        // Transition the test Activity to a running state.
+        ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STARTED);
+
+        assertFalse(task.startBackgroundRequests(Robolectric.application, mTaskExtras, waiter));
+
+        // Check that the backup task was scheduled.
+        Task gcmTask = ShadowGcmNetworkManager.getScheduledTask();
+        assertNotNull("Backup task scheduled", gcmTask);
+        assertEquals(mTriggerConditions,
+                TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
+
+        // Check that startProcessing was NOT called.
+        assertFalse(mStubBackgroundSchedulerProcessor.getStartProcessingCalled());
+
+        // Now verify will start processing when Activity is stopped.
+        ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STOPPED);
         BackgroundOfflinerTask task2 =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter2 = new ChromeBackgroundServiceWaiter(1);

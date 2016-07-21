@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.offlinepages;
 import android.content.Context;
 import android.os.Bundle;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
 import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerProcessor;
@@ -48,6 +50,11 @@ public class BackgroundOfflinerTask {
                 && currentConditions.getBatteryPercentage()
                         < previousTriggerConditions.getMinimumBatteryPercentage()) {
             Log.d(TAG, "Battery percentage is lower than minimum to start processing");
+            return false;
+        }
+
+        if (SysUtils.isLowEndDevice() && ApplicationStatus.hasVisibleActivities()) {
+            Log.d(TAG, "Application visible on low-end device so deferring background processing");
             return false;
         }
 
