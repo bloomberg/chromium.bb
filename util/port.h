@@ -18,9 +18,8 @@
 #define UTIL_PORT_H_
 
 #include <stdarg.h>
-#include "util/build_config.h"
 
-#ifdef COMPILER_MSVC
+#if defined(_MSC_VER)
 #define GG_LONGLONG(x) x##I64
 #define GG_ULONGLONG(x) x##UI64
 #else
@@ -45,7 +44,7 @@
 #define GG_UINT64_C(x)  GG_ULONGLONG(x)
 
 // Define an OS-neutral wrapper for shared library entry points
-#if defined(OS_WIN)
+#if defined(_WIN32)
 #define API_CALL __stdcall
 #else
 #define API_CALL
