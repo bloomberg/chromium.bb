@@ -141,25 +141,33 @@ const InterpKernel *av1_filter_kernels[4] = { sub_pel_filters_8,
                                               sub_pel_filters_8sharp,
                                               bilinear_filters };
 #if CONFIG_EXT_INTERP
-static const InterpFilterParams
-    interp_filter_params_list[SWITCHABLE_FILTERS + 1] = {
-      { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS },
-      { (const int16_t *)sub_pel_filters_8smooth, SUBPEL_TAPS, SUBPEL_SHIFTS },
-      { (const int16_t *)sub_pel_filters_10sharp, 10, SUBPEL_SHIFTS },
-      { (const int16_t *)sub_pel_filters_8smooth2, SUBPEL_TAPS, SUBPEL_SHIFTS },
-      { (const int16_t *)sub_pel_filters_12sharp, 12, SUBPEL_SHIFTS },
-      { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS }
-    };
+static const InterpFilterParams interp_filter_params_list[SWITCHABLE_FILTERS +
+                                                          1] = {
+  { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS, EIGHTTAP },
+  { (const int16_t *)sub_pel_filters_8smooth, SUBPEL_TAPS, SUBPEL_SHIFTS,
+    EIGHTTAP_SMOOTH },
+  { (const int16_t *)sub_pel_filters_10sharp, 10, SUBPEL_SHIFTS,
+    MULTITAP_SHARP },
+  { (const int16_t *)sub_pel_filters_8smooth2, SUBPEL_TAPS, SUBPEL_SHIFTS,
+    EIGHTTAP_SMOOTH2 },
+  { (const int16_t *)sub_pel_filters_12sharp, 12, SUBPEL_SHIFTS,
+    MULTITAP_SHARP2 },
+  { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS, BILINEAR }
+};
 #else   // CONFIG_EXT_INTERP
-static const InterpFilterParams
-    interp_filter_params_list[SWITCHABLE_FILTERS + 1] = {
-      { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS },
-      { (const int16_t *)sub_pel_filters_8smooth, SUBPEL_TAPS, SUBPEL_SHIFTS },
-      { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS },
-      { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS }
-    };
+static const InterpFilterParams interp_filter_params_list[SWITCHABLE_FILTERS +
+                                                          1] = {
+  { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS, EIGHTTAP },
+  { (const int16_t *)sub_pel_filters_8smooth, SUBPEL_TAPS, SUBPEL_SHIFTS,
+    EIGHTTAP_SMOOTH },
+  { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS,
+    EIGHTTAP_SHARP },
+  { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS, BILINEAR }
+};
 #endif  // CONFIG_EXT_INTERP
 
 InterpFilterParams get_interp_filter_params(InterpFilter interp_filter) {
-  return interp_filter_params_list[interp_filter];
+  InterpFilterParams params = interp_filter_params_list[interp_filter];
+  assert(params.interp_filter == interp_filter);
+  return params;
 }

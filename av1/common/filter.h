@@ -57,6 +57,7 @@ typedef struct InterpFilterParams {
   const int16_t* filter_ptr;
   uint16_t taps;
   uint16_t subpel_shifts;
+  InterpFilter interp_filter;
 } InterpFilterParams;
 
 static INLINE const int16_t* get_interp_filter_subpel_kernel(

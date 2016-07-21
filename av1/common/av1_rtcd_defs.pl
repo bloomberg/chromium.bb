@@ -17,6 +17,7 @@ struct search_site_config;
 struct mv;
 union int_mv;
 struct yv12_buffer_config;
+struct InterpFilterParams;
 EOF
 }
 forward_decls qw/av1_common_forward_decls/;
@@ -52,6 +53,19 @@ if ($opts{arch} eq "x86_64") {
   $ssse3_x86_64 = 'ssse3';
   $avx_x86_64 = 'avx';
   $avx2_x86_64 = 'avx2';
+}
+
+add_proto qw/void av1_convolve_horiz/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const struct InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg";
+specialize qw/av1_convolve_horiz ssse3/;
+
+add_proto qw/void av1_convolve_vert/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const struct InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg";
+specialize qw/av1_convolve_vert ssse3/;
+
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+  add_proto qw/void av1_highbd_convolve_horiz/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const struct InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg, int bd";
+  specialize qw/av1_highbd_convolve_horiz sse4_1/;
+  add_proto qw/void av1_highbd_convolve_vert/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const struct InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg, int bd";
+  specialize qw/av1_highbd_convolve_vert sse4_1/;
 }
 
 #
