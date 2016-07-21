@@ -8,6 +8,8 @@ component("win") {
   defines = [ "MF_INITIALIZER_IMPLEMENTATION" ]
   set_sources_assignment_filter([])
   sources = [
+    "mf_helpers.cc",
+    "mf_helpers.h",
     "mf_initializer.cc",
     "mf_initializer.h",
     "mf_initializer_export.h",

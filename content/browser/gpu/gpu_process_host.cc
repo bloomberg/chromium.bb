@@ -120,6 +120,7 @@ static const char* const kSwitchNames[] = {
 #endif
 #if defined(OS_WIN)
   switches::kEnableAcceleratedVpxDecode,
+  switches::kEnableMFH264Encoding,
 #endif
   switches::kEnableHeapProfiling,
   switches::kEnableLogging,
