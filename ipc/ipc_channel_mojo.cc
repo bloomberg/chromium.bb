@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/process/process_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_listener.h"
@@ -269,13 +270,11 @@ ChannelMojo::ChannelMojo(
     Mode mode,
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
-    : pipe_(handle.get()),
-      listener_(listener),
-      waiting_connect_(true),
-      weak_factory_(this) {
+    : pipe_(handle.get()), listener_(listener), weak_factory_(this) {
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
-  bootstrap_ = MojoBootstrap::Create(std::move(handle), mode, this);
+  bootstrap_ =
+      MojoBootstrap::Create(std::move(handle), mode, this, ipc_task_runner);
 }
 
 ChannelMojo::~ChannelMojo() {
@@ -284,89 +283,32 @@ ChannelMojo::~ChannelMojo() {
 
 bool ChannelMojo::Connect() {
   WillConnect();
-  {
-    base::AutoLock lock(lock_);
-    DCHECK(!task_runner_);
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    DCHECK(!message_reader_);
-  }
+
+  DCHECK(!task_runner_);
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(!message_reader_);
+
   bootstrap_->Connect();
   return true;
 }
 
 void ChannelMojo::Close() {
-  std::unique_ptr<internal::MessagePipeReader, ReaderDeleter> reader;
-  {
-    base::AutoLock lock(lock_);
-    if (!message_reader_)
-      return;
-    // The reader's destructor may re-enter Close, so we swap it out first to
-    // avoid deadlock when freeing it below.
-    std::swap(message_reader_, reader);
-
-    // We might Close() before we Connect().
-    waiting_connect_ = false;
-  }
-
+  // NOTE: The MessagePipeReader's destructor may re-enter this function. Use
+  // caution when changing this method.
+  std::unique_ptr<internal::MessagePipeReader> reader =
+      std::move(message_reader_);
   reader.reset();
+
+  base::AutoLock lock(associated_interface_lock_);
+  associated_interfaces_.clear();
 }
 
 // MojoBootstrap::Delegate implementation
-void ChannelMojo::OnPipesAvailable(
-    mojom::ChannelAssociatedPtrInfo send_channel,
-    mojom::ChannelAssociatedRequest receive_channel,
-    int32_t peer_pid) {
-  InitMessageReader(std::move(send_channel), std::move(receive_channel),
-                    peer_pid);
-}
-
-void ChannelMojo::OnBootstrapError() {
-  listener_->OnChannelError();
-}
-
-void ChannelMojo::OnAssociatedInterfaceRequest(
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  auto iter = associated_interfaces_.find(name);
-  if (iter != associated_interfaces_.end())
-    iter->second.Run(std::move(handle));
-}
-
-void ChannelMojo::InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
-                                    mojom::ChannelAssociatedRequest receiver,
-                                    base::ProcessId peer_pid) {
-  mojom::ChannelAssociatedPtr sender_ptr;
-  sender_ptr.Bind(std::move(sender));
-  std::unique_ptr<internal::MessagePipeReader, ChannelMojo::ReaderDeleter>
-      reader(new internal::MessagePipeReader(
-          pipe_, std::move(sender_ptr), std::move(receiver), peer_pid, this));
-
-  bool connected = true;
-  {
-    base::AutoLock lock(lock_);
-    for (size_t i = 0; i < pending_messages_.size(); ++i) {
-      if (!reader->Send(std::move(pending_messages_[i]))) {
-        LOG(ERROR) << "Failed to flush pending messages";
-        pending_messages_.clear();
-        connected = false;
-        break;
-      }
-    }
-
-    if (connected) {
-      // We set |message_reader_| here and won't get any |pending_messages_|
-      // hereafter. Although we might have some if there is an error, we don't
-      // care. They cannot be sent anyway.
-      message_reader_ = std::move(reader);
-      pending_messages_.clear();
-      waiting_connect_ = false;
-    }
-  }
-
-  if (connected)
-    listener_->OnChannelConnected(static_cast<int32_t>(GetPeerPID()));
-  else
-    OnPipeError();
+void ChannelMojo::OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
+                                   mojom::ChannelAssociatedRequest receiver) {
+  sender->SetPeerPid(GetSelfPID());
+  message_reader_.reset(new internal::MessagePipeReader(
+      pipe_, std::move(sender), std::move(receiver), this));
 }
 
 void ChannelMojo::OnPipeError() {
@@ -380,14 +322,25 @@ void ChannelMojo::OnPipeError() {
   }
 }
 
-bool ChannelMojo::Send(Message* message) {
-  base::AutoLock lock(lock_);
-  if (!message_reader_) {
-    pending_messages_.push_back(base::WrapUnique(message));
-    // Counts as OK before the connection is established, but it's an
-    // error otherwise.
-    return waiting_connect_;
+void ChannelMojo::OnAssociatedInterfaceRequest(
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  GenericAssociatedInterfaceFactory factory;
+  {
+    base::AutoLock locker(associated_interface_lock_);
+    auto iter = associated_interfaces_.find(name);
+    if (iter != associated_interfaces_.end())
+      factory = iter->second;
   }
+
+  if (!factory.is_null())
+    factory.Run(std::move(handle));
+}
+
+bool ChannelMojo::Send(Message* message) {
+  std::unique_ptr<Message> scoped_message = base::WrapUnique(message);
+  if (!message_reader_)
+    return false;
 
   // Comment copied from ipc_channel_posix.cc:
   // We can't close the pipe here, because calling OnChannelError may destroy
@@ -398,7 +351,7 @@ bool ChannelMojo::Send(Message* message) {
   //
   // With Mojo, there's no OnFileCanReadWithoutBlocking, but we expect the
   // pipe's connection error handler will be invoked in its place.
-  return message_reader_->Send(base::WrapUnique(message));
+  return message_reader_->Send(std::move(scoped_message));
 }
 
 bool ChannelMojo::IsSendThreadSafe() const {
@@ -406,19 +359,29 @@ bool ChannelMojo::IsSendThreadSafe() const {
 }
 
 base::ProcessId ChannelMojo::GetPeerPID() const {
-  base::AutoLock lock(lock_);
   if (!message_reader_)
     return base::kNullProcessId;
-
   return message_reader_->GetPeerPid();
 }
 
 base::ProcessId ChannelMojo::GetSelfPID() const {
-  return bootstrap_->GetSelfPID();
+#if defined(OS_LINUX)
+  if (int global_pid = GetGlobalPid())
+    return global_pid;
+#endif  // OS_LINUX
+#if defined(OS_NACL)
+  return -1;
+#else
+  return base::GetCurrentProcId();
+#endif  // defined(OS_NACL)
 }
 
 Channel::AssociatedInterfaceSupport*
 ChannelMojo::GetAssociatedInterfaceSupport() { return this; }
+
+void ChannelMojo::OnPeerPidReceived() {
+  listener_->OnChannelConnected(static_cast<int32_t>(GetPeerPID()));
+}
 
 void ChannelMojo::OnMessageReceived(const Message& message) {
   TRACE_EVENT2("ipc,toplevel", "ChannelMojo::OnMessageReceived",
@@ -504,6 +467,7 @@ mojo::AssociatedGroup* ChannelMojo::GetAssociatedGroup() {
 void ChannelMojo::AddGenericAssociatedInterface(
     const std::string& name,
     const GenericAssociatedInterfaceFactory& factory) {
+  base::AutoLock locker(associated_interface_lock_);
   auto result = associated_interfaces_.insert({ name, factory });
   DCHECK(result.second);
 }
@@ -511,14 +475,8 @@ void ChannelMojo::AddGenericAssociatedInterface(
 void ChannelMojo::GetGenericRemoteAssociatedInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  DCHECK(message_reader_);
-  message_reader_->GetRemoteInterface(name, std::move(handle));
-}
-
-void ChannelMojo::SetProxyTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(bootstrap_);
-  bootstrap_->SetProxyTaskRunner(task_runner);
+  if (message_reader_)
+    message_reader_->GetRemoteInterface(name, std::move(handle));
 }
 
 }  // namespace IPC

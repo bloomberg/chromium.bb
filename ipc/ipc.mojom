@@ -22,17 +22,13 @@ struct SerializedHandle {
 interface GenericInterface {};
 
 interface Channel {
+  // Informs the remote end of this client's PID. Must be called exactly once,
+  // before any calls to Receive() below.
+  SetPeerPid(int32 pid);
+
+  // Transmits a classical Chrome IPC message.
   Receive(array<uint8> data, array<SerializedHandle>? handles);
 
+  // Requests a Channel-associated interface.
   GetAssociatedInterface(string name, associated GenericInterface& request);
-};
-
-// An interface for connecting a pair of Channel interfaces representing a
-// bidirectional IPC channel.
-interface Bootstrap {
-  // Initializes a Chrome IPC channel over |to_client_channel| and
-  // |to_server_channel|. Each side also sends its PID to the other side.
-  Init(associated Channel& to_client_channel,
-       associated Channel to_server_channel,
-       int32 pid) => (int32 pid);
 };
