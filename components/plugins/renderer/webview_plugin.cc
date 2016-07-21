@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -60,7 +61,8 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
       finished_loading_(false),
       focused_(false),
       is_painting_(false),
-      is_resizing_(false) {
+      is_resizing_(false),
+      weak_factory_(this) {
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
@@ -86,6 +88,7 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
 }
 
 WebViewPlugin::~WebViewPlugin() {
+  DCHECK(!weak_factory_.HasWeakPtrs());
   web_frame_widget_->close();
   web_view_->close();
   web_frame_->close();
@@ -152,6 +155,8 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
 }
 
 void WebViewPlugin::destroy() {
+  weak_factory_.InvalidateWeakPtrs();
+
   if (delegate_) {
     delegate_->PluginDestroyed();
     delegate_ = nullptr;
@@ -202,22 +207,14 @@ void WebViewPlugin::updateGeometry(const WebRect& window_rect,
                                    const WebRect& unobscured_rect,
                                    const WebVector<WebRect>& cut_outs_rects,
                                    bool is_visible) {
-  base::AutoReset<bool> is_resizing(
-        &is_resizing_, true);
+  DCHECK(container_);
 
-  if (static_cast<gfx::Rect>(window_rect) != rect_) {
-    rect_ = window_rect;
-    WebSize newSize(window_rect.width, window_rect.height);
-    web_view_->resize(newSize);
-  }
-
-  if (delegate_) {
-    delegate_->OnUnobscuredRectUpdate(gfx::Rect(unobscured_rect));
-    // The delegate may have dirtied style and layout of the WebView.
-    // See for example the resizePoster function in plugin_poster.html.
-    // Run the lifecycle now so that it is clean.
-    web_view_->updateAllLifecyclePhases();
-  }
+  // Plugin updates are forbidden during Blink layout. Therefore,
+  // UpdatePluginForNewGeometry must be posted to a task to run asynchronously.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebViewPlugin::UpdatePluginForNewGeometry,
+                 weak_factory_.GetWeakPtr(), window_rect, unobscured_rect));
 }
 
 void WebViewPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {
@@ -344,5 +341,26 @@ void WebViewPlugin::OnZoomLevelChanged() {
   if (container_) {
     web_view_->setZoomLevel(
       blink::WebView::zoomFactorToZoomLevel(container_->pageZoomFactor()));
+  }
+}
+
+void WebViewPlugin::UpdatePluginForNewGeometry(
+    const blink::WebRect& window_rect,
+    const blink::WebRect& unobscured_rect) {
+  DCHECK(container_);
+
+  base::AutoReset<bool> is_resizing(&is_resizing_, true);
+
+  if (static_cast<gfx::Rect>(window_rect) != rect_) {
+    rect_ = window_rect;
+    web_view_->resize(rect_.size());
+  }
+
+  if (delegate_) {
+    delegate_->OnUnobscuredRectUpdate(gfx::Rect(unobscured_rect));
+    // The delegate may have dirtied style and layout of the WebView.
+    // See for example the resizePoster function in plugin_poster.html.
+    // Run the lifecycle now so that it is clean.
+    web_view_->updateAllLifecyclePhases();
   }
 }

@@ -8,6 +8,7 @@
 #include <list>
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -154,6 +155,9 @@ class WebViewPlugin : public blink::WebPlugin,
   void OnDestruct() override;
   void OnZoomLevelChanged() override;
 
+  void UpdatePluginForNewGeometry(const blink::WebRect& window_rect,
+                                  const blink::WebRect& unobscured_rect);
+
   // Manages its own lifetime.
   Delegate* delegate_;
 
@@ -180,6 +184,9 @@ class WebViewPlugin : public blink::WebPlugin,
   bool focused_;
   bool is_painting_;
   bool is_resizing_;
+
+  // Should be invalidated when destroy() is called.
+  base::WeakPtrFactory<WebViewPlugin> weak_factory_;
 };
 
 #endif  // COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_
