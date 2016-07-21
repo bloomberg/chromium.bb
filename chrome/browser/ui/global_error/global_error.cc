@@ -30,8 +30,8 @@ gfx::Image GlobalError::MenuItemIcon() {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INPUT_ALERT_MENU);
 #else
-  return gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 18,
-                                          gfx::kGoogleYellow700));
+  return gfx::Image(gfx::CreateVectorIcon(
+      gfx::VectorIconId::BROWSER_TOOLS_ERROR, gfx::kGoogleYellow700));
 #endif
 }
 

@@ -166,10 +166,8 @@ void AppMenuButton::UpdateIcon() {
       icon_id = gfx::VectorIconId::BROWSER_TOOLS_UPDATE;
       break;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
-      icon_id = gfx::VectorIconId::BROWSER_TOOLS_ERROR;
-      break;
     case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
-      icon_id = gfx::VectorIconId::BROWSER_TOOLS_WARNING;
+      icon_id = gfx::VectorIconId::BROWSER_TOOLS_ERROR;
       break;
   }
 

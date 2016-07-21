@@ -60,9 +60,8 @@ class AppMenuButtonIconPainterDelegateMac :
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
       return gfx::VectorIconId::BROWSER_TOOLS_UPDATE;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
-      return gfx::VectorIconId::BROWSER_TOOLS_ERROR;
     case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
-      return gfx::VectorIconId::BROWSER_TOOLS_WARNING;
+      return gfx::VectorIconId::BROWSER_TOOLS_ERROR;
   }
 
   return gfx::VectorIconId::VECTOR_ICON_NONE;
