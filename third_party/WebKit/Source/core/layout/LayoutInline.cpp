@@ -1078,19 +1078,13 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     if (!container)
         return true;
 
-    LayoutPoint topLeft = rect.location();
-
     if (style()->hasInFlowPosition() && layer()) {
         // Apply the in-flow position offset when invalidating a rectangle. The layer
         // is translated, but the layout box isn't, so we need to do this to get the
         // right dirty rect. Since this is called from LayoutObject::setStyle, the relative position
         // flag on the LayoutObject has been cleared, so use the one on the style().
-        topLeft += layer()->offsetForInFlowPosition();
+        rect.move(layer()->offsetForInFlowPosition());
     }
-
-    // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
-    // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
-    rect.setLocation(topLeft);
 
     LayoutBox* containerBox = container->isBox() ? toLayoutBox(container) : nullptr;
     if (containerBox && !containerBox->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
