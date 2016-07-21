@@ -11,9 +11,6 @@
               <item android:id="@+id/forward_menu_id"
                 android:title="@string/accessibility_menu_forward"
                 android:icon="@drawable/btn_forward"/>
-              <item android:id="@+id/bookmark_this_page_id"
-                android:title="@string/accessibility_menu_bookmark"
-                android:icon="@drawable/btn_star"/>
               <item android:id="@+id/info_menu_id"
                 android:title="@string/accessibility_menu_info"
                 android:icon="@drawable/btn_info" />
@@ -32,9 +29,6 @@
                 android:title="@null" />
           </menu>
         </item>
-        <item android:id="@+id/find_in_page_id"
-            android:title="@string/menu_find_in_page"
-            android:orderInCategory="2" />
         <!-- Title is intentionally left blank in xml and will be set in java. -->
         <item android:id="@+id/open_in_browser_id"
             android:title=""

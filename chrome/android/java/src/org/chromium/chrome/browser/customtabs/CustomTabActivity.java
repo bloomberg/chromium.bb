@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -500,7 +499,6 @@ public class CustomTabActivity extends ChromeActivity {
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
-                mIntentDataProvider.shouldShowBookmarkMenuItem(),
                 mIntentDataProvider.isOpenedByChrome());
     }
 
@@ -636,9 +634,6 @@ public class CustomTabActivity extends ChromeActivity {
                 || id == R.id.recent_tabs_menu_id || id == R.id.new_incognito_tab_menu_id
                 || id == R.id.new_tab_menu_id || id == R.id.open_history_menu_id) {
             return true;
-        } else if (id == R.id.bookmark_this_page_id
-                && !mIntentDataProvider.shouldShowBookmarkMenuItem()) {
-            return true;
         } else if (id == R.id.open_in_browser_id) {
             openCurrentUrlInBrowser(false, true);
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
@@ -646,17 +641,6 @@ public class CustomTabActivity extends ChromeActivity {
         } else if (id == R.id.read_it_later_id) {
             openCurrentUrlInBrowser(false, false);
             RecordUserAction.record("CustomTabsMenuReadItLater");
-            return true;
-        } else if (id == R.id.find_in_page_id) {
-            mFindToolbarManager.showToolbar();
-            if (getContextualSearchManager() != null) {
-                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
-            }
-            if (fromMenu) {
-                RecordUserAction.record("MobileMenuFindInPage");
-            } else {
-                RecordUserAction.record("MobileShortcutFindInPage");
-            }
             return true;
         } else if (id == R.id.info_menu_id) {
             if (getTabModelSelector().getCurrentTab() == null) return false;

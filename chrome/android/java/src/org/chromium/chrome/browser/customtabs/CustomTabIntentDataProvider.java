@@ -56,12 +56,6 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_IS_OPENED_BY_CHROME =
             "org.chromium.chrome.browser.customtabs.IS_OPENED_BY_CHROME";
 
-    /**
-     * Herb: Extra used by the main Chrome browser to enable the bookmark icon in the menu.
-     */
-    public static final String EXTRA_SHOW_STAR_ICON =
-            "org.chromium.chrome.browser.customtabs.SHOW_STAR_ICON";
-
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
     private static final String ANIMATION_BUNDLE_PREFIX =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? "android:activity." : "android:";
@@ -91,9 +85,6 @@ public class CustomTabIntentDataProvider {
 
     /** Herb: Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private boolean mIsOpenedByChrome;
-
-    /** Herb: Whether or not the bookmark button should be shown. */
-    private boolean mShowBookmarkItem;
 
     /**
      * Constructs a {@link CustomTabIntentDataProvider}.
@@ -250,13 +241,6 @@ public class CustomTabIntentDataProvider {
      */
     public boolean shouldShowShareMenuItem() {
         return mShowShareItem;
-    }
-
-    /**
-     * @return Whether the bookmark item should be shown in the menu.
-     */
-    public boolean shouldShowBookmarkMenuItem() {
-        return mShowBookmarkItem;
     }
 
     /**
@@ -447,7 +431,5 @@ public class CustomTabIntentDataProvider {
 
         mIsOpenedByChrome = IntentUtils.safeGetBooleanExtra(
                 intent, EXTRA_IS_OPENED_BY_CHROME, false);
-        mShowBookmarkItem = IntentUtils.safeGetBooleanExtra(
-                intent, EXTRA_SHOW_STAR_ICON, false);
     }
 }

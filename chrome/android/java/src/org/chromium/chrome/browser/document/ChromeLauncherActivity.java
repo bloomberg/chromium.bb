@@ -383,7 +383,6 @@ public class ChromeLauncherActivity extends Activity
 
         newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
-        newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_SHOW_STAR_ICON, true);
 
         // Mark this as a trusted Chrome Intent.
         IntentHandler.addTrustedIntentExtras(newIntent, context);

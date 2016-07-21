@@ -110,7 +110,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
     private static final String READ_IT_LATER_FEATURE = "ReadItLaterInMenu";
     private static final int MAX_MENU_CUSTOM_ITEMS = 5;
-    private static final int NUM_CHROME_MENU_ITEMS = 3;
+    private static final int NUM_CHROME_MENU_ITEMS = 2;
     private static final String
             TEST_ACTION = "org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT";
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
@@ -357,11 +357,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertNotNull(menu.findItem(R.id.forward_menu_id));
         assertNotNull(menu.findItem(R.id.info_menu_id));
         assertNotNull(menu.findItem(R.id.reload_menu_id));
-        assertNotNull(menu.findItem(R.id.find_in_page_id));
         assertNotNull(menu.findItem(R.id.open_in_browser_id));
         assertFalse(menu.findItem(R.id.share_row_menu_id).isVisible());
         assertFalse(menu.findItem(R.id.share_row_menu_id).isEnabled());
         assertNull(menu.findItem(R.id.bookmark_this_page_id));
+        assertNull(menu.findItem(R.id.find_in_page_id));
     }
 
     /**

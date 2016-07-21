@@ -33,7 +33,6 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     private static final String SAMPLE_URL = "https://www.google.com";
 
     private final boolean mShowShare;
-    private final boolean mShowBookmark;
     private final List<String> mMenuEntries;
     private final Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
     private final AsyncTask<Void, Void, String> mDefaultBrowserFetcher;
@@ -44,12 +43,10 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
     public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
-            List<String> menuEntries, boolean showShare, boolean showBookmark,
-            final boolean isOpenedByChrome) {
+            List<String> menuEntries, boolean showShare, final boolean isOpenedByChrome) {
         super(activity);
         mMenuEntries = menuEntries;
         mShowShare = showShare;
-        mShowBookmark = showBookmark;
 
         mDefaultBrowserFetcher = new AsyncTask<Void, Void, String>() {
             @Override
@@ -92,16 +89,6 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             if (mShowShare) {
                 ShareHelper.configureDirectShareMenuItem(
                         mActivity, menu.findItem(R.id.direct_share_menu_id));
-            }
-
-            if (mShowBookmark) {
-                MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
-                updateBookmarkMenuItem(bookmarkItem, currentTab);
-            } else {
-                // Because we have custom logic for laying out the icon row, the bookmark icon must
-                // be explicitly removed instead of just made invisible.
-                menu.findItem(R.id.icon_row_menu_id).getSubMenu().removeItem(
-                        R.id.bookmark_this_page_id);
             }
 
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
