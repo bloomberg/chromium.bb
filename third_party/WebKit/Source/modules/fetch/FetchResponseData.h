@@ -59,6 +59,8 @@ public:
     FetchHeaderList* headerList() const { return m_headerList.get(); }
     BodyStreamBuffer* buffer() const { return m_buffer; }
     String mimeType() const;
+    // Returns the BodyStreamBuffer of |m_internalResponse| if any. Otherwise,
+    // returns |m_buffer|.
     BodyStreamBuffer* internalBuffer() const;
     String internalMIMEType() const;
     int64_t responseTime() const { return m_responseTime; }
