@@ -89,57 +89,44 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
   # Package all builds in the output directory
   os.makedirs(out_dir)
   build_dir = ''
-  for (build_config, is_debug) in [('Debug', 'true'),
-                                   ('Release', 'false')]:
-    for (target_device, target_cpus) in [('simulator', ['x86', 'x64']),
-                                         ('os', ['arm', 'arm64'])]:
-      build_dirs = []
-      # Build every architecture separately until gn supports fat builds.
-      for target_cpu in target_cpus:
-        build_dir = 'out/cronet_%s_%s' % (build_config, target_cpu)
-        build_dirs.append(build_dir)
-        gn_args = 'target_os="ios" enable_websockets=false ' \
-                  'disable_file_support=true disable_ftp_support=true ' \
-                  'use_platform_icu_alternatives=true ' \
-                  'disable_brotli_filter=true ' \
-                  'target_cpu="%s" is_debug=%s' % (target_cpu, is_debug)
-
-        print 'Generating Ninja ' + gn_args
-        gn_result = run('gn gen %s --args=\'%s\'' % (build_dir, gn_args))
-        if gn_result != 0:
-          return gn_result
-
-        print 'Building ' + build_dir
-        build_result = run('ninja -C %s cronet_package' % build_dir,
-                           extra_options)
-        if build_result != 0:
-          return build_result
-
-      # Copy first framework.
+  for (build_config, gn_extra_args) in [('Debug', 'is_debug=true'),
+        ('Release', 'is_debug=false enable_dsyms=true enable_stripping=true')]:
+    for (target_device, target_cpu, additional_cpu) in [('os', 'arm', 'arm64'),
+        ('simulator', 'x86', 'x64')]:
       target_dir = '%s-iphone%s' % (build_config, target_device)
-      shutil.copytree(os.path.join(build_dirs[0], 'Cronet.framework'),
+      build_dir = os.path.join("out", target_dir)
+      gn_args = 'target_os="ios" enable_websockets=false ' \
+                'disable_file_support=true disable_ftp_support=true ' \
+                'use_platform_icu_alternatives=true ' \
+                'disable_brotli_filter=true ' \
+                'target_cpu="%s" additional_target_cpus = ["%s"] %s' % \
+                (target_cpu, additional_cpu, gn_extra_args)
+
+      print 'Generating Ninja ' + gn_args
+      gn_result = run('gn gen %s --args=\'%s\'' % (build_dir, gn_args))
+      if gn_result != 0:
+        return gn_result
+
+      print 'Building ' + build_dir
+      build_result = run('ninja -C %s cronet_package' % build_dir,
+                         extra_options)
+      if build_result != 0:
+        return build_result
+
+      # Copy framework.
+      shutil.copytree(os.path.join(build_dir, 'Cronet.framework'),
                       os.path.join(out_dir, target_dir, 'Cronet.framework'))
-      # Lipo first and second cpu.
-      lipo_result = run('lipo -create %s %s -output %s' %
-           (os.path.join(build_dirs[0], 'Cronet.framework/Cronet'),
-            os.path.join(build_dirs[1], 'Cronet.framework/Cronet'),
-            os.path.join(out_dir, target_dir, 'Cronet.framework/Cronet')))
-      if lipo_result != 0:
-        return lipo_result
-      # Extract and strip symbols from release binaries.
+      # Copy symbols from release binaries.
       if 'Release' in build_config:
-        run('dsymutil -o=%s -minimize %s' %
-            (os.path.join(out_dir, target_dir, 'Cronet.framework.dSYM'),
-             os.path.join(out_dir, target_dir, 'Cronet.framework/Cronet')))
-        run('strip -x %s' %
-             os.path.join(out_dir, target_dir, 'Cronet.framework/Cronet'))
+        shutil.copytree(os.path.join(build_dir, 'Cronet.dSYM'),
+            os.path.join(out_dir, target_dir, 'Cronet.framework.dSYM'))
 
   # Copy common files from last built package.
   package_dir = os.path.join(build_dir, 'cronet')
   shutil.copy2(os.path.join(package_dir, 'AUTHORS'), out_dir)
   shutil.copy2(os.path.join(package_dir, 'LICENSE'), out_dir)
   shutil.copy2(os.path.join(package_dir, 'VERSION'), out_dir)
-  # Copy the headers
+  # Copy the headers.
   shutil.copytree(os.path.join(build_dir,
                                'Cronet.framework', 'Headers'),
                   os.path.join(out_dir, 'Headers'))

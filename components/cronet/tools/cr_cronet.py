@@ -80,6 +80,7 @@ def main():
     target_os = 'ios'
     test_target = 'cronet_test'
     gn_args = 'target_cpu = "x64" '
+    gn_extra = '--ide=xcode'
     out_dir_suffix = '-iphonesimulator'
     if options.iphoneos:
       gn_args = 'target_cpu = "arm64" '
@@ -88,6 +89,7 @@ def main():
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
     gn_args = 'use_errorprone_java_compiler=true '
+    gn_extra = ''
     out_dir_suffix = ''
 
   gyp_defines = 'GYP_DEFINES="OS=' + target_os + ' enable_websockets=0 '+ \
@@ -117,7 +119,7 @@ def main():
   if (options.command=='gyp'):
     return run (gyp_defines + ' gclient runhooks')
   if (options.command=='gn'):
-    return run ('gn gen ' + out_dir + ' --args=\'' + gn_args + '\'')
+    return run ('gn gen %s --args=\'%s\' %s' % (out_dir, gn_args, gn_extra))
   if (options.command=='sync'):
     return run ('git pull --rebase && ' + gyp_defines + ' gclient sync')
   if (options.command=='build'):
