@@ -75,8 +75,8 @@ class ExternalDataUseObserverBridge {
                      const std::string& tag,
                      net::NetworkChangeNotifier::ConnectionType connection_type,
                      const std::string& mcc_mnc,
-                     const base::Time& start_time,
-                     const base::Time& end_time,
+                     base::Time start_time,
+                     base::Time end_time,
                      int64_t bytes_downloaded,
                      int64_t bytes_uploaded) const;
 

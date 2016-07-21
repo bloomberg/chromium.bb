@@ -222,7 +222,7 @@ void DataUseTabModel::OnTrackingLabelRemoved(const std::string& label) {
 
 bool DataUseTabModel::GetTrackingInfoForTabAtTime(
     SessionID::id_type tab_id,
-    base::TimeTicks timestamp,
+    const base::TimeTicks timestamp,
     TrackingInfo* output_tracking_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 

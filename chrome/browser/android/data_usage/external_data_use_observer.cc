@@ -63,10 +63,16 @@ ExternalDataUseObserver::ExternalDataUseObserver(
           base::Bind(
               &ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver,
               base::Unretained(external_data_use_observer_bridge_)))),
-      external_data_use_reporter_(
-          new ExternalDataUseReporter(kExternalDataUseObserverFieldTrial,
-                                      data_use_tab_model_,
-                                      external_data_use_observer_bridge_)),
+      // It is okay to use  base::Unretained for the callbacks, since
+      // |external_data_use_observer_bridge_| and |data_use_tab_model_| are
+      // owned by |this|, and are destroyed on UI thread after |this| and
+      // |external_data_use_reporter_| are destroyed.
+      external_data_use_reporter_(new ExternalDataUseReporter(
+          kExternalDataUseObserverFieldTrial,
+          base::Bind(&DataUseTabModel::GetTrackingInfoForTabAtTime,
+                     base::Unretained(data_use_tab_model_)),
+          base::Bind(&ExternalDataUseObserverBridge::ReportDataUse,
+                     base::Unretained(external_data_use_observer_bridge_)))),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       last_matching_rules_fetch_time_(base::TimeTicks::Now()),

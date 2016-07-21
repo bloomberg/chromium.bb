@@ -142,7 +142,7 @@ class ExternalDataUseReporterTest : public testing::Test {
   }
 
   DataUseTabModel* data_use_tab_model() const {
-    return external_data_use_reporter()->data_use_tab_model_;
+    return external_data_use_observer()->GetDataUseTabModel();
   }
 
   const ExternalDataUseReporter::DataUseReports& buffered_data_reports() const {

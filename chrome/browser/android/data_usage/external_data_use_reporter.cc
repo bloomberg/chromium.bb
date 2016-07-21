@@ -10,8 +10,6 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/android/data_usage/data_use_tab_model.h"
-#include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -100,10 +98,10 @@ const size_t ExternalDataUseReporter::kMaxBufferSize = 100;
 
 ExternalDataUseReporter::ExternalDataUseReporter(
     const char* field_trial,
-    DataUseTabModel* data_use_tab_model,
-    ExternalDataUseObserverBridge* external_data_use_observer_bridge)
-    : external_data_use_observer_bridge_(external_data_use_observer_bridge),
-      data_use_tab_model_(data_use_tab_model),
+    const GetTrackingInfoCallback& get_tracking_info_callback,
+    const ReportDataUseCallback& report_data_use_callback)
+    : get_tracking_info_callback_(get_tracking_info_callback),
+      report_data_use_callback_(report_data_use_callback),
       last_data_report_submitted_ticks_(base::TimeTicks()),
       pending_report_bytes_(0),
       previous_report_time_(base::Time::Now()),
@@ -111,6 +109,8 @@ ExternalDataUseReporter::ExternalDataUseReporter(
       data_use_report_min_bytes_(GetMinBytes(field_trial)),
       data_report_submit_timeout_(base::TimeDelta::FromMilliseconds(
           GetDataReportSubmitTimeoutMsec(field_trial))) {
+  DCHECK(get_tracking_info_callback_);
+  DCHECK(report_data_use_callback_);
   DCHECK(last_data_report_submitted_ticks_.is_null());
   // Detach from current thread since rest of ExternalDataUseReporter lives on
   // the UI thread and the current thread may not be UI thread..
@@ -140,7 +140,7 @@ void ExternalDataUseReporter::OnDataUse(
   DataUseTabModel::TrackingInfo tracking_info;
 
   for (const auto& data_use : *data_use_list) {
-    if (!data_use_tab_model_->GetTrackingInfoForTabAtTime(
+    if (!get_tracking_info_callback_.Run(
             data_use.tab_id, data_use.request_start, &tracking_info)) {
       continue;
     }
@@ -278,9 +278,9 @@ void ExternalDataUseReporter::SubmitBufferedDataUseReport(bool immediate) {
   buffered_data_reports_.erase(it);
   total_bytes_buffered_ -= (report.bytes_downloaded + report.bytes_uploaded);
 
-  external_data_use_observer_bridge_->ReportDataUse(
-      key.label, key.tag, key.connection_type, key.mcc_mnc, report.start_time,
-      report.end_time, report.bytes_downloaded, report.bytes_uploaded);
+  report_data_use_callback_.Run(key.label, key.tag, key.connection_type,
+                                key.mcc_mnc, report.start_time, report.end_time,
+                                report.bytes_downloaded, report.bytes_uploaded);
 }
 
 ExternalDataUseReporter::DataUseReportKey::DataUseReportKey(
