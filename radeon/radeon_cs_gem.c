@@ -323,7 +323,7 @@ static int cs_gem_end(struct radeon_cs_int *cs,
         return -EPIPE;
     }
     if (cs->section_ndw != cs->section_cdw) {
-        fprintf(stderr, "CS section size missmatch start at (%s,%s,%d) %d vs %d\n",
+        fprintf(stderr, "CS section size mismatch start at (%s,%s,%d) %d vs %d\n",
                 cs->section_file, cs->section_func, cs->section_line, cs->section_ndw, cs->section_cdw);
         fprintf(stderr, "CS section end at (%s,%s,%d)\n",
                 file, func, line);
