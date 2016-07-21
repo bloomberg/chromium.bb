@@ -21,11 +21,11 @@ namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 const char kInfoBarClassPath[] = "org/chromium/TestJni$InfoBar";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_TestJni_clazz = NULL;
-#define TestJni_clazz(env) g_TestJni_clazz
+base::subtle::AtomicWord g_TestJni_clazz __attribute__((unused)) = 0;
+#define TestJni_clazz(env) base::android::LazyGetClass(env, kTestJniClassPath, &g_TestJni_clazz)
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_InfoBar_clazz = NULL;
-#define InfoBar_clazz(env) g_InfoBar_clazz
+base::subtle::AtomicWord g_InfoBar_clazz __attribute__((unused)) = 0;
+#define InfoBar_clazz(env) base::android::LazyGetClass(env, kInfoBarClassPath, &g_InfoBar_clazz)
 
 }  // namespace
 
@@ -496,11 +496,7 @@ static ScopedJavaLocalRef<jobject> Java_TestJni_getCompressFormatList(JNIEnv*
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kTestJniClassPath).obj()));
-  g_InfoBar_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kInfoBarClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   return true;
 }

@@ -22,11 +22,11 @@ const char kMyOtherInnerClassClassPath[] =
     "org/chromium/TestJni$MyOtherInnerClass";
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_MyOtherInnerClass_clazz = NULL;
-#define MyOtherInnerClass_clazz(env) g_MyOtherInnerClass_clazz
+base::subtle::AtomicWord g_MyOtherInnerClass_clazz __attribute__((unused)) = 0;
+#define MyOtherInnerClass_clazz(env) base::android::LazyGetClass(env, kMyOtherInnerClassClassPath, &g_MyOtherInnerClass_clazz)
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_TestJni_clazz = NULL;
-#define TestJni_clazz(env) g_TestJni_clazz
+base::subtle::AtomicWord g_TestJni_clazz __attribute__((unused)) = 0;
+#define TestJni_clazz(env) base::android::LazyGetClass(env, kTestJniClassPath, &g_TestJni_clazz)
 
 }  // namespace
 
@@ -34,14 +34,16 @@ jclass g_TestJni_clazz = NULL;
 
 static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
-static jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
+extern "C" __attribute__((visibility("default")))
+jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
   return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
 static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
-static jint Java_org_chromium_TestJni_00024MyOtherInnerClass_nativeInit(JNIEnv*
-    env, jobject jcaller) {
+extern "C" __attribute__((visibility("default")))
+jint Java_org_chromium_TestJni_00024MyOtherInnerClass_nativeInit(JNIEnv* env,
+    jobject jcaller) {
   return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
@@ -64,11 +66,7 @@ static const JNINativeMethod kMethodsTestJni[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_MyOtherInnerClass_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kMyOtherInnerClassClassPath).obj()));
-  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kTestJniClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   const int kMethodsMyOtherInnerClassSize =
       arraysize(kMethodsMyOtherInnerClass);

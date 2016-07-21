@@ -20,8 +20,8 @@
 namespace {
 const char kInputStreamClassPath[] = "java/io/InputStream";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_InputStream_clazz = NULL;
-#define InputStream_clazz(env) g_InputStream_clazz
+base::subtle::AtomicWord g_InputStream_clazz __attribute__((unused)) = 0;
+#define InputStream_clazz(env) base::android::LazyGetClass(env, kInputStreamClassPath, &g_InputStream_clazz)
 
 }  // namespace
 
@@ -254,9 +254,7 @@ static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_InputStream_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kInputStreamClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   return true;
 }

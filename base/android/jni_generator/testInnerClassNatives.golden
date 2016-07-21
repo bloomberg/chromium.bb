@@ -21,11 +21,11 @@ namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 const char kMyInnerClassClassPath[] = "org/chromium/TestJni$MyInnerClass";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_TestJni_clazz = NULL;
-#define TestJni_clazz(env) g_TestJni_clazz
+base::subtle::AtomicWord g_TestJni_clazz __attribute__((unused)) = 0;
+#define TestJni_clazz(env) base::android::LazyGetClass(env, kTestJniClassPath, &g_TestJni_clazz)
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_MyInnerClass_clazz = NULL;
-#define MyInnerClass_clazz(env) g_MyInnerClass_clazz
+base::subtle::AtomicWord g_MyInnerClass_clazz __attribute__((unused)) = 0;
+#define MyInnerClass_clazz(env) base::android::LazyGetClass(env, kMyInnerClassClassPath, &g_MyInnerClass_clazz)
 
 }  // namespace
 
@@ -33,8 +33,9 @@ jclass g_MyInnerClass_clazz = NULL;
 
 static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
-static jint Java_org_chromium_TestJni_00024MyInnerClass_nativeInit(JNIEnv* env,
-    jobject jcaller) {
+extern "C" __attribute__((visibility("default")))
+jint Java_org_chromium_TestJni_00024MyInnerClass_nativeInit(JNIEnv* env, jobject
+    jcaller) {
   return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
@@ -50,11 +51,7 @@ static const JNINativeMethod kMethodsMyInnerClass[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kTestJniClassPath).obj()));
-  g_MyInnerClass_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kMyInnerClassClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   const int kMethodsMyInnerClassSize = arraysize(kMethodsMyInnerClass);
 

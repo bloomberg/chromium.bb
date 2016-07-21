@@ -20,8 +20,8 @@
 namespace {
 const char kMotionEventClassPath[] = "android/view/MotionEvent";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_MotionEvent_clazz = NULL;
-#define MotionEvent_clazz(env) g_MotionEvent_clazz
+base::subtle::AtomicWord g_MotionEvent_clazz __attribute__((unused)) = 0;
+#define MotionEvent_clazz(env) base::android::LazyGetClass(env, kMotionEventClassPath, &g_MotionEvent_clazz)
 
 }  // namespace
 
@@ -2216,9 +2216,7 @@ static void Java_MotionEvent_writeToParcel(JNIEnv* env, jobject obj, jobject p0,
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_MotionEvent_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kMotionEventClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   return true;
 }

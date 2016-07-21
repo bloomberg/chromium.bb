@@ -20,8 +20,8 @@
 namespace {
 const char kHashSetClassPath[] = "java/util/HashSet";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_HashSet_clazz = NULL;
-#define HashSet_clazz(env) g_HashSet_clazz
+base::subtle::AtomicWord g_HashSet_clazz __attribute__((unused)) = 0;
+#define HashSet_clazz(env) base::android::LazyGetClass(env, kHashSetClassPath, &g_HashSet_clazz)
 
 }  // namespace
 
@@ -53,9 +53,7 @@ static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_HashSet_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kHashSetClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   return true;
 }

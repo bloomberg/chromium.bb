@@ -20,8 +20,8 @@
 namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_TestJni_clazz = NULL;
-#define TestJni_clazz(env) g_TestJni_clazz
+base::subtle::AtomicWord g_TestJni_clazz __attribute__((unused)) = 0;
+#define TestJni_clazz(env) base::android::LazyGetClass(env, kTestJniClassPath, &g_TestJni_clazz)
 
 }  // namespace
 
@@ -29,11 +29,13 @@ jclass g_TestJni_clazz = NULL;
 
 static jint Init(JNIEnv* env, const JavaParamRef<jobject>& jcaller);
 
-static jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
+extern "C" __attribute__((visibility("default")))
+jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
   return Init(env, JavaParamRef<jobject>(env, jcaller));
 }
 
-static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
+extern "C" __attribute__((visibility("default")))
+void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
     jobject jcaller,
     jint nativeChromeBrowserProvider) {
   ChromeBrowserProvider* native =
@@ -42,7 +44,8 @@ static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
   return native->Destroy(env, JavaParamRef<jobject>(env, jcaller));
 }
 
-static jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
+extern "C" __attribute__((visibility("default")))
+jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
     jobject jcaller,
     jint nativeChromeBrowserProvider,
     jstring url,
@@ -61,8 +64,9 @@ static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(JNIEnv* env, const
     JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& url);
 
-static jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env,
-    jclass jcaller,
+extern "C" __attribute__((visibility("default")))
+jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env, jclass
+    jcaller,
     jstring url) {
   return GetDomainAndRegistry(env, JavaParamRef<jclass>(env, jcaller),
       JavaParamRef<jstring>(env, url)).Release();
@@ -73,8 +77,9 @@ static void CreateHistoricalTabFromState(JNIEnv* env, const
     const JavaParamRef<jbyteArray>& state,
     jint tab_index);
 
-static void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(JNIEnv*
-    env, jclass jcaller,
+extern "C" __attribute__((visibility("default")))
+void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(JNIEnv* env,
+    jclass jcaller,
     jbyteArray state,
     jint tab_index) {
   return CreateHistoricalTabFromState(env, JavaParamRef<jclass>(env, jcaller),
@@ -85,8 +90,9 @@ static ScopedJavaLocalRef<jbyteArray> GetStateAsByteArray(JNIEnv* env, const
     JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jobject>& view);
 
-static jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv*
-    env, jobject jcaller,
+extern "C" __attribute__((visibility("default")))
+jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv* env,
+    jobject jcaller,
     jobject view) {
   return GetStateAsByteArray(env, JavaParamRef<jobject>(env, jcaller),
       JavaParamRef<jobject>(env, view)).Release();
@@ -95,9 +101,9 @@ static jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv*
 static ScopedJavaLocalRef<jobjectArray> GetAutofillProfileGUIDs(JNIEnv* env,
     const JavaParamRef<jclass>& jcaller);
 
-static jobjectArray
-    Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv* env, jclass
-    jcaller) {
+extern "C" __attribute__((visibility("default")))
+jobjectArray Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv*
+    env, jclass jcaller) {
   return GetAutofillProfileGUIDs(env, JavaParamRef<jclass>(env,
       jcaller)).Release();
 }
@@ -107,15 +113,17 @@ static void SetRecognitionResults(JNIEnv* env, const JavaParamRef<jobject>&
     jint sessionId,
     const JavaParamRef<jobjectArray>& results);
 
-static void Java_org_chromium_TestJni_nativeSetRecognitionResults(JNIEnv* env,
-    jobject jcaller,
+extern "C" __attribute__((visibility("default")))
+void Java_org_chromium_TestJni_nativeSetRecognitionResults(JNIEnv* env, jobject
+    jcaller,
     jint sessionId,
     jobjectArray results) {
   return SetRecognitionResults(env, JavaParamRef<jobject>(env, jcaller),
       sessionId, JavaParamRef<jobjectArray>(env, results));
 }
 
-static jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
+extern "C" __attribute__((visibility("default")))
+jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
     jobject jcaller,
     jint nativeChromeBrowserProvider,
     jstring url,
@@ -138,8 +146,8 @@ static jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
 static jint FindAll(JNIEnv* env, const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& find);
 
-static jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject
-    jcaller,
+extern "C" __attribute__((visibility("default")))
+jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject jcaller,
     jstring find) {
   return FindAll(env, JavaParamRef<jobject>(env, jcaller),
       JavaParamRef<jstring>(env, find));
@@ -148,12 +156,14 @@ static jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject
 static ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env, const
     JavaParamRef<jclass>& jcaller);
 
-static jobject Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass
+extern "C" __attribute__((visibility("default")))
+jobject Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass
     jcaller) {
   return GetInnerClass(env, JavaParamRef<jclass>(env, jcaller)).Release();
 }
 
-static jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
+extern "C" __attribute__((visibility("default")))
+jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
     jobject jcaller,
     jint nativeChromeBrowserProvider,
     jobjectArray projection,
@@ -169,7 +179,8 @@ static jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
       JavaParamRef<jstring>(env, sortOrder)).Release();
 }
 
-static void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
+extern "C" __attribute__((visibility("default")))
+void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
     jobject jcaller,
     jint nativeDataFetcherImplAndroid,
     jdouble alpha,
@@ -186,8 +197,9 @@ static ScopedJavaLocalRef<jthrowable> MessWithJavaException(JNIEnv* env, const
     JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jthrowable>& e);
 
-static jthrowable Java_org_chromium_TestJni_nativeMessWithJavaException(JNIEnv*
-    env, jclass jcaller,
+extern "C" __attribute__((visibility("default")))
+jthrowable Java_org_chromium_TestJni_nativeMessWithJavaException(JNIEnv* env,
+    jclass jcaller,
     jthrowable e) {
   return MessWithJavaException(env, JavaParamRef<jclass>(env, jcaller),
       JavaParamRef<jthrowable>(env, e)).Release();
@@ -301,9 +313,7 @@ static const JNINativeMethod kMethodsTestJni[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kTestJniClassPath).obj()));
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
 
   const int kMethodsTestJniSize = arraysize(kMethodsTestJni);
 

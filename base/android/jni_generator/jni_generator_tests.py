@@ -40,8 +40,7 @@ class TestOptions(object):
     self.ptr_type = 'long'
     self.cpp = 'cpp'
     self.javap = 'javap'
-    self.native_exports = False
-    self.native_exports_optional = False
+    self.native_exports_optional = True
 
 class TestGenerator(unittest.TestCase):
   def assertObjEquals(self, first, second):
@@ -935,7 +934,7 @@ class Foo {
                                              natives, [], [], test_options)
     self.assertGoldenTextEquals(h.GetContent())
 
-  def runNativeExportsOption(self, optional):
+  def testNativeExportsOnlyOption(self):
     test_data = """
     package org.chromium.example.jni_generator;
 
@@ -967,19 +966,10 @@ class Foo {
     }
     """
     options = TestOptions()
-    options.native_exports = True
-    options.native_exports_optional = optional
+    options.native_exports_optional = False
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/example/jni_generator/SampleForTests', options)
-    return jni_from_java.GetContent()
-
-  def testNativeExportsOption(self):
-    content = self.runNativeExportsOption(False)
-    self.assertGoldenTextEquals(content)
-
-  def testNativeExportsOptionalOption(self):
-    content = self.runNativeExportsOption(True)
-    self.assertGoldenTextEquals(content)
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
 
   def testOuterInnerRaises(self):
     test_data = """
