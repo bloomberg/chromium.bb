@@ -81,7 +81,6 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     , m_sizes(DOMTokenList::create(this))
     , m_relList(RelList::create(this))
     , m_createdByParser(createdByParser)
-    , m_isInShadowTree(false)
 {
 }
 
@@ -144,7 +143,7 @@ bool HTMLLinkElement::loadLink(const String& type, const String& as, const Strin
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()
 {
-    bool visible = isConnected() && !m_isInShadowTree;
+    bool visible = isConnected() && !isInShadowTree();
     if (!visible) {
         ASSERT(!linkStyle() || !linkStyle()->hasSheet());
         return nullptr;
@@ -205,8 +204,7 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
     if (!insertionPoint->isConnected())
         return InsertionDone;
 
-    m_isInShadowTree = isInShadowTree();
-    if (m_isInShadowTree) {
+    if (isInShadowTree()) {
         String message = "HTML element <link> is ignored in shadow tree.";
         document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
         return InsertionDone;
@@ -224,13 +222,15 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
 
 void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
 {
+    // Store the result of isInShadowTree() here before Node::removedFrom(..) clears the flags.
+    bool wasInShadowTree = isInShadowTree();
     HTMLElement::removedFrom(insertionPoint);
     if (!insertionPoint->isConnected())
         return;
 
     m_linkLoader->released();
 
-    if (m_isInShadowTree) {
+    if (wasInShadowTree) {
         ASSERT(!linkStyle() || !linkStyle()->hasSheet());
         return;
     }

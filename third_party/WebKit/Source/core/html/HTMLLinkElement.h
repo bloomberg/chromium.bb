@@ -230,7 +230,6 @@ private:
     String m_scope;
 
     bool m_createdByParser;
-    bool m_isInShadowTree;
 };
 
 } // namespace blink
