@@ -1324,9 +1324,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, MAYBE_DragAll) {
   // Size unchanged, but it should have moved down.
   EXPECT_EQ(initial_bounds.size(), final_bounds.size());
   EXPECT_EQ(initial_bounds.origin().x(), final_bounds.origin().x());
-  // TODO(mblsha): Fails on MacViews because of crbug.com/518740
-  // EXPECT_EQ(initial_bounds.origin().y() + GetDetachY(tab_strip),
-  //           final_bounds.origin().y());
+  EXPECT_EQ(initial_bounds.origin().y() + GetDetachY(tab_strip),
+            final_bounds.origin().y());
 }
 
 namespace {

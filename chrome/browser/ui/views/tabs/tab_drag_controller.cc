@@ -404,6 +404,15 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
                                          point_in_screen,
                                          &drag_bounds);
         widget->SetVisibilityChangedAnimationsEnabled(true);
+      } else {
+        // The user has to move the mouse some amount of pixels before the drag
+        // starts. Offset the window by this amount so that the relative offset
+        // of the initial location is consistent. See crbug.com/518740
+        views::Widget* widget = GetAttachedBrowserWidget();
+        gfx::Rect bounds = widget->GetWindowBoundsInScreen();
+        bounds.Offset(point_in_screen.x() - start_point_in_screen_.x(),
+                      point_in_screen.y() - start_point_in_screen_.y());
+        widget->SetBounds(bounds);
       }
       RunMoveLoop(GetWindowOffset(point_in_screen));
       return;
