@@ -5,40 +5,16 @@
 <dom-module id="network-summary">
   <template>
     <div id="summary" class="layout vertical">
-      <network-summary-item id="ethernet"
-          device-state="[[deviceStates.Ethernet]]"
-          network-state="[[networkStates.Ethernet]]"
-          network-state-list="[[networkStateLists.Ethernet]]"
-          on-selected="onSelected_">
-      </network-summary-item>
-      <network-summary-item id="wifi"
-          device-state="[[deviceStates.WiFi]]"
-          network-state="[[networkStates.WiFi]]"
-          network-state-list="[[networkStateLists.WiFi]]"
-          on-expanded="onWiFiExpanded_"
-          on-selected="onSelected_"
-          on-device-enabled-toggled="onDeviceEnabledToggled_">
-      </network-summary-item>
-      <network-summary-item id="cellular"
-          device-state="[[deviceStates.Cellular]]"
-          network-state="[[networkStates.Cellular]]"
-          network-state-list="[[networkStateLists.Cellular]]"
-          on-selected="onSelected_"
-          on-device-enabled-toggled="onDeviceEnabledToggled_">
-      </network-summary-item>
-      <network-summary-item id="wimax"
-          device-state="[[deviceStates.WiMAX]]"
-          network-state="[[networkStates.WiMAX]]"
-          network-state-list="[[networkStateLists.WiMAX]]"
-          on-selected="onSelected_"
-          on-device-enabled-toggled="onDeviceEnabledToggled_">
-      </network-summary-item>
-      <network-summary-item id="vpn"
-          device-state="[[deviceStates.VPN]]"
-          network-state="[[networkStates.VPN]]"
-          network-state-list="[[networkStateLists.VPN]]"
-          on-selected="onSelected_">
-      </network-summary-item>
+      <template is="dom-repeat" items="[[activeNetworkStates]]">
+        <network-summary-item id="[[item.Type]]"
+            active-network-state="[[item]]"
+            device-state="[[get(item.Type, deviceStates)]]"
+            network-state-list="[[get(item.Type, networkStateLists)]]"
+            on-expanded="onExpanded_"
+            on-selected="onSelected_"
+            on-device-enabled-toggled="onDeviceEnabledToggled_">
+        </network-summary-item>
+      </template>
     </div>
   </template>
   <script src="network_summary.js"></script>

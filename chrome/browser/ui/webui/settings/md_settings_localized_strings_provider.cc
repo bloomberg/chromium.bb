@@ -636,7 +636,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET},
       {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
       {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
-      {"OncTypeWimax", IDS_NETWORK_TYPE_WIMAX},
+      {"OncTypeWiMAX", IDS_NETWORK_TYPE_WIMAX},
       {"vpnNameTemplate",
        IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE},
   };
