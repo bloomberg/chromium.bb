@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,7 +29,8 @@ class SupervisedUserRegistrationUtility;
 
 // Handler for the 'create profile' page.
 class SigninCreateProfileHandler : public content::WebUIMessageHandler,
-                                   public content::NotificationObserver {
+                                   public content::NotificationObserver,
+                                   public ProfileAttributesStorage::Observer {
  public:
   SigninCreateProfileHandler();
   ~SigninCreateProfileHandler() override;
@@ -64,6 +66,9 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // ProfileAttributesStorage::Observer implementation:
+  void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
 
   // Represents the final profile creation status. It is used to map
   // the status to the javascript method to be called.

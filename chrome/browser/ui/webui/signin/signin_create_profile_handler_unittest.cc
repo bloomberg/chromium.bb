@@ -228,8 +228,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    profile_manager_.reset();
     handler_.reset();
+    profile_manager_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -304,10 +304,6 @@ TEST_F(SigninCreateProfileHandlerTest, ReturnSignedInProfiles) {
   ASSERT_TRUE(profile_manager()->profile_attributes_storage()->
       GetProfileAttributesWithPath(profile_2->GetPath(), &entry));
   entry->SetAuthInfo(kTestGaiaId2, base::UTF8ToUTF16(kTestEmail2));
-
-  // Request a list of signed in profiles.
-  base::ListValue list_args;
-  handler()->RequestSignedInProfiles(&list_args);
 
   // Expect a JS callback with a list containing profile_2.
   EXPECT_EQ(1U, web_ui()->call_data().size());

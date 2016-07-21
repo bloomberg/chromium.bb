@@ -55,13 +55,18 @@
 
 SigninCreateProfileHandler::SigninCreateProfileHandler()
     : profile_creation_type_(NO_CREATION_IN_PROGRESS),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().AddObserver(this);
+}
 
 SigninCreateProfileHandler::~SigninCreateProfileHandler() {
 #if defined(ENABLE_SUPERVISED_USERS)
   // Cancellation is only supported for supervised users.
   CancelProfileRegistration(false);
 #endif
+  g_browser_process->profile_manager()->
+    GetProfileAttributesStorage().RemoveObserver(this);
 }
 
 void SigninCreateProfileHandler::GetLocalizedValues(
@@ -212,6 +217,11 @@ void SigninCreateProfileHandler::RequestSignedInProfiles(
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback", base::StringValue("signedin-users-received"),
       user_info_list);
+}
+
+void SigninCreateProfileHandler::OnProfileAuthInfoChanged(
+    const base::FilePath& profile_path) {
+  RequestSignedInProfiles(nullptr);
 }
 
 void SigninCreateProfileHandler::CreateProfile(const base::ListValue* args) {
