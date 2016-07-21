@@ -344,11 +344,7 @@ bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
 }
 
 bool ChromeAutofillClient::ShouldShowSigninPromo() {
-#if defined(OS_IOS)
-  // TODO(crbug.com/626383): Implement signin promo for iOS by changing the
-  // logic of StartSigninFlow() below.
-  return false;
-#elif !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
   // Determine if we are in a valid context (on desktop platforms, we could be
   // in an app window with no Browser).
   if (!chrome::FindBrowserWithWebContents(web_contents()))
@@ -360,10 +356,7 @@ bool ChromeAutofillClient::ShouldShowSigninPromo() {
 }
 
 void ChromeAutofillClient::StartSigninFlow() {
-// See ShouldShowSigninPromo.
-#if defined(OS_IOS)
-  return;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   chrome::android::SigninPromoUtilAndroid::StartAccountSigninActivityForPromo(
       content::ContentViewCore::FromWebContents(web_contents()),
       signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
