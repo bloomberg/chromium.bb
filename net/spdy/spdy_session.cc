@@ -627,7 +627,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
                          bool verify_domain_authentication,
                          bool enable_sending_initial_data,
                          bool enable_ping_based_connection_checking,
-                         bool enable_priority_dependencies,
                          size_t session_max_recv_window_size,
                          size_t stream_max_recv_window_size,
                          TimeFunc time_func,
@@ -683,7 +682,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       proxy_delegate_(proxy_delegate),
       time_func_(time_func),
-      priority_dependencies_enabled_(enable_priority_dependencies),
       weak_factory_(this) {
   net_log_.BeginEvent(
       NetLog::TYPE_HTTP2_SESSION,
@@ -1018,10 +1016,8 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
   SpdyStreamId dependent_stream_id = 0;
   bool exclusive = false;
 
-  if (priority_dependencies_enabled_) {
-    priority_dependency_state_.OnStreamSynSent(
-        stream_id, spdy_priority, &dependent_stream_id, &exclusive);
-  }
+  priority_dependency_state_.OnStreamSynSent(stream_id, spdy_priority,
+                                             &dependent_stream_id, &exclusive);
 
   if (net_log().IsCapturing()) {
     net_log().AddEvent(
@@ -1213,8 +1209,7 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
 
   std::unique_ptr<SpdyStream> owned_stream(it->second.stream);
   active_streams_.erase(it);
-  if (priority_dependencies_enabled_)
-    priority_dependency_state_.OnStreamDestruction(owned_stream->stream_id());
+  priority_dependency_state_.OnStreamDestruction(owned_stream->stream_id());
 
   // TODO(akalin): When SpdyStream was ref-counted (and
   // |unclaimed_pushed_streams_| held scoped_refptr<SpdyStream>), this

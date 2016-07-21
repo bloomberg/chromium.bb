@@ -294,7 +294,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool verify_domain_authentication,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
-              bool enable_priority_dependencies,
               size_t session_max_recv_window_size,
               size_t stream_max_recv_window_size,
               TimeFunc time_func,
@@ -1197,7 +1196,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   TimeFunc time_func_;
 
-  const bool priority_dependencies_enabled_;
   Http2PriorityDependencies priority_dependency_state_;
 
   // Used for posting asynchronous IO tasks.  We use this even though

@@ -101,9 +101,6 @@ class NET_EXPORT HttpNetworkSession
     // of the origin.
     bool enable_quic_alternative_service_with_different_host;
 
-    // Enable setting of HTTP/2 dependencies based on priority.
-    bool enable_priority_dependencies;
-
     // Enables QUIC support.
     bool enable_quic;
     // Disable QUIC if a connection times out with open streams.
