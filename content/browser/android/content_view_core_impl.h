@@ -66,11 +66,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   cc::Layer* GetLayer() const override;
   bool ShowPastePopup(int x, int y) override;
   void PauseOrResumeGeolocation(bool should_pause) override;
-  void RequestTextSurroundingSelection(
-      int max_length,
-      const base::Callback<void(const base::string16& content,
-                                int start_offset,
-                                int end_offset)>& callback) override;
 
   void AddObserver(ContentViewCoreImplObserver* observer);
   void RemoveObserver(ContentViewCoreImplObserver* observer);

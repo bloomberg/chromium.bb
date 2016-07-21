@@ -1564,12 +1564,30 @@ void RenderFrameHostImpl::OnRunFileChooser(const FileChooserParams& params) {
   delegate_->RunFileChooser(this, params);
 }
 
+void RenderFrameHostImpl::RequestTextSurroundingSelection(
+    const TextSurroundingSelectionCallback& callback,
+    int max_length) {
+  DCHECK(!callback.is_null());
+  // Only one outstanding request is allowed at any given time.
+  // If already one request is in progress, then immediately release callback
+  // with empty result.
+  if (!text_surrounding_selection_callback_.is_null()) {
+    callback.Run(base::string16(), 0, 0);
+    return;
+  }
+  text_surrounding_selection_callback_ = callback;
+  Send(
+      new FrameMsg_TextSurroundingSelectionRequest(GetRoutingID(), max_length));
+}
+
 void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
     const base::string16& content,
     uint32_t start_offset,
     uint32_t end_offset) {
-  render_view_host_->OnTextSurroundingSelectionResponse(
-      content, start_offset, end_offset);
+  // Just Run the callback instead of propagating further.
+  text_surrounding_selection_callback_.Run(content, start_offset, end_offset);
+  // Reset the callback for enabling early exit from future request.
+  text_surrounding_selection_callback_.Reset();
 }
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {

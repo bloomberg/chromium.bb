@@ -250,10 +250,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
     main_frame_routing_id_ = routing_id;
   }
 
-  void OnTextSurroundingSelectionResponse(const base::string16& content,
-                                          size_t start_offset,
-                                          size_t end_offset);
-
   // Increases the refcounting on this RVH. This is done by the FrameTree on
   // creation of a RenderFrameHost or RenderFrameProxyHost.
   void increment_ref_count() { ++frames_ref_count_; }

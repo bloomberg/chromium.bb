@@ -161,6 +161,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int GetProxyCount() override;
   void FilesSelectedInChooser(const std::vector<FileChooserFileInfo>& files,
                               FileChooserParams::Mode permissions) override;
+  void RequestTextSurroundingSelection(
+      const TextSurroundingSelectionCallback& callback,
+      int max_length) override;
 
   // mojom::FrameHost
   void GetInterfaceProvider(
@@ -1036,6 +1039,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojo::Binding<mojom::FrameHost> frame_host_binding_;
   mojom::FramePtr frame_;
+
+  // Callback for responding when
+  // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
+  TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

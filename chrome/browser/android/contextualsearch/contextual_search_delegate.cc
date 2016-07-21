@@ -26,6 +26,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
@@ -33,6 +34,7 @@
 #include "url/gurl.h"
 
 using content::ContentViewCore;
+using content::RenderFrameHost;
 
 namespace {
 
@@ -234,13 +236,23 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
     content::ContentViewCore* content_view_core,
     bool may_send_base_page_url,
     HandleSurroundingsCallback callback) {
+  DCHECK(content_view_core);
+  DCHECK(content_view_core->GetWebContents());
+  DCHECK(!callback.is_null());
+  DCHECK(!selection.empty());
+  RenderFrameHost* focused_frame =
+      content_view_core->GetWebContents()->GetFocusedFrame();
+  if (!focused_frame) {
+    callback.Run(base::string16(), 0, 0);
+    return;
+  }
   // Immediately cancel any request that's in flight, since we're building a new
   // context (and the response disposes of any existing context).
   search_term_fetcher_.reset();
   BuildContext(selection, use_resolved_search_term, content_view_core,
                may_send_base_page_url);
-  content_view_core->RequestTextSurroundingSelection(
-      field_trial_->GetSurroundingSize(), callback);
+  focused_frame->RequestTextSurroundingSelection(
+      callback, field_trial_->GetSurroundingSize());
 }
 
 void ContextualSearchDelegate::BuildContext(

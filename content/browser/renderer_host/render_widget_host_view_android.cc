@@ -555,23 +555,6 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
   }
 }
 
-void RenderWidgetHostViewAndroid::SetTextSurroundingSelectionCallback(
-    const TextSurroundingSelectionCallback& callback) {
-  // Only one outstanding request is allowed at any given time.
-  DCHECK(!callback.is_null());
-  text_surrounding_selection_callback_ = callback;
-}
-
-void RenderWidgetHostViewAndroid::OnTextSurroundingSelectionResponse(
-    const base::string16& content,
-    size_t start_offset,
-    size_t end_offset) {
-  if (text_surrounding_selection_callback_.is_null())
-    return;
-  text_surrounding_selection_callback_.Run(content, start_offset, end_offset);
-  text_surrounding_selection_callback_.Reset();
-}
-
 void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
                                                                int y_dip) {
   if (!content_view_core_)

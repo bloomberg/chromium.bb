@@ -1546,23 +1546,6 @@ void ContentViewCoreImpl::OnDragEvent(
   }
 }
 
-void ContentViewCoreImpl::RequestTextSurroundingSelection(
-    int max_length,
-    const base::Callback<
-        void(const base::string16& content, int start_offset, int end_offset)>&
-        callback) {
-  DCHECK(!callback.is_null());
-  RenderFrameHost* focused_frame = web_contents_->GetFocusedFrame();
-  if (!focused_frame)
-    return;
-  if (GetRenderWidgetHostViewAndroid()) {
-    GetRenderWidgetHostViewAndroid()->SetTextSurroundingSelectionCallback(
-        callback);
-    focused_frame->Send(new FrameMsg_TextSurroundingSelectionRequest(
-        focused_frame->GetRoutingID(), max_length));
-  }
-}
-
 void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

@@ -48,13 +48,6 @@ class CONTENT_EXPORT ContentViewCore {
 
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 
-  // Text surrounding selection.
-  virtual void RequestTextSurroundingSelection(
-      int max_length,
-      const base::Callback<void(const base::string16& content,
-                                int start_offset,
-                                int end_offset)>& callback) = 0;
-
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual const base::android::JavaRef<jobject>& GetViewAndroidDelegate()
       const = 0;

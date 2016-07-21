@@ -1122,16 +1122,6 @@ bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
   return true;
 }
 
-void RenderViewHostImpl::OnTextSurroundingSelectionResponse(
-    const base::string16& content,
-    size_t start_offset,
-    size_t end_offset) {
-  if (!GetWidget()->GetView())
-    return;
-  GetWidget()->GetView()->OnTextSurroundingSelectionResponse(
-      content, start_offset, end_offset);
-}
-
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
   if (!web_preferences_.get()) {
     OnWebkitPreferencesChanged();
