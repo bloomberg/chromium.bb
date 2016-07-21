@@ -4,8 +4,8 @@
 
 #include <queue>
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/shell.h"

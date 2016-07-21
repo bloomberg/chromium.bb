@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_CONTROL_DELEGATE_H_
-#define ASH_IME_CONTROL_DELEGATE_H_
+#ifndef ASH_COMMON_IME_CONTROL_DELEGATE_H_
+#define ASH_COMMON_IME_CONTROL_DELEGATE_H_
 
 namespace ui {
 class Accelerator;
@@ -37,4 +37,4 @@ class ImeControlDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_IME_CONTROL_DELEGATE_H_
+#endif  // ASH_COMMON_IME_CONTROL_DELEGATE_H_

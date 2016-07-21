@@ -4,7 +4,7 @@
 
 #include "ash/accelerators/accelerator_delegate.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"

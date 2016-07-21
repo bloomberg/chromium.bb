@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/ash_init.h"
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/high_contrast/high_contrast_controller.h"

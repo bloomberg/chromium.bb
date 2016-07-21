@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_positioning_utils.h"

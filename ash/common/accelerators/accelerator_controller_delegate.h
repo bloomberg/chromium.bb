@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_H_
-#define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_H_
+#ifndef ASH_COMMON_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_H_
+#define ASH_COMMON_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_H_
 
-#include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_export.h"
+#include "ash/common/accelerators/accelerator_table.h"
 
 namespace ui {
 class Accelerator;
@@ -47,4 +47,4 @@ class ASH_EXPORT AcceleratorControllerDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_H_
+#endif  // ASH_COMMON_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_H_

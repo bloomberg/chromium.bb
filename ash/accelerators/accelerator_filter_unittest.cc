@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"

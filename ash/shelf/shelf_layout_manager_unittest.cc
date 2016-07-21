@@ -4,9 +4,9 @@
 
 #include "ash/shelf/shelf_layout_manager.h"
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_table.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"

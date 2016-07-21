@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 
-#include "ash/accelerators/accelerator_commands.h"
-#include "ash/accelerators/accelerator_controller_delegate.h"
-#include "ash/accelerators/debug_commands.h"
+#include "ash/common/accelerators/accelerator_commands.h"
+#include "ash/common/accelerators/accelerator_controller_delegate.h"
+#include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/focus_cycler.h"
+#include "ash/common/ime_control_delegate.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -27,7 +28,6 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/ime_control_delegate.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/accelerators/accelerator.h"

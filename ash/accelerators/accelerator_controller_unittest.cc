@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 
-#include "ash/accelerators/accelerator_table.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/ime_control_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -20,7 +21,6 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
-#include "ash/ime_control_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"

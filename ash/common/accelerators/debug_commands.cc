@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/debug_commands.h"
+#include "ash/common/accelerators/debug_commands.h"
 
-#include "ash/accelerators/accelerator_commands.h"
+#include "ash/common/accelerators/accelerator_commands.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/toast/toast_data.h"

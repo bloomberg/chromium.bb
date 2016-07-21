@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_commands.h"
+#include "ash/common/accelerators/accelerator_commands.h"
 
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"

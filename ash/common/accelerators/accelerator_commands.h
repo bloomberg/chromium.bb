@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_COMMANDS_H_
-#define ASH_ACCELERATORS_ACCELERATOR_COMMANDS_H_
+#ifndef ASH_COMMON_ACCELERATORS_ACCELERATOR_COMMANDS_H_
+#define ASH_COMMON_ACCELERATORS_ACCELERATOR_COMMANDS_H_
 
 #include "ash/ash_export.h"
 
@@ -28,4 +28,4 @@ ASH_EXPORT void ToggleFullscreen();
 }  // namespace accelerators
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_COMMANDS_H_
+#endif  // ASH_COMMON_ACCELERATORS_ACCELERATOR_COMMANDS_H_

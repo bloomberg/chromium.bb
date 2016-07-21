@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/ash_util.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"

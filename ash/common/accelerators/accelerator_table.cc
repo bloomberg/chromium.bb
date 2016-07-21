@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/common/accelerators/accelerator_table.h"
 
 #include "ash/common/strings/grit/ash_strings.h"
 #include "base/macros.h"

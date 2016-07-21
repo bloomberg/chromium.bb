@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/accelerators/accelerator_commands.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accelerators/accelerator_commands.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"

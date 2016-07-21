@@ -12,7 +12,7 @@
 #include "ui/events/event_constants.h"
 
 #if defined(USE_ASH)
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/common/accelerators/accelerator_table.h"
 #endif  // USE_ASH
 
 namespace chrome {

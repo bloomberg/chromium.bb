@@ -40,7 +40,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
-#include "ash/accelerators/accelerator_commands.h"
+#include "ash/common/accelerators/accelerator_commands.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"

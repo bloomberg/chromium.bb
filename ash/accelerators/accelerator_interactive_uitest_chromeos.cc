@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/accelerator_controller.h"
 
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/chromeos/network/network_observer.h"

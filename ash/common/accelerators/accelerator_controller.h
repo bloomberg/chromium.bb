@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
-#define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
+#ifndef ASH_COMMON_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
+#define ASH_COMMON_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
 
 #include <stddef.h>
 
@@ -11,9 +11,9 @@
 #include <memory>
 #include <set>
 
-#include "ash/accelerators/accelerator_table.h"
-#include "ash/accelerators/exit_warning_handler.h"
 #include "ash/ash_export.h"
+#include "ash/common/accelerators/accelerator_table.h"
+#include "ash/common/accelerators/exit_warning_handler.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -200,4 +200,4 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
+#endif  // ASH_COMMON_ACCELERATORS_ACCELERATOR_CONTROLLER_H_

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands_aura.h"
-#include "ash/accelerators/debug_commands.h"
+#include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
