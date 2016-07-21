@@ -115,7 +115,7 @@ interfaces::MediaRoutePtr CreateMojoRoute() {
   route->description = kDescription;
   route->is_local = true;
   route->for_display = true;
-  route->off_the_record = false;
+  route->incognito = false;
   return route;
 }
 
@@ -239,7 +239,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis, bool off_the_record,
+             int tab_id, int64_t timeout_millis, bool incognito,
              const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
             cb.Run(CreateMojoRoute(), mojo::String(),
                    interfaces::RouteRequestResultCode::OK);
@@ -259,11 +259,11 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, CreateOffTheRecordRoute) {
+TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
                             false);
-  expected_route.set_off_the_record(true);
+  expected_route.set_incognito(true);
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -274,11 +274,11 @@ TEST_F(MediaRouterMojoImplTest, CreateOffTheRecordRoute) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis, bool off_the_record,
+             int tab_id, int64_t timeout_millis, bool incognito,
              const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
             interfaces::MediaRoutePtr route = CreateMojoRoute();
             route->custom_controller_path = "custom/controller/path";
-            route->off_the_record = true;
+            route->incognito = true;
             cb.Run(std::move(route), mojo::String(),
                    interfaces::RouteRequestResultCode::OK);
           }));
@@ -305,7 +305,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis, bool off_the_record,
+             int tab_id, int64_t timeout_millis, bool incognito,
              const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
             cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
                    interfaces::RouteRequestResultCode::TIMED_OUT);
@@ -325,7 +325,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, CreateRouteOffTheRecordMismatchFails) {
+TEST_F(MediaRouterMojoImplTest, CreateRouteIncognitoMismatchFails) {
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
                           mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis,
@@ -333,7 +333,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteOffTheRecordMismatchFails) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis, bool off_the_record,
+             int tab_id, int64_t timeout_millis, bool incognito,
              const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
             cb.Run(CreateMojoRoute(), mojo::String(),
                    interfaces::RouteRequestResultCode::OK);
@@ -341,10 +341,9 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteOffTheRecordMismatchFails) {
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  std::string error(
-      "Mismatch in off the record status: request = 1, response = 0");
+  std::string error("Mismatch in incognito status: request = 1, response = 0");
   EXPECT_CALL(handler, DoInvoke(nullptr, "", error,
-                                RouteRequestResult::OFF_THE_RECORD_MISMATCH))
+                                RouteRequestResult::INCOGNITO_MISMATCH))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
@@ -355,9 +354,9 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteOffTheRecordMismatchFails) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
+TEST_F(MediaRouterMojoImplTest, IncognitoRoutesTerminatedOnProfileShutdown) {
   interfaces::MediaRoutePtr route = CreateMojoRoute();
-  route->off_the_record = true;
+  route->incognito = true;
 
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
@@ -366,10 +365,10 @@ TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis, bool off_the_record,
+             int tab_id, int64_t timeout_millis, bool incognito,
              const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
             interfaces::MediaRoutePtr route = CreateMojoRoute();
-            route->off_the_record = true;
+            route->incognito = true;
             cb.Run(std::move(route), mojo::String(),
                    interfaces::RouteRequestResultCode::OK);
           }));
@@ -396,7 +395,7 @@ TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
        }));
 
   base::RunLoop run_loop2;
-  router()->OnOffTheRecordProfileShutdown();
+  router()->OnIncognitoProfileShutdown();
   run_loop2.RunUntilIdle();
 }
 
@@ -424,7 +423,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& presentation_id,
           const mojo::String& origin, int tab_id, int64_t timeout_millis,
-          bool off_the_record,
+          bool incognito,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), mojo::String(),
                interfaces::RouteRequestResultCode::OK);
@@ -475,7 +474,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& presentation_id,
              const mojo::String& origin, int tab_id, int64_t timeout_millis,
-             bool off_the_record,
+             bool incognito,
              const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
             cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
                    interfaces::RouteRequestResultCode::TIMED_OUT);
@@ -495,7 +494,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, JoinRouteOffTheRecordMismatchFails) {
+TEST_F(MediaRouterMojoImplTest, JoinRouteIncognitoMismatchFails) {
   interfaces::MediaRoutePtr route = CreateMojoRoute();
 
   // Make sure the MR has received an update with the route, so it knows there
@@ -516,7 +515,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteOffTheRecordMismatchFails) {
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& presentation_id,
           const mojo::String& origin, int tab_id, int64_t timeout_millis,
-          bool off_the_record,
+          bool incognito,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), mojo::String(),
                interfaces::RouteRequestResultCode::OK);
@@ -524,10 +523,9 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteOffTheRecordMismatchFails) {
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  std::string error(
-      "Mismatch in off the record status: request = 1, response = 0");
+  std::string error("Mismatch in incognito status: request = 1, response = 0");
   EXPECT_CALL(handler, DoInvoke(nullptr, "", error,
-                                RouteRequestResult::OFF_THE_RECORD_MISMATCH))
+                                RouteRequestResult::INCOGNITO_MISMATCH))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
@@ -542,7 +540,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
                             false);
-  expected_route.set_off_the_record(false);
+  expected_route.set_incognito(false);
   interfaces::MediaRoutePtr route = CreateMojoRoute();
 
   // Use a lambda function as an invocation target here to work around
@@ -556,7 +554,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& route_id,
           const mojo::String& presentation_id, const mojo::String& origin,
-          int tab_id, int64_t timeout_millis, bool off_the_record,
+          int tab_id, int64_t timeout_millis, bool incognito,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), mojo::String(),
                interfaces::RouteRequestResultCode::OK);
@@ -585,7 +583,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& route_id,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis, bool off_the_record,
+             int tab_id, int64_t timeout_millis, bool incognito,
              const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
             cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
                    interfaces::RouteRequestResultCode::TIMED_OUT);
@@ -605,7 +603,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdOffTheRecordMismatchFails) {
+TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdIncognitoMismatchFails) {
   interfaces::MediaRoutePtr route = CreateMojoRoute();
 
   // Use a lambda function as an invocation target here to work around
@@ -619,7 +617,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdOffTheRecordMismatchFails) {
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& route_id,
           const mojo::String& presentation_id, const mojo::String& origin,
-          int tab_id, int64_t timeout_millis, bool off_the_record,
+          int tab_id, int64_t timeout_millis, bool incognito,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), mojo::String(),
                interfaces::RouteRequestResultCode::OK);
@@ -627,10 +625,9 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdOffTheRecordMismatchFails) {
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  std::string error(
-      "Mismatch in off the record status: request = 1, response = 0");
+  std::string error("Mismatch in incognito status: request = 1, response = 0");
   EXPECT_CALL(handler, DoInvoke(nullptr, "", error,
-                                RouteRequestResult::OFF_THE_RECORD_MISMATCH))
+                                RouteRequestResult::INCOGNITO_MISMATCH))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
@@ -927,7 +924,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
                                        kDescription, false, "", false));
   MediaRoute incognito_expected_route(kRouteId2, media_source, kSinkId,
                                       kDescription, false, "", false);
-  incognito_expected_route.set_off_the_record(true);
+  incognito_expected_route.set_incognito(true);
   expected_routes.push_back(incognito_expected_route);
   std::vector<MediaRoute::Id> expected_joinable_route_ids;
   expected_joinable_route_ids.push_back(kJoinableRouteId);
@@ -941,7 +938,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   mojo_routes[0] = CreateMojoRoute();
   mojo_routes[1] = CreateMojoRoute();
   mojo_routes[1]->media_route_id = kRouteId2;
-  mojo_routes[1]->off_the_record = true;
+  mojo_routes[1]->incognito = true;
 
   EXPECT_CALL(routes_observer, OnRoutesUpdated(SequenceEquals(expected_routes),
                                                expected_joinable_route_ids));

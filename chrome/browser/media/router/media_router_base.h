@@ -28,9 +28,9 @@ class MediaRouterBase : public MediaRouter {
       const content::PresentationConnectionStateChangedCallback& callback)
       override;
 
-  // Called when the off the record (incognito) profile for this instance is
-  // being shut down.  This will terminate all off the record media routes.
-  void OnOffTheRecordProfileShutdown() override;
+  // Called when the incognito profile for this instance is being shut down.
+  // This will terminate all incognito media routes.
+  void OnIncognitoProfileShutdown() override;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,

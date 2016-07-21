@@ -74,13 +74,10 @@ class MediaRoute {
 
   bool for_display() const { return for_display_; }
 
-  // Sets off_the_record.  Set this to true when the route was created by an off
-  // the record (incognito) profile.
-  void set_off_the_record(bool off_the_record) {
-    off_the_record_ = off_the_record;
-  }
+  // Set this to true when the route was created by an incognito profile.
+  void set_incognito(bool incognito) { incognito_ = incognito; }
 
-  bool off_the_record() const { return off_the_record_; }
+  bool incognito() const { return incognito_; }
 
   bool Equals(const MediaRoute& other) const;
 
@@ -92,7 +89,7 @@ class MediaRoute {
   bool is_local_;
   std::string custom_controller_path_;
   bool for_display_;
-  bool off_the_record_;
+  bool incognito_;
 };
 
 }  // namespace media_router

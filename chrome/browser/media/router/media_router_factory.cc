@@ -44,7 +44,7 @@ void MediaRouterFactory::BrowserContextShutdown(
     MediaRouter* router =
         static_cast<MediaRouter*>(GetServiceForBrowserContext(context, false));
     if (router)
-      router->OnOffTheRecordProfileShutdown();
+      router->OnIncognitoProfileShutdown();
   }
   BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }

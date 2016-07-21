@@ -26,13 +26,13 @@ class MediaRouterFactory : public BrowserContextKeyedServiceFactory {
 
  protected:
   // We override the shutdown method for the factory to give the Media Router a
-  // chance to remove off the record media routes.
+  // chance to remove incognito media routes.
   void BrowserContextShutdown(content::BrowserContext* context) override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaRouterFactory>;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterFactoryTest,
-                           OffTheRecordBrowserContextShutdown);
+                           IncognitoBrowserContextShutdown);
 
   MediaRouterFactory();
   ~MediaRouterFactory() override;

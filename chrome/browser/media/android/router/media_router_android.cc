@@ -78,7 +78,7 @@ void MediaRouterAndroid::CreateRoute(
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
-    bool off_the_record) {
+    bool incognito) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
@@ -134,7 +134,7 @@ void MediaRouterAndroid::ConnectRouteByRouteId(
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
-    bool off_the_record) {
+    bool incognito) {
   NOTIMPLEMENTED();
 }
 
@@ -145,7 +145,7 @@ void MediaRouterAndroid::JoinRoute(
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
-    bool off_the_record) {
+    bool incognito) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(

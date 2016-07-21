@@ -749,20 +749,19 @@ void PresentationServiceDelegateImpl::JoinSession(
     const std::string& presentation_id,
     const content::PresentationSessionStartedCallback& success_cb,
     const content::PresentationSessionErrorCallback& error_cb) {
-  bool off_the_record = web_contents_->GetBrowserContext()->IsOffTheRecord();
+  bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &PresentationServiceDelegateImpl::OnJoinRouteResponse,
       weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
       content::PresentationSessionInfo(presentation_url, presentation_id),
       success_cb, error_cb));
-  router_->JoinRoute(MediaSourceForPresentationUrl(presentation_url).id(),
-                     presentation_id,
-                     GetLastCommittedURLForFrame(
-                         RenderFrameHostId(render_process_id, render_frame_id))
-                         .GetOrigin(),
-                     web_contents_, route_response_callbacks, base::TimeDelta(),
-                     off_the_record);
+  router_->JoinRoute(
+      MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
+      GetLastCommittedURLForFrame(
+          RenderFrameHostId(render_process_id, render_frame_id))
+          .GetOrigin(),
+      web_contents_, route_response_callbacks, base::TimeDelta(), incognito);
 }
 
 void PresentationServiceDelegateImpl::CloseConnection(

@@ -78,7 +78,7 @@ TypeConverter<media_router::MediaRoute, MediaRoutePtr>::Convert(
       input->media_route_id, media_router::MediaSource(input->media_source),
       input->media_sink_id, input->description, input->is_local,
       input->custom_controller_path, input->for_display);
-  media_route.set_off_the_record(input->off_the_record);
+  media_route.set_incognito(input->incognito);
   return media_route;
 }
 
@@ -91,7 +91,7 @@ TypeConverter<std::unique_ptr<media_router::MediaRoute>,
           input->media_route_id, media_router::MediaSource(input->media_source),
           input->media_sink_id, input->description, input->is_local,
           input->custom_controller_path, input->for_display));
-  media_route->set_off_the_record(input->off_the_record);
+  media_route->set_incognito(input->incognito);
   return media_route;
 }
 
@@ -189,8 +189,8 @@ media_router::RouteRequestResult::ResultCode RouteRequestResultCodeFromMojo(
       return media_router::RouteRequestResult::SINK_NOT_FOUND;
     case RouteRequestResultCode::INVALID_ORIGIN:
       return media_router::RouteRequestResult::INVALID_ORIGIN;
-    case RouteRequestResultCode::OFF_THE_RECORD_MISMATCH:
-      return media_router::RouteRequestResult::OFF_THE_RECORD_MISMATCH;
+    case RouteRequestResultCode::INCOGNITO_MISMATCH:
+      return media_router::RouteRequestResult::INCOGNITO_MISMATCH;
     case RouteRequestResultCode::NO_SUPPORTED_PROVIDER:
       return media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER;
     default:

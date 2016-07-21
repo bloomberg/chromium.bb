@@ -41,10 +41,10 @@ TEST(MediaRouteTest, Equals) {
                     "Description", false, "", false);
   EXPECT_FALSE(route1.Equals(route5));
 
-  // Same as route1 with different off_the_record.
+  // Same as route1 with different incognito.
   MediaRoute route6(kRouteId1, MediaSourceForCastApp("DialApp"), "sinkId",
                     "Description", true, "", false);
-  route6.set_off_the_record(true);
+  route6.set_incognito(true);
   EXPECT_TRUE(route1.Equals(route6));
 }
 

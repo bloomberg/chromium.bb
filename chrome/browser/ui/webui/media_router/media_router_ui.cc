@@ -369,15 +369,14 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   GURL origin;
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   base::TimeDelta timeout;
-  bool off_the_record;
+  bool incognito;
   if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
+                          &route_response_callbacks, &timeout, &incognito)) {
     SendIssueForUnableToCast(cast_mode);
     return false;
   }
   router_->CreateRoute(source_id, sink_id, origin, initiator_,
-                       route_response_callbacks, timeout, off_the_record);
+                       route_response_callbacks, timeout, incognito);
   return true;
 }
 
@@ -388,7 +387,7 @@ bool MediaRouterUI::SetRouteParameters(
     GURL* origin,
     std::vector<MediaRouteResponseCallback>* route_response_callbacks,
     base::TimeDelta* timeout,
-    bool* off_the_record) {
+    bool* incognito) {
   DCHECK(query_result_manager_.get());
   DCHECK(initiator_);
 
@@ -455,7 +454,7 @@ bool MediaRouterUI::SetRouteParameters(
   }
 
   *timeout = GetRouteRequestTimeout(cast_mode);
-  *off_the_record = Profile::FromWebUI(web_ui())->IsOffTheRecord();
+  *incognito = Profile::FromWebUI(web_ui())->IsOffTheRecord();
 
   return true;
 }
@@ -466,16 +465,14 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
   GURL origin;
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   base::TimeDelta timeout;
-  bool off_the_record;
+  bool incognito;
   if (!SetRouteParameters(sink_id, MediaCastMode::DEFAULT, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
+                          &route_response_callbacks, &timeout, &incognito)) {
     SendIssueForUnableToCast(MediaCastMode::DEFAULT);
     return false;
   }
   router_->ConnectRouteByRouteId(source_id, route_id, origin, initiator_,
-                                 route_response_callbacks, timeout,
-                                 off_the_record);
+                                 route_response_callbacks, timeout, incognito);
   return true;
 }
 
@@ -601,15 +598,14 @@ void MediaRouterUI::OnSearchSinkResponseReceived(
   GURL origin;
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   base::TimeDelta timeout;
-  bool off_the_record;
+  bool incognito;
   if (!SetRouteParameters(found_sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout,
-                          &off_the_record)) {
+                          &route_response_callbacks, &timeout, &incognito)) {
     SendIssueForUnableToCast(cast_mode);
     return;
   }
   router_->CreateRoute(source_id, found_sink_id, origin, initiator_,
-                       route_response_callbacks, timeout, off_the_record);
+                       route_response_callbacks, timeout, incognito);
 }
 
 void MediaRouterUI::SendIssueForRouteTimeout(

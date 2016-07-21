@@ -78,7 +78,7 @@ class PresentationServiceDelegateImplTest
  protected:
   virtual content::WebContents* GetWebContents() { return web_contents(); }
 
-  void RunDefaultPresentationUrlCallbackTest(bool off_the_record) {
+  void RunDefaultPresentationUrlCallbackTest(bool incognito) {
     content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
     ASSERT_TRUE(main_frame);
     int render_process_id = main_frame->GetProcess()->GetID();
@@ -109,7 +109,7 @@ class PresentationServiceDelegateImplTest
     MediaRoute* media_route = new MediaRoute(
         "differentRouteId", MediaSourceForPresentationUrl(presentation_url2),
         "mediaSinkId", "", true, "", true);
-    media_route->set_off_the_record(off_the_record);
+    media_route->set_incognito(incognito);
     result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route),
                                              "differentPresentationId");
     delegate_impl_->OnRouteResponse(different_request, *result);
@@ -120,7 +120,7 @@ class PresentationServiceDelegateImplTest
     MediaRoute* media_route2 = new MediaRoute(
         "routeId", MediaSourceForPresentationUrl(presentation_url1),
         "mediaSinkId", "", true, "", true);
-    media_route2->set_off_the_record(off_the_record);
+    media_route2->set_incognito(incognito);
     result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route2),
                                              "presentationId");
     delegate_impl_->OnRouteResponse(request, *result);

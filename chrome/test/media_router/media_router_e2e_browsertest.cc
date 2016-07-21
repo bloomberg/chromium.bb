@@ -102,7 +102,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
                  base::Unretained(this)));
   media_router_->CreateRoute(source.id(), sink.id(), origin, web_contents,
                              route_response_callbacks, base::TimeDelta(),
-                             is_off_the_record());
+                             is_incognito());
 
   // Wait for the route request to be fulfilled (and route to be started).
   ASSERT_TRUE(ConditionalWait(

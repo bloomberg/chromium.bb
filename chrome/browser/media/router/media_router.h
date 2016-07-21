@@ -79,8 +79,7 @@ class MediaRouter : public KeyedService {
   // success or failure, in the order they are listed.
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
-  // If |off_the_record| is true, the request was made by an off the record
-  // (incognito) profile.
+  // If |incognito| is true, the request was made by an incognito profile.
   virtual void CreateRoute(
       const MediaSource::Id& source_id,
       const MediaSink::Id& sink_id,
@@ -88,7 +87,7 @@ class MediaRouter : public KeyedService {
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
-      bool off_the_record) = 0;
+      bool incognito) = 0;
 
   // Creates a route and connects it to an existing route identified by
   // |route_id|. |route_id| must refer to a non-local route, unnassociated with
@@ -102,8 +101,7 @@ class MediaRouter : public KeyedService {
   // success or failure, in the order they are listed.
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
-  // If |off_the_record| is true, the request was made by an off the record
-  // (incognito) profile.
+  // If |incognito| is true, the request was made by an incognito profile.
   virtual void ConnectRouteByRouteId(
       const MediaSource::Id& source_id,
       const MediaRoute::Id& route_id,
@@ -111,7 +109,7 @@ class MediaRouter : public KeyedService {
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
-      bool off_the_record) = 0;
+      bool incognito) = 0;
 
   // Joins an existing route identified by |presentation_id|.
   // |source|: The source to route to the existing route.
@@ -123,8 +121,7 @@ class MediaRouter : public KeyedService {
   // success or failure, in the order they are listed.
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
-  // If |off_the_record| is true, the request was made by an off the record
-  // (incognito) profile.
+  // If |incognito| is true, the request was made by an incognito profile.
   virtual void JoinRoute(
       const MediaSource::Id& source,
       const std::string& presentation_id,
@@ -132,7 +129,7 @@ class MediaRouter : public KeyedService {
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
-      bool off_the_record) = 0;
+      bool incognito) = 0;
 
   // Terminates the media route specified by |route_id|.
   virtual void TerminateRoute(const MediaRoute::Id& route_id) = 0;
@@ -185,9 +182,9 @@ class MediaRouter : public KeyedService {
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback) = 0;
 
-  // Called when the off the record (incognito) profile for this instance is
-  // being shut down.  This will terminate all off the record media routes.
-  virtual void OnOffTheRecordProfileShutdown() = 0;
+  // Called when the incognito profile for this instance is being shut down.
+  // This will terminate all incognito media routes.
+  virtual void OnIncognitoProfileShutdown() = 0;
 
  private:
   friend class IssuesObserver;

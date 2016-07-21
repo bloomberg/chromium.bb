@@ -57,9 +57,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void UpdateMaxDialogHeight(int height);
 
   void SetWebUIForTest(content::WebUI* webui);
-  void set_off_the_record_for_test(bool off_the_record) {
-    off_the_record_ = off_the_record;
-  }
+  void set_incognito_for_test(bool incognito) { incognito_ = incognito; }
 
  private:
   // WebUIMessageHandler implementation.
@@ -120,8 +118,8 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // Marked virtual for tests.
   virtual AccountInfo GetAccountInfo();
 
-  // |true| if the associated Profile is off the record.
-  bool off_the_record_;
+  // |true| if the associated Profile is incognito.
+  bool incognito_;
 
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;

@@ -27,18 +27,18 @@ class MediaRouterBase::InternalMediaRoutesObserver
   void OnRoutesUpdated(
       const std::vector<MediaRoute>& routes,
       const std::vector<MediaRoute::Id>& joinable_route_ids) override {
-    off_the_record_route_ids.clear();
+    incognito_route_ids.clear();
     // TODO(crbug.com/611486): Have the MRPM pass a list of joinable route ids
     // via |joinable_route_ids|, and check here if it is non-empty.
     has_route = !routes.empty();
     for (const auto& route : routes) {
-      if (route.off_the_record())
-        off_the_record_route_ids.push_back(route.media_route_id());
+      if (route.incognito())
+        incognito_route_ids.push_back(route.media_route_id());
     }
   }
 
   bool has_route;
-  std::vector<MediaRoute::Id> off_the_record_route_ids;
+  std::vector<MediaRoute::Id> incognito_route_ids;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InternalMediaRoutesObserver);
@@ -67,9 +67,8 @@ MediaRouterBase::AddPresentationConnectionStateChangedCallback(
   return callbacks->Add(callback);
 }
 
-void MediaRouterBase::OnOffTheRecordProfileShutdown() {
-  for (const auto& route_id :
-       internal_routes_observer_->off_the_record_route_ids)
+void MediaRouterBase::OnIncognitoProfileShutdown() {
+  for (const auto& route_id : internal_routes_observer_->incognito_route_ids)
     TerminateRoute(route_id);
 }
 

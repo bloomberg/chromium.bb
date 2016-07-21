@@ -37,7 +37,7 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                     const mojo::String& origin,
                     int tab_id,
                     int64_t timeout_secs,
-                    bool off_the_record,
+                    bool incognito,
                     const CreateRouteCallback& callback));
   MOCK_METHOD7(JoinRoute,
                void(const mojo::String& source_urn,
@@ -45,7 +45,7 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                     const mojo::String& origin,
                     int tab_id,
                     int64_t timeout_secs,
-                    bool off_the_record,
+                    bool incognito,
                     const JoinRouteCallback& callback));
   MOCK_METHOD8(ConnectRouteByRouteId,
                void(const mojo::String& source_urn,
@@ -54,7 +54,7 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                     const mojo::String& origin,
                     int tab_id,
                     int64_t timeout_secs,
-                    bool off_the_record,
+                    bool incognito,
                     const JoinRouteCallback& callback));
   MOCK_METHOD1(DetachRoute, void(const mojo::String& route_id));
   MOCK_METHOD2(TerminateRoute, void(const mojo::String& route_id,

@@ -39,14 +39,14 @@ class MediaRouterAndroid : public MediaRouterBase {
                    content::WebContents* web_contents,
                    const std::vector<MediaRouteResponseCallback>& callbacks,
                    base::TimeDelta timeout,
-                   bool off_the_record) override;
+                   bool incognito) override;
   void JoinRoute(const MediaSource::Id& source,
                  const std::string& presentation_id,
                  const GURL& origin,
                  content::WebContents* web_contents,
                  const std::vector<MediaRouteResponseCallback>& callbacks,
                  base::TimeDelta timeout,
-                 bool off_the_record) override;
+                 bool incognito) override;
   void ConnectRouteByRouteId(
       const MediaSource::Id& source,
       const MediaRoute::Id& route_id,
@@ -54,7 +54,7 @@ class MediaRouterAndroid : public MediaRouterBase {
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
-      bool off_the_record) override;
+      bool incognito) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,

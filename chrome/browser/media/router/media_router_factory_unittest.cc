@@ -39,29 +39,29 @@ TEST_F(MediaRouterFactoryTest, CreateForRegularProfile) {
   ASSERT_TRUE(MediaRouterFactory::GetApiForBrowserContext(profile()));
 }
 
-TEST_F(MediaRouterFactoryTest, CreateForOffTheRecordProfile) {
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
-  ASSERT_TRUE(otr_profile);
+TEST_F(MediaRouterFactoryTest, CreateForIncognitoProfile) {
+  Profile* incognito_profile = profile()->GetOffTheRecordProfile();
+  ASSERT_TRUE(incognito_profile);
 
-  // Makes sure a MediaRouter can be created from an OTR Profile.
+  // Makes sure a MediaRouter can be created from an incognito Profile.
   MediaRouter* router =
-      MediaRouterFactory::GetApiForBrowserContext(otr_profile);
+      MediaRouterFactory::GetApiForBrowserContext(incognito_profile);
   ASSERT_TRUE(router);
 
-  // A Profile and its OTR Profile share the same MediaRouter instance.
+  // A Profile and its incognito Profile share the same MediaRouter instance.
   ASSERT_EQ(router, MediaRouterFactory::GetApiForBrowserContext(profile()));
 }
 
-TEST_F(MediaRouterFactoryTest, OffTheRecordBrowserContextShutdown) {
+TEST_F(MediaRouterFactoryTest, IncognitoBrowserContextShutdown) {
   MediaRouterFactory::GetMediaRouterFactoryForTest()->SetTestingFactory(
       profile(), &CreateMockMediaRouter);
 
-  // Creates an off the record profile.
+  // Creates an incognito profile.
   profile()->GetOffTheRecordProfile();
   MockMediaRouter* router = static_cast<MockMediaRouter*>(
       MediaRouterFactory::GetApiForBrowserContext(profile()));
   ASSERT_TRUE(router);
-  EXPECT_CALL(*router, OnOffTheRecordProfileShutdown());
+  EXPECT_CALL(*router, OnIncognitoProfileShutdown());
   profile()->DestroyOffTheRecordProfile();
 }
 

@@ -385,8 +385,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   EXPECT_EQ(expected_path, custom_controller_path);
 }
 
-TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesOffTheRecord) {
-  handler_->set_off_the_record_for_test(true);
+TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesIncognito) {
+  handler_->set_incognito_for_test(true);
 
   MediaRoute::Id route_id("routeId123");
   MediaSink::Id sink_id("sinkId123");
@@ -441,10 +441,10 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   std::string description("This is a route");
   bool is_local = true;
   bool is_for_display = true;
-  bool off_the_record = false;
+  bool incognito = false;
   MediaRoute route(route_id, MediaSource("mediaSource"), sink_id, description,
                    is_local, kControllerPathForTesting, is_for_display);
-  route.set_off_the_record(off_the_record);
+  route.set_incognito(incognito);
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId())
       .WillOnce(ReturnRef(provider_extension_id()));
@@ -487,8 +487,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest,
-       OnCreateRouteResponseReceivedOffTheRecord) {
-  handler_->set_off_the_record_for_test(true);
+       OnCreateRouteResponseReceivedIncognito) {
+  handler_->set_incognito_for_test(true);
 
   MediaRoute::Id route_id("routeId123");
   MediaSink::Id sink_id("sinkId123");
@@ -496,10 +496,10 @@ TEST_F(MediaRouterWebUIMessageHandlerTest,
   std::string description("This is a route");
   bool is_local = true;
   bool is_for_display = true;
-  bool off_the_record = true;
+  bool incognito = true;
   MediaRoute route(route_id, MediaSource("mediaSource"), sink_id, description,
                    is_local, kControllerPathForTesting, is_for_display);
-  route.set_off_the_record(off_the_record);
+  route.set_incognito(incognito);
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));

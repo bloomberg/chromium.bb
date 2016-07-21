@@ -262,7 +262,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
       GURL* origin,
       std::vector<MediaRouteResponseCallback>* route_response_callbacks,
       base::TimeDelta* timeout,
-      bool* off_the_record);
+      bool* incognito);
 
   // Updates the set of supported cast modes and sends the updated set to
   // |handler_|.

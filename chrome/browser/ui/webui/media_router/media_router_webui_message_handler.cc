@@ -142,7 +142,7 @@ std::unique_ptr<base::DictionaryValue> RouteToValue(
     const MediaRoute& route,
     bool can_join,
     const std::string& extension_id,
-    bool off_the_record,
+    bool incognito,
     int current_cast_mode) {
   std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetString("id", route.media_route_id());
@@ -155,7 +155,7 @@ std::unique_ptr<base::DictionaryValue> RouteToValue(
   }
 
   const std::string& custom_path = route.custom_controller_path();
-  if (!off_the_record && !custom_path.empty()) {
+  if (!incognito && !custom_path.empty()) {
     std::string full_custom_controller_path = base::StringPrintf("%s://%s/%s",
         extensions::kExtensionScheme, extension_id.c_str(),
             custom_path.c_str());
@@ -233,7 +233,7 @@ std::string GetLearnMoreUrl(const base::DictionaryValue* args) {
 
 MediaRouterWebUIMessageHandler::MediaRouterWebUIMessageHandler(
     MediaRouterUI* media_router_ui)
-    : off_the_record_(
+    : incognito_(
           Profile::FromWebUI(media_router_ui->web_ui())->IsOffTheRecord()),
       dialog_closing_(false),
       media_router_ui_(media_router_ui) {}
@@ -278,7 +278,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
         route->media_route_id(), media_router_ui_->current_cast_modes());
     std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
         *route, false, media_router_ui_->GetRouteProviderExtensionId(),
-        off_the_record_, current_cast_mode));
+        incognito_, current_cast_mode));
     web_ui()->CallJavascriptFunctionUnsafe(
         kOnCreateRouteResponseReceived, base::StringValue(sink_id),
         *route_value, base::FundamentalValue(route->for_display()));
@@ -884,7 +884,7 @@ std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
     int current_cast_mode = CurrentCastModeForRouteId(route.media_route_id(),
                                                       current_cast_modes);
     std::unique_ptr<base::DictionaryValue> route_val(RouteToValue(
-        route, can_join, extension_id, off_the_record_, current_cast_mode));
+        route, can_join, extension_id, incognito_, current_cast_mode));
     value->Append(std::move(route_val));
   }
 

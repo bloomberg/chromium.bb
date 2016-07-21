@@ -41,7 +41,7 @@ class RouteRequestResult {
     ROUTE_NOT_FOUND = 3,
     SINK_NOT_FOUND = 4,
     INVALID_ORIGIN = 5,
-    OFF_THE_RECORD_MISMATCH = 6,
+    INCOGNITO_MISMATCH = 6,
     NO_SUPPORTED_PROVIDER = 7,
     // New values must be added here.
 

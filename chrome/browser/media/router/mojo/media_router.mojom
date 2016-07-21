@@ -46,9 +46,8 @@ struct MediaRoute {
   string? custom_controller_path;
   // Set to true if this route should be displayed for |media_sink_id| in UI.
   bool for_display;
-  // Set to true if this route was created by an off the record (incognito)
-  // profile.
-  bool off_the_record;
+  // Set to true if this route was created by an incognito profile.
+  bool incognito;
 };
 
 // Notifications or an actionable events to be shown to the user.
@@ -133,7 +132,7 @@ enum RouteRequestResultCode {
   ROUTE_NOT_FOUND,
   SINK_NOT_FOUND,
   INVALID_ORIGIN,
-  OFF_THE_RECORD_MISMATCH,
+  INCOGNITO_MISMATCH,
   NO_SUPPORTED_PROVIDER
 // New values must be added here.
 };
@@ -154,8 +153,7 @@ interface MediaRouteProvider {
   // If |timeout_millis| is positive, it will be used in place of the default
   // timeout defined by Media Route Provider Manager.
   //
-  // If |off_the_record| is true, the request was made by an off the record
-  // (incognito) profile.
+  // If |incognito| is true, the request was made by an incognito profile.
   //
   // If the operation was successful, |route| will be defined and
   //     |error_text| will be null.
@@ -169,7 +167,7 @@ interface MediaRouteProvider {
               string origin,
               int32 tab_id,
               int64 timeout_millis,
-              bool off_the_record) =>
+              bool incognito) =>
                   (MediaRoute? route,
                    string? error_text,
                    RouteRequestResultCode result_code);
@@ -183,8 +181,8 @@ interface MediaRouteProvider {
   // If |timeout_millis| is positive, it will be used in place of the default
   // timeout defined by Media Route Provider Manager.
   //
-  // If the route request was created by an off the record (incognito) profile,
-  // |off_the_record| must be true.
+  // If the route request was created by an incognito profile,
+  // |incognito| must be true.
   //
   // If the operation was successful, |route| will be defined and
   //     |error_text| will be null.
@@ -197,7 +195,7 @@ interface MediaRouteProvider {
             string origin,
             int32 tab_id,
             int64 timeout_millis,
-            bool off_the_record) =>
+            bool incognito) =>
                 (MediaRoute? route,
                  string? error_text,
                  RouteRequestResultCode result_code);
@@ -216,8 +214,8 @@ interface MediaRouteProvider {
   // timeout defined by Media Route Provider Manager; see CreateRoute for
   // additional documentation.
   //
-  // If the route request was created by an off the record (incognito) profile,
-  // |off_the_record| must be true.
+  // If the route request was created by an incognito profile,
+  // |incognito| must be true.
   //
   // If the operation was successful, |route| will be defined and
   // |error_text| will be null. If the operation failed, |route| will be null
@@ -231,7 +229,7 @@ interface MediaRouteProvider {
                         string origin,
                         int32 tab_id,
                         int64 timeout_millis,
-                        bool off_the_record) =>
+                        bool incognito) =>
                             (MediaRoute? route,
                              string? error_text,
                              RouteRequestResultCode result_code);
@@ -392,4 +390,3 @@ interface MediaRouter {
   OnRouteMessagesReceived(string route_id,
                           array<RouteMessage> messages);
 };
-

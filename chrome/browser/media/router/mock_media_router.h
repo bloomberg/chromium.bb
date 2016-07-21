@@ -32,7 +32,7 @@ class MockMediaRouter : public MediaRouter {
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
-                    bool off_the_record));
+                    bool incognito));
   MOCK_METHOD7(JoinRoute,
                void(const MediaSource::Id& source,
                     const std::string& presentation_id,
@@ -40,7 +40,7 @@ class MockMediaRouter : public MediaRouter {
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
-                    bool off_the_record));
+                    bool incognito));
   MOCK_METHOD7(ConnectRouteByRouteId,
                void(const MediaSource::Id& source,
                     const MediaRoute::Id& route_id,
@@ -48,7 +48,7 @@ class MockMediaRouter : public MediaRouter {
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
-                    bool off_the_record));
+                    bool incognito));
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD3(SendRouteMessage,
@@ -86,7 +86,7 @@ class MockMediaRouter : public MediaRouter {
     return connection_state_callbacks_.Add(callback);
   }
 
-  MOCK_METHOD0(OnOffTheRecordProfileShutdown, void());
+  MOCK_METHOD0(OnIncognitoProfileShutdown, void());
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&
                         callback));

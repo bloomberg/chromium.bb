@@ -78,7 +78,7 @@ define('media_router_bindings', [
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
       'for_display': route.forDisplay, // M47
-      'off_the_record': !!route.offTheRecord  // M50
+      'incognito': !!route.offTheRecord  // M50
     });
   }
 
@@ -603,18 +603,18 @@ define('media_router_bindings', [
    * @param {!number} timeoutMillis If positive, the timeout duration for the
    *     request, measured in seconds. Otherwise, the default duration will be
    *     used.
-   * @param {!boolean} offTheRecord If true, the route is being requested by
-   *     an off the record (incognito) profile.
+   * @param {!boolean} incognito If true, the route is being requested by
+   *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.createRoute =
       function(sourceUrn, sinkId, presentationId, origin, tabId,
-          timeoutMillis, offTheRecord) {
+          timeoutMillis, incognito) {
     return this.handlers_.createRoute(
         sourceUrn, sinkId, presentationId, origin, tabId, timeoutMillis,
-        offTheRecord)
+        incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },
@@ -634,17 +634,17 @@ define('media_router_bindings', [
    * @param {!number} timeoutMillis If positive, the timeout duration for the
    *     request, measured in seconds. Otherwise, the default duration will be
    *     used.
-   * @param {!boolean} offTheRecord If true, the route is being requested by
-   *     an off the record (incognito) profile.
+   * @param {!boolean} incognito If true, the route is being requested by
+   *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.joinRoute =
       function(sourceUrn, presentationId, origin, tabId, timeoutMillis,
-               offTheRecord) {
+               incognito) {
     return this.handlers_.joinRoute(
-        sourceUrn, presentationId, origin, tabId, timeoutMillis, offTheRecord)
+        sourceUrn, presentationId, origin, tabId, timeoutMillis, incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },
@@ -665,18 +665,18 @@ define('media_router_bindings', [
    * @param {!number} timeoutMillis If positive, the timeout duration for the
    *     request, measured in seconds. Otherwise, the default duration will be
    *     used.
-   * @param {!boolean} offTheRecord If true, the route is being requested by
-   *     an off the record (incognito) profile.
+   * @param {!boolean} incognito If true, the route is being requested by
+   *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.connectRouteByRouteId =
       function(sourceUrn, routeId, presentationId, origin, tabId,
-               timeoutMillis, offTheRecord) {
+               timeoutMillis, incognito) {
     return this.handlers_.connectRouteByRouteId(
         sourceUrn, routeId, presentationId, origin, tabId, timeoutMillis,
-        offTheRecord)
+        incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },

@@ -68,7 +68,7 @@ class MediaRouterBaseBrowserTest : public ExtensionBrowserTest,
 
   bool is_extension_host_created() const { return extension_host_created_; }
 
-  bool is_off_the_record() { return profile()->IsOffTheRecord(); }
+  bool is_incognito() { return profile()->IsOffTheRecord(); }
 
   // These values are initialized via flags.
   base::FilePath extension_crx_;

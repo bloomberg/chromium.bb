@@ -23,7 +23,7 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
       is_local_(is_local),
       custom_controller_path_(custom_controller_path),
       for_display_(for_display),
-      off_the_record_(false) {}
+      incognito_(false) {}
 
 MediaRoute::MediaRoute(const MediaRoute& other) = default;
 
