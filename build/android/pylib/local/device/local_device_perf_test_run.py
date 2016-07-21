@@ -13,7 +13,6 @@ import time
 import zipfile
 
 from devil.android import battery_utils
-from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_list
 from devil.android import device_utils
@@ -296,12 +295,9 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     if not self._test_buckets:
       raise local_device_test_run.NoTestsError()
 
-    blacklist = (device_blacklist.Blacklist(self._env.blacklist)
-                 if self._env.blacklist
-                 else None)
-
     def run_perf_tests(shard_id):
-      if device_status.IsBlacklisted(str(self._devices[shard_id]), blacklist):
+      if device_status.IsBlacklisted(
+          str(self._devices[shard_id]), self._env.blacklist):
         logging.warning('Device %s is not active. Will not create shard %s.',
                         str(self._devices[shard_id]), shard_id)
         return []
