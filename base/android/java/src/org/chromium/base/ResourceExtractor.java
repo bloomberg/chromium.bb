@@ -4,16 +4,13 @@
 
 package org.chromium.base;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Trace;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 
@@ -92,12 +89,12 @@ public class ResourceExtractor {
                 return;
             }
 
-            beginTraceSection("checkPakTimeStamp");
+            TraceEvent.begin("checkPakTimeStamp");
             long curAppVersion = getApkVersion();
             SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
             long prevAppVersion = sharedPrefs.getLong(APP_VERSION_PREF, 0);
             boolean versionChanged = curAppVersion != prevAppVersion;
-            endTraceSection();
+            TraceEvent.end("checkPakTimeStamp");
 
             if (versionChanged) {
                 deleteFiles();
@@ -107,7 +104,7 @@ public class ResourceExtractor {
                 sharedPrefs.edit().putLong(APP_VERSION_PREF, curAppVersion).apply();
             }
 
-            beginTraceSection("WalkAssets");
+            TraceEvent.begin("WalkAssets");
             byte[] buffer = new byte[BUFFER_SIZE];
             try {
                 for (ResourceEntry entry : sResourcesToExtract) {
@@ -117,13 +114,13 @@ public class ResourceExtractor {
                     if (output.length() != 0) {
                         continue;
                     }
-                    beginTraceSection("ExtractResource");
+                    TraceEvent.begin("ExtractResource");
                     InputStream inputStream = mContext.getResources().openRawResource(
                             entry.resourceId);
                     try {
                         extractResourceHelper(inputStream, output, buffer);
                     } finally {
-                        endTraceSection(); // ExtractResource
+                        TraceEvent.end("ExtractResource");
                     }
                 }
             } catch (IOException e) {
@@ -135,21 +132,17 @@ public class ResourceExtractor {
                 deleteFiles();
                 return;
             } finally {
-                endTraceSection(); // WalkAssets
+                TraceEvent.end("WalkAssets");
             }
         }
 
         @Override
         protected Void doInBackground(Void... unused) {
-            // TODO(lizeb): Use chrome tracing here (and above in
-            // doInBackgroundImpl) when it will be possible. This is currently
-            // not doable since the native library is not loaded yet, and the
-            // TraceEvent calls are dropped before this point.
-            beginTraceSection("ResourceExtractor.ExtractTask.doInBackground");
+            TraceEvent.begin("ResourceExtractor.ExtractTask.doInBackground");
             try {
                 doInBackgroundImpl();
             } finally {
-                endTraceSection();
+                TraceEvent.end("ResourceExtractor.ExtractTask.doInBackground");
             }
             return null;
         }
@@ -163,11 +156,11 @@ public class ResourceExtractor {
 
         @Override
         protected void onPostExecute(Void result) {
-            beginTraceSection("ResourceExtractor.ExtractTask.onPostExecute");
+            TraceEvent.begin("ResourceExtractor.ExtractTask.onPostExecute");
             try {
                 onPostExecuteImpl();
             } finally {
-                endTraceSection();
+                TraceEvent.end("ResourceExtractor.ExtractTask.onPostExecute");
             }
         }
 
@@ -181,18 +174,6 @@ public class ResourceExtractor {
             } catch (PackageManager.NameNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-        private void beginTraceSection(String section) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return;
-            Trace.beginSection(section);
-        }
-
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-        private void endTraceSection() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return;
-            Trace.endSection();
         }
     }
 
