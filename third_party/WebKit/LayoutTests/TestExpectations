@@ -1359,6 +1359,8 @@ crbug.com/627798 fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failur
 crbug.com/627798 fast/repaint/resize-scrollable-iframe.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/text-match-document-change.html [ Pass Failure ]
 
+crbug.com/588956 [ Mac ] media/video-poster-scale.html [ NeedsRebaseline ]
+
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu-rasterization/fast/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
 crbug.com/627844 virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ NeedsManualRebaseline ]
