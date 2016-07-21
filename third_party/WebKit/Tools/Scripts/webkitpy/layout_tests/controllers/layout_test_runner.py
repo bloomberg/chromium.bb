@@ -284,7 +284,6 @@ class Worker(object):
 
         self._update_test_input(test_input)
         start = time.time()
-        device_failed = False
 
         _log.debug("%s %s started" % (self._name, test_input.test_name))
         self._caller.post('started_test', test_input)

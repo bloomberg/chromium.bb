@@ -132,7 +132,7 @@ class TextFileReader(object):
     def _process_directory(self, directory):
         """Process all files in the given directory, recursively."""
         # FIXME: We should consider moving to self.filesystem.files_under() (or adding walk() to FileSystem)
-        for dir_path, dir_names, file_names in os.walk(directory):
+        for dir_path, _, file_names in os.walk(directory):
             for file_name in file_names:
                 file_path = self.filesystem.join(dir_path, file_name)
                 self.process_file(file_path)

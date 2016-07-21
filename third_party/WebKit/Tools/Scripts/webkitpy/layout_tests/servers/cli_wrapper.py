@@ -66,7 +66,7 @@ def main(server_constructor, input_fn=None, argv=None, **kwargs):
     server.start()
     try:
         _ = input_fn('Hit any key to stop the server and exit.')
-    except (KeyboardInterrupt, EOFError) as e:
+    except (KeyboardInterrupt, EOFError):
         pass
 
     server.stop()

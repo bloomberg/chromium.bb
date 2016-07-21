@@ -311,7 +311,6 @@ class BotTestExpectations(object):
             # If there are only two entries, then that means it failed on the first
             # try and ran as expected on the second because otherwise we'd have
             # a third entry from the next try.
-            second_result_type_enum_value = self._result_to_enum(result_types[1])
             if only_ignore_very_flaky and len(result_types) == 2:
                 continue
 

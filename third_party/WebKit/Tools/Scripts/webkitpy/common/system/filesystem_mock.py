@@ -204,7 +204,7 @@ class MockFileSystem(object):
         return path
 
     def listdir(self, path):
-        root, dirs, files = list(self.walk(path))[0]
+        _, dirs, files = list(self.walk(path))[0]
         return dirs + files
 
     def walk(self, top):

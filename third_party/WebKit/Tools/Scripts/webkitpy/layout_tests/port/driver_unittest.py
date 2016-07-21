@@ -220,7 +220,7 @@ class DriverTest(unittest.TestCase):
 
     def test_creating_a_port_does_not_write_to_the_filesystem(self):
         port = TestWebKitPort()
-        driver = Driver(port, 0, pixel_tests=True)
+        Driver(port, 0, pixel_tests=True)
         self.assertEqual(port._filesystem.written_files, {})
         self.assertIsNone(port._filesystem.last_tmpdir)
 

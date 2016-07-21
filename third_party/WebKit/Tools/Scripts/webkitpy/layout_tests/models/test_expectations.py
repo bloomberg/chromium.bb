@@ -1170,7 +1170,6 @@ class TestExpectations(object):
             expectation_line = self._parser.expectation_line_for_test(test_name, bot_expectations[test_name])
 
             # Unexpected results are merged into existing expectations.
-            merge = self._port.get_option('ignore_flaky_tests') == 'unexpected'
             model.add_expectation_line(expectation_line)
         self._model.merge_model(model)
 

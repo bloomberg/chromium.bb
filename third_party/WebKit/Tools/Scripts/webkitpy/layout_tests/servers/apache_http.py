@@ -57,7 +57,6 @@ class ApacheHTTP(server_base.ServerBase):
 
         test_dir = self._port_obj.layout_tests_dir()
         document_root = self._filesystem.join(test_dir, "http", "tests")
-        js_test_resources_dir = self._filesystem.join(test_dir, "resources")
         forms_test_resources_dir = self._filesystem.join(test_dir, "fast", "forms", "resources")
         imported_resources_dir = self._filesystem.join(test_dir, "imported", "wpt", "resources")
         media_resources_dir = self._filesystem.join(test_dir, "media")

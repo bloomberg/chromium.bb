@@ -223,7 +223,7 @@ class AndroidCommands(object):
     def restart_adb(self):
         pids = self.extract_pids('adbd')
         if pids:
-            output = self.run(['shell', 'kill', '-' + str(signal.SIGTERM)] + pids)
+            self.run(['shell', 'kill', '-' + str(signal.SIGTERM)] + pids)
         self.run(['wait-for-device'])
 
     def restart_as_root(self):
@@ -988,7 +988,7 @@ class ChromiumAndroidDriver(driver.Driver):
     def _push_fonts(self, log_callback):
         path_to_ahem_font = self._port._build_path('AHEM____.TTF')
         self._push_file_if_needed(path_to_ahem_font, self._driver_details.device_fonts_directory() + 'AHEM____.TTF', log_callback)
-        for (host_dirs, font_file, package) in HOST_FONT_FILES:
+        for (host_dirs, font_file, _) in HOST_FONT_FILES:
             for host_dir in host_dirs:
                 host_font_path = host_dir + font_file
                 if self._port._check_file_exists(host_font_path, '', more_logging=False):

@@ -164,7 +164,7 @@ def _symbolize_keepalive(queue):
     while True:
         _log.debug("waiting for symbolize to complete")
         try:
-            msg = queue.get(block=True, timeout=60)
+            queue.get(block=True, timeout=60)
             return
         except Queue.Empty:
             pass

@@ -259,7 +259,6 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
         text_path = None
 
         unicode_text_string = u'\u016An\u012Dc\u014Dde\u033D'
-        hex_equivalent = '\xC5\xAA\x6E\xC4\xAD\x63\xC5\x8D\x64\x65\xCC\xBD'
         try:
             text_path = tempfile.mktemp(prefix='tree_unittest_')
             file = fs.open_text_file_for_writing(text_path)

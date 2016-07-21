@@ -80,7 +80,7 @@ def add_path_to_trie(path, value, trie):
         trie[path] = value
         return
 
-    directory, slash, rest = path.partition("/")
+    directory, _, rest = path.partition("/")
     if not directory in trie:
         trie[directory] = {}
     add_path_to_trie(rest, value, trie[directory])

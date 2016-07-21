@@ -66,7 +66,7 @@ class ArgumentParserTest(LoggingTestCase):
 
     class _MockStdErr(object):
 
-        def write(self, message):
+        def write(self, _):
             # We do not want the usage string or style categories
             # to print during unit tests, so print nothing.
             return
@@ -78,7 +78,6 @@ class ArgumentParserTest(LoggingTestCase):
 
     def _create_defaults(self):
         """Return a DefaultCommandOptionValues instance for testing."""
-        base_filter_rules = ["-", "+whitespace"]
         return DefaultCommandOptionValues(min_confidence=3,
                                           output_format="vs7")
 
@@ -155,39 +154,39 @@ class ArgumentParserTest(LoggingTestCase):
         parse = self._parse
 
         # Pass non-default explicit values.
-        (files, options) = parse(['--min-confidence=4'])
+        _, options = parse(['--min-confidence=4'])
         self.assertEqual(options.min_confidence, 4)
-        (files, options) = parse(['--output=emacs'])
+        _, options = parse(['--output=emacs'])
         self.assertEqual(options.output_format, 'emacs')
-        (files, options) = parse(['-g', 'commit'])
+        _, options = parse(['-g', 'commit'])
         self.assertEqual(options.git_commit, 'commit')
-        (files, options) = parse(['--git-commit=commit'])
+        _, options = parse(['--git-commit=commit'])
         self.assertEqual(options.git_commit, 'commit')
-        (files, options) = parse(['--git-diff=commit'])
+        _, options = parse(['--git-diff=commit'])
         self.assertEqual(options.git_commit, 'commit')
-        (files, options) = parse(['--verbose'])
+        _, options = parse(['--verbose'])
         self.assertTrue(options.is_verbose)
-        (files, options) = parse(['--diff-files', 'file.txt'])
+        _, options = parse(['--diff-files', 'file.txt'])
         self.assertTrue(options.diff_files)
 
         # Pass user_rules.
-        (files, options) = parse(['--filter=+build,-whitespace'])
+        _, options = parse(['--filter=+build,-whitespace'])
         self.assertEqual(options.filter_rules,
                          ["+build", "-whitespace"])
 
         # Pass spurious white space in user rules.
-        (files, options) = parse(['--filter=+build, -whitespace'])
+        _, options = parse(['--filter=+build, -whitespace'])
         self.assertEqual(options.filter_rules,
                          ["+build", "-whitespace"])
 
     def test_parse_files(self):
         parse = self._parse
 
-        (files, options) = parse(['foo.cpp'])
+        files, _ = parse(['foo.cpp'])
         self.assertEqual(files, ['foo.cpp'])
 
         # Pass multiple files.
-        (files, options) = parse(['--output=emacs', 'foo.cpp', 'bar.cpp'])
+        files, _ = parse(['--output=emacs', 'foo.cpp', 'bar.cpp'])
         self.assertEqual(files, ['foo.cpp', 'bar.cpp'])
 
 

@@ -63,7 +63,7 @@ class PythonChecker(object):
             self._handle_style_error(line_number, category, 5, pep8_message)
 
         pep8_checker.report_error = _pep8_handle_error
-        pep8_errors = pep8_checker.check_all()
+        pep8_checker.check_all()
 
     def _check_pylint(self):
         output = self.run_pylint(self._file_path)

@@ -64,7 +64,7 @@ class OutputTee:
 
     @staticmethod
     def _open_log_file(log_path):
-        (log_directory, log_name) = os.path.split(log_path)
+        log_directory, _ = os.path.split(log_path)
         if log_directory and not os.path.exists(log_directory):
             os.makedirs(log_directory)
         return codecs.open(log_path, "a+", "utf-8")

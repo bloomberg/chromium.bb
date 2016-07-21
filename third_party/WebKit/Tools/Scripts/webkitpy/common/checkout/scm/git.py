@@ -72,7 +72,7 @@ class Git(SCM):
             executive = executive or Executive()
             return executive.run_command([cls.executable_name, 'rev-parse', '--is-inside-work-tree'],
                                          cwd=path, error_handler=Executive.ignore_error).rstrip() == "true"
-        except OSError as e:
+        except OSError:
             # The Windows bots seem to through a WindowsError when git isn't installed.
             return False
 

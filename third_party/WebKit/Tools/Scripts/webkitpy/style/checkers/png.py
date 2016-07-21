@@ -42,9 +42,6 @@ class PNGChecker(object):
         self._fs = self._host.filesystem
 
     def check(self, inline=None):
-        errorstr = ""
-        config_file_path = ""
-
         if self._fs.exists(self._file_path) and self._file_path.endswith("-expected.png"):
             with self._fs.open_binary_file_for_reading(self._file_path) as filehandle:
                 if not read_checksum_from_png.read_checksum(filehandle):

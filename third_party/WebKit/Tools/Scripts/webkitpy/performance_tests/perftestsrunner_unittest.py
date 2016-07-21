@@ -47,7 +47,7 @@ from webkitpy.performance_tests.perftestsrunner import PerfTestsRunner
 class MainTest(unittest.TestCase):
 
     def create_runner(self, args=[]):
-        options, parsed_args = PerfTestsRunner._parse_args(args)
+        options, _ = PerfTestsRunner._parse_args(args)
         test_port = TestPort(host=MockHost(), options=options)
         runner = PerfTestsRunner(args=args, port=test_port)
         runner._host.filesystem.maybe_make_directory(runner._base_path, 'inspector')
@@ -61,7 +61,7 @@ class MainTest(unittest.TestCase):
         runner._host.filesystem.files[runner._host.filesystem.join(dirname, filename)] = content
 
     def test_collect_tests(self):
-        runner, port = self.create_runner()
+        runner, _ = self.create_runner()
         self._add_file(runner, 'inspector', 'a_file.html', 'a content')
         tests = runner._collect_tests()
         self.assertEqual(len(tests), 1)
@@ -118,8 +118,7 @@ class MainTest(unittest.TestCase):
                               'inspector/test1.html', 'inspector/test2.html', 'inspector/unsupported_test1.html', 'unsupported/unsupported_test2.html'])
 
     def test_default_args(self):
-        runner, port = self.create_runner()
-        options, args = PerfTestsRunner._parse_args([])
+        options, _ = PerfTestsRunner._parse_args([])
         self.assertTrue(options.build)
         self.assertEqual(options.time_out_ms, 600 * 1000)
         self.assertTrue(options.generate_results)
@@ -129,8 +128,7 @@ class MainTest(unittest.TestCase):
         self.assertEqual(options.test_runner_count, DEFAULT_TEST_RUNNER_COUNT)
 
     def test_parse_args(self):
-        runner, port = self.create_runner()
-        options, args = PerfTestsRunner._parse_args([
+        options, _ = PerfTestsRunner._parse_args([
             '--build-directory=folder42',
             '--platform=platform42',
             '--builder-name', 'webkit-mac-1',
@@ -385,7 +383,7 @@ class IntegrationTest(unittest.TestCase):
         return json.loads(re.sub(r'("stdev":\s*\d+\.\d{5})\d+', r'\1', json_content))
 
     def create_runner(self, args=[], driver_class=TestDriver):
-        options, parsed_args = PerfTestsRunner._parse_args(args)
+        options, _ = PerfTestsRunner._parse_args(args)
         test_port = TestPort(host=MockHost(), options=options)
         test_port.create_driver = lambda worker_number=None, no_timeout=False: driver_class()
 
@@ -424,7 +422,6 @@ class IntegrationTest(unittest.TestCase):
         tests = []
         for test in test_names:
             path = filesystem.join(runner._base_path, test)
-            dirname = filesystem.dirname(path)
             if test.startswith('inspector/'):
                 tests.append(ChromiumStylePerfTest(runner._port, test, path))
             else:
@@ -432,7 +429,7 @@ class IntegrationTest(unittest.TestCase):
         return tests
 
     def test_run_test_set(self):
-        runner, port = self.create_runner()
+        runner, _ = self.create_runner()
         tests = self._tests_for_runner(runner, ['inspector/pass.html', 'inspector/silent.html', 'inspector/failed.html',
                                                 'inspector/tonguey.html', 'inspector/timeout.html', 'inspector/crash.html'])
         output = OutputCapture()
@@ -440,7 +437,7 @@ class IntegrationTest(unittest.TestCase):
         try:
             unexpected_result_count = runner._run_tests_set(tests)
         finally:
-            stdout, stderr, log = output.restore_output()
+            _, _, log = output.restore_output()
         self.assertEqual(unexpected_result_count, len(tests) - 1)
         self.assertTrue('\nRESULT group_name: test_name= 42 ms\n' in log)
 
@@ -452,23 +449,23 @@ class IntegrationTest(unittest.TestCase):
             def stop(self):
                 TestDriverWithStopCount.stop_count += 1
 
-        runner, port = self.create_runner(driver_class=TestDriverWithStopCount)
+        runner, _ = self.create_runner(driver_class=TestDriverWithStopCount)
 
         tests = self._tests_for_runner(runner, ['inspector/pass.html', 'inspector/silent.html', 'inspector/failed.html',
                                                 'inspector/tonguey.html', 'inspector/timeout.html', 'inspector/crash.html'])
-        unexpected_result_count = runner._run_tests_set(tests)
+        runner._run_tests_set(tests)
 
         self.assertEqual(TestDriverWithStopCount.stop_count, 6)
 
     def test_run_test_set_for_parser_tests(self):
-        runner, port = self.create_runner()
+        runner, _ = self.create_runner()
         tests = self._tests_for_runner(runner, ['Bindings/event-target-wrapper.html', 'Parser/some-parser.html'])
         output = OutputCapture()
         output.capture_output()
         try:
             unexpected_result_count = runner._run_tests_set(tests)
         finally:
-            stdout, stderr, log = output.restore_output()
+            _, _, log = output.restore_output()
         self.assertEqual(unexpected_result_count, 0)
         self.assertEqual(self._normalize_output(log), EventTargetWrapperTestData.output + SomeParserTestData.output)
 
@@ -482,7 +479,7 @@ class IntegrationTest(unittest.TestCase):
         try:
             unexpected_result_count = runner.run()
         finally:
-            stdout, stderr, log = output.restore_output()
+            _, _, log = output.restore_output()
         self.assertEqual(unexpected_result_count, 0)
         self.assertEqual(self._normalize_output(log), MemoryTestData.output + '\nMOCK: user.open_url: file://...\n')
         parser_tests = self._load_output_json(runner)[0]['tests']['Parser']['tests']
@@ -513,7 +510,7 @@ class IntegrationTest(unittest.TestCase):
         try:
             self.assertEqual(runner.run(), expected_exit_code)
         finally:
-            stdout, stderr, logs = output_capture.restore_output()
+            _, _, logs = output_capture.restore_output()
 
         if not expected_exit_code and compare_logs:
             expected_logs = ''

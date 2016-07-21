@@ -2795,7 +2795,6 @@ def check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line_num
                 return
         else:
             # Skip over the current expression.
-            current_line_number = current_pos.row
             current_pos = _find_in_lines(r';', lines, current_pos, None)
             if not current_pos:
                 return
@@ -2893,9 +2892,6 @@ def check_redundant_virtual(clean_lines, linenum, error):
                   ('"virtual" is redundant since function is '
                    'already declared as "%s"' % override_or_final.group(1)))
 
-        # Set end_col to check whole lines after we are done with the
-        # first line.
-        end_col = 0
         if search(r'[^\w]\s*$', line):
             break
 
@@ -3596,7 +3592,7 @@ def check_for_toFoo_definition(filename, pattern, error):
         fileSystem = FileSystem()
         base_dir = fileSystem.path_to_module(FileSystem.__module__).split('WebKit', 1)[0]
         base_dir = ''.join((base_dir, 'WebKit/Source'))
-        for root, dirs, names in os.walk(base_dir):
+        for root, _, names in os.walk(base_dir):
             if filename in names:
                 return os.path.join(root, filename)
         return None

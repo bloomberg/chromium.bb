@@ -113,7 +113,7 @@ class PortTestCase(unittest.TestCase):
             self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
                              test_run_results.OK_EXIT_STATUS)
         finally:
-            out, err, logs = oc.restore_output()
+            _, _, logs = oc.restore_output()
             self.assertIn('pretty patches', logs)         # We should get a warning about PrettyPatch being missing,
             self.assertNotIn('build requirements', logs)  # but not the driver itself.
 
@@ -124,7 +124,7 @@ class PortTestCase(unittest.TestCase):
             self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
                              test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
-            out, err, logs = oc.restore_output()
+            _, _, logs = oc.restore_output()
             self.assertIn('pretty patches', logs)        # And, here we should get warnings about both.
             self.assertIn('build requirements', logs)
 
@@ -181,7 +181,7 @@ class PortTestCase(unittest.TestCase):
             try:
                 test_socket = socket.socket()
                 test_socket.connect((host, port))
-            except IOError as e:
+            except IOError:
                 self.fail('failed to connect to %s:%d' % (host, port))
             finally:
                 test_socket.close()
@@ -230,7 +230,7 @@ class PortTestCase(unittest.TestCase):
         exception_raised = False
         try:
             port.diff_image("EXPECTED", "ACTUAL")
-        except ValueError as e:
+        except ValueError:
             exception_raised = True
         self.assertFalse(exception_raised)
 

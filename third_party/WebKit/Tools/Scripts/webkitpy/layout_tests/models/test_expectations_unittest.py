@@ -429,7 +429,7 @@ class SkippedTests(Base):
         port.skipped_layout_tests = lambda tests: set(['foo/bar/baz.html'])
         capture = OutputCapture()
         capture.capture_output()
-        exp = TestExpectations(port)
+        TestExpectations(port)
         _, _, logs = capture.restore_output()
         self.assertEqual('The following test foo/bar/baz.html from the Skipped list doesn\'t exist\n', logs)
 

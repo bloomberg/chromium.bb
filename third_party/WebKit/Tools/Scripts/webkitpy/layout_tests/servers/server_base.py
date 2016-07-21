@@ -157,7 +157,7 @@ class ServerBase(object):
         for log_prefix in self._log_prefixes:
             try:
                 self._remove_log_files(self._output_dir, log_prefix)
-            except OSError as e:
+            except OSError:
                 _log.warning('Failed to remove old %s %s files' % (self._name, log_prefix))
 
     def _spawn_process(self):
@@ -179,7 +179,6 @@ class ServerBase(object):
     def _check_and_kill(self):
         if self._executive.check_running_pid(self._pid):
             _log.debug('pid %d is running, killing it' % self._pid)
-            host = self._port_obj.host
             self._executive.kill_process(self._pid)
             return False
         else:

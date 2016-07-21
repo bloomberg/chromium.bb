@@ -179,7 +179,7 @@ class ServerProcess(object):
         try:
             self._log_data(' IN', bytes)
             self._proc.stdin.write(bytes)
-        except IOError as e:
+        except IOError:
             self.stop(0.0)
             # stop() calls _reset(), so we have to set crashed to True after calling stop().
             self._crashed = True

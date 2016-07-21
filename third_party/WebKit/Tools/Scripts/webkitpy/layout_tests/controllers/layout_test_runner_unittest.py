@@ -135,7 +135,7 @@ class LayoutTestRunnerTests(unittest.TestCase):
 
         runner._options.exit_after_n_crashes_or_timeouts = None
         runner._options.exit_after_n_failures = 10
-        exception = self.assertRaises(TestRunInterruptedException, runner._interrupt_if_at_failure_limits, run_results)
+        self.assertRaises(TestRunInterruptedException, runner._interrupt_if_at_failure_limits, run_results)
 
     def test_update_summary_with_result(self):
         # Reftests expected to be image mismatch should be respected when pixel_tests=False.
@@ -262,7 +262,7 @@ class SharderTests(unittest.TestCase):
         self.assertEqual(len(unlocked), 0)
 
     def test_multiple_locked_shards(self):
-        locked, unlocked = self.get_shards(num_workers=4, fully_parallel=False, max_locked_shards=2, run_singly=False)
+        locked, _ = self.get_shards(num_workers=4, fully_parallel=False, max_locked_shards=2, run_singly=False)
         self.assert_shards(locked,
                            [('locked_shard_1',
                              ['http/tests/security/view-source-no-refresh.html',
@@ -272,7 +272,7 @@ class SharderTests(unittest.TestCase):
                                 ['http/tests/xmlhttprequest/supported-xml-content-types.html',
                                  'perf/object-keys.html'])])
 
-        locked, unlocked = self.get_shards(num_workers=4, fully_parallel=False, run_singly=False)
+        locked, _ = self.get_shards(num_workers=4, fully_parallel=False, run_singly=False)
         self.assert_shards(locked,
                            [('locked_shard_1',
                              ['http/tests/security/view-source-no-refresh.html',
@@ -284,13 +284,13 @@ class SharderTests(unittest.TestCase):
     def test_virtual_shards(self):
         # With run_singly=False, we try to keep all of the tests in a virtual suite together even
         # when fully_parallel=True, so that we don't restart every time the command line args change.
-        locked, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2, run_singly=False,
-                                           test_list=['virtual/foo/bar1.html', 'virtual/foo/bar2.html'])
+        _, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2, run_singly=False,
+                                      test_list=['virtual/foo/bar1.html', 'virtual/foo/bar2.html'])
         self.assert_shards(unlocked,
                            [('virtual/foo', ['virtual/foo/bar1.html', 'virtual/foo/bar2.html'])])
 
         # But, with run_singly=True, we have to restart every time anyway, so we want full parallelism.
-        locked, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2, run_singly=True,
+        _, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2, run_singly=True,
                                            test_list=['virtual/foo/bar1.html', 'virtual/foo/bar2.html'])
         self.assert_shards(unlocked,
                            [('.', ['virtual/foo/bar1.html']),

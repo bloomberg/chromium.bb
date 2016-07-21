@@ -488,7 +488,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
         host.filesystem.remove(filename)
-        details, err, user = logging_run(['--test-list=%s' % filename], tests_included=True, host=host)
+        details, err, _ = logging_run(['--test-list=%s' % filename], tests_included=True, host=host)
         self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
         self.assertNotEmpty(err)
 
@@ -534,12 +534,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Test that we update expectations in place. If the expectation
         # is missing, update the expected generic location.
         host = MockHost()
-        details, err, _ = logging_run(['--no-show-results', '--retry-failures',
+        details, _, _ = logging_run(['--no-show-results', '--retry-failures',
                                        'failures/expected/missing_image.html',
                                        'failures/unexpected/missing_text.html',
                                        'failures/unexpected/text-image-checksum.html'],
                                       tests_included=True, host=host)
-        file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 2)
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertTrue(json_string.find(
@@ -555,7 +554,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # initial failure for simplicity and consistency w/ the flakiness
         # dashboard, even if the second failure is worse.
 
-        details, err, _ = logging_run(['--retry-failures', 'failures/unexpected/text_then_crash.html'], tests_included=True)
+        details, _, _ = logging_run(['--retry-failures', 'failures/unexpected/text_then_crash.html'], tests_included=True)
         self.assertEqual(details.exit_code, 1)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['unexpected']['text_then_crash.html']['actual'],
                          'TEXT CRASH CRASH CRASH')
@@ -563,7 +562,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # If we get a test that fails two different ways -- but the second one is expected --
         # we should treat it as a flaky result and report the initial unexpected failure type
         # to the dashboard. However, the test should be considered passing.
-        details, err, _ = logging_run(['--retry-failures', 'failures/expected/crash_then_text.html'], tests_included=True)
+        details, _, _ = logging_run(['--retry-failures', 'failures/expected/crash_then_text.html'], tests_included=True)
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['expected']['crash_then_text.html']['actual'],
                          'CRASH TEXT')
@@ -575,7 +574,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         args = ['--pixel-tests', '--retry-failures', '--pixel-test-directory', 'failures/unexpected/pixeldir',
                 'failures/unexpected/pixeldir/image_in_pixeldir.html',
                 'failures/unexpected/image_not_in_pixeldir.html']
-        details, err, _ = logging_run(extra_args=args, host=host, tests_included=True)
+        details, _, _ = logging_run(extra_args=args, host=host, tests_included=True)
 
         self.assertEqual(details.exit_code, 1)
         expected_token = '"pixeldir":{"image_in_pixeldir.html":{"expected":"PASS","actual":"IMAGE","is_unexpected":true'
@@ -584,20 +583,20 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_crash_with_stderr(self):
         host = MockHost()
-        _, regular_output, _ = logging_run(['failures/unexpected/crash-with-stderr.html'], tests_included=True, host=host)
+        logging_run(['failures/unexpected/crash-with-stderr.html'], tests_included=True, host=host)
         self.assertTrue(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json').find(
             '{"crash-with-stderr.html":{"expected":"PASS","actual":"CRASH","has_stderr":true,"is_unexpected":true') != -1)
 
     def test_no_image_failure_with_image_diff(self):
         host = MockHost()
-        _, regular_output, _ = logging_run(
+        logging_run(
             ['failures/unexpected/checksum-with-matching-image.html'], tests_included=True, host=host)
         self.assertTrue(host.filesystem.read_text_file(
             '/tmp/layout-test-results/full_results.json').find('"num_regressions":0') != -1)
 
     def test_exit_after_n_failures_upload(self):
         host = MockHost()
-        details, regular_output, user = logging_run(
+        details, regular_output, _ = logging_run(
             ['failures/unexpected/text-image-checksum.html', 'passes/text.html', '--exit-after-n-failures', '1'],
             tests_included=True, host=host)
 
@@ -759,7 +758,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_retrying_uses_retry_directories(self):
         host = MockHost()
-        details, err, _ = logging_run(['--debug-rwt-logging', '--retry-failures',
+        details, _, _ = logging_run(['--debug-rwt-logging', '--retry-failures',
                                        'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 1)
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
@@ -806,7 +805,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reftest_should_not_use_naming_convention_if_not_listed_in_reftestlist(self):
         host = MockHost()
-        _, err, _ = logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
+        logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
         results = parse_full_results(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
 
         self.assertEqual(results["tests"]["reftests"]["foo"]["unlistedtest.html"]["actual"], "MISSING"),
@@ -839,7 +838,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_name = 'passes/reftest.html'
         host = MockHost()
         host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', 'reftest')
-        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
         test_result = run_details.initial_results.all_results[0]
@@ -850,7 +849,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_name = 'passes/reftest.html'
         host = MockHost()
         host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', 'mismatch')
-        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
         test_result = run_details.initial_results.all_results[0]
@@ -862,7 +861,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_name = 'failures/unexpected/reftest.html'
         host = MockHost()
         host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'reftest')
-        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
         test_result = run_details.initial_results.all_results[0]
@@ -874,7 +873,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_name = 'failures/unexpected/reftest.html'
         host = MockHost()
         host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'mismatch')
-        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
         test_result = run_details.initial_results.all_results[0]
@@ -912,7 +911,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Test to ensure that we don't generate -wdiff.html or -pretty.html if wdiff and PrettyPatch
         # aren't available.
         host = MockHost()
-        _, err, _ = logging_run(['--pixel-tests', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
+        logging_run(['--pixel-tests', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         written_files = host.filesystem.written_files
         self.assertTrue(any(path.endswith('-diff.txt') for path in written_files.keys()))
         self.assertFalse(any(path.endswith('-wdiff.html') for path in written_files.keys()))
@@ -999,7 +998,6 @@ class EndToEndTest(unittest.TestCase):
         # is missing, update the expected generic location.
         host = MockHost()
         _, _, _ = logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
-        file_list = host.filesystem.written_files.keys()
 
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
         json = parse_full_results(json_string)
@@ -1061,7 +1059,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # Test that we update expectations in place. If the expectation
         # is missing, update the expected generic location.
         host = MockHost()
-        options, parsed_args = run_webkit_tests.parse_args([])
+        options, _ = run_webkit_tests.parse_args([])
 
         port = test.TestPort(host, options=options)
         host.filesystem.write_text_file(port.path_to_generic_test_expectations_file(), """
@@ -1070,7 +1068,7 @@ Bug(foo) failures/unexpected/missing_image.html [ NeedsRebaseline ]
 Bug(foo) failures/unexpected/missing_audio.html [ NeedsManualRebaseline ]
 Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
 """)
-        details, err, _ = logging_run(['--no-show-results',
+        details, _, _ = logging_run(['--no-show-results',
                                        'failures/unexpected/missing_text.html',
                                        'failures/unexpected/missing_image.html',
                                        'failures/unexpected/missing_audio.html',
@@ -1087,7 +1085,7 @@ Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
         # Test that we update expectations in place. If the expectation
         # is missing, update the expected generic location.
         host = MockHost()
-        options, parsed_args = run_webkit_tests.parse_args(['--pixel-tests', '--reset-results'])
+        options, _ = run_webkit_tests.parse_args(['--pixel-tests', '--reset-results'])
 
         port = test.TestPort(host, options=options)
         host.filesystem.write_text_file(port.path_to_generic_test_expectations_file(), """

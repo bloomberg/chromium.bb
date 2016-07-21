@@ -244,7 +244,7 @@ class Executive(object):
                 pid = line[1]
                 if process_name_filter(process_name):
                     running_pids.append(int(pid))
-            except (ValueError, IndexError) as e:
+            except (ValueError, IndexError):
                 pass
 
         return sorted(running_pids)

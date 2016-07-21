@@ -361,7 +361,6 @@ class PerfTestsRunner(object):
         return True
 
     def _run_tests_set(self, tests):
-        result_count = len(tests)
         failures = 0
         self._results = []
 

@@ -53,7 +53,7 @@ def get_options(args):
 class TestUtilityFunctions(unittest.TestCase):
 
     def test_print_options(self):
-        options, args = get_options([])
+        options, _ = get_options([])
         self.assertIsNotNone(options)
 
 
@@ -103,7 +103,6 @@ class Testprinter(unittest.TestCase):
         options, args = option_parser.parse_args(args)
         host = MockHost()
         self._port = host.port_factory.get('test', options)
-        nproc = 2
 
         regular_output = StringIO.StringIO()
         printer = printing.Printer(self._port, options, regular_output)
@@ -120,7 +119,7 @@ class Testprinter(unittest.TestCase):
     def test_configure_and_cleanup(self):
         # This test verifies that calling cleanup repeatedly and deleting
         # the object is safe.
-        printer, err = self.get_printer()
+        printer, _ = self.get_printer()
         printer.cleanup()
         printer.cleanup()
         printer = None

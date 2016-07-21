@@ -540,7 +540,7 @@ class FunctionDetectionTest(CppStyleTestBase):
 
     def test_parameter_list(self):
         # A function with no arguments.
-        function_state = self.perform_function_detection(
+        self.perform_function_detection(
             ['void functionName();'],
             {'name': 'functionName',
              'modifiers_and_return_type': 'void',
@@ -554,7 +554,7 @@ class FunctionDetectionTest(CppStyleTestBase):
              'parameter_list': ()})
 
         # A function with one argument.
-        function_state = self.perform_function_detection(
+        self.perform_function_detection(
             ['void functionName(int);'],
             {'name': 'functionName',
              'modifiers_and_return_type': 'void',
@@ -569,7 +569,7 @@ class FunctionDetectionTest(CppStyleTestBase):
                  ({'type': 'int', 'name': '', 'row': 0},)})
 
         # A function with unsigned and short arguments
-        function_state = self.perform_function_detection(
+        self.perform_function_detection(
             ['void functionName(unsigned a, short b, long c, long long short unsigned int);'],
             {'name': 'functionName',
              'modifiers_and_return_type': 'void',
@@ -587,7 +587,7 @@ class FunctionDetectionTest(CppStyleTestBase):
                   {'type': 'long long short unsigned int', 'name': '', 'row': 0})})
 
         # Some parameter type with modifiers and no parameter names.
-        function_state = self.perform_function_detection(
+        self.perform_function_detection(
             [
                 'virtual void determineARIADropEffects(Vector<String>*&, const unsigned long int*&, const MediaPlayer::Preload, Other<Other2, Other3<P1, P2> >, int);'],
             {'name': 'determineARIADropEffects',
@@ -607,7 +607,7 @@ class FunctionDetectionTest(CppStyleTestBase):
                   {'type': 'int', 'name': '', 'row': 0})})
 
         # Try parsing a function with a very complex definition.
-        function_state = self.perform_function_detection(
+        self.perform_function_detection(
             ['#define MyMacro(a) a',
              'virtual',
              'AnotherTemplate<Class1, Class2> aFunctionName(PassRefPtr<MyClass> paramName,',
@@ -2481,7 +2481,7 @@ class CppStyleTest(CppStyleTestBase):
         # Make sure that the declaration is logged if there's an error.
         # Seed generator with an integer for absolute reproducibility.
         random.seed(25)
-        for unused_i in range(10):
+        for _ in range(10):
             # Build up random list of non-storage-class declaration specs.
             other_decl_specs = [random.choice(qualifiers), random.choice(signs),
                                 random.choice(types)]
@@ -2527,7 +2527,7 @@ class CppStyleTest(CppStyleTestBase):
         error_collector = ErrorCollector(self.assertTrue)
         self.process_file_data(
             file_path, 'cpp',
-            ['' for unused_i in range(10)] + [copyright_line],
+            ['' for _ in range(10)] + [copyright_line],
             error_collector)
         self.assertEqual(
             1,
@@ -2543,7 +2543,7 @@ class CppStyleTest(CppStyleTestBase):
         error_collector = ErrorCollector(self.assertTrue)
         self.process_file_data(
             file_path, 'cpp',
-            ['' for unused_i in range(9)] + [copyright_line],
+            ['' for _ in range(9)] + [copyright_line],
             error_collector)
         for message in error_collector.result_list():
             if message.find('legal/copyright') != -1:
@@ -3296,7 +3296,6 @@ class CheckForFunctionLengthsTest(CppStyleTestBase):
     def test_function_length_check_definition_severity1_for_bad_test_doesnt_break(self):
         error_level = 1
         error_lines = self.trigger_test_lines(error_level) + 1
-        trigger_level = self.trigger_test_lines(self.min_confidence)
         # Since the function name isn't valid, the function detection algorithm
         # will skip it, so no error is produced.
         self.assert_function_lengths_check(
