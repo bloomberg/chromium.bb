@@ -6,6 +6,7 @@
 
 #include "core/dom/Range.h"
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/SelectionAdjuster.h"
 
 #define LOREM_IPSUM \
     "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor " \
@@ -348,6 +349,31 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         EXPECT_EQ("Lorem ipsum", range->text());
         testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
     }
+}
+
+// This is for crbug.com/627783, simulating restoring selection
+// in undo stack.
+TEST_F(VisibleSelectionTest, validatePositionsIfNeededWithShadowHost)
+{
+    setBodyContent("<div id=host></div><div id=sample>foo</div>");
+    setShadowContent("<content>", "host");
+    Element* sample = document().getElementById("sample");
+
+    // Simulates saving selection in undo stack.
+    VisibleSelection selection(Position(sample->firstChild(), 0));
+    EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
+
+    // Simulates modifying DOM tree to invalidate distribution.
+    Element* host = document().getElementById("host");
+    host->appendChild(sample);
+
+    // Simulates to restore selection from undo stack.
+    selection.validatePositionsIfNeeded();
+    EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
+
+    VisibleSelectionInFlatTree selectionInFlatTree;
+    SelectionAdjuster::adjustSelectionInFlatTree(&selectionInFlatTree, selection);
+    EXPECT_EQ(PositionInFlatTree(sample->firstChild(), 0), selectionInFlatTree.start());
 }
 
 } // namespace blink

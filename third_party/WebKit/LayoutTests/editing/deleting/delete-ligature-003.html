@@ -17,9 +17,7 @@ test(() => {
                 eventSender.keyDown('Backspace', null);
                 selection.document.execCommand('undo');
             },
-            platform === 'mac'
-                ? '<div contenteditable>\u0E27|\u0E31^</div>'
-                : '<div contenteditable>\u0E27\u0E31|</div>',
+            '<div contenteditable>\u0E27\u0E31|</div>',
             `${platform}: Undo of backspace key on ligature U+0E27 and U+0E31`));
 });
 </script>

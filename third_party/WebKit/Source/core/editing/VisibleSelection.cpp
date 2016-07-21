@@ -730,23 +730,6 @@ Element* VisibleSelectionTemplate<Strategy>::rootEditableElement() const
 }
 
 template <typename Strategy>
-static bool isValidPosition(const PositionTemplate<Strategy>& position)
-{
-    if (!position.isConnected())
-        return false;
-
-    if (!position.isOffsetInAnchor())
-        return true;
-
-    if (position.offsetInContainerNode() < 0)
-        return false;
-
-    const unsigned offset = static_cast<unsigned>(position.offsetInContainerNode());
-    const unsigned nodeLength = position.anchorNode()->lengthOfContents();
-    return offset <= nodeLength;
-}
-
-template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
 {
     Document* document = m_base.document();
@@ -760,6 +743,8 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
     appendTrailingWhitespace();
 }
 
+// TODO(yosin): Since |validatePositionsIfNeeded()| is called just one place,
+// we should move it to the call site.
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validatePositionsIfNeeded()
 {
@@ -767,9 +752,7 @@ void VisibleSelectionTemplate<Strategy>::validatePositionsIfNeeded()
         *this = VisibleSelectionTemplate();
         return;
     }
-    if (isValidPosition(m_base) && isValidPosition(m_extent) && isValidPosition(m_start) && isValidPosition(m_end))
-        return;
-    validate();
+    updateIfNeeded();
 }
 
 template <typename Strategy>
