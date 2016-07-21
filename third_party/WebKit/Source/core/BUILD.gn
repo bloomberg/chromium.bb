@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
+import("//build/split_static_library.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/core/v8/generated.gni")
 import("//third_party/WebKit/Source/bindings/modules/modules.gni")
@@ -67,6 +68,16 @@ config("core_include_dirs") {
   if (is_android && use_openmax_dl_fft) {
     include_dirs += [ "//third_party/openmax_dl" ]
   }
+}
+
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "split_static_library"
+
+  # Safe split count for all of these split libraries - largest is ~6 GB in 32-bit
+  # official builds.
+  split_count = 6
 }
 
 # GYP version: WebKit/Source/core/core.gyp:webcore_generated
@@ -188,7 +199,7 @@ component("core") {
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_dom
-source_set("dom") {
+target(link_target_type, "dom") {
   sources = rebase_path(webcore_dom_files, ".", "//")
 
   configs -= core_config_remove
@@ -203,7 +214,7 @@ source_set("dom") {
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_html
-source_set("html") {
+target(link_target_type, "html") {
   sources = rebase_path(webcore_html_files, ".", "//")
 
   configs -= core_config_remove
@@ -215,7 +226,7 @@ source_set("html") {
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_svg
-source_set("svg") {
+target(link_target_type, "svg") {
   sources = rebase_path(webcore_svg_files, ".", "//")
 
   configs -= core_config_remove
@@ -227,7 +238,7 @@ source_set("svg") {
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_remaining
-source_set("remaining") {
+target(link_target_type, "remaining") {
   # This is currently a mashup of "webcore_rendering" and "webcore_remaining"
   # in GYP. The file list variable is the same and then GYP filters on wether
   # the path starts with "rendering/" or not. We should tweak the .gypis a bit
@@ -336,7 +347,7 @@ source_set("testing") {
 }
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_generated
-source_set("core_generated") {
+target(link_target_type, "core_generated") {
   sources = bindings_core_v8_files
 
   # These files include all the .cpp files generated from the .idl files

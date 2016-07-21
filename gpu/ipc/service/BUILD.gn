@@ -20,7 +20,12 @@ group("service") {
   }
 }
 
-source_set("ipc_service_sources") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "ipc_service_sources") {
   visibility = [ "//gpu/*" ]
   sources = [
     "gpu_channel.cc",

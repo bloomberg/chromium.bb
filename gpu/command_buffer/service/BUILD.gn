@@ -17,7 +17,12 @@ group("service") {
   }
 }
 
-source_set("service_sources") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "service_sources") {
   # External code should depend on this via //gpu/command_buffer/service above
   # rather than depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
