@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "jni/MediaCodecUtil_jni.h"
+#include "media/base/android/media_codec_bridge.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -238,6 +239,20 @@ bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
   }
 
   return true;
+}
+
+// static
+bool MediaCodecUtil::CodecNeedsFlushWorkaround(MediaCodecBridge* codec) {
+  int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
+  std::string codec_name = codec->GetName();
+  return sdk_int < 18 ||
+         (sdk_int == 18 && ("OMX.SEC.avc.dec" == codec_name ||
+                            "OMX.SEC.avc.dec.secure" == codec_name)) ||
+         (sdk_int == 19 &&
+          base::StartsWith(base::android::BuildInfo::GetInstance()->model(),
+                           "SM-G800", base::CompareCase::INSENSITIVE_ASCII) &&
+          ("OMX.Exynos.avc.dec" == codec_name ||
+           "OMX.Exynos.avc.dec.secure" == codec_name));
 }
 
 }  // namespace media

@@ -174,6 +174,9 @@ class MEDIA_EXPORT MediaCodecBridge {
                                         void* dst,
                                         size_t num);
 
+  // Gets the component name. Before API level 18 this returns an empty string.
+  virtual std::string GetName() = 0;
+
  protected:
   MediaCodecBridge();
 

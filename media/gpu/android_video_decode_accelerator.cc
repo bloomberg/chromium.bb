@@ -1275,7 +1275,7 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
 
   if (pending_input_buf_index_ != -1) {
     // The data for that index exists in the input buffer, but corresponding
-    // shm block been deleted. Check that it is safe to flush the coec, i.e.
+    // shm block been deleted. Check that it is safe to flush the codec, i.e.
     // |pending_bitstream_records_| is empty.
     // TODO(timav): keep shm block for that buffer and remove this restriction.
     DCHECK(pending_bitstream_records_.empty());
@@ -1302,12 +1302,9 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   // conservative approach and let the errors post.
   // TODO(liberato): revisit this once we sort out the error state a bit more.
 
-  // When the codec is not in error state we can flush() for JB-MR2 and beyond.
-  // Prior to JB-MR2, flush() had several bugs (b/8125974, b/8347958) so we must
-  // delete the MediaCodec and create a new one. The full reconfigure is much
-  // slower and may cause visible freezing if done mid-stream.
+  // Flush the codec if possible, or create a new one if not.
   if (!did_codec_error_happen &&
-      base::android::BuildInfo::GetInstance()->sdk_int() >= 18) {
+      !media::MediaCodecUtil::CodecNeedsFlushWorkaround(media_codec_.get())) {
     DVLOG(3) << __FUNCTION__ << " Flushing MediaCodec.";
     media_codec_->Flush();
     // Since we just flushed all the output buffers, make sure that nothing is

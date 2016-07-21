@@ -249,4 +249,10 @@ MediaCodecStatus NdkMediaCodecBridge::GetOutputBufferAddress(
   return MEDIA_CODEC_OK;
 }
 
+std::string NdkMediaCodecBridge::GetName() {
+  // The NDK api doesn't expose a getName like the Java one.
+  NOTIMPLEMENTED();
+  return "";
+}
+
 }  // namespace media

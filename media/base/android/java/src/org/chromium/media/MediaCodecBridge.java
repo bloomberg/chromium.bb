@@ -310,6 +310,12 @@ class MediaCodecBridge {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @CalledByNative
+    private String getName() {
+        return mMediaCodec.getName();
+    }
+
     @CalledByNative
     private GetOutputFormatResult getOutputFormat() {
         MediaFormat format = null;

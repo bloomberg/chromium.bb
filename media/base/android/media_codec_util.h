@@ -18,6 +18,8 @@ class GURL;
 
 namespace media {
 
+class MediaCodecBridge;
+
 // Helper macro to skip the test if MediaCodecBridge isn't available.
 #define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
   do {                                                            \
@@ -84,6 +86,12 @@ class MEDIA_EXPORT MediaCodecUtil {
 
   // Indicates if SurfaceView and MediaCodec work well together on this device.
   static bool IsSurfaceViewOutputSupported();
+
+  // Indicates if the decoder is known to fail when flushed. (b/8125974,
+  // b/8347958)
+  // When true, the client should work around the issue by releasing the
+  // decoder and instantiating a new one rather than flushing the current one.
+  static bool CodecNeedsFlushWorkaround(MediaCodecBridge* codec);
 };
 
 }  // namespace media

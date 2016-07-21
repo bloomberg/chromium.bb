@@ -334,6 +334,15 @@ MediaCodecStatus SdkMediaCodecBridge::GetOutputBufferAddress(
   return MEDIA_CODEC_OK;
 }
 
+std::string SdkMediaCodecBridge::GetName() {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 18)
+    return "";
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_name =
+      Java_MediaCodecBridge_getName(env, j_media_codec_.obj());
+  return ConvertJavaStringToUTF8(env, j_name.obj());
+}
+
 // static
 bool SdkMediaCodecBridge::RegisterSdkMediaCodecBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
