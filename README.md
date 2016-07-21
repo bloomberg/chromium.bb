@@ -76,6 +76,7 @@ dependent repos are up-to-date.
     e.g. `git commit ... && git cl upload ...`
     You will be prompted for credential and a description.
 
-4.  At https://codereview.chromium.org/ you’ll find your issue listed; click on
-    it, and select Publish+Mail, and enter in the code reviewer and CC
-    google-breakpad-dev@googlegroups.com
+4.  At https://chromium-review.googlesource.com/ you'll find your issue listed;
+    click on it, then “Add reviewer”, and enter in the code reviewer. Depending
+    on your settings, you may not see an email, but the reviewer has been
+    notified with google-breakpad-dev@googlegroups.com always CC’d.
