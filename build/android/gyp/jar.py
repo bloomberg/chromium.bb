@@ -21,7 +21,7 @@ _RESOURCE_CLASSES = [
 
 
 def Jar(class_files, classes_dir, jar_path, manifest_file=None,
-        provider_configurations=None):
+        provider_configurations=None, additional_files=None):
   jar_path = os.path.abspath(jar_path)
 
   # The paths of the files in the jar will be the same as they are passed in to
@@ -34,6 +34,14 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None,
     jar_cmd[1] += 'm'
     jar_cmd.append(os.path.abspath(manifest_file))
   jar_cmd.extend(class_files_rel)
+
+  for filepath, jar_filepath in additional_files or []:
+    full_jar_filepath = os.path.join(jar_cwd, jar_filepath)
+    jar_dir = os.path.dirname(full_jar_filepath)
+    if not os.path.exists(jar_dir):
+      os.makedirs(jar_dir)
+    shutil.copy(filepath, full_jar_filepath)
+    jar_cmd.append(jar_filepath)
 
   if provider_configurations:
     service_dir = os.path.join(jar_cwd, 'META-INF', 'services')
@@ -53,13 +61,14 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None,
 
 
 def JarDirectory(classes_dir, jar_path, manifest_file=None, predicate=None,
-                 provider_configurations=None):
+                 provider_configurations=None, additional_files=None):
   class_files = build_utils.FindInDirectory(classes_dir, '*.class')
   if predicate:
     class_files = [f for f in class_files if predicate(f)]
 
   Jar(class_files, classes_dir, jar_path, manifest_file=manifest_file,
-      provider_configurations=provider_configurations)
+      provider_configurations=provider_configurations,
+      additional_files=additional_files)
 
 
 def main():
