@@ -122,7 +122,9 @@ bool canCreateImageBuffer(const IntSize& size)
 {
     if (size.isEmpty())
         return false;
-    if (size.width() * size.height() > MaxCanvasArea)
+    CheckedNumeric<int> area = size.width();
+    area *= size.height();
+    if (!area.IsValid() || area.ValueOrDie() > MaxCanvasArea)
         return false;
     if (size.width() > MaxSkiaDim || size.height() > MaxSkiaDim)
         return false;
