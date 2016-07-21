@@ -18,7 +18,7 @@ config("precache_config") {
   ]
 }
 
-source_set("core") {
+static_library("core") {
   sources = [
     "fetcher_pool.h",
     "precache_database.cc",

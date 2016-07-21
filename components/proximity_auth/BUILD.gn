@@ -4,7 +4,7 @@
 
 import("//testing/test.gni")
 
-source_set("proximity_auth") {
+static_library("proximity_auth") {
   sources = [
     "authenticator.h",
     "bluetooth_connection.cc",

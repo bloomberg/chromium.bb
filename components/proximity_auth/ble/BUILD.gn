@@ -4,7 +4,7 @@
 
 import("//testing/test.gni")
 
-source_set("ble") {
+static_library("ble") {
   sources = [
     "bluetooth_low_energy_characteristics_finder.cc",
     "bluetooth_low_energy_characteristics_finder.h",

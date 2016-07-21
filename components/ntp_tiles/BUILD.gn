@@ -9,7 +9,7 @@ if (is_android) {
 }
 
 # GYP version: components/ntp_tiles.gypi:ntp_tiles
-source_set("ntp_tiles") {
+static_library("ntp_tiles") {
   sources = [
     "constants.cc",
     "constants.h",

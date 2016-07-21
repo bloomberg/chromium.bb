@@ -69,7 +69,7 @@ static_library("test_support") {
   ]
 }
 
-source_set("switches") {
+static_library("switches") {
   sources = [
     "offline_page_feature.cc",
     "offline_page_feature.h",

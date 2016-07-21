@@ -10,7 +10,7 @@ if (is_android) {
 }
 
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
-source_set("ntp_snippets") {
+static_library("ntp_snippets") {
   sources = [
     "content_suggestion.cc",
     "content_suggestion.h",

@@ -6,7 +6,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("navigation_interception") {
+static_library("navigation_interception") {
   sources = [
     "intercept_navigation_throttle.cc",
     "intercept_navigation_throttle.h",

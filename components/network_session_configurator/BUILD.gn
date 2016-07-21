@@ -4,7 +4,7 @@
 
 # GYP version:
 # components/components.gyp:network_session_configurator
-source_set("network_session_configurator") {
+static_library("network_session_configurator") {
   sources = [
     "network_session_configurator.cc",
     "network_session_configurator.h",
@@ -25,7 +25,7 @@ source_set("network_session_configurator") {
 
 # GYP version:
 # components/components.gyp:network_session_configurator_switches
-source_set("switches") {
+static_library("switches") {
   sources = [
     "switches.cc",
     "switches.h",

@@ -56,7 +56,7 @@ group("safe_browsing_db_mobile") {
   ]
 }
 
-source_set("database_manager") {
+static_library("database_manager") {
   sources = [
     "database_manager.cc",
     "database_manager.h",
@@ -73,7 +73,7 @@ source_set("database_manager") {
   ]
 }
 
-source_set("hit_report") {
+static_library("hit_report") {
   sources = [
     "hit_report.cc",
     "hit_report.h",
@@ -85,7 +85,7 @@ source_set("hit_report") {
   ]
 }
 
-source_set("prefix_set") {
+static_library("prefix_set") {
   sources = [
     "prefix_set.cc",
     "prefix_set.h",
@@ -96,7 +96,7 @@ source_set("prefix_set") {
   ]
 }
 
-source_set("remote_database_manager") {
+static_library("remote_database_manager") {
   sources = [
     "remote_database_manager.cc",
     "remote_database_manager.h",
@@ -125,7 +125,7 @@ source_set("safe_browsing_api_handler") {
   ]
 }
 
-source_set("safe_browsing_api_handler_util") {
+static_library("safe_browsing_api_handler_util") {
   sources = [
     "safe_browsing_api_handler_util.cc",
     "safe_browsing_api_handler_util.h",
@@ -137,7 +137,7 @@ source_set("safe_browsing_api_handler_util") {
   ]
 }
 
-source_set("test_database_manager") {
+static_library("test_database_manager") {
   sources = [
     "test_database_manager.cc",
     "test_database_manager.h",
@@ -149,7 +149,7 @@ source_set("test_database_manager") {
   ]
 }
 
-source_set("util") {
+static_library("util") {
   sources = [
     "util.cc",
     "util.h",
@@ -167,7 +167,7 @@ source_set("util") {
   }
 }
 
-source_set("v4_database") {
+static_library("v4_database") {
   sources = [
     "v4_database.cc",
     "v4_database.h",
@@ -183,7 +183,7 @@ source_set("v4_database") {
   ]
 }
 
-source_set("v4_get_hash_protocol_manager") {
+static_library("v4_get_hash_protocol_manager") {
   sources = [
     "v4_get_hash_protocol_manager.cc",
     "v4_get_hash_protocol_manager.h",
@@ -200,7 +200,7 @@ source_set("v4_get_hash_protocol_manager") {
   ]
 }
 
-source_set("v4_local_database_manager") {
+static_library("v4_local_database_manager") {
   sources = [
     "v4_local_database_manager.cc",
     "v4_local_database_manager.h",
@@ -247,7 +247,7 @@ source_set("v4_store") {
   ]
 }
 
-source_set("v4_update_protocol_manager") {
+static_library("v4_update_protocol_manager") {
   sources = [
     "v4_update_protocol_manager.cc",
     "v4_update_protocol_manager.h",

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("navigation_metrics") {
+static_library("navigation_metrics") {
   sources = [
     "navigation_metrics.cc",
     "navigation_metrics.h",

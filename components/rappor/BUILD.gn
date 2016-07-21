@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # GYP version: components/rappor.gypi:rappor
-source_set("rappor") {
+static_library("rappor") {
   sources = [
     "bloom_filter.cc",
     "bloom_filter.h",

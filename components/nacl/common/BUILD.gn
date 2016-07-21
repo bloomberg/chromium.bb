@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 
 if (enable_nacl) {
   # This is separate so it can be used by ../broker:nacl64.
-  source_set("minimal") {
+  static_library("minimal") {
     sources = [
       "nacl_cmd_line.cc",
       "nacl_cmd_line.h",
@@ -49,7 +49,7 @@ if (enable_nacl) {
     ]
   }
 
-  source_set("common") {
+  static_library("common") {
     sources = [
       "nacl_host_messages.cc",
       "nacl_host_messages.h",
@@ -105,7 +105,7 @@ source_set("process_type") {
   ]
 }
 
-source_set("switches") {
+static_library("switches") {
   sources = [
     "nacl_switches.cc",
     "nacl_switches.h",
