@@ -26,9 +26,7 @@ Polymer({
   },
 
   listeners: {
-    'infinite-list.scroll': 'closeMenu_',
-    'tap': 'closeMenu_',
-    'toggle-menu': 'toggleMenu_',
+    'infinite-list.scroll': 'notifyListScroll_',
     'remove-bookmark-stars': 'removeBookmarkStars_',
   },
 
@@ -38,26 +36,6 @@ Polymer({
     // resize events to fire before the list is attached and can be measured.
     // Adding another resize here ensures it will get sized correctly.
     /** @type {IronListElement} */(this.$['infinite-list']).notifyResize();
-  },
-
-  /**
-   * Closes the overflow menu.
-   * @private
-   */
-  closeMenu_: function() {
-    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).closeMenu();
-  },
-
-  /**
-   * Opens the overflow menu unless the menu is already open and the same button
-   * is pressed.
-   * @param {{detail: {item: !HistoryEntry, target: !HTMLElement}}} e
-   * @private
-   */
-  toggleMenu_: function(e) {
-    var target = e.detail.target;
-    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
-        target, e.detail.item);
   },
 
   /**
@@ -75,28 +53,6 @@ Polymer({
       if (this.historyData_[i].url == url)
         this.set('historyData_.' + i + '.starred', false);
     }
-  },
-
-  /** @private */
-  onMoreFromSiteTap_: function() {
-    var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
-    this.fire('search-domain', {domain: menu.itemData.domain});
-    menu.closeMenu();
-  },
-
-  /** @private */
-  onRemoveFromHistoryTap_: function() {
-    var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
-    md_history.BrowserService.getInstance()
-        .deleteItems([menu.itemData])
-        .then(function(items) {
-          this.removeDeletedHistory_(items);
-          // This unselect-all is to reset the toolbar when deleting a selected
-          // item. TODO(tsergeant): Make this automatic based on observing list
-          // modifications.
-          this.fire('unselect-all');
-        }.bind(this));
-    menu.closeMenu();
   },
 
   /**
@@ -280,5 +236,12 @@ Polymer({
    */
   isFirstItem_: function(index) {
     return index == 0;
-  }
+  },
+
+  /**
+   * @private
+   */
+  notifyListScroll_: function() {
+    this.fire('history-list-scrolled');
+  },
 });

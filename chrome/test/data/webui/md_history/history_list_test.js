@@ -174,8 +174,25 @@ cr.define('md_history.history_list_test', function() {
           });
         });
 
-        element.$.sharedMenu.itemData = {domain: 'example.com'};
-        MockInteractions.tap(element.$.menuMoreButton);
+        app.$['history'].$.sharedMenu.itemData = {domain: 'example.com'};
+        MockInteractions.tap(app.$['history'].$.menuMoreButton);
+      });
+
+      test('scrolling history list closes overflow menu', function() {
+        var sharedMenu = app.$.history.$.sharedMenu;
+        for (var i = 0; i < 10; i++)
+          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+
+        return flush().then(function() {
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
+
+          MockInteractions.tap(items[2].$['menu-button']);
+          assertTrue(sharedMenu.menuOpen);
+          element.$['infinite-list'].scrollTop = 100;
+          return flush();
+        }).then(function() {
+          assertFalse(sharedMenu.menuOpen);
+        });
       });
 
       test('changing search deselects items', function() {
