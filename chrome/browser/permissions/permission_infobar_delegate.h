@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 
 class NavigationDetails;
+class Profile;
 
 // Base class for permission infobars, it implements the default behavior
 // so that the accept/deny buttons grant/deny the relevant permission.
@@ -28,6 +29,7 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   PermissionInfobarDelegate(const GURL& requesting_origin,
                             content::PermissionType permission_type,
                             ContentSettingsType content_settings_type,
+                            Profile* profile,
                             const PermissionSetCallback& callback);
   ~PermissionInfobarDelegate() override;
 
@@ -49,6 +51,7 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   bool action_taken_;
   content::PermissionType permission_type_;
   ContentSettingsType content_settings_type_;
+  Profile* const profile_;
   const PermissionSetCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionInfobarDelegate);

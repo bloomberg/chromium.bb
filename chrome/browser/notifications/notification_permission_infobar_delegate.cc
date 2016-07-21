@@ -13,19 +13,22 @@
 infobars::InfoBar* NotificationPermissionInfobarDelegate::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
+    Profile* profile,
     const base::Callback<void(bool, bool)>& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
-          new NotificationPermissionInfobarDelegate(requesting_frame,
+          new NotificationPermissionInfobarDelegate(requesting_frame, profile,
                                                     callback))));
 }
 
 NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
     const GURL& requesting_frame,
+    Profile* profile,
     const base::Callback<void(bool, bool)>& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 content::PermissionType::NOTIFICATIONS,
                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                profile,
                                 callback),
       requesting_frame_(requesting_frame) {}
 

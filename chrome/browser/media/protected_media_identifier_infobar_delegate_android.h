@@ -20,11 +20,13 @@ class ProtectedMediaIdentifierInfoBarDelegateAndroid
   // added.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const GURL& requesting_frame,
+                                   Profile* profile,
                                    const PermissionSetCallback& callback);
 
  protected:
   ProtectedMediaIdentifierInfoBarDelegateAndroid(
       const GURL& requesting_frame,
+      Profile* profile,
       const PermissionSetCallback& callback);
   ~ProtectedMediaIdentifierInfoBarDelegateAndroid() override;
 

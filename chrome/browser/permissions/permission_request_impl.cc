@@ -17,10 +17,12 @@
 PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
     content::PermissionType permission_type,
+    Profile* profile,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
       permission_type_(permission_type),
+      profile_(profile),
       permission_decided_callback_(permission_decided_callback),
       delete_callback_(delete_callback),
       is_finished_(false),
@@ -28,10 +30,10 @@ PermissionRequestImpl::PermissionRequestImpl(
 
 PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
-  if (!action_taken_)
-    // TODO(stefanocs): Pass in a non null profile.
+  if (!action_taken_) {
     PermissionUmaUtil::PermissionIgnored(permission_type_, request_origin_,
-                                         nullptr);
+                                         profile_);
+  }
 }
 
 gfx::VectorIconId PermissionRequestImpl::GetVectorIconId() const {

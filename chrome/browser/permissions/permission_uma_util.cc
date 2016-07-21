@@ -300,10 +300,8 @@ bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePermissionActionReporting))
     return false;
-  // TODO(stefanocs): Remove this check once all callsites have been updated
-  // to not pass a nullptr.
-  if (!profile)
-    return false;
+
+  DCHECK(profile);
   if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE)
     return false;
   if (!profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))

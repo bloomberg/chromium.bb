@@ -52,6 +52,7 @@ class PermissionQueueController::PendingInfobarRequest {
                         const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         const GURL& embedder,
+                        Profile* profile,
                         const PermissionDecidedCallback& callback);
   ~PendingInfobarRequest();
 
@@ -71,6 +72,7 @@ class PermissionQueueController::PendingInfobarRequest {
   PermissionRequestID id_;
   GURL requesting_frame_;
   GURL embedder_;
+  Profile* profile_;
   PermissionDecidedCallback callback_;
   infobars::InfoBar* infobar_;
 
@@ -82,11 +84,13 @@ PermissionQueueController::PendingInfobarRequest::PendingInfobarRequest(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
+    Profile* profile,
     const PermissionDecidedCallback& callback)
     : type_(type),
       id_(id),
       requesting_frame_(requesting_frame),
       embedder_(embedder),
+      profile_(profile),
       callback_(callback),
       infobar_(NULL) {}
 
@@ -119,21 +123,21 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
   switch (type_) {
     case content::PermissionType::GEOLOCATION:
       infobar_ = GeolocationInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, callback);
+          GetInfoBarService(id_), requesting_frame_, profile_, callback);
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
       infobar_ = NotificationPermissionInfobarDelegate::Create(
-          GetInfoBarService(id_), requesting_frame_, callback);
+          GetInfoBarService(id_), requesting_frame_, profile_, callback);
       break;
 #endif  // ENABLE_NOTIFICATIONS
     case content::PermissionType::MIDI_SYSEX:
       infobar_ = MidiPermissionInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, callback);
+          GetInfoBarService(id_), requesting_frame_, profile_, callback);
       break;
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       infobar_ = ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, callback);
+          GetInfoBarService(id_), requesting_frame_, profile_, callback);
       break;
     default:
       NOTREACHED();
@@ -169,7 +173,7 @@ void PermissionQueueController::CreateInfoBarRequest(
     return;
 
   pending_infobar_requests_.push_back(PendingInfobarRequest(
-      permission_type_, id, requesting_frame, embedder, callback));
+      permission_type_, id, requesting_frame, embedder, profile_, callback));
   if (!AlreadyShowingInfoBarForTab(id))
     ShowQueuedInfoBarForTab(id);
 }

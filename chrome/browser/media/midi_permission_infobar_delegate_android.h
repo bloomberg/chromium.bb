@@ -23,10 +23,12 @@ class MidiPermissionInfoBarDelegateAndroid : public PermissionInfobarDelegate {
   // |infobar_service|.  Returns the infobar if it was successfully added.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const GURL& requesting_frame,
+                                   Profile* profile,
                                    const PermissionSetCallback& callback);
 
  private:
   MidiPermissionInfoBarDelegateAndroid(const GURL& requesting_frame,
+                                       Profile* profile,
                                        const PermissionSetCallback& callback);
   ~MidiPermissionInfoBarDelegateAndroid() override;
 

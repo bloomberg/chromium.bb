@@ -14,6 +14,7 @@
 
 class GURL;
 class PermissionContextBase;
+class Profile;
 
 // Default implementation of PermissionRequest, it is assumed that the
 // caller owns it and that it can be deleted once the |delete_callback|
@@ -25,6 +26,7 @@ class PermissionRequestImpl : public PermissionRequest {
   PermissionRequestImpl(
       const GURL& request_origin,
       content::PermissionType permission_type,
+      Profile* profile,
       const PermissionDecidedCallback& permission_decided_callback,
       const base::Closure delete_callback);
 
@@ -49,6 +51,7 @@ class PermissionRequestImpl : public PermissionRequest {
 
   GURL request_origin_;
   content::PermissionType permission_type_;
+  Profile* profile_;
 
   // Called once a decision is made about the permission.
   const PermissionDecidedCallback permission_decided_callback_;
