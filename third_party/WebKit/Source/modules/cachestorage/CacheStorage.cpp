@@ -140,7 +140,7 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        if (reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound || reason == WebServiceWorkerCacheErrorCacheNameNotFound)
             m_resolver->resolve();
         else
             m_resolver->reject(CacheStorageError::createException(reason));
