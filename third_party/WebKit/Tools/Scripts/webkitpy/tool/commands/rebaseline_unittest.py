@@ -4,7 +4,6 @@
 
 import unittest
 
-from webkitpy.common.net.buildbot_mock import MockBuilder
 from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.executive_mock import MockExecutive2
@@ -16,7 +15,7 @@ from webkitpy.tool.mock_tool import MockTool, MockOptions
 
 class BaseTestCase(unittest.TestCase):
     MOCK_WEB_RESULT = 'MOCK Web result, convert 404 to None=True'
-    WEB_PREFIX = 'http://example.com/f/builders/MOCK Mac10.11/results/layout-test-results'
+    WEB_PREFIX = 'https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Mac10_11/results/layout-test-results'
 
     command_constructor = None
 
@@ -254,6 +253,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.options.suffixes = "png,wav,txt"
         self.command._rebaseline_test_and_update_expectations(self.options)
 
+        self.maxDiff = None
         self.assertItemsEqual(self.tool.web.urls_fetched,
                               [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
                                self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
@@ -530,7 +530,7 @@ class TestRebaseline(BaseTestCase):
     command_constructor = Rebaseline  # AKA webkit-patch rebaseline
 
     def test_rebaseline(self):
-        self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK Win7')]
+        self.command._builders_to_pull_from = lambda: ['MOCK Win7']
 
         self._write("userscripts/first-test.html", "test data")
 
@@ -545,7 +545,7 @@ class TestRebaseline(BaseTestCase):
                           [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']]])
 
     def test_rebaseline_directory(self):
-        self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK Win7')]
+        self.command._builders_to_pull_from = lambda: ['MOCK Win7']
 
         self._write("userscripts/first-test.html", "test data")
         self._write("userscripts/second-test.html", "test data")
@@ -1437,3 +1437,9 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
     def test_execute_with_dry_run(self):
         self._basic_execute_test([], dry_run=True)
         self.assertEqual(self.tool.scm().local_commits(), [])
+
+    def test_bot_revision_data(self):
+        self._setup_mock_build_data()
+        self.assertEqual(
+            self.command.bot_revision_data(self.tool.scm()),
+            [{'builder': 'MOCK Win7', 'revision': '9000'}])

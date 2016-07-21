@@ -96,13 +96,6 @@ class AbstractRebaseliningCommand(Command):
         self._baseline_suffix_list = BASELINE_SUFFIX_LIST
         self._scm_changes = {'add': [], 'delete': [], 'remove-lines': []}
 
-    def _results_url(self, builder_name, build_number=None):
-        builder = self._tool.buildbot.builder_with_name(builder_name)
-        if build_number:
-            build = builder.build(build_number)
-            return build.results_url()
-        return builder.latest_layout_test_results_url()
-
     def _add_to_scm_later(self, path):
         self._scm_changes['add'].append(path)
 
@@ -252,7 +245,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         if options.results_directory:
             results_url = 'file://' + options.results_directory
         else:
-            results_url = self._results_url(options.builder, build_number=options.build_number)
+            results_url = self._tool.buildbot.results_url(options.builder, build_number=options.build_number)
 
         for suffix in self._baseline_suffix_list:
             self._rebaseline_test(options.builder, options.test, suffix, results_url)
@@ -323,8 +316,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         """
         build_to_results = {}
         for builder_name in self._release_builders():
-            builder = self._tool.buildbot.builder_with_name(builder_name)
-            builder_results = builder.latest_layout_test_results()
+            builder_results = self._tool.buildbot.latest_layout_test_results(builder_name)
             if builder_results:
                 build_to_results[Build(builder_name)] = builder_results
             else:
@@ -693,12 +685,8 @@ class Rebaseline(AbstractParallelRebaselineCommand):
         ])
 
     def _builders_to_pull_from(self):
-        chosen_names = self._tool.user.prompt_with_list(
+        return self._tool.user.prompt_with_list(
             "Which builder to pull results from:", self._release_builders(), can_choose_multiple=True)
-        return [self._builder_with_name(name) for name in chosen_names]
-
-    def _builder_with_name(self, name):
-        return self._tool.buildbot.builder_with_name(name)
 
     def execute(self, options, args, tool):
         if not args:
@@ -708,7 +696,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
         if options.builders:
             builders_to_check = []
             for builder_names in options.builders:
-                builders_to_check += [self._builder_with_name(name) for name in builder_names.split(",")]
+                builders_to_check += builder_names.split(",")
         else:
             builders_to_check = self._builders_to_pull_from()
 
@@ -719,7 +707,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             for test in args:
                 if test not in test_prefix_list:
                     test_prefix_list[test] = {}
-                build = Build(builder.name())
+                build = Build(builder)
                 test_prefix_list[test][build] = suffixes_to_update
 
         if options.verbose:

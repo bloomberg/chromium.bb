@@ -26,48 +26,60 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import re
 import urllib2
 
-import webkitpy.common.config.urls as config_urls
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.net.networktransaction import NetworkTransaction
 from webkitpy.common.system.logutils import get_logger
 
 
+RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'
+
 _log = get_logger(__file__)
 
 
-class Builder(object):
+class BuildBot(object):
+    """This class represents an interface to BuildBot-related functionality.
 
-    def __init__(self, builder_name, buildbot):
-        self._name = builder_name
-        self._buildbot = buildbot
+    This includes fetching layout test results from Google Storage;
+    for more information about the layout test result format, see:
+        https://www.chromium.org/developers/the-json-test-results-format
+    """
 
-    def name(self):
-        return self._name
+    def results_url(self, builder_name, build_number=None):
+        """Returns a URL for one set of archived layout test results.
 
-    def results_url(self):
-        return config_urls.chromium_results_url_base_for_builder(self._name)
+        If a build number is given, this will be results for a particular run;
+        otherwise it will be the accumulated results URL, which should have
+        the latest results.
+        """
+        if build_number:
+            url_base = self.builder_results_url_base(builder_name)
+            return "%s/%s/layout-test-results" % (url_base, build_number)
+        return self.accumulated_results_url_base(builder_name)
 
-    def latest_layout_test_results_url(self):
-        return config_urls.chromium_accumulated_results_url_base_for_builder(self._name)
+    def builder_results_url_base(self, builder_name):
+        """Returns the URL for the given builder's directory in Google Storage.
+
+        Each builder has a directory in the GS bucket, and the directory
+        name is the builder name transformed to be more URL-friendly by
+        replacing all spaces, periods and parentheses with underscores.
+        """
+        return '%s/%s' % (RESULTS_URL_BASE, re.sub('[ .()]', '_', builder_name))
+
+    def accumulated_results_url_base(self, builder_name):
+        return self.builder_results_url_base(builder_name) + "/results/layout-test-results"
 
     @memoized
-    def latest_layout_test_results(self):
-        return self.fetch_layout_test_results(self.latest_layout_test_results_url())
-
-    def _fetch_file_from_results(self, results_url, file_name):
-        # It seems this can return None if the url redirects and then returns 404.
-        result = urllib2.urlopen("%s/%s" % (results_url, file_name))
-        if not result:
-            return None
-        # urlopen returns a file-like object which sometimes works fine with str()
-        # but sometimes is a addinfourl object.  In either case calling read() is correct.
-        return result.read()
+    def latest_layout_test_results(self, builder_name):
+        return self.fetch_layout_test_results(self.accumulated_results_url_base(builder_name))
 
     def fetch_layout_test_results(self, results_url):
+        """Returns a LayoutTestResults object for results fetched from a given URL."""
         # FIXME: This should cache that the result was a 404 and stop hitting the network.
+        # This may be able to be done by just adding a @memoized decorator.
         results_file = NetworkTransaction(convert_404_to_None=True).run(
             lambda: self._fetch_file_from_results(results_url, "failing_results.json"))
         revision = NetworkTransaction(convert_404_to_None=True).run(
@@ -76,24 +88,12 @@ class Builder(object):
             results_file = None
         return LayoutTestResults.results_from_string(results_file, revision)
 
-    def build(self, build_number):
-        return Build(self, build_number=build_number)
-
-
-class Build(object):
-
-    def __init__(self, builder, build_number):
-        self._builder = builder
-        self._number = build_number
-
-    def results_url(self):
-        return "%s/%s/layout-test-results" % (self._builder.results_url(), self._number)
-
-    def builder(self):
-        return self._builder
-
-
-class BuildBot(object):
-
-    def builder_with_name(self, builder_name):
-        return Builder(builder_name, self)
+    def _fetch_file_from_results(self, results_url, file_name):
+        # It seems this can return None if the url redirects and then returns 404.
+        # FIXME: This could use Web instead of using urllib2 directly.
+        result = urllib2.urlopen("%s/%s" % (results_url, file_name))
+        if not result:
+            return None
+        # urlopen returns a file-like object which sometimes works fine with str()
+        # but sometimes is a addinfourl object.  In either case calling read() is correct.
+        return result.read()
