@@ -494,7 +494,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                         viewHolder.textView, R.drawable.history_favicon, 0, 0, 0);
             } else {
                 RecentlyClosedTab tab = getChild(childPosition);
-                String title = NewTabPageView.getTitleForDisplay(tab.title, tab.url);
+                String title = TitleUtil.getTitleForDisplay(tab.title, tab.url);
                 viewHolder.textView.setText(title);
                 loadLocalFavicon(viewHolder, tab.url);
             }

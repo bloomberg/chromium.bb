@@ -13,7 +13,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.RecyclerView;
@@ -218,22 +217,6 @@ public class NewTabPageView extends FrameLayout
          * @param mostVisitedItems The MostVisitedItem shown on the NTP. Used to record metrics.
          */
         void onLoadingComplete(MostVisitedItem[] mostVisitedItems);
-    }
-
-    /**
-     * Returns a title suitable for display for a link (e.g. a most visited item). If |title| is
-     * non-empty, this simply returns it. Otherwise, returns a shortened form of the URL.
-     */
-    static String getTitleForDisplay(String title, String url) {
-        if (TextUtils.isEmpty(title) && url != null) {
-            Uri uri = Uri.parse(url);
-            String host = uri.getHost();
-            String path = uri.getPath();
-            if (host == null) host = "";
-            if (TextUtils.isEmpty(path) || path.equals("/")) path = "";
-            title = host + path;
-        }
-        return title;
     }
 
     /**
@@ -1051,7 +1034,7 @@ public class NewTabPageView extends FrameLayout
                 LayoutInflater inflater, MostVisitedItem item, boolean isInitialLoad) {
             final MostVisitedItemView view = (MostVisitedItemView) inflater.inflate(
                     R.layout.most_visited_item, mMostVisitedLayout, false);
-            view.setTitle(getTitleForDisplay(item.getTitle(), item.getUrl()));
+            view.setTitle(TitleUtil.getTitleForDisplay(item.getTitle(), item.getUrl()));
             view.setOfflineAvailable(item.isOfflineAvailable());
 
             LargeIconCallback iconCallback = new LargeIconCallbackImpl(item, view, isInitialLoad);
