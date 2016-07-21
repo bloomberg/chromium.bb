@@ -14,9 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/network_hints/common/network_hints_common.h"
+#include "components/network_hints/common/network_hints_messages.h"
 #include "components/network_hints/renderer/dns_prefetch_queue.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/shell/public/cpp/interface_provider.h"
 
 using content::RenderThread;
 
@@ -37,15 +37,6 @@ void RendererDnsPrefetch::Reset() {
   buffer_full_discard_count_ = 0;
   numeric_ip_discard_count_ = 0;
   new_name_count_ = 0;
-}
-
-mojom::NetworkHints& RendererDnsPrefetch::GetNetworkHints() {
-  DCHECK(content::RenderThread::Get());
-  if (!network_hints_) {
-    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&network_hints_));
-  }
-  return *network_hints_;
 }
 
 // Push names into queue quickly!
@@ -162,7 +153,7 @@ void RendererDnsPrefetch::DnsPrefetchNames(size_t max_count) {
 
   network_hints::LookupRequest request;
   request.hostname_list = names;
-  GetNetworkHints().DNSPrefetch(request);
+  RenderThread::Get()->Send(new NetworkHintsMsg_DNSPrefetch(request));
 }
 
 // is_numeric_ip() checks to see if all characters in name are either numeric,

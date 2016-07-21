@@ -13,11 +13,16 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/accessibility/accessibility.gyp:accessibility',
         '../url/ipc/url_ipc.gyp:url_ipc',
       ],
       'sources': [
         'network_hints/common/network_hints_common.cc',
         'network_hints/common/network_hints_common.h',
+        'network_hints/common/network_hints_message_generator.cc',
+        'network_hints/common/network_hints_message_generator.h',
+        'network_hints/common/network_hints_messages.cc',
+        'network_hints/common/network_hints_messages.h',
       ],
     },
     {
@@ -28,32 +33,12 @@
         '..',
       ],
       'dependencies': [
-        'network_hints_mojom',
-        'network_hints_public_cpp',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',
       ],
       'sources': [
-        'network_hints/browser/network_hints_impl.cc',
-        'network_hints/browser/network_hints_impl.h',
-      ],
-    },
-    {
-      # GN version: //components/network_hints/public/cpp
-      'target_name': 'network_hints_public_cpp',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        'network_hints_common',
-        '../base/base.gyp:base',
-        '../ipc/ipc.gyp:ipc',
-        '../url/ipc/url_ipc.gyp:url_ipc',
-      ],
-      'sources': [
-        'network_hints/public/cpp/network_hints_param_traits.cc',
-        'network_hints/public/cpp/network_hints_param_traits.h',
+        'network_hints/browser/network_hints_message_filter.cc',
+        'network_hints/browser/network_hints_message_filter.h',
       ],
     },
   ],
@@ -69,10 +54,7 @@
           ],
           'dependencies': [
             'network_hints_common',
-            'network_hints_mojom',
-            'network_hints_public_cpp',
             '../content/content.gyp:content_renderer',
-            '../services/shell/shell_public.gyp:shell_public',
             '../third_party/WebKit/public/blink.gyp:blink',
           ],
           'sources': [
@@ -85,25 +67,6 @@
             'network_hints/renderer/renderer_preconnect.cc',
             'network_hints/renderer/renderer_preconnect.h',
           ],
-        },
-        {
-          # GN version: //components/network_hints/public/interfaces:network_hints_mojom
-          'target_name': 'network_hints_mojom',
-          'type': 'static_library',
-          'dependencies': [
-            '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-            '../url/url.gyp:url_mojom',
-          ],
-          'sources': [
-            'network_hints/public/interfaces/network_hints.mojom',
-          ],
-          'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
-          'variables': {
-            'mojom_typemaps': [
-              '../url/mojo/gurl.typemap',
-              'network_hints/public/cpp/network_hints.typemap',
-            ],
-          },
         },
       ],
     }],

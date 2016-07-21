@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/network_hints/browser/network_hints_impl.h"
+#include "components/network_hints/browser/network_hints_message_filter.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/network_hints/common/network_hints_common.h"
+#include "components/network_hints/common/network_hints_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -62,18 +63,27 @@ class DnsLookupRequest {
 
 }  // namespace
 
-void NetworkHintsImpl::Bind(mojom::NetworkHintsRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-NetworkHintsImpl::NetworkHintsImpl(net::HostResolver* host_resolver)
-    : host_resolver_(host_resolver) {
+NetworkHintsMessageFilter::NetworkHintsMessageFilter(
+    net::HostResolver* host_resolver)
+    : content::BrowserMessageFilter(NetworkHintsMsgStart),
+      host_resolver_(host_resolver) {
   DCHECK(host_resolver_);
 }
 
-NetworkHintsImpl::~NetworkHintsImpl() {}
+NetworkHintsMessageFilter::~NetworkHintsMessageFilter() {
+}
 
-void NetworkHintsImpl::DNSPrefetch(const LookupRequest& lookup_request) {
+bool NetworkHintsMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(NetworkHintsMessageFilter, message)
+    IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void NetworkHintsMessageFilter::OnDnsPrefetch(
+    const LookupRequest& lookup_request) {
   DCHECK(host_resolver_);
   for (const std::string& hostname : lookup_request.hostname_list) {
     DnsLookupRequest* request = new DnsLookupRequest(host_resolver_, hostname);

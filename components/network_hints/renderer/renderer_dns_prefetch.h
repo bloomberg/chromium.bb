@@ -28,12 +28,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/network_hints/public/interfaces/network_hints.mojom.h"
 #include "components/network_hints/renderer/dns_prefetch_queue.h"
 
 namespace network_hints {
-
-class NetworkHints;
 
 // An internal interface to the network_hints component for efficiently sending
 // DNS prefetch requests to the net stack.
@@ -80,9 +77,6 @@ class RendererDnsPrefetch {
   // This discards ALL queue entries, and map entries.
   void Reset();
 
-  // Get a connected NetworkHints.
-  mojom::NetworkHints& GetNetworkHints();
-
   // We use c_string_queue_ to hold lists of names supplied typically) by the
   // renderer.  It queues the names, at minimal cost to the renderer's thread,
   // and allows this class to process them when time permits (in a later task).
@@ -106,9 +100,6 @@ class RendererDnsPrefetch {
   // these metrics to modify buffer counts etc. some day.
   int buffer_full_discard_count_;
   int numeric_ip_discard_count_;
-
-  // Don't use directly. Instead call |GetNetworkHints()|.
-  mojom::NetworkHintsPtr network_hints_;
 
   base::WeakPtrFactory<RendererDnsPrefetch> weak_factory_;
 

@@ -11,9 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "components/network_hints/public/interfaces/network_hints.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 class GURL;
 class Profile;
@@ -36,8 +34,7 @@ class InfoMap;
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
 // process on the IPC thread.
-class ChromeRenderMessageFilter : public content::BrowserMessageFilter,
-                                  public network_hints::mojom::NetworkHints {
+class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
  public:
   ChromeRenderMessageFilter(int render_process_id, Profile* profile);
 
@@ -46,18 +43,14 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter,
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override;
 
-  void BindNetworkHints(network_hints::mojom::NetworkHintsRequest request);
-
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ChromeRenderMessageFilter>;
 
   ~ChromeRenderMessageFilter() override;
 
-  // mojom::NetworkHints methods:
-  void DNSPrefetch(const network_hints::LookupRequest& request) override;
-  void Preconnect(const GURL& url, bool allow_credentials, int count) override;
-
+  void OnDnsPrefetch(const network_hints::LookupRequest& request);
+  void OnPreconnect(const GURL& url, bool allow_credentials, int count);
   void OnUpdatedCacheStats(uint64_t min_capacity,
                            uint64_t max_capacity,
                            uint64_t capacity,
@@ -138,8 +131,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter,
 
   // Used to look up permissions at database creation time.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-
-  mojo::BindingSet<network_hints::mojom::NetworkHints> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };
