@@ -28,9 +28,6 @@
 
 from webkitpy.common.host_mock import MockHost
 
-# FIXME: Old-style "Ports" need to die and be replaced by modern layout_tests.port which needs to move to common.
-from webkitpy.common.config.ports_mock import MockPort
-
 
 # FIXME: We should just replace this with optparse.Values(default=kwargs)
 class MockOptions(object):
@@ -59,11 +56,6 @@ class MockTool(MockHost):
 
     def __init__(self, *args, **kwargs):
         MockHost.__init__(self, *args, **kwargs)
-
-        self._deprecated_port = MockPort()
-
-    def deprecated_port(self):
-        return self._deprecated_port
 
     def path(self):
         return "echo"
