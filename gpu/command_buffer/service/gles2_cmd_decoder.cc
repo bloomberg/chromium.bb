@@ -5684,6 +5684,16 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
     const char* function_name, FramebufferOperation op) {
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
 
+  // Because of performance issues, no-op if the format of the attachment is
+  // DEPTH_STENCIL and only one part is intended to be invalidated.
+  bool has_depth_stencil_format = framebuffer &&
+      framebuffer->HasDepthStencilFormatAttachment(GL_DEPTH_ATTACHMENT) &&
+      framebuffer->HasDepthStencilFormatAttachment(GL_STENCIL_ATTACHMENT);
+  bool invalidate_depth = false;
+  bool invalidate_stencil = false;
+  std::unique_ptr<GLenum[]> validated_attachments(new GLenum[count]);
+  GLsizei validated_count = 0;
+
   // Validates the attachments. If one of them fails, the whole command fails.
   GLenum thresh0 = GL_COLOR_ATTACHMENT0 + group_->max_color_attachments();
   GLenum thresh1 = GL_COLOR_ATTACHMENT15;
@@ -5699,6 +5709,16 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
             function_name, attachments[i], "attachments");
         return;
       }
+      if (has_depth_stencil_format) {
+        switch(attachments[i]) {
+          case GL_DEPTH_ATTACHMENT:
+            invalidate_depth = true;
+            continue;
+          case GL_STENCIL_ATTACHMENT:
+            invalidate_stencil = true;
+            continue;
+        }
+      }
     } else {
       if (!validators_->backbuffer_attachment.IsValid(attachments[i])) {
         LOCAL_SET_GL_ERROR_INVALID_ENUM(
@@ -5706,14 +5726,18 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
         return;
       }
     }
+    validated_attachments[validated_count++] = attachments[i];
+  }
+  if (invalidate_depth && invalidate_stencil) {
+    validated_attachments[validated_count++] = GL_DEPTH_STENCIL_ATTACHMENT;
   }
 
   // If the default framebuffer is bound but we are still rendering to an
   // FBO, translate attachment names that refer to default framebuffer
   // channels to corresponding framebuffer attachments.
-  std::unique_ptr<GLenum[]> translated_attachments(new GLenum[count]);
-  for (GLsizei i = 0; i < count; ++i) {
-    GLenum attachment = attachments[i];
+  std::unique_ptr<GLenum[]> translated_attachments(new GLenum[validated_count]);
+  for (GLsizei i = 0; i < validated_count; ++i) {
+    GLenum attachment = validated_attachments[i];
     if (!framebuffer && GetBackbufferServiceId()) {
       switch (attachment) {
         case GL_COLOR_EXT:
@@ -5738,10 +5762,10 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
     case kFramebufferDiscard:
       if (feature_info_->gl_version_info().is_es3) {
         glInvalidateFramebuffer(
-            target, count, translated_attachments.get());
+            target, validated_count, translated_attachments.get());
       } else {
         glDiscardFramebufferEXT(
-            target, count, translated_attachments.get());
+            target, validated_count, translated_attachments.get());
       }
       dirty = true;
       break;
@@ -5750,7 +5774,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
         // no-op since the function isn't supported.
       } else {
         glInvalidateFramebuffer(
-            target, count, translated_attachments.get());
+            target, validated_count, translated_attachments.get());
         dirty = true;
       }
       break;
@@ -5765,14 +5789,25 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
     return;
 
   // Marks each one of them as not cleared.
-  for (GLsizei i = 0; i < count; ++i) {
+  for (GLsizei i = 0; i < validated_count; ++i) {
     if (framebuffer) {
-      framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
-                                           texture_manager(),
-                                           attachments[i],
-                                           false);
+      if (validated_attachments[i] == GL_DEPTH_STENCIL_ATTACHMENT) {
+        framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
+                                             texture_manager(),
+                                             GL_DEPTH_ATTACHMENT,
+                                             false);
+        framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
+                                             texture_manager(),
+                                             GL_STENCIL_ATTACHMENT,
+                                             false);
+      } else {
+        framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
+                                             texture_manager(),
+                                             validated_attachments[i],
+                                             false);
+      }
     } else {
-      switch (attachments[i]) {
+      switch (validated_attachments[i]) {
         case GL_COLOR_EXT:
           backbuffer_needs_clear_bits_ |= GL_COLOR_BUFFER_BIT;
           break;

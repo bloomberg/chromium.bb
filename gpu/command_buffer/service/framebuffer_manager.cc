@@ -431,6 +431,18 @@ bool Framebuffer::HasUnclearedAttachment(
   return false;
 }
 
+bool Framebuffer::HasDepthStencilFormatAttachment(
+    GLenum attachment) const {
+  AttachmentMap::const_iterator it = attachments_.find(attachment);
+  if (it != attachments_.end()) {
+    const Attachment* attachment = it->second.get();
+    GLenum internal_format = attachment->internal_format();
+    return TextureManager::ExtractFormatFromStorageFormat(internal_format) ==
+        GL_DEPTH_STENCIL;
+  }
+  return false;
+}
+
 bool Framebuffer::HasUnclearedColorAttachments() const {
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
@@ -580,6 +592,9 @@ void Framebuffer::ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
   }
 }
 
+// TODO(jiawei.shao@intel.com): when the texture or the renderbuffer in
+// format DEPTH_STENCIL, mark the specific part (depth or stencil) of it as
+// cleared or uncleared instead of the whole one.
 void Framebuffer::MarkAttachmentAsCleared(
     RenderbufferManager* renderbuffer_manager,
     TextureManager* texture_manager,
@@ -794,7 +809,7 @@ GLenum Framebuffer::GetStatus(
 }
 
 bool Framebuffer::IsCleared() const {
-  // are all the attachments cleaared?
+  // are all the attachments cleared?
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     Attachment* attachment = it->second.get();
