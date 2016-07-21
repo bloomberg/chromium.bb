@@ -101,8 +101,7 @@ def CheckChangeOnCommit(input_api, output_api):
 def _AreBenchmarksModified(change):
   """Checks whether CL contains any modification to Telemetry benchmarks."""
   for affected_file in change.AffectedFiles():
-    affected_file_path = affected_file.LocalPath()
-    file_path, _ = os.path.splitext(affected_file_path)
+    file_path = affected_file.LocalPath()
     # Changes to unittest files should not count.
     if file_path.endswith('test.py'):
         continue
