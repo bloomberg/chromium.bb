@@ -157,6 +157,7 @@ PaymentRequestMockFunctionScope::~PaymentRequestMockFunctionScope()
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectCall(String* captor)
 {
     m_mockFunctions.append(new MockFunction(m_scriptState, captor));
+    EXPECT_CALL(*m_mockFunctions.last(), call(testing::_));
     return m_mockFunctions.last()->bind();
 }
 
