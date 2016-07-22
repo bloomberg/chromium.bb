@@ -39,7 +39,7 @@
         'gmock',
         'gmock/include',
       ],
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
           'gmock/include',  # So that gmock headers can find themselves.
         ],

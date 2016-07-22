@@ -29,6 +29,9 @@
         'GTEST_LANG_CXX11=0',
       ],
       'all_dependent_settings': {
+        'include_dirs': [
+          'gtest/include',
+        ],
         'defines': [
           'GTEST_HAS_POSIX_RE=0',
           'GTEST_LANG_CXX11=0',
@@ -120,9 +123,6 @@
       'direct_dependent_settings': {
         'defines': [
           'UNIT_TEST',
-        ],
-        'include_dirs': [
-          'gtest/include',  # So that gtest headers can find themselves.
         ],
         'target_conditions': [
           ['_type=="executable"', {
