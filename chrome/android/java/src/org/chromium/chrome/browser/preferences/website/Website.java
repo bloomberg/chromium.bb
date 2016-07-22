@@ -42,6 +42,7 @@ public class Website implements Serializable {
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
+    private final List<UsbInfo> mUsbInfo = new ArrayList<UsbInfo>();
 
     public Website(WebsiteAddress origin, WebsiteAddress embedder) {
         mOrigin = origin;
@@ -484,5 +485,19 @@ public class Website implements Serializable {
             usage += info.getSize();
         }
         return usage;
+    }
+
+    /**
+     * Add information about a USB device permission to the set stored in this object.
+     */
+    public void addUsbInfo(UsbInfo info) {
+        mUsbInfo.add(info);
+    }
+
+    /**
+     * Returns the set of USB devices this website has been granted permission to access.
+     */
+    public List<UsbInfo> getUsbInfo() {
+        return new ArrayList<UsbInfo>(mUsbInfo);
     }
 }
