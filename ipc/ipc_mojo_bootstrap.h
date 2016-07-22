@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "ipc/ipc.mojom.h"
@@ -34,57 +33,26 @@ class IPC_EXPORT MojoBootstrap {
  public:
   class Delegate {
    public:
-    virtual void OnPipesAvailable(
-        mojom::ChannelAssociatedPtrInfo send_channel,
-        mojom::ChannelAssociatedRequest receive_channel,
-        int32_t peer_pid) = 0;
-    virtual void OnBootstrapError() = 0;
+    virtual ~Delegate() {}
+
+    virtual void OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
+                                  mojom::ChannelAssociatedRequest receiver) = 0;
   };
+
+  virtual ~MojoBootstrap() {}
 
   // Create the MojoBootstrap instance, using |handle| as the message pipe, in
   // mode as specified by |mode|. The result is passed to |delegate|.
   static std::unique_ptr<MojoBootstrap> Create(
       mojo::ScopedMessagePipeHandle handle,
       Channel::Mode mode,
-      Delegate* delegate);
-
-  MojoBootstrap();
-  virtual ~MojoBootstrap();
+      Delegate* delegate,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   // Start the handshake over the underlying message pipe.
   virtual void Connect() = 0;
 
   virtual mojo::AssociatedGroup* GetAssociatedGroup() = 0;
-
-  virtual void SetProxyTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
-
-  // GetSelfPID returns our PID.
-  base::ProcessId GetSelfPID() const;
-
- protected:
-  // On MojoServerBootstrap: INITIALIZED -> WAITING_ACK -> READY
-  // On MojoClientBootstrap: INITIALIZED -> READY
-  // STATE_ERROR is a catch-all state that captures any observed error.
-  enum State { STATE_INITIALIZED, STATE_WAITING_ACK, STATE_READY, STATE_ERROR };
-
-  Delegate* delegate() const { return delegate_; }
-  void Fail();
-  bool HasFailed() const;
-
-  State state() const { return state_; }
-  void set_state(State state) { state_ = state; }
-
-  mojo::ScopedMessagePipeHandle TakeHandle();
-
- private:
-  void Init(mojo::ScopedMessagePipeHandle, Delegate* delegate);
-
-  mojo::ScopedMessagePipeHandle handle_;
-  Delegate* delegate_;
-  State state_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoBootstrap);
 };
 
 }  // namespace IPC

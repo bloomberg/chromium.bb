@@ -42,7 +42,7 @@ namespace IPC {
 class IPC_EXPORT ChannelMojo
     : public Channel,
       public Channel::AssociatedInterfaceSupport,
-      public MojoBootstrap::Delegate,
+      public NON_EXPORTED_BASE(MojoBootstrap::Delegate),
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
   // Creates a ChannelMojo.
@@ -90,17 +90,16 @@ class IPC_EXPORT ChannelMojo
       mojo::Array<mojom::SerializedHandlePtr>* handles);
 
   // MojoBootstrapDelegate implementation
-  void OnPipesAvailable(mojom::ChannelAssociatedPtrInfo send_channel,
-                        mojom::ChannelAssociatedRequest receive_channel,
-                        int32_t peer_pid) override;
-  void OnBootstrapError() override;
+  void OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
+                        mojom::ChannelAssociatedRequest receiver) override;
+
+  // MessagePipeReader::Delegate
+  void OnPeerPidReceived() override;
+  void OnMessageReceived(const Message& message) override;
+  void OnPipeError() override;
   void OnAssociatedInterfaceRequest(
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
-
-  // MessagePipeReader::Delegate
-  void OnMessageReceived(const Message& message) override;
-  void OnPipeError() override;
 
  private:
   ChannelMojo(
@@ -108,10 +107,6 @@ class IPC_EXPORT ChannelMojo
       Mode mode,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
-
-  void InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
-                         mojom::ChannelAssociatedRequest receiver,
-                         base::ProcessId peer_pid);
 
   // Channel::AssociatedInterfaceSupport:
   mojo::AssociatedGroup* GetAssociatedGroup() override;
@@ -121,13 +116,6 @@ class IPC_EXPORT ChannelMojo
   void GetGenericRemoteAssociatedInterface(
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
-  void SetProxyTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-
-  // ChannelMojo needs to kill its MessagePipeReader in delayed manner
-  // because the channel wants to kill these readers during the
-  // notifications invoked by them.
-  typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
   // A TaskRunner which runs tasks on the ChannelMojo's owning thread.
   scoped_refptr<base::TaskRunner> task_runner_;
@@ -136,14 +124,11 @@ class IPC_EXPORT ChannelMojo
   std::unique_ptr<MojoBootstrap> bootstrap_;
   Listener* listener_;
 
+  std::unique_ptr<internal::MessagePipeReader> message_reader_;
+
+  base::Lock associated_interface_lock_;
   std::map<std::string, GenericAssociatedInterfaceFactory>
       associated_interfaces_;
-
-  // Guards access to the fields below.
-  mutable base::Lock lock_;
-  std::unique_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
-  std::vector<std::unique_ptr<Message>> pending_messages_;
-  bool waiting_connect_;
 
   base::WeakPtrFactory<ChannelMojo> weak_factory_;
 

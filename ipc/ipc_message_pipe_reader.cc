@@ -55,10 +55,8 @@ MessagePipeReader::MessagePipeReader(
     mojo::MessagePipeHandle pipe,
     mojom::ChannelAssociatedPtr sender,
     mojo::AssociatedInterfaceRequest<mojom::Channel> receiver,
-    base::ProcessId peer_pid,
     MessagePipeReader::Delegate* delegate)
     : delegate_(delegate),
-      peer_pid_(peer_pid),
       sender_(std::move(sender)),
       binding_(this, std::move(receiver)),
       sender_interface_id_(sender_.interface_id()),
@@ -123,9 +121,15 @@ void MessagePipeReader::GetRemoteInterface(
   sender_->GetAssociatedInterface(name, std::move(request));
 }
 
+void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
+  peer_pid_ = peer_pid;
+  delegate_->OnPeerPidReceived();
+}
+
 void MessagePipeReader::Receive(
     mojo::Array<uint8_t> data,
     mojo::Array<mojom::SerializedHandlePtr> handles) {
+  DCHECK_NE(peer_pid_, base::kNullProcessId);
   Message message(
       data.size() == 0 ? "" : reinterpret_cast<const char*>(&data[0]),
       static_cast<uint32_t>(data.size()));
@@ -156,16 +160,12 @@ void MessagePipeReader::GetAssociatedInterface(
 
 void MessagePipeReader::OnPipeError(MojoResult error) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  Close();
+
+  // NOTE: The delegate call below may delete |this|.
   if (delegate_)
     delegate_->OnPipeError();
-  Close();
-}
-
-void MessagePipeReader::DelayedDeleter::operator()(
-    MessagePipeReader* ptr) const {
-  ptr->Close();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&DeleteNow, ptr));
 }
 
 }  // namespace internal
