@@ -122,7 +122,7 @@ SkImageGenerator* DecodingImageGenerator::create(SkData* data)
 {
     // We just need the size of the image, so we have to temporarily create an ImageDecoder. Since
     // we only need the size, it doesn't really matter about premul or not, or gamma settings.
-    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(static_cast<const char*>(data->data()), data->size(),
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(ImageDecoder::determineImageType(static_cast<const char*>(data->data()), data->size()),
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     if (!decoder)
         return 0;

@@ -82,15 +82,15 @@ bool Image::supportsType(const String& type)
     return MIMETypeRegistry::isSupportedImageResourceMIMEType(type);
 }
 
-bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
+Image::SizeAvailability Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
     m_encodedImageData = data;
     if (!m_encodedImageData.get())
-        return true;
+        return SizeAvailable;
 
     int length = m_encodedImageData->size();
     if (!length)
-        return true;
+        return SizeAvailable;
 
     return dataChanged(allDataReceived);
 }

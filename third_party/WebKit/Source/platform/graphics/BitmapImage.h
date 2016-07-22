@@ -65,8 +65,9 @@ public:
     IntSize sizeRespectingOrientation() const;
     bool getHotSpot(IntPoint&) const override;
     String filenameExtension() const override;
-    bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived) override;
-    bool dataChanged(bool allDataReceived) override;
+
+    SizeAvailability setData(PassRefPtr<SharedBuffer> data, bool allDataReceived) override;
+    SizeAvailability dataChanged(bool allDataReceived) override;
 
     bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;

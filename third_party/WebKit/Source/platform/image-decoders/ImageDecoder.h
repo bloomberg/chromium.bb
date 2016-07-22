@@ -94,6 +94,21 @@ public:
         GammaAndColorProfileIgnored
     };
 
+    enum class SniffResult {
+        JPEG,
+        PNG,
+        GIF,
+        WEBP,
+        ICO,
+        BMP,
+        InsufficientData,
+        Invalid
+    };
+
+    static SniffResult determineImageType(const char* data, size_t length);
+    static SniffResult determineImageType(const SharedBuffer&);
+    static SniffResult determineImageType(const SegmentReader&);
+
     ImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
         : m_premultiplyAlpha(alphaOption == AlphaPremultiplied)
         , m_ignoreGammaAndColorProfile(colorOptions == GammaAndColorProfileIgnored)
@@ -108,9 +123,7 @@ public:
     // we can't sniff a supported type from the provided data (possibly
     // because there isn't enough data yet).
     // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
-    static std::unique_ptr<ImageDecoder> create(const char* data, size_t length, AlphaOption, GammaAndColorProfileOption);
-    static std::unique_ptr<ImageDecoder> create(const SharedBuffer&, AlphaOption, GammaAndColorProfileOption);
-    static std::unique_ptr<ImageDecoder> create(const SegmentReader&, AlphaOption, GammaAndColorProfileOption);
+    static std::unique_ptr<ImageDecoder> create(SniffResult, AlphaOption, GammaAndColorProfileOption);
 
     virtual String filenameExtension() const = 0;
 

@@ -60,7 +60,7 @@ PictureSnapshot::PictureSnapshot(PassRefPtr<const SkPicture> picture)
 
 static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
 {
-    std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(static_cast<const char*>(data), length,
+    std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(ImageDecoder::determineImageType(static_cast<const char*>(data), length),
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
     if (!imageDecoder)
         return false;

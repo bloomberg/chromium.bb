@@ -96,7 +96,7 @@ private:
     IntSize containerSize() const;
     bool usesContainerSize() const override { return true; }
 
-    bool dataChanged(bool allDataReceived) override;
+    SizeAvailability dataChanged(bool allDataReceived) override;
 
     // FIXME: SVGImages are underreporting decoded sizes and will be unable
     // to prune because these functions are not implemented yet.
