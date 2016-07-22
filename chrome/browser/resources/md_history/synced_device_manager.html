@@ -73,10 +73,12 @@
       </template>
     </div>
     <div id="no-synced-tabs" class="centered-message"
-      hidden="[[!showNoSyncedMessage(signInState_, syncedDevices_.length)]]">
+        hidden="[[!showNoSyncedMessage(signInState_, syncedDevices_.length,
+                                       guestSession_)]]">
       [[noSyncedTabsMessage(fetchingSyncedTabs_)]]
     </div>
-    <div id="sign-in-guide" hidden$="[[signInState_]]">
+    <div id="sign-in-guide"
+        hidden="[[!showSignInGuide(signInState_, guestSession_)]]">
       <div id="illustration"></div>
       <div id="sign-in-promo">$i18n{signInPromo}</div>
       <div id="sign-in-promo-desc">$i18n{signInPromoDesc}</div>

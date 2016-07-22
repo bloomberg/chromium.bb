@@ -45,6 +45,12 @@ Polymer({
     },
 
     /** @private */
+    guestSession_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isGuestSession'),
+    },
+
+    /** @private */
     fetchingSyncedTabs_: {
       type: Boolean,
       value: false,
@@ -108,10 +114,26 @@ Polymer({
    * Decide whether or not should display no synced tabs message.
    * @param {boolean} signInState
    * @param {number} syncedDevicesLength
+   * @param {boolean} guestSession
    * @return {boolean}
    */
-  showNoSyncedMessage: function(signInState, syncedDevicesLength) {
+  showNoSyncedMessage: function(
+      signInState, syncedDevicesLength, guestSession) {
+    if (guestSession)
+      return true;
+
     return signInState && syncedDevicesLength == 0;
+  },
+
+  /**
+   * Shows the signin guide when the user is not signed in and not in a guest
+   * session.
+   * @param {boolean} signInState
+   * @param {boolean} guestSession
+   * @return {boolean}
+   */
+  showSignInGuide: function(signInState, guestSession) {
+    return !signInState && !guestSession;
   },
 
   /**

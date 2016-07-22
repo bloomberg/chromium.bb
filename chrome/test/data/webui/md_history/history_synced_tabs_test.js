@@ -253,9 +253,17 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
       });
 
+      test('hide sign in promo in guest mode', function() {
+        element.guestSession_ = true;
+        return flush().then(function() {
+          assertTrue(element.$['sign-in-guide'].hidden);
+        });
+      });
+
       teardown(function() {
         element.syncedDevices = [];
         element.searchTerm = '';
+        element.guestSession_ = false;
       });
     });
   }

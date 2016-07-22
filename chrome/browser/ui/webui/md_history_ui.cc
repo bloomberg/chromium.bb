@@ -101,6 +101,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
       switches::kHistoryEnableGroupByDomain) || profile->IsSupervised();
   source->AddBoolean("groupByDomain", group_by_domain);
 
+  source->AddBoolean("isGuestSession", profile->IsGuestSession());
+
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   bool is_authenticated = signin_manager != nullptr &&
