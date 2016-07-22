@@ -137,6 +137,14 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      "Native GpuMemoryBuffers have been disabled, either via about:flags"
      " or command line.",
      true},
+    {"vpx_decode", manager->IsFeatureBlacklisted(
+                       gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
+                       manager->IsFeatureBlacklisted(
+                           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+     command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
+     "Accelerated VPx video decode has been disabled, either via blacklist,"
+     " about:flags or the command line.",
+     true},
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);

@@ -126,4 +126,8 @@ GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
                            "gpu_rasterization",
                            GPU_FEATURE_TYPE_GPU_RASTERIZATION)
 
+GPU_BLACKLIST_FEATURE_TEST(AcceleratedVpxDecode,
+                           "accelerated_vpx_decode",
+                           GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE)
+
 }  // namespace gpu

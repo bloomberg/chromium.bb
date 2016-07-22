@@ -743,6 +743,14 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
     }
   }
+
+#if defined(OS_WIN)
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) &&
+      gpu_preferences) {
+    gpu_preferences->enable_accelerated_vpx_decode = false;
+  }
+#endif
+
 #if defined(ENABLE_WEBRTC)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
       !command_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {

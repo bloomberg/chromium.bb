@@ -38,6 +38,8 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_PANEL_FITTING);
   list->AddSupportedFeature("gpu_rasterization",
                             GPU_FEATURE_TYPE_GPU_RASTERIZATION);
+  list->AddSupportedFeature("accelerated_vpx_decode",
+                            GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE);
   list->set_supports_feature_type_all(true);
   return list;
 }
