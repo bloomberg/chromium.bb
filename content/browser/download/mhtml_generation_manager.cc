@@ -44,11 +44,15 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   const GenerateMHTMLCallback& callback() const { return callback_; }
 
+  // Indicates whether we expect a message from the |sender| at this time.
+  // We expect only one message per frame - therefore calling this method
+  // will always clear |frame_tree_node_id_of_busy_frame_|.
+  bool IsMessageFromFrameExpected(RenderFrameHostImpl* sender);
+
   // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
   // renderer that the MHTML generation for previous frame has finished).
   // Returns |true| upon success; |false| otherwise.
   bool OnSerializeAsMHTMLResponse(
-      RenderFrameHostImpl* sender,
       const std::set<std::string>& digests_of_uris_of_serialized_resources);
 
   // Sends IPC to the renderer, asking for MHTML generation of the next frame.
@@ -74,6 +78,8 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
                            base::TerminationStatus status,
                            int exit_code) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
+
+  void MarkAsFinished();
 
  private:
   static int64_t CloseFileOnFileThread(base::File file);
@@ -119,6 +125,11 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // The callback to call once generation is complete.
   const GenerateMHTMLCallback callback_;
 
+  // Whether the job is finished (set to true only for the short duration of
+  // time between MHTMLGenerationManager::JobFinished is called and the job is
+  // destroyed by MHTMLGenerationManager::OnFileClosed).
+  bool is_finished_;
+
   // RAII helper for registering this Job as a RenderProcessHost observer.
   ScopedObserver<RenderProcessHost, MHTMLGenerationManager::Job>
       observed_renderer_process_host_;
@@ -136,6 +147,7 @@ MHTMLGenerationManager::Job::Job(int job_id,
       mhtml_boundary_marker_(net::GenerateMimeMultipartBoundary()),
       salt_(base::GenerateGUID()),
       callback_(callback),
+      is_finished_(false),
       observed_renderer_process_host_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_contents->ForEachFrame(base::Bind(
@@ -222,6 +234,15 @@ void MHTMLGenerationManager::Job::RenderProcessExited(
   MHTMLGenerationManager::GetInstance()->RenderProcessExited(this);
 }
 
+void MHTMLGenerationManager::Job::MarkAsFinished() {
+  DCHECK(!is_finished_);
+  is_finished_ = true;
+
+  // Stopping RenderProcessExited notifications is needed to avoid calling
+  // JobFinished twice.  See also https://crbug.com/612098.
+  observed_renderer_process_host_.RemoveAll();
+}
+
 void MHTMLGenerationManager::Job::AddFrame(RenderFrameHost* render_frame_host) {
   auto* rfhi = static_cast<RenderFrameHostImpl*>(render_frame_host);
   int frame_tree_node_id = rfhi->frame_tree_node()->frame_tree_node_id();
@@ -255,18 +276,21 @@ void MHTMLGenerationManager::Job::CloseFile(
       callback);
 }
 
-bool MHTMLGenerationManager::Job::OnSerializeAsMHTMLResponse(
-    RenderFrameHostImpl* sender,
-    const std::set<std::string>& digests_of_uris_of_serialized_resources) {
-  // Sanitize renderer input / reject unexpected messages.
+bool MHTMLGenerationManager::Job::IsMessageFromFrameExpected(
+    RenderFrameHostImpl* sender) {
   int sender_id = sender->frame_tree_node()->frame_tree_node_id();
-  if (sender_id != frame_tree_node_id_of_busy_frame_) {
-    ReceivedBadMessage(sender->GetProcess(),
-                       bad_message::DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE);
-    return false;  // Report failure.
-  }
+  if (sender_id != frame_tree_node_id_of_busy_frame_)
+    return false;
+
+  // We only expect one message per frame - let's make sure subsequent messages
+  // from the same |sender| will be rejected.
   frame_tree_node_id_of_busy_frame_ = FrameTreeNode::kFrameTreeNodeInvalidId;
 
+  return true;
+}
+
+bool MHTMLGenerationManager::Job::OnSerializeAsMHTMLResponse(
+    const std::set<std::string>& digests_of_uris_of_serialized_resources) {
   // Renderer should be deduping resources with the same uris.
   DCHECK_EQ(0u, base::STLSetIntersection<std::set<std::string>>(
                     digests_of_already_serialized_uris_,
@@ -276,7 +300,7 @@ bool MHTMLGenerationManager::Job::OnSerializeAsMHTMLResponse(
       digests_of_uris_of_serialized_resources.end());
 
   if (pending_frame_tree_node_ids_.empty())
-    return true;  // Report success.
+    return true;  // Report success - all frames have been processed.
 
   return SendToNextRenderFrame();
 }
@@ -323,7 +347,8 @@ void MHTMLGenerationManager::OnSerializeAsMHTMLResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Job* job = FindJob(job_id);
-  if (!job) {
+  if (!job || !job->IsMessageFromFrameExpected(sender)) {
+    NOTREACHED();
     ReceivedBadMessage(sender->GetProcess(),
                        bad_message::DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE);
     return;
@@ -335,7 +360,7 @@ void MHTMLGenerationManager::OnSerializeAsMHTMLResponse(
   }
 
   if (!job->OnSerializeAsMHTMLResponse(
-          sender, digests_of_uris_of_serialized_resources)) {
+          digests_of_uris_of_serialized_resources)) {
     JobFinished(job, JobStatus::FAILURE);
     return;
   }
@@ -388,6 +413,7 @@ void MHTMLGenerationManager::JobFinished(Job* job, JobStatus job_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(job);
 
+  job->MarkAsFinished();
   job->CloseFile(
       base::Bind(&MHTMLGenerationManager::OnFileClosed,
                  base::Unretained(this),  // Safe b/c |this| is a singleton.

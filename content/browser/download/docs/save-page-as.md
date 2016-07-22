@@ -88,13 +88,16 @@ Very high-level flow of saving a page as MHTML:
           API) or by an embedder of `WebContents` (since this is public API of
           //content).
 
-* Step 2: `MHTMLGenerationManager` coordinates generation of the MHTML file
-          by sequentially (one-at-a-time) asking each frame to write its portion
-          of MHTML to a file handle.  Other classes (i.e. `SavePackage` and/or
-          `SaveFileManager`) are not used at this step at all.
+* Step 2: `MHTMLGenerationManager` creates a new instance of
+          `MHTMLGenerationManager::Job` that coordinates generation of
+          the MHTML file by sequentially (one-at-a-time) asking each
+          frame to write its portion of MHTML to a file handle.  Other
+          classes (i.e. `SavePackage` and/or `SaveFileManager`) are not
+          used at this step at all.
 
-* Step 3: When done `MHTMLGenerationManager` calls a completion callback
-          which in case of Save-Page-As will end up in
+* Step 3: When done `MHTMLGenerationManager` destroys
+          `MHTMLGenerationManager::Job` instance and calls a completion
+          callback which in case of Save-Page-As will end up in
           `SavePackage::OnMHTMLGenerated`.
 
 Note: MHTML format is by default disabled in Save-Page-As UI on Windows, MacOS

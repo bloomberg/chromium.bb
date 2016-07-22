@@ -12,6 +12,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/common/frame_messages.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "content/public/test/browser_test_utils.h"
@@ -102,7 +105,10 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 
   void GenerateMHTML(const MHTMLGenerationParams& params, const GURL& url) {
     NavigateToURL(shell(), url);
+    GenerateMHTMLForCurrentPage(params);
+  }
 
+  void GenerateMHTMLForCurrentPage(const MHTMLGenerationParams& params) {
     base::RunLoop run_loop;
 
     shell()->web_contents()->GenerateMHTML(
@@ -218,6 +224,121 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
   EXPECT_THAT(mhtml,
               HasSubstr("Content-Transfer-Encoding: quoted-printable"));
+}
+
+class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
+ public:
+  GenerateMHTMLAndExitRendererMessageFilter(
+      RenderProcessHostImpl* render_process_host)
+      : BrowserMessageFilter(FrameMsgStart),
+        render_process_host_(render_process_host) {}
+
+ protected:
+  ~GenerateMHTMLAndExitRendererMessageFilter() override {}
+
+ private:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() == FrameHostMsg_SerializeAsMHTMLResponse::ID) {
+      // After |return false| below, this IPC message will be handled by the
+      // product code as illustrated below.  (1), (2), (3) depict points in time
+      // when product code runs on UI and FILE threads.  (X), (Y), (Z) depict
+      // when we want test-injected tasks to run - for the repro, (Z) has to
+      // happen between (1) and (3).  (Y?) and (Z?) depict when test tasks can
+      // theoretically happen and ruin the repro.
+      //
+      //     IO thread       UI thread           FILE thread
+      //     ---------       ---------           -----------
+      //        |                |                     |
+      //    WE ARE HERE          |                     |
+      //        |                |                     |
+      // after |return false|    |                     |
+      //        +--------------->+                     |
+      //        |                |                     |
+      //        |               (X)                    |
+      //        |                |                     |
+      //        |                |                    (Y?)
+      //        |               (Z?)                   |
+      //        |                |                     |
+      // (1)    |      MHTMLGenerationManager          |
+      //        |      ::OnSerializeAsMHTMLResponse    |
+      //        |                +-------------------->+
+      //        |                |                     |
+      //        |                |                    (Y)
+      //        |                |                     |
+      // (2)    |                |          MHTMLGenerationManager::Job
+      //        |                |          ::CloseFileOnFileThread
+      //        |                |                     |
+      //        |               (Z)                    |
+      //        |         test needs to inject         |
+      //        |        fast renderer shutdown        |
+      //        |      HERE - between (1) and (3)      |
+      //        |                |                     |
+      //        |                |                     |
+      //        |                +<--------------------+
+      //        |                |                     |
+      // (3)    |      MHTMLGenerationManager          |
+      //        |      ::OnFileClosed                  |
+      //        |                |                     |
+      //
+      // We hope that (Z) happens between (1) and (3) by doing the following:
+      // - From here post TaskX to UI thread.  (X) is guaranteed to happen
+      //   before timepoint (1) (because posting of (1) happens after
+      //   |return false| / before we post TaskX below).
+      // - From (X) post TaskY to FILE thread.  Because this posting is done
+      //   before (1), we can guarantee that (Y) will happen before (2).
+      // - From (Y) post TaskZ to UI thread.  Because this posting is done
+      //   before (2), we can guarantee that (Z) will happen before (3).
+      // - We cannot really guarantee that (Y) and (Z) happen *after* (1) - i.e.
+      //   execution at (Y?) and (Z?) instead is possible.  In practice,
+      //   bouncing off of UI and FILE thread does mean (Z) happens after (1).
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, base::Bind(
+              &GenerateMHTMLAndExitRendererMessageFilter::TaskX,
+              base::Unretained(this)));
+    }
+
+    return false;
+  };
+
+  void TaskX() {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE, base::Bind(
+            &GenerateMHTMLAndExitRendererMessageFilter::TaskY,
+            base::Unretained(this)));
+  }
+
+  void TaskY() {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(
+            &GenerateMHTMLAndExitRendererMessageFilter::TaskZ,
+            base::Unretained(this)));
+  }
+
+  void TaskZ() {
+    render_process_host_->FastShutdownIfPossible();
+  }
+
+  RenderProcessHostImpl* render_process_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(GenerateMHTMLAndExitRendererMessageFilter);
+};
+
+// Regression test for the crash/race from https://crbug.com/612098.
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLAndExitRenderer) {
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
+
+  RenderProcessHostImpl* render_process_host =
+      static_cast<RenderProcessHostImpl*>(
+          shell()->web_contents()->GetRenderProcessHost());
+  scoped_refptr<BrowserMessageFilter> filter =
+      new GenerateMHTMLAndExitRendererMessageFilter(render_process_host);
+  render_process_host->AddFilter(filter.get());
+
+  base::FilePath path(temp_dir_.path());
+  path = path.Append(FILE_PATH_LITERAL("test.mht"));
+  GenerateMHTMLForCurrentPage(MHTMLGenerationParams(path));
+
+  EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {

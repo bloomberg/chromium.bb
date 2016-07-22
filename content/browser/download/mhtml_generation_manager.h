@@ -28,6 +28,10 @@ class WebContents;
 
 // The class and all of its members live on the UI thread.  Only static methods
 // are executed on other threads.
+//
+// MHTMLGenerationManager is a singleton.  Each call to SaveMHTML method creates
+// a new instance of MHTMLGenerationManager::Job that tracks generation of a
+// single MHTML file.
 class MHTMLGenerationManager {
  public:
   static MHTMLGenerationManager* GetInstance();
