@@ -20,3 +20,6 @@ xunjieli@chromium.org
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
 per-file *.isolate=vadimsh@chromium.org
+
+per-file BUILD.gn=bengr@chromium.org
+per-file net.gyp*=bengr@chromium.org
