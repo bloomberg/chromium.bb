@@ -15,6 +15,7 @@ import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chrome/version.gni")
 import("//ui/base/ui_features.gni")
+import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")

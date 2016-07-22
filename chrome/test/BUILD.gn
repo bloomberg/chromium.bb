@@ -11,6 +11,7 @@ import("//chrome/chrome_tests.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
+import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
