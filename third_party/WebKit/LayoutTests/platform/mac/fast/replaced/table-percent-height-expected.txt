@@ -80,7 +80,7 @@ PASS getHeight('input-submit-75') != '0px' is true
 PASS getHeight('input-submit-75') is getHeight('input-submit-100')
 PASS getWidth('select-75') is getWidth('select-100')
 PASS getHeight('select-75') != '0px' is true
-PASS getHeight('select-75') is getHeight('select-100')
+FAIL getHeight('select-75') should be 16px. Was 15px.
 PASS successfullyParsed is true
 
 TEST COMPLETE
