@@ -33,6 +33,7 @@ class WebClipboardImpl : public blink::WebClipboard {
                             blink::WebURL* source_url,
                             unsigned* fragment_start,
                             unsigned* fragment_end) override;
+  blink::WebString readRTF(Buffer buffer) override;
   blink::WebBlobInfo readImage(Buffer buffer) override;
   blink::WebString readCustomData(Buffer buffer,
                                   const blink::WebString& type) override;

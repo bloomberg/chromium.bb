@@ -77,6 +77,7 @@ public:
     virtual WebString readHTML(
         Buffer buffer, WebURL* pageURL, unsigned* fragmentStart,
         unsigned* fragmentEnd) { return WebString(); }
+    virtual WebString readRTF(Buffer) { return WebString(); }
     virtual WebBlobInfo readImage(Buffer) { return WebBlobInfo(); }
     virtual WebString readCustomData(
         Buffer, const WebString& type) { return WebString(); }

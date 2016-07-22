@@ -39,6 +39,7 @@ PLATFORM_EXPORT extern const char mimeTypeText[];
 PLATFORM_EXPORT extern const char mimeTypeTextPlain[];
 PLATFORM_EXPORT extern const char mimeTypeTextPlainEtc[];
 PLATFORM_EXPORT extern const char mimeTypeTextHTML[];
+PLATFORM_EXPORT extern const char mimeTypeTextRTF[];
 PLATFORM_EXPORT extern const char mimeTypeURL[];
 PLATFORM_EXPORT extern const char mimeTypeTextURIList[];
 PLATFORM_EXPORT extern const char mimeTypeDownloadURL[];

@@ -300,6 +300,7 @@
       'renderer/render_view_browsertest_mac.mm',
       'renderer/render_widget_browsertest.cc',
       'renderer/visual_state_browsertest.cc',
+      'renderer/webclipboard_impl_browsertest.cc',
       'test/browser_test_utils_browsertest.cc',
       'test/content_browser_test_test.cc',
       'test/webui_resource_browsertest.cc',

@@ -139,6 +139,8 @@ String DataObjectItem::getAsString() const
     // This is ugly but there's no real alternative.
     if (m_type == mimeTypeTextPlain) {
         data = Platform::current()->clipboard()->readPlainText(buffer);
+    } else if (m_type == mimeTypeTextRTF) {
+        data = Platform::current()->clipboard()->readRTF(buffer);
     } else if (m_type == mimeTypeTextHTML) {
         WebURL ignoredSourceURL;
         unsigned ignored;

@@ -553,6 +553,27 @@ class InputMsgWatcher : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(InputMsgWatcher);
 };
 
+// Sets up a ui::TestClipboard for use in browser tests. On Windows,
+// clipboard is handled on the IO thread, BrowserTestClipboardScope
+// hops messages onto the right thread.
+class BrowserTestClipboardScope {
+ public:
+  // Sets up a ui::TestClipboard.
+  BrowserTestClipboardScope();
+
+  // Tears down the clipboard.
+  ~BrowserTestClipboardScope();
+
+  // Puts text/rtf |rtf| on the clipboard.
+  void SetRtf(const std::string& rtf);
+
+  // Puts plain text |text| on the clipboard.
+  void SetText(const std::string& text);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserTestClipboardScope);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_

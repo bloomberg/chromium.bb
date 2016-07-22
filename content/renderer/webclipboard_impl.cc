@@ -109,6 +109,16 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
   return html_stdstr;
 }
 
+WebString WebClipboardImpl::readRTF(Buffer buffer) {
+  ui::ClipboardType clipboard_type;
+  if (!ConvertBufferType(buffer, &clipboard_type))
+    return WebString();
+
+  std::string rtf;
+  delegate_->ReadRTF(clipboard_type, &rtf);
+  return WebString::fromLatin1(rtf);
+}
+
 WebBlobInfo WebClipboardImpl::readImage(Buffer buffer) {
   ui::ClipboardType clipboard_type;
   if (!ConvertBufferType(buffer, &clipboard_type))

@@ -41,6 +41,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -62,7 +63,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/test/test_clipboard.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -1429,6 +1433,78 @@ uint32_t InputMsgWatcher::WaitForAck() {
   base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
   run_loop.Run();
   return ack_result_;
+}
+
+#if defined(OS_WIN)
+static void RunTaskAndSignalCompletion(const base::Closure& task,
+                                       base::WaitableEvent* completion) {
+  task.Run();
+  completion->Signal();
+}
+
+static void RunTaskOnIOThreadAndWait(const base::Closure& task) {
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RunTaskAndSignalCompletion, task, &completion));
+  completion.Wait();
+}
+#endif
+
+static void SetUpTestClipboard() {
+#if defined(OS_WIN)
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    RunTaskOnIOThreadAndWait(base::Bind(&SetUpTestClipboard));
+    return;
+  }
+#endif
+  ui::TestClipboard::CreateForCurrentThread();
+}
+
+// TODO(dcheng): Make the test clipboard on different threads share the
+// same backing store. crbug.com/629765
+BrowserTestClipboardScope::BrowserTestClipboardScope() {
+  SetUpTestClipboard();
+}
+
+static void TearDownTestClipboard() {
+#if defined(OS_WIN)
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    RunTaskOnIOThreadAndWait(base::Bind(&TearDownTestClipboard));
+    return;
+  }
+#endif
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+}
+
+BrowserTestClipboardScope::~BrowserTestClipboardScope() {
+  TearDownTestClipboard();
+}
+
+void BrowserTestClipboardScope::SetRtf(const std::string& rtf) {
+#if defined(OS_WIN)
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    RunTaskOnIOThreadAndWait(base::Bind(&BrowserTestClipboardScope::SetRtf,
+                                        base::Unretained(this), rtf));
+    return;
+  }
+#endif
+  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  clipboard_writer.WriteRTF(rtf);
+}
+
+void BrowserTestClipboardScope::SetText(const std::string& text) {
+#if defined(OS_WIN)
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    RunTaskOnIOThreadAndWait(base::Bind(&BrowserTestClipboardScope::SetText,
+                                        base::Unretained(this), text));
+    return;
+  }
+#endif
+  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  clipboard_writer.WriteText(base::ASCIIToUTF16(text));
 }
 
 }  // namespace content

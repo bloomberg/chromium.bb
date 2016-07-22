@@ -8,20 +8,17 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
-#include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ipc/message_filter.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/test/test_clipboard.h"
 
 namespace content {
 
@@ -135,46 +132,6 @@ class InterstitialPageImplTest : public ContentBrowserTest {
   ~InterstitialPageImplTest() override {}
 
  protected:
-  void SetUpTestClipboard() {
-#if defined(OS_WIN)
-    // On Windows, clipboard reads are handled on the IO thread. So, the test
-    // clipboard should be created for the IO thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      RunTaskOnIOThreadAndWait(
-          base::Bind(&InterstitialPageImplTest::SetUpTestClipboard, this));
-      return;
-    }
-#endif
-    ui::TestClipboard::CreateForCurrentThread();
-  }
-
-  void TearDownTestClipboard() {
-#if defined(OS_WIN)
-    // On Windows, test clipboard is created for the IO thread. So, destroy it
-    // for the IO thread, too.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      RunTaskOnIOThreadAndWait(
-          base::Bind(&InterstitialPageImplTest::TearDownTestClipboard, this));
-      return;
-    }
-#endif
-    ui::Clipboard::DestroyClipboardForCurrentThread();
-  }
-
-  void SetClipboardText(const std::string& text) {
-#if defined(OS_WIN)
-    // On Windows, clipboard reads are handled on the IO thread. So, set the
-    // text for the IO thread clipboard.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      RunTaskOnIOThreadAndWait(
-          base::Bind(&InterstitialPageImplTest::SetClipboardText, this, text));
-      return;
-    }
-#endif
-    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteText(base::ASCIIToUTF16(text));
-  }
-
   void SetUpInterstitialPage() {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -277,21 +234,6 @@ class InterstitialPageImplTest : public ContentBrowserTest {
   }
 
  private:
-  void RunTaskOnIOThreadAndWait(const base::Closure& task) {
-    base::WaitableEvent completion(
-        base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED);
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&InterstitialPageImplTest::RunTask, this,
-                                       task, &completion));
-    completion.Wait();
-  }
-
-  void RunTask(const base::Closure& task, base::WaitableEvent* completion) {
-    task.Run();
-    completion->Signal();
-  }
-
   std::unique_ptr<InterstitialPageImpl> interstitial_;
   scoped_refptr<ClipboardMessageWatcher> clipboard_message_watcher_;
 
@@ -331,10 +273,10 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Copy) {
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Paste) {
-  SetUpTestClipboard();
+  BrowserTestClipboardScope clipboard;
   SetUpInterstitialPage();
 
-  SetClipboardText("text-to-paste");
+  clipboard.SetText("text-to-paste");
 
   ASSERT_TRUE(CreateInputAndSetText(std::string()));
   ASSERT_TRUE(FocusInputAndSelectText());
@@ -346,7 +288,6 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Paste) {
   EXPECT_EQ("text-to-paste", input_text);
 
   TearDownInterstitialPage();
-  TearDownTestClipboard();
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, SelectAll) {

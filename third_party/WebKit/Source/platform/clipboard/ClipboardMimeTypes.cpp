@@ -36,6 +36,7 @@ const char mimeTypeText[] = "text";
 const char mimeTypeTextPlain[] = "text/plain";
 const char mimeTypeTextPlainEtc[] = "text/plain;";
 const char mimeTypeTextHTML[] = "text/html";
+const char mimeTypeTextRTF[] = "text/rtf";
 const char mimeTypeURL[] = "url";
 const char mimeTypeTextURIList[] = "text/uri-list";
 const char mimeTypeDownloadURL[] = "downloadurl";
