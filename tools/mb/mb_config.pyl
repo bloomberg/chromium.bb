@@ -336,16 +336,16 @@
     },
 
     'chromium.lkgr': {
-      'ASAN Debug': 'gyp_asan_lsan_edge_debug_bot',
+      'ASAN Debug': 'gn_asan_lsan_edge_debug_bot',
       'ASAN Release Media':
-        'gyp_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
-      'ASAN Release': 'gyp_asan_lsan_edge_fuzzer_v8_heap_release_bot',
+        'gn_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Release': 'gn_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'ASan Debug (32-bit x86 with V8-ARM)':
-        'gyp_asan_edge_v8_heap_debug_bot_hybrid',
+        'gn_asan_edge_v8_heap_debug_bot_hybrid',
       'ASan Release (32-bit x86 with V8-ARM)':
-        'gyp_asan_edge_fuzzer_v8_heap_release_bot_hybrid',
+        'gn_asan_edge_fuzzer_v8_heap_release_bot_hybrid',
       'ASan Release Media (32-bit x86 with V8-ARM)':
-        'gyp_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
+        'gn_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
       'ChromiumOS ASAN Release':
         'gn_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'MSAN Release (chained origins)': 'gn_msan_edge_release_bot',
@@ -354,11 +354,11 @@
       'Mac ASAN Release Media':
         'gyp_asan_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
       'Mac ASAN Release': 'gyp_asan_edge_fuzzer_v8_heap_release_bot',
-      'TSAN Debug': 'gyp_tsan_disable_nacl_line_tables_debug_bot',
-      'TSAN Release': 'gyp_tsan_disable_nacl_line_tables_release_bot',
+      'TSAN Debug': 'gn_tsan_disable_nacl_line_tables_debug_bot',
+      'TSAN Release': 'gn_tsan_disable_nacl_line_tables_release_bot',
       'Telemetry Harness Upload': 'none',
-      'UBSan Release': 'gyp_ubsan_release_bot',
-      'UBSan vptr Release': 'gyp_ubsan_vptr_edge_release_bot',
+      'UBSan Release': 'gn_ubsan_release_bot',
+      'UBSan vptr Release': 'gn_ubsan_vptr_edge_release_bot',
       'Win ASan Release Coverage':
         'gyp_asan_edge_fuzzer_v8_heap_release_bot_x86',
       'Win ASan Release Media':
@@ -1255,17 +1255,17 @@
       'gn', 'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
     ],
 
-    'gyp_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid': [
-      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'chromeos_codecs',
+    'gn_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid': [
+      'gn', 'asan', 'edge', 'fuzzer', 'v8_heap', 'chromeos_codecs',
       'release_bot', 'hybrid',
     ],
 
-    'gyp_asan_edge_v8_heap_debug_bot_hybrid': [
+    'gn_asan_edge_v8_heap_debug_bot_hybrid': [
       'gyp', 'asan', 'edge', 'v8_heap', 'debug_bot', 'hybrid',
     ],
 
-    'gyp_asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
-      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
+    'gn_asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
+      'gn', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
     ],
 
     'gyp_asan_edge_fuzzer_v8_heap_release_bot_x86': [
@@ -1298,17 +1298,13 @@
       'gn', 'asan', 'lsan', 'edge', 'debug_bot',
     ],
 
-    'gyp_asan_lsan_edge_debug_bot': [
-      'gyp', 'asan', 'lsan', 'edge', 'debug_bot',
-    ],
-
-    'gyp_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
-      'gyp', 'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs',
+    'gn_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
+      'gn', 'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs',
       'release_bot',
     ],
 
-    'gyp_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
-      'gyp', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+    'gn_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
+      'gn', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'gn_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot': [
@@ -1408,20 +1404,20 @@
       'gyp', 'syzyasan', 'no_pch', 'win_z7', 'x86',
     ],
 
-    'gyp_tsan_disable_nacl_line_tables_debug_bot': [
-      'gyp', 'tsan', 'disable_nacl', 'line_tables', 'debug_bot',
+    'gn_tsan_disable_nacl_line_tables_debug_bot': [
+      'gn', 'tsan', 'disable_nacl', 'line_tables', 'debug_bot',
     ],
 
-    'gyp_tsan_disable_nacl_line_tables_release_bot': [
-      'gyp', 'tsan', 'disable_nacl', 'line_tables', 'release_bot',
+    'gn_tsan_disable_nacl_line_tables_release_bot': [
+      'gn', 'tsan', 'disable_nacl', 'line_tables', 'release_bot',
     ],
 
-    'gyp_ubsan_release_bot': [
-      'gyp', 'ubsan', 'release_bot',
+    'gn_ubsan_release_bot': [
+      'gn', 'ubsan', 'release_bot',
     ],
 
-    'gyp_ubsan_vptr_edge_release_bot': [
-      'gyp', 'ubsan_vptr', 'edge', 'release_bot',
+    'gn_ubsan_vptr_edge_release_bot': [
+      'gn', 'ubsan_vptr', 'edge', 'release_bot',
     ],
 
     # The 'ios' configs are just used for auditing. iOS bots
