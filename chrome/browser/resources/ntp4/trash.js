@@ -12,6 +12,8 @@ cr.define('ntp', function() {
 
   /**
    * @constructor
+   * @extends {HTMLDivElement}
+   * @implements {cr.ui.DragWrapperDelegate}
    */
   function Trash(trash) {
     trash.__proto__ = Trash.prototype;
@@ -39,10 +41,7 @@ cr.define('ntp', function() {
       return tile.firstChild.canBeRemoved();
     },
 
-    /**
-     * Drag over handler.
-     * @param {Event} e The drag event.
-     */
+    /** @override */
     doDragOver: function(e) {
       ntp.getCurrentlyDraggingTile().dragClone.classList.add(
           'hovering-on-trash');
@@ -50,18 +49,12 @@ cr.define('ntp', function() {
       e.preventDefault();
     },
 
-    /**
-     * Drag enter handler.
-     * @param {Event} e The drag event.
-     */
+    /** @override */
     doDragEnter: function(e) {
       this.doDragOver(e);
     },
 
-    /**
-     * Drop handler.
-     * @param {Event} e The drag event.
-     */
+    /** @override */
     doDrop: function(e) {
       e.preventDefault();
 
@@ -70,10 +63,7 @@ cr.define('ntp', function() {
       tile.landedOnTrash = true;
     },
 
-    /**
-     * Drag leave handler.
-     * @param {Event} e The drag event.
-     */
+    /** @override */
     doDragLeave: function(e) {
       ntp.getCurrentlyDraggingTile().dragClone.classList.remove(
           'hovering-on-trash');

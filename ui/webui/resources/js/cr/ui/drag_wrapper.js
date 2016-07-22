@@ -8,22 +8,45 @@
  * handle the nitty gritty of nested drag enters and leaves.
  */
 cr.define('cr.ui', function() {
+  /** @interface */
+  var DragWrapperDelegate = function() {};
+
+  // TODO(devlin): The only method this "delegate" actually needs is
+  // shouldAcceptDrag(); the rest can be events emitted by the DragWrapper.
+  DragWrapperDelegate.prototype = {
+    /**
+     * @param {MouseEvent} e The event for the drag.
+     * @return {boolean} Whether the drag should be accepted. If false,
+     *     subsequent methods (doDrag*) will not be called.
+     */
+    shouldAcceptDrag: assertNotReached,
+
+    /** @param {MouseEvent} e */
+    doDragEnter: assertNotReached,
+
+    /** @param {MouseEvent} e */
+    doDragLeave: assertNotReached,
+
+    /** @param {MouseEvent} e */
+    doDragOver: assertNotReached,
+
+    /** @param {MouseEvent} e */
+    doDrop: assertNotReached,
+  };
+
   /**
    * Creates a DragWrapper which listens for drag target events on |target| and
-   * delegates event handling to |handler|. The |handler| must implement:
-   *   shouldAcceptDrag
-   *   doDragEnter
-   *   doDragLeave
-   *   doDragOver
-   *   doDrop
+   * delegates event handling to |delegate|.
+   * @param {!Element} target
+   * @param {!cr.ui.DragWrapperDelegate} delegate
    * @constructor
    */
-  function DragWrapper(target, handler) {
-    this.initialize(target, handler);
+  function DragWrapper(target, delegate) {
+    this.initialize(target, delegate);
   }
 
   DragWrapper.prototype = {
-    initialize: function(target, handler) {
+    initialize: function(target, delegate) {
       target.addEventListener('dragenter',
                               this.onDragEnter_.bind(this));
       target.addEventListener('dragover', this.onDragOver_.bind(this));
@@ -31,7 +54,7 @@ cr.define('cr.ui', function() {
       target.addEventListener('dragleave', this.onDragLeave_.bind(this));
 
       this.target_ = target;
-      this.handler_ = handler;
+      this.delegate_ = delegate;
     },
 
     /**
@@ -55,20 +78,20 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Handler for dragenter events fired on |target_|.
-     * @param {Event} e A MouseEvent for the drag.
+     * Delegate for dragenter events fired on |target_|.
+     * @param {MouseEvent} e A MouseEvent for the drag.
      * @private
      */
     onDragEnter_: function(e) {
       if (++this.dragEnters_ == 1) {
-        if (this.handler_.shouldAcceptDrag(e)) {
+        if (this.delegate_.shouldAcceptDrag(e)) {
           this.target_.classList.add('drag-target');
-          this.handler_.doDragEnter(e);
+          this.delegate_.doDragEnter(e);
         }
       } else {
         // Sometimes we'll get an enter event over a child element without an
         // over event following it. In this case we have to still call the
-        // drag over handler so that we make the necessary updates (one visible
+        // drag over delegate so that we make the necessary updates (one visible
         // symptom of not doing this is that the cursor's drag state will
         // flicker during drags).
         this.onDragOver_(e);
@@ -83,7 +106,7 @@ cr.define('cr.ui', function() {
     onDragOver_: function(e) {
       if (!this.target_.classList.contains('drag-target'))
         return;
-      this.handler_.doDragOver(e);
+      this.delegate_.doDragOver(e);
     },
 
     /**
@@ -96,7 +119,7 @@ cr.define('cr.ui', function() {
       if (!this.target_.classList.contains('drag-target'))
         return;
       this.target_.classList.remove('drag-target');
-      this.handler_.doDrop(e);
+      this.delegate_.doDrop(e);
     },
 
     /**
@@ -109,11 +132,12 @@ cr.define('cr.ui', function() {
         return;
 
       this.target_.classList.remove('drag-target');
-      this.handler_.doDragLeave(e);
+      this.delegate_.doDragLeave(e);
     },
   };
 
   return {
-    DragWrapper: DragWrapper
+    DragWrapper: DragWrapper,
+    DragWrapperDelegate: DragWrapperDelegate,
   };
 });

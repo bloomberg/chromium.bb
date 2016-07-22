@@ -19,6 +19,7 @@ cr.define('ntp', function() {
    * @param {boolean} animate If true, animates into existence.
    * @constructor
    * @extends {HTMLLIElement}
+   * @implements {cr.ui.DragWrapperDelegate}
    */
   function NavDot(page, title, titleIsEditable, animate) {
     var dot = cr.doc.createElement('li');
@@ -189,12 +190,7 @@ cr.define('ntp', function() {
       return this.page_.shouldAcceptDrag(e);
     },
 
-    /**
-     * A drag has entered the navigation dot. If the user hovers long enough,
-     * we will navigate to the relevant page.
-     * @param {Event} e The MouseOver event for the drag.
-     * @private
-     */
+    /** @override */
     doDragEnter: function(e) {
       var self = this;
       function navPageClearTimeout() {
@@ -206,14 +202,9 @@ cr.define('ntp', function() {
       this.doDragOver(e);
     },
 
-    /**
-     * A dragged element has moved over the navigation dot. Show the correct
-     * indicator and prevent default handling so the <input> won't act as a drag
-     * target.
-     * @param {Event} e The MouseOver event for the drag.
-     * @private
-     */
+    /** @override */
     doDragOver: function(e) {
+      // Prevent default handling so the <input> won't act as a drag target.
       e.preventDefault();
 
       if (!this.dragWrapper_.isCurrentDragTarget)
@@ -222,12 +213,7 @@ cr.define('ntp', function() {
         this.page_.setDropEffect(e.dataTransfer);
     },
 
-    /**
-     * A dragged element has been dropped on the navigation dot. Tell the page
-     * to append it.
-     * @param {Event} e The MouseOver event for the drag.
-     * @private
-     */
+    /** @override */
     doDrop: function(e) {
       e.stopPropagation();
       var tile = ntp.getCurrentlyDraggingTile();
@@ -238,11 +224,7 @@ cr.define('ntp', function() {
       this.cancelDelayedSwitch_();
     },
 
-    /**
-     * The drag has left the navigation dot.
-     * @param {Event} e The MouseOver event for the drag.
-     * @private
-     */
+    /** @override */
     doDragLeave: function(e) {
       this.cancelDelayedSwitch_();
     },

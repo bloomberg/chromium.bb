@@ -359,6 +359,7 @@ cr.define('ntp', function() {
    *     of the tile grid.
    * @constructor
    * @extends {HTMLDivElement}
+   * @implements {cr.ui.DragWrapperDelegate}
    */
   function TilePage(gridValues) {
     var el = cr.doc.createElement('div');
@@ -1145,18 +1146,12 @@ cr.define('ntp', function() {
       return this.dragWrapper_.isCurrentDragTarget;
     },
 
-    /**
-     * Thunk for dragleave events fired on |tileGrid_|.
-     * @param {Event} e A MouseEvent for the drag.
-     */
+    /** @override */
     doDragLeave: function(e) {
       this.cleanupDrag();
     },
 
-    /**
-     * Performs all actions necessary when a drag enters the tile page.
-     * @param {Event} e A mouseover event for the drag enter.
-     */
+    /** @override */
     doDragEnter: function(e) {
       // Applies the mask so doppleganger tiles disappear into the fog.
       this.updateMask_();
@@ -1175,11 +1170,7 @@ cr.define('ntp', function() {
       this.doDragOver(e);
     },
 
-    /**
-     * Performs all actions necessary when the user moves the cursor during
-     * a drag over the tile page.
-     * @param {Event} e A mouseover event for the drag over.
-     */
+    /** @override */
     doDragOver: function(e) {
       e.preventDefault();
 
@@ -1190,10 +1181,7 @@ cr.define('ntp', function() {
       this.updateDropIndicator_(newDragIndex);
     },
 
-    /**
-     * Performs all actions necessary when the user completes a drop.
-     * @param {Event} e A mouseover event for the drag drop.
-     */
+    /** @override */
     doDrop: function(e) {
       e.stopPropagation();
       e.preventDefault();

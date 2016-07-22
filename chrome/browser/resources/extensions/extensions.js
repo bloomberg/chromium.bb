@@ -5,6 +5,7 @@
 <include src="../../../../ui/webui/resources/js/cr/ui/focus_row.js">
 <include src="../../../../ui/webui/resources/js/cr/ui/focus_grid.js">
 <include src="../uber/uber_utils.js">
+<include src="drag_and_drop_handler.js">
 <include src="extension_code.js">
 <include src="extension_commands_overlay.js">
 <include src="extension_error_overlay.js">
@@ -26,76 +27,6 @@ var webuiResponded = false;
 cr.define('extensions', function() {
   var ExtensionList = extensions.ExtensionList;
 
-  // Implements the DragWrapper handler interface.
-  var dragWrapperHandler = {
-    /** @override */
-    shouldAcceptDrag: function(e) {
-      // External Extension installation can be disabled globally, e.g. while a
-      // different overlay is already showing.
-      if (!ExtensionSettings.getInstance().dragEnabled_)
-        return false;
-
-      // We can't access filenames during the 'dragenter' event, so we have to
-      // wait until 'drop' to decide whether to do something with the file or
-      // not.
-      // See: http://www.w3.org/TR/2011/WD-html5-20110113/dnd.html#concept-dnd-p
-      return (e.dataTransfer.types &&
-              e.dataTransfer.types.indexOf('Files') > -1);
-    },
-    /** @override */
-    doDragEnter: function() {
-      chrome.send('startDrag');
-      ExtensionSettings.showOverlay($('drop-target-overlay'));
-    },
-    /** @override */
-    doDragLeave: function() {
-      this.hideDropTargetOverlay_();
-      chrome.send('stopDrag');
-    },
-    /** @override */
-    doDragOver: function(e) {
-      e.preventDefault();
-    },
-    /** @override */
-    doDrop: function(e) {
-      this.hideDropTargetOverlay_();
-      if (e.dataTransfer.files.length != 1)
-        return;
-
-      var toSend = null;
-      // Files lack a check if they're a directory, but we can find out through
-      // its item entry.
-      for (var i = 0; i < e.dataTransfer.items.length; ++i) {
-        if (e.dataTransfer.items[i].kind == 'file' &&
-            e.dataTransfer.items[i].webkitGetAsEntry().isDirectory) {
-          toSend = 'installDroppedDirectory';
-          break;
-        }
-      }
-      // Only process files that look like extensions. Other files should
-      // navigate the browser normally.
-      if (!toSend &&
-          /\.(crx|user\.js|zip)$/i.test(e.dataTransfer.files[0].name)) {
-        toSend = 'installDroppedFile';
-      }
-
-      if (toSend) {
-        e.preventDefault();
-        chrome.send(toSend);
-      }
-    },
-
-    /**
-     * Hide the current overlay if it is the drop target overlay.
-     * @private
-     */
-    hideDropTargetOverlay_: function() {
-      var currentOverlay = ExtensionSettings.getCurrentOverlay();
-      if (currentOverlay && currentOverlay.id === 'drop-target-overlay')
-        ExtensionSettings.showOverlay(null);
-    }
-  };
-
   /**
    * ExtensionSettings class
    * @class
@@ -107,8 +38,6 @@ cr.define('extensions', function() {
   cr.addSingletonGetter(ExtensionSettings);
 
   ExtensionSettings.prototype = {
-    __proto__: HTMLDivElement.prototype,
-
     /**
      * The drag-drop wrapper for installing external Extensions, if available.
      * null if external Extension installation is not available.
@@ -182,9 +111,20 @@ cr.define('extensions', function() {
           this.handleUpdateExtensionNow_.bind(this));
 
       if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
-        this.dragWrapper_ = new cr.ui.DragWrapper(document.documentElement,
-                                                  dragWrapperHandler);
-        this.dragEnabled_ = true;
+        var dragTarget = document.documentElement;
+        /** @private {extensions.DragAndDropHandler} */
+        this.dragWrapperHandler_ =
+            new extensions.DragAndDropHandler(true, dragTarget);
+        dragTarget.addEventListener('extension-drag-started', function() {
+          ExtensionSettings.showOverlay($('drop-target-overlay'));
+        });
+        dragTarget.addEventListener('extension-drag-ended', function() {
+          var overlay = ExtensionSettings.getCurrentOverlay();
+          if (overlay && overlay.id === 'drop-target-overlay')
+            ExtensionSettings.showOverlay(null);
+        });
+        this.dragWrapper_ =
+            new cr.ui.DragWrapper(dragTarget, this.dragWrapperHandler_);
       }
 
       extensions.PackExtensionOverlay.getInstance().initializePage();
@@ -428,8 +368,10 @@ cr.define('extensions', function() {
     // drag-drop when there is any overlay showing other than the usual overlay
     // shown when drag-drop is started.
     var settings = ExtensionSettings.getInstance();
-    if (settings.dragWrapper_)
-      settings.dragEnabled_ = !node || node == $('drop-target-overlay');
+    if (settings.dragWrapper_) {
+      assert(settings.dragWrapperHandler_).dragEnabled =
+          !node || node == $('drop-target-overlay');
+    }
 
     uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
                                      'stopInterceptingEvents');
