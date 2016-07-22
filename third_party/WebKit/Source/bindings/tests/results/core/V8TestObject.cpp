@@ -2029,7 +2029,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetter(const 
 
 static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingAccessForAllWorldsLongAttribute");
@@ -2050,7 +2050,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Lo
 static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         contextData->activityLogger()->logSetter("TestObject.activityLoggingAccessForAllWorldsLongAttribute", v8Value);
@@ -2067,7 +2067,7 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetter(const 
 
 static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingGetterForAllWorldsLongAttribute");
@@ -2117,7 +2117,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
 static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         contextData->activityLogger()->logSetter("TestObject.activityLoggingSetterForAllWorldsLongAttribute", v8Value);
@@ -2276,7 +2276,7 @@ static void callWithScriptStateAnyAttributeAttributeGetter(const v8::FunctionCal
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     v8SetReturnValue(info, impl->callWithScriptStateAnyAttribute(scriptState).v8Value());
 }
 
@@ -2290,7 +2290,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     impl->setCallWithScriptStateAnyAttribute(scriptState, cppValue);
 }
 
@@ -2305,7 +2305,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(co
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext).v8Value());
 }
 
@@ -2320,7 +2320,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
     TestObject* impl = V8TestObject::toImpl(holder);
     ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext, cppValue);
 }
 
@@ -2704,7 +2704,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetter(co
 
 static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute");
@@ -2725,7 +2725,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8
 static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         contextData->activityLogger()->logSetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", v8Value);
@@ -2742,7 +2742,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterFor
 
 static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute");
@@ -2763,7 +2763,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterFor
 static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         contextData->activityLogger()->logSetter("TestObject.activityLoggingAccessPerWorldBindingsLongAttribute", v8Value);
@@ -2780,7 +2780,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
 
 static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -2801,7 +2801,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
 static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         contextData->activityLogger()->logSetter("TestObject.activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", v8Value);
@@ -2847,7 +2847,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetter(co
 
 static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute");
@@ -2880,7 +2880,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterFor
 
 static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingGetterPerWorldBindingsLongAttribute");
@@ -2913,7 +2913,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
 
 static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->logGetter("TestObject.activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
@@ -8929,7 +8929,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     ScriptValue result = impl->item(scriptState, index);
     v8SetReturnValue(info, result.v8Value());
 }
@@ -8958,7 +8958,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!value.prepare())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     String result = impl->setItem(scriptState, index, value);
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
@@ -9162,7 +9162,7 @@ static void activityLoggingAccessForAllWorldsMethodMethod(const v8::FunctionCall
 
 static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingAccessForAllWorldsMethod", "TestObject", info.Holder(), info.GetIsolate());
@@ -9187,7 +9187,7 @@ static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionC
 static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     impl->callWithScriptStateVoidMethod(scriptState);
 }
 
@@ -9199,7 +9199,7 @@ static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     int result = impl->callWithScriptStateLongMethod(scriptState);
     v8SetReturnValueInt(info, result);
 }
@@ -9212,7 +9212,7 @@ static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->callWithScriptStateExecutionContextVoidMethod(scriptState, executionContext);
 }
@@ -9225,7 +9225,7 @@ static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8
 static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 0));
     impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments);
 }
@@ -9248,7 +9248,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
             --numArgsPassed;
         }
         if (UNLIKELY(numArgsPassed <= 0)) {
-            ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+            ScriptState* scriptState = ScriptState::forHolderObject(info);
             ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
             impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments);
             return;
@@ -9257,7 +9257,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
         if (exceptionState.throwIfNeeded())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments, optionalBooleanArg);
 }
@@ -9292,7 +9292,7 @@ static void callWithCurrentWindowScriptWindowMethodCallback(const v8::FunctionCa
 static void callWithThisValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     impl->callWithThisValue(ScriptValue(scriptState, info.Holder()));
 }
 
@@ -9958,7 +9958,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(const v8
 
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
@@ -9976,7 +9976,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWo
 
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
@@ -9994,7 +9994,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(con
 
 static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
@@ -10837,7 +10837,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -10855,7 +10855,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -10873,7 +10873,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -10907,7 +10907,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
         thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -10935,7 +10935,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     bool result = impl->hasForBinding(scriptState, key, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -10964,7 +10964,7 @@ static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     ScriptValue result = impl->getForBinding(scriptState, key, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -10982,7 +10982,7 @@ static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "clear", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     impl->clearForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -11010,7 +11010,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     bool result = impl->deleteForBinding(scriptState, key, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -11043,7 +11043,7 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     TestObject* result = impl->setForBinding(scriptState, key, value, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -11083,7 +11083,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();

@@ -62,7 +62,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_script_state %}
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     {% endif %}
     {% if (attribute.is_check_security_for_receiver and
            not attribute.is_data_type_property) or
@@ -193,7 +193,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     {% if attribute.activity_logging_world_check %}
     if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger())
@@ -342,7 +342,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_script_state %}
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     {% endif %}
     {# Set #}
     {% if attribute.cpp_setter %}
@@ -378,7 +378,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeSetter')}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
-    ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
+    ScriptState* scriptState = ScriptState::forHolderObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     {% if attribute.activity_logging_world_check %}
     if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger()) {

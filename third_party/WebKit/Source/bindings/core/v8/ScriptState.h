@@ -57,6 +57,16 @@ public:
         return from(isolate->GetCurrentContext());
     }
 
+    static ScriptState* forHolderObject(const v8::FunctionCallbackInfo<v8::Value>& info)
+    {
+        return from(info.Holder()->CreationContext());
+    }
+
+    static ScriptState* forHolderObject(const v8::PropertyCallbackInfo<v8::Value>& info)
+    {
+        return from(info.Holder()->CreationContext());
+    }
+
     // Debugger context doesn't have associated ScriptState and when current
     // context is debugger it should be treated as if context stack was empty.
     static bool hasCurrentScriptState(v8::Isolate* isolate)
