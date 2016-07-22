@@ -8,7 +8,7 @@ if (is_android) {
 }
 
 # GYP version: components/security_state.gyp
-source_set("security_state") {
+static_library("security_state") {
   sources = [
     "security_state_model.cc",
     "security_state_model.h",

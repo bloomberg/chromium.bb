@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-source_set("browser") {
+static_library("browser") {
   sources = [
     "language_state.cc",
     "language_state.h",

@@ -35,7 +35,7 @@ component("wifi") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   sources = [
     "fake_wifi_service.cc",
     "fake_wifi_service.h",

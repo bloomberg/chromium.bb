@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("net") {
+static_library("net") {
   sources = [
     "variations_http_headers.cc",
     "variations_http_headers.h",

@@ -15,7 +15,7 @@ group("browser") {
   ]
 }
 
-source_set("lib") {
+static_library("lib") {
   sources = [
     "pref_names.cc",
     "pref_names.h",
@@ -30,7 +30,7 @@ source_set("lib") {
   ]
 }
 
-source_set("host") {
+static_library("host") {
   sources = [
     "startup_metric_host_impl.cc",
     "startup_metric_host_impl.h",

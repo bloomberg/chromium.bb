@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("sync_bookmarks") {
+static_library("sync_bookmarks") {
   sources = [
     "bookmark_change_processor.cc",
     "bookmark_change_processor.h",

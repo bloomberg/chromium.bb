@@ -5,7 +5,7 @@
 import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-source_set("webcrypto") {
+static_library("webcrypto") {
   sources = [
     "algorithm_dispatch.cc",
     "algorithm_dispatch.h",

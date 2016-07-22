@@ -9,7 +9,7 @@ declare_args() {
   use_unofficial_version_number = !is_chrome_branded
 }
 
-source_set("version_info") {
+static_library("version_info") {
   sources = [
     "version_info.cc",
     "version_info.h",

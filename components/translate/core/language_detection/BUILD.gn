@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("language_detection") {
+static_library("language_detection") {
   sources = [
     "language_detection_util.cc",
     "language_detection_util.h",

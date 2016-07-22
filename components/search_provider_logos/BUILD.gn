@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("search_provider_logos") {
+static_library("search_provider_logos") {
   sources = [
     "google_logo_api.cc",
     "google_logo_api.h",
