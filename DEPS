@@ -24,7 +24,7 @@ vars = {
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
   "gyp_rev": "c61b0b35c8396bfd59efc6cfc11401d912b0f510",
-  "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00",
+  "breakpad_rev": "5f638d532312685548d5033618c8a36f73302d0a",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
@@ -32,7 +32,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
-  'lss_revision': '4fc942258fe5509549333b9487ec018e3c8c5b10',
+  'lss_revision': '3f6478ac95edf86cd3da300c2c0d34a438f5dbeb',
 
   # Separately pinned repositories, update with roll-dep individually.
   "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
@@ -51,7 +51,7 @@ vars = {
 
 deps = {
   "breakpad":
-    Var("chromium_git") + "/external/google-breakpad.git@" +
+    Var("chromium_git") + "/breakpad/breakpad.git@" +
     Var("breakpad_rev"),
   "buildtools":
     Var("chromium_git") + "/chromium/buildtools.git@" +
@@ -81,7 +81,7 @@ deps = {
     Var("chromium_git") + "/chromium/src/third_party/libc++-static.git@" +
     Var("libcxx_static_rev"),
   "third_party/lss":
-    Var("chromium_git") + "/external/linux-syscall-support/lss.git@" +
+    Var("chromium_git") + "/linux-syscall-support.git@" +
     Var("lss_revision"),
   "tools/clang":
     Var("chromium_git") + "/chromium/src/tools/clang.git@" + Var("clang_rev"),

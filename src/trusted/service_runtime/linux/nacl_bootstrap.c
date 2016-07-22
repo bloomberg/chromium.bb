@@ -178,11 +178,7 @@ static void my_pread(const char *file, const char *fail_message,
 
 static uintptr_t my_mmap_simple(uintptr_t address, size_t size,
                                 int prot, int flags, int fd, uintptr_t pos) {
-#if defined(__NR_mmap2)
-  void *result = sys_mmap2((void *) address, size, prot, flags, fd, pos >> 12);
-#else
   void *result = sys_mmap((void *) address, size, prot, flags, fd, pos);
-#endif
   return (uintptr_t) result;
 }
 

@@ -334,7 +334,8 @@ def BuildScript(status, context):
       CommandGclientRunhooks(context)
 
   # Always update Clang.  On Linux and Mac, it's the default for the GN build.
-  # On Windows, we do a second Clang GN build.
+  # It's also used for the Linux Breakpad build. On Windows, we do a second
+  # Clang GN build.
   with Step('update_clang', status):
     Command(context, cmd=[sys.executable, '../tools/clang/scripts/update.py'])
 
@@ -394,9 +395,25 @@ def BuildScript(status, context):
   if context['use_breakpad_tools']:
     with Step('breakpad configure', status):
       Command(context, cmd=['mkdir', '-p', 'breakpad-out'])
+
+      # Breakpad requires C++11, so use clang and the sysroot rather than
+      # hoping that the host toolchain will provide support.
+      configure_args = []
+      if context.Linux():
+        cxx = 'CXX=../../third_party/llvm-build/Release+Asserts/bin/clang++ '
+        if context['arch'] == '32':
+          cxx += '-m32'
+          sysroot_arch = 'i386'
+        else:
+          cxx += '-m64'
+          sysroot_arch = 'amd64'
+        cxx += (' --sysroot=../../build/linux/debian_wheezy_%s-sysroot' %
+                sysroot_arch)
+        configure_args += [cxx]
+        configure_args += ['CXXFLAGS=-I../..']  # For third_party/lss
       Command(context, cwd='breakpad-out',
-              cmd=['bash', '../../breakpad/configure',
-                   'CXXFLAGS=-I../..'])  # For third_party/lss
+              cmd=['bash', '../../breakpad/configure'] + configure_args)
+
     with Step('breakpad make', status):
       Command(context, cmd=['make', '-j%d' % context['max_jobs'],
                             # This avoids a broken dependency on
