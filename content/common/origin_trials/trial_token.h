@@ -50,12 +50,10 @@ class CONTENT_EXPORT TrialToken {
       blink::WebOriginTrialTokenStatus* out_status);
 
   // Returns success if this token is appropriate for use by the given origin
-  // and feature name, and has not yet expired. Otherwise, the return value
-  // indicates why the token is not valid.
-  blink::WebOriginTrialTokenStatus IsValidForFeature(
-      const url::Origin& origin,
-      base::StringPiece feature_name,
-      const base::Time& now) const;
+  // and has not yet expired. Otherwise, the return value indicates why the
+  // token is not valid.
+  blink::WebOriginTrialTokenStatus IsValid(const url::Origin& origin,
+                                           const base::Time& now) const;
 
   url::Origin origin() { return origin_; }
   std::string feature_name() { return feature_name_; }

@@ -61,17 +61,13 @@ std::unique_ptr<TrialToken> TrialToken::From(
   return token;
 }
 
-blink::WebOriginTrialTokenStatus TrialToken::IsValidForFeature(
+blink::WebOriginTrialTokenStatus TrialToken::IsValid(
     const url::Origin& origin,
-    base::StringPiece feature_name,
     const base::Time& now) const {
   // The order of these checks is intentional. For example, will only report a
-  // token as expired if it is valid for the origin + feature combination.
+  // token as expired if it is valid for the origin.
   if (!ValidateOrigin(origin)) {
     return blink::WebOriginTrialTokenStatus::WrongOrigin;
-  }
-  if (!ValidateFeatureName(feature_name)) {
-    return blink::WebOriginTrialTokenStatus::WrongFeature;
   }
   if (!ValidateDate(now)) {
     return blink::WebOriginTrialTokenStatus::Expired;

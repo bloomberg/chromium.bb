@@ -157,64 +157,65 @@ class TrialTokenValidatorTest : public testing::Test {
 };
 
 TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
+  std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+            TrialTokenValidator::ValidateToken(kSampleToken,
+                                               appropriate_origin_, &feature));
+  EXPECT_EQ(kAppropriateFeatureName, feature);
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
+  std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
             TrialTokenValidator::ValidateToken(
-                kSampleToken, inappropriate_origin_, kAppropriateFeatureName));
+                kSampleToken, inappropriate_origin_, &feature));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
             TrialTokenValidator::ValidateToken(kSampleToken, insecure_origin_,
-                                               kAppropriateFeatureName));
-}
-
-TEST_F(TrialTokenValidatorTest, ValidateInappropriateFeature) {
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongFeature,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, kInappropriateFeatureName));
+                                               &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
+  std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
             TrialTokenValidator::ValidateToken(kInvalidSignatureToken,
-                                               appropriate_origin_,
-                                               kAppropriateFeatureName));
+                                               appropriate_origin_, &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
+  std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed,
             TrialTokenValidator::ValidateToken(kUnparsableToken,
-                                               appropriate_origin_,
-                                               kAppropriateFeatureName));
+                                               appropriate_origin_, &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
+  std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
-            TrialTokenValidator::ValidateToken(
-                kExpiredToken, appropriate_origin_, kAppropriateFeatureName));
+            TrialTokenValidator::ValidateToken(kExpiredToken,
+                                               appropriate_origin_, &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
+  std::string feature;
   SetPublicKey(kTestPublicKey2);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+            TrialTokenValidator::ValidateToken(kSampleToken,
+                                               appropriate_origin_, &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
+  std::string feature;
   // Disable an irrelevant feature; token should still validate
   DisableFeature(kInappropriateFeatureName);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+            TrialTokenValidator::ValidateToken(kSampleToken,
+                                               appropriate_origin_, &feature));
+  EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token's feature; it should no longer be valid
   DisableFeature(kAppropriateFeatureName);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, kAppropriateFeatureName));
+            TrialTokenValidator::ValidateToken(kSampleToken,
+                                               appropriate_origin_, &feature));
 }
 
 }  // namespace content

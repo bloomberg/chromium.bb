@@ -18,11 +18,13 @@ namespace content {
 
 namespace TrialTokenValidator {
 
+// If token validates, |*feature_name| is set to the name of the feature the
+// token enables.
 // This method is thread-safe.
 CONTENT_EXPORT blink::WebOriginTrialTokenStatus ValidateToken(
     const std::string& token,
     const url::Origin& origin,
-    base::StringPiece feature_name);
+    std::string* feature_name);
 
 }  // namespace TrialTokenValidator
 

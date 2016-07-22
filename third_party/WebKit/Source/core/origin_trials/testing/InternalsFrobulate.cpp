@@ -14,8 +14,8 @@ namespace blink {
 bool InternalsFrobulate::frobulate(ScriptState* scriptState, Internals& internals, ExceptionState& exceptionState)
 {
     String errorMessage;
-    if (!OriginTrials::originTrialsSampleAPIEnabled(scriptState->getExecutionContext(), errorMessage)) {
-        exceptionState.throwDOMException(NotSupportedError, errorMessage);
+    if (!OriginTrials::originTrialsSampleAPIEnabled(scriptState->getExecutionContext())) {
+        exceptionState.throwDOMException(NotSupportedError, "The Origin Trials Sample API has not been enabled in this context");
         return false;
     }
     return frobulateNoEnabledCheck(internals);

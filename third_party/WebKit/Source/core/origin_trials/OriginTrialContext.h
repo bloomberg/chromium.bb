@@ -66,9 +66,8 @@ public:
     void addTokens(const Vector<String>& tokens);
 
     // Returns true if the feature should be considered enabled for the current
-    // execution context. If non-null, the |errorMessage| parameter will be used
-    // to provide a message for features that are not enabled.
-    bool isFeatureEnabled(const String& featureName, String* errorMessage);
+    // execution context.
+    bool isFeatureEnabled(const String& featureName);
 
     // Installs JavaScript bindings for any features which should be enabled by
     // the current set of trial tokens. This method is idempotent; only features
@@ -83,33 +82,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    void validateToken(const String& token);
+
     Member<ExecutionContext> m_host;
     Vector<String> m_tokens;
+    HashSet<String> m_enabledFeatures;
     WebTrialTokenValidator* m_trialTokenValidator;
-
-    // The public isFeatureEnabled method delegates to this method to do the
-    // core logic to check if the feature can be enabled for the current
-    // context. Returns a code to indicate if the feature is enabled, or to
-    // indicate a specific reason why the feature is disabled. If the
-    // |errorMessage| parameter is non-null, and the feature is disabled due to
-    // an insecure context, it will be updated with a message. For other
-    // disabled reasons, the |errorMessage| parameter will not be updated. The
-    // caller is responsible for providing a message as appropriate.
-    WebOriginTrialTokenStatus checkFeatureEnabled(const String& featureName, String* errorMessage);
 
     // Records whether a feature has been installed into the host's V8 context,
     // for each feature name.
     HashSet<String> m_bindingsInstalled;
-
-    // Records whether metrics about the enabled status have been recorded, for
-    // each feature name. Only one result should be recorded per context,
-    // regardless of how many times the enabled check is actually done.
-    HashSet<String> m_enabledResultCountedForFeature;
-
-    // Records whether an error message has been generated, for each feature
-    // name. Since these messages are generally written to the console, this is
-    // used to avoid cluttering the console with messages on every access.
-    HashSet<String> m_errorMessageGeneratedForFeature;
 };
 
 } // namespace blink

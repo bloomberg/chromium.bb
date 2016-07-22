@@ -830,11 +830,11 @@ void installOriginTrials(ScriptState* scriptState)
     (*s_installOriginTrialsFunction)(scriptState);
 
     // Mark each enabled feature as having been installed.
-    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage", nullptr))) {
+    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage"))) {
         originTrialContext->setFeatureBindingsInstalled("DurableStorage");
     }
 
-    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth", nullptr))) {
+    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth"))) {
         originTrialContext->setFeatureBindingsInstalled("WebBluetooth");
     }
 }

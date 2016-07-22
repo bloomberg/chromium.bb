@@ -15,32 +15,34 @@ namespace content {
 blink::WebOriginTrialTokenStatus TrialTokenValidator::ValidateToken(
     const std::string& token,
     const url::Origin& origin,
-    base::StringPiece feature_name) {
+    std::string* feature_name) {
   ContentClient* content_client = GetContentClient();
   const OriginTrialPolicy* origin_trial_policy =
       content_client->GetOriginTrialPolicy();
   if (!origin_trial_policy)
     return blink::WebOriginTrialTokenStatus::NotSupported;
 
-  if (origin_trial_policy->IsFeatureDisabled(feature_name))
-    return blink::WebOriginTrialTokenStatus::FeatureDisabled;
-
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
   base::StringPiece public_key = origin_trial_policy->GetPublicKey();
-  if (public_key.empty()) {
+  if (public_key.empty())
     return blink::WebOriginTrialTokenStatus::NotSupported;
-  }
 
   blink::WebOriginTrialTokenStatus status;
   std::unique_ptr<TrialToken> trial_token =
       TrialToken::From(token, public_key, &status);
-  if (status != blink::WebOriginTrialTokenStatus::Success) {
+  if (status != blink::WebOriginTrialTokenStatus::Success)
     return status;
-  }
 
-  return trial_token->IsValidForFeature(origin, feature_name,
-                                        base::Time::Now());
+  status = trial_token->IsValid(origin, base::Time::Now());
+  if (status != blink::WebOriginTrialTokenStatus::Success)
+    return status;
+
+  if (origin_trial_policy->IsFeatureDisabled(trial_token->feature_name()))
+    return blink::WebOriginTrialTokenStatus::FeatureDisabled;
+
+  *feature_name = trial_token->feature_name();
+  return blink::WebOriginTrialTokenStatus::Success;
 }
 
 }  // namespace content

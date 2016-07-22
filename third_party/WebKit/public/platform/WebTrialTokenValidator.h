@@ -24,9 +24,10 @@ class WebTrialTokenValidator {
 public:
     virtual ~WebTrialTokenValidator() {}
 
-    // Returns true if the given token is valid for the specified origin and
-    // feature name.
-    virtual WebOriginTrialTokenStatus validateToken(const WebString& token, const WebSecurityOrigin&, const WebString& featureName) = 0;
+    // Returns whether the given token is valid for the specified origin. If the
+    // token is valid, it also returns the feature the token is valid for in
+    // |*featureName|.
+    virtual WebOriginTrialTokenStatus validateToken(const WebString& token, const WebSecurityOrigin&, WebString* featureName) = 0;
 };
 
 } // namespace blink

@@ -544,7 +544,7 @@ void installOriginTrialsForModules(ScriptState* scriptState)
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = context->Global();
 
-    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage", nullptr))) {
+    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage"))) {
         if (executionContext->isDocument()) {
             V8WindowPartial::installDurableStorage(scriptState, global);
             V8NavigatorPartial::installDurableStorage(scriptState);
@@ -560,7 +560,7 @@ void installOriginTrialsForModules(ScriptState* scriptState)
         }
     }
 
-    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth", nullptr))) {
+    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth"))) {
         if (executionContext->isDocument()) {
             // For global interfaces e.g. BluetoothUUID.
             V8WindowPartial::installWebBluetooth(scriptState, global);

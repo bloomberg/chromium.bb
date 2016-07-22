@@ -27,7 +27,7 @@ class CONTENT_EXPORT WebTrialTokenValidatorImpl
   blink::WebOriginTrialTokenStatus validateToken(
       const blink::WebString& token,
       const blink::WebSecurityOrigin& origin,
-      const blink::WebString& featureName) override;
+      blink::WebString* feature_name) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTrialTokenValidatorImpl);

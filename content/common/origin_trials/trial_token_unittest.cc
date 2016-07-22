@@ -287,32 +287,17 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
   EXPECT_FALSE(ValidateDate(token.get(), invalid_timestamp_));
 }
 
-TEST_F(TrialTokenTest, TokenIsValidForFeature) {
+TEST_F(TrialTokenTest, TokenIsValid) {
   std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);
   ASSERT_TRUE(token);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
-            token->IsValidForFeature(expected_origin_, kExpectedFeatureName,
-                                     valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongFeature,
-            token->IsValidForFeature(expected_origin_,
-                                     base::ToUpperASCII(kExpectedFeatureName),
-                                     valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongFeature,
-            token->IsValidForFeature(expected_origin_,
-                                     base::ToLowerASCII(kExpectedFeatureName),
-                                     valid_timestamp_));
+            token->IsValid(expected_origin_, valid_timestamp_));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
-            token->IsValidForFeature(invalid_origin_, kExpectedFeatureName,
-                                     valid_timestamp_));
+            token->IsValid(invalid_origin_, valid_timestamp_));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
-            token->IsValidForFeature(insecure_origin_, kExpectedFeatureName,
-                                     valid_timestamp_));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongFeature,
-            token->IsValidForFeature(expected_origin_, kInvalidFeatureName,
-                                     valid_timestamp_));
+            token->IsValid(insecure_origin_, valid_timestamp_));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
-            token->IsValidForFeature(expected_origin_, kExpectedFeatureName,
-                                     invalid_timestamp_));
+            token->IsValid(expected_origin_, invalid_timestamp_));
 }
 
 // Test overall extraction, to ensure output status matches returned token

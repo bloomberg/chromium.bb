@@ -14,14 +14,12 @@ enum class WebOriginTrialTokenStatus {
     Success = 0,
     NotSupported = 1,
     Insecure = 2,
-    NoTokens = 3,
-    Expired = 4,
-    WrongFeature = 5,
-    WrongOrigin = 6,
-    InvalidSignature = 7,
-    Malformed = 8,
-    WrongVersion = 9,
-    FeatureDisabled = 10,
+    Expired = 3,
+    WrongOrigin = 4,
+    InvalidSignature = 5,
+    Malformed = 6,
+    WrongVersion = 7,
+    FeatureDisabled = 8,
     Last = FeatureDisabled
 };
 
