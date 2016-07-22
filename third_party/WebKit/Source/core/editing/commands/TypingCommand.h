@@ -77,7 +77,6 @@ public:
     void deleteSelection(bool smartDelete, EditingState*);
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
-    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
     TextCompositionType compositionType() const { return m_compositionType; }
     // |TypingCommand| may contain multiple |InsertTextCommand|, should return |textDataForInputEvent()| of the last one.
     String textDataForInputEvent() const final;
@@ -102,7 +101,7 @@ private:
     static TypingCommand* lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override;
+    InputEvent::InputType inputType() const override;
     bool isTypingCommand() const override;
     bool preservesTypingStyle() const override { return m_preservesTypingStyle; }
     void setShouldRetainAutocorrectionIndicator(bool retain) override { m_shouldRetainAutocorrectionIndicator = retain; }
@@ -117,6 +116,7 @@ private:
     bool makeEditableRootEmpty(EditingState*);
 
     void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) { m_commandType = typingCommand; }
+    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
 
     ETypingCommand m_commandType;
     String m_textToInsert;

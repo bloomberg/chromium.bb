@@ -43,4 +43,9 @@ void UnlinkCommand::doApply(EditingState* editingState)
     removeStyledElement(HTMLAnchorElement::create(document()), editingState);
 }
 
+InputEvent::InputType UnlinkCommand::inputType() const
+{
+    return InputEvent::InputType::Unlink;
+}
+
 } // namespace blink

@@ -45,7 +45,7 @@ private:
     MoveSelectionCommand(DocumentFragment*, const Position&, bool smartInsert, bool smartDelete);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override;
+    InputEvent::InputType inputType() const override;
 
     Member<DocumentFragment> m_fragment;
     Position m_position;

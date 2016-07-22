@@ -41,7 +41,7 @@ private:
     explicit RemoveFormatCommand(Document&);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override { return EditActionUnspecified; }
+    InputEvent::InputType inputType() const;
 };
 
 } // namespace blink

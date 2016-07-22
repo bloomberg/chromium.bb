@@ -80,18 +80,18 @@ namespace blink {
 using namespace HTMLNames;
 
 EditCommandComposition* EditCommandComposition::create(Document* document,
-    const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, EditAction editAction)
+    const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, InputEvent::InputType inputType)
 {
-    return new EditCommandComposition(document, startingSelection, endingSelection, editAction);
+    return new EditCommandComposition(document, startingSelection, endingSelection, inputType);
 }
 
-EditCommandComposition::EditCommandComposition(Document* document, const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, EditAction editAction)
+EditCommandComposition::EditCommandComposition(Document* document, const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, InputEvent::InputType inputType)
     : m_document(document)
     , m_startingSelection(startingSelection)
     , m_endingSelection(endingSelection)
     , m_startingRootEditableElement(startingSelection.rootEditableElement())
     , m_endingRootEditableElement(endingSelection.rootEditableElement())
-    , m_editAction(editAction)
+    , m_inputType(inputType)
 {
 }
 
@@ -140,6 +140,11 @@ void EditCommandComposition::reapply()
     frame->editor().reappliedEditing(this);
 }
 
+InputEvent::InputType EditCommandComposition::inputType() const
+{
+    return m_inputType;
+}
+
 void EditCommandComposition::append(SimpleEditCommand* command)
 {
     m_commands.append(command);
@@ -181,13 +186,23 @@ CompositeEditCommand::~CompositeEditCommand()
 bool CompositeEditCommand::apply()
 {
     if (!endingSelection().isContentRichlyEditable()) {
-        switch (editingAction()) {
-        case EditActionTyping:
-        case EditActionPaste:
-        case EditActionDrag:
-        case EditActionSetWritingDirection:
-        case EditActionCut:
-        case EditActionUnspecified:
+        switch (inputType()) {
+        case InputEvent::InputType::InsertText:
+        case InputEvent::InputType::InsertLineBreak:
+        case InputEvent::InputType::InsertParagraph:
+        case InputEvent::InputType::DeleteComposedCharacterForward:
+        case InputEvent::InputType::DeleteComposedCharacterBackward:
+        case InputEvent::InputType::DeleteWordBackward:
+        case InputEvent::InputType::DeleteWordForward:
+        case InputEvent::InputType::DeleteLineBackward:
+        case InputEvent::InputType::DeleteLineForward:
+        case InputEvent::InputType::DeleteContentBackward:
+        case InputEvent::InputType::DeleteContentForward:
+        case InputEvent::InputType::Paste:
+        case InputEvent::InputType::Drag:
+        case InputEvent::InputType::SetWritingDirection:
+        case InputEvent::InputType::Cut:
+        case InputEvent::InputType::None:
             break;
         default:
             NOTREACHED();
@@ -223,7 +238,7 @@ EditCommandComposition* CompositeEditCommand::ensureComposition()
     while (command && command->parent())
         command = command->parent();
     if (!command->m_composition)
-        command->m_composition = EditCommandComposition::create(&document(), startingSelection(), endingSelection(), editingAction());
+        command->m_composition = EditCommandComposition::create(&document(), startingSelection(), endingSelection(), inputType());
     return command->m_composition.get();
 }
 
@@ -278,7 +293,7 @@ void CompositeEditCommand::applyCommandToComposite(CompositeEditCommand* command
 
 void CompositeEditCommand::applyStyle(const EditingStyle* style, EditingState* editingState)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(document(), style, EditActionChangeAttributes), editingState);
+    applyCommandToComposite(ApplyStyleCommand::create(document(), style, InputEvent::InputType::ChangeAttributes), editingState);
 }
 
 void CompositeEditCommand::applyStyle(const EditingStyle* style, const Position& start, const Position& end, EditingState* editingState)

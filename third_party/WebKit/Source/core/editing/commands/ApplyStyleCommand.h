@@ -48,9 +48,9 @@ public:
     enum EAddStyledElement { AddStyledElement, DoNotAddStyledElement };
     typedef bool (*IsInlineElementToRemoveFunction)(const Element*);
 
-    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, EditAction action, EPropertyLevel level = PropertyDefault)
+    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, InputEvent::InputType inputType, EPropertyLevel level = PropertyDefault)
     {
-        return new ApplyStyleCommand(document, style, action, level);
+        return new ApplyStyleCommand(document, style, inputType, level);
     }
     static ApplyStyleCommand* create(Document& document, const EditingStyle* style, const Position& start, const Position& end)
     {
@@ -60,21 +60,21 @@ public:
     {
         return new ApplyStyleCommand(element, removeOnly);
     }
-    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, EditAction action)
+    static ApplyStyleCommand* create(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, InputEvent::InputType inputType)
     {
-        return new ApplyStyleCommand(document, style, isInlineElementToRemoveFunction, action);
+        return new ApplyStyleCommand(document, style, isInlineElementToRemoveFunction, inputType);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ApplyStyleCommand(Document&, const EditingStyle*, EditAction, EPropertyLevel);
+    ApplyStyleCommand(Document&, const EditingStyle*, InputEvent::InputType, EPropertyLevel);
     ApplyStyleCommand(Document&, const EditingStyle*, const Position& start, const Position& end);
     ApplyStyleCommand(Element*, bool removeOnly);
-    ApplyStyleCommand(Document&, const EditingStyle*, bool (*isInlineElementToRemove)(const Element*), EditAction);
+    ApplyStyleCommand(Document&, const EditingStyle*, bool (*isInlineElementToRemove)(const Element*), InputEvent::InputType);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override;
+    InputEvent::InputType inputType() const override;
 
     // style-removal helpers
     bool isStyledInlineElementToRemove(Element*) const;
@@ -123,7 +123,7 @@ private:
     Position endPosition();
 
     Member<EditingStyle> m_style;
-    EditAction m_editingAction;
+    InputEvent::InputType m_inputType;
     EPropertyLevel m_propertyLevel;
     Position m_start;
     Position m_end;

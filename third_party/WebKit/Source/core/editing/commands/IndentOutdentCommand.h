@@ -27,7 +27,6 @@
 #define IndentOutdentCommand_h
 
 #include "core/editing/commands/ApplyBlockElementCommand.h"
-#include "core/editing/commands/EditAction.h"
 
 namespace blink {
 
@@ -44,7 +43,7 @@ public:
 private:
     IndentOutdentCommand(Document&, EIndentType);
 
-    EditAction editingAction() const override { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
+    InputEvent::InputType inputType() const override;
 
     void outdentRegion(const VisiblePosition&, const VisiblePosition&, EditingState*);
     void outdentParagraph(EditingState*);

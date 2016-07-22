@@ -25,12 +25,12 @@ test(function() {
     if (!window.eventSender) {
         document.write('This test requires eventSender');
     } else {
-        var kNoInputEventFired = 'noInputEventFired';
+        const NO_INPUT_EVENT_FIRED = 'NO_INPUT_EVENT_FIRED';
         function testExecCommandInputType(command, args, inputType) {
-            lastBeforeInputType = kNoInputEventFired;
-            lastInputType = kNoInputEventFired;
+            lastBeforeInputType = NO_INPUT_EVENT_FIRED;
+            lastInputType = NO_INPUT_EVENT_FIRED;
             document.execCommand(command, false, args);
-            assert_equals(lastBeforeInputType, kNoInputEventFired, `execCommand(${command}, false, ${args}) shouldn't fire beforeinput`);
+            assert_equals(lastBeforeInputType, NO_INPUT_EVENT_FIRED, `execCommand(${command}, false, ${args}) shouldn't fire beforeinput`);
             assert_equals(lastInputType, inputType, `execCommand(${command}, false, ${args}) should produce inputType: ${inputType}`);
         }
 
@@ -39,8 +39,15 @@ test(function() {
         testExecCommandInputType('insertText', 'a', 'insertText');
         testExecCommandInputType('insertText', 'bc', 'insertText');
         assert_equals(txt.innerHTML, 'abc');
+        testExecCommandInputType('insertOrderedList', null, 'insertOrderedList');
+        assert_equals(txt.innerHTML, '<ol><li>abc<br></li></ol>');
+        testExecCommandInputType('insertUnorderedList', null, 'insertUnorderedList');
+        assert_equals(txt.innerHTML, '<ul><li>abc<br></li></ul>');
+        testExecCommandInputType('insertLineBreak', null, 'insertLineBreak');
+        testExecCommandInputType('insertParagraph', null, 'insertParagraph');
 
         // Styling
+        txt.innerHTML = 'abc';
         var selection = window.getSelection();
         selection.collapse(txt, 0);
         selection.extend(txt, 1);
@@ -57,11 +64,29 @@ test(function() {
         testExecCommandInputType('subscript', null, 'subscript');
         assert_equals(txt.innerHTML, '<b><i><u><strike><sub>abc</sub></strike></u></i></b>');
 
+        // Formating
+        txt.innerHTML = 'abc';
+        testExecCommandInputType('justifyCenter', null, 'justifyCenter');
+        assert_equals(txt.innerHTML, '<div style="text-align: center;">abc</div>');
+        testExecCommandInputType('justifyFull', null, 'justifyFull');
+        assert_equals(txt.innerHTML, '<div style="text-align: justify;">abc</div>');
+        testExecCommandInputType('justifyRight', null, 'justifyRight');
+        assert_equals(txt.innerHTML, '<div style="text-align: right;">abc</div>');
+        testExecCommandInputType('justifyLeft', null, 'justifyLeft');
+        assert_equals(txt.innerHTML, '<div style="text-align: left;">abc</div>');
+        selection.collapse(txt, 0);
+        selection.extend(txt, 1);
+        testExecCommandInputType('removeFormat', null, 'removeFormat');
+        assert_equals(txt.innerHTML, '<div>abc</div>');
+        testExecCommandInputType('indent', null, 'indent');
+        testExecCommandInputType('outdent', null, 'outdent');
+        assert_equals(txt.innerHTML, '<div>abc</div>');
+
         // Copy shouldn't fire 'input'.
-        testExecCommandInputType('copy', null, kNoInputEventFired);
-        // Paste should fire 'input'.
-        // TODO(chongz): Add |inputType| for 'paste'.
-        testExecCommandInputType('paste', null, '');
+        testExecCommandInputType('copy', null, NO_INPUT_EVENT_FIRED);
+        // Cut/Paste should fire 'input'.
+        testExecCommandInputType('cut', null, 'cut');
+        testExecCommandInputType('paste', null, 'paste');
     }
 }, 'Testing input with execCommand');
 </script>

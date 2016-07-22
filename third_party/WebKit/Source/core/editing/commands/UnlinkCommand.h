@@ -41,7 +41,7 @@ private:
     explicit UnlinkCommand(Document&);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override { return EditActionUnlink; }
+    InputEvent::InputType inputType() const override;
 };
 
 } // namespace blink

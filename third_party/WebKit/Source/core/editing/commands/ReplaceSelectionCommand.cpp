@@ -399,7 +399,7 @@ inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(Node& node, N
         m_lastNodeInserted = &newNode;
 }
 
-ReplaceSelectionCommand::ReplaceSelectionCommand(Document& document, DocumentFragment* fragment, CommandOptions options, EditAction editAction)
+ReplaceSelectionCommand::ReplaceSelectionCommand(Document& document, DocumentFragment* fragment, CommandOptions options, InputEvent::InputType inputType)
     : CompositeEditCommand(document)
     , m_selectReplacement(options & SelectReplacement)
     , m_smartReplace(options & SmartReplace)
@@ -407,7 +407,7 @@ ReplaceSelectionCommand::ReplaceSelectionCommand(Document& document, DocumentFra
     , m_documentFragment(fragment)
     , m_preventNesting(options & PreventNesting)
     , m_movingParagraph(options & MovingParagraph)
-    , m_editAction(editAction)
+    , m_inputType(inputType)
     , m_sanitizeFragment(options & SanitizeFragment)
     , m_shouldMergeEnd(false)
 {
@@ -1636,9 +1636,9 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
     }
 }
 
-EditAction ReplaceSelectionCommand::editingAction() const
+InputEvent::InputType ReplaceSelectionCommand::inputType() const
 {
-    return m_editAction;
+    return m_inputType;
 }
 
 // If the user is inserting a list into an existing list, instead of nesting the list,

@@ -25,12 +25,13 @@ test(function() {
     if (!window.eventSender) {
         document.write('This test requires eventSender');
     } else {
-        var kNoInputEventFired = 'noInputEventFired';
-        function testKeyDownInputType(key, modifiers, inputType) {
-            lastBeforeInputType = kNoInputEventFired;
-            lastInputType = kNoInputEventFired;
+        const NO_INPUT_EVENT_FIRED = 'NO_INPUT_EVENT_FIRED';
+        function testKeyDownInputType(key, modifiers, beforeInputType, inputType) {
+            inputType = inputType || beforeInputType;
+            lastBeforeInputType = NO_INPUT_EVENT_FIRED;
+            lastInputType = NO_INPUT_EVENT_FIRED;
             eventSender.keyDown(key, modifiers);
-            assert_equals(lastBeforeInputType, inputType, `${modifiers.toString()}+${key} should produce beforeInputType: ${inputType}`);
+            assert_equals(lastBeforeInputType, beforeInputType, `${modifiers.toString()}+${key} should produce beforeInputType: ${inputType}`);
             assert_equals(lastInputType, inputType, `${modifiers.toString()}+${key} should produce inputType: ${inputType}`);
         }
 
@@ -38,9 +39,12 @@ test(function() {
         // Typing
         testKeyDownInputType('a', [], 'insertText');
         testKeyDownInputType('6', [], 'insertText');
-        testKeyDownInputType('Backspace', [], 'deleteContent');
+        testKeyDownInputType('Backspace', [], 'deleteContentBackward');
         testKeyDownInputType('l', ['shiftKey'], 'insertText');
         testKeyDownInputType('w', ['shiftKey'], 'insertText');
+        // TODO(chongz): Add tests for Enter key on <textarea> and ContentEditable.
+        testKeyDownInputType('Enter', [], 'insertLineBreak', NO_INPUT_EVENT_FIRED);
+        testKeyDownInputType('Enter', ['shiftKey'], 'insertLineBreak', NO_INPUT_EVENT_FIRED);
 
         // Keyboard commands
         var isMacOS = (navigator.userAgent.indexOf('Mac OS X') != -1);
@@ -50,9 +54,9 @@ test(function() {
             testKeyDownInputType('z', ['ctrlKey', 'shiftKey'], 'redo');
         }
         // Move command should not generate input events.
-        testKeyDownInputType('ArrowLeft', [], kNoInputEventFired);
-        testKeyDownInputType('ArrowLeft', ['shiftKey'], kNoInputEventFired);
-        testKeyDownInputType('Home', [], kNoInputEventFired);
+        testKeyDownInputType('ArrowLeft', [], NO_INPUT_EVENT_FIRED);
+        testKeyDownInputType('ArrowLeft', ['shiftKey'], NO_INPUT_EVENT_FIRED);
+        testKeyDownInputType('Home', [], NO_INPUT_EVENT_FIRED);
     }
 }, 'Testing beforeinput inputType');
 </script>

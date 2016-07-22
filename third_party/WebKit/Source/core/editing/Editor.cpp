@@ -118,45 +118,6 @@ void dispatchInputEventEditableContentChanged(Element* startRoot, Element* endRo
         dispatchInputEvent(endRoot, inputType, data, isComposing);
 }
 
-InputEvent::InputType inputTypeFromCommand(const CompositeEditCommand* command)
-{
-    if (command->isTypingCommand()) {
-        const TypingCommand* typingCommand = toTypingCommand(command);
-        // TODO(chongz): Separate command types into more detailed InputType.
-        switch (typingCommand->commandTypeOfOpenCommand()) {
-        case TypingCommand::DeleteSelection:
-        case TypingCommand::DeleteKey:
-        case TypingCommand::ForwardDeleteKey:
-            return InputEvent::InputType::DeleteContent;
-        case TypingCommand::InsertText:
-        case TypingCommand::InsertLineBreak:
-        case TypingCommand::InsertParagraphSeparator:
-        case TypingCommand::InsertParagraphSeparatorInQuotedContent:
-            return InputEvent::InputType::InsertText;
-        default:
-            return InputEvent::InputType::None;
-        }
-    }
-
-    switch (command->editingAction()) {
-    // TODO(chongz): Handle remaining edit actions.
-    case EditActionBold:
-        return InputEvent::InputType::Bold;
-    case EditActionItalics:
-        return InputEvent::InputType::Italic;
-    case EditActionUnderline:
-        return InputEvent::InputType::Underline;
-    case EditActionStrikeThrough:
-        return InputEvent::InputType::StrikeThrough;
-    case EditActionSuperscript:
-        return InputEvent::InputType::Superscript;
-    case EditActionSubscript:
-        return InputEvent::InputType::Subscript;
-    default:
-        return InputEvent::InputType::None;
-    }
-}
-
 InputEvent::EventIsComposing isComposingFromCommand(const CompositeEditCommand* command)
 {
     if (command->isTypingCommand() && toTypingCommand(command)->compositionType() != TypingCommand::TextCompositionNone)
@@ -580,7 +541,7 @@ void Editor::replaceSelectionWithFragment(DocumentFragment* fragment, bool selec
     if (matchStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
     DCHECK(frame().document());
-    ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionPaste)->apply();
+    ReplaceSelectionCommand::create(*frame().document(), fragment, options, InputEvent::InputType::Paste)->apply();
     revealSelectionAfterEditingOperation();
 }
 
@@ -598,7 +559,7 @@ void Editor::replaceSelectionAfterDragging(DocumentFragment* fragment, bool smar
     if (plainText)
         options |= ReplaceSelectionCommand::MatchStyle;
     DCHECK(frame().document());
-    ReplaceSelectionCommand::create(*frame().document(), fragment, options, EditActionDrag)->apply();
+    ReplaceSelectionCommand::create(*frame().document(), fragment, options, InputEvent::InputType::Drag)->apply();
 }
 
 void Editor::moveSelectionAfterDragging(DocumentFragment* fragment, const Position& pos, bool smartInsert, bool smartDelete)
@@ -662,46 +623,46 @@ Element* Editor::findEventTargetFromSelection() const
     return findEventTargetFrom(frame().selection().selection());
 }
 
-void Editor::applyStyle(StylePropertySet* style, EditAction editingAction)
+void Editor::applyStyle(StylePropertySet* style, InputEvent::InputType inputType)
 {
     switch (frame().selection().getSelectionType()) {
     case NoSelection:
         // do nothing
         break;
     case CaretSelection:
-        computeAndSetTypingStyle(style, editingAction);
+        computeAndSetTypingStyle(style, inputType);
         break;
     case RangeSelection:
         if (style) {
             DCHECK(frame().document());
-            ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), editingAction)->apply();
+            ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), inputType)->apply();
         }
         break;
     }
 }
 
-void Editor::applyParagraphStyle(StylePropertySet* style, EditAction editingAction)
+void Editor::applyParagraphStyle(StylePropertySet* style, InputEvent::InputType inputType)
 {
     if (frame().selection().isNone() || !style)
         return;
     DCHECK(frame().document());
-    ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), editingAction, ApplyStyleCommand::ForceBlockProperties)->apply();
+    ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style), inputType, ApplyStyleCommand::ForceBlockProperties)->apply();
 }
 
-void Editor::applyStyleToSelection(StylePropertySet* style, EditAction editingAction)
+void Editor::applyStyleToSelection(StylePropertySet* style, InputEvent::InputType inputType)
 {
     if (!style || style->isEmpty() || !canEditRichly())
         return;
 
-    applyStyle(style, editingAction);
+    applyStyle(style, inputType);
 }
 
-void Editor::applyParagraphStyleToSelection(StylePropertySet* style, EditAction editingAction)
+void Editor::applyParagraphStyleToSelection(StylePropertySet* style, InputEvent::InputType inputType)
 {
     if (!style || style->isEmpty() || !canEditRichly())
         return;
 
-    applyParagraphStyle(style, editingAction);
+    applyParagraphStyle(style, inputType);
 }
 
 bool Editor::selectionStartHasStyle(CSSPropertyID propertyID, const String& value) const
@@ -742,7 +703,7 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
     // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
     // created in |Editor::replaceSelectionWithFragment()|.
     // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
-    if (cmd->editingAction() != EditActionPaste)
+    if (cmd->inputType() != InputEvent::InputType::Paste)
         return;
     if (!spellChecker().isContinuousSpellCheckingEnabled())
         return;
@@ -767,7 +728,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
     DCHECK(composition);
     dispatchEditableContentChangedEvents(composition->startingRootEditableElement(), composition->endingRootEditableElement());
     // TODO(chongz): Filter empty InputType after spec is finalized.
-    dispatchInputEventEditableContentChanged(composition->startingRootEditableElement(), composition->endingRootEditableElement(), inputTypeFromCommand(cmd), cmd->textDataForInputEvent(), isComposingFromCommand(cmd));
+    dispatchInputEventEditableContentChanged(composition->startingRootEditableElement(), composition->endingRootEditableElement(), cmd->inputType(), cmd->textDataForInputEvent(), isComposingFromCommand(cmd));
     VisibleSelection newSelection(cmd->endingSelection());
 
     // Don't clear the typing style with this selection change. We do those things elsewhere if necessary.
@@ -1104,7 +1065,7 @@ void Editor::setBaseWritingDirection(WritingDirection direction)
 
     MutableStylePropertySet* style = MutableStylePropertySet::create(HTMLQuirksMode);
     style->setProperty(CSSPropertyDirection, direction == LeftToRightWritingDirection ? "ltr" : direction == RightToLeftWritingDirection ? "rtl" : "inherit", false);
-    applyParagraphStyleToSelection(style, EditActionSetWritingDirection);
+    applyParagraphStyleToSelection(style, InputEvent::InputType::SetWritingDirection);
 }
 
 void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
@@ -1217,7 +1178,7 @@ IntRect Editor::firstRectForRange(const Range* range) const
     return firstRectForRange(EphemeralRange(range));
 }
 
-void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editingAction)
+void Editor::computeAndSetTypingStyle(StylePropertySet* style, InputEvent::InputType inputType)
 {
     if (!style || style->isEmpty()) {
         frame().selection().clearTypingStyle();
@@ -1239,7 +1200,7 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     EditingStyle* blockStyle = typingStyle->extractAndRemoveBlockProperties();
     if (!blockStyle->isEmpty()) {
         DCHECK(frame().document());
-        ApplyStyleCommand::create(*frame().document(), blockStyle, editingAction)->apply();
+        ApplyStyleCommand::create(*frame().document(), blockStyle, inputType)->apply();
     }
 
     // Set the remaining style as the typing style.

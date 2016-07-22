@@ -51,7 +51,7 @@ private:
     DeleteSelectionCommand(const VisibleSelection&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override;
+    InputEvent::InputType inputType() const override;
 
     bool preservesTypingStyle() const override;
 

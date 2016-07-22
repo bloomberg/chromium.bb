@@ -48,9 +48,9 @@ EditCommand::~EditCommand()
 {
 }
 
-EditAction EditCommand::editingAction() const
+InputEvent::InputType EditCommand::inputType() const
 {
-    return EditActionUnspecified;
+    return InputEvent::InputType::None;
 }
 
 String EditCommand::textDataForInputEvent() const

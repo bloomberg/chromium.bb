@@ -270,8 +270,8 @@ void InputMethodController::cancelComposition()
 
     clear();
 
-    // TODO(chongz): Update InputType::DeleteComposedCharacter with latest discussion.
-    dispatchBeforeInputFromComposition(frame().document()->focusedElement(), InputEvent::InputType::DeleteComposedCharacter, emptyString(), InputEvent::EventCancelable::NotCancelable);
+    // TODO(chongz): Figure out which InputType should we use here.
+    dispatchBeforeInputFromComposition(frame().document()->focusedElement(), InputEvent::InputType::DeleteComposedCharacterBackward, emptyString(), InputEvent::EventCancelable::NotCancelable);
     dispatchCompositionUpdateEvent(frame(), emptyString());
     insertTextDuringCompositionWithEvents(frame(), emptyString(), 0, TypingCommand::TextCompositionType::TextCompositionConfirm);
     // Event handler might destroy document.
@@ -554,9 +554,8 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
             break;
         ++before;
     } while (frame().selection().start() == frame().selection().end() && before <= static_cast<int>(selectionOffsets.start()));
-    // TODO(chongz): New spec might want to change InputType.
-    // https://github.com/w3c/editing/issues/125#issuecomment-213041256
-    dispatchBeforeInputEditorCommand(m_frame->document()->focusedElement(), InputEvent::InputType::DeleteContent, emptyString(), new RangeVector(1, m_frame->selection().firstRange()));
+    // TODO(chongz): Find a way to distinguish Forward and Backward.
+    dispatchBeforeInputEditorCommand(m_frame->document()->focusedElement(), InputEvent::InputType::DeleteContentBackward, emptyString(), new RangeVector(1, m_frame->selection().firstRange()));
     TypingCommand::deleteSelection(*frame().document());
 }
 

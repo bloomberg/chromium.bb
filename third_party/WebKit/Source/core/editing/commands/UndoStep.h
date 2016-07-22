@@ -31,7 +31,7 @@
 #ifndef UndoStep_h
 #define UndoStep_h
 
-#include "core/editing/commands/EditAction.h"
+#include "core/events/InputEvent.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -46,7 +46,7 @@ public:
     virtual bool belongsTo(const LocalFrame&) const = 0;
     virtual void unapply() = 0;
     virtual void reapply() = 0;
-    virtual EditAction editingAction() const = 0;
+    virtual InputEvent::InputType inputType() const = 0;
 };
 
 } // namespace blink

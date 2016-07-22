@@ -29,13 +29,27 @@ public:
         None,
         // Insertion.
         InsertText,
-        ReplaceContent,
+        InsertNonText,
+        InsertLineBreak,
+        InsertParagraph,
+        InsertOrderedList,
+        InsertUnorderedList,
+        InsertHorizontalRule,
         // Deletion.
-        DeleteContent,
-        DeleteComposedCharacter,
-        // Misc.
+        DeleteComposedCharacterForward,
+        DeleteComposedCharacterBackward,
+        DeleteWordBackward,
+        DeleteWordForward,
+        DeleteLineBackward,
+        DeleteLineForward,
+        DeleteContentBackward,
+        DeleteContentForward,
+        // Command.
         Undo,
         Redo,
+        Copy,
+        Cut,
+        Paste,
         // Styling.
         Bold,
         Italic,
@@ -43,6 +57,26 @@ public:
         StrikeThrough,
         Superscript,
         Subscript,
+        // Formatting.
+        JustifyCenter,
+        JustifyRight,
+        JustifyLeft,
+        Indent,
+        Outdent,
+        RemoveFormat,
+        // Not on spec.
+        // TODO(chongz): Drag is not on SPEC but it's not decided how we should handle it.
+        Drag,
+        JustifyFull,
+        SetColor,
+        SetBackgroundColor,
+        SetFont,
+        ChangeAttributes,
+        SetWritingDirection,
+        Unscript,
+        CreateLink,
+        Unlink,
+        FormatBlock,
 
         // Add new input types immediately above this line.
         NumberOfInputTypes,

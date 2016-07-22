@@ -34,9 +34,9 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
-#include "core/editing/commands/EditAction.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
+#include "core/events/InputEvent.h"
 #include "platform/PasteMode.h"
 #include "platform/heap/Handle.h"
 #include <memory>
@@ -109,10 +109,10 @@ public:
     bool deleteWithDirection(SelectionDirection, TextGranularity, bool killRing, bool isTypingAction);
     void deleteSelectionWithSmartDelete(bool smartDelete);
 
-    void applyStyle(StylePropertySet*, EditAction = EditActionUnspecified);
-    void applyParagraphStyle(StylePropertySet*, EditAction = EditActionUnspecified);
-    void applyStyleToSelection(StylePropertySet*, EditAction);
-    void applyParagraphStyleToSelection(StylePropertySet*, EditAction);
+    void applyStyle(StylePropertySet*, InputEvent::InputType);
+    void applyParagraphStyle(StylePropertySet*, InputEvent::InputType);
+    void applyStyleToSelection(StylePropertySet*, InputEvent::InputType);
+    void applyParagraphStyleToSelection(StylePropertySet*, InputEvent::InputType);
 
     void appliedEditing(CompositeEditCommand*);
     void unappliedEditing(EditCommandComposition*);
@@ -213,7 +213,7 @@ public:
     const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
     void setMark(const VisibleSelection&);
 
-    void computeAndSetTypingStyle(StylePropertySet* , EditAction = EditActionUnspecified);
+    void computeAndSetTypingStyle(StylePropertySet*, InputEvent::InputType);
 
     IntRect firstRectForRange(const EphemeralRange&) const;
     IntRect firstRectForRange(const Range*) const;

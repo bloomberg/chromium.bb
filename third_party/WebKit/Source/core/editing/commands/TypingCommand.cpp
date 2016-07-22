@@ -298,9 +298,24 @@ void TypingCommand::doApply(EditingState* editingState)
     NOTREACHED();
 }
 
-EditAction TypingCommand::editingAction() const
+InputEvent::InputType TypingCommand::inputType() const
 {
-    return EditActionTyping;
+    // TODO(chongz): Map commands based on |m_granularity| and direction.
+    switch (commandTypeOfOpenCommand()) {
+    case DeleteSelection:
+    case DeleteKey:
+    case ForwardDeleteKey:
+        return InputEvent::InputType::DeleteContentBackward;
+    case InsertText:
+        return InputEvent::InputType::InsertText;
+    case InsertLineBreak:
+        return InputEvent::InputType::InsertLineBreak;
+    case InsertParagraphSeparator:
+    case InsertParagraphSeparatorInQuotedContent:
+        return InputEvent::InputType::InsertParagraph;
+    default:
+        return InputEvent::InputType::None;
+    }
 }
 
 void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)

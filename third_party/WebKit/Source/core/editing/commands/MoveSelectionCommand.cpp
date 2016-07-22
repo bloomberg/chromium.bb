@@ -81,9 +81,9 @@ void MoveSelectionCommand::doApply(EditingState* editingState)
     applyCommandToComposite(ReplaceSelectionCommand::create(document(), m_fragment, options), editingState);
 }
 
-EditAction MoveSelectionCommand::editingAction() const
+InputEvent::InputType MoveSelectionCommand::inputType() const
 {
-    return EditActionDrag;
+    return InputEvent::InputType::Drag;
 }
 
 DEFINE_TRACE(MoveSelectionCommand)

@@ -41,7 +41,7 @@ private:
     CreateLinkCommand(Document&, const String& linkURL);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override { return EditActionCreateLink; }
+    InputEvent::InputType inputType() const override;
 
     String m_url;
 };

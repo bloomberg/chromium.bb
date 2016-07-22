@@ -30,7 +30,6 @@
 #include "core/editing/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/commands/ApplyBlockElementCommand.h"
-#include "core/editing/commands/EditAction.h"
 
 namespace blink {
 
@@ -55,7 +54,7 @@ private:
 
     void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*) override;
     void formatRange(const Position& start, const Position& end, const Position& endOfSelection, HTMLElement*&, EditingState*) override;
-    EditAction editingAction() const override { return EditActionFormatBlock; }
+    InputEvent::InputType inputType() const;
 
     bool m_didApply;
 };

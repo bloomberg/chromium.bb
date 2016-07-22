@@ -122,10 +122,10 @@ static bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
     return offset < currentOffset;
 }
 
-ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, EditAction editingAction, EPropertyLevel propertyLevel)
+ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, InputEvent::InputType inputType, EPropertyLevel propertyLevel)
     : CompositeEditCommand(document)
     , m_style(style->copy())
-    , m_editingAction(editingAction)
+    , m_inputType(inputType)
     , m_propertyLevel(propertyLevel)
     , m_start(mostForwardCaretPosition(endingSelection().start()))
     , m_end(mostBackwardCaretPosition(endingSelection().end()))
@@ -139,7 +139,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
 ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, const Position& start, const Position& end)
     : CompositeEditCommand(document)
     , m_style(style->copy())
-    , m_editingAction(EditActionChangeAttributes)
+    , m_inputType(InputEvent::InputType::ChangeAttributes)
     , m_propertyLevel(PropertyDefault)
     , m_start(start)
     , m_end(end)
@@ -153,7 +153,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
 ApplyStyleCommand::ApplyStyleCommand(Element* element, bool removeOnly)
     : CompositeEditCommand(element->document())
     , m_style(EditingStyle::create())
-    , m_editingAction(EditActionChangeAttributes)
+    , m_inputType(InputEvent::InputType::ChangeAttributes)
     , m_propertyLevel(PropertyDefault)
     , m_start(mostForwardCaretPosition(endingSelection().start()))
     , m_end(mostBackwardCaretPosition(endingSelection().end()))
@@ -164,10 +164,10 @@ ApplyStyleCommand::ApplyStyleCommand(Element* element, bool removeOnly)
 {
 }
 
-ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, EditAction editingAction)
+ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, InputEvent::InputType inputType)
     : CompositeEditCommand(document)
     , m_style(style->copy())
-    , m_editingAction(editingAction)
+    , m_inputType(inputType)
     , m_propertyLevel(PropertyDefault)
     , m_start(mostForwardCaretPosition(endingSelection().start()))
     , m_end(mostBackwardCaretPosition(endingSelection().end()))
@@ -235,9 +235,9 @@ void ApplyStyleCommand::doApply(EditingState* editingState)
     }
 }
 
-EditAction ApplyStyleCommand::editingAction() const
+InputEvent::InputType ApplyStyleCommand::inputType() const
 {
-    return m_editingAction;
+    return m_inputType;
 }
 
 void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editingState)

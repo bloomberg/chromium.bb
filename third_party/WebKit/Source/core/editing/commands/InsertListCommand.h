@@ -50,7 +50,7 @@ private:
     InsertListCommand(Document&, Type);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override { return EditActionInsertList; }
+    InputEvent::InputType inputType() const override;
 
     HTMLUListElement* fixOrphanedListChild(Node*, EditingState*);
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);

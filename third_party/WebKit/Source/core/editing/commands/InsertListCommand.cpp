@@ -227,6 +227,11 @@ void InsertListCommand::doApply(EditingState* editingState)
     doApplyForSingleParagraph(false, listTag, *firstRangeOf(endingSelection()), editingState);
 }
 
+InputEvent::InputType InsertListCommand::inputType() const
+{
+    return m_type == OrderedList ? InputEvent::InputType::InsertOrderedList : InputEvent::InputType::InsertUnorderedList;
+}
+
 bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection, EditingState* editingState)
 {
     // FIXME: This will produce unexpected results for a selection that starts just before a

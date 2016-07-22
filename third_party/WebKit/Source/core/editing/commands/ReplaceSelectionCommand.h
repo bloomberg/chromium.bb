@@ -48,9 +48,9 @@ public:
 
     typedef unsigned CommandOptions;
 
-    static ReplaceSelectionCommand* create(Document& document, DocumentFragment* fragment, CommandOptions options, EditAction action = EditActionPaste)
+    static ReplaceSelectionCommand* create(Document& document, DocumentFragment* fragment, CommandOptions options, InputEvent::InputType inputType = InputEvent::InputType::Paste)
     {
-        return new ReplaceSelectionCommand(document, fragment, options, action);
+        return new ReplaceSelectionCommand(document, fragment, options, inputType);
     }
 
     EphemeralRange insertedRange() const;
@@ -58,10 +58,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ReplaceSelectionCommand(Document&, DocumentFragment*, CommandOptions, EditAction);
+    ReplaceSelectionCommand(Document&, DocumentFragment*, CommandOptions, InputEvent::InputType);
 
     void doApply(EditingState*) override;
-    EditAction editingAction() const override;
+    InputEvent::InputType inputType() const override;
     bool isReplaceSelectionCommand() const override;
 
     class InsertedNodes {
@@ -118,7 +118,7 @@ private:
     Member<DocumentFragment> m_documentFragment;
     bool m_preventNesting;
     bool m_movingParagraph;
-    EditAction m_editAction;
+    InputEvent::InputType m_inputType;
     bool m_sanitizeFragment;
     bool m_shouldMergeEnd;
 

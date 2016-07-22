@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/editing/commands/EditAction.h"
+#include "core/events/InputEvent.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -43,7 +43,7 @@ public:
 
     void setParent(CompositeEditCommand*);
 
-    virtual EditAction editingAction() const;
+    virtual InputEvent::InputType inputType() const;
 
     const VisibleSelection& startingSelection() const { return m_startingSelection; }
     const VisibleSelection& endingSelection() const { return m_endingSelection; }

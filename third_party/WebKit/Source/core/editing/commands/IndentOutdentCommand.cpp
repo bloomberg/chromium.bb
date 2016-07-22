@@ -286,4 +286,9 @@ void IndentOutdentCommand::formatRange(const Position& start, const Position& en
         indentIntoBlockquote(start, end, blockquoteForNextIndent, editingState);
 }
 
+InputEvent::InputType IndentOutdentCommand::inputType() const
+{
+    return m_typeOfAction == Indent ? InputEvent::InputType::Indent : InputEvent::InputType::Outdent;
+}
+
 } // namespace blink

@@ -929,12 +929,12 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
     clearTransientState();
 }
 
-EditAction DeleteSelectionCommand::editingAction() const
+InputEvent::InputType DeleteSelectionCommand::inputType() const
 {
     // Note that DeleteSelectionCommand is also used when the user presses the Delete key,
-    // but in that case there's a TypingCommand that supplies the editingAction(), so
+    // but in that case there's a TypingCommand that supplies the inputType(), so
     // the Undo menu correctly shows "Undo Typing"
-    return EditActionCut;
+    return InputEvent::InputType::Cut;
 }
 
 // Normally deletion doesn't preserve the typing style that was present before it.  For example,

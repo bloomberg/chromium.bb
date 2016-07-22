@@ -92,7 +92,12 @@ void RemoveFormatCommand::doApply(EditingState* editingState)
     // FIXME: We shouldn't access style().
     defaultStyle->style()->setProperty(CSSPropertyBackgroundColor, CSSValueTransparent);
 
-    applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle, isElementForRemoveFormatCommand, editingAction()), editingState);
+    applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle, isElementForRemoveFormatCommand, inputType()), editingState);
+}
+
+InputEvent::InputType RemoveFormatCommand::inputType() const
+{
+    return InputEvent::InputType::RemoveFormat;
 }
 
 } // namespace blink
