@@ -771,7 +771,6 @@ void NodeChannel::ProcessPendingMessagesWithMachPorts() {
     pending_writes.swap(pending_write_messages_);
     pending_relays.swap(pending_relay_messages_);
   }
-  DCHECK(pending_writes.empty() && pending_relays.empty());
 
   while (!pending_writes.empty()) {
     Channel::MessagePtr message = std::move(pending_writes.front());
