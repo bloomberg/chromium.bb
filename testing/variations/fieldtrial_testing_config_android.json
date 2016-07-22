@@ -163,6 +163,14 @@
             }
         }
     ],
+    "MainFrameBeforeActivation": [
+        {
+            "enable_features": [
+                "MainFrameBeforeActivation"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "MinidumpDirectoryObserver": [
         {
             "group_name": "ObserverExperimentGroup",

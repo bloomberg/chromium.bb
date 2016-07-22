@@ -134,6 +134,14 @@
             "group_name": "Mach"
         }
     ],
+    "MainFrameBeforeActivation": [
+        {
+            "enable_features": [
+                "MainFrameBeforeActivation"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "MaterialDesignDownloads": [
         {
             "group_name": "Enabled"

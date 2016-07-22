@@ -295,7 +295,7 @@ bool IsMainFrameBeforeActivationEnabled() {
   if (command_line.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation))
     return true;
 
-  return true;
+  return base::FeatureList::IsEnabled(features::kMainFrameBeforeActivation);
 }
 
 base::DictionaryValue* GetFeatureStatus() {

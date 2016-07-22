@@ -23,6 +23,7 @@ CONTENT_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
 CONTENT_EXPORT extern const base::Feature kDoNotUnlockSharedBuffer;
 CONTENT_EXPORT extern const base::Feature kDocumentWriteEvaluator;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
+CONTENT_EXPORT extern const base::Feature kMainFrameBeforeActivation;
 CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;
 CONTENT_EXPORT extern const base::Feature kNewMediaPlaybackUi;
 CONTENT_EXPORT extern const base::Feature kNonValidatingReloadOnNormalReload;
