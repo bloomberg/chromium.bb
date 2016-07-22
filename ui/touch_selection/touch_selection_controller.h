@@ -147,6 +147,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   ActiveStatus active_status() const { return active_status_; }
 
+  bool insertion_active_or_requested() const {
+    return activate_insertion_automatically_;
+  }
+
  private:
   friend class TouchSelectionControllerTestApi;
 
