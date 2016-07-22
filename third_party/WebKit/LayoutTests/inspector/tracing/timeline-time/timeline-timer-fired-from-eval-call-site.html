@@ -35,7 +35,7 @@ function test()
         {
             if (record.type() === "TimerFire") {
                 var fnCallSite = record.children()[0].traceEvent().args["data"];
-                InspectorTest.addResult(record.type() + " " + fnCallSite.scriptName + ":" + fnCallSite.scriptLine);
+                InspectorTest.addResult(record.type() + " " + fnCallSite.url + ":" + (fnCallSite.lineNumber + 1));
             }
         }
         InspectorTest.printTimelineRecords(null, formatter);

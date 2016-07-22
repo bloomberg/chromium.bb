@@ -726,8 +726,8 @@ std::unique_ptr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* 
         value->setString("functionName", toCoreString(functionName.As<v8::String>()));
     std::unique_ptr<SourceLocation> location = SourceLocation::fromFunction(originalFunction);
     value->setString("scriptId", String::number(location->scriptId()));
-    value->setString("scriptName", location->url());
-    value->setInteger("scriptLine", location->lineNumber());
+    value->setString("url", location->url());
+    value->setInteger("lineNumber", location->lineNumber());
     return value;
 }
 

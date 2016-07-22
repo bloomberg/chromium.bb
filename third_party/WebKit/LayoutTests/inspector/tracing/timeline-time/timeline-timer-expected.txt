@@ -87,9 +87,9 @@ FunctionCall Properties:
     data : {
         frame : <string>
         functionName : "intervalTimerWork"
+        lineNumber : <number>
         scriptId : <string>
-        scriptLine : <number>
-        scriptName : <string>
+        url : .../inspector/tracing/timeline-time/timeline-timer.html
     }
     endTime : <number>
     frameId : <string>
@@ -101,9 +101,9 @@ FunctionCall Properties:
     data : {
         frame : <string>
         functionName : "intervalTimerWork"
+        lineNumber : <number>
         scriptId : <string>
-        scriptLine : <number>
-        scriptName : <string>
+        url : .../inspector/tracing/timeline-time/timeline-timer.html
     }
     endTime : <number>
     frameId : <string>

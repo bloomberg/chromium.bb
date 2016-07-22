@@ -38,7 +38,7 @@ function test()
                 return;
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
             // Filter out InjectedScript function call because they happen out of sync.
-            if (typesToDump.has(traceEvent.name) && (traceEvent.name !== "FunctionCall" || traceEvent.args["data"].scriptName))
+            if (typesToDump.has(traceEvent.name) && (traceEvent.name !== "FunctionCall" || traceEvent.args["data"]["url"]))
                 InspectorTest.addResult("    ".repeat(level - 1) + traceEvent.name);
         }
         InspectorTest.walkTimelineEventTree(dumpEvent);

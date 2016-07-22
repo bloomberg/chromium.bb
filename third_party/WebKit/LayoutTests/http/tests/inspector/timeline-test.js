@@ -64,7 +64,7 @@ InspectorTest.formatters.formatAsInvalidationCause = function(cause)
         return "<undefined>";
     var stackTrace;
     if (cause.stackTrace && cause.stackTrace.length)
-        stackTrace = InspectorTest.formatters.formatAsURL(cause.stackTrace[0].url) + ":" + cause.stackTrace[0].lineNumber;
+        stackTrace = InspectorTest.formatters.formatAsURL(cause.stackTrace[0].url) + ":" + (cause.stackTrace[0].lineNumber + 1);
     return "{reason: " + cause.reason + ", stackTrace: " + stackTrace + "}";
 }
 
