@@ -135,7 +135,7 @@ void EmbeddedWorkerRegistry::OnWorkerStarted(
     return;
 
   if (!ContainsKey(worker_process_map_, process_id) ||
-      worker_process_map_[process_id].count(embedded_worker_id) == 0) {
+      !ContainsKey(worker_process_map_[process_id], embedded_worker_id)) {
     return;
   }
 
@@ -256,12 +256,10 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
   DCHECK(ContainsKey(process_sender_map_, process_id));
 
   int embedded_worker_id = params->embedded_worker_id;
-  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
-  DCHECK(found != worker_map_.end());
-  DCHECK_EQ(found->second->process_id(), process_id);
-
+  DCHECK(GetWorker(embedded_worker_id));
+  DCHECK_EQ(GetWorker(embedded_worker_id)->process_id(), process_id);
   DCHECK(!ContainsKey(worker_process_map_, process_id) ||
-         worker_process_map_[process_id].count(embedded_worker_id) == 0);
+         !ContainsKey(worker_process_map_[process_id], embedded_worker_id));
 
   ServiceWorkerStatusCode status =
       Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params));

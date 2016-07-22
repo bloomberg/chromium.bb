@@ -8,7 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -21,10 +24,6 @@
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
-
-namespace IPC {
-class Sender;
-}
 
 namespace storage {
 class BlobStorageContext;
@@ -39,14 +38,17 @@ class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 
 // This class is the browser-process representation of a service worker
-// provider. There is a provider per document or a worker and the lifetime
-// of this object is tied to the lifetime of its document or the worker
-// in the renderer process.
-// This class holds service worker state that is scoped to an individual
-// document or a worker.
+// provider. There are two general types of providers: 1) those for a client
+// (windows, dedicated workers, or shared workers), and 2) those for hosting a
+// running service worker.
 //
-// Note this class can also host a running service worker, in which
-// case it will observe resource loads made directly by the service worker.
+// For client providers, there is a provider per document or a worker and the
+// lifetime of this object is tied to the lifetime of its document or the worker
+// in the renderer process. This class holds service worker state that is scoped
+// to an individual document or a worker.
+//
+// For providers hosting a running service worker, this class will observe
+// resource loads made directly by the service worker.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
@@ -325,9 +327,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   std::string client_uuid_;
   int render_process_id_;
+
+  // See the constructor's documentation.
   int route_id_;
+
+  // For provider hosts that are hosting a running service worker, the id of the
+  // service worker thread. Otherwise, |kDocumentMainThreadId|. May be
+  // |kInvalidEmbeddedWorkerThreadId| before the hosted service worker starts
+  // up, or during cross-site transfers.
   int render_thread_id_;
+
+  // Unique within the renderer process.
   int provider_id_;
+
   ServiceWorkerProviderType provider_type_;
   FrameSecurityLevel parent_frame_security_level_;
   GURL document_url_;

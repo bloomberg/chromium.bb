@@ -295,7 +295,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<EmbeddedWorkerRegistry> registry_;
+
+  // Unique within an EmbeddedWorkerRegistry.
   const int embedded_worker_id_;
+
   EmbeddedWorkerStatus status_;
   StartingPhase starting_phase_;
 
