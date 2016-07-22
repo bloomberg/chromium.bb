@@ -42,8 +42,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
-    self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
-
     self.Fail('conformance2/transform_feedback/' +
         'unwritten-output-defaults-to-zero.html', bug=1441) # ANGLE bug
 
@@ -55,16 +53,33 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
 
-    self.Fail('conformance2/rendering/framebuffer-unsupported.html',
-        bug=628861)
+    # Windows only.
 
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        bug=1450) # ANGLE bug
-    # self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-    #     ['mac'], bug=483282)
-    # self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-    #     ['linux', 'amd', 'intel'], bug=483282)
-
+    self.Fail('conformance/glsl/bugs/' +
+        'pow-of-small-constant-in-user-defined-function.html',
+        ['win'], bug=485641)
+    self.Fail('conformance/misc/uninitialized-test.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/rendering/point-specific-shader-variables.html',
+        ['win'], bug=616335)
+    self.Fail('conformance/textures/canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/textures/canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/textures/canvas/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['win'], bug=483282)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['win'], bug=628954)
@@ -75,32 +90,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['win'], bug=628954)
 
-    # Windows only.
-    self.Fail('conformance/glsl/bugs/' +
-              'pow-of-small-constant-in-user-defined-function.html',
-        ['win'], bug=485641)
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['win'], bug=483282)
-    self.Fail('conformance/rendering/point-specific-shader-variables.html',
-        ['win'], bug=616335)
-    self.Fail('conformance/textures/canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-              ['win'], bug=483282)
-    self.Fail('conformance/textures/canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-              ['win'], bug=483282)
-    self.Fail('conformance/textures/canvas/' +
-              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-              ['win'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-              ['win'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-              ['win'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-              ['win'], bug=483282)
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
 
@@ -213,6 +202,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel'], bug=628395)
 
     # Mac only.
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['mac'], bug=483282)
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
@@ -538,6 +529,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['linux', 'amd', 'intel'], bug=483282)
 
     # Linux with ANGLE only
     self.Fail('conformance/misc/uninitialized-test.html',
