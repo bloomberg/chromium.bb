@@ -240,9 +240,6 @@ class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('reference')
-# TODO(crbug.com/617814): Temporarily disable this benchmark for mac. Scrolling
-# does not work on for google.com web page. Remove this once it is fixed.
-@benchmark.Disabled('mac')
 class V8MobileCodeSizeIgnition(_V8MemoryAndCodeSizeBenchmark):
   """Measures V8 heap and code size with ignition enabled on mobile web pages.
 
@@ -259,9 +256,6 @@ class V8MobileCodeSizeIgnition(_V8MemoryAndCodeSizeBenchmark):
 
 
 @benchmark.Disabled('reference')
-# TODO(crbug.com/617914): Temporarily disable this benchmark for mac. Scrolling
-# does not work on for google.com web page. Remove this once it is fixed.
-@benchmark.Disabled('mac')
 class V8MobileCodeSize(_V8MemoryAndCodeSizeBenchmark):
   """Measures V8 heap and code size on mobile web pages.
 
