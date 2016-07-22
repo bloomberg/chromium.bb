@@ -97,7 +97,7 @@ function test()
         function testScrollSelectionAwayDown(next)
         {
             consoleView._immediatelyScrollToBottom();
-            viewport._innerRefresh(true);
+            viewport.refresh();
             dumpSelectionModel();
             dumpViewportRenderedItems();
             next();
@@ -204,21 +204,21 @@ function test()
 
     function dumpSelectionModel()
     {
-        viewport._innerRefresh(true);
+        viewport.refresh();
         var text = String.sprintf("anchor = %s, head = %s", dumpSelectionModelElement(viewport._anchorSelection), dumpSelectionModelElement(viewport._headSelection));
         InspectorTest.addResult(text);
     }
 
     function dumpSelectionText()
     {
-        viewport._innerRefresh(true);
+        viewport.refresh();
         var text = viewport._selectedText();
         InspectorTest.addResult("Selected text:<<<EOL\n" + text + "\nEOL");
     }
 
     function dumpViewportRenderedItems()
     {
-        viewport._innerRefresh(true);
+        viewport.refresh();
         var firstVisibleIndex = viewport.firstVisibleIndex();
         var lastVisibleIndex = viewport.lastVisibleIndex();
         InspectorTest.addResult("first visible message index: " + firstVisibleIndex);
@@ -226,7 +226,7 @@ function test()
 
     function emulateShiftClickOnMessage(messageIndex)
     {
-        viewport._innerRefresh(true);
+        viewport.refresh();
         var selection = window.getSelection();
         if (!selection || !selection.rangeCount) {
             InspectorTest.addResult("FAILURE: There's no selection");
@@ -235,7 +235,7 @@ function test()
         viewport.forceScrollItemToBeFirst(Math.max(messageIndex - minimumViewportMessagesCount / 2, 0));
         var element = consoleView.itemElement(messageIndex).element();
         selection.setBaseAndExtent(selection.anchorNode, selection.anchorOffset, element, 0);
-        viewport._innerRefresh(true);
+        viewport.refresh();
     }
 
     function selectionContainerAndOffset(container, offset)
@@ -267,7 +267,7 @@ function test()
         var from = selectionContainerAndOffset(consoleView.itemElement(fromMessage).element(), fromTextOffset);
         var to = selectionContainerAndOffset(consoleView.itemElement(toMessage).element(), toTextOffset);
         window.getSelection().setBaseAndExtent(from.container, from.offset, to.container, to.offset);
-        viewport._innerRefresh(true);
+        viewport.refresh();
     }
 }
 </script>

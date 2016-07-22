@@ -69,7 +69,7 @@ function test()
             const manualScrollValue = 3;
             var initialScrollTop = viewport.element.scrollTop;
             viewport.element.scrollTop = initialScrollTop - manualScrollValue;
-            viewport._innerRefresh(true);
+            viewport.refresh();
             var newScrollTop = viewport.element.scrollTop;
             var isScrollPreserved = initialScrollTop - newScrollTop === manualScrollValue;
             InspectorTest.addResult("Scroll preserved: " + isScrollPreserved);

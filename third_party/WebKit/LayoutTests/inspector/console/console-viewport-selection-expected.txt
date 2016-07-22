@@ -192,7 +192,7 @@ first visible message index: 0
 
 Running: testScrollSelectionAwayDown
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 140
+first visible message index: 137
 
 Running: testShiftClickSelectionOver
 anchor = {item: 72, offset: 6}, head = {item: 10, offset: 0}
