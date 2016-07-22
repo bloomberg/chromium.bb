@@ -17,11 +17,11 @@ namespace internal {
 
 class SchedulerWorker;
 
-// A stack of SchedulerWorkers. Supports removal of arbitrary
-// SchedulerWorkers. DCHECKs when a SchedulerWorker is inserted
-// multiple times. SchedulerWorkers are not owned by the stack. Push() is
-// amortized O(1). Pop(), Size() and Empty() are O(1). Remove is O(n). This
-// class is NOT thread-safe.
+// A stack of SchedulerWorkers. Supports removal of arbitrary SchedulerWorkers.
+// DCHECKs when a SchedulerWorker is inserted multiple times. SchedulerWorkers
+// are not owned by the stack. Push() is amortized O(1). Pop(), Peek(), Size()
+// and Empty() are O(1). Contains() and Remove() are O(n).
+// This class is NOT thread-safe.
 class BASE_EXPORT SchedulerWorkerStack {
  public:
   SchedulerWorkerStack();
@@ -34,6 +34,12 @@ class BASE_EXPORT SchedulerWorkerStack {
   // Removes the top SchedulerWorker from the stack and returns it.
   // Returns nullptr if the stack is empty.
   SchedulerWorker* Pop();
+
+  // Returns the top SchedulerWorker from the stack, nullptr if empty.
+  SchedulerWorker* Peek() const;
+
+  // Returns true if |worker| is already on the stack.
+  bool Contains(const SchedulerWorker* worker) const;
 
   // Removes |worker| from the stack.
   void Remove(const SchedulerWorker* worker);

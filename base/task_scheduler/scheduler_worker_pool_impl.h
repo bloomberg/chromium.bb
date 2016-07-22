@@ -31,6 +31,9 @@
 #include "base/threading/platform_thread.h"
 
 namespace base {
+
+class TimeDelta;
+
 namespace internal {
 
 class DelayedTaskManager;
@@ -67,6 +70,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // allowed to complete their execution. This can only be called once.
   void JoinForTesting();
 
+  // Disallows worker thread detachment. If the suggested reclaim time is not
+  // TimeDelta::Max(), then the test should call this before the detach code can
+  // run. The safest place to do this is before the a set of work is dispatched
+  // (the worker pool is idle and steady state) or before the last
+  // synchronization point for all workers (all threads are busy and can't be
+  // reclaimed).
+  void DisallowWorkerDetachmentForTesting();
+
   // SchedulerWorkerPool:
   scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
       const TaskTraits& traits,
@@ -81,11 +92,13 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                                SchedulerWorker* worker) override;
 
  private:
+  class SchedulerSingleThreadTaskRunner;
   class SchedulerWorkerDelegateImpl;
 
   SchedulerWorkerPoolImpl(StringPiece name,
                           SchedulerWorkerPoolParams::IORestriction
                               io_restriction,
+                          const TimeDelta& suggested_reclaim_time,
                           TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
@@ -100,8 +113,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Adds |worker| to |idle_workers_stack_|.
   void AddToIdleWorkersStack(SchedulerWorker* worker);
 
+  // Peeks from |idle_workers_stack_|.
+  const SchedulerWorker* PeekAtIdleWorkersStack() const;
+
   // Removes |worker| from |idle_workers_stack_|.
   void RemoveFromIdleWorkersStack(SchedulerWorker* worker);
+
+  // Returns true if worker thread detachment is permitted.
+  bool CanWorkerDetachForTesting();
 
   // The name of this worker pool, used to label its worker threads.
   const std::string name_;
@@ -123,12 +142,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Indicates whether Tasks on this worker pool are allowed to make I/O calls.
   const SchedulerWorkerPoolParams::IORestriction io_restriction_;
 
+  // Suggested reclaim time for workers.
+  const TimeDelta suggested_reclaim_time_;
+
   // Synchronizes access to |idle_workers_stack_| and
   // |idle_workers_stack_cv_for_testing_|. Has |shared_priority_queue_|'s
   // lock as its predecessor so that a worker can be pushed to
   // |idle_workers_stack_| within the scope of a Transaction (more
   // details in GetWork()).
-  SchedulerLock idle_workers_stack_lock_;
+  mutable SchedulerLock idle_workers_stack_lock_;
 
   // Stack of idle workers.
   SchedulerWorkerStack idle_workers_stack_;
@@ -138,6 +160,13 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
+
+  // Synchronizes access to |worker_detachment_allowed_|.
+  SchedulerLock worker_detachment_allowed_lock_;
+
+  // Indicates to the delegates that workers are permitted to detach their
+  // threads.
+  bool worker_detachment_allowed_ = true;
 
 #if DCHECK_IS_ON()
   // Signaled when all workers have been created.

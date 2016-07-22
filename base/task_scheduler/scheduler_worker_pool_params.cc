@@ -4,6 +4,8 @@
 
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 
+#include "base/time/time.h"
+
 namespace base {
 namespace internal {
 
@@ -11,11 +13,13 @@ SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
     const std::string& name,
     ThreadPriority thread_priority,
     IORestriction io_restriction,
-    int max_threads)
+    int max_threads,
+    const TimeDelta& suggested_reclaim_time)
     : name_(name),
       thread_priority_(thread_priority),
       io_restriction_(io_restriction),
-      max_threads_(max_threads) {}
+      max_threads_(max_threads),
+      suggested_reclaim_time_(suggested_reclaim_time) {}
 
 SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
     SchedulerWorkerPoolParams&& other) = default;

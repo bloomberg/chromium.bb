@@ -16,8 +16,7 @@ SchedulerWorkerStack::SchedulerWorkerStack() = default;
 SchedulerWorkerStack::~SchedulerWorkerStack() = default;
 
 void SchedulerWorkerStack::Push(SchedulerWorker* worker) {
-  DCHECK(std::find(stack_.begin(), stack_.end(), worker) == stack_.end())
-      << "SchedulerWorker already on stack";
+  DCHECK(!Contains(worker)) << "SchedulerWorker already on stack";
   stack_.push_back(worker);
 }
 
@@ -27,6 +26,16 @@ SchedulerWorker* SchedulerWorkerStack::Pop() {
   SchedulerWorker* const worker = stack_.back();
   stack_.pop_back();
   return worker;
+}
+
+SchedulerWorker* SchedulerWorkerStack::Peek() const {
+  if (IsEmpty())
+    return nullptr;
+  return stack_.back();
+}
+
+bool SchedulerWorkerStack::Contains(const SchedulerWorker* worker) const {
+  return std::find(stack_.begin(), stack_.end(), worker) != stack_.end();
 }
 
 void SchedulerWorkerStack::Remove(const SchedulerWorker* worker) {

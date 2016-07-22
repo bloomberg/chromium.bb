@@ -23,6 +23,7 @@
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -166,22 +167,22 @@ class TaskSchedulerImplTest
     ASSERT_EQ(BACKGROUND_WORKER_POOL, params_vector.size());
     params_vector.emplace_back("TaskSchedulerBackground",
                                ThreadPriority::BACKGROUND,
-                               IORestriction::DISALLOWED, 1U);
+                               IORestriction::DISALLOWED, 1U, TimeDelta::Max());
 
     ASSERT_EQ(BACKGROUND_FILE_IO_WORKER_POOL, params_vector.size());
     params_vector.emplace_back("TaskSchedulerBackgroundFileIO",
                                ThreadPriority::BACKGROUND,
-                               IORestriction::ALLOWED, 3U);
+                               IORestriction::ALLOWED, 3U, TimeDelta::Max());
 
     ASSERT_EQ(FOREGROUND_WORKER_POOL, params_vector.size());
     params_vector.emplace_back("TaskSchedulerForeground",
                                ThreadPriority::NORMAL,
-                               IORestriction::DISALLOWED, 4U);
+                               IORestriction::DISALLOWED, 4U, TimeDelta::Max());
 
     ASSERT_EQ(FOREGROUND_FILE_IO_WORKER_POOL, params_vector.size());
     params_vector.emplace_back("TaskSchedulerForegroundFileIO",
                                ThreadPriority::NORMAL, IORestriction::ALLOWED,
-                               12U);
+                               12U, TimeDelta::Max());
 
     scheduler_ = TaskSchedulerImpl::Create(params_vector,
                                            Bind(&GetThreadPoolIndexForTraits));

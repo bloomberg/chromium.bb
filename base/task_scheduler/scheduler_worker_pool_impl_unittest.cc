@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -29,7 +30,10 @@
 #include "base/task_scheduler/test_utils.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_checker_impl.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -39,6 +43,8 @@ namespace {
 const size_t kNumWorkersInWorkerPool = 4;
 const size_t kNumThreadsPostingTasks = 4;
 const size_t kNumTasksPostedPerThread = 150;
+constexpr TimeDelta kReclaimTimeForDetachTests =
+    TimeDelta::FromMilliseconds(10);
 
 using IORestriction = SchedulerWorkerPoolParams::IORestriction;
 
@@ -63,20 +69,25 @@ class TaskSchedulerWorkerPoolImplTest
   TaskSchedulerWorkerPoolImplTest() = default;
 
   void SetUp() override {
-    worker_pool_ = SchedulerWorkerPoolImpl::Create(
-        SchedulerWorkerPoolParams("TestWorkerPoolWithFileIO",
-                                  ThreadPriority::NORMAL,
-                                  IORestriction::ALLOWED,
-                                  kNumWorkersInWorkerPool),
-        Bind(&TaskSchedulerWorkerPoolImplTest::ReEnqueueSequenceCallback,
-             Unretained(this)),
-        &task_tracker_, &delayed_task_manager_);
-    ASSERT_TRUE(worker_pool_);
+    InitializeWorkerPool(TimeDelta::Max());
   }
 
   void TearDown() override {
     worker_pool_->WaitForAllWorkersIdleForTesting();
     worker_pool_->JoinForTesting();
+  }
+
+  void InitializeWorkerPool(const TimeDelta& suggested_reclaim_time) {
+    worker_pool_ = SchedulerWorkerPoolImpl::Create(
+        SchedulerWorkerPoolParams("TestWorkerPoolWithFileIO",
+                                  ThreadPriority::NORMAL,
+                                  IORestriction::ALLOWED,
+                                  kNumWorkersInWorkerPool,
+                                  suggested_reclaim_time),
+        Bind(&TaskSchedulerWorkerPoolImplTest::ReEnqueueSequenceCallback,
+             Unretained(this)),
+        &task_tracker_, &delayed_task_manager_);
+    ASSERT_TRUE(worker_pool_);
   }
 
   std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool_;
@@ -367,7 +378,8 @@ TEST_P(TaskSchedulerWorkerPoolImplIORestrictionTest, IORestriction) {
 
   auto worker_pool = SchedulerWorkerPoolImpl::Create(
       SchedulerWorkerPoolParams("TestWorkerPoolWithParam",
-                                ThreadPriority::NORMAL, GetParam(), 1U),
+                                ThreadPriority::NORMAL, GetParam(), 1U,
+                                TimeDelta::Max()),
       Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
       &delayed_task_manager);
   ASSERT_TRUE(worker_pool);
@@ -387,6 +399,162 @@ INSTANTIATE_TEST_CASE_P(IOAllowed,
 INSTANTIATE_TEST_CASE_P(IODisallowed,
                         TaskSchedulerWorkerPoolImplIORestrictionTest,
                         ::testing::Values(IORestriction::DISALLOWED));
+
+namespace {
+
+class TaskSchedulerWorkerPoolSingleThreadedTest
+    : public TaskSchedulerWorkerPoolImplTest {
+ public:
+  void InitializeThreadChecker() {
+    thread_checker_.reset(new ThreadCheckerImpl());
+  }
+
+  void CheckValidThread() {
+    EXPECT_TRUE(thread_checker_->CalledOnValidThread());
+  }
+
+ protected:
+  void SetUp() override {
+    InitializeWorkerPool(kReclaimTimeForDetachTests);
+  }
+
+  TaskSchedulerWorkerPoolSingleThreadedTest() = default;
+
+ private:
+  std::unique_ptr<ThreadCheckerImpl> thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolSingleThreadedTest);
+};
+
+}  // namespace
+
+// Verify that thread resources for a single thread remain.
+TEST_F(TaskSchedulerWorkerPoolSingleThreadedTest, SingleThreadTask) {
+  auto single_thread_task_runner =
+      worker_pool_->CreateTaskRunnerWithTraits(
+          TaskTraits().
+              WithShutdownBehavior(TaskShutdownBehavior::BLOCK_SHUTDOWN),
+          ExecutionMode::SINGLE_THREADED);
+  single_thread_task_runner->PostTask(
+      FROM_HERE,
+      Bind(&TaskSchedulerWorkerPoolSingleThreadedTest::InitializeThreadChecker,
+           Unretained(this)));
+  WaitableEvent task_waiter(WaitableEvent::ResetPolicy::AUTOMATIC,
+                            WaitableEvent::InitialState::NOT_SIGNALED);
+  single_thread_task_runner->PostTask(
+      FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&task_waiter)));
+  task_waiter.Wait();
+  worker_pool_->WaitForAllWorkersIdleForTesting();
+
+  // Give the worker pool a chance to reclaim its threads.
+  PlatformThread::Sleep(
+      kReclaimTimeForDetachTests + TimeDelta::FromMilliseconds(200));
+
+  worker_pool_->DisallowWorkerDetachmentForTesting();
+
+  single_thread_task_runner->PostTask(
+      FROM_HERE,
+      Bind(&TaskSchedulerWorkerPoolSingleThreadedTest::CheckValidThread,
+           Unretained(this)));
+  single_thread_task_runner->PostTask(
+      FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&task_waiter)));
+  task_waiter.Wait();
+}
+
+namespace {
+
+constexpr size_t kMagicTlsValue = 42;
+
+class TaskSchedulerWorkerPoolCheckTlsReuse
+    : public TaskSchedulerWorkerPoolImplTest {
+ public:
+  void SetTlsValueAndWait() {
+    slot_.Set(reinterpret_cast<void*>(kMagicTlsValue));
+    waiter_.Wait();
+  }
+
+  void CountZeroTlsValuesAndWait(WaitableEvent* count_waiter) {
+    if (!slot_.Get())
+      subtle::NoBarrier_AtomicIncrement(&zero_tls_values_, 1);
+
+    count_waiter->Signal();
+    waiter_.Wait();
+  }
+
+ protected:
+  TaskSchedulerWorkerPoolCheckTlsReuse() :
+      waiter_(WaitableEvent::ResetPolicy::MANUAL,
+              WaitableEvent::InitialState::NOT_SIGNALED) {}
+
+  void SetUp() override {
+    InitializeWorkerPool(kReclaimTimeForDetachTests);
+  }
+
+  subtle::Atomic32 zero_tls_values_ = 0;
+
+  WaitableEvent waiter_;
+
+ private:
+  ThreadLocalStorage::Slot slot_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolCheckTlsReuse);
+};
+
+}  // namespace
+
+// Checks that at least one thread has detached by checking the TLS.
+TEST_F(TaskSchedulerWorkerPoolCheckTlsReuse, CheckDetachedThreads) {
+  // Saturate the threads and mark each thread with a magic TLS value.
+  std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    factories.push_back(WrapUnique(new test::TestTaskFactory(
+        worker_pool_->CreateTaskRunnerWithTraits(
+            TaskTraits(), ExecutionMode::PARALLEL),
+        ExecutionMode::PARALLEL)));
+    ASSERT_TRUE(factories.back()->PostTask(
+        PostNestedTask::NO,
+        Bind(&TaskSchedulerWorkerPoolCheckTlsReuse::SetTlsValueAndWait,
+             Unretained(this))));
+    factories.back()->WaitForAllTasksToRun();
+  }
+
+  // Release tasks waiting on |waiter_|.
+  waiter_.Signal();
+  worker_pool_->WaitForAllWorkersIdleForTesting();
+
+  // All threads should be done running by now, so reset for the next phase.
+  waiter_.Reset();
+
+  // Give the worker pool a chance to detach its threads.
+  PlatformThread::Sleep(
+      kReclaimTimeForDetachTests + TimeDelta::FromMilliseconds(200));
+
+  worker_pool_->DisallowWorkerDetachmentForTesting();
+
+  // Saturate and count the threads that do not have the magic TLS value. If the
+  // value is not there, that means we're at a new thread.
+  std::vector<std::unique_ptr<WaitableEvent>> count_waiters;
+  for (auto& factory : factories) {
+    count_waiters.push_back(WrapUnique(new WaitableEvent(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED)));
+    ASSERT_TRUE(factory->PostTask(
+          PostNestedTask::NO,
+          Bind(&TaskSchedulerWorkerPoolCheckTlsReuse::CountZeroTlsValuesAndWait,
+               Unretained(this),
+               count_waiters.back().get())));
+    factory->WaitForAllTasksToRun();
+  }
+
+  // Wait for all counters to complete.
+  for (auto& count_waiter : count_waiters)
+    count_waiter->Wait();
+
+  EXPECT_GT(subtle::NoBarrier_Load(&zero_tls_values_), 0);
+
+  // Release tasks waiting on |waiter_|.
+  waiter_.Signal();
+}
 
 }  // namespace internal
 }  // namespace base

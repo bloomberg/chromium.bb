@@ -76,6 +76,8 @@ class TaskSchedulerWorkerStackTest : public testing::Test {
 // Verify that Push() and Pop() add/remove values in FIFO order.
 TEST_F(TaskSchedulerWorkerStackTest, PushPop) {
   SchedulerWorkerStack stack;
+  EXPECT_EQ(nullptr, stack.Pop());
+
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
 
@@ -110,6 +112,86 @@ TEST_F(TaskSchedulerWorkerStackTest, PushPop) {
   EXPECT_EQ(worker_a_.get(), stack.Pop());
   EXPECT_TRUE(stack.IsEmpty());
   EXPECT_EQ(0U, stack.Size());
+
+  EXPECT_EQ(nullptr, stack.Pop());
+}
+
+// Verify that Peek() returns the correct values in FIFO order.
+TEST_F(TaskSchedulerWorkerStackTest, PeekPop) {
+  SchedulerWorkerStack stack;
+  EXPECT_EQ(nullptr, stack.Peek());
+
+  EXPECT_TRUE(stack.IsEmpty());
+  EXPECT_EQ(0U, stack.Size());
+
+  stack.Push(worker_a_.get());
+  EXPECT_EQ(worker_a_.get(), stack.Peek());
+  EXPECT_FALSE(stack.IsEmpty());
+  EXPECT_EQ(1U, stack.Size());
+
+  stack.Push(worker_b_.get());
+  EXPECT_EQ(worker_b_.get(), stack.Peek());
+  EXPECT_FALSE(stack.IsEmpty());
+  EXPECT_EQ(2U, stack.Size());
+
+  stack.Push(worker_c_.get());
+  EXPECT_EQ(worker_c_.get(), stack.Peek());
+  EXPECT_FALSE(stack.IsEmpty());
+  EXPECT_EQ(3U, stack.Size());
+
+  EXPECT_EQ(worker_c_.get(), stack.Pop());
+  EXPECT_EQ(worker_b_.get(), stack.Peek());
+  EXPECT_FALSE(stack.IsEmpty());
+  EXPECT_EQ(2U, stack.Size());
+
+  EXPECT_EQ(worker_b_.get(), stack.Pop());
+  EXPECT_EQ(worker_a_.get(), stack.Peek());
+  EXPECT_FALSE(stack.IsEmpty());
+  EXPECT_EQ(1U, stack.Size());
+
+  EXPECT_EQ(worker_a_.get(), stack.Pop());
+  EXPECT_TRUE(stack.IsEmpty());
+  EXPECT_EQ(0U, stack.Size());
+
+  EXPECT_EQ(nullptr, stack.Peek());
+}
+
+// Verify that Contains() returns true for workers on the stack.
+TEST_F(TaskSchedulerWorkerStackTest, Contains) {
+  SchedulerWorkerStack stack;
+  EXPECT_FALSE(stack.Contains(worker_a_.get()));
+  EXPECT_FALSE(stack.Contains(worker_b_.get()));
+  EXPECT_FALSE(stack.Contains(worker_c_.get()));
+
+  stack.Push(worker_a_.get());
+  EXPECT_TRUE(stack.Contains(worker_a_.get()));
+  EXPECT_FALSE(stack.Contains(worker_b_.get()));
+  EXPECT_FALSE(stack.Contains(worker_c_.get()));
+
+  stack.Push(worker_b_.get());
+  EXPECT_TRUE(stack.Contains(worker_a_.get()));
+  EXPECT_TRUE(stack.Contains(worker_b_.get()));
+  EXPECT_FALSE(stack.Contains(worker_c_.get()));
+
+  stack.Push(worker_c_.get());
+  EXPECT_TRUE(stack.Contains(worker_a_.get()));
+  EXPECT_TRUE(stack.Contains(worker_b_.get()));
+  EXPECT_TRUE(stack.Contains(worker_c_.get()));
+
+  stack.Pop();
+  EXPECT_TRUE(stack.Contains(worker_a_.get()));
+  EXPECT_TRUE(stack.Contains(worker_b_.get()));
+  EXPECT_FALSE(stack.Contains(worker_c_.get()));
+
+  stack.Pop();
+  EXPECT_TRUE(stack.Contains(worker_a_.get()));
+  EXPECT_FALSE(stack.Contains(worker_b_.get()));
+  EXPECT_FALSE(stack.Contains(worker_c_.get()));
+
+  stack.Pop();
+  EXPECT_FALSE(stack.Contains(worker_a_.get()));
+  EXPECT_FALSE(stack.Contains(worker_b_.get()));
+  EXPECT_FALSE(stack.Contains(worker_c_.get()));
 }
 
 // Verify that a value can be removed by Remove().

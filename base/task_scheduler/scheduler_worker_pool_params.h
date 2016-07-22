@@ -11,6 +11,9 @@
 #include "base/threading/platform_thread.h"
 
 namespace base {
+
+class TimeDelta;
+
 namespace internal {
 
 class BASE_EXPORT SchedulerWorkerPoolParams final {
@@ -24,12 +27,15 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
   // scheduler worker pool to use the label |name| and create up to
   // |max_threads| threads of priority |thread_priority|. |io_restriction|
   // indicates whether Tasks on the scheduler worker pool are allowed to make
-  // I/O calls.
+  // I/O calls. |suggested_reclaim_time| sets a suggestion on when to reclaim
+  // idle threads. The worker pool is free to ignore this value for performance
+  // or correctness reasons.
   SchedulerWorkerPoolParams(
       const std::string& name,
       ThreadPriority thread_priority,
       IORestriction io_restriction,
-      int max_threads);
+      int max_threads,
+      const TimeDelta& suggested_reclaim_time);
   SchedulerWorkerPoolParams(SchedulerWorkerPoolParams&& other);
   SchedulerWorkerPoolParams& operator=(SchedulerWorkerPoolParams&& other);
 
@@ -45,11 +51,17 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
   // Maximum number of threads in the pool.
   size_t max_threads() const { return max_threads_; }
 
+  // Suggested reclaim time for threads in the worker pool.
+  const TimeDelta& suggested_reclaim_time() const {
+    return suggested_reclaim_time_;
+  }
+
  private:
   std::string name_;
   ThreadPriority thread_priority_;
   IORestriction io_restriction_;
   size_t max_threads_;
+  TimeDelta suggested_reclaim_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolParams);
 };

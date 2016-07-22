@@ -59,7 +59,8 @@ class TaskSchedulerServiceThreadTest : public testing::Test {
                                   ThreadPriority::BACKGROUND,
                                   SchedulerWorkerPoolParams::IORestriction::
                                       DISALLOWED,
-                                  1u),
+                                  1u,
+                                  TimeDelta::Max()),
         Bind(&ReEnqueueSequenceCallback), &task_tracker_,
         &delayed_task_manager_);
     ASSERT_TRUE(scheduler_worker_pool_);
