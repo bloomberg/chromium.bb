@@ -6801,22 +6801,22 @@ All users must sign out to continue.
     Terms of Service
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_ENABLED" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and on.">
-    This device will automatically send diagnostic and usage data to Google. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by your administrator. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    This device currently sends diagnostic and usage data to Google. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are enabled on the device and off.">
-    Your administrator may choose to send diagnostic and usage data for this device to Google. You may view this <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> here. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    The owner may choose to send diagnostic and usage data for this device to Google. You may view this <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> here. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_ENABLED" desc="Message in the opt-in dialog for Android apps in case metrics are already enabled on the device. User has no way to deactivate them using opt-in dialog.">
-    This device will automatically send diagnostic and usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    This device currently sends diagnostic and usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are disabled on the device. User has an option to active them using opt-in dialog">
     Automatically send diagnostic and usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE" desc="Message in the opt-in dialog for users to enable Backup and Restore for Android apps.">
-    Automatically back up and restore Play app data to Google Drive. You can change this in Android Settings at any time. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Automatically back up and restore Play app data to Google Drive. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services">
-    Let Google’s location service help apps find your location quickly and accurately, which can reduce battery consumption. Anonymous location data will be sent to Google, even when no apps are running.
+    Let Google’s location service help apps find your location quickly and accurately, which can reduce battery consumption. Anonymous location data will be sent to Google, even when no apps are running. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_SCANNING_SETTING" desc="Message in the opt-in dialog for Android apps for the user to enable wifi and bluetooth scanning to improve location">
     Improve location accuracy by allowing apps and services to scan for Wi-Fi networks and Bluetooth devices.
