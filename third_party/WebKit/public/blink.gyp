@@ -54,6 +54,10 @@
         'blink_android_mojo_sources': [
             'platform/modules/payments/payment_request.mojom',
         ],
+        'blink_typemap_sources': [
+            '<(DEPTH)/cc/ipc/surface_id.typemap',
+            '<(DEPTH)/cc/ipc/surface_sequence.typemap',
+        ],
     },
     'targets': [
         {
@@ -118,9 +122,8 @@
                     '<@(blink_android_mojo_sources)',
                 ],
                 'mojom_typemaps': [
-                    '<(DEPTH)/cc/ipc/surface_id.typemap',
-                    '<(DEPTH)/cc/ipc/surface_sequence.typemap',
                     '../Source/platform/mojo/SecurityOrigin.typemap',
+                    '<@(blink_typemap_sources)',
                 ],
                 'for_blink': 'true',
                 'use_new_wrapper_types': 'false',
@@ -143,10 +146,9 @@
                     '<@(blink_android_mojo_sources)',
                 ],
                 'mojom_typemaps': [
-                  '../../../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
-                    '<(DEPTH)/cc/ipc/surface_id.typemap',
-                    '<(DEPTH)/cc/ipc/surface_sequence.typemap',
+                    '../../../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
                     '<(DEPTH)/url/mojo/origin.typemap',
+                    '<@(blink_typemap_sources)',
                 ],
                 'use_new_wrapper_types': 'false',
             },
