@@ -59,6 +59,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
+#include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #include "sandbox/win/src/sandbox.h"
 #endif
 
@@ -489,6 +490,7 @@ bool WarmUpSandbox(const base::CommandLine& command_line) {
 
 #if defined(OS_WIN)
   media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+  media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
   return true;
 }

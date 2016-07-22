@@ -92,6 +92,10 @@ class GpuVideoEncodeAccelerator
 #if defined(OS_MACOSX)
   static std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA();
 #endif
+#if defined(OS_WIN)
+  static std::unique_ptr<media::VideoEncodeAccelerator>
+  CreateMediaFoundationVEA();
+#endif
 
   // IPC handlers, proxying VideoEncodeAccelerator for the renderer
   // process.

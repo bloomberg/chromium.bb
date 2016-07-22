@@ -55,6 +55,9 @@ const char kUseGpuMemoryBuffersForCapture[] =
 // for details.
 const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
 
+// Enables H264 HW encode acceleration using Media Foundation for Windows.
+const char kEnableMFH264Encoding[] = "enable-mf-h264-encoding";
+
 // Force the use of MediaFoundation for video capture. This is only supported in
 // Windows 7 and above. Used, like |kForceDirectShowVideoCapture|, to
 // troubleshoot problems in Windows platforms.

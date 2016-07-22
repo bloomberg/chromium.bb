@@ -37,6 +37,7 @@ MEDIA_EXPORT extern const char kUseGpuMemoryBuffersForCapture[];
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
+MEDIA_EXPORT extern const char kEnableMFH264Encoding[];
 MEDIA_EXPORT extern const char kForceMediaFoundationVideoCapture[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
 MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
