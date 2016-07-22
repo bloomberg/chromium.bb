@@ -7,8 +7,9 @@
 #include "components/network_hints/renderer/renderer_preconnect.h"
 
 #include "components/network_hints/common/network_hints_common.h"
-#include "components/network_hints/common/network_hints_messages.h"
+#include "components/network_hints/public/cpp/network_hints_param_traits.h"
 #include "content/public/renderer/render_thread.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 using content::RenderThread;
 
@@ -24,8 +25,16 @@ void RendererPreconnect::Preconnect(const GURL& url, bool allow_credentials) {
   if (!url.is_valid())
     return;
 
-  RenderThread::Get()->Send(
-      new NetworkHintsMsg_Preconnect(url, allow_credentials, 1));
+  GetNetworkHints().Preconnect(url, allow_credentials, 1);
+}
+
+mojom::NetworkHints& RendererPreconnect::GetNetworkHints() {
+  DCHECK(content::RenderThread::Get());
+  if (!network_hints_) {
+    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&network_hints_));
+  }
+  return *network_hints_;
 }
 
 }  // namespace network_hints
