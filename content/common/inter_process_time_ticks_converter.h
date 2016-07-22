@@ -17,8 +17,9 @@ class LocalTimeTicks;
 class RemoteTimeDelta;
 class RemoteTimeTicks;
 
-// On Windows, TimeTicks are not consistent between processes. Often, the values
-// on one process have a static offset relative to another. Occasionally, these
+// On Windows, TimeTicks are not always consistent between processes as
+// indicated by |TimeTicks::IsConsistentAcrossProcesses()|. Often, the values on
+// one process have a static offset relative to another. Occasionally, these
 // offsets shift while running.
 //
 // To combat this, any TimeTicks values sent from the remote process to the

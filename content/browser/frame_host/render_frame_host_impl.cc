@@ -1363,37 +1363,41 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   base::TimeTicks before_unload_end_time = renderer_before_unload_end_time;
   if (!renderer_before_unload_start_time.is_null() &&
       !renderer_before_unload_end_time.is_null()) {
-    // When passing TimeTicks across process boundaries, we need to compensate
-    // for any skew between the processes. Here we are converting the
-    // renderer's notion of before_unload_end_time to TimeTicks in the browser
-    // process. See comments in inter_process_time_ticks_converter.h for more.
     base::TimeTicks receive_before_unload_ack_time = base::TimeTicks::Now();
-    InterProcessTimeTicksConverter converter(
-        LocalTimeTicks::FromTimeTicks(send_before_unload_start_time_),
-        LocalTimeTicks::FromTimeTicks(receive_before_unload_ack_time),
-        RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
-        RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
-    LocalTimeTicks browser_before_unload_end_time =
-        converter.ToLocalTimeTicks(
-            RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
-    before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
 
-    // Collect UMA on the inter-process skew.
-    bool is_skew_additive = false;
-    if (converter.IsSkewAdditiveForMetrics()) {
-      is_skew_additive = true;
-      base::TimeDelta skew = converter.GetSkewForMetrics();
-      if (skew >= base::TimeDelta()) {
-        UMA_HISTOGRAM_TIMES(
-            "InterProcessTimeTicks.BrowserBehind_RendererToBrowser", skew);
-      } else {
-        UMA_HISTOGRAM_TIMES(
-            "InterProcessTimeTicks.BrowserAhead_RendererToBrowser", -skew);
+    if (!base::TimeTicks::IsConsistentAcrossProcesses()) {
+      // TimeTicks is not consistent across processes and we are passing
+      // TimeTicks across process boundaries so we need to compensate for any
+      // skew between the processes. Here we are converting the renderer's
+      // notion of before_unload_end_time to TimeTicks in the browser process.
+      // See comments in inter_process_time_ticks_converter.h for more.
+      InterProcessTimeTicksConverter converter(
+          LocalTimeTicks::FromTimeTicks(send_before_unload_start_time_),
+          LocalTimeTicks::FromTimeTicks(receive_before_unload_ack_time),
+          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
+          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+      LocalTimeTicks browser_before_unload_end_time =
+          converter.ToLocalTimeTicks(
+              RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+      before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
+
+      // Collect UMA on the inter-process skew.
+      bool is_skew_additive = false;
+      if (converter.IsSkewAdditiveForMetrics()) {
+        is_skew_additive = true;
+        base::TimeDelta skew = converter.GetSkewForMetrics();
+        if (skew >= base::TimeDelta()) {
+          UMA_HISTOGRAM_TIMES(
+              "InterProcessTimeTicks.BrowserBehind_RendererToBrowser", skew);
+        } else {
+          UMA_HISTOGRAM_TIMES(
+              "InterProcessTimeTicks.BrowserAhead_RendererToBrowser", -skew);
+        }
       }
+      UMA_HISTOGRAM_BOOLEAN(
+          "InterProcessTimeTicks.IsSkewAdditive_RendererToBrowser",
+          is_skew_additive);
     }
-    UMA_HISTOGRAM_BOOLEAN(
-        "InterProcessTimeTicks.IsSkewAdditive_RendererToBrowser",
-        is_skew_additive);
 
     base::TimeDelta on_before_unload_overhead_time =
         (receive_before_unload_ack_time - send_before_unload_start_time_) -
