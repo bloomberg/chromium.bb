@@ -566,6 +566,10 @@ static bool executeDeleteWordForward(LocalFrame& frame, Event*, EditorCommandSou
 
 static bool executeFindString(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
 {
+    DCHECK(frame.document());
+    // Up-to-date, clean tree is required for finding text in page, since it relies
+    // on TextIterator to look over the text.
+    frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
     return frame.editor().findString(value, CaseInsensitive | WrapAround);
 }
 

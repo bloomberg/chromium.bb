@@ -1962,12 +1962,22 @@ void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
 
 bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
 {
+    if (!frame())
+        return false;
+
+    // Unlikely, but just in case we try to find-in-page on a detached frame.
+    DCHECK(frame()->host());
+
     // Search for an active match only if this frame is focused or if this is a
     // find next request.
-    if (isFocused() || options.findNext)
-        return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect, activeNow);
+    if (!isFocused() && !options.findNext)
+        return false;
 
-    return false;
+    // Up-to-date, clean tree is required for finding text in page, since it relies
+    // on TextIterator to look over the text.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect, activeNow);
 }
 
 void WebLocalFrameImpl::stopFinding(StopFindAction action)

@@ -857,6 +857,10 @@ bool LocalDOMWindow::find(const String& string, bool caseSensitive, bool backwar
     if (!isCurrentlyDisplayedInFrame())
         return false;
 
+    // Up-to-date, clean tree is required for finding text in page, since it relies
+    // on TextIterator to look over the text.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     // FIXME (13016): Support searchInFrames and showDialog
     FindOptions options = (backwards ? Backwards : 0) | (caseSensitive ? 0 : CaseInsensitive) | (wrap ? WrapAround : 0) | (wholeWord ? WholeWord | AtWordStarts : 0);
     return frame()->editor().findString(string, options);

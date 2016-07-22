@@ -114,9 +114,6 @@ private:
 
 bool TextFinder::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
 {
-    if (!ownerFrame().frame() || !ownerFrame().frame()->page())
-        return false;
-
     if (!options.findNext)
         unmarkAllTextMatches();
     else
@@ -252,6 +249,8 @@ void TextFinder::reportFindInPageResultToAccessibility(int identifier)
 
 void TextFinder::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
 {
+    // TODO(dglazkov): The reset/continue cases need to be untangled into two separate functions. This collation of logic
+    // is unnecessary and adds to overall complexity of the code.
     if (reset) {
         // This is a brand new search, so we need to reset everything.
         // Scoping is just about to begin.
@@ -299,6 +298,10 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         if (searchStart.document() != searchEnd.document())
             return;
     }
+
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    searchStart.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // This timeout controls how long we scope before releasing control. This
     // value does not prevent us from running for longer than this, but it is
