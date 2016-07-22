@@ -64,10 +64,11 @@ Polymer({
      * True if quick unlock settings should be displayed on this machine.
      * @private
      */
-    quickUnlockAllowed_: {
+    quickUnlockEnabled_: {
       type: Boolean,
-      // TODO(jdufault): Get a real value via quickUnlockPrivate API.
-      value: false,
+      value: function() {
+        return loadTimeData.getBoolean('quickUnlockEnabled');
+      },
       readOnly: true,
     },
 

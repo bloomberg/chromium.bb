@@ -2015,6 +2015,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_FILES_QUICK_VIEW_DESCRIPTION, kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableFilesQuickView,
                                chromeos::switches::kDisableFilesQuickView)},
+    {"quick-unlock-pin", IDS_FLAGS_QUICK_UNLOCK_PIN,
+     IDS_FLAGS_QUICK_UNLOCK_PIN_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID)
     {"multi-instance-merge-tabs", IDS_FLAGS_MULTI_INSTANCE_MERGE_TABS_NAME,

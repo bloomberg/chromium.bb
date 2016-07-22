@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/key.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -104,8 +105,13 @@ std::string PinStorage::PinSecret() const {
 }
 
 bool PinStorage::IsPinAuthenticationAvailable() const {
-  return IsPinSet() && unlock_attempt_count() < kMaximumUnlockAttempts &&
-         HasStrongAuth() && TimeSinceLastStrongAuth() < kStrongAuthTimeout;
+  const bool exceeded_unlock_attempts =
+      unlock_attempt_count() >= kMaximumUnlockAttempts;
+  const bool has_strong_auth =
+      HasStrongAuth() && TimeSinceLastStrongAuth() < kStrongAuthTimeout;
+
+  return IsQuickUnlockEnabled() && IsPinSet() && has_strong_auth &&
+         !exceeded_unlock_attempts;
 }
 
 bool PinStorage::TryAuthenticatePin(const std::string& pin) {

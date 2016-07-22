@@ -163,7 +163,7 @@
 
         <!-- TODO(jdufault): Disable navigating to /quickUnlock/* if pin is
           disabled. -->
-        <template is="dom-if" if=[[quickUnlockAllowed_]]>
+        <template is="dom-if" if=[[quickUnlockEnabled_]]>
           <div class="settings-box">
             <paper-button on-tap="onQuickUnlockTap_" class="primary-button">
               $i18n{quickUnlockTitle}

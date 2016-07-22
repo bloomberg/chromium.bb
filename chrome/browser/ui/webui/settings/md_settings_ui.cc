@@ -36,6 +36,7 @@
 #include "grit/settings_resources_map.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
@@ -104,6 +105,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
                                                             profile);
   if (easy_unlock_handler)
     AddSettingsPageUIHandler(easy_unlock_handler);
+
+  html_source->AddBoolean("quickUnlockEnabled",
+                          chromeos::IsQuickUnlockEnabled());
 #endif
 
   AddSettingsPageUIHandler(AboutHandler::Create(html_source, profile));

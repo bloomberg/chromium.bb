@@ -61,6 +61,8 @@ extern const base::Feature kSyzyasanDeferredFree;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;
+
+extern const base::Feature kQuickUnlockPin;
 #endif  // defined(OS_CHROMEOS)
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

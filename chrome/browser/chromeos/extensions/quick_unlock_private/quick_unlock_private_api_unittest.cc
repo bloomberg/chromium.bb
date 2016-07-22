@@ -7,10 +7,10 @@
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 
 #include "base/bind.h"
-
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -61,6 +61,8 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
  protected:
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
+
+    EnableQuickUnlockForTesting();
 
     // Setup a primary user.
     auto test_account = AccountId::FromUserEmail(kTestUserEmail);

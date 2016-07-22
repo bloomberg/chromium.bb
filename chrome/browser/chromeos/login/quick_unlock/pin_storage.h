@@ -21,11 +21,6 @@ class PinStorageTestApi;
 
 namespace chromeos {
 
-// TODO(jdufault): Figure out the UX we want on the lock screen when there are
-// multiple users. We will be storing either global or per-user unlock state. If
-// we end up storing global unlock state, we can pull the unlock attempt and
-// strong-auth code out of this class.
-
 class PinStorage : public KeyedService {
  public:
   // TODO(jdufault): Pull these values in from policy. See crbug.com/612271.

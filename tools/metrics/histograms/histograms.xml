@@ -81895,6 +81895,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
+  <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
@@ -82014,6 +82015,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-488779992" label="blink-settings"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-475049740" label="disable-vr-shell"/>
+  <int value="-474322576" label="disable-quick-unlock-pin"/>
   <int value="-462205750" label="enable-service-worker-sync"/>
   <int value="-455203267" label="use_new_features_summary"/>
   <int value="-430360431" label="disable-password-generation"/>
