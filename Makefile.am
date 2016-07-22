@@ -5,7 +5,7 @@ noinst_PROGRAMS =
 libexec_PROGRAMS =
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =
-libweston_moduledir = $(libdir)/libweston-${LIBWESTON_ABI_VERSION}
+libweston_moduledir = $(libdir)/libweston-$(LIBWESTON_MAJOR)
 libweston_module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
@@ -61,15 +61,15 @@ CLEANFILES = weston.ini				\
 	internal-screenshot-00.png		\
 	$(BUILT_SOURCES)
 
-lib_LTLIBRARIES = libweston.la
-libweston_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
-libweston_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
-libweston_la_LIBADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
+lib_LTLIBRARIES = libweston-@LIBWESTON_MAJOR@.la
+libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
+libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
+libweston_@LIBWESTON_MAJOR@_la_LIBADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) -lm $(CLOCK_GETTIME_LIBS) \
 	$(LIBINPUT_BACKEND_LIBS) libshared.la
-libweston_la_LDFLAGS = -release ${LIBWESTON_ABI_VERSION}
+libweston_@LIBWESTON_MAJOR@_la_LDFLAGS = -version-info $(LT_VERSION_INFO)
 
-libweston_la_SOURCES =					\
+libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	libweston/git-version.h				\
 	libweston/log.c					\
 	libweston/compositor.c				\
@@ -121,7 +121,7 @@ systemd_notify_la_SOURCES =			\
 	libweston/compositor.h
 endif
 
-nodist_libweston_la_SOURCES =					\
+nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES =				\
 	protocol/weston-screenshooter-protocol.c			\
 	protocol/weston-screenshooter-server-protocol.h			\
 	protocol/text-cursor-position-protocol.c	\
@@ -141,7 +141,7 @@ nodist_libweston_la_SOURCES =					\
 	protocol/pointer-constraints-unstable-v1-protocol.c		\
 	protocol/pointer-constraints-unstable-v1-server-protocol.h
 
-BUILT_SOURCES += $(nodist_libweston_la_SOURCES)
+BUILT_SOURCES += $(nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES)
 
 bin_PROGRAMS += weston
 
@@ -152,7 +152,7 @@ weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON 		\
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) $(LIBINPUT_BACKEND_LIBS) \
-	-lm libshared.la libweston.la
+	-lm libshared.la libweston-@LIBWESTON_MAJOR@.la
 
 weston_SOURCES = 					\
 	compositor/main.c				\
@@ -229,12 +229,12 @@ endif
 endif # BUILD_WESTON_LAUNCH
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = compositor/weston.pc libweston/libweston-${LIBWESTON_ABI_VERSION}.pc
+pkgconfig_DATA = compositor/weston.pc libweston/libweston-${LIBWESTON_MAJOR}.pc
 
 wayland_sessiondir = $(datadir)/wayland-sessions
 dist_wayland_session_DATA = compositor/weston.desktop
 
-libwestonincludedir = $(includedir)/libweston-${LIBWESTON_ABI_VERSION}
+libwestonincludedir = $(includedir)/libweston-${LIBWESTON_MAJOR}
 libwestoninclude_HEADERS =			\
 	libweston/version.h			\
 	libweston/compositor.h			\

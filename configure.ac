@@ -3,7 +3,9 @@ m4_define([weston_minor_version], [11])
 m4_define([weston_micro_version], [90])
 m4_define([weston_version],
           [weston_major_version.weston_minor_version.weston_micro_version])
-m4_define([libweston_abi_version], [0])
+m4_define([libweston_major_version], [0])
+m4_define([libweston_minor_version], [0])
+m4_define([libweston_patch_version], [0])
 
 AC_PREREQ([2.64])
 AC_INIT([weston],
@@ -18,7 +20,13 @@ AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
 AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
 AC_SUBST([WESTON_VERSION_MICRO], [weston_micro_version])
 AC_SUBST([WESTON_VERSION], [weston_version])
-AC_SUBST([LIBWESTON_ABI_VERSION], [libweston_abi_version])
+AC_SUBST([LIBWESTON_MAJOR], [libweston_major_version])
+# We use minor as current and age since on ABI/API break/removal we bump major
+# so minor will be reset to 0.
+m4_define([lt_current], [libweston_minor_version])
+m4_define([lt_revision], [libweston_patch_version])
+m4_define([lt_age], [libweston_minor_version])
+AC_SUBST([LT_VERSION_INFO], [lt_current:lt_revision:lt_age])
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
@@ -637,7 +645,7 @@ AC_CONFIG_FILES([Makefile libweston/version.h compositor/weston.pc])
 
 # AC_CONFIG_FILES needs the full name when running autoconf, so we need to use
 # libweston_abi_version here, and outside [] because of m4 quoting rules
-AC_CONFIG_FILES([libweston/libweston-]libweston_abi_version[.pc:libweston/libweston.pc.in])
+AC_CONFIG_FILES([libweston/libweston-]libweston_major_version[.pc:libweston/libweston.pc.in])
 
 AM_CONDITIONAL([HAVE_GIT_REPO], [test -f $srcdir/.git/logs/HEAD])
 
