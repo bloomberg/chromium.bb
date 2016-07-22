@@ -19,7 +19,7 @@ class WebThreadSupportingGC;
 
 // WorkerBackingThread represents a WebThread with Oilpan and V8 potentially
 // shared by multiple WebWorker scripts. A WebWorker needs to call initialize()
-// to using V8 and Oilpan functionalities, and call detach() when the script
+// to using V8 and Oilpan functionalities, and call shutdown() when the script
 // no longer needs the thread.
 // A WorkerBackingThread represents a WebThread while a WorkerThread corresponds
 // to a web worker. There is one-to-one correspondence between WorkerThread and
