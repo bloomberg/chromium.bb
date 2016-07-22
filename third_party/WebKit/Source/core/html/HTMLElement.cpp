@@ -586,6 +586,11 @@ void HTMLElement::setContentEditable(const String& enabled, ExceptionState& exce
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + enabled + "') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.");
 }
 
+bool HTMLElement::isContentEditable() const
+{
+    return blink::isContentEditable(*this);
+}
+
 bool HTMLElement::draggable() const
 {
     return equalIgnoringCase(getAttribute(draggableAttr), "true");
@@ -1038,7 +1043,7 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
     // if the element is a text form control (like <input type=text> or <textarea>)
     // or has contentEditable attribute on, we should enter a space or newline
     // even in spatial navigation mode instead of handling it as a "click" action.
-    if (isTextFormControl() || isContentEditable())
+    if (isTextFormControl() || blink::isContentEditable(*this))
         return;
     int charCode = event->charCode();
     if (charCode == '\r' || charCode == ' ') {

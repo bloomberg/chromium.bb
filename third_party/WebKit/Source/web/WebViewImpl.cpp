@@ -2275,7 +2275,7 @@ void WebViewImpl::setFocus(bool enable)
                 // no caret and does respond to keyboard inputs.
                 if (element->isTextFormControl()) {
                     element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
-                } else if (element->isContentEditable()) {
+                } else if (isContentEditable(*element)) {
                     // updateFocusAppearance() selects all the text of
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
@@ -2344,7 +2344,7 @@ bool WebViewImpl::setComposition(
     const EphemeralRange range = inputMethodController.compositionEphemeralRange();
     if (range.isNotNull()) {
         Node* node = range.startPosition().computeContainerNode();
-        if (!node || !node->isContentEditable())
+        if (!node || !isContentEditable(*node))
             return false;
     }
 
@@ -2542,7 +2542,7 @@ WebTextInputType WebViewImpl::textInputType()
             return WebTextInputTypeDateTimeField;
     }
 
-    if (element->isContentEditable())
+    if (isContentEditable(*element))
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;
@@ -2997,7 +2997,7 @@ void WebViewImpl::clearFocusedElement()
     // knows to remove selection from it. Otherwise, the text field is still
     // processing keyboard events even though focus has been moved to the page and
     // keystrokes get eaten as a result.
-    if (oldFocusedElement->isContentEditable() || oldFocusedElement->isTextFormControl())
+    if (isContentEditable(*oldFocusedElement) || oldFocusedElement->isTextFormControl())
         localFrame->selection().clear();
 }
 
@@ -3005,7 +3005,7 @@ void WebViewImpl::clearFocusedElement()
 // http://crbug.com/612560
 static bool isElementEditable(const Element* element)
 {
-    if (element->isContentEditable())
+    if (isContentEditable(*element))
         return true;
 
     if (element->isTextFormControl()) {

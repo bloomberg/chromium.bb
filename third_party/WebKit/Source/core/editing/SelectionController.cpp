@@ -583,7 +583,7 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
         return false;
 
     Node* innerNode = hitTestResult.innerNode();
-    bool innerNodeIsSelectable = innerNode && (innerNode->isContentEditable() || innerNode->canStartSelection());
+    bool innerNodeIsSelectable = innerNode && (isContentEditable(*innerNode) || innerNode->canStartSelection());
     if (!innerNodeIsSelectable)
         return false;
 

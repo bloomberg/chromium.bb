@@ -166,7 +166,7 @@ bool CaretBase::shouldRepaintCaret(Node& node) const
     // If PositionAnchorType::BeforeAnchor or PositionAnchorType::AfterAnchor,
     // carets need to be repainted not only when the node is contentEditable but
     // also when its parentNode() is contentEditable.
-    return node.isContentEditable() || (node.parentNode() && node.parentNode()->isContentEditable());
+    return isContentEditable(node) || (node.parentNode() && isContentEditable(*node.parentNode()));
 }
 
 bool CaretBase::shouldRepaintCaret(const LayoutViewItem view) const
@@ -185,7 +185,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
         return;
 
     if (LayoutViewItem view = node->document().layoutViewItem()) {
-        if (node->isContentEditable() || shouldRepaintCaret(view))
+        if (isContentEditable(*node) || shouldRepaintCaret(view))
             invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
     }
 }

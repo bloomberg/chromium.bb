@@ -46,7 +46,7 @@ void DeleteFromTextNodeCommand::doApply(EditingState*)
 {
     DCHECK(m_node);
 
-    if (!m_node->isContentEditable())
+    if (!isContentEditable(*m_node))
         return;
 
     TrackExceptionState exceptionState;

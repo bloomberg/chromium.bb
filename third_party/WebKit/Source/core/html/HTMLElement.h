@@ -56,6 +56,7 @@ public:
 
     String contentEditable() const;
     void setContentEditable(const String&, ExceptionState&);
+    bool isContentEditable() const;
 
     virtual bool draggable() const;
     void setDraggable(bool);

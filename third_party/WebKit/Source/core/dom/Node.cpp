@@ -539,16 +539,18 @@ enum EditableLevel { Editable, RichlyEditable };
 static bool hasEditableStyle(const Node&, EditableLevel);
 static bool isEditableToAccessibility(const Node&, EditableLevel);
 
-bool Node::isContentEditable() const
+// TODO(yoichio): Move to core/editing
+bool isContentEditable(const Node& node)
 {
-    document().updateStyleAndLayoutTree();
-    return blink::hasEditableStyle(*this, Editable);
+    node.document().updateStyleAndLayoutTree();
+    return blink::hasEditableStyle(node, Editable);
 }
 
-bool Node::isContentRichlyEditable() const
+// TODO(yoichio): Move to core/editing
+bool isContentRichlyEditable(const Node& node)
 {
-    document().updateStyleAndLayoutTree();
-    return blink::hasEditableStyle(*this, RichlyEditable);
+    node.document().updateStyleAndLayoutTree();
+    return blink::hasEditableStyle(node, RichlyEditable);
 }
 
 // TODO(yoichio): Move to core/editing
@@ -2237,7 +2239,7 @@ bool Node::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl(this))
         return false;
-    return isContentEditable() || hasEventListeners(EventTypeNames::mouseup) || hasEventListeners(EventTypeNames::mousedown) || hasEventListeners(EventTypeNames::click) || hasEventListeners(EventTypeNames::DOMActivate);
+    return isContentEditable(*this) || hasEventListeners(EventTypeNames::mouseup) || hasEventListeners(EventTypeNames::mousedown) || hasEventListeners(EventTypeNames::click) || hasEventListeners(EventTypeNames::DOMActivate);
 }
 
 bool Node::willRespondToTouchEvents()

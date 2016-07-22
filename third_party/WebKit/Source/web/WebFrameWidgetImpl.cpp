@@ -460,7 +460,7 @@ void WebFrameWidgetImpl::setFocus(bool enable)
                 // no caret and does respond to keyboard inputs.
                 if (element->isTextFormControl()) {
                     element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
-                } else if (element->isContentEditable()) {
+                } else if (isContentEditable(*element)) {
                     // updateFocusAppearance() selects all the text of
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
@@ -517,7 +517,7 @@ bool WebFrameWidgetImpl::setComposition(
     const EphemeralRange range = inputMethodController.compositionEphemeralRange();
     if (range.isNotNull()) {
         Node* node = range.startPosition().computeContainerNode();
-        if (!node || !node->isContentEditable())
+        if (!node || !isContentEditable(*node))
             return false;
     }
 
@@ -715,7 +715,7 @@ WebTextInputType WebFrameWidgetImpl::textInputType()
             return WebTextInputTypeDateTimeField;
     }
 
-    if (element->isContentEditable())
+    if (isContentEditable(*element))
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;

@@ -171,7 +171,7 @@ bool WebNode::isFocusable() const
 
 bool WebNode::isContentEditable() const
 {
-    return m_private->isContentEditable();
+    return blink::isContentEditable(*m_private);
 }
 
 bool WebNode::isInsideFocusableElementOrARIAWidget() const

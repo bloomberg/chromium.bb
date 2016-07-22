@@ -416,9 +416,6 @@ public:
     // must be recognized as inert to prevent text selection.
     bool isInert() const;
 
-    bool isContentEditable() const;
-    bool isContentRichlyEditable() const;
-
     virtual LayoutRect boundingBox() const;
     IntRect pixelSnappedBoundingBox() const { return pixelSnappedIntRect(boundingBox()); }
 
@@ -863,6 +860,8 @@ CORE_EXPORT Element* rootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
 CORE_EXPORT bool hasEditableStyle(const Node&, EditableType = ContentIsEditable);
 CORE_EXPORT bool layoutObjectIsRichlyEditable(const Node&, EditableType = ContentIsEditable);
+CORE_EXPORT bool isContentEditable(const Node&);
+CORE_EXPORT bool isContentRichlyEditable(const Node&);
 
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)

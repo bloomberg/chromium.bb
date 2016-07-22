@@ -718,7 +718,7 @@ static Image* getImage(Element* element)
 
 static void prepareDataTransferForImageDrag(LocalFrame* source, DataTransfer* dataTransfer, Element* node, const KURL& linkURL, const KURL& imageURL, const String& label)
 {
-    if (node->isContentRichlyEditable()) {
+    if (isContentRichlyEditable(*node)) {
         Range* range = source->document()->createRange();
         range->selectNode(node, ASSERT_NO_EXCEPTION);
         source->selection().setSelection(VisibleSelection(EphemeralRange(range)));

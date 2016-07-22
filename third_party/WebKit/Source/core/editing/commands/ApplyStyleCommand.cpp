@@ -994,7 +994,7 @@ bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, HTMLEl
 {
     DCHECK(element);
 
-    if (!element->parentNode() || !element->parentNode()->isContentEditable())
+    if (!element->parentNode() || !isContentEditable(*element->parentNode()))
         return false;
 
     if (isStyledInlineElementToRemove(element)) {
@@ -1486,7 +1486,7 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(Node* passedStartNode, Node
 
     while (node) {
         Node* next = node->nextSibling();
-        if (node->isContentEditable()) {
+        if (isContentEditable(*node)) {
             removeNode(node, editingState);
             if (editingState->isAborted())
                 return;
