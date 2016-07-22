@@ -101,6 +101,7 @@ def main_mac(options, args, results_collector):
     framework_name = base_name + ' Framework'
     framework_bundle = framework_name + '.framework'
     framework_dsym_bundle = framework_bundle + '.dSYM'
+    framework_unstripped_name = framework_name + '.unstripped'
 
     chromium_app_dir = os.path.join(target_dir, app_bundle)
     chromium_executable = os.path.join(chromium_app_dir,
@@ -115,6 +116,8 @@ def main_mac(options, args, results_collector):
     chromium_framework_dsym = os.path.join(chromium_framework_dsym_dir,
                                            'Contents', 'Resources', 'DWARF',
                                            framework_name)
+    chromium_framework_unstripped = os.path.join(target_dir,
+                                                 framework_unstripped_name)
     if os.path.exists(chromium_executable):
       print_dict = {
         # Remove spaces in the names so any downstream processing is less
@@ -167,14 +170,33 @@ def main_mac(options, args, results_collector):
       # For Release builds only, use dump-static-initializers.py to print the
       # list of static initializers.
       if si_count > 0 and options.target == 'Release':
-        dump_static_initializers = os.path.join(
-            os.path.dirname(build_dir), 'tools', 'mac',
-            'dump-static-initializers.py')
-        result, stdout = run_process(result, [dump_static_initializers,
-                                              chromium_framework_dsym])
         print '\n# Static initializers in %s:' % chromium_framework_executable
-        print_si_fail_hint('tools/mac/dump-static-initializers.py')
-        print stdout
+
+        # First look for a dSYM to get information about the initializers. If
+        # one is not present, check if there is an unstripped copy of the build
+        # output.
+        mac_tools_path = os.path.join(os.path.dirname(build_dir),
+                                      'tools', 'mac')
+        if os.path.exists(chromium_framework_dsym):
+          dump_static_initializers = os.path.join(
+              mac_tools_path, 'dump-static-initializers.py')
+          result, stdout = run_process(result, [dump_static_initializers,
+                                                chromium_framework_dsym])
+          print_si_fail_hint('tools/mac/dump-static-initializers.py')
+          print stdout
+        else:
+          show_mod_init_func = os.path.join(
+              mac_tools_path, 'show_mod_init_func.py')
+          args = [show_mod_init_func]
+          if os.path.exists(chromium_framework_unstripped):
+            args.append(chromium_framework_unstripped)
+          else:
+            print '# Warning: Falling back to potentially stripped output.'
+            args.append(chromium_framework_executable)
+          result, stdout = run_process(result, args)
+          print_si_fail_hint('tools/mac/show_mod_init_func.py')
+          print stdout
+
 
       results_collector.add_result(
           print_dict['app_name'], print_dict['app_name'],
