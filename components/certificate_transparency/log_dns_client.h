@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "net/base/network_change_notifier.h"
 #include "net/log/net_log.h"
 
 namespace net {
@@ -30,7 +31,8 @@ namespace certificate_transparency {
 // All queries are performed asynchronously.
 // For more information, see
 // https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md.
-class LogDnsClient {
+// It must be created and deleted on the same thread. It is not thread-safe.
+class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
  public:
   // Invoked when a leaf index query completes.
   // If an error occured, |net_error| will be a net::Error code, otherwise it
@@ -48,9 +50,20 @@ class LogDnsClient {
 
   // Creates a log client that will take ownership of |dns_client| and use it
   // to perform DNS queries. Queries will be logged to |net_log|.
+  // The |dns_client| does not need to be configured first - this will be done
+  // automatically as needed.
   LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
                const net::BoundNetLog& net_log);
-  virtual ~LogDnsClient();
+  // Must be deleted on the same thread that it was created on.
+  ~LogDnsClient() override;
+
+  // Called by NetworkChangeNotifier when the DNS config changes.
+  // The DnsClient's config will be updated in response.
+  void OnDNSChanged() override;
+
+  // Called by NetworkChangeNotifier when the DNS config is first read.
+  // The DnsClient's config will be updated in response.
+  void OnInitialDNSConfigRead() override;
 
   // Queries a CT log to discover the index of the leaf with |leaf_hash|.
   // The log is identified by |domain_for_log|, which is the DNS name used as a
@@ -94,6 +107,9 @@ class LogDnsClient {
       net::DnsTransaction* transaction,
       int net_error,
       const net::DnsResponse* response);
+
+  // Updates the |dns_client_| config using NetworkChangeNotifier.
+  void UpdateDnsConfig();
 
   // A DNS query that is in flight.
   template <typename CallbackType>

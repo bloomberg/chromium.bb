@@ -32,7 +32,9 @@
 namespace certificate_transparency {
 namespace {
 
+using ::testing::IsEmpty;
 using ::testing::IsNull;
+using ::testing::Not;
 using ::testing::NotNull;
 using net::test::IsError;
 using net::test::IsOk;
@@ -40,6 +42,18 @@ using net::test::IsOk;
 constexpr char kLeafHash[] =
     "\x1f\x25\xe1\xca\xba\x4f\xf9\xb8\x27\x24\x83\x0f\xca\x60\xe4\xc2\xbe\xa8"
     "\xc3\xa9\x44\x1c\x27\xb0\xb4\x3e\x6a\x96\x94\xc7\xb8\x04";
+
+// Necessary to expose SetDnsConfig for testing.
+class DnsChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  static void SetInitialDnsConfig(const net::DnsConfig& config) {
+    net::NetworkChangeNotifier::SetInitialDnsConfig(config);
+  }
+
+  static void SetDnsConfig(const net::DnsConfig& config) {
+    net::NetworkChangeNotifier::SetDnsConfig(config);
+  }
+};
 
 // Always return min, to simplify testing.
 // This should result in the DNS query ID always being 0.
@@ -259,19 +273,23 @@ const net::MockRead MockSocketData::eof_(net::SYNCHRONOUS,
 
 class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
  protected:
-  LogDnsClientTest() {
+  LogDnsClientTest() :
+    network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
+    net::DnsConfig dns_config;
     // Use an invalid nameserver address. This prevents the tests accidentally
     // sending real DNS queries. The mock sockets don't care that the address
     // is invalid.
-    dns_config_.nameservers.push_back(net::IPEndPoint());
+    dns_config.nameservers.push_back(net::IPEndPoint());
     // Don't attempt retransmissions - just fail.
-    dns_config_.attempts = 1;
+    dns_config.attempts = 1;
     // This ensures timeouts are long enough for memory tests.
-    dns_config_.timeout = TestTimeouts::action_timeout();
+    dns_config.timeout = TestTimeouts::action_timeout();
     // Simplify testing - don't require random numbers for the source port.
     // This means our FakeRandInt function should only be called to get query
     // IDs.
-    dns_config_.randomize_ports = false;
+    dns_config.randomize_ports = false;
+
+    DnsChangeNotifier::SetInitialDnsConfig(dns_config);
   }
 
   void ExpectRequestAndErrorResponse(base::StringPiece qname, uint8_t rcode) {
@@ -299,7 +317,10 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
     mock_socket_data_.back()->AddToFactory(&socket_factory_);
 
     // Speed up timeout tests.
-    dns_config_.timeout = TestTimeouts::tiny_timeout();
+    net::DnsConfig dns_config;
+    DnsChangeNotifier::GetDnsConfig(&dns_config);
+    dns_config.timeout = TestTimeouts::tiny_timeout();
+    DnsChangeNotifier::SetDnsConfig(dns_config);
   }
 
   void ExpectLeafIndexRequestAndResponse(base::StringPiece qname,
@@ -332,6 +353,7 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
                       MockLeafIndexCallback* callback) {
     std::unique_ptr<net::DnsClient> dns_client = CreateDnsClient();
     LogDnsClient log_client(std::move(dns_client), net::BoundNetLog());
+    net::NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
 
     log_client.QueryLeafIndex(log_domain, leaf_hash, callback->AsCallback());
     callback->WaitUntilRun();
@@ -343,20 +365,19 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
                        MockAuditProofCallback* callback) {
     std::unique_ptr<net::DnsClient> dns_client = CreateDnsClient();
     LogDnsClient log_client(std::move(dns_client), net::BoundNetLog());
+    net::NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
 
     log_client.QueryAuditProof(log_domain, leaf_index, tree_size,
                                callback->AsCallback());
     callback->WaitUntilRun();
   }
 
- private:
   std::unique_ptr<net::DnsClient> CreateDnsClient() {
-    std::unique_ptr<net::DnsClient> client =
-        net::DnsClient::CreateClientForTesting(nullptr, &socket_factory_,
-                                               base::Bind(&FakeRandInt));
-    client->SetConfig(dns_config_);
-    return client;
+    return net::DnsClient::CreateClientForTesting(nullptr, &socket_factory_,
+                                                  base::Bind(&FakeRandInt));
   }
+
+ private:
 
   void ExpectRequestAndResponse(base::StringPiece qname,
                                 base::StringPiece answer) {
@@ -368,9 +389,16 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
     mock_socket_data_.back()->AddToFactory(&socket_factory_);
   }
 
-  net::DnsConfig dns_config_;
+  // This will be the NetworkChangeNotifier singleton for the duration of the
+  // test. It is accessed statically by LogDnsClient.
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  // Queues and handles asynchronous DNS tasks. Indirectly used by LogDnsClient,
+  // the underlying net::DnsClient, and NetworkChangeNotifier.
   base::MessageLoopForIO message_loop_;
+  // One MockSocketData for each socket that is created. This corresponds to one
+  // for each DNS request sent.
   std::vector<std::unique_ptr<MockSocketData>> mock_socket_data_;
+  // Provides as many mock sockets as there are entries in |mock_socket_data_|.
   net::MockClientSocketFactory socket_factory_;
 };
 
@@ -735,6 +763,38 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsTimeout) {
   ASSERT_TRUE(callback.called());
   EXPECT_THAT(callback.net_error(), IsError(net::ERR_DNS_TIMED_OUT));
   EXPECT_THAT(callback.proof(), IsNull());
+}
+
+TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigIfValid) {
+  std::unique_ptr<net::DnsClient> tmp = CreateDnsClient();
+  net::DnsClient* dns_client = tmp.get();
+  LogDnsClient log_client(std::move(tmp), net::BoundNetLog());
+
+  // Get the current DNS config, modify it and broadcast the update.
+  net::DnsConfig config(*dns_client->GetConfig());
+  ASSERT_NE(123, config.attempts);
+  config.attempts = 123;
+  DnsChangeNotifier::SetDnsConfig(config);
+
+  // Let the DNS config change propogate.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(123, dns_client->GetConfig()->attempts);
+}
+
+TEST_P(LogDnsClientTest, IgnoresLatestDnsConfigIfInvalid) {
+  std::unique_ptr<net::DnsClient> tmp = CreateDnsClient();
+  net::DnsClient* dns_client = tmp.get();
+  LogDnsClient log_client(std::move(tmp), net::BoundNetLog());
+
+  // Get the current DNS config, modify it and broadcast the update.
+  net::DnsConfig config(*dns_client->GetConfig());
+  ASSERT_THAT(config.nameservers, Not(IsEmpty()));
+  config.nameservers.clear();  // Makes config invalid
+  DnsChangeNotifier::SetDnsConfig(config);
+
+  // Let the DNS config change propogate.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(dns_client->GetConfig()->nameservers, Not(IsEmpty()));
 }
 
 INSTANTIATE_TEST_CASE_P(ReadMode,

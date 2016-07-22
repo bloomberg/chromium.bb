@@ -13,11 +13,13 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/base32/base32.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/cert/merkle_audit_proof.h"
 #include "net/dns/dns_client.h"
+#include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
@@ -86,9 +88,21 @@ LogDnsClient::LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
       net_log_(net_log),
       weak_ptr_factory_(this) {
   CHECK(dns_client_);
+  net::NetworkChangeNotifier::AddDNSObserver(this);
+  UpdateDnsConfig();
 }
 
-LogDnsClient::~LogDnsClient() {}
+LogDnsClient::~LogDnsClient() {
+  net::NetworkChangeNotifier::RemoveDNSObserver(this);
+}
+
+void LogDnsClient::OnDNSChanged() {
+  UpdateDnsConfig();
+}
+
+void LogDnsClient::OnInitialDNSConfigRead() {
+  UpdateDnsConfig();
+}
 
 void LogDnsClient::QueryLeafIndex(base::StringPiece domain_for_log,
                                   base::StringPiece leaf_hash,
@@ -289,6 +303,13 @@ void LogDnsClient::QueryAuditProofNodesComplete(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(query.callback, net::OK, base::Passed(std::move(proof))));
+}
+
+void LogDnsClient::UpdateDnsConfig() {
+  net::DnsConfig config;
+  net::NetworkChangeNotifier::GetDnsConfig(&config);
+  if (config.IsValid())
+    dns_client_->SetConfig(config);
 }
 
 }  // namespace certificate_transparency
