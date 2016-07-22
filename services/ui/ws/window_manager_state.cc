@@ -496,12 +496,14 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
       tree = window_server()->GetTreeWithId(window->id().client_id);
   }
 
-  const ServerWindow* embed_root =
-      tree->HasRoot(window) ? window : GetEmbedRoot(window);
-  while (tree && tree->embedder_intercepts_events()) {
-    DCHECK(tree->HasRoot(embed_root));
-    tree = window_server()->GetTreeWithId(embed_root->id().client_id);
-    embed_root = GetEmbedRoot(embed_root);
+  if (tree) {
+    const ServerWindow* embed_root =
+        tree->HasRoot(window) ? window : GetEmbedRoot(window);
+    while (tree && tree->embedder_intercepts_events()) {
+      DCHECK(tree->HasRoot(embed_root));
+      tree = window_server()->GetTreeWithId(embed_root->id().client_id);
+      embed_root = GetEmbedRoot(embed_root);
+    }
   }
 
   if (!tree) {
