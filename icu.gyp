@@ -118,44 +118,52 @@
           'target_name': 'data_assembly',
           'type': 'none',
           'conditions': [
-            [ 'target_arch=="mips" or target_arch=="mips64"', {
-              'data_assembly_sources': [
-                'common/icudtb.dat',
-              ],
+            [ 'target_arch=="mips" or target_arch=="mips64"', { # Big Endian
               'data_assembly_inputs': [
-                'scripts/make_data_assembly.py',
                 'common/icudtb.dat',
               ],
               'data_assembly_outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S',
               ],
-            }],
-            [ 'target_arch!="mips" and target_arch!="mips64"', {
-              'data_assembly_sources': [
-                'common/icudtl.dat',
-              ],
-              'data_assembly_inputs': [
-                'scripts/make_data_assembly.py',
-                'common/icudtl.dat',
-              ],
+            }, { # Little Endian
               'data_assembly_outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S',
+              ],
+              'conditions': [
+                ['OS == "android"', {
+                  'data_assembly_inputs': [
+                    'android/icudtl.dat',
+                  ],
+                } , { # else: OS!="android"
+                  'data_assembly_inputs': [
+                    'common/icudtl.dat',
+                  ],
+                }], # OS==android
               ],
             }],
           ],
           'sources': [
-            '<@(_data_assembly_sources)',
+            '<@(_data_assembly_inputs)',
           ],
           'actions': [
             {
               'action_name': 'make_data_assembly',
               'inputs': [
+                'scripts/make_data_assembly.py',
                 '<@(_data_assembly_inputs)',
               ],
               'outputs': [
                 '<@(_data_assembly_outputs)',
               ],
-              'action': ['python', '<@(_inputs)', '<@(_outputs)'],
+              'target_conditions': [
+                 [ 'OS == "mac" or OS == "ios" or '
+                   '((OS == "android" or OS == "qnx") and '
+                   '_toolset == "host" and host_os == "mac")', {
+                   'action': ['python', '<@(_inputs)', '<@(_outputs)', '--mac'],
+                 } , {
+                   'action': ['python', '<@(_inputs)', '<@(_outputs)'],
+                 }],
+              ],
             },
           ],
         },
@@ -169,20 +177,13 @@
             'data_assembly#target',
           ],
           'sources': [
-             # These are hand-generated, but will do for now.  The linux
-             # version is an identical copy of the (mac) icudtl_dat.S file,
-             # modulo removal of the .private_extern and .const directives and
-             # with no leading underscore on the icudt52_dat symbol.
-             'android/icudtl_dat.S',
              '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S',
              '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S',
-             'mac/icudtl_dat.S',
           ],
           'conditions': [
             [ 'target_arch=="mips" or target_arch=="mips64"', {
               'sources!': ['<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S'],
-            }],
-            [ 'target_arch!="mips" and target_arch!="mips64"', {
+            }, {
               'sources!': ['<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S'],
             }],
             [ 'use_system_icu==1 and want_separate_host_toolset==1', {
@@ -206,12 +207,6 @@
                     'windows/icudt.dll',
                   ],
                 },
-              ],
-            }],
-            [ '(OS == "mac" or OS == "ios") and icu_use_data_file_flag==0', {
-              'type': 'none',
-              'dependencies!': [
-                'data_assembly#target',
               ],
             }],
             [ 'icu_use_data_file_flag==1', {
@@ -239,21 +234,11 @@
             }], # icu_use_data_file_flag
           ], # conditions
           'target_conditions': [
-            [ 'OS == "win" or OS == "mac" or OS == "ios" or '
-              '(OS == "android" and (_toolset != "host" or host_os != "linux")) or '
-              '(OS == "qnx" and (_toolset == "host" and host_os != "linux"))', {
+            [ 'OS == "win"', {
               'sources!': [
                 '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S',
                 '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S'
               ],
-            }],
-            [ 'OS != "android" or _toolset == "host"', {
-              'sources!': ['android/icudtl_dat.S'],
-            }],
-            [ 'OS != "mac" and OS != "ios" and '
-              '((OS != "android" and OS != "qnx") or '
-              '_toolset != "host" or host_os != "mac")', {
-              'sources!': ['mac/icudtl_dat.S'],
             }],
           ], # target_conditions
         },
