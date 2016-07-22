@@ -22,6 +22,7 @@ namespace {
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
 #define REQUEST_QUEUE_TABLE_NAME "request_queue_v1"
+const bool kUserRequested = true;
 
 bool CreateRequestQueueTable(sql::Connection* db) {
   const char kSql[] = "CREATE TABLE IF NOT EXISTS " REQUEST_QUEUE_TABLE_NAME
@@ -93,7 +94,8 @@ SavePageRequest MakeSavePageRequest(const sql::Statement& statement) {
   const ClientId client_id(statement.ColumnString(6),
                            statement.ColumnString(7));
 
-  SavePageRequest request(id, url, client_id, creation_time, activation_time);
+  SavePageRequest request(
+      id, url, client_id, creation_time, activation_time, kUserRequested);
   request.set_last_attempt_time(last_attempt_time);
   request.set_attempt_count(last_attempt_count);
   return request;

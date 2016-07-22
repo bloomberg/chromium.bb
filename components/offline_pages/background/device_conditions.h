@@ -20,6 +20,10 @@ class DeviceConditions {
         battery_percentage_(battery_percentage),
         net_connection_type_(net_connection_type) {}
 
+  DeviceConditions()
+      : power_connected_(true), battery_percentage_(75),
+        net_connection_type_(net::NetworkChangeNotifier::CONNECTION_WIFI) {}
+
   // Returns whether power is connected.
   bool IsPowerConnected() const { return power_connected_; }
 
@@ -35,6 +39,8 @@ class DeviceConditions {
   const bool power_connected_;
   const int battery_percentage_;
   const net::NetworkChangeNotifier::ConnectionType net_connection_type_;
+
+  // NOTE: We intentionally allow the default copy constructor and assignment.
 };
 
 }  // namespace offline_pages

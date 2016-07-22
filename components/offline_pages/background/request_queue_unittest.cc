@@ -28,6 +28,7 @@ const ClientId kClientId("bookmark", "1234");
 const int64_t kRequestId2 = 77;
 const GURL kUrl2("http://test.com");
 const ClientId kClientId2("bookmark", "567");
+const bool kUserRequested = true;
 }  // namespace
 
 // TODO(fgorski): Add tests for store failures in add/remove/get.
@@ -125,7 +126,8 @@ TEST_F(RequestQueueTest, GetRequestsEmpty) {
 
 TEST_F(RequestQueueTest, AddRequest) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
                                           base::Unretained(this)));
   PumpLoop();
@@ -142,7 +144,8 @@ TEST_F(RequestQueueTest, AddRequest) {
 
 TEST_F(RequestQueueTest, RemoveRequest) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
                                           base::Unretained(this)));
   PumpLoop();
@@ -165,12 +168,14 @@ TEST_F(RequestQueueTest, RemoveRequest) {
 // listing multiple items and removing the right item.
 TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest request1(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   queue()->AddRequest(request1, base::Bind(&RequestQueueTest::AddRequestDone,
                                            base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(request1.request_id(), last_added_request()->request_id());
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time);
+  SavePageRequest request2(
+      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
   queue()->AddRequest(request2, base::Bind(&RequestQueueTest::AddRequestDone,
                                            base::Unretained(this)));
   PumpLoop();

@@ -24,6 +24,7 @@ namespace {
 const int64_t kRequestId = 42;
 const GURL kUrl("http://example.com");
 const ClientId kClientId("bookmark", "1234");
+const bool kUserRequested = true;
 
 enum class LastResult {
   kNone,
@@ -195,7 +196,8 @@ TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
 TYPED_TEST(RequestQueueStoreTest, AddRequest) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
 
   store->AddOrUpdateRequest(
       request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
@@ -218,7 +220,8 @@ TYPED_TEST(RequestQueueStoreTest, AddRequest) {
 TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest original_request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   store->AddOrUpdateRequest(
       original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                                    base::Unretained(this)));
@@ -229,7 +232,8 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
       creation_time + base::TimeDelta::FromMinutes(1);
   base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
   SavePageRequest updated_request(kRequestId, kUrl, kClientId,
-                                  new_creation_time, activation_time);
+                                  new_creation_time, activation_time,
+                                  kUserRequested);
   store->AddOrUpdateRequest(
       updated_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                                   base::Unretained(this)));
@@ -251,7 +255,8 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
 TYPED_TEST(RequestQueueStoreTest, RemoveRequest) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest original_request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   store->AddOrUpdateRequest(
       original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                                    base::Unretained(this)));
@@ -290,7 +295,8 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequest) {
 TYPED_TEST(RequestQueueStoreTest, ResetStore) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest original_request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   store->AddOrUpdateRequest(
       original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                                    base::Unretained(this)));
@@ -319,7 +325,8 @@ class RequestQueueStoreSQLTest
 TEST_F(RequestQueueStoreSQLTest, SaveCloseReopenRead) {
   std::unique_ptr<RequestQueueStore> store(BuildStore());
   base::Time creation_time = base::Time::Now();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest original_request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   store->AddOrUpdateRequest(
       original_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
                                    base::Unretained(this)));

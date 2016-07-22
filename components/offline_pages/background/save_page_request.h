@@ -30,12 +30,14 @@ class SavePageRequest {
   SavePageRequest(int64_t request_id,
                   const GURL& url,
                   const ClientId& client_id,
-                  const base::Time& creation_time);
+                  const base::Time& creation_time,
+                  const bool user_requested);
   SavePageRequest(int64_t request_id,
                   const GURL& url,
                   const ClientId& client_id,
                   const base::Time& creation_time,
-                  const base::Time& activation_time);
+                  const base::Time& activation_time,
+                  const bool user_requested);
   SavePageRequest(const SavePageRequest& other);
   ~SavePageRequest();
 
@@ -68,6 +70,12 @@ class SavePageRequest {
     last_attempt_time_ = last_attempt_time;
   }
 
+  bool user_requested() const { return user_requested_; }
+
+  void set_user_requested(bool user_requested) {
+    user_requested_ = user_requested;
+  }
+
  private:
   // ID of this request.
   int64_t request_id_;
@@ -90,6 +98,10 @@ class SavePageRequest {
 
   // Timestamp of the last request starting.
   base::Time last_attempt_time_;
+
+  // Whether the user specifically requested this page (as opposed to a client
+  // like AGSA or Now.)
+  bool user_requested_;
 };
 
 }  // namespace offline_pages

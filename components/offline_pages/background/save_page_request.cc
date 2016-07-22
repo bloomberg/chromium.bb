@@ -9,25 +9,29 @@ namespace offline_pages {
 SavePageRequest::SavePageRequest(int64_t request_id,
                                  const GURL& url,
                                  const ClientId& client_id,
-                                 const base::Time& creation_time)
+                                 const base::Time& creation_time,
+                                 const bool was_user_requested)
     : request_id_(request_id),
       url_(url),
       client_id_(client_id),
       creation_time_(creation_time),
       activation_time_(creation_time),
-      attempt_count_(0) {}
+      attempt_count_(0),
+      user_requested_(was_user_requested) {}
 
 SavePageRequest::SavePageRequest(int64_t request_id,
                                  const GURL& url,
                                  const ClientId& client_id,
                                  const base::Time& creation_time,
-                                 const base::Time& activation_time)
+                                 const base::Time& activation_time,
+                                 const bool user_requested)
     : request_id_(request_id),
       url_(url),
       client_id_(client_id),
       creation_time_(creation_time),
       activation_time_(activation_time),
-      attempt_count_(0) {}
+      attempt_count_(0),
+      user_requested_(user_requested) {}
 
 SavePageRequest::SavePageRequest(const SavePageRequest& other)
     : request_id_(other.request_id_),
@@ -36,7 +40,8 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
       creation_time_(other.creation_time_),
       activation_time_(other.activation_time_),
       attempt_count_(other.attempt_count_),
-      last_attempt_time_(other.last_attempt_time_) {}
+      last_attempt_time_(other.last_attempt_time_),
+      user_requested_(other.user_requested_) {}
 
 SavePageRequest::~SavePageRequest() {}
 

@@ -12,6 +12,7 @@ namespace {
 const int64_t kRequestId = 42;
 const GURL kUrl("http://example.com");
 const ClientId kClientId("bookmark", "1234");
+const bool kUserRequested = true;
 }  // namespace
 
 class SavePageRequestTest : public testing::Test {
@@ -23,7 +24,8 @@ SavePageRequestTest::~SavePageRequestTest() {}
 
 TEST_F(SavePageRequestTest, CreatePendingReqeust) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time);
+  SavePageRequest request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
   ASSERT_EQ(kRequestId, request.request_id());
   ASSERT_EQ(kUrl, request.url());
   ASSERT_EQ(kClientId, request.client_id());
@@ -41,7 +43,7 @@ TEST_F(SavePageRequestTest, CreateNotReadyRequest) {
   base::Time creation_time = base::Time::Now();
   base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
-                          activation_time);
+                          activation_time, kUserRequested);
 
   ASSERT_EQ(kRequestId, request.request_id());
   ASSERT_EQ(kUrl, request.url());
@@ -63,7 +65,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   base::Time creation_time = base::Time::Now();
   base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
-                          activation_time);
+                          activation_time, kUserRequested);
 
   base::Time start_time = activation_time + base::TimeDelta::FromHours(3);
   request.MarkAttemptStarted(start_time);

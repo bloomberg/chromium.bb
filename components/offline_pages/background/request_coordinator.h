@@ -47,7 +47,8 @@ class RequestCoordinator : public KeyedService {
 
   // Queues |request| to later load and save when system conditions allow.
   // Returns true if the page could be queued successfully.
-  bool SavePageLater(const GURL& url, const ClientId& client_id);
+  bool SavePageLater(
+      const GURL& url, const ClientId& client_id, bool user_reqeusted);
 
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
@@ -123,6 +124,10 @@ class RequestCoordinator : public KeyedService {
     offliner_timeout_ = timeout;
   }
 
+  void SetDeviceConditionsForTest(DeviceConditions& current_conditions) {
+    current_conditions_.reset(new DeviceConditions(current_conditions));
+  }
+
   friend class RequestCoordinatorTest;
 
   // The offliner can only handle one request at a time - if the offliner is
@@ -135,6 +140,8 @@ class RequestCoordinator : public KeyedService {
   base::TimeDelta offliner_timeout_;
   // Unowned pointer to the current offliner, if any.
   Offliner* offliner_;
+  // Last known conditions for network, battery
+  std::unique_ptr<DeviceConditions> current_conditions_;
   // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
   // OfflinerFactory.  Used to create offline pages. Owned.

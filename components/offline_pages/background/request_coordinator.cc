@@ -60,22 +60,23 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
-  picker_.reset(new RequestPicker(queue_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
 }
 
 RequestCoordinator::~RequestCoordinator() {}
 
 bool RequestCoordinator::SavePageLater(
-    const GURL& url, const ClientId& client_id) {
+    const GURL& url, const ClientId& client_id, bool was_user_requested) {
   DVLOG(2) << "URL is " << url << " " << __FUNCTION__;
 
-  // TODO(petewil): We need a robust scheme for allocating new IDs.
+  // TODO(petewil): We need a robust scheme for allocating new IDs.  We may need
+  // GUIDS for the downloads home design.
   static int64_t id = 0;
 
   // Build a SavePageRequest.
   // TODO(petewil): Use something like base::Clock to help in testing.
   offline_pages::SavePageRequest request(
-      id++, url, client_id, base::Time::Now());
+      id++, url, client_id, base::Time::Now(), was_user_requested);
 
   // Put the request on the request queue.
   queue_->AddRequest(request,
@@ -116,6 +117,7 @@ void RequestCoordinator::StopProcessing() {
 bool RequestCoordinator::StartProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
+  current_conditions_.reset(new DeviceConditions(device_conditions));
   if (is_busy_) return false;
 
   is_canceled_ = false;
@@ -135,7 +137,8 @@ void RequestCoordinator::TryNextRequest() {
       base::Bind(&RequestCoordinator::RequestPicked,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&RequestCoordinator::RequestQueueEmpty,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      current_conditions_.get());
 }
 
 // Called by the request picker when a request has been picked.

@@ -41,6 +41,7 @@ namespace android {
 namespace {
 
 const char kOfflinePageBridgeKey[] = "offline-page-bridge";
+const bool kUserRequested = true;
 
 void ToJavaOfflinePageList(JNIEnv* env,
                            jobject j_result_obj,
@@ -371,7 +372,7 @@ void OfflinePageBridge::SavePageLater(
           GetForBrowserContext(browser_context_);
 
   coordinator->SavePageLater(
-      GURL(ConvertJavaStringToUTF8(env, j_url)), client_id);
+      GURL(ConvertJavaStringToUTF8(env, j_url)), client_id, kUserRequested);
 }
 
 void OfflinePageBridge::DeletePages(

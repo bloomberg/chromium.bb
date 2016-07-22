@@ -35,6 +35,7 @@ const int kRequestId(1);
 const long kTestTimeoutSeconds = 1;
 const int kBatteryPercentageHigh = 75;
 const bool kPowerRequired = true;
+const bool kUserRequested = true;
 }  // namespace
 
 class SchedulerStub : public Scheduler {
@@ -69,7 +70,8 @@ class SchedulerStub : public Scheduler {
 class OfflinerStub : public Offliner {
  public:
   OfflinerStub()
-      : request_(kRequestId, kUrl, kClientId, base::Time::Now()),
+      : request_(kRequestId, kUrl, kClientId, base::Time::Now(),
+                 kUserRequested),
         enable_callback_(false),
         cancel_called_(false) {}
 
@@ -170,6 +172,10 @@ class RequestCoordinatorTest
     coordinator_->SetOfflinerTimeoutForTest(timeout);
   }
 
+  void SetDeviceConditionsForTest(DeviceConditions device_conditions) {
+    coordinator_->SetDeviceConditionsForTest(device_conditions);
+  }
+
   void WaitForCallback() {
     waiter_.Wait();
   }
@@ -252,7 +258,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   // Put the request on the queue.
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId));
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId, kUserRequested));
 
   // Set up for the call to StartProcessing by building arguments.
   DeviceConditions device_conditions(false, 75,
@@ -275,7 +281,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId));
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId, kUserRequested));
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(
@@ -303,7 +309,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now());
+      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -316,6 +322,11 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Set up device conditions for the test.
+  DeviceConditions device_conditions(
+      false, 75, net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
 
   // Call the OfflinerDoneCallback to simulate the page being completed, wait
   // for callbacks.
@@ -338,7 +349,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now());
+      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -375,7 +386,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now());
+      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -409,7 +420,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
 TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now());
+      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -448,7 +459,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
 TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(
-      kRequestId, kUrl, kClientId, base::Time::Now());
+      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,

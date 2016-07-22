@@ -8,6 +8,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -25,6 +26,7 @@ const ClientId kClientId1("bookmark", "1234");
 const int64_t kRequestId2 = 42;
 const GURL kUrl2("http://nytimes.com");
 const ClientId kClientId2("bookmark", "5678");
+const bool kUserRequested = true;
 }  // namespace
 
 class RequestPickerTest : public testing::Test {
@@ -50,6 +52,7 @@ class RequestPickerTest : public testing::Test {
   std::unique_ptr<RequestQueue> queue_;
   std::unique_ptr<RequestPicker> picker_;
   std::unique_ptr<SavePageRequest> last_picked_;
+  std::unique_ptr<OfflinerPolicy> policy_;
   bool request_queue_empty_called_;
 
  private:
@@ -67,7 +70,8 @@ void RequestPickerTest::SetUp() {
   std::unique_ptr<RequestQueueInMemoryStore> store(
       new RequestQueueInMemoryStore());
   queue_.reset(new RequestQueue(std::move(store)));
-  picker_.reset(new RequestPicker(queue_.get()));
+  policy_.reset(new OfflinerPolicy());
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
   request_queue_empty_called_ = false;
 }
 
@@ -88,8 +92,11 @@ void RequestPickerTest::RequestQueueEmpty() {
 
 TEST_F(RequestPickerTest, ChooseNextRequest) {
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time);
+  DeviceConditions conditions;
+  SavePageRequest request1(
+      kRequestId1, kUrl1, kClientId1, creation_time, kUserRequested);
+  SavePageRequest request2(
+      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
   // Put some test requests on the Queue.
   queue_->AddRequest(request1, base::Bind(&RequestPickerTest::AddRequestDone,
                                           base::Unretained(this)));
@@ -101,23 +108,24 @@ TEST_F(RequestPickerTest, ChooseNextRequest) {
 
   picker_->ChooseNextRequest(
       base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestQueueEmpty,
-                 base::Unretained(this)));
+      base::Bind(&RequestPickerTest::RequestQueueEmpty, base::Unretained(this)),
+      &conditions);
 
   // Pump the loop again to give the async queue the opportunity to return
   // results from the Get operation, and for the picker to call the "picked"
   // callback.
   PumpLoop();
 
-  EXPECT_EQ(kRequestId1, last_picked_->request_id());
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_empty_called_);
 }
 
 TEST_F(RequestPickerTest, PickFromEmptyQueue) {
+  DeviceConditions conditions;
   picker_->ChooseNextRequest(
       base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestQueueEmpty,
-                 base::Unretained(this)));
+      base::Bind(&RequestPickerTest::RequestQueueEmpty, base::Unretained(this)),
+      &conditions);
 
   // Pump the loop again to give the async queue the opportunity to return
   // results from the Get operation, and for the picker to call the "QueueEmpty"
