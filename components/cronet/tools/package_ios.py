@@ -52,7 +52,7 @@ def package_ios(out_dir, build_dir, build_config):
                         "cronet/libcronet_standalone.a")
 
 
-def package_ios_framework(out_dir='out/Framework', extra_options=''):
+def package_ios_framework(out_dir, target, framework_name, extra_options=''):
   print 'Building Cronet Dynamic Framework...'
 
   # Use Ninja to build all possible combinations.
@@ -62,7 +62,7 @@ def package_ios_framework(out_dir='out/Framework', extra_options=''):
                 'Release-iphoneos']
   for build_dir in build_dirs:
     print 'Building ' + build_dir
-    build_result = run('ninja -C out/' + build_dir + ' cronet_framework',
+    build_result = run('ninja -C out/' + build_dir + ' ' + target,
                        extra_options)
     if build_result != 0:
       return build_result
@@ -70,16 +70,17 @@ def package_ios_framework(out_dir='out/Framework', extra_options=''):
   # Package all builds in the output directory
   os.makedirs(out_dir)
   for build_dir in build_dirs:
-    shutil.copytree(os.path.join('out', build_dir, 'Cronet.framework'),
-                    os.path.join(out_dir, build_dir, 'Cronet.framework'))
+    shutil.copytree(os.path.join('out', build_dir, framework_name),
+                    os.path.join(out_dir, build_dir, framework_name))
     if 'Release' in build_dir:
-      shutil.copytree(os.path.join('out', build_dir, 'Cronet.framework.dSYM'),
-                      os.path.join(out_dir, build_dir, 'Cronet.framework.dSYM'))
+      shutil.copytree(os.path.join('out', build_dir, framework_name + '.dSYM'),
+                      os.path.join(out_dir, build_dir,
+                                   framework_name + '.dSYM'))
   # Copy the version file
   shutil.copy2('chrome/VERSION', out_dir)
   # Copy the headers
   shutil.copytree(os.path.join(out_dir, build_dirs[0],
-                               'Cronet.framework', 'Headers'),
+                               framework_name, 'Headers'),
                   os.path.join(out_dir, 'Headers'))
 
 
@@ -134,7 +135,14 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
 
 
 def main():
-  parser = argparse.ArgumentParser()
+  description = (
+    '1. To build Cronet.framework call:\n'
+    'package_ios.py --framework out/Frameworks\n'
+    '2. To build CrNet.framework call:\n'
+    'package_ios.py --crnet out/crnet\n'
+  )
+  parser = argparse.ArgumentParser(description=description)
+
   parser.add_argument('out_dir', nargs=1, help='path to output directory')
   parser.add_argument('-g', '--gn', action='store_true',
                       help='build using gn')
@@ -144,6 +152,11 @@ def main():
                       help='use release configuration')
   parser.add_argument('--framework', action='store_true',
                       help='build Cronet dynamic framework')
+  parser.add_argument('--crnet', action='store_true',
+                      help='build CrNet dynamic framework')
+  parser.add_argument('--use_full_icu', action='store_true',
+                      help='use full version of ICU instead of \
+                      platform ICU alternative.')
 
   options, extra_options_list = parser.parse_known_args()
   print options
@@ -156,16 +169,24 @@ def main():
     print >>sys.stderr, 'The output directory already exists: ' + out_dir
     return 1
 
+  use_platform_icu_alternatives = 'use_platform_icu_alternatives=1' \
+      if not options.use_full_icu else 'use_platform_icu_alternatives=0'
+
   gyp_defines = 'GYP_DEFINES="OS=ios enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
-      'enable_errorprone=1 use_platform_icu_alternatives=1 ' + \
-      'disable_brotli_filter=1 chromium_ios_signing=0 ' + \
-      'target_subarch=both"'
+      'enable_errorprone=1 disable_brotli_filter=1 chromium_ios_signing=0 ' + \
+      'target_subarch=both ' + use_platform_icu_alternatives + '"'
+
   if not options.gn:
     run (gyp_defines + ' gclient runhooks')
 
   if options.framework:
-    return package_ios_framework(out_dir, extra_options_list)
+    return package_ios_framework(out_dir, 'cronet_framework',
+                                 'Cronet.framework', extra_options_list)
+
+  if options.crnet:
+    return package_ios_framework(out_dir, 'crnet_framework',
+                                 'CrNet.framework', extra_options_list)
 
   if options.gn:
     return package_ios_framework_using_gn(out_dir, extra_options_list)
