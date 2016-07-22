@@ -144,6 +144,26 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
 };
 
+// A Callback that deletes the QuicHttpStream.
+class DeleteStreamCallback : public TestCompletionCallbackBase {
+ public:
+  DeleteStreamCallback(std::unique_ptr<QuicHttpStream> stream)
+      : stream_(std::move(stream)),
+        callback_(base::Bind(&DeleteStreamCallback::DeleteStream,
+                             base::Unretained(this))) {}
+
+  const CompletionCallback& callback() const { return callback_; }
+
+ private:
+  void DeleteStream(int result) {
+    stream_.reset();
+    SetResult(result);
+  }
+
+  std::unique_ptr<QuicHttpStream> stream_;
+  CompletionCallback callback_;
+};
+
 }  // namespace
 
 class QuicHttpStreamPeer {
@@ -1310,6 +1330,41 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());
   EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin, DEFAULT_PRIORITY,
+                                         &spdy_request_headers_frame_length));
+  AddWrite(
+      ConstructClientDataPacket(2, kIncludeVersion, !kFin, 0, kUploadData));
+  // Second data write will result in a synchronous failure which will close
+  // the session.
+  AddWrite(SYNCHRONOUS, ERR_FAILED);
+  Initialize();
+
+  ChunkedUploadDataStream upload_data_stream(0);
+
+  request_.method = "POST";
+  request_.url = GURL("http://www.example.org/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback()));
+
+  size_t chunk_size = strlen(kUploadData);
+  upload_data_stream.AppendData(kUploadData, chunk_size, false);
+  ASSERT_EQ(OK,
+            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                      net_log_.bound(), callback_.callback()));
+  QuicHttpStream* stream = stream_.get();
+  DeleteStreamCallback delete_stream_callback(std::move(stream_));
+  // SendRequest() completes asynchronously after the final chunk is added.
+  ASSERT_EQ(ERR_IO_PENDING,
+            stream->SendRequest(headers_, &response_, callback_.callback()));
+  upload_data_stream.AppendData(kUploadData, chunk_size, true);
+  int rv = callback_.WaitForResult();
+  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, rv);
 }
 
 TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {

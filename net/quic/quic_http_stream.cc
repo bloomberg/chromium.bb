@@ -510,6 +510,10 @@ void QuicHttpStream::OnClose() {
 
   quic_connection_error_ = stream_->connection_error();
   ResetStream();
+  if (in_loop_) {
+    // If already in DoLoop(), |callback_| will be handled when DoLoop() exits.
+    return;
+  }
   if (!callback_.is_null()) {
     DoCallback(response_status_);
   }
