@@ -434,6 +434,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                          max_varying_vectors_,
                          max_draw_buffers_,
                          max_dual_source_draw_buffers_,
+                         max_vertex_attribs_,
                          gpu_preferences_,
                          feature_info_.get()));
 

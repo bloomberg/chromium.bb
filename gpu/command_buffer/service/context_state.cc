@@ -224,6 +224,10 @@ ContextState::ContextState(FeatureInfo* feature_info,
       framebuffer_srgb_(false),
       feature_info_(feature_info),
       error_state_(ErrorState::Create(error_state_client, logger)) {
+  max_vertex_attribs_ = 0;
+  generic_attrib_base_type_mask_.resize(1);
+  generic_attrib_base_type_mask_[0] = 0xFFFFFFFF;
+
   Initialize();
 }
 

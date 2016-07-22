@@ -45,6 +45,7 @@ namespace {
 const uint32_t kMaxVaryingVectors = 8;
 const uint32_t kMaxDrawBuffers = 8;
 const uint32_t kMaxDualSourceDrawBuffers = 8;
+const uint32_t kMaxVertexAttribs = 8;
 
 void ShaderCacheCb(const std::string& key, const std::string& shader) {}
 
@@ -61,6 +62,7 @@ class ProgramManagerTestBase : public GpuServiceTest {
     manager_.reset(new ProgramManager(nullptr, kMaxVaryingVectors,
                                       kMaxDrawBuffers,
                                       kMaxDualSourceDrawBuffers,
+                                      kMaxVertexAttribs,
                                       gpu_preferences_,
                                       feature_info_.get()));
   }
@@ -2072,6 +2074,7 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
     manager_.reset(new ProgramManager(cache_.get(), kMaxVaryingVectors,
                                       kMaxDrawBuffers,
                                       kMaxDualSourceDrawBuffers,
+                                      kMaxVertexAttribs,
                                       gpu_preferences_,
                                       feature_info_.get()));
   }

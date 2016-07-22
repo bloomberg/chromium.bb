@@ -243,6 +243,31 @@ struct GPU_EXPORT ContextState {
   void SetBoundBuffer(GLenum target, Buffer* buffer);
   void RemoveBoundBuffer(Buffer* buffer);
 
+  void InitGenericAttribBaseType(GLuint max_vertex_attribs) {
+      max_vertex_attribs_ = max_vertex_attribs;
+
+      uint32_t packed_size = max_vertex_attribs_ / 16;
+      packed_size += (max_vertex_attribs_ % 16 == 0) ? 0 : 1;
+      generic_attrib_base_type_mask_.resize(packed_size);
+      for (uint32_t i = 0; i < packed_size; ++i) {
+        generic_attrib_base_type_mask_[i] = 0xFFFFFFFF;
+      }
+  }
+
+  void SetGenericVertexAttribBaseType(GLuint index, GLenum base_type) {
+    DCHECK(index < max_vertex_attribs_);
+    int shift_bits = (index % 16) * 2;
+    generic_attrib_base_type_mask_[index / 16] &= ~(0x3 << shift_bits);
+    generic_attrib_base_type_mask_[index / 16] |= (base_type << shift_bits);
+  }
+
+  // Return 16 attributes' base types, in which the generic attribute
+  // specified by argument 'index' located.
+  uint32_t GetGenericVertexAttribBaseTypeMask(GLuint index) {
+    DCHECK(index < max_vertex_attribs_);
+    return generic_attrib_base_type_mask_[index / 16];
+  }
+
   void UnbindTexture(TextureRef* texture);
   void UnbindSampler(Sampler* sampler);
 
@@ -319,6 +344,12 @@ struct GPU_EXPORT ContextState {
   void InitStateManual(const ContextState* prev_state) const;
 
   bool framebuffer_srgb_;
+
+  uint32_t max_vertex_attribs_;
+  // Generic vertex attrib base types: FLOAT, INT, or UINT.
+  // Each base type is encoded into 2 bits, the lowest 2 bits for location 0,
+  // the highest 2 bits for location (max_vertex_attribs_ - 1).
+  std::vector<uint32_t> generic_attrib_base_type_mask_;
 
   FeatureInfo* feature_info_;
   std::unique_ptr<ErrorState> error_state_;

@@ -117,7 +117,7 @@ uint32_t ComputeOffset(const void* start, const void* position) {
          static_cast<const uint8_t*>(start);
 }
 
-ShaderVariableBaseType FragmentOutputTypeToBaseType(GLenum type) {
+ShaderVariableBaseType InputOutputTypeToBaseType(bool is_input, GLenum type) {
   switch (type) {
     case GL_INT:
     case GL_INT_VEC2:
@@ -133,6 +133,17 @@ ShaderVariableBaseType FragmentOutputTypeToBaseType(GLenum type) {
     case GL_FLOAT_VEC2:
     case GL_FLOAT_VEC3:
     case GL_FLOAT_VEC4:
+      return SHADER_VARIABLE_FLOAT;
+    case GL_FLOAT_MAT2:
+    case GL_FLOAT_MAT3:
+    case GL_FLOAT_MAT4:
+    case GL_FLOAT_MAT2x3:
+    case GL_FLOAT_MAT3x2:
+    case GL_FLOAT_MAT2x4:
+    case GL_FLOAT_MAT4x2:
+    case GL_FLOAT_MAT3x4:
+    case GL_FLOAT_MAT4x3:
+      DCHECK(is_input);
       return SHADER_VARIABLE_FLOAT;
     default:
       NOTREACHED();
@@ -316,6 +327,8 @@ void Program::Reset() {
   attrib_location_to_index_map_.clear();
   fragment_output_type_mask_ = 0u;
   fragment_output_written_mask_ = 0u;
+  vertex_input_base_type_mask_.clear();
+  vertex_input_type_written_mask_.clear();
 }
 
 void Program::UpdateFragmentOutputBaseTypes() {
@@ -351,8 +364,33 @@ void Program::UpdateFragmentOutputBaseTypes() {
       int shift_bits = ii * 2;
       fragment_output_written_mask_ |= 0x3 << shift_bits;
       fragment_output_type_mask_ |=
-          FragmentOutputTypeToBaseType(output.type) << shift_bits;
+          InputOutputTypeToBaseType(false, output.type) << shift_bits;
     }
+  }
+}
+
+void Program::UpdateVertexInputBaseTypes() {
+  max_vertex_attribs_ = manager_->max_vertex_attribs();
+  uint32_t packed_size = max_vertex_attribs_ / 16;
+  packed_size += (max_vertex_attribs_ % 16 == 0) ? 0 : 1;
+  vertex_input_base_type_mask_.resize(packed_size);
+  vertex_input_type_written_mask_.resize(packed_size);
+
+  for (uint32_t ii = 0; ii < packed_size; ++ii) {
+    vertex_input_type_written_mask_[ii] = 0u;
+    vertex_input_base_type_mask_[ii] = 0u;
+  }
+
+  for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
+    DCHECK(ii < max_vertex_attribs_);
+    const VertexAttrib& input = attrib_infos_[ii];
+    if (ProgramManager::HasBuiltInPrefix(input.name)) {
+      continue;
+    }
+    int shift_bits = (input.location % 16) * 2;
+      vertex_input_type_written_mask_[ii / 16] |= 0x3 << shift_bits;
+      vertex_input_base_type_mask_[ii / 16] |=
+          InputOutputTypeToBaseType(true, input.type) << shift_bits;
   }
 }
 
@@ -623,6 +661,7 @@ void Program::Update() {
   UpdateFragmentInputs();
   UpdateProgramOutputs();
   UpdateFragmentOutputBaseTypes();
+  UpdateVertexInputBaseTypes();
   UpdateUniformBlockSizeInfo();
 
   valid_ = true;
@@ -2376,6 +2415,7 @@ ProgramManager::ProgramManager(
     uint32_t max_varying_vectors,
     uint32_t max_draw_buffers,
     uint32_t max_dual_source_draw_buffers,
+    uint32_t max_vertex_attribs,
     const GpuPreferences& gpu_preferences,
     FeatureInfo* feature_info)
     : program_count_(0),
@@ -2384,6 +2424,7 @@ ProgramManager::ProgramManager(
       max_varying_vectors_(max_varying_vectors),
       max_draw_buffers_(max_draw_buffers),
       max_dual_source_draw_buffers_(max_dual_source_draw_buffers),
+      max_vertex_attribs_(max_vertex_attribs),
       gpu_preferences_(gpu_preferences),
       feature_info_(feature_info) {}
 

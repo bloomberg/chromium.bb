@@ -1424,6 +1424,21 @@ bool FeatureInfo::IsWebGLContext() const {
   return false;
 }
 
+bool FeatureInfo::IsWebGL2OrES3Context() const {
+  // Switch statement to cause a compile-time error if we miss a case.
+  switch (context_type_) {
+    case CONTEXT_TYPE_WEBGL2:
+    case CONTEXT_TYPE_OPENGLES3:
+      return true;
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_OPENGLES2:
+      return false;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 void FeatureInfo::AddExtensionString(const char* s) {
   std::string str(s);
   size_t pos = extensions_.find(str);

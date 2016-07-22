@@ -1795,6 +1795,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
+  // Checks if every attribute's type set by vertexAttrib API match
+  // the type of corresponding attribute in vertex shader.
+  bool AttribsTypeMatch();
+
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(
       const char* function_name, GLuint max_vertex_accessed, bool instanced,
@@ -3066,6 +3070,7 @@ bool GLES2DecoderImpl::Initialize(
   state_.indexed_uniform_buffer_bindings = new IndexedBufferBindingHost(
       group_->max_uniform_buffer_bindings(), needs_emulation);
 
+  state_.InitGenericAttribBaseType(group_->max_vertex_attribs());
   state_.attrib_values.resize(group_->max_vertex_attribs());
   vertex_array_manager_.reset(new VertexArrayManager());
 
@@ -9114,6 +9119,28 @@ void GLES2DecoderImpl::RestoreStateForSimulatedFixedAttribs() {
                                       : 0);
 }
 
+bool GLES2DecoderImpl::AttribsTypeMatch() {
+  for (uint32_t index = 0; index < group_->max_vertex_attribs(); index += 16) {
+    uint32_t shader_attrib_written_mask =
+        state_.current_program->vertex_input_type_written_mask(index);
+    uint32_t vao_attrib_written_mask =
+        state_.vertex_attrib_manager->attrib_type_written_mask(index);
+
+    uint32_t vertex_attrib_base_type_mask =
+        (~vao_attrib_written_mask &
+        state_.GetGenericVertexAttribBaseTypeMask(index)) |
+        (vao_attrib_written_mask &
+        state_.vertex_attrib_manager->attrib_base_type_mask(index));
+
+    if ((state_.current_program->vertex_input_base_type_mask(index)
+         & shader_attrib_written_mask) !=
+         (vertex_attrib_base_type_mask & shader_attrib_written_mask)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 error::Error GLES2DecoderImpl::DoDrawArrays(
     const char* function_name,
     bool instanced,
@@ -9157,6 +9184,12 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
 
   if (count == 0 || primcount == 0) {
     LOCAL_RENDER_WARNING("Render count or primcount is 0.");
+    return error::kNoError;
+  }
+
+  if (feature_info_->IsWebGL2OrES3Context() && !AttribsTypeMatch()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+        "vertexAttrib function must match shader attrib type");
     return error::kNoError;
   }
 
@@ -9283,6 +9316,12 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
   }
 
   if (count == 0 || primcount == 0) {
+    return error::kNoError;
+  }
+
+  if (feature_info_->IsWebGL2OrES3Context() && !AttribsTypeMatch()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+        "vertexAttrib function must match shader attrib type");
     return error::kNoError;
   }
 
@@ -9885,6 +9924,8 @@ bool GLES2DecoderImpl::SetVertexAttribValue(
 void GLES2DecoderImpl::DoVertexAttrib1f(GLuint index, GLfloat v0) {
   GLfloat v[4] = { v0, 0.0f, 0.0f, 1.0f, };
   if (SetVertexAttribValue("glVertexAttrib1f", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib1f(index, v0);
   }
 }
@@ -9892,6 +9933,8 @@ void GLES2DecoderImpl::DoVertexAttrib1f(GLuint index, GLfloat v0) {
 void GLES2DecoderImpl::DoVertexAttrib2f(GLuint index, GLfloat v0, GLfloat v1) {
   GLfloat v[4] = { v0, v1, 0.0f, 1.0f, };
   if (SetVertexAttribValue("glVertexAttrib2f", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib2f(index, v0, v1);
   }
 }
@@ -9900,6 +9943,8 @@ void GLES2DecoderImpl::DoVertexAttrib3f(
     GLuint index, GLfloat v0, GLfloat v1, GLfloat v2) {
   GLfloat v[4] = { v0, v1, v2, 1.0f, };
   if (SetVertexAttribValue("glVertexAttrib3f", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib3f(index, v0, v1, v2);
   }
 }
@@ -9908,6 +9953,8 @@ void GLES2DecoderImpl::DoVertexAttrib4f(
     GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) {
   GLfloat v[4] = { v0, v1, v2, v3, };
   if (SetVertexAttribValue("glVertexAttrib4f", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib4f(index, v0, v1, v2, v3);
   }
 }
@@ -9915,6 +9962,8 @@ void GLES2DecoderImpl::DoVertexAttrib4f(
 void GLES2DecoderImpl::DoVertexAttrib1fv(GLuint index, const GLfloat* v) {
   GLfloat t[4] = { v[0], 0.0f, 0.0f, 1.0f, };
   if (SetVertexAttribValue("glVertexAttrib1fv", index, t)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib1fv(index, v);
   }
 }
@@ -9922,6 +9971,8 @@ void GLES2DecoderImpl::DoVertexAttrib1fv(GLuint index, const GLfloat* v) {
 void GLES2DecoderImpl::DoVertexAttrib2fv(GLuint index, const GLfloat* v) {
   GLfloat t[4] = { v[0], v[1], 0.0f, 1.0f, };
   if (SetVertexAttribValue("glVertexAttrib2fv", index, t)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib2fv(index, v);
   }
 }
@@ -9929,12 +9980,16 @@ void GLES2DecoderImpl::DoVertexAttrib2fv(GLuint index, const GLfloat* v) {
 void GLES2DecoderImpl::DoVertexAttrib3fv(GLuint index, const GLfloat* v) {
   GLfloat t[4] = { v[0], v[1], v[2], 1.0f, };
   if (SetVertexAttribValue("glVertexAttrib3fv", index, t)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib3fv(index, v);
   }
 }
 
 void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
   if (SetVertexAttribValue("glVertexAttrib4fv", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_FLOAT);
     glVertexAttrib4fv(index, v);
   }
 }
@@ -9943,12 +9998,16 @@ void GLES2DecoderImpl::DoVertexAttribI4i(
     GLuint index, GLint v0, GLint v1, GLint v2, GLint v3) {
   GLint v[4] = { v0, v1, v2, v3 };
   if (SetVertexAttribValue("glVertexAttribI4i", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_INT);
     glVertexAttribI4i(index, v0, v1, v2, v3);
   }
 }
 
 void GLES2DecoderImpl::DoVertexAttribI4iv(GLuint index, const GLint* v) {
   if (SetVertexAttribValue("glVertexAttribI4iv", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_INT);
     glVertexAttribI4iv(index, v);
   }
 }
@@ -9957,12 +10016,16 @@ void GLES2DecoderImpl::DoVertexAttribI4ui(
     GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3) {
   GLuint v[4] = { v0, v1, v2, v3 };
   if (SetVertexAttribValue("glVertexAttribI4ui", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_UINT);
     glVertexAttribI4ui(index, v0, v1, v2, v3);
   }
 }
 
 void GLES2DecoderImpl::DoVertexAttribI4uiv(GLuint index, const GLuint* v) {
   if (SetVertexAttribValue("glVertexAttribI4uiv", index, v)) {
+    state_.SetGenericVertexAttribBaseType(
+        index, SHADER_VARIABLE_UINT);
     glVertexAttribI4uiv(index, v);
   }
 }
@@ -10041,6 +10104,11 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
         "glVertexAttribIPointer", "stride not valid for type");
     return error::kNoError;
   }
+
+  GLenum base_type = (type == GL_BYTE || type == GL_SHORT || type == GL_INT) ?
+                      SHADER_VARIABLE_INT : SHADER_VARIABLE_UINT;
+  state_.vertex_attrib_manager->UpdateAttribBaseTypeAndMask(indx, base_type);
+
   GLsizei group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
   state_.vertex_attrib_manager
       ->SetAttribInfo(indx,
@@ -10135,6 +10203,10 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
         "glVertexAttribPointer", "stride not valid for type");
     return error::kNoError;
   }
+
+  state_.vertex_attrib_manager->UpdateAttribBaseTypeAndMask(
+      indx, SHADER_VARIABLE_FLOAT);
+
   GLsizei group_size = GLES2Util::GetGroupSizeForBufferType(size, type);
   state_.vertex_attrib_manager
       ->SetAttribInfo(indx,
