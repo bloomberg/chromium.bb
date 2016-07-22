@@ -14,7 +14,7 @@ crash-reporting system.
 ## Getting started (from master)
 
 1.  First, [download depot_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools)
-    and ensure that they're in your `PATH`.
+    and ensure that they’re in your `PATH`.
 
 2.  Create a new directory for checking out the source code (it must be named
     breakpad).
@@ -76,6 +76,6 @@ dependent repos are up-to-date.
     e.g. `git commit ... && git cl upload ...`
     You will be prompted for credential and a description.
 
-4.  At https://codereview.chromium.org/ you'll find your issue listed; click on
+4.  At https://codereview.chromium.org/ you’ll find your issue listed; click on
     it, and select Publish+Mail, and enter in the code reviewer and CC
     google-breakpad-dev@googlegroups.com
