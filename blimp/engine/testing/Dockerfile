@@ -4,15 +4,15 @@
 # Engine itself.
 FROM base:latest
 
-RUN mkdir -p /out/test/
+RUN mkdir -p /blimp/
 
-# The glob below expands to all files, but does not add directories
-# recursively.
-# Test binaries assume src directory is 2 levels down. While this behavior can
-# be changed with flags, the directory structure is set up to minimize
-# potential problems with initial integration.
-ADD * /out/test/
+RUN useradd -ms /bin/bash blimp_user
 
-RUN chown -R blimp_user /out/test/
+# Put all the Blimp related files in /blimp so they are kept separate from
+# the OS files. Using '.' instead of '*' ensures directory structure is
+# maintained since ADD only copies the contents of directories.
+ADD . /blimp/
+
+RUN chown -R blimp_user /blimp
 
 USER blimp_user

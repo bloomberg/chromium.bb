@@ -15,19 +15,22 @@ import os
 import subprocess
 import sys
 
-def ReadDependencies(manifest):
-  """Read the manifest and return the list of dependencies.
+def ReadDependencies(manifest, relative_path):
+  """Returns a list of dependencies based on the specified manifest file.
+  The returned dependencies will be made relative to |relative_path| and
+  normalized.
   :raises IOError: if the manifest could not be read.
   """
-  deps = []
+  dependency_list = []
   with open(manifest) as f:
     for line in f.readlines():
       # Strip comments.
-      dep = line.partition('#')[0].strip()
+      dependency = line.partition('#')[0].strip()
       # Ignore empty strings.
-      if dep:
-        deps.append(dep)
-  return deps
+      if dependency:
+        dependency = os.path.normpath(os.path.join(relative_path, dependency))
+        dependency_list.append(dependency)
+  return dependency_list
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
@@ -50,9 +53,19 @@ def main():
                       help=('name and path of bundle to create'),
                       required=True,
                       metavar='FILE')
+  parser.add_argument('--tar-contents-rooted-in',
+                      help=('optional path prefix to use inside the resulting '
+                            'tar file'),
+                      required=False,
+                      metavar='DIR')
   args = parser.parse_args()
 
-  deps = ReadDependencies(args.manifest)
+  dependencies_path = args.build_dir
+  if args.tar_contents_rooted_in:
+    dependencies_path = args.tar_contents_rooted_in
+  relative_path = os.path.relpath(args.build_dir, dependencies_path)
+
+  dependency_list = ReadDependencies(args.manifest, relative_path)
 
   try:
     env = os.environ.copy()
@@ -65,7 +78,7 @@ def main():
         # use as part of a "docker build". That is group readable with
         # executable files also being group executable.
         "--mode=g+rX",
-        "-C", args.build_dir] + deps
+        "-C", dependencies_path] + dependency_list
     for f in args.filelist:
       dirname, basename = os.path.split(f)
       subprocess_args.extend(["-C", dirname, basename])

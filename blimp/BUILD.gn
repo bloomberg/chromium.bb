@@ -175,6 +175,8 @@ if (is_linux) {
       _rebased_blimp_engine_env_tests_manifest,
       "--output",
       rebase_path(_bundle),
+      "--tar-contents-rooted-in",
+      rebase_path("//")
     ]
   }
 }
