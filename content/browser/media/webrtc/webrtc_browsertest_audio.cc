@@ -62,9 +62,8 @@ class MAYBE_WebRtcBrowserAudioTest : public WebRtcContentBrowserTest {
   }
 };
 
-// Causes asserts in libjingle: http://crbug.com/484826.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserAudioTest,
-                       DISABLED_CanMakeVideoCallAndThenRenegotiateToAudio) {
+                       CanMakeVideoCallAndThenRenegotiateToAudio) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndRenegotiateToAudio({audio: true, video:true}, {audio: true});");
 }

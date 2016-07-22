@@ -113,9 +113,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(kJavascript);
 }
 
-// Causes asserts in libjingle: http://crbug.com/484826.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       DISABLED_CanMakeAudioCallAndThenRenegotiateToVideo) {
+                       CanMakeAudioCallAndThenRenegotiateToVideo) {
   const char* kJavascript =
       "callAndRenegotiateToVideo({audio: true}, {audio: true, video:true});";
   MakeTypicalPeerConnectionCall(kJavascript);
