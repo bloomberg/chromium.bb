@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
@@ -84,7 +83,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     private boolean mNativeSideIsInitialized;
 
     private ProfileDataCache mProfileDataCache;
-    private ViewPager mPager;
+    private FirstRunViewPager mPager;
 
     private Bundle mFreProperties;
 
@@ -147,7 +146,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             return;
         }
 
-        mPager = new ViewPager(this);
+        mPager = new FirstRunViewPager(this);
         mPager.setId(R.id.fre_pager);
         setContentView(mPager);
 
@@ -234,7 +233,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mPager.getCurrentItem() == 0) {
             abortFirstRunExperience();
         } else {
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+            mPager.setCurrentItem(mPager.getCurrentItem() - 1, false);
         }
     }
 
@@ -247,7 +246,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void advanceToNextPage() {
-        jumpToPage(mPager.getCurrentItem() + 1, true);
+        jumpToPage(mPager.getCurrentItem() + 1);
     }
 
     @Override
@@ -356,7 +355,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         FirstRunStatus.setSkipWelcomePage(FirstRunActivity.this, true);
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();
-        jumpToPage(mPager.getCurrentItem() + 1, true);
+        jumpToPage(mPager.getCurrentItem() + 1);
     }
 
     @Override
@@ -389,9 +388,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
      * Transitions to a given page.
      * @return Whether the transition to a given page was allowed.
      * @param position A page index to transition to.
-     * @param smooth   Whether the transition should be smooth.
      */
-    private boolean jumpToPage(int position, boolean smooth) {
+    private boolean jumpToPage(int position) {
         if (mShowWelcomePage && !didAcceptTermsOfService()) {
             return position == 0;
         }
@@ -399,7 +397,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             completeFirstRunExperience();
             return false;
         }
-        mPager.setCurrentItem(position, smooth);
+        mPager.setCurrentItem(position, false);
         return true;
     }
 
@@ -415,7 +413,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         while (currentPageIndex < mPagerAdapter.getCount()) {
             FirstRunPage currentPage = (FirstRunPage) mPagerAdapter.getItem(currentPageIndex);
             if (!currentPage.shouldSkipPageOnCreate(getApplicationContext())) return;
-            if (!jumpToPage(currentPageIndex + 1, false)) return;
+            if (!jumpToPage(currentPageIndex + 1)) return;
             currentPageIndex = mPager.getCurrentItem();
         }
     }

@@ -347,6 +347,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunSignInProcessor.java",
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunStatus.java",
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunView.java",
+  "java/src/org/chromium/chrome/browser/firstrun/FirstRunViewPager.java",
   "java/src/org/chromium/chrome/browser/firstrun/ForcedSigninProcessor.java",
   "java/src/org/chromium/chrome/browser/firstrun/ProfileDataCache.java",
   "java/src/org/chromium/chrome/browser/firstrun/ToSAckedReceiver.java",
