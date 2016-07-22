@@ -629,15 +629,15 @@ static_library("test_support") {
     "//url",
   ]
 
-  deps = [
-    ":test_support_bundle_data",
-  ]
+  deps = []
 
   data = [
     "data/",
   ]
 
-  if (!is_ios) {
+  if (is_ios) {
+    deps += [ ":test_support_bundle_data" ]
+  } else {
     public_deps += [ "//third_party/protobuf:py_proto" ]
   }
 
@@ -1339,7 +1339,6 @@ test("net_unittests") {
     ":balsa",
     ":extras",
     ":net",
-    ":net_unittests_bundle_data",
     ":simple_quic_tools",
     ":stale_while_revalidate_experiment_domains",
     ":test_support",
@@ -1546,6 +1545,8 @@ test("net_unittests") {
       "socket/unix_domain_client_socket_posix_unittest.cc",
       "socket/unix_domain_server_socket_posix_unittest.cc",
     ]
+
+    bundle_deps = [ ":net_unittests_bundle_data" ]
   }
 
   # Unit tests that aren't supported by the current ICU alternatives on Android.
