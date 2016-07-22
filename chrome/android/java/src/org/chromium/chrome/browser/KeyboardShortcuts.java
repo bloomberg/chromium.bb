@@ -70,6 +70,10 @@ public class KeyboardShortcuts {
                     activity.onMenuOrKeyboardAction(R.id.show_menu, false);
                 }
                 return true;
+            case KeyEvent.KEYCODE_ESCAPE:
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                    return activity.exitFullscreenIfShowing();
+                }
             case KeyEvent.KEYCODE_TV:
             case KeyEvent.KEYCODE_GUIDE:
             case KeyEvent.KEYCODE_DVR:
