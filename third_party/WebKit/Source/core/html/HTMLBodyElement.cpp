@@ -190,7 +190,7 @@ bool HTMLBodyElement::supportsFocus() const
 {
     // This override is needed because the inherited method bails if the parent is editable.
     // The <body> should be focusable even if <html> is editable.
-    return hasEditableStyle() || HTMLElement::supportsFocus();
+    return hasEditableStyle(*this) || HTMLElement::supportsFocus();
 }
 
 } // namespace blink

@@ -1377,7 +1377,7 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
     }
 
     // Editable nodes should not be highlighted (e.g., <input>)
-    if (bestTouchNode->hasEditableStyle())
+    if (hasEditableStyle(*bestTouchNode))
         return nullptr;
 
     Node* cursorDefiningAncestor =

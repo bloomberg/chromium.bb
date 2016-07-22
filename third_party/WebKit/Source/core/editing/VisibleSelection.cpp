@@ -587,7 +587,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingShadowBou
 static Element* lowestEditableAncestor(Node* node)
 {
     while (node) {
-        if (node->hasEditableStyle())
+        if (hasEditableStyle(*node))
             return rootEditableElement(*node);
         if (isHTMLBodyElement(*node))
             break;

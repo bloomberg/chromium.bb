@@ -779,12 +779,12 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
 
 static bool containsNonEditableRegion(Node& node)
 {
-    if (!node.hasEditableStyle())
+    if (!hasEditableStyle(node))
         return true;
 
     Node* sibling = NodeTraversal::nextSkippingChildren(node);
     for (Node* descendent = node.firstChild(); descendent && descendent != sibling; descendent = NodeTraversal::next(*descendent)) {
-        if (!descendent->hasEditableStyle())
+        if (!hasEditableStyle(*descendent))
             return true;
     }
 
@@ -842,10 +842,10 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, Node* s
     for (Node* next; node && node != pastEndNode; node = next) {
         next = NodeTraversal::next(*node);
 
-        if (!node->layoutObject() || !node->hasEditableStyle())
+        if (!node->layoutObject() || !hasEditableStyle(*node))
             continue;
 
-        if (!node->layoutObjectIsRichlyEditable() && node->isHTMLElement()) {
+        if (!layoutObjectIsRichlyEditable(*node) && node->isHTMLElement()) {
             HTMLElement* element = toHTMLElement(node);
             // This is a plaintext-only region. Only proceed if it's fully selected.
             // pastEndNode is the node after the last fully selected node, so if it's inside node then
@@ -866,7 +866,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, Node* s
             continue;
 
         if (node->hasChildren()) {
-            if (node->contains(pastEndNode) || containsNonEditableRegion(*node) || !node->parentNode()->hasEditableStyle())
+            if (node->contains(pastEndNode) || containsNonEditableRegion(*node) || !hasEditableStyle(*node->parentNode()))
                 continue;
             if (editingIgnoresContent(node)) {
                 next = NodeTraversal::nextSkippingChildren(*node);
@@ -1491,16 +1491,16 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(Node* passedStartNode, Node
 
     Node* nextSibling = element->nextSibling();
     Node* previousSibling = element->previousSibling();
-    if (nextSibling && nextSibling->isElementNode() && nextSibling->hasEditableStyle()
+    if (nextSibling && nextSibling->isElementNode() && hasEditableStyle(*nextSibling)
         && areIdenticalElements(*element, toElement(*nextSibling))) {
         mergeIdenticalElements(element, toElement(nextSibling), editingState);
         if (editingState->isAborted())
             return;
     }
 
-    if (previousSibling && previousSibling->isElementNode() && previousSibling->hasEditableStyle()) {
+    if (previousSibling && previousSibling->isElementNode() && hasEditableStyle(*previousSibling)) {
         Node* mergedElement = previousSibling->nextSibling();
-        if (mergedElement->isElementNode() && mergedElement->hasEditableStyle()
+        if (mergedElement->isElementNode() && hasEditableStyle(*mergedElement)
             && areIdenticalElements(toElement(*previousSibling), toElement(*mergedElement))) {
             mergeIdenticalElements(toElement(previousSibling), toElement(mergedElement), editingState);
             if (editingState->isAborted())

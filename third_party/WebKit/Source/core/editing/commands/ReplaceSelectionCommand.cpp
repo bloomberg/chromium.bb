@@ -172,12 +172,12 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     if (!editableRoot->getAttributeEventListener(EventTypeNames::webkitBeforeTextInserted)
         // FIXME: Remove these checks once textareas and textfields actually register an event handler.
         && !(shadowAncestorElement && shadowAncestorElement->layoutObject() && shadowAncestorElement->layoutObject()->isTextControl())
-        && editableRoot->layoutObjectIsRichlyEditable()) {
+        && layoutObjectIsRichlyEditable(*editableRoot)) {
         removeInterchangeNodes(m_fragment.get());
         return;
     }
 
-    if (!editableRoot->layoutObjectIsRichlyEditable()) {
+    if (!layoutObjectIsRichlyEditable(*editableRoot)) {
         bool isPlainText = true;
         for (Node& node : NodeTraversal::childrenOf(*m_fragment)) {
             if (isInterchangeHTMLBRElement(&node) && &node == m_fragment->lastChild())
@@ -217,7 +217,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     // Give the root a chance to change the text.
     BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::create(text);
     editableRoot->dispatchEvent(evt);
-    if (text != evt->text() || !editableRoot->layoutObjectIsRichlyEditable()) {
+    if (text != evt->text() || !layoutObjectIsRichlyEditable(*editableRoot)) {
         restoreAndRemoveTestRenderingNodesToFragment(holder);
 
         m_fragment = createFragmentFromText(selection.toNormalizedEphemeralRange(), evt->text());
@@ -581,7 +581,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             continue;
         }
 
-        if (element->parentNode() && element->parentNode()->layoutObjectIsRichlyEditable())
+        if (element->parentNode() && layoutObjectIsRichlyEditable(*element->parentNode()))
             removeElementAttribute(element, contenteditableAttr);
 
         // WebKit used to not add display: inline and float: none on copy.
@@ -701,7 +701,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
 
 void ReplaceSelectionCommand::moveElementOutOfAncestor(Element* element, Element* ancestor, EditingState* editingState)
 {
-    if (!ancestor->parentNode()->hasEditableStyle())
+    if (!hasEditableStyle(*ancestor->parentNode()))
         return;
 
     VisiblePosition positionAtEndOfNode = createVisiblePosition(lastPositionInOrAfterNode(element));
@@ -1227,7 +1227,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
     Element* blockStart = enclosingBlock(insertionPos.anchorNode());
     if ((isHTMLListElement(refNode) || (isLegacyAppleHTMLSpanElement(refNode) && isHTMLListElement(refNode->firstChild())))
-        && blockStart && blockStart->layoutObject()->isListItem() && blockStart->parentNode()->hasEditableStyle()) {
+        && blockStart && blockStart->layoutObject()->isListItem() && hasEditableStyle(*blockStart->parentNode())) {
         refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes, editingState);
         if (editingState->isAborted())
             return;

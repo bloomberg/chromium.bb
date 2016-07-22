@@ -366,7 +366,7 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
     const ComputedStyle* style = layoutBox.style();
     if (!style)
         return 0;
-    if (!(style->overflowY() == OverflowScroll || style->overflowY() == OverflowAuto || focusedElement->hasEditableStyle()))
+    if (!(style->overflowY() == OverflowScroll || style->overflowY() == OverflowAuto || hasEditableStyle(*focusedElement)))
         return 0;
     int height = std::min<int>(layoutBox.clientHeight(), frame.view()->visibleHeight());
     return static_cast<unsigned>(max(max<int>(height * ScrollableArea::minFractionToStepWhenPaging(), height - ScrollableArea::maxOverlapBetweenPages()), 1));

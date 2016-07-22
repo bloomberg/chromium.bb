@@ -41,7 +41,7 @@ InsertNodeBeforeCommand::InsertNodeBeforeCommand(Node* insertChild, Node* refChi
     DCHECK(m_refChild);
     DCHECK(m_refChild->parentNode()) << m_refChild;
 
-    DCHECK(m_refChild->parentNode()->hasEditableStyle() || !m_refChild->parentNode()->inActiveDocument()) << m_refChild->parentNode();
+    DCHECK(hasEditableStyle(*m_refChild->parentNode()) || !m_refChild->parentNode()->inActiveDocument()) << m_refChild->parentNode();
 }
 
 void InsertNodeBeforeCommand::doApply(EditingState*)

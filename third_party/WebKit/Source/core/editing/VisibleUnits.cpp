@@ -125,7 +125,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     // The new position must be in the same editable element. Enforce that
     // first. Unless the descent is from a non-editable html element to an
     // editable body.
-    if (node && node->document().documentElement() == node && !node->hasEditableStyle() && node->document().body() && node->document().body()->hasEditableStyle())
+    if (node && node->document().documentElement() == node && !hasEditableStyle(*node) && node->document().body() && hasEditableStyle(*node->document().body()))
         return next.isNotNull() ? next : prev;
 
     Element* editingRoot = rootEditableElementOf(position);
@@ -239,10 +239,10 @@ static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const Vis
 
 static Node* previousLeafWithSameEditability(Node* node, EditableType editableType)
 {
-    bool editable = node->hasEditableStyle(editableType);
+    bool editable = hasEditableStyle(*node, editableType);
     node = previousAtomicLeafNode(*node);
     while (node) {
-        if (editable == node->hasEditableStyle(editableType))
+        if (editable == hasEditableStyle(*node, editableType))
             return node;
         node = previousAtomicLeafNode(*node);
     }
@@ -254,10 +254,10 @@ static Node* nextLeafWithSameEditability(Node* node, EditableType editableType =
     if (!node)
         return 0;
 
-    bool editable = node->hasEditableStyle(editableType);
+    bool editable = hasEditableStyle(*node, editableType);
     node = nextAtomicLeafNode(*node);
     while (node) {
-        if (editable == node->hasEditableStyle(editableType))
+        if (editable == hasEditableStyle(*node, editableType))
             return node;
         node = nextAtomicLeafNode(*node);
     }
@@ -647,7 +647,7 @@ static Node* parentEditingBoundary(const PositionTemplate<Strategy>& position)
         return nullptr;
 
     Node* boundary = position.computeContainerNode();
-    while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && anchorNode->hasEditableStyle() == Strategy::parent(*boundary)->hasEditableStyle())
+    while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && hasEditableStyle(*anchorNode) == hasEditableStyle(*Strategy::parent(*boundary)))
         boundary = nonShadowBoundaryParentNode<Strategy>(boundary);
 
     return boundary;
@@ -1336,7 +1336,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     // Could not find a previous line. This means we must already be on the first line.
     // Move to the start of the content in this block, which effectively moves us
     // to the start of the line we're on.
-    Element* rootElement = node->hasEditableStyle(editableType) ? rootEditableElement(*node, editableType) : node->document().documentElement();
+    Element* rootElement = hasEditableStyle(*node, editableType) ? rootEditableElement(*node, editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
     return VisiblePosition::firstPositionInNode(rootElement);
@@ -1392,7 +1392,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     // Could not find a next line. This means we must already be on the last line.
     // Move to the end of the content in this block, which effectively moves us
     // to the end of the line we're on.
-    Element* rootElement = node->hasEditableStyle(editableType) ? rootEditableElement(*node, editableType) : node->document().documentElement();
+    Element* rootElement = hasEditableStyle(*node, editableType) ? rootEditableElement(*node, editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
     return VisiblePosition::lastPositionInNode(rootElement);
@@ -1495,12 +1495,12 @@ VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositio
     PositionAnchorType type = p.anchorType();
 
     Node* n = startNode;
-    bool startNodeIsEditable = startNode->hasEditableStyle();
+    bool startNodeIsEditable = hasEditableStyle(*startNode);
     while (n) {
-        if (boundaryCrossingRule == CannotCrossEditingBoundary && !nodeIsUserSelectAll(n) && n->hasEditableStyle() != startNodeIsEditable)
+        if (boundaryCrossingRule == CannotCrossEditingBoundary && !nodeIsUserSelectAll(n) && hasEditableStyle(*n) != startNodeIsEditable)
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
-            while (n && n->hasEditableStyle() != startNodeIsEditable)
+            while (n && hasEditableStyle(*n) != startNodeIsEditable)
                 n = Strategy::previousPostOrder(*n, startBlock);
             if (!n || !n->isDescendantOf(highestRoot))
                 break;
@@ -1583,12 +1583,12 @@ static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePo
     PositionAnchorType type = p.anchorType();
 
     Node* n = startNode;
-    bool startNodeIsEditable = startNode->hasEditableStyle();
+    bool startNodeIsEditable = hasEditableStyle(*startNode);
     while (n) {
-        if (boundaryCrossingRule == CannotCrossEditingBoundary && !nodeIsUserSelectAll(n) && n->hasEditableStyle() != startNodeIsEditable)
+        if (boundaryCrossingRule == CannotCrossEditingBoundary && !nodeIsUserSelectAll(n) && hasEditableStyle(*n) != startNodeIsEditable)
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
-            while (n && n->hasEditableStyle() != startNodeIsEditable)
+            while (n && hasEditableStyle(*n) != startNodeIsEditable)
                 n = Strategy::next(*n, stayInsideBlock);
             if (!n || !n->isDescendantOf(highestRoot))
                 break;
@@ -2364,7 +2364,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
     // FIXME: PositionIterator should respect Before and After positions.
     PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionTemplate<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
-    bool startEditable = startNode->hasEditableStyle();
+    bool startEditable = hasEditableStyle(*startNode);
     Node* lastNode = startNode;
     bool boundaryCrossed = false;
     for (; !currentPos.atStart(); currentPos.decrement()) {
@@ -2373,7 +2373,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
         // to avoid the expense of computing hasEditableStyle().
         if (currentNode != lastNode) {
             // Don't change editability.
-            bool currentEditable = currentNode->hasEditableStyle();
+            bool currentEditable = hasEditableStyle(*currentNode);
             if (startEditable != currentEditable) {
                 if (rule == CannotCrossEditingBoundary)
                     break;
@@ -2505,7 +2505,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
     // FIXME: PositionIterator should respect Before and After positions.
     PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionTemplate<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
-    bool startEditable = startNode->hasEditableStyle();
+    bool startEditable = hasEditableStyle(*startNode);
     Node* lastNode = startNode;
     bool boundaryCrossed = false;
     for (; !currentPos.atEnd(); currentPos.increment()) {
@@ -2514,7 +2514,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
         // to avoid the expense of computing hasEditableStyle().
         if (currentNode != lastNode) {
             // Don't change editability.
-            bool currentEditable = currentNode->hasEditableStyle();
+            bool currentEditable = hasEditableStyle(*currentNode);
             if (startEditable != currentEditable) {
                 if (rule == CannotCrossEditingBoundary)
                     break;
@@ -2636,15 +2636,15 @@ template <typename Strategy>
 static bool atEditingBoundary(const PositionTemplate<Strategy> positions)
 {
     PositionTemplate<Strategy> nextPosition = mostForwardCaretPosition(positions, CanCrossEditingBoundary);
-    if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
+    if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !hasEditableStyle(*nextPosition.anchorNode()))
         return true;
 
     PositionTemplate<Strategy> prevPosition = mostBackwardCaretPosition(positions, CanCrossEditingBoundary);
-    if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
+    if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !hasEditableStyle(*prevPosition.anchorNode()))
         return true;
 
-    return nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle()
-        && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle();
+    return nextPosition.isNotNull() && !hasEditableStyle(*nextPosition.anchorNode())
+        && prevPosition.isNotNull() && !hasEditableStyle(*prevPosition.anchorNode());
 }
 
 template <typename Strategy>
@@ -2700,12 +2700,12 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
         if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*anchorNode)) {
             if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
                 return position.atFirstEditingPositionForNode();
-            return anchorNode->hasEditableStyle() && atEditingBoundary(position);
+            return hasEditableStyle(*anchorNode) && atEditingBoundary(position);
         }
     } else {
         LocalFrame* frame = anchorNode->document().frame();
         bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || anchorNode->hasEditableStyle()) && atEditingBoundary(position);
+        return (caretBrowsing || hasEditableStyle(*anchorNode)) && atEditingBoundary(position);
     }
 
     return false;

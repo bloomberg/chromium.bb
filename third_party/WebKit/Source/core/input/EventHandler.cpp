@@ -553,7 +553,7 @@ bool EventHandler::useHandCursor(Node* node, bool isOverLink)
     if (!node)
         return false;
 
-    return ((isOverLink || isSubmitImage(node)) && !node->hasEditableStyle());
+    return ((isOverLink || isSubmitImage(node)) && !hasEditableStyle(*node));
 }
 
 void EventHandler::cursorUpdateTimerFired(Timer<EventHandler>*)
@@ -740,7 +740,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
 
 OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node* node, const Cursor& iBeam)
 {
-    bool editable = (node && node->hasEditableStyle());
+    bool editable = (node && hasEditableStyle(*node));
 
     const bool isOverLink = !selectionController().mouseDownMayStartSelect() && result.isOverLink();
     if (useHandCursor(node, isOverLink))

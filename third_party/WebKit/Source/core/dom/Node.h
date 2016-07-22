@@ -419,9 +419,6 @@ public:
     bool isContentEditable() const;
     bool isContentRichlyEditable() const;
 
-    bool hasEditableStyle(EditableType = ContentIsEditable) const;
-    bool layoutObjectIsRichlyEditable(EditableType = ContentIsEditable) const;
-
     virtual LayoutRect boundingBox() const;
     IntRect pixelSnappedBoundingBox() const { return pixelSnappedIntRect(boundingBox()); }
 
@@ -864,6 +861,8 @@ inline ScriptWrappable* ScriptWrappable::fromNode(Node* node)
 CORE_EXPORT bool isRootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
+CORE_EXPORT bool hasEditableStyle(const Node&, EditableType = ContentIsEditable);
+CORE_EXPORT bool layoutObjectIsRichlyEditable(const Node&, EditableType = ContentIsEditable);
 
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)

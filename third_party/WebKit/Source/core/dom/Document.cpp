@@ -360,7 +360,7 @@ static Widget* widgetForElement(const Element& focusedElement)
 
 static bool acceptsEditingFocus(const Element& element)
 {
-    DCHECK(element.hasEditableStyle());
+    DCHECK(hasEditableStyle(element));
 
     return element.document().frame() && rootEditableElement(element);
 }

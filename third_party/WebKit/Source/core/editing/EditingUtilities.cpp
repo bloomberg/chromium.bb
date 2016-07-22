@@ -269,7 +269,7 @@ ContainerNode* highestEditableRoot(const Position& position, EditableType editab
 
     ContainerNode* node = highestRoot->parentNode();
     while (node) {
-        if (node->hasEditableStyle(editableType))
+        if (hasEditableStyle(*node, editableType))
             highestRoot = node;
         if (isHTMLBodyElement(*node))
             break;
@@ -303,7 +303,7 @@ bool isEditablePosition(const Position& position, EditableType editableType)
 
     if (node->isDocumentNode())
         return false;
-    return node->hasEditableStyle(editableType);
+    return hasEditableStyle(*node, editableType);
 }
 
 bool isEditablePosition(const PositionInFlatTree& p, EditableType editableType)
@@ -327,7 +327,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     if (isDisplayInsideTable(node))
         node = node->parentNode();
 
-    return node->layoutObjectIsRichlyEditable(editableType);
+    return layoutObjectIsRichlyEditable(*node, editableType);
 }
 
 Element* rootEditableElementOf(const Position& p, EditableType editableType)
@@ -509,7 +509,7 @@ PositionTemplate<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(con
 {
     DCHECK(!needsLayoutTreeUpdate(highestRoot)) << position << ' ' << highestRoot;
     // position falls before highestRoot.
-    if (position.compareTo(PositionTemplate<Strategy>::firstPositionInNode(&highestRoot)) == -1 && highestRoot.hasEditableStyle())
+    if (position.compareTo(PositionTemplate<Strategy>::firstPositionInNode(&highestRoot)) == -1 && hasEditableStyle(highestRoot))
         return PositionTemplate<Strategy>::firstPositionInNode(&highestRoot);
 
     PositionTemplate<Strategy> editablePosition = position;
@@ -1102,7 +1102,7 @@ Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName
     ContainerNode* root = highestEditableRoot(p);
     Element* ancestor = p.anchorNode()->isElementNode() ? toElement(p.anchorNode()) : p.anchorNode()->parentElement();
     for (; ancestor; ancestor = ancestor->parentElement()) {
-        if (root && !ancestor->hasEditableStyle())
+        if (root && !hasEditableStyle(*ancestor))
             continue;
         if (ancestor->hasTagName(tagName))
             return ancestor;
@@ -1125,7 +1125,7 @@ static Node* enclosingNodeOfTypeAlgorithm(const PositionTemplate<Strategy>& p, b
     for (Node* n = p.anchorNode(); n; n = Strategy::parent(*n)) {
         // Don't return a non-editable node if the input position was editable, since
         // the callers from editing will no doubt want to perform editing inside the returned node.
-        if (root && !n->hasEditableStyle())
+        if (root && !hasEditableStyle(*n))
             continue;
         if (nodeIsOfType(n))
             return n;
@@ -1151,7 +1151,7 @@ Node* highestEnclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const N
     Node* highest = nullptr;
     ContainerNode* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : nullptr;
     for (Node* n = p.computeContainerNode(); n && n != stayWithin; n = n->parentNode()) {
-        if (root && !n->hasEditableStyle())
+        if (root && !hasEditableStyle(*n))
             continue;
         if (nodeIsOfType(n))
             highest = n;
@@ -1288,7 +1288,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
         return false;
 
     return firstList->hasTagName(secondList->tagQName()) // make sure the list types match (ol vs. ul)
-    && firstList->hasEditableStyle() && secondList->hasEditableStyle() // both lists are editable
+    && hasEditableStyle(*firstList) && hasEditableStyle(*secondList) // both lists are editable
     && rootEditableElement(*firstList) == rootEditableElement(*secondList) // don't cross editing boundaries
     && isVisiblyAdjacent(Position::inParentAfterNode(*firstList), Position::inParentBeforeNode(*secondList));
     // Make sure there is no visible content between this li and the previous list
@@ -1730,7 +1730,7 @@ bool areIdenticalElements(const Node& first, const Node& second)
     if (!firstElement.hasEquivalentAttributes(&secondElement))
         return false;
 
-    return firstElement.hasEditableStyle() && secondElement.hasEditableStyle();
+    return hasEditableStyle(firstElement) && hasEditableStyle(secondElement);
 }
 
 bool isNonTableCellHTMLBlockElement(const Node* node)

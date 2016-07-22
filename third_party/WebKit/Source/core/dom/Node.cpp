@@ -597,26 +597,26 @@ static bool isEditableToAccessibility(const Node& node, EditableLevel editableLe
 }
 
 // TODO(yoichio): Move to core/editing
-bool Node::hasEditableStyle(EditableType editableType) const
+bool hasEditableStyle(const Node& node, EditableType editableType)
 {
     switch (editableType) {
     case ContentIsEditable:
-        return blink::hasEditableStyle(*this, Editable);
+        return blink::hasEditableStyle(node, Editable);
     case HasEditableAXRole:
-        return isEditableToAccessibility(*this, Editable);
+        return isEditableToAccessibility(node, Editable);
     }
     NOTREACHED();
     return false;
 }
 
 // TODO(yoichio): Move to core/editing
-bool Node::layoutObjectIsRichlyEditable(EditableType editableType) const
+bool layoutObjectIsRichlyEditable(const Node& node, EditableType editableType)
 {
     switch (editableType) {
     case ContentIsEditable:
-        return blink::hasEditableStyle(*this, RichlyEditable);
+        return blink::hasEditableStyle(node, RichlyEditable);
     case HasEditableAXRole:
-        return isEditableToAccessibility(*this, RichlyEditable);
+        return isEditableToAccessibility(node, RichlyEditable);
     }
     NOTREACHED();
     return false;
@@ -1013,7 +1013,7 @@ bool Node::canStartSelection() const
     if (isDisabledFormControl(this))
         return false;
 
-    if (hasEditableStyle())
+    if (hasEditableStyle(*this))
         return true;
 
     if (layoutObject()) {
@@ -1142,7 +1142,7 @@ ContainerNode* Node::parentOrShadowHostOrTemplateHostNode() const
 // TODO(yoichio): Move to core/editing
 bool isRootEditableElement(const Node& node)
 {
-    return node.hasEditableStyle() && node.isElementNode() && (!node.parentNode() || !node.parentNode()->hasEditableStyle()
+    return hasEditableStyle(node) && node.isElementNode() && (!node.parentNode() || !hasEditableStyle(*node.parentNode())
         || !node.parentNode()->isElementNode() || &node == node.document().body());
 }
 
@@ -1161,7 +1161,7 @@ Element* rootEditableElement(const Node& node, EditableType editableType)
 Element* rootEditableElement(const Node& node)
 {
     const Node* result = nullptr;
-    for (const Node* n = &node; n && n->hasEditableStyle(); n = n->parentNode()) {
+    for (const Node* n = &node; n && hasEditableStyle(*n); n = n->parentNode()) {
         if (n->isElementNode())
             result = n;
         if (node.document().body() == n)
@@ -1657,7 +1657,7 @@ void Node::showNode(const char* prefix) const
         appendAttributeDesc(this, attrs, idAttr, " ID");
         appendAttributeDesc(this, attrs, classAttr, " CLASS");
         appendAttributeDesc(this, attrs, styleAttr, " STYLE");
-        if (hasEditableStyle())
+        if (hasEditableStyle(*this))
             attrs.append(" (editable)");
         if (document().focusedElement() == this)
             attrs.append(" (focused)");

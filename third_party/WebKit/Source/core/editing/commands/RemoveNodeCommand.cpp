@@ -64,7 +64,7 @@ void RemoveNodeCommand::doUnapply()
 {
     ContainerNode* parent = m_parent.release();
     Node* refChild = m_refChild.release();
-    if (!parent || !parent->hasEditableStyle())
+    if (!parent || !hasEditableStyle(*parent))
         return;
 
     parent->insertBefore(m_node.get(), refChild, IGNORE_EXCEPTION);

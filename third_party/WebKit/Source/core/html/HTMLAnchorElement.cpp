@@ -144,7 +144,7 @@ DEFINE_TRACE(HTMLAnchorElement)
 
 bool HTMLAnchorElement::supportsFocus() const
 {
-    if (hasEditableStyle())
+    if (hasEditableStyle(*this))
         return HTMLElement::supportsFocus();
     // If not a link we should still be able to focus the element if it has tabIndex.
     return isLink() || HTMLElement::supportsFocus();
@@ -260,7 +260,7 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
 
 void HTMLAnchorElement::setActive(bool down)
 {
-    if (hasEditableStyle())
+    if (hasEditableStyle(*this))
         return;
 
     ContainerNode::setActive(down);
@@ -318,7 +318,7 @@ bool HTMLAnchorElement::canStartSelection() const
 {
     if (!isLink())
         return HTMLElement::canStartSelection();
-    return hasEditableStyle();
+    return hasEditableStyle(*this);
 }
 
 bool HTMLAnchorElement::draggable() const
@@ -391,7 +391,7 @@ short HTMLAnchorElement::tabIndex() const
 
 bool HTMLAnchorElement::isLiveLink() const
 {
-    return isLink() && !hasEditableStyle();
+    return isLink() && !hasEditableStyle(*this);
 }
 
 void HTMLAnchorElement::sendPings(const KURL& destinationURL) const

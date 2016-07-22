@@ -399,7 +399,7 @@ bool HitTestResult::isContentEditable() const
         return !inputElement.isDisabledOrReadOnly() && inputElement.isTextField();
     }
 
-    return m_innerNode->hasEditableStyle();
+    return hasEditableStyle(*m_innerNode);
 }
 
 ListBasedHitTestBehavior HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& location, const LayoutRect& rect)

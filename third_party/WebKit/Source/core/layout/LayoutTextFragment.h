@@ -42,7 +42,7 @@ public:
 
     bool isTextFragment() const override { return true; }
 
-    bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
+    bool canBeSelectionLeaf() const override { return node() && hasEditableStyle(*node()); }
 
     unsigned start() const { return m_start; }
     unsigned fragmentLength() const { return m_fragmentLength; }

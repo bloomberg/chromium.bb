@@ -494,10 +494,10 @@ bool AXLayoutObject::isReadOnly() const
     if (isWebArea()) {
         Document& document = m_layoutObject->document();
         HTMLElement* body = document.body();
-        if (body && body->hasEditableStyle())
+        if (body && hasEditableStyle(*body))
             return false;
 
-        return !document.hasEditableStyle();
+        return !hasEditableStyle(document);
     }
 
     return AXNodeObject::isReadOnly();

@@ -1025,7 +1025,7 @@ Element* FocusController::findFocusableElementInShadowHost(const Element& shadow
 
 static bool relinquishesEditingFocus(const Element& element)
 {
-    DCHECK(element.hasEditableStyle());
+    DCHECK(hasEditableStyle(element));
     return element.document().frame() && rootEditableElement(element);
 }
 

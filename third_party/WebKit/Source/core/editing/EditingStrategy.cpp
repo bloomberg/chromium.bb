@@ -33,7 +33,7 @@ bool EditingAlgorithm<Traversal>::isEmptyNonEditableNodeInEditable(const Node* n
     // Flat Tree:
     //   <host><div ce><span1>unedittable</span></div></host>
     // e.g. editing/shadow/breaking-editing-boundaries.html
-    return !Traversal::hasChildren(*node) && !node->hasEditableStyle() && node->parentNode() && node->parentNode()->hasEditableStyle();
+    return !Traversal::hasChildren(*node) && !hasEditableStyle(*node) && node->parentNode() && hasEditableStyle(*node->parentNode());
 }
 
 template <typename Traversal>

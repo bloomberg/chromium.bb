@@ -424,7 +424,7 @@ DragOperation DragController::operationForLoad(DragData* dragData)
     ASSERT(dragData);
     Document* doc = m_page->deprecatedLocalMainFrame()->documentAtPoint(dragData->clientPosition());
 
-    if (doc && (m_didInitiateDrag || doc->isPluginDocument() || doc->hasEditableStyle()))
+    if (doc && (m_didInitiateDrag || doc->isPluginDocument() || hasEditableStyle(*doc)))
         return DragOperationNone;
     return dragOperation(dragData);
 }
@@ -564,9 +564,9 @@ bool DragController::canProcessDrag(DragData* dragData)
 
     if (isHTMLPlugInElement(*result.innerNode())) {
         HTMLPlugInElement* plugin = toHTMLPlugInElement(result.innerNode());
-        if (!plugin->canProcessDrag() && !result.innerNode()->hasEditableStyle())
+        if (!plugin->canProcessDrag() && !hasEditableStyle(*result.innerNode()))
             return false;
-    } else if (!result.innerNode()->hasEditableStyle()) {
+    } else if (!hasEditableStyle(*result.innerNode())) {
         return false;
     }
 

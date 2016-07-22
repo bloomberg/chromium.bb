@@ -157,7 +157,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
     VisiblePosition visibleEndOfParagraph = endOfParagraph(visibleStartOfParagraph);
 
     HTMLElement* enclosingElement = toHTMLElement(enclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), &isHTMLListOrBlockquoteElement));
-    if (!enclosingElement || !enclosingElement->parentNode()->hasEditableStyle()) // We can't outdent if there is no place to go!
+    if (!enclosingElement || !hasEditableStyle(*enclosingElement->parentNode())) // We can't outdent if there is no place to go!
         return;
 
     // Use InsertListCommand to remove the selection from the list
@@ -190,7 +190,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
             if (Element* splitPointParent = splitPoint->parentElement()) {
                 if (splitPointParent->hasTagName(blockquoteTag)
                     && !splitPoint->hasTagName(blockquoteTag)
-                    && splitPointParent->parentNode()->hasEditableStyle()) // We can't outdent if there is no place to go!
+                    && hasEditableStyle(*splitPointParent->parentNode())) // We can't outdent if there is no place to go!
                     splitElement(splitPointParent, splitPoint);
             }
         }

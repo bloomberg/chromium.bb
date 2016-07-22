@@ -807,7 +807,7 @@ bool LayoutBox::canBeProgramaticallyScrolled() const
     if (scrollsOverflow() && hasScrollableOverflow)
         return true;
 
-    return node && node->hasEditableStyle();
+    return node && hasEditableStyle(*node);
 }
 
 void LayoutBox::autoscroll(const IntPoint& positionInRootFrame)

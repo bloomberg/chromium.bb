@@ -321,7 +321,7 @@ bool CompositeEditCommand::isRemovableBlock(const Node* node)
 void CompositeEditCommand::insertNodeBefore(Node* insertChild, Node* refChild, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
     DCHECK_NE(document().body(), refChild);
-    ABORT_EDITING_COMMAND_IF(!refChild->parentNode()->hasEditableStyle() && refChild->parentNode()->inActiveDocument());
+    ABORT_EDITING_COMMAND_IF(!hasEditableStyle(*refChild->parentNode()) && refChild->parentNode()->inActiveDocument());
     applyCommandToComposite(InsertNodeBeforeCommand::create(insertChild, refChild, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 
@@ -386,7 +386,7 @@ void CompositeEditCommand::appendNode(Node* node, ContainerNode* parent, Editing
     // produced by JavaScript.
     ABORT_EDITING_COMMAND_IF(!canHaveChildrenForEditing(parent)
         && !(parent->isElementNode() && toElement(parent)->tagQName() == objectTag));
-    ABORT_EDITING_COMMAND_IF(!parent->hasEditableStyle() && parent->inActiveDocument());
+    ABORT_EDITING_COMMAND_IF(!hasEditableStyle(*parent) && parent->inActiveDocument());
     applyCommandToComposite(AppendNodeCommand::create(parent, node), editingState);
 }
 
@@ -659,7 +659,7 @@ bool CompositeEditCommand::shouldRebalanceLeadingWhitespaceFor(const String& tex
 bool CompositeEditCommand::canRebalance(const Position& position) const
 {
     Node* node = position.computeContainerNode();
-    if (!position.isOffsetInAnchor() || !node || !node->isTextNode() || !node->layoutObjectIsRichlyEditable())
+    if (!position.isOffsetInAnchor() || !node || !node->isTextNode() || !layoutObjectIsRichlyEditable(*node))
         return false;
 
     Text* textNode = toText(node);
@@ -1402,7 +1402,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
     // FIXME: Can't we do something better when the immediate parent wasn't a list node?
     if (!listNode
         || (!isHTMLUListElement(*listNode) && !isHTMLOListElement(*listNode))
-        || !listNode->hasEditableStyle()
+        || !hasEditableStyle(*listNode)
         || listNode == rootEditableElement(*emptyListItem))
         return false;
 

@@ -165,14 +165,14 @@ Node* enclosingBlockToSplitTreeTo(Node* startNode)
     DCHECK(startNode);
     Node* lastBlock = startNode;
     for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*startNode)) {
-        if (!runner.hasEditableStyle())
+        if (!hasEditableStyle(runner))
             return lastBlock;
-        if (isTableCell(&runner) || isHTMLBodyElement(&runner) || !runner.parentNode() || !runner.parentNode()->hasEditableStyle() || isElementForFormatBlock(&runner))
+        if (isTableCell(&runner) || isHTMLBodyElement(&runner) || !runner.parentNode() || !hasEditableStyle(*runner.parentNode()) || isElementForFormatBlock(&runner))
             return &runner;
         if (isEnclosingBlock(&runner))
             lastBlock = &runner;
         if (isHTMLListElement(&runner))
-            return runner.parentNode()->hasEditableStyle() ? runner.parentNode() : &runner;
+            return hasEditableStyle(*runner.parentNode()) ? runner.parentNode() : &runner;
     }
     return lastBlock;
 }

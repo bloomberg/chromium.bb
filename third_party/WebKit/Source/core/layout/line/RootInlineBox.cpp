@@ -407,7 +407,7 @@ LineLayoutBlockFlow RootInlineBox::block() const
 
 static bool isEditableLeaf(InlineBox* leaf)
 {
-    return leaf && leaf->getLineLayoutItem().node() && leaf->getLineLayoutItem().node()->hasEditableStyle();
+    return leaf && leaf->getLineLayoutItem().node() && hasEditableStyle(*leaf->getLineLayoutItem().node());
 }
 
 InlineBox* RootInlineBox::closestLeafChildForPoint(const LayoutPoint& pointInContents, bool onlyEditableLeaves)

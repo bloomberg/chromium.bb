@@ -47,7 +47,7 @@ void SplitTextNodeContainingElementCommand::doApply(EditingState*)
     splitTextNode(m_text.get(), m_offset);
 
     Element* parent = m_text->parentElement();
-    if (!parent || !parent->parentElement() || !parent->parentElement()->hasEditableStyle())
+    if (!parent || !parent->parentElement() || !hasEditableStyle(*parent->parentElement()))
         return;
 
     LayoutObject* parentLayoutObject = parent->layoutObject();

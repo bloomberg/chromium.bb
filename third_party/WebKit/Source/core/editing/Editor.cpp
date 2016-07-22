@@ -319,7 +319,7 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const
     if (!startContainer || !endContainer)
         return false;
 
-    if (!startContainer->hasEditableStyle() || !endContainer->hasEditableStyle())
+    if (!hasEditableStyle(*startContainer) || !hasEditableStyle(*endContainer))
         return false;
 
     if (range.isCollapsed()) {
@@ -1400,7 +1400,7 @@ void Editor::tidyUpHTMLStructure(Document& document)
 {
     // hasEditableStyle() needs up-to-date ComputedStyle.
     document.updateStyleAndLayoutTree();
-    bool needsValidStructure = document.hasEditableStyle() || (document.documentElement() && document.documentElement()->hasEditableStyle());
+    bool needsValidStructure = hasEditableStyle(document) || (document.documentElement() && hasEditableStyle(*document.documentElement()));
     if (!needsValidStructure)
         return;
     Element* existingHead = nullptr;

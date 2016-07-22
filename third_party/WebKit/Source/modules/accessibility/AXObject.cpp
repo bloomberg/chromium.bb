@@ -996,7 +996,7 @@ bool AXObject::isMultiline() const
     if (isHTMLTextAreaElement(*node))
         return true;
 
-    if (node->hasEditableStyle())
+    if (hasEditableStyle(*node))
         return true;
 
     if (!isNativeTextControl() && !isNonNativeTextControl())

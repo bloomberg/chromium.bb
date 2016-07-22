@@ -1088,7 +1088,7 @@ static inline bool isEditingBoundary(LayoutObject* ancestor, LineLayoutBox child
     ASSERT(!ancestor || ancestor->nonPseudoNode());
     ASSERT(child && child.nonPseudoNode());
     return !ancestor || !ancestor->parent() || (ancestor->hasLayer() && ancestor->parent()->isLayoutView())
-        || ancestor->nonPseudoNode()->hasEditableStyle() == child.nonPseudoNode()->hasEditableStyle();
+        || hasEditableStyle(*ancestor->nonPseudoNode()) == hasEditableStyle(*child.nonPseudoNode());
 }
 
 // FIXME: This function should go on LayoutObject.

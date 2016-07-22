@@ -62,7 +62,7 @@ void DeleteFromTextNodeCommand::doUnapply()
 {
     DCHECK(m_node);
 
-    if (!m_node->hasEditableStyle())
+    if (!hasEditableStyle(*m_node))
         return;
 
     m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);

@@ -786,7 +786,7 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
         return;
 
     // This method's purpose is it to make it easier to select iframes (in order to delete them).  Don't do anything if the iframe isn't deletable.
-    if (!ownerElementParent->hasEditableStyle())
+    if (!blink::hasEditableStyle(*ownerElementParent))
         return;
 
     // Create compute positions before and after the element.
@@ -1176,7 +1176,7 @@ void FrameSelection::setSelectionFromNone()
 
     Document* document = m_frame->document();
     bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-    if (!isNone() || !(document->hasEditableStyle() || caretBrowsing))
+    if (!isNone() || !(blink::hasEditableStyle(*document) || caretBrowsing))
         return;
 
     Element* documentElement = document->documentElement();

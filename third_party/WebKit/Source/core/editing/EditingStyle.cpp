@@ -747,7 +747,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
     TriState state = FalseTriState;
     bool nodeIsStart = true;
     for (Node& node : NodeTraversal::startsAt(*selection.start().anchorNode())) {
-        if (node.layoutObject() && node.hasEditableStyle()) {
+        if (node.layoutObject() && hasEditableStyle(node)) {
             CSSComputedStyleDeclaration* nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
                 // If the selected element has <sub> or <sup> ancestor element, apply the corresponding

@@ -43,7 +43,7 @@ MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(Element* first, Ele
 
 void MergeIdenticalElementsCommand::doApply(EditingState*)
 {
-    if (m_element1->nextSibling() != m_element2 || !m_element1->hasEditableStyle() || !m_element2->hasEditableStyle())
+    if (m_element1->nextSibling() != m_element2 || !hasEditableStyle(*m_element1) || !hasEditableStyle(*m_element2))
         return;
 
     m_atChild = m_element2->firstChild();
@@ -65,7 +65,7 @@ void MergeIdenticalElementsCommand::doUnapply()
     Node* atChild = m_atChild.release();
 
     ContainerNode* parent = m_element2->parentNode();
-    if (!parent || !parent->hasEditableStyle())
+    if (!parent || !hasEditableStyle(*parent))
         return;
 
     TrackExceptionState exceptionState;
