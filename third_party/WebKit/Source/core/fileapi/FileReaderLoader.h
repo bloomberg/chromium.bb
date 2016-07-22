@@ -107,7 +107,6 @@ public:
 
 private:
     void startInternal(ExecutionContext&, const Stream*, PassRefPtr<BlobDataHandle>);
-    void terminate();
     void cleanup();
 
     void failed(FileError::ErrorCode);

@@ -152,9 +152,9 @@ public:
     // After any of these methods is called, the loader won't call any of the
     // ThreadableLoaderClient methods.
     //
-    // When a ThreadableLoader is destructed, any of the
-    // ThreadableLoaderClient methods is NOT called in response to the
-    // destruction either synchronously or after destruction.
+    // A user must guarantee that the loading completes before the attached
+    // client gets invalid. Also, a user must guarantee that the loading
+    // completes before the ThreadableLoader is destructed.
     //
     // When ThreadableLoader::cancel() is called,
     // ThreadableLoaderClient::didFail() is called with a ResourceError

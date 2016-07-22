@@ -40,6 +40,7 @@
 #include "core/streams/Stream.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
+#include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebURLRequest.h"
@@ -71,7 +72,7 @@ FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* cl
 
 FileReaderLoader::~FileReaderLoader()
 {
-    terminate();
+    cleanup();
     if (!m_urlForReading.isEmpty()) {
         if (m_urlForReadingIsStream)
             BlobRegistry::unregisterStreamURL(m_urlForReading);
@@ -150,20 +151,15 @@ void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& s
 void FileReaderLoader::cancel()
 {
     m_errorCode = FileError::ABORT_ERR;
-    terminate();
-}
-
-void FileReaderLoader::terminate()
-{
-    if (m_loader) {
-        m_loader->cancel();
-        cleanup();
-    }
+    cleanup();
 }
 
 void FileReaderLoader::cleanup()
 {
-    m_loader = nullptr;
+    if (m_loader) {
+        m_loader->cancel();
+        m_loader = nullptr;
+    }
 
     // If we get any error, we do not need to keep a buffer around.
     if (m_errorCode) {
@@ -280,8 +276,10 @@ void FileReaderLoader::didFinishLoading(unsigned long, double)
         m_client->didFinishLoading();
 }
 
-void FileReaderLoader::didFail(const ResourceError&)
+void FileReaderLoader::didFail(const ResourceError& error)
 {
+    if (error.isCancellation())
+        return;
     // If we're aborting, do not proceed with normal error handling since it is covered in aborting code.
     if (m_errorCode == FileError::ABORT_ERR)
         return;

@@ -78,6 +78,7 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
 
 WorkerThreadableLoader::~WorkerThreadableLoader()
 {
+    DCHECK(m_workerClientWrapper->done());
     m_bridge->destroy();
     m_bridge = nullptr;
 }

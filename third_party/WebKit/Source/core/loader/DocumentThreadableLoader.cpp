@@ -352,7 +352,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
 
 DocumentThreadableLoader::~DocumentThreadableLoader()
 {
-    m_client = nullptr;
+    CHECK(!m_client);
 
     // TODO(oilpan): Remove this once DocumentThreadableLoader is once again a ResourceOwner.
     clearResource();
@@ -948,16 +948,19 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     ResourceError error = resource ? resource->resourceError() : ResourceError();
 
     InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
+    ThreadableLoaderClient* client = m_client;
 
     if (!resource) {
-        m_client->didFail(error);
+        m_client = nullptr;
+        client->didFail(error);
         return;
     }
 
     // No exception for file:/// resources, see <rdar://problem/4962298>.
     // Also, if we have an HTTP response, then it wasn't a network error in fact.
     if (!error.isNull() && !requestURL.isLocalFile() && response.httpStatusCode() <= 0) {
-        m_client->didFail(error);
+        m_client = nullptr;
+        client->didFail(error);
         return;
     }
 
@@ -965,7 +968,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     // request and response URLs. This isn't a perfect test though, since a server can serve a redirect to the same URL that was
     // requested. Also comparing the request and response URLs as strings will fail if the requestURL still has its credentials.
     if (requestURL != response.url() && !isAllowedRedirect(response.url())) {
-        m_client->didFailRedirectCheck();
+        m_client = nullptr;
+        client->didFailRedirectCheck();
         return;
     }
 

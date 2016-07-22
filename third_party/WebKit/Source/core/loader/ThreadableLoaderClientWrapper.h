@@ -90,29 +90,41 @@ public:
     void didFinishLoading(unsigned long identifier, double finishTime)
     {
         m_done = true;
-        if (m_client)
-            m_client->didFinishLoading(identifier, finishTime);
+        if (m_client) {
+            ThreadableLoaderClient* client = m_client;
+            m_client = nullptr;
+            client->didFinishLoading(identifier, finishTime);
+        }
     }
 
     void didFail(const ResourceError& error)
     {
         m_done = true;
-        if (m_client)
-            m_client->didFail(error);
+        if (m_client) {
+            ThreadableLoaderClient* client = m_client;
+            m_client = nullptr;
+            client->didFail(error);
+        }
     }
 
     void didFailAccessControlCheck(const ResourceError& error)
     {
         m_done = true;
-        if (m_client)
-            m_client->didFailAccessControlCheck(error);
+        if (m_client) {
+            ThreadableLoaderClient* client = m_client;
+            m_client = nullptr;
+            client->didFailAccessControlCheck(error);
+        }
     }
 
     void didFailRedirectCheck()
     {
         m_done = true;
-        if (m_client)
-            m_client->didFailRedirectCheck();
+        if (m_client) {
+            ThreadableLoaderClient* client = m_client;
+            m_client = nullptr;
+            client->didFailRedirectCheck();
+        }
     }
 
     void didDownloadData(int dataLength)
