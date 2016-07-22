@@ -449,10 +449,11 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
   DVLOG(1) << "Merging profiles:\nSource = " << profile << "\nDest = " << *this;
 
   // The comparator's merge operations are biased to prefer the data in the
-  // first profile parameter when the data is the same modulo case. We pass the
-  // incoming profile in this position to prefer accepting updates instead of
-  // preserving the original data. I.e., passing the incoming profile first
-  // accepts case changes, the other ways does not.
+  // first profile parameter when the data is the same modulo case. We expect
+  // the caller to pass the incoming profile in this position to prefer
+  // accepting updates instead of preserving the original data. I.e., passing
+  // the incoming profile first accepts case and diacritic changes, for example,
+  // the other ways does not.
   if (!comparator.MergeNames(profile, *this, &name) ||
       !comparator.MergeEmailAddresses(profile, *this, &email) ||
       !comparator.MergeCompanyNames(profile, *this, &company) ||
@@ -462,16 +463,24 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
     return false;
   }
 
+  // TODO(rogerm): As implemented, "origin" really denotes "domain of last use".
+  // Find a better merge heuristic. Ditto for language code.
   set_origin(profile.origin());
   set_language_code(profile.language_code());
-  set_use_count(profile.use_count() + use_count());
-  if (profile.use_date() > use_date())
-    set_use_date(profile.use_date());
 
-  // Now that the preferred values have been obtained, update the fields which
-  // need to be modified, if any. Note: that we're comparing the fields for
-  // representational equality below (i.e., are the values byte for byte the
-  // same).
+  // Update the use-count to be the max of the two merge-counts. Alternatively,
+  // we could have summed the two merge-counts. We don't sum because it skews
+  // the frecency value on merge and double counts usage on profile reuse.
+  // Profile reuse is accounted for on RecordUseOf() on selection of a profile
+  // in the autofill drop-down; we don't need to account for that here. Further,
+  // a similar, fully-typed submission that merges to an existing profile should
+  // not be counted as a re-use of that profile.
+  set_use_count(std::max(profile.use_count(), use_count()));
+  set_use_date(std::max(profile.use_date(), use_date()));
+
+  // Update the fields which need to be modified, if any. Note: that we're
+  // comparing the fields for representational equality below (i.e., are the
+  // values byte for byte the same).
 
   bool modified = false;
 

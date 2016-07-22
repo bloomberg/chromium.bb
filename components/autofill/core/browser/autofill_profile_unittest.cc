@@ -880,7 +880,7 @@ TEST(AutofillProfileTest, MergeDataFrom_SameProfile) {
   AutofillProfile b = a;
   b.set_guid(base::GenerateGUID());
   EXPECT_TRUE(a.MergeDataFrom(b, "en-US"));
-  EXPECT_EQ(2u, a.use_count());
+  EXPECT_EQ(1u, a.use_count());
 
   // Now the profile is fully populated. Merging it again has no effect (except
   // for usage statistics).
@@ -888,7 +888,7 @@ TEST(AutofillProfileTest, MergeDataFrom_SameProfile) {
   c.set_guid(base::GenerateGUID());
   c.set_use_count(3);
   EXPECT_FALSE(a.MergeDataFrom(c, "en-US"));
-  EXPECT_EQ(5u, a.use_count());
+  EXPECT_EQ(3u, a.use_count());
 }
 
 TEST(AutofillProfileTest, OverwriteName_AddNameFull) {

@@ -377,6 +377,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeSimilarProfiles) {
   profiles_from_web_db.back()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   profiles_from_web_db.back()->SetRawInfo(ADDRESS_HOME_LINE1,
                                           ASCIIToUTF16("1 1st st"));
+  profiles_from_web_db.back()->set_use_count(27);
   profiles_from_web_db.push_back(
       new AutofillProfile(guid_present2, origin_present2));
   profiles_from_web_db.back()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Tom"));
@@ -384,17 +385,19 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeSimilarProfiles) {
                                           ASCIIToUTF16("2 2nd st"));
 
   // The synced profiles are identical to the local ones, except that the guids
-  // are different.
+  // and use_count values are different.
   syncer::SyncDataList data_list;
   AutofillProfile profile1(guid_synced1, origin_synced1);
   profile1.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   profile1.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1 1st st"));
   profile1.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Frobbers, Inc."));
+  profile1.set_use_count(13);
   data_list.push_back(autofill_syncable_service_.CreateData(profile1));
   AutofillProfile profile2(guid_synced2, origin_synced2);
   profile2.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Tom"));
   profile2.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("2 2nd st"));
   profile2.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Fizzbang, LLC."));
+  profile1.set_use_count(4);
   data_list.push_back(autofill_syncable_service_.CreateData(profile2));
 
   // The first profile should have its origin updated.
@@ -403,8 +406,8 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeSimilarProfiles) {
   AutofillProfile expected_profile(profile1);
   expected_profile.set_origin(origin_present1);
   expected_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John"));
-  // Merging two profile adds their user count.
-  expected_profile.set_use_count(2);
+  // Merging two profile takes their max use count.
+  expected_profile.set_use_count(27);
   syncer::SyncChangeList expected_change_list;
   expected_change_list.push_back(
       syncer::SyncChange(FROM_HERE,
@@ -670,7 +673,7 @@ TEST_F(AutofillProfileSyncableServiceTest,
   EXPECT_EQ(base::Time::FromTimeT(35), into_profile.use_date());
 }
 
-// Tests that MergeSimilarProfiles saves the sum of the use counts of the two
+// Tests that MergeSimilarProfiles saves the max of the use counts of the two
 // profiles in |into_profile|.
 TEST_F(AutofillProfileSyncableServiceTest,
        MergeSimilarProfiles_NonZeroUseCounts) {
@@ -680,14 +683,14 @@ TEST_F(AutofillProfileSyncableServiceTest,
   from_profile.set_use_date(base::Time::FromTimeT(1234));
   into_profile.set_use_date(base::Time::FromTimeT(1234));
 
-  from_profile.set_use_count(5);
-  into_profile.set_use_count(12);
+  from_profile.set_use_count(12);
+  into_profile.set_use_count(5);
 
   // Expect true because the use count of |from_profile| was added to the use
   // count of |into_profile|.
   EXPECT_TRUE(AutofillProfileSyncableService::MergeSimilarProfiles(
       from_profile, &into_profile, "en-US"));
-  EXPECT_EQ(17U, into_profile.use_count());
+  EXPECT_EQ(12U, into_profile.use_count());
 }
 
 // Ensure that all profile fields are able to be synced up from the client to

@@ -4388,8 +4388,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
                   saved_profiles.front()->GetRawInfo(changed_field.field_type));
       }
       // Verify that the merged profile's use count, use date and modification
-      // date were updated.
-      EXPECT_EQ(2U, saved_profiles.front()->use_count());
+      // date were properly updated.
+      EXPECT_EQ(1U, saved_profiles.front()->use_count());
       EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
                 base::Time::Now() - saved_profiles.front()->use_date());
       EXPECT_GT(
@@ -4471,8 +4471,8 @@ TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
 
   // The new profile should be merged into the existing profile.
   EXPECT_EQ(profile.guid(), guid);
-  // The use count should have been incremented by one.
-  EXPECT_EQ(5U, profile.use_count());
+  // The use count should have be max(4, 1) => 4.
+  EXPECT_EQ(4U, profile.use_count());
   // The use date and modification dates should have been set to less than 500
   // milliseconds ago.
   EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
@@ -4642,10 +4642,9 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MergedProfileValues) {
   // The specified country from the imported profile shoudl be kept (no loss of
   // information).
   EXPECT_EQ(UTF8ToUTF16("US"), profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
-  // The use count that results from the merge should be the sum of the two
-  // saved profiles plus 1 (imported profile count).
-  EXPECT_EQ(profile1.use_count() + profile2.use_count() + profile3.use_count(),
-            profiles[0]->use_count());
+  // The use count that results from the merge should be the max of all the
+  // profiles use counts.
+  EXPECT_EQ(10U, profiles[0]->use_count());
   // The use date that results from the merge should be the one from the
   // profile1 since it was the most recently used profile.
   EXPECT_LT(profile1.use_date() - base::TimeDelta::FromSeconds(10),
@@ -5109,10 +5108,9 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
   EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
   // The country from |Homer1| profile should be kept (no loss of information).
   EXPECT_EQ(UTF8ToUTF16("US"), profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
-  // The use count that results from the merge should be the sum of Homer 1, 2
+  // The use count that results from the merge should be the max of Homer 1, 2
   // and 3's respective use counts.
-  EXPECT_EQ(Homer1.use_count() + Homer2.use_count() + Homer3.use_count(),
-            profiles[0]->use_count());
+  EXPECT_EQ(10U, profiles[0]->use_count());
   // The use date that results from the merge should be the one from the
   // |Homer1| since it was the most recently used profile.
   EXPECT_LT(Homer1.use_date() - base::TimeDelta::FromSeconds(5),
