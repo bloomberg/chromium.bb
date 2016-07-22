@@ -1000,7 +1000,6 @@
       'text/LocaleToScriptMapping.h',
       'text/LocaleWin.cpp',
       'text/LocaleWin.h',
-      'text/ParserUtilities.h',
       'text/PlatformLocale.cpp',
       'text/PlatformLocale.h',
       'text/QuotedPrintable.cpp',
