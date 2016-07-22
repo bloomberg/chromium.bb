@@ -8,6 +8,7 @@ import("//ios/third_party/earl_grey/ios_eg_test.gni")
 ios_eg_test("ios_web_shell_test") {
   sources = [
     "web_shell_navigation_egtest.mm",
+    "web_shell_page_state_egtest.mm",
   ]
 
   deps = [
@@ -61,6 +62,7 @@ bundle_data("bundle") {
   visibility = [ ":ios_web_shell_test_host" ]
   sources = [
     "http_server_files/basic_navigation_test.html",
+    "http_server_files/tall_page.html",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
