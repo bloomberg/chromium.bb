@@ -52,7 +52,9 @@ void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image) {
   DCHECK(box_layout_);
   DCHECK(!right_icon_);
 
-  right_icon_ = new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
+  right_icon_ = new views::ImageView();
+  right_icon_->SetImageSize(
+      gfx::Size(kTrayPopupDetailsIconWidth, kTrayPopupDetailsIconWidth));
   right_icon_->SetImage(image);
   right_icon_->SetEnabled(enabled());
   AddChildView(right_icon_);
