@@ -68,76 +68,6 @@ static_library("drive") {
   ]
 }
 
-static_library("drive_chromeos") {
-  sources = [
-    "chromeos/change_list_loader.cc",
-    "chromeos/change_list_loader.h",
-    "chromeos/change_list_loader_observer.h",
-    "chromeos/change_list_processor.cc",
-    "chromeos/change_list_processor.h",
-    "chromeos/directory_loader.cc",
-    "chromeos/directory_loader.h",
-    "chromeos/file_cache.cc",
-    "chromeos/file_cache.h",
-    "chromeos/file_system.cc",
-    "chromeos/file_system.h",
-    "chromeos/file_system/copy_operation.cc",
-    "chromeos/file_system/copy_operation.h",
-    "chromeos/file_system/create_directory_operation.cc",
-    "chromeos/file_system/create_directory_operation.h",
-    "chromeos/file_system/create_file_operation.cc",
-    "chromeos/file_system/create_file_operation.h",
-    "chromeos/file_system/download_operation.cc",
-    "chromeos/file_system/download_operation.h",
-    "chromeos/file_system/get_file_for_saving_operation.cc",
-    "chromeos/file_system/get_file_for_saving_operation.h",
-    "chromeos/file_system/move_operation.cc",
-    "chromeos/file_system/move_operation.h",
-    "chromeos/file_system/open_file_operation.cc",
-    "chromeos/file_system/open_file_operation.h",
-    "chromeos/file_system/operation_delegate.cc",
-    "chromeos/file_system/operation_delegate.h",
-    "chromeos/file_system/remove_operation.cc",
-    "chromeos/file_system/remove_operation.h",
-    "chromeos/file_system/search_operation.cc",
-    "chromeos/file_system/search_operation.h",
-    "chromeos/file_system/set_property_operation.cc",
-    "chromeos/file_system/set_property_operation.h",
-    "chromeos/file_system/touch_operation.cc",
-    "chromeos/file_system/touch_operation.h",
-    "chromeos/file_system/truncate_operation.cc",
-    "chromeos/file_system/truncate_operation.h",
-    "chromeos/file_system_interface.cc",
-    "chromeos/file_system_interface.h",
-    "chromeos/file_system_observer.h",
-    "chromeos/remove_stale_cache_files.cc",
-    "chromeos/remove_stale_cache_files.h",
-    "chromeos/resource_metadata.cc",
-    "chromeos/resource_metadata.h",
-    "chromeos/search_metadata.cc",
-    "chromeos/search_metadata.h",
-    "chromeos/sync/entry_revert_performer.cc",
-    "chromeos/sync/entry_revert_performer.h",
-    "chromeos/sync/entry_update_performer.cc",
-    "chromeos/sync/entry_update_performer.h",
-    "chromeos/sync/remove_performer.cc",
-    "chromeos/sync/remove_performer.h",
-    "chromeos/sync_client.cc",
-    "chromeos/sync_client.h",
-  ]
-  deps = [
-    ":drive",
-    "//base",
-    "//base:i18n",
-    "//components/prefs",
-    "//google_apis:google_apis",
-    "//net:net",
-  ]
-  public_deps = [
-    ":proto",
-  ]
-}
-
 proto_library("proto") {
   sources = [
     "drive.proto",
@@ -166,6 +96,75 @@ static_library("test_support") {
 }
 
 if (is_chromeos) {
+  source_set("drive_chromeos") {
+    sources = [
+      "chromeos/change_list_loader.cc",
+      "chromeos/change_list_loader.h",
+      "chromeos/change_list_loader_observer.h",
+      "chromeos/change_list_processor.cc",
+      "chromeos/change_list_processor.h",
+      "chromeos/directory_loader.cc",
+      "chromeos/directory_loader.h",
+      "chromeos/file_cache.cc",
+      "chromeos/file_cache.h",
+      "chromeos/file_system.cc",
+      "chromeos/file_system.h",
+      "chromeos/file_system/copy_operation.cc",
+      "chromeos/file_system/copy_operation.h",
+      "chromeos/file_system/create_directory_operation.cc",
+      "chromeos/file_system/create_directory_operation.h",
+      "chromeos/file_system/create_file_operation.cc",
+      "chromeos/file_system/create_file_operation.h",
+      "chromeos/file_system/download_operation.cc",
+      "chromeos/file_system/download_operation.h",
+      "chromeos/file_system/get_file_for_saving_operation.cc",
+      "chromeos/file_system/get_file_for_saving_operation.h",
+      "chromeos/file_system/move_operation.cc",
+      "chromeos/file_system/move_operation.h",
+      "chromeos/file_system/open_file_operation.cc",
+      "chromeos/file_system/open_file_operation.h",
+      "chromeos/file_system/operation_delegate.cc",
+      "chromeos/file_system/operation_delegate.h",
+      "chromeos/file_system/remove_operation.cc",
+      "chromeos/file_system/remove_operation.h",
+      "chromeos/file_system/search_operation.cc",
+      "chromeos/file_system/search_operation.h",
+      "chromeos/file_system/set_property_operation.cc",
+      "chromeos/file_system/set_property_operation.h",
+      "chromeos/file_system/touch_operation.cc",
+      "chromeos/file_system/touch_operation.h",
+      "chromeos/file_system/truncate_operation.cc",
+      "chromeos/file_system/truncate_operation.h",
+      "chromeos/file_system_interface.cc",
+      "chromeos/file_system_interface.h",
+      "chromeos/file_system_observer.h",
+      "chromeos/remove_stale_cache_files.cc",
+      "chromeos/remove_stale_cache_files.h",
+      "chromeos/resource_metadata.cc",
+      "chromeos/resource_metadata.h",
+      "chromeos/search_metadata.cc",
+      "chromeos/search_metadata.h",
+      "chromeos/sync/entry_revert_performer.cc",
+      "chromeos/sync/entry_revert_performer.h",
+      "chromeos/sync/entry_update_performer.cc",
+      "chromeos/sync/entry_update_performer.h",
+      "chromeos/sync/remove_performer.cc",
+      "chromeos/sync/remove_performer.h",
+      "chromeos/sync_client.cc",
+      "chromeos/sync_client.h",
+    ]
+    deps = [
+      ":drive",
+      "//base",
+      "//base:i18n",
+      "//components/prefs",
+      "//google_apis:google_apis",
+      "//net:net",
+    ]
+    public_deps = [
+      ":proto",
+    ]
+  }
   static_library("test_support_chromeos") {
     testonly = true
     sources = [
