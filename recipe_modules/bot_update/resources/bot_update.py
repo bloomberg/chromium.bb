@@ -834,7 +834,7 @@ def need_to_run_deps2git(repo_base, deps_file, deps_git_file):
                        last_known_deps_git_ref, cwd=repo_base).strip()
 
   # If the merge base of the last DEPS and last .DEPS.git file is not
-  # equivalent to the hash of the last DEPS file, that means the DEPS file
+  # equivilent to the hash of the last DEPS file, that means the DEPS file
   # was committed after the last .DEPS.git file.
   return last_known_deps_ref != merge_base_ref
 
@@ -966,7 +966,7 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
           'clone', '--no-checkout', '--local', '--shared', mirror_dir, sln_dir)
 
       try:
-        if not path.isdir(os.path.join(sln_dir, '.git')):
+        if not path.isdir(sln_dir):
           git(*clone_cmd)
         else:
           git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
