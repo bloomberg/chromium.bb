@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "remoting/client/client_context.h"
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/frame_consumer.h"
@@ -134,17 +135,17 @@ void SetTrue(int* out) {
 
 class SoftwareVideoRendererTest : public ::testing::Test {
  public:
-  SoftwareVideoRendererTest() : decode_thread_("TestDecodeThread") {
-    decode_thread_.Start();
-    renderer_.reset(new SoftwareVideoRenderer(decode_thread_.task_runner(),
-                                              &frame_consumer_, nullptr));
+  SoftwareVideoRendererTest() : context_(nullptr) {
+    context_.Start();
+    renderer_.reset(new SoftwareVideoRenderer(&frame_consumer_));
+    renderer_->Initialize(context_, nullptr);
     renderer_->OnSessionConfig(
         *protocol::SessionConfig::ForTestWithVerbatimVideo());
   }
 
  protected:
   base::MessageLoop message_loop_;
-  base::Thread decode_thread_;
+  ClientContext context_;
 
   TestFrameConsumer frame_consumer_;
   std::unique_ptr<SoftwareVideoRenderer> renderer_;

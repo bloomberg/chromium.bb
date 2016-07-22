@@ -85,6 +85,7 @@ source_set("unit_tests") {
     "chromoting_client_runtime_unittest.cc",
     "client_status_logger_unittest.cc",
     "client_telemetry_logger_unittest.cc",
+    "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
     "key_event_mapper_unittest.cc",
     "normalizing_input_filter_cros_unittest.cc",

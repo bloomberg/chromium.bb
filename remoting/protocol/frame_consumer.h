@@ -20,6 +20,8 @@ namespace protocol {
 
 class FrameConsumer {
  public:
+  virtual ~FrameConsumer() {}
+
   // List of supported pixel formats needed by various platforms.
   enum PixelFormat {
     FORMAT_BGRA,  // Used by the Pepper plugin.
@@ -37,7 +39,6 @@ class FrameConsumer {
 
  protected:
   FrameConsumer() {}
-  virtual ~FrameConsumer() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameConsumer);

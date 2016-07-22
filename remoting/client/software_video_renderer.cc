@@ -51,13 +51,10 @@ SoftwareVideoRenderer::SoftwareVideoRenderer(protocol::FrameConsumer* consumer)
 }
 
 SoftwareVideoRenderer::SoftwareVideoRenderer(
-    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    protocol::FrameConsumer* consumer,
-    protocol::FrameStatsConsumer* stats_consumer)
-    : decode_task_runner_(decode_task_runner),
-      consumer_(consumer),
-      stats_consumer_(stats_consumer),
-      weak_factory_(this) {}
+    std::unique_ptr<protocol::FrameConsumer> consumer)
+    : SoftwareVideoRenderer(consumer.get()) {
+  owned_consumer_ = std::move(consumer);
+}
 
 SoftwareVideoRenderer::~SoftwareVideoRenderer() {
   if (decoder_)

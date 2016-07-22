@@ -297,6 +297,8 @@
       'client/client_telemetry_logger.cc',
       'client/client_telemetry_logger.h',
       'client/client_user_interface.h',
+      'client/dual_buffer_frame_consumer.cc',
+      'client/dual_buffer_frame_consumer.h',
       'client/empty_cursor_filter.cc',
       'client/empty_cursor_filter.h',
       'client/key_event_mapper.cc',

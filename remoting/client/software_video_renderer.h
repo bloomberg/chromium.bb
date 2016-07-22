@@ -44,17 +44,10 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
   // be called on the same thread.
   explicit SoftwareVideoRenderer(protocol::FrameConsumer* consumer);
 
-  // Deprecated constructor. TODO(yuweih): remove.
-  // Constructs the renderer and initializes it immediately. Caller should not
-  // call Initialize() after using this constructor.
-  // All methods must be called on the same thread the renderer is created. The
-  // |decode_task_runner_| is used to decode the video packets. |consumer| and
-  // |stats_consumer| must outlive the renderer. |stats_consumer| may be
-  // nullptr, performance tracking is disabled in that case.
-  SoftwareVideoRenderer(
-      scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-      protocol::FrameConsumer* consumer,
-      protocol::FrameStatsConsumer* stats_consumer);
+  // Same as above, but take ownership of the |consumer|.
+  explicit SoftwareVideoRenderer(
+      std::unique_ptr<protocol::FrameConsumer> consumer);
+
   ~SoftwareVideoRenderer() override;
 
   // VideoRenderer interface.
@@ -77,7 +70,12 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
                        const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
+
+  // |owned_consumer_| and |consumer_| should refer to the same object if
+  // |owned_consumer_| is not null.
+  std::unique_ptr<protocol::FrameConsumer> owned_consumer_;
   protocol::FrameConsumer* const consumer_;
+
   protocol::FrameStatsConsumer* stats_consumer_ = nullptr;
 
   std::unique_ptr<VideoDecoder> decoder_;

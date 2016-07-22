@@ -246,6 +246,7 @@
         'client/chromoting_client_runtime_unittest.cc',
         'client/client_status_logger_unittest.cc',
         'client/client_telemetry_logger_unittest.cc',
+        'client/dual_buffer_frame_consumer_unittest.cc',
         'client/empty_cursor_filter_unittest.cc',
         'client/key_event_mapper_unittest.cc',
         'client/normalizing_input_filter_cros_unittest.cc',

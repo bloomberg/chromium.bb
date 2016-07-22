@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace webrtc {
 class DesktopFrame;
-class DesktopRegion;
 }  // namespace webrtc
 
 namespace remoting {
@@ -25,10 +25,11 @@ class GlDesktop {
   GlDesktop();
   virtual ~GlDesktop();
 
+  // |frame| can be either a full frame or updated regions only frame.
   void SetVideoFrame(std::unique_ptr<webrtc::DesktopFrame> frame);
 
-  // Sets the canvas on which the desktop will be drawn. Resumes the current
-  // state of the desktop to the context of the new canvas.
+  // Sets the canvas on which the desktop will be drawn. Caller must feed a
+  // full desktop frame after calling this function.
   // If |canvas| is nullptr, nothing will happen when calling Draw().
   void SetCanvas(GlCanvas* canvas);
 
@@ -37,7 +38,7 @@ class GlDesktop {
 
  private:
   std::unique_ptr<GlRenderLayer> layer_;
-  std::unique_ptr<webrtc::DesktopFrame> last_frame_;
+  webrtc::DesktopSize last_desktop_size_;
 
   DISALLOW_COPY_AND_ASSIGN(GlDesktop);
 };

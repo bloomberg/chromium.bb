@@ -27,33 +27,31 @@ void GlDesktop::SetCanvas(GlCanvas* canvas) {
     return;
   }
   layer_.reset(new GlRenderLayer(kTextureId, canvas));
-  if (last_frame_) {
-    layer_->SetTexture(last_frame_->data(), last_frame_->size().width(),
-                       last_frame_->size().height());
-  }
+  last_desktop_size_.set(0, 0);
 }
 
 void GlDesktop::SetVideoFrame(std::unique_ptr<webrtc::DesktopFrame> frame) {
-  if (layer_) {
-    if (!last_frame_ || !frame->size().equals(last_frame_->size())) {
-      layer_->SetTexture(frame->data(), frame->size().width(),
-                         frame->size().height());
-    } else {
-      for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
-          !i.IsAtEnd(); i.Advance()) {
-        const uint8_t* rect_start =
-            frame->GetFrameDataAtPos(i.rect().top_left());
-        layer_->UpdateTexture(
-            rect_start, i.rect().left(), i.rect().top(), i.rect().width(),
-            i.rect().height(), frame->stride());
-      }
+  if (!layer_) {
+    return;
+  }
+  if (!frame->size().equals(last_desktop_size_)) {
+    layer_->SetTexture(frame->data(), frame->size().width(),
+                       frame->size().height());
+    last_desktop_size_.set(frame->size().width(), frame->size().height());
+  } else {
+    for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
+        !i.IsAtEnd(); i.Advance()) {
+      const uint8_t* rect_start =
+          frame->GetFrameDataAtPos(i.rect().top_left());
+      layer_->UpdateTexture(
+          rect_start, i.rect().left(), i.rect().top(), i.rect().width(),
+          i.rect().height(), frame->stride());
     }
   }
-  last_frame_ = std::move(frame);
 }
 
 void GlDesktop::Draw() {
-  if (layer_ && last_frame_) {
+  if (layer_ && !last_desktop_size_.is_empty()) {
     layer_->Draw(1.f);
   }
 }
