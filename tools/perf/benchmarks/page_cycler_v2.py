@@ -155,3 +155,19 @@ class PageCyclerV2Top10Mobile(_PageCyclerV2):
     return page_sets.Top10MobilePageSet(run_no_page_interactions=True,
         cache_temperatures=[
             cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
+
+
+class PageCyclerV2ToughLayoutCases(_PageCyclerV2):
+  """Page loading for the slowest layouts observed in the Alexa top 1 million.
+
+  Recorded in July 2013.
+  """
+  page_set = page_sets.ToughLayoutCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_v2.tough_layout_cases'
+
+  def CreateStorySet(self, options):
+    return page_sets.ToughLayoutCasesPageSet(cache_temperatures=[
+          cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
