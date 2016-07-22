@@ -653,8 +653,14 @@ public class CustomTabsConnection {
      * Handle any clean up left after a session is destroyed.
      * @param session The session that has been destroyed.
      */
-    void cleanUpSession(CustomTabsSessionToken session) {
-        mClientManager.cleanupSession(session);
+    @VisibleForTesting
+    void cleanUpSession(final CustomTabsSessionToken session) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mClientManager.cleanupSession(session);
+            }
+        });
     }
 
     private boolean mayPrerender(CustomTabsSessionToken session) {

@@ -146,6 +146,30 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         });
     }
 
+    /*
+     * Tests that when the disconnection notification comes from a non-UI thread, Chrome doesn't
+     * crash. Non-regression test for crbug.com/623128.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderAndDisconnectOnOtherThread() {
+        final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
+        final Thread otherThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mCustomTabsConnection.cleanUpSession(token);
+            }
+        });
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                otherThread.start();
+            }
+        });
+        // Should not crash, hence no assertions below.
+    }
+
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testMayLaunchUrlKeepsSpareRendererWithoutPrerendering() {
