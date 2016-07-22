@@ -189,7 +189,9 @@ public class ThreadUtils {
      * Asserts that the current thread is running on the main thread.
      */
     public static void assertOnUiThread() {
-        assert runningOnUiThread();
+        if (BuildConfig.IS_DEBUG && !runningOnUiThread()) {
+            throw new IllegalStateException("Must be called on the Ui thread.");
+        }
     }
 
     /**
