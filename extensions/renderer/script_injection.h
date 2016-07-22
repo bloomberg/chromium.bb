@@ -98,14 +98,14 @@ class ScriptInjection {
   InjectionResult Inject(ScriptsRunInfo* scripts_run_info);
 
   // Inject any JS scripts into the frame for the injection.
-  void InjectJs();
+  void InjectJs(ScriptsRunInfo* scripts_run_info);
 
   // Called when JS injection for the given frame has been completed.
   void OnJsInjectionCompleted(
       const blink::WebVector<v8::Local<v8::Value> >& results);
 
   // Inject any CSS source into the frame for the injection.
-  void InjectCss();
+  void InjectCss(ScriptsRunInfo* scripts_run_info);
 
   // Notify that we will not inject, and mark it as acknowledged.
   void NotifyWillNotInject(ScriptInjector::InjectFailureReason reason);
