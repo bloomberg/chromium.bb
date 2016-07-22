@@ -24,8 +24,10 @@ CustomElementDefinition::CustomElementDefinition(
 CustomElementDefinition::CustomElementDefinition(
     const CustomElementDescriptor& descriptor,
     const HashSet<AtomicString>& observedAttributes)
-    : m_observedAttributes(observedAttributes)
-    , m_descriptor(descriptor)
+    : m_descriptor(descriptor)
+    , m_observedAttributes(observedAttributes)
+    , m_hasStyleAttributeChangedCallback(
+        observedAttributes.contains(HTMLNames::styleAttr.localName()))
 {
 }
 
@@ -127,9 +129,14 @@ void CustomElementDefinition::upgrade(Element* element)
 }
 
 bool CustomElementDefinition::hasAttributeChangedCallback(
-    const QualifiedName& name)
+    const QualifiedName& name) const
 {
     return m_observedAttributes.contains(name.localName());
+}
+
+bool CustomElementDefinition::hasStyleAttributeChangedCallback() const
+{
+    return m_hasStyleAttributeChangedCallback;
 }
 
 void CustomElementDefinition::enqueueUpgradeReaction(Element* element)

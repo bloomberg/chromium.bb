@@ -38,6 +38,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/custom/CEReactionsScope.h"
 #include "core/events/EventTarget.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"
@@ -211,6 +212,8 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, 
     CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>());
     if (!unresolvedProperty)
         return;
+
+    CEReactionsScope ceReactionsScope;
 
     TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
     ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(resolveCSSPropertyID(unresolvedProperty)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());

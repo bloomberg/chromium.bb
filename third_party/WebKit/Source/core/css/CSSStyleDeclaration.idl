@@ -24,19 +24,19 @@
     DependentLifetime,
     SetWrapperReferenceTo(CSSRule parentRule),
 ] interface CSSStyleDeclaration {
-    [RaisesException=Setter] attribute DOMString cssText;
+    [CEReactions, RaisesException=Setter] attribute DOMString cssText;
     readonly attribute unsigned long length;
     getter DOMString item(unsigned long index);
     DOMString getPropertyValue(DOMString property);
     DOMString getPropertyPriority(DOMString property);
     // TODO(foolip): The value and priority arguments should have
     // [TreatNullAs=EmptyString] and should not be nullable.
-    [RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
+    [CEReactions, RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
     // void setPropertyValue(DOMString property, [TreatNullAs=EmptyString] DOMString value);
     // void setPropertyPriority(DOMString property, [TreatNullAs=EmptyString] DOMString priority);
-    [RaisesException] DOMString removeProperty(DOMString property);
+    [CEReactions, RaisesException] DOMString removeProperty(DOMString property);
     readonly attribute CSSRule? parentRule;
-    [RaisesException=Setter, TreatNullAs=EmptyString] attribute DOMString cssFloat;
+    [CEReactions, RaisesException=Setter, TreatNullAs=EmptyString] attribute DOMString cssFloat;
 
     // The camel-cased and dashed attribute getters have custom bindings.
     // http://dev.w3.org/csswg/cssom/#dom-cssstyledeclaration-camel-cased-attribute

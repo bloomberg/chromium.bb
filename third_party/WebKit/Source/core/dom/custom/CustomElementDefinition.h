@@ -56,7 +56,8 @@ public:
 
     virtual bool hasConnectedCallback() const = 0;
     virtual bool hasDisconnectedCallback() const = 0;
-    bool hasAttributeChangedCallback(const QualifiedName&);
+    bool hasAttributeChangedCallback(const QualifiedName&) const;
+    bool hasStyleAttributeChangedCallback() const;
 
     virtual void runConnectedCallback(Element*) = 0;
     virtual void runDisconnectedCallback(Element*) = 0;
@@ -74,11 +75,11 @@ protected:
 
     static void checkConstructorResult(Element*, Document&, const QualifiedName&, ExceptionState&);
 
-    HashSet<AtomicString> m_observedAttributes;
-
 private:
     const CustomElementDescriptor m_descriptor;
     ConstructionStack m_constructionStack;
+    HashSet<AtomicString> m_observedAttributes;
+    bool m_hasStyleAttributeChangedCallback;
 
     void enqueueAttributeChangedCallbackForAllAttributes(Element*);
 };

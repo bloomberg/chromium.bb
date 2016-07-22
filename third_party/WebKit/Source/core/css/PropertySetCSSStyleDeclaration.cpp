@@ -34,12 +34,21 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
 namespace {
+
+static CustomElementDefinition* definitionIfStyleChangedCallback(Element* element)
+{
+    CustomElementDefinition* definition = CustomElement::definitionForElement(element);
+    return definition && definition->hasStyleAttributeChangedCallback()
+        ? definition : nullptr;
+}
 
 class StyleAttributeMutationScope {
     WTF_MAKE_NONCOPYABLE(StyleAttributeMutationScope);
@@ -60,18 +69,16 @@ public:
         if (!s_currentDecl->parentElement())
             return;
 
-        bool shouldReadOldValue = false;
-
         m_mutationRecipients = MutationObserverInterestGroup::createForAttributesMutation(*s_currentDecl->parentElement(), HTMLNames::styleAttr);
-        if (m_mutationRecipients && m_mutationRecipients->isOldValueRequested())
-            shouldReadOldValue = true;
+        bool shouldReadOldValue =
+            (m_mutationRecipients && m_mutationRecipients->isOldValueRequested())
+            || definitionIfStyleChangedCallback(s_currentDecl->parentElement());
 
-        AtomicString oldValue;
         if (shouldReadOldValue)
-            oldValue = s_currentDecl->parentElement()->getAttribute(HTMLNames::styleAttr);
+            m_oldValue = s_currentDecl->parentElement()->getAttribute(HTMLNames::styleAttr);
 
         if (m_mutationRecipients) {
-            AtomicString requestedOldValue = m_mutationRecipients->isOldValueRequested() ? oldValue : nullAtom;
+            AtomicString requestedOldValue = m_mutationRecipients->isOldValueRequested() ? m_oldValue : nullAtom;
             m_mutation = MutationRecord::createAttributes(s_currentDecl->parentElement(), HTMLNames::styleAttr, requestedOldValue);
         }
     }
@@ -82,10 +89,19 @@ public:
         if (s_scopeCount)
             return;
 
-        if (m_mutation && s_shouldDeliver)
-            m_mutationRecipients->enqueueMutationRecord(m_mutation);
+        if (s_shouldDeliver) {
+            if (m_mutation)
+                m_mutationRecipients->enqueueMutationRecord(m_mutation);
 
-        s_shouldDeliver = false;
+            Element* element = s_currentDecl->parentElement();
+            if (CustomElementDefinition* definition = definitionIfStyleChangedCallback(element)) {
+                definition->enqueueAttributeChangedCallback(element,
+                    HTMLNames::styleAttr, m_oldValue,
+                    element->getAttribute(HTMLNames::styleAttr));
+            }
+
+            s_shouldDeliver = false;
+        }
 
         // We have to clear internal state before calling Inspector's code.
         AbstractPropertySetCSSStyleDeclaration* localCopyStyleDecl = s_currentDecl;
@@ -117,6 +133,7 @@ private:
 
     Member<MutationObserverInterestGroup> m_mutationRecipients;
     Member<MutationRecord> m_mutation;
+    AtomicString m_oldValue;
 };
 
 unsigned StyleAttributeMutationScope::s_scopeCount = 0;

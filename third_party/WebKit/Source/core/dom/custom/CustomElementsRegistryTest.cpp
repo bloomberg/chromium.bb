@@ -231,6 +231,12 @@ public:
     {
     }
 
+    TestCustomElementDefinition(const CustomElementDescriptor& descriptor,
+        const HashSet<AtomicString>& observedAttributes)
+        : CustomElementDefinition(descriptor, observedAttributes)
+    {
+    }
+
     ~TestCustomElementDefinition() override = default;
 
     ScriptValue getConstructorForScript() override
@@ -265,11 +271,12 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
     WTF_MAKE_NONCOPYABLE(LogUpgradeDefinition);
 public:
     LogUpgradeDefinition(const CustomElementDescriptor& descriptor)
-        : TestCustomElementDefinition(descriptor)
+        : TestCustomElementDefinition(descriptor, {
+            "attr1",
+            "attr2",
+            HTMLNames::contenteditableAttr.localName(),
+        })
     {
-        m_observedAttributes.add("attr1");
-        m_observedAttributes.add("attr2");
-        m_observedAttributes.add(HTMLNames::contenteditableAttr.localName());
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()

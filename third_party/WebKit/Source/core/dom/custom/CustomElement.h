@@ -30,7 +30,7 @@ public:
     static CustomElementsRegistry* registry(const Element&);
     static CustomElementsRegistry* registry(const Document&);
 
-    static CustomElementDefinition* definitionForElement(const Element&);
+    static CustomElementDefinition* definitionForElement(const Element*);
 
     static bool isValidName(const AtomicString& name);
 

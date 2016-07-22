@@ -91,6 +91,78 @@
   test_with_window(w => {
     let document = w.document;
     let element = document.createElement('a-a');
+    document.body.appendChild(element);
+    let logs = define_logger(w, ['style']);
+
+    logs.length = 0;
+    element.style.color = 'red';
+    assert_equals(logs.length, 1);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', '']);
+
+    element.style.color = 'green';
+    assert_equals(logs.length, 2);
+    assert_log_is_type(logs, 1, attributeChanged, element, ['style', 'color: red;', 'color: green;', '']);
+
+    element.style.color = '';
+    assert_equals(logs.length, 3);
+    assert_log_is_type(logs, 2, attributeChanged, element, ['style', 'color: green;', null, '']);
+  }, 'style.color should enqueue attributeChangedCallback for style attribute');
+
+  test_with_window(w => {
+    let document = w.document;
+    let element = document.createElement('a-a');
+    document.body.appendChild(element);
+    let logs = define_logger(w, ['style']);
+
+    logs.length = 0;
+    element.style.cssText = 'color: red';
+    assert_equals(logs.length, 1);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', '']);
+  }, 'style.cssText should enqueue attributeChangedCallback for style attribute');
+
+  test_with_window(w => {
+    let document = w.document;
+    let element = document.createElement('a-a');
+    document.body.appendChild(element);
+    let logs = define_logger(w, ['style']);
+
+    logs.length = 0;
+    element.style.setProperty('color', 'red');
+    assert_equals(logs.length, 1);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', '']);
+
+    element.style.removeProperty('color', 'red');
+    assert_equals(logs.length, 2);
+    assert_log_is_type(logs, 1, attributeChanged, element, ['style', 'color: red;', null, '']);
+  }, 'style.setProperty/removeProperty should enqueue attributeChangedCallback for style attribute');
+
+  test_with_window(w => {
+    let document = w.document;
+    let element = document.createElement('a-a');
+    document.body.appendChild(element);
+    let logs = define_logger(w, ['style']);
+
+    logs.length = 0;
+    element.style.cssFloat = 'left';
+    assert_equals(logs.length, 1);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'float: left;', '']);
+  }, 'style.cssFloat should enqueue attributeChangedCallback for style attribute');
+
+  test_with_window(w => {
+    let document = w.document;
+    let element = document.createElement('a-a');
+    document.body.appendChild(element);
+    let logs = define_logger(w, ['lang']);
+
+    logs.length = 0;
+    element.lang = 'ja-jp';
+    assert_equals(logs.length, 1);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['lang', null, 'ja-jp', '']);
+  }, 'lang property setter should enqueue attributeChangedCallback for lang attribute');
+
+  test_with_window(w => {
+    let document = w.document;
+    let element = document.createElement('a-a');
     element.setAttribute('x', '1');
     document.body.appendChild(element);
     let logs = define_logger(w, ['x']);
