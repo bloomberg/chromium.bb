@@ -34,7 +34,7 @@ const int kExpirationDelayDays = 1;
 }  // namespace
 
 const char TranslateScript::kScriptURL[] =
-    "https://translate.google.com/translate_a/element.js";
+    "https://translate.googleapis.com/translate_a/element.js";
 const char TranslateScript::kRequestHeader[] =
     "Google-Translate-Element-Mode: library";
 const char TranslateScript::kAlwaysUseSslQueryName[] = "aus";
