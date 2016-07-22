@@ -105,7 +105,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": ""
         }
@@ -116,7 +116,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": ""
         }
@@ -160,7 +160,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "glados"
         }
@@ -223,17 +223,6 @@
     },
     {
       "name": "cyan",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "strago"
-        }
-      ]
-    },
-    {
-      "name": "cyan-cheets",
       "configs": [
         {
           "builder": "RELEASE",
@@ -889,17 +878,6 @@
           "experimental": false,
           "leader_board": false,
           "board_group": ""
-        }
-      ]
-    },
-    {
-      "name": "samus-cheets",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "auron"
         }
       ]
     },

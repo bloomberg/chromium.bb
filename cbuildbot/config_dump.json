@@ -4790,11 +4790,13 @@
     },
     "cave-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "cave"
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -6333,13 +6335,9 @@
     },
     "cyan-cheets-release": {
         "_template": "cheets-release",
-        "active_waterfall": "chromeos",
         "boards": [
             "cyan-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
-        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -19503,13 +19501,9 @@
     },
     "samus-cheets-release": {
         "_template": "cheets-release",
-        "active_waterfall": "chromeos",
         "boards": [
             "samus-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
-        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
