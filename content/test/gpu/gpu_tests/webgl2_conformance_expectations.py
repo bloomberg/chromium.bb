@@ -107,9 +107,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
-        ['win'], bug=624506)
-
     # ANGLE bug id
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win'], bug=1246)
@@ -529,9 +526,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
-
-    self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
-        ['linux'], bug=624506)
 
     # Multi-vendor failures.
 

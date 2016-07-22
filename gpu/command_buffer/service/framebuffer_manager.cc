@@ -421,24 +421,39 @@ Framebuffer::~Framebuffer() {
 }
 
 bool Framebuffer::HasUnclearedAttachment(
-    GLenum attachment) const {
-  AttachmentMap::const_iterator it =
-      attachments_.find(attachment);
-  if (it != attachments_.end()) {
-    const Attachment* attachment = it->second.get();
-    return !attachment->cleared();
+    GLenum attachment_type) const {
+  const Attachment* attachment = GetAttachment(attachment_type);
+  switch (attachment_type) {
+    case GL_DEPTH_ATTACHMENT:
+    case GL_STENCIL_ATTACHMENT:
+      attachment = attachment ? attachment :
+          GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
+      break;
+   default:
+      break;
   }
-  return false;
+  return attachment && !attachment->cleared();
 }
 
-bool Framebuffer::HasDepthStencilFormatAttachment(
-    GLenum attachment) const {
-  AttachmentMap::const_iterator it = attachments_.find(attachment);
-  if (it != attachments_.end()) {
-    const Attachment* attachment = it->second.get();
-    GLenum internal_format = attachment->internal_format();
-    return TextureManager::ExtractFormatFromStorageFormat(internal_format) ==
-        GL_DEPTH_STENCIL;
+bool Framebuffer::HasDepthStencilFormatAttachment() const {
+  const Attachment* depth_attachment = GetAttachment(GL_DEPTH_ATTACHMENT);
+  const Attachment* stencil_attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
+  const Attachment* depth_stencil_attachment = GetAttachment(
+      GL_DEPTH_STENCIL_ATTACHMENT);
+  if (depth_attachment && stencil_attachment) {
+    GLenum depth_format = depth_attachment->internal_format();
+    depth_format = TextureManager::ExtractFormatFromStorageFormat(depth_format);
+    GLenum stencil_format = stencil_attachment->internal_format();
+    stencil_format = TextureManager::ExtractFormatFromStorageFormat(
+        stencil_format);
+    return depth_format == GL_DEPTH_STENCIL &&
+        stencil_format == GL_DEPTH_STENCIL;
+  }
+  if (depth_stencil_attachment) {
+    GLenum depth_stencil_format = depth_stencil_attachment->internal_format();
+    depth_stencil_format = TextureManager::ExtractFormatFromStorageFormat(
+        depth_stencil_format);
+    return depth_stencil_format == GL_DEPTH_STENCIL;
   }
   return false;
 }

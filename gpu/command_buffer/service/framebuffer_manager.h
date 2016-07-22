@@ -86,7 +86,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   bool HasUnclearedColorAttachments() const;
 
   bool HasSRGBAttachments() const;
-  bool HasDepthStencilFormatAttachment(GLenum attachment) const;
+  bool HasDepthStencilFormatAttachment() const;
 
   void ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
       GLES2Decoder* decoder,

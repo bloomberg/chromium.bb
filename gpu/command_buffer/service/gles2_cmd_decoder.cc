@@ -5692,8 +5692,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
   // Because of performance issues, no-op if the format of the attachment is
   // DEPTH_STENCIL and only one part is intended to be invalidated.
   bool has_depth_stencil_format = framebuffer &&
-      framebuffer->HasDepthStencilFormatAttachment(GL_DEPTH_ATTACHMENT) &&
-      framebuffer->HasDepthStencilFormatAttachment(GL_STENCIL_ATTACHMENT);
+      framebuffer->HasDepthStencilFormatAttachment();
   bool invalidate_depth = false;
   bool invalidate_stencil = false;
   std::unique_ptr<GLenum[]> validated_attachments(new GLenum[count]);
@@ -5720,6 +5719,10 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
             invalidate_depth = true;
             continue;
           case GL_STENCIL_ATTACHMENT:
+            invalidate_stencil = true;
+            continue;
+          case GL_DEPTH_STENCIL_ATTACHMENT:
+            invalidate_depth = true;
             invalidate_stencil = true;
             continue;
         }
@@ -5797,6 +5800,9 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
   for (GLsizei i = 0; i < validated_count; ++i) {
     if (framebuffer) {
       if (validated_attachments[i] == GL_DEPTH_STENCIL_ATTACHMENT) {
+        // TODO(qiankun.miao@intel.com): We should only mark DEPTH and STENCIL
+        // attachments as cleared when command buffer handles DEPTH_STENCIL
+        // well. http://crbug.com/630568
         framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
                                              texture_manager(),
                                              GL_DEPTH_ATTACHMENT,
@@ -5804,6 +5810,10 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
         framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
                                              texture_manager(),
                                              GL_STENCIL_ATTACHMENT,
+                                             false);
+        framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
+                                             texture_manager(),
+                                             GL_DEPTH_STENCIL_ATTACHMENT,
                                              false);
       } else {
         framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),

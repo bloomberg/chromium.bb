@@ -3410,6 +3410,67 @@ TEST_P(GLES3DecoderTest, FramebufferTextureLayerValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, GL_DEPTH24_STENCIL8,
+      1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  Framebuffer* framebuffer =
+      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  // TODO(qiankun.miao@intel.com): We should only mark DEPTH and STENCIL
+  // attachments as cleared when command buffer handles DEPTH_STENCIL well.
+  // http://crbug.com/630568
+  framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
+                                       GL_DEPTH_ATTACHMENT, true);
+  framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
+                                       GL_STENCIL_ATTACHMENT, true);
+  framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
+                                       GL_DEPTH_STENCIL_ATTACHMENT, true);
+  EXPECT_TRUE(framebuffer->IsCleared());
+
+  const GLenum target = GL_FRAMEBUFFER;
+  const GLsizei count = 1;
+  GLenum attachments[] = {GL_DEPTH_ATTACHMENT};
+  EXPECT_CALL(*gl_, InvalidateFramebuffer(target, 0, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  InvalidateFramebufferImmediate& cmd =
+      *GetImmediateAs<InvalidateFramebufferImmediate>();
+  cmd.Init(target, count, attachments);
+
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  // Invalidating part of DEPTH_STENCIL attachment doesn't change framebuffer
+  // clearance status.
+  EXPECT_TRUE(framebuffer->IsCleared());
+  EXPECT_FALSE(framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_FALSE(framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(framebuffer->HasUnclearedAttachment(
+      GL_DEPTH_STENCIL_ATTACHMENT));
+
+  attachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
+  EXPECT_CALL(*gl_, InvalidateFramebuffer(target, 1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmd.Init(target, count, attachments);
+
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  // Invalidating DEPTH_STENCIL attachment should make framebuffer uncleared.
+  EXPECT_FALSE(framebuffer->IsCleared());
+  EXPECT_TRUE(framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_TRUE(framebuffer->HasUnclearedAttachment(
+      GL_DEPTH_STENCIL_ATTACHMENT));
+}
+
 // TODO(gman): PixelStorei
 
 // TODO(gman): SwapBuffers
