@@ -63,6 +63,7 @@
 #if defined(USE_ASH)
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "chrome/browser/ui/ash/ash_init.h"
@@ -171,7 +172,7 @@ int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
 void ProcessAcceleratorNow(const ui::Accelerator& accelerator) {
   // TODO(afakhry): See if we need here to send the accelerator to the
   // FocusManager of the active window in a follow-up CL.
-  ash::Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+  ash::WmShell::Get()->accelerator_controller()->Process(accelerator);
 }
 #endif  // defined(USE_ASH)
 
@@ -277,7 +278,7 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 
   ash::AcceleratorController* accelerator_controller =
-      ash::Shell::GetInstance()->accelerator_controller();
+      ash::WmShell::Get()->accelerator_controller();
 
   accelerator_controller->accelerator_history()->StoreCurrentAccelerator(
       accelerator);

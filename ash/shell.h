@@ -76,7 +76,6 @@ class WindowModalityController;
 
 namespace ash {
 
-class AcceleratorController;
 class AcceleratorControllerDelegateAura;
 class AshNativeCursorManager;
 class AutoclickController;
@@ -286,9 +285,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   bool ShouldSaveDisplaySettings();
 #endif
 
-  AcceleratorController* accelerator_controller() {
-    return accelerator_controller_.get();
-  }
   AcceleratorControllerDelegateAura* accelerator_controller_delegate() {
     return accelerator_controller_delegate_.get();
   }
@@ -560,7 +556,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<AcceleratorControllerDelegateAura>
       accelerator_controller_delegate_;
-  std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;

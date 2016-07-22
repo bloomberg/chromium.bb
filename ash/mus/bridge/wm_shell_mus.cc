@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -19,6 +20,7 @@
 #include "ash/common/wm/window_cycle_event_filter.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
+#include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
@@ -103,6 +105,10 @@ WmShellMus::WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
       session_state_delegate_(new SessionStateDelegateStub) {
   client_->AddObserver(this);
   WmShell::Set(this);
+
+  accelerator_controller_delegate_.reset(new AcceleratorControllerDelegateMus);
+  SetAcceleratorController(base::MakeUnique<AcceleratorController>(
+      accelerator_controller_delegate_.get()));
 
   CreateMaximizeModeController();
 

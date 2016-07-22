@@ -22,6 +22,7 @@ class PointerDownWatcher;
 
 namespace ash {
 
+class AcceleratorController;
 class AccessibilityDelegate;
 class BrightnessControlDelegate;
 class DisplayInfo;
@@ -70,6 +71,10 @@ class ASH_EXPORT WmShell {
   virtual void Shutdown();
 
   ShellDelegate* delegate() { return delegate_.get(); }
+
+  AcceleratorController* accelerator_controller() {
+    return accelerator_controller_.get();
+  }
 
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
@@ -289,6 +294,9 @@ class ASH_EXPORT WmShell {
 
   void DeleteToastManager();
 
+  void SetAcceleratorController(
+      std::unique_ptr<AcceleratorController> accelerator_controller);
+
  private:
   friend class AcceleratorControllerTest;
   friend class Shell;
@@ -298,6 +306,7 @@ class ASH_EXPORT WmShell {
   base::ObserverList<ShellObserver> shell_observers_;
   std::unique_ptr<ShellDelegate> delegate_;
 
+  std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<FocusCycler> focus_cycler_;

@@ -192,6 +192,7 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -738,7 +739,7 @@ class PolicyTest : public InProcessBrowserTest {
         ->SetScreenshotDelegate(std::move(chrome_screenshot_grabber));
 
     SetScreenshotPolicy(enabled);
-    ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+    ash::WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
         ash::TAKE_SCREENSHOT);
 
     content::RunMessageLoop();

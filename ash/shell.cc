@@ -883,8 +883,8 @@ void Shell::Init(const ShellInitParams& init_params) {
         display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_delegate_.reset(new AcceleratorControllerDelegateAura);
-  accelerator_controller_.reset(
-      new AcceleratorController(accelerator_controller_delegate_.get()));
+  wm_shell_->SetAcceleratorController(base::MakeUnique<AcceleratorController>(
+      accelerator_controller_delegate_.get()));
   wm_shell_->CreateMaximizeModeController();
 
   AddPreTargetHandler(window_tree_host_manager_->input_method_event_handler());
@@ -908,7 +908,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
       std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
-      accelerator_controller_->accelerator_history()));
+      wm_shell_->accelerator_controller()->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 
   event_transformation_handler_.reset(new EventTransformationHandler);

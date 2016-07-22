@@ -9,6 +9,7 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -82,7 +83,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
           ->GetSequencedTaskRunnerWithShutdownBehavior(
               content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  shell->accelerator_controller()->SetImeControlDelegate(
+  ash::WmShell::Get()->accelerator_controller()->SetImeControlDelegate(
       std::unique_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());

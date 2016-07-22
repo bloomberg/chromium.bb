@@ -26,6 +26,7 @@ class WindowTreeClient;
 namespace ash {
 namespace mus {
 
+class AcceleratorControllerDelegateMus;
 class WmRootWindowControllerMus;
 class WmWindowMus;
 
@@ -102,6 +103,8 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 
+  std::unique_ptr<AcceleratorControllerDelegateMus>
+      accelerator_controller_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
 
   base::ObserverList<WmActivationObserver> activation_observers_;

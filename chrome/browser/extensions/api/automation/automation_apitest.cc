@@ -34,7 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #endif
 
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusIframe) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusViews) {
   AutomationManagerAura::GetInstance()->Enable(browser()->profile());
   // Trigger the shelf subtree to be computed.
-  ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+  ash::WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
       ash::FOCUS_SHELF);
 
   ASSERT_TRUE(
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
   AutomationManagerAura::GetInstance()->Enable(browser()->profile());
   // Trigger the shelf subtree to be computed.
-  ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+  ash::WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
       ash::FOCUS_SHELF);
 
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "actions.html"))

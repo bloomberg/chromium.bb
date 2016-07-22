@@ -54,12 +54,12 @@ bool AcceleratorDelegate::ProcessAccelerator(
   if (IsSystemKey(key_event.key_code()) && !CanConsumeSystemKeys(key_event)) {
     // System keys are always consumed regardless of whether they trigger an
     // accelerator to prevent windows from seeing unexpected key up events.
-    Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+    WmShell::Get()->accelerator_controller()->Process(accelerator);
     return true;
   }
   if (!ShouldProcessAcceleratorNow(key_event, accelerator))
     return false;
-  return Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+  return WmShell::Get()->accelerator_controller()->Process(accelerator);
 }
 
 // Uses the top level window so if the target is a web contents window the
@@ -90,10 +90,11 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
     return true;
 
   aura::Window* top_level = ::wm::GetToplevelWindow(target);
-  Shell* shell = Shell::GetInstance();
+  AcceleratorController* accelerator_controller =
+      WmShell::Get()->accelerator_controller();
 
   // Reserved accelerators (such as Power button) always have a prority.
-  if (shell->accelerator_controller()->IsReserved(accelerator))
+  if (accelerator_controller->IsReserved(accelerator))
     return true;
 
   // A full screen window has a right to handle all key events including the
@@ -107,7 +108,7 @@ bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
 
   // Handle preferred accelerators (such as ALT-TAB) before sending
   // to the target.
-  if (shell->accelerator_controller()->IsPreferred(accelerator))
+  if (accelerator_controller->IsPreferred(accelerator))
     return true;
 
   return WmShell::Get()->GetAppListTargetVisibility();

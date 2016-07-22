@@ -278,7 +278,7 @@ class AcceleratorControllerTest : public test::AshTestBase {
 };
 
 AcceleratorController* AcceleratorControllerTest::GetController() {
-  return Shell::GetInstance()->accelerator_controller();
+  return WmShell::Get()->accelerator_controller();
 }
 
 #if !defined(OS_WIN)

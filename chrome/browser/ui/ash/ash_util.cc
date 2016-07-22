@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -33,9 +33,8 @@ bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
   if (chrome::IsRunningInMash())
     return false;
 
-  ash::AcceleratorController* controller =
-      ash::Shell::GetInstance()->accelerator_controller();
-  return controller->IsDeprecated(accelerator);
+  return ash::WmShell::Get()->accelerator_controller()->IsDeprecated(
+      accelerator);
 }
 
 }  // namespace chrome

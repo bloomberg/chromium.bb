@@ -5,7 +5,7 @@
 #include "ash/accelerators/focus_manager_factory.h"
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ash {
@@ -21,8 +21,7 @@ views::FocusManager* AshFocusManagerFactory::CreateFocusManager(
 
 bool AshFocusManagerFactory::Delegate::ProcessAccelerator(
     const ui::Accelerator& accelerator) {
-  AcceleratorController* controller =
-      Shell::GetInstance()->accelerator_controller();
+  AcceleratorController* controller = WmShell::Get()->accelerator_controller();
   if (controller)
     return controller->Process(accelerator);
   return false;

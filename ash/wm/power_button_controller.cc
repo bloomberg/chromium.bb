@@ -80,7 +80,7 @@ void PowerButtonController::OnPowerButtonEvent(
       WmShell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
-    Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+    WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
         TAKE_SCREENSHOT);
     return;
   }

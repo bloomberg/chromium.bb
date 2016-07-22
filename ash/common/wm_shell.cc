@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
@@ -213,6 +214,11 @@ void WmShell::DeleteMruWindowTracker() {
 
 void WmShell::DeleteToastManager() {
   toast_manager_.reset();
+}
+
+void WmShell::SetAcceleratorController(
+    std::unique_ptr<AcceleratorController> accelerator_controller) {
+  accelerator_controller_ = std::move(accelerator_controller);
 }
 
 }  // namespace ash
