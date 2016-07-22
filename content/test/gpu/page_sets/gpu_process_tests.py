@@ -522,56 +522,6 @@ class EqualBugWorkaroundsInBrowserAndGpuProcessPage(gpu_test_base.PageBase):
         (browser_list, gpu_list, list(diff)))
 
 
-class HasTransparentVisualsShared(GpuProcessSharedPageState):
-  def __init__(self, test, finder_options, story_set):
-    super(HasTransparentVisualsShared, self).__init__(
-      test, finder_options, story_set)
-    options = finder_options.browser_options
-    if sys.platform.startswith('linux'):
-      # Hit id 173 from kGpuDriverBugListJson.
-      options.AppendExtraBrowserArgs('--gpu-testing-gl-version=3.0 Mesa ' \
-                                     '12.1')
-
-class HasTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
-  def __init__(self, story_set, expectations):
-    super(HasTransparentVisualsGpuProcessPage, self).__init__(
-      name='GpuProcess.has_transparent_visuals_gpu_process',
-      page_set=story_set,
-      shared_page_state_class=HasTransparentVisualsShared,
-      expectations=expectations,
-      expected_workaround=None,
-      unexpected_workaround='disable_transparent_visuals')
-
-  def Validate(self, tab, results):
-    if sys.platform.startswith('linux'):
-      super(HasTransparentVisualsGpuProcessPage, self).Validate(tab, results)
-
-
-class NoTransparentVisualsShared(GpuProcessSharedPageState):
-  def __init__(self, test, finder_options, story_set):
-    super(NoTransparentVisualsShared, self).__init__(
-      test, finder_options, story_set)
-    options = finder_options.browser_options
-    if sys.platform.startswith('linux'):
-      # Hit id 173 from kGpuDriverBugListJson.
-      options.AppendExtraBrowserArgs('--gpu-testing-gl-version=4.5.0 ' \
-                                     'NVIDIA 352.41')
-
-class NoTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
-  def __init__(self, story_set, expectations):
-    super(NoTransparentVisualsGpuProcessPage, self).__init__(
-      name='GpuProcess.no_transparent_visuals_gpu_process',
-      page_set=story_set,
-      shared_page_state_class=NoTransparentVisualsShared,
-      expectations=expectations,
-      expected_workaround='disable_transparent_visuals',
-      unexpected_workaround=None)
-
-  def Validate(self, tab, results):
-    if sys.platform.startswith('linux'):
-      super(NoTransparentVisualsGpuProcessPage, self).Validate(tab, results)
-
-
 class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
@@ -607,8 +557,6 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     self.AddStory(DriverBugWorkaroundsUponGLRendererPage(self, expectations))
     self.AddStory(EqualBugWorkaroundsInBrowserAndGpuProcessPage(self,
                                                                 expectations))
-    self.AddStory(HasTransparentVisualsGpuProcessPage(self, expectations))
-    self.AddStory(NoTransparentVisualsGpuProcessPage(self, expectations))
 
   @property
   def allow_mixed_story_states(self):
