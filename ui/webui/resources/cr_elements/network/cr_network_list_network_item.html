@@ -9,7 +9,7 @@
 <dom-module id="cr-network-list-network-item">
   <template>
     <style include="cr-network-list-item-css"></style>
-    <div id="divOuter" hoverable$="[[isListItem_(listItemType)]]">
+    <div id="divOuter" selectable$="[[isListItem_(listItemType)]]">
       <div id="divIcon">
         <cr-network-icon id="icon" is-list-item="[[isListItem_(listItemType)]]"
             network-state="[[networkState]]">

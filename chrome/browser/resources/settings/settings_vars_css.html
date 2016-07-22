@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <!-- Common css variables for Material Design settings. -->
@@ -23,6 +24,8 @@
     --paper-radio-button-label-color: inherit;
     --paper-radio-group-item-padding: 0;
 
+    --settings-actionable: var(--cr-actionable);
+
     /* Custom grey for Alan (bettes@). */
     --settings-background-color: rgb(241, 241, 241);
     --settings-secondary: {
@@ -39,14 +42,10 @@
     --settings-page-vertical-margin: 21px;
 
     --settings-row-min-height: 44px;
-    --settings-separator-line: 1px solid rgba(0, 0, 0, 0.06);
+    --settings-separator-line: var(--cr-separator-line);
 
     --settings-title-bar-background-color: var(--google-blue-700);
     --settings-title-bar-color: rgb(255, 255, 255);
     --settings-title-search-color: rgb(192, 199, 205);
-
-    --settings-actionable: {
-      cursor: pointer;
-    };
   }
 </style>

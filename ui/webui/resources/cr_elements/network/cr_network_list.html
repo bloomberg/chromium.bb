@@ -7,7 +7,7 @@
 
 <dom-module id="cr-network-list">
   <template>
-    <style>
+    <style include="cr-shared-style">
       #container {
         max-height: 1000px;
         min-height: 50px;
@@ -20,11 +20,11 @@
       }
 
       cr-network-list-network-item:not(:last-of-type) {
-        border-bottom: 1px solid lightgrey;
+        border-bottom: var(--cr-separator-line);
       }
 
       cr-network-list-custom-item {
-        border-top: 1px solid lightgrey;
+        border-top: var(--cr-separator-line);
       }
     </style>
     <iron-collapse opened="{{opened}}">

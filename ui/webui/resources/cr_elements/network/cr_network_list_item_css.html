@@ -1,13 +1,11 @@
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+
 <!-- Common styles <cr-network-list/> items. -->
 <dom-module id="cr-network-list-item-css">
   <template>
-    <style>
+    <style include="cr-shared-style">
       :host {
         display: inline-block;
-      }
-
-      span {
-        cursor: pointer;
       }
 
       #divOuter {
@@ -18,8 +16,13 @@
         padding: 4px;
       }
 
-      #divOuter[hoverable]:hover {
-        background-color: lightgrey;
+      [selectable] {
+        @apply(--cr-actionable);
+      }
+
+      /* TODO(stevenjb): remove once list item focus is fixed. */
+      [selectable]:hover {
+        background-color: var(--cr-focused-item-color);
       }
 
       #divIcon {
