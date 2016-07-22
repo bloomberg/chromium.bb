@@ -340,12 +340,25 @@ weston_pointer_send_relative_motion(struct weston_pointer *pointer,
 }
 
 static void
+weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+			   wl_fixed_t sx, wl_fixed_t sy)
+{
+	struct wl_list *resource_list;
+	struct wl_resource *resource;
+
+	if (!pointer->focus_client)
+		return;
+
+	resource_list = &pointer->focus_client->pointer_resources;
+	wl_resource_for_each(resource, resource_list)
+		wl_pointer_send_motion(resource, time, sx, sy);
+}
+
+static void
 default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 			    struct weston_pointer_motion_event *event)
 {
 	struct weston_pointer *pointer = grab->pointer;
-	struct wl_list *resource_list;
-	struct wl_resource *resource;
 	wl_fixed_t x, y;
 	wl_fixed_t old_sx = pointer->sx;
 	wl_fixed_t old_sy = pointer->sy;
@@ -358,13 +371,9 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 
 	weston_pointer_move(pointer, event);
 
-	if (pointer->focus_client &&
-	    (old_sx != pointer->sx || old_sy != pointer->sy)) {
-		resource_list = &pointer->focus_client->pointer_resources;
-		wl_resource_for_each(resource, resource_list) {
-			wl_pointer_send_motion(resource, time,
-					       pointer->sx, pointer->sy);
-		}
+	if (old_sx != pointer->sx || old_sy != pointer->sy) {
+		weston_pointer_send_motion(pointer, time,
+					   pointer->sx, pointer->sy);
 	}
 
 	weston_pointer_send_relative_motion(pointer, time, event);
