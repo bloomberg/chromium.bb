@@ -82,6 +82,11 @@ Document& V8TestingScope::document()
 
 V8TestingScope::~V8TestingScope()
 {
+    // TODO(yukishiino): We put this statement here to clear an exception from
+    // the isolate.  Otherwise, the leak detector complains.  Really mysterious
+    // hack.
+    v8::Function::New(context(), nullptr);
+
     if (m_holder->document().frame())
         getScriptState()->disposePerContextData();
 }

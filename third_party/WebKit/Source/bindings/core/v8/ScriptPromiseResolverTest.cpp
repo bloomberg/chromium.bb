@@ -18,8 +18,6 @@ namespace blink {
 
 namespace {
 
-void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
-
 class Function : public ScriptFunction {
 public:
     static v8::Local<v8::Function> createFunction(ScriptState* scriptState, String* value)
@@ -54,11 +52,6 @@ public:
 
     ~ScriptPromiseResolverTest() override
     {
-        ScriptState::Scope scope(getScriptState());
-        // FIXME: We put this statement here to clear an exception from the
-        // isolate.
-        createClosure(callback, v8::Undefined(isolate()), isolate());
-
         // Execute all pending microtasks
         v8::MicrotasksScope::PerformCheckpoint(isolate());
     }
