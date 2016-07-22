@@ -796,6 +796,7 @@ weston_pointer_create(struct weston_seat *seat)
 	wl_signal_init(&pointer->motion_signal);
 	wl_signal_init(&pointer->focus_signal);
 	wl_list_init(&pointer->focus_view_listener.link);
+	wl_signal_init(&pointer->destroy_signal);
 
 	pointer->sprite_destroy_listener.notify = pointer_handle_sprite_destroy;
 
@@ -817,6 +818,8 @@ weston_pointer_create(struct weston_seat *seat)
 WL_EXPORT void
 weston_pointer_destroy(struct weston_pointer *pointer)
 {
+	wl_signal_emit(&pointer->destroy_signal, pointer);
+
 	if (pointer->sprite)
 		pointer_unmap_sprite(pointer);
 

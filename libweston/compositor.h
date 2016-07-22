@@ -370,6 +370,7 @@ struct weston_pointer {
 	struct wl_listener focus_resource_listener;
 	struct wl_signal focus_signal;
 	struct wl_signal motion_signal;
+	struct wl_signal destroy_signal;
 
 	struct weston_view *sprite;
 	struct wl_listener sprite_destroy_listener;
