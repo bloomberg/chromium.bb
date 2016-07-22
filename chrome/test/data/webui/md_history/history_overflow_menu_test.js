@@ -18,11 +18,13 @@ cr.define('md_history.history_overflow_menu_test', function() {
 
   function registerTests() {
     suite('#overflow-menu', function() {
+      var app;
       var listContainer;
       var sharedMenu;
 
       suiteSetup(function() {
-        listContainer = $('history-app').$['history'];
+        app = $('history-app');
+        listContainer = app.$['history'];
         sharedMenu = listContainer.$.sharedMenu;
 
         var element1 = document.createElement('div');
@@ -58,6 +60,18 @@ cr.define('md_history.history_overflow_menu_test', function() {
         sharedMenu.closeMenu();
         assertFalse(sharedMenu.menuOpen);
         assertEquals(MENU_EVENT.detail.target, sharedMenu.lastAnchor_);
+      });
+
+      test('menu closes when search changes', function() {
+        var entry =
+            [createHistoryEntry('2016-07-19', 'https://www.nianticlabs.com')];
+
+        app.historyResult(createHistoryInfo(), entry);
+        listContainer.toggleMenu_(MENU_EVENT);
+
+        // Menu closes when search changes
+        app.historyResult(createHistoryInfo('niantic'), entry);
+        assertFalse(sharedMenu.menuOpen);
       });
 
       teardown(function() {

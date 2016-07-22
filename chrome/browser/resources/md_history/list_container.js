@@ -37,6 +37,7 @@ Polymer({
    */
   historyResult: function(info, results) {
     this.initializeResults_(info, results);
+    this.closeMenu_();
 
     if (this.selectedPage_ == 'grouped-list') {
       this.$$('#grouped-list').historyData = results;
