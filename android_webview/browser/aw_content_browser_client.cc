@@ -33,12 +33,10 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_micro_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -141,39 +139,6 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
   AwContentsIoThreadClient::SubFrameCreated(
       process_id_, parent_render_frame_id, child_render_frame_id);
 }
-
-class AwAccessTokenStore : public content::AccessTokenStore {
- public:
-  AwAccessTokenStore() { }
-
-  // content::AccessTokenStore implementation
-  void LoadAccessTokens(const LoadAccessTokensCallback& request) override {
-    AccessTokenStore::AccessTokenMap access_token_map;
-    // AccessTokenMap and net::URLRequestContextGetter not used on Android,
-    // but Run needs to be called to finish the geolocation setup.
-    request.Run(access_token_map, NULL);
-  }
-  void SaveAccessToken(const GURL& server_url,
-                       const base::string16& access_token) override {}
-
- private:
-  ~AwAccessTokenStore() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
-};
-
-// A provider of Geolocation services to override AccessTokenStore.
-class AwGeolocationDelegate : public content::GeolocationDelegate {
- public:
-  AwGeolocationDelegate() = default;
-
-  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
-    return new AwAccessTokenStore();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AwGeolocationDelegate);
-};
 
 AwLocaleManager* g_locale_manager = NULL;
 
@@ -441,11 +406,6 @@ void AwContentBrowserClient::ResourceDispatcherHostCreated() {
 
 net::NetLog* AwContentBrowserClient::GetNetLog() {
   return browser_context_->GetAwURLRequestContext()->GetNetLog();
-}
-
-content::GeolocationDelegate*
-AwContentBrowserClient::CreateGeolocationDelegate() {
-  return new AwGeolocationDelegate();
 }
 
 bool AwContentBrowserClient::IsFastShutdownPossible() {

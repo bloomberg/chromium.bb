@@ -20,7 +20,10 @@
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/crash_micro_dump_manager_android.h"
+#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
@@ -36,6 +39,42 @@
 #include "ui/gl/gl_surface.h"
 
 namespace android_webview {
+namespace {
+
+class AwAccessTokenStore : public content::AccessTokenStore {
+ public:
+  AwAccessTokenStore() { }
+
+  // content::AccessTokenStore implementation
+  void LoadAccessTokens(const LoadAccessTokensCallback& request) override {
+    AccessTokenStore::AccessTokenMap access_token_map;
+    // AccessTokenMap and net::URLRequestContextGetter not used on Android,
+    // but Run needs to be called to finish the geolocation setup.
+    request.Run(access_token_map, NULL);
+  }
+  void SaveAccessToken(const GURL& server_url,
+                       const base::string16& access_token) override {}
+
+ private:
+  ~AwAccessTokenStore() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
+};
+
+// A provider of Geolocation services to override AccessTokenStore.
+class AwGeolocationDelegate : public content::GeolocationDelegate {
+ public:
+  AwGeolocationDelegate() = default;
+
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
+    return new AwAccessTokenStore();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AwGeolocationDelegate);
+};
+
+}  // anonymous namespace
 
 AwBrowserMainParts::AwBrowserMainParts(AwBrowserContext* browser_context)
     : browser_context_(browser_context) {
@@ -87,6 +126,9 @@ int AwBrowserMainParts::PreCreateThreads() {
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_->PreMainMessageLoopRun();
+
+  content::GeolocationProvider::SetGeolocationDelegate(
+      new AwGeolocationDelegate());
 
   AwDevToolsDiscoveryProvider::Install();
 

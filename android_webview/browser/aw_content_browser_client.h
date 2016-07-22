@@ -108,7 +108,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                        bool* no_javascript_access) override;
   void ResourceDispatcherHostCreated() override;
   net::NetLog* GetNetLog() override;
-  content::GeolocationDelegate* CreateGeolocationDelegate() override;
   bool IsFastShutdownPossible() override;
   void ClearCache(content::RenderFrameHost* rfh) override;
   void ClearCookies(content::RenderFrameHost* rfh) override;

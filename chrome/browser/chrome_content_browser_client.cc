@@ -48,7 +48,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/font_family_cache.h"
-#include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
@@ -146,7 +145,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -333,7 +331,6 @@
 
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
-using content::AccessTokenStore;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::ChildProcessSecurityPolicy;
@@ -637,19 +634,6 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
  private:
   const scoped_refptr<safe_browsing::SafeBrowsingUIManager>
       safe_browsing_ui_manager_;
-};
-
-// A provider of Geolocation services to override AccessTokenStore.
-class ChromeGeolocationDelegate : public content::GeolocationDelegate {
- public:
-  ChromeGeolocationDelegate() = default;
-
-  scoped_refptr<AccessTokenStore> CreateAccessTokenStore() final {
-    return new ChromeAccessTokenStore();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationDelegate);
 };
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -2311,11 +2295,6 @@ content::SpeechRecognitionManagerDelegate*
 
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
-}
-
-content::GeolocationDelegate*
-ChromeContentBrowserClient::CreateGeolocationDelegate() {
-  return new ChromeGeolocationDelegate();
 }
 
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {

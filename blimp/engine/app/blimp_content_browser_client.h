@@ -36,8 +36,6 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
       shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
 
-  content::GeolocationDelegate* CreateGeolocationDelegate() override;
-
   BlimpBrowserContext* GetBrowserContext();
 
  private:

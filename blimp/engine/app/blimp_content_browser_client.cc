@@ -5,32 +5,11 @@
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/settings_manager.h"
-#include "blimp/engine/feature/geolocation/blimp_location_provider.h"
 #include "blimp/engine/mojo/blob_channel_service.h"
-#include "content/public/browser/geolocation_delegate.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
 namespace blimp {
 namespace engine {
-
-namespace {
-// A provider of services needed by Geolocation.
-class BlimpGeolocationDelegate : public content::GeolocationDelegate {
- public:
-  BlimpGeolocationDelegate() = default;
-
-  bool UseNetworkLocationProviders() final { return false; }
-
-  std::unique_ptr<content::LocationProvider> OverrideSystemLocationProvider()
-      final {
-    return base::WrapUnique(new BlimpLocationProvider());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlimpGeolocationDelegate);
-};
-
-}  // anonymous namespace
 
 BlimpContentBrowserClient::BlimpContentBrowserClient() {}
 
@@ -58,11 +37,6 @@ void BlimpContentBrowserClient::OverrideWebkitPrefs(
 
 BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
   return blimp_browser_main_parts_->GetBrowserContext();
-}
-
-content::GeolocationDelegate*
-BlimpContentBrowserClient::CreateGeolocationDelegate() {
-  return new BlimpGeolocationDelegate();
 }
 
 void BlimpContentBrowserClient::ExposeInterfacesToRenderer(

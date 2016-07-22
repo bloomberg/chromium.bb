@@ -107,7 +107,6 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
-class GeolocationDelegate;
 class LocationProvider;
 class MediaObserver;
 class NavigationHandle;
@@ -534,10 +533,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Getters for common objects.
   virtual net::NetLog* GetNetLog();
-
-  // Allows the embedder to provide a Delegate for Geolocation to override some
-  // functionality of the API (e.g. AccessTokenStore, LocationProvider).
-  virtual GeolocationDelegate* CreateGeolocationDelegate();
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible();

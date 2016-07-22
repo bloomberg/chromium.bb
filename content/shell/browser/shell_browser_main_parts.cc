@@ -15,11 +15,14 @@
 #include "build/build_config.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_access_token_store.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
@@ -54,6 +57,21 @@
 namespace content {
 
 namespace {
+
+// A provider of services for Geolocation.
+class ShellGeolocationDelegate : public content::GeolocationDelegate {
+ public:
+  explicit ShellGeolocationDelegate(ShellBrowserContext* context)
+      : context_(context) {}
+
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
+    return new ShellAccessTokenStore(context_);
+  }
+
+ private:
+  ShellBrowserContext* context_;
+  DISALLOW_COPY_AND_ASSIGN(ShellGeolocationDelegate);
+};
 
 GURL GetStartupURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -165,6 +183,8 @@ int ShellBrowserMainParts::PreCreateThreads() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new ShellNetLog("content_shell"));
   InitializeBrowserContexts();
+  content::GeolocationProvider::SetGeolocationDelegate(
+      new ShellGeolocationDelegate(browser_context()));
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 

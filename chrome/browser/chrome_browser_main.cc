@@ -59,6 +59,7 @@
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -140,6 +141,8 @@
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -269,6 +272,19 @@
 using content::BrowserThread;
 
 namespace {
+
+// A provider of Geolocation services to override AccessTokenStore.
+class ChromeGeolocationDelegate : public content::GeolocationDelegate {
+ public:
+  ChromeGeolocationDelegate() = default;
+
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
+    return new ChromeAccessTokenStore();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationDelegate);
+};
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
@@ -1200,6 +1216,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();
+
+  content::GeolocationProvider::SetGeolocationDelegate(
+      new ChromeGeolocationDelegate());
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }

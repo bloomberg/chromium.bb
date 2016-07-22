@@ -28,7 +28,6 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
-#include "chromecast/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -42,7 +41,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
@@ -88,22 +86,6 @@ static std::unique_ptr<::shell::Service> CreateMojoMediaApplication(
                                         quit_closure));
 }
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-
-// A provider of services for Geolocation.
-class CastGeolocationDelegate : public content::GeolocationDelegate {
- public:
-  explicit CastGeolocationDelegate(CastBrowserContext* context)
-      : context_(context) {}
-
-  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() override {
-    return new CastAccessTokenStore(context_);
-  }
-
- private:
-  CastBrowserContext* context_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastGeolocationDelegate);
-};
 
 }  // namespace
 
@@ -301,12 +283,6 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 
   AppendExtraCommandLineSwitches(command_line);
-}
-
-content::GeolocationDelegate*
-CastContentBrowserClient::CreateGeolocationDelegate() {
-  return new CastGeolocationDelegate(
-      CastBrowserProcess::GetInstance()->browser_context());
 }
 
 void CastContentBrowserClient::OverrideWebkitPrefs(

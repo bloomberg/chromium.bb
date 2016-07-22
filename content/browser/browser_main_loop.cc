@@ -683,9 +683,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     DOMStorageArea::EnableAggressiveCommitDelay();
   }
 
-  GeolocationProvider::SetGeolocationDelegate(
-      GetContentClient()->browser()->CreateGeolocationDelegate());
-
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();
   tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
