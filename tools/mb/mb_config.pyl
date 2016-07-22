@@ -69,6 +69,13 @@
       'Google Chrome Win': 'gn_official_goma_minimal_symbols_x86',
     },
 
+    'chromium.chromedriver': {
+      'Win7': 'gn_release_bot_x86',
+      'Mac 10.6': 'gn_release_bot',
+      'Linux': 'gn_release_bot',
+      'Linux32': 'gn_release_bot_x86',
+    },
+
     'chromium.chromiumos': {
       'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk_gn',
       'ChromiumOS daisy Compile': 'cros_chrome_sdk_gn',
