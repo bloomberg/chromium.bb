@@ -152,6 +152,11 @@ WebrtcTransport::WebrtcTransport(
 
 WebrtcTransport::~WebrtcTransport() {}
 
+std::unique_ptr<MessagePipe> WebrtcTransport::CreateOutgoingChannel(
+    const std::string& name) {
+  return data_stream_adapter_->CreateOutgoingChannel(name);
+}
+
 void WebrtcTransport::Start(
     Authenticator* authenticator,
     SendTransportInfoCallback send_transport_info_callback) {
@@ -192,9 +197,7 @@ void WebrtcTransport::Start(
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
       rtc_config, &constraints, std::move(port_allocator), nullptr, this);
 
-  data_stream_adapter_.reset(new WebrtcDataStreamAdapter(
-      base::Bind(&WebrtcTransport::Close, base::Unretained(this))));
-  data_stream_adapter_->Initialize(peer_connection_);
+  data_stream_adapter_.reset(new WebrtcDataStreamAdapter(peer_connection_));
 
   event_handler_->OnWebrtcTransportConnecting();
 
@@ -434,10 +437,9 @@ void WebrtcTransport::OnRemoveStream(
 void WebrtcTransport::OnDataChannel(
     rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_stream_adapter_->WrapIncomingDataChannel(
-      data_channel,
-      base::Bind(&EventHandler::OnWebrtcTransportIncomingDataChannel,
-                 base::Unretained(event_handler_), data_channel->label()));
+  event_handler_->OnWebrtcTransportIncomingDataChannel(
+      data_channel->label(),
+      data_stream_adapter_->WrapIncomingDataChannel(data_channel));
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {

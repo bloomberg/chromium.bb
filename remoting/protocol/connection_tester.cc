@@ -273,7 +273,9 @@ MessagePipeConnectionTester::~MessagePipeConnectionTester() {}
 
 void MessagePipeConnectionTester::RunAndCheckResults() {
   host_pipe_->Start(this);
+}
 
+void MessagePipeConnectionTester::OnMessagePipeOpen() {
   for (int i = 0; i < message_count_; ++i) {
     std::unique_ptr<VideoPacket> message(new VideoPacket());
     message->mutable_data()->resize(message_size_);

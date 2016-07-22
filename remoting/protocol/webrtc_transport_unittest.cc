@@ -14,10 +14,11 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/compound_buffer.h"
-#include "remoting/protocol/connection_tester.h"
+#include "remoting/proto/event.pb.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/message_channel_factory.h"
 #include "remoting/protocol/message_pipe.h"
+#include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
@@ -97,15 +98,32 @@ class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
   TestMessagePipeEventHandler() {}
   ~TestMessagePipeEventHandler() override {}
 
+  void set_open_callback(const base::Closure& callback) {
+    open_callback_ = callback;
+  }
+  void set_message_callback(const base::Closure& callback) {
+    message_callback_ = callback;
+  }
   void set_closed_callback(const base::Closure& callback) {
     closed_callback_ = callback;
   }
 
-  // MessagePipe::EventHandler interface.
-  void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override {
-    NOTREACHED();
+  bool is_open() { return is_open_; }
+  const std::list<std::unique_ptr<CompoundBuffer>>& received_messages() {
+    return received_messages_;
   }
 
+  // MessagePipe::EventHandler interface.
+  void OnMessagePipeOpen() override {
+    is_open_ = true;
+    if (!open_callback_.is_null())
+      open_callback_.Run();
+  }
+  void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override {
+    received_messages_.push_back(std::move(message));
+    if (!message_callback_.is_null())
+      message_callback_.Run();
+  }
   void OnMessagePipeClosed() override {
     if (!closed_callback_.is_null()) {
       closed_callback_.Run();
@@ -115,7 +133,12 @@ class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
   }
 
  private:
+  bool is_open_ = false;
+  base::Closure open_callback_;
+  base::Closure message_callback_;
   base::Closure closed_callback_;
+
+  std::list<std::unique_ptr<CompoundBuffer>> received_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMessagePipeEventHandler);
 };
@@ -220,22 +243,24 @@ class WebrtcTransportTest : public testing::Test {
   }
 
   void CreateHostDataStream() {
-    host_transport_->outgoing_channel_factory()->CreateChannel(
-        kChannelName, base::Bind(&WebrtcTransportTest::OnHostChannelCreated,
-                                 base::Unretained(this)));
+    host_message_pipe_ = host_transport_->CreateOutgoingChannel(kChannelName);
+    host_message_pipe_->Start(&host_message_pipe_event_handler_);
+    host_message_pipe_event_handler_.set_open_callback(base::Bind(
+        &WebrtcTransportTest::OnHostChannelConnected, base::Unretained(this)));
   }
 
   void OnIncomingChannel(const std::string& name,
                          std::unique_ptr<MessagePipe> pipe) {
     EXPECT_EQ(kChannelName, name);
     client_message_pipe_ = std::move(pipe);
-    if (run_loop_ && host_message_pipe_)
+    client_message_pipe_->Start(&client_message_pipe_event_handler_);
+
+    if (run_loop_ && host_message_pipe_event_handler_.is_open())
       run_loop_->Quit();
   }
 
-  void OnHostChannelCreated(std::unique_ptr<MessagePipe> pipe) {
-    host_message_pipe_ = std::move(pipe);
-    if (run_loop_ && client_message_pipe_)
+  void OnHostChannelConnected() {
+    if (run_loop_ && client_message_pipe_event_handler_.is_open())
       run_loop_->Quit();
   }
 
@@ -283,6 +308,7 @@ class WebrtcTransportTest : public testing::Test {
   std::unique_ptr<FakeAuthenticator> client_authenticator_;
 
   std::unique_ptr<MessagePipe> client_message_pipe_;
+  TestMessagePipeEventHandler client_message_pipe_event_handler_;
   std::unique_ptr<MessagePipe> host_message_pipe_;
   TestMessagePipeEventHandler host_message_pipe_event_handler_;
 
@@ -324,12 +350,20 @@ TEST_F(WebrtcTransportTest, DataStream) {
   EXPECT_TRUE(client_message_pipe_);
   EXPECT_TRUE(host_message_pipe_);
 
-  const int kMessageSize = 1024;
-  const int kMessages = 100;
-  MessagePipeConnectionTester tester(host_message_pipe_.get(),
-                                     client_message_pipe_.get(), kMessageSize,
-                                     kMessages);
-  tester.RunAndCheckResults();
+  TextEvent message;
+  message.set_text("Hello");
+  host_message_pipe_->Send(&message, base::Closure());
+
+  run_loop_.reset(new base::RunLoop());
+  client_message_pipe_event_handler_.set_message_callback(
+      base::Bind(&base::RunLoop::Quit, base::Unretained(run_loop_.get())));
+  run_loop_->Run();
+
+  ASSERT_EQ(1U, client_message_pipe_event_handler_.received_messages().size());
+
+  std::unique_ptr<TextEvent> received_message = ParseMessage<TextEvent>(
+      client_message_pipe_event_handler_.received_messages().front().get());
+  EXPECT_EQ(message.text(), received_message->text());
 }
 
 // Verify that data streams can be created after connection has been initiated.
@@ -366,7 +400,6 @@ TEST_F(WebrtcTransportTest, TerminateDataChannel) {
 
   // Expect that the channel is closed on the host side once the client closes
   // the channel.
-  host_message_pipe_->Start(&host_message_pipe_event_handler_);
   host_message_pipe_event_handler_.set_closed_callback(base::Bind(
       &WebrtcTransportTest::OnHostChannelClosed, base::Unretained(this)));
 

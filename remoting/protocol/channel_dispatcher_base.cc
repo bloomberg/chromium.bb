@@ -42,7 +42,11 @@ void ChannelDispatcherBase::OnChannelReady(
   channel_factory_ = nullptr;
   message_pipe_ = std::move(message_pipe);
   message_pipe_->Start(this);
+}
 
+void ChannelDispatcherBase::OnMessagePipeOpen() {
+  DCHECK(!is_connected_);
+  is_connected_ = true;
   event_handler_->OnChannelInitialized(this);
 }
 
@@ -52,6 +56,7 @@ void ChannelDispatcherBase::OnMessageReceived(
 }
 
 void ChannelDispatcherBase::OnMessagePipeClosed() {
+  is_connected_ = false;
   event_handler_->OnChannelClosed(this);
 }
 

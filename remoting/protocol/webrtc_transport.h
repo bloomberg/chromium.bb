@@ -29,7 +29,6 @@ namespace remoting {
 namespace protocol {
 
 class TransportContext;
-class MessageChannelFactory;
 class MessagePipe;
 
 class WebrtcTransport : public Transport,
@@ -81,11 +80,10 @@ class WebrtcTransport : public Transport,
     return video_encoder_factory_;
   }
 
-  // Factory for outgoing data channels. Must be used only after the transport
-  // is connected.
-  MessageChannelFactory* outgoing_channel_factory() {
-    return data_stream_adapter_.get();
-  }
+  // Creates outgoing data channel. The channel is created in CONNECTING state.
+  // The caller must wait for OnMessagePipeOpen() notification before sending
+  // any messages.
+  std::unique_ptr<MessagePipe> CreateOutgoingChannel(const std::string& name);
 
   // Transport interface.
   void Start(Authenticator* authenticator,

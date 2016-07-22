@@ -57,7 +57,7 @@ class ChannelDispatcherBase : public MessagePipe::EventHandler {
   const std::string& channel_name() { return channel_name_; }
 
   // Returns true if the channel is currently connected.
-  bool is_connected() { return message_pipe() != nullptr; }
+  bool is_connected() { return is_connected_; }
 
  protected:
   explicit ChannelDispatcherBase(const char* channel_name);
@@ -71,12 +71,14 @@ class ChannelDispatcherBase : public MessagePipe::EventHandler {
   void OnChannelReady(std::unique_ptr<MessagePipe> message_pipe);
 
   // MessagePipe::EventHandler interface.
+  void OnMessagePipeOpen() override;
   void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override;
   void OnMessagePipeClosed() override;
 
   std::string channel_name_;
   MessageChannelFactory* channel_factory_ = nullptr;
   EventHandler* event_handler_ = nullptr;
+  bool is_connected_ = false;
 
   std::unique_ptr<MessagePipe> message_pipe_;
 

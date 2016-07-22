@@ -104,7 +104,9 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
 
 void WebrtcConnectionToHost::OnWebrtcTransportConnecting() {
   event_dispatcher_.reset(new ClientEventDispatcher());
-  event_dispatcher_->Init(transport_->outgoing_channel_factory(), this);
+  event_dispatcher_->Init(
+      transport_->CreateOutgoingChannel(event_dispatcher_->channel_name()),
+      this);
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportConnected() {}

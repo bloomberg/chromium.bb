@@ -26,6 +26,9 @@ class MessagePipe {
  public:
   class EventHandler {
    public:
+    // Called when the channel is open.
+    virtual void OnMessagePipeOpen() = 0;
+
     // Called when a message is received.
     virtual void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) = 0;
 
@@ -38,8 +41,9 @@ class MessagePipe {
 
   virtual ~MessagePipe() {}
 
-  // Starts the channel. |event_handler| will be called to notify when a message
-  // is received or the pipe is closed.
+  // Starts the channel. Must be called immediately after MessagePipe is
+  // created. |event_handler| will be notified when state of the pipe changes or
+  // when a message is received.
   virtual void Start(EventHandler* event_handler) = 0;
 
   // Sends a message. |done| is called when the message has been sent to the

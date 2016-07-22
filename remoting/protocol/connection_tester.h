@@ -121,6 +121,7 @@ class MessagePipeConnectionTester : public MessagePipe::EventHandler {
 
  protected:
   // MessagePipe::EventHandler interface.
+  void OnMessagePipeOpen() override;
   void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override;
   void OnMessagePipeClosed() override;
 

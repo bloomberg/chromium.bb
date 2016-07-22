@@ -42,6 +42,7 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
                                   base::Unretained(event_handler)),
                        base::Bind(&StreamMessagePipeAdapter::CloseOnError,
                                   base::Unretained(this)));
+  event_handler->OnMessagePipeOpen();
 }
 
 void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,

@@ -155,10 +155,11 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnecting() {
-  // Create outgoing control channel by initializing |control_dispatcher_|.
-  // |event_dispatcher_| is initialized later because event channel is expected
-  // to be created by the client.
-  control_dispatcher_->Init(transport_->outgoing_channel_factory(), this);
+  // Create outgoing control channel. |event_dispatcher_| is initialized later
+  // because event channel is expected to be created by the client.
+  control_dispatcher_->Init(
+      transport_->CreateOutgoingChannel(control_dispatcher_->channel_name()),
+      this);
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
