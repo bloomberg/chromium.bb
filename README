@@ -70,6 +70,55 @@ For more information about parallel installability, see
 http://ometer.com/parallel.html
 
 
+Versioning scheme
+-----------------
+
+In order to provide consistent, easy to use versioning, libweston
+follows the rules in the Apache Portable Runtime Project
+http://apr.apache.org/versioning.html.
+
+The document provides the full details, with the gist summed below:
+ - Major - backward incompatible changes.
+ - Minor - new backward compatible features.
+ - Patch - internal (implementation specific) fixes.
+
+
+Forward compatibility
+---------------------
+
+Inspired by ATK, Qt and KDE programs/libraries, libjpeg-turbo, GDK,
+NetworkManager, js17, lz4 and many others, libweston uses a macro to restrict
+the API visible to the developer - REQUIRE_LIBWESTON_API_VERSION.
+
+Note that different projects focus on different aspects - upper and/or lower
+version check, default to visible/hidden old/new symbols and so on.
+
+libweston aims to guard all newly introduced API, in order to prevent subtle
+breaks that a simple recompile (against a newer version) might cause.
+
+The macro is of the format 0x$MAJOR$MINOR and does not include PATCH version.
+As mentioned in the Versioning scheme section, the latter does not reflect any
+user visible API changes, thus should be not considered part of the API version.
+
+All new symbols should be guarded by the macro like the example given below:
+
+#if REQUIRE_LIBWESTON_API_VERSION >= 0x0101
+
+bool
+weston_ham_sandwich(void);
+
+#endif
+
+In order to use the said symbol, the one will have a similar code in their
+configure.ac:
+
+PKG_CHECK_MODULES(LIBWAYLAND, [libwayland-1 >= 1.1])
+AC_DEFINE(REQUIRE_LIBWESTON_API_VERSION, [0x0101])
+
+If the user is _not_ interested in forward compatibility, they can use 0xffff
+or similar high value. Yet doing so is not recommended.
+
+
 Libweston design goals
 ----------------------
 
