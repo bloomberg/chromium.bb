@@ -104,9 +104,12 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Verify that the form's 'skip_zero_click' is updated and not overwritten
   // by the autofill password manager on successful login.
-  auto& passwords_map = password_store->stored_passwords();
+  WaitForPasswordStore();
+  password_manager::TestPasswordStore::PasswordMap passwords_map =
+      password_store->stored_passwords();
   ASSERT_EQ(1u, passwords_map.size());
-  auto& passwords_vector = passwords_map.begin()->second;
+  const std::vector<autofill::PasswordForm>& passwords_vector =
+      passwords_map.begin()->second;
   ASSERT_EQ(1u, passwords_vector.size());
   const autofill::PasswordForm& form = passwords_vector[0];
   EXPECT_EQ(base::ASCIIToUTF16("user"), form.username_value);
@@ -177,6 +180,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       RenderViewHost(),
       "var c = new PasswordCredential({ id: 'user', password: '12345' });"
       "navigator.credentials.store(c);"));
+  // Wait for the password store before checking the prompt because it pops up
+  // after the store replies.
+  WaitForPasswordStore();
   std::unique_ptr<BubbleObserver> prompt_observer(
       new BubbleObserver(WebContents()));
   EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
@@ -235,11 +241,13 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
       "document.getElementById('input_submit_button').click();"));
   form_submit_observer.Wait();
 
+  // Wait for the password store before checking the prompt because it pops up
+  // after the store replies.
+  WaitForPasswordStore();
   std::unique_ptr<BubbleObserver> prompt_observer(
       new BubbleObserver(WebContents()));
   EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
   EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
-  WaitForPasswordStore();
   signin_form.skip_zero_click = false;
   signin_form.times_used = 1;
   signin_form.password_value = base::ASCIIToUTF16("API");
