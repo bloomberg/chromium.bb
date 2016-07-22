@@ -36,7 +36,7 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
     const std::size_t index_length = 2 + length_field_size * num_frames;
 
     if (frame_length < index_length) {
-      std::fprintf(stderr, "Webm2Pes: Invalid superframe index size.\n");
+      std::fprintf(stderr, "VP9Parse: Invalid superframe index size.\n");
       return false;
     }
 
@@ -61,13 +61,13 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
       }
 
       if (static_cast<int>(frame_ranges->size()) != num_frames) {
-        std::fprintf(stderr, "Webm2Pes: superframe index parse failed.\n");
+        std::fprintf(stderr, "VP9Parse: superframe index parse failed.\n");
         return false;
       }
 
       parse_ok = true;
     } else {
-      std::fprintf(stderr, "Webm2Pes: Invalid superframe index.\n");
+      std::fprintf(stderr, "VP9Parse: Invalid superframe index.\n");
     }
   }
   return parse_ok;
