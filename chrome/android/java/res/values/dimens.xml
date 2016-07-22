@@ -282,6 +282,7 @@
     <dimen name="ntp_search_box_material_padding_left">2dp</dimen>
     <dimen name="ntp_search_box_material_padding_right">2dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
+    <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_list_item_padding">16dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_list_item_text_size">16sp</dimen>
