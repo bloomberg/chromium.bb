@@ -56,6 +56,7 @@ public:
     float resourceWidth() const { return m_resourceWidth.isSet ? m_resourceWidth.width : 0; }
     const KURL& baseURL() const { return m_baseURL; }
     bool isPreconnect() const { return m_requestType == RequestTypePreconnect; }
+    bool isLinkRelPreload() const { return m_requestType == RequestTypeLinkRelPreload; }
     const ClientHintsPreferences& preferences() const { return m_clientHintsPreferences; }
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
     void setIntegrityMetadata(const IntegrityMetadataSet& metadataSet)

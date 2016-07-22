@@ -208,6 +208,11 @@ Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& reques
     return resource;
 }
 
+void DocumentLoader::dispatchLinkHeaderPreloads(ViewportDescriptionWrapper* viewport, LinkLoader::MediaPreloadPolicy mediaPolicy)
+{
+    LinkLoader::loadLinksFromHeader(response().httpHeaderField(HTTPNames::Link), response().url(), m_frame->document(), NetworkHintsInterfaceImpl(), LinkLoader::OnlyLoadResources, mediaPolicy, viewport);
+}
+
 void DocumentLoader::didChangePerformanceTiming()
 {
     if (frame() && frame()->isMainFrame() && m_state >= Committed) {

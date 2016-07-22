@@ -445,6 +445,11 @@ void FrameLoader::receivedFirstData()
     if (client()->isControlledByServiceWorker(*m_documentLoader))
         client()->didObserveLoadingBehavior(WebLoadingBehaviorServiceWorkerControlled);
 
+    // Links with media values need more information (like viewport
+    // information). This happens after the first chunk is parsed in
+    // HTMLDocumentParser.
+    m_documentLoader->dispatchLinkHeaderPreloads(nullptr, LinkLoader::OnlyLoadNonMedia);
+
     TRACE_EVENT1("devtools.timeline", "CommitLoad", "data", InspectorCommitLoadEvent::data(m_frame));
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);

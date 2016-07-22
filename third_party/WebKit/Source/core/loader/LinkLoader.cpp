@@ -302,13 +302,18 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
 }
 
 void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document* document, const NetworkHintsInterface& networkHintsInterface,
-    CanLoadResources canLoadResources, ViewportDescriptionWrapper* viewportDescriptionWrapper)
+    CanLoadResources canLoadResources, MediaPreloadPolicy mediaPolicy, ViewportDescriptionWrapper* viewportDescriptionWrapper)
 {
     if (!document || headerValue.isEmpty())
         return;
     LinkHeaderSet headerSet(headerValue);
     for (auto& header : headerSet) {
         if (!header.valid() || header.url().isEmpty() || header.rel().isEmpty())
+            continue;
+
+        if (mediaPolicy == OnlyLoadMedia && header.media().isEmpty())
+            continue;
+        if (mediaPolicy == OnlyLoadNonMedia && !header.media().isEmpty())
             continue;
 
         LinkRelAttribute relAttribute(header.rel());

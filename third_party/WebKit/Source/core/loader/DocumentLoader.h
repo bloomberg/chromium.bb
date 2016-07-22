@@ -41,6 +41,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/LinkLoader.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceError.h"
@@ -60,6 +61,7 @@ class LocalFrame;
 class FrameLoader;
 class ResourceLoader;
 class WebDocumentSubresourceFilter;
+struct ViewportDescriptionWrapper;
 
 class CORE_EXPORT DocumentLoader : public GarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
 public:
@@ -145,6 +147,8 @@ public:
 
     void setWasBlockedAfterXFrameOptionsOrCSP() { m_wasBlockedAfterXFrameOptionsOrCSP = true; }
     bool wasBlockedAfterXFrameOptionsOrCSP() { return m_wasBlockedAfterXFrameOptionsOrCSP; }
+
+    void dispatchLinkHeaderPreloads(ViewportDescriptionWrapper*, LinkLoader::MediaPreloadPolicy);
 
     Resource* startPreload(Resource::Type, FetchRequest&);
 

@@ -298,17 +298,32 @@ void HTMLDocumentParser::notifyPendingParsedChunks()
 
     // ApplicationCache needs to be initialized before issuing preloads.
     // We suspend preload until HTMLHTMLElement is inserted and
-    // ApplicationCache is initialized.
+    // ApplicationCache is initialized. Note: link rel preloads don't follow
+    // this policy per the spec. These directives should initiate a fetch as
+    // fast as possible.
+    if (!m_triedLoadingLinkHeaders && document()->loader() && !pendingChunks.isEmpty()) {
+        // Note that on commit, the loader dispatched preloads for all the
+        // non-media links.
+        document()->loader()->dispatchLinkHeaderPreloads(&pendingChunks.first()->viewport, LinkLoader::OnlyLoadMedia);
+        m_triedLoadingLinkHeaders = true;
+    }
+
     if (!document()->documentElement()) {
+        PreloadRequestStream linkRelPreloads;
         for (auto& chunk : pendingChunks) {
-            for (auto& request : chunk->preloads)
-                m_queuedPreloads.append(std::move(request));
+            for (auto& request : chunk->preloads) {
+                if (request->isLinkRelPreload())
+                    linkRelPreloads.append(std::move(request));
+                else
+                    m_queuedPreloads.append(std::move(request));
+            }
             for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
                 const CompactHTMLToken& token = chunk->tokens->at(index);
                 ASSERT(token.type() == HTMLToken::TokenType::Character);
                 m_queuedDocumentWriteScripts.append(token.data());
             }
         }
+        m_preloader->takeAndPreload(linkRelPreloads);
     } else {
         // We can safely assume that there are no queued preloads request after
         // the document element is available, as we empty the queue immediately
@@ -467,16 +482,6 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(std::unique_pt
 
         if (isStopped())
             break;
-
-        if (!m_triedLoadingLinkHeaders && document()->loader()) {
-            String linkHeader = document()->loader()->response().httpHeaderField(HTTPNames::Link);
-            if (!linkHeader.isEmpty()) {
-                ASSERT(chunk);
-                LinkLoader::loadLinksFromHeader(linkHeader, document()->loader()->response().url(),
-                    document(), NetworkHintsInterfaceImpl(), LinkLoader::OnlyLoadResources, &(chunk->viewport));
-                m_triedLoadingLinkHeaders = true;
-            }
-        }
 
         if (isWaitingForScripts()) {
             ASSERT(it + 1 == tokens->end()); // The </script> is assumed to be the last token of this bunch.

@@ -75,7 +75,10 @@ public:
     void released();
     bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const String& media, const KURL&, Document&, const NetworkHintsInterface&);
     enum CanLoadResources { OnlyLoadResources, DoNotLoadResources, LoadResourcesAndPreconnect };
-    static void loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources, ViewportDescriptionWrapper*);
+    // Media links cannot be preloaded until the first chunk is parsed. The rest
+    // can be preloaded at commit time.
+    enum MediaPreloadPolicy { LoadAll, OnlyLoadNonMedia, OnlyLoadMedia };
+    static void loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources, MediaPreloadPolicy, ViewportDescriptionWrapper*);
     static bool getResourceTypeFromAsAttribute(const String& as, Resource::Type&);
 
     DECLARE_TRACE();
