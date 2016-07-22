@@ -212,15 +212,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }                                                             \
   class SingleThreadDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-#define SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
-  TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) {   \
-    RunTest(CompositorMode::SINGLE_THREADED, true);                 \
-  }                                                                 \
+#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \
+  TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) { \
+    RunTest(CompositorMode::SINGLE_THREADED, true);               \
+  }                                                               \
   class SingleThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
-
-#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)            \
-  SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME); \
-  SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
 
 #define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer) {   \
@@ -228,15 +224,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }                                                            \
   class MultiThreadDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-#define MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
-  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) {   \
-    RunTest(CompositorMode::THREADED, true);                       \
-  }                                                                \
+#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) { \
+    RunTest(CompositorMode::THREADED, true);                     \
+  }                                                              \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
-
-#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)            \
-  MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME); \
-  MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
 
 // The Remote mode tests don't need to run for delegated renderer.
 #define REMOTE_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
@@ -249,13 +241,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)
 
-#define SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
-  SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME);                \
-  MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
-
-#define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)            \
-  SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME); \
-  SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
+#define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
+  SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME);                \
+  MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)
 
 // Some tests want to control when notify ready for activation occurs,
 // but this is not supported in the single-threaded case.

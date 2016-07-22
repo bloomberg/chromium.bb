@@ -76,7 +76,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
   gfx::Rect drawn_viewport_;
 };
 
-SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(DelegatingRendererTestDraw);
+SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestDraw);
 
 class DelegatingRendererTestResources : public DelegatingRendererTest {
  public:
@@ -125,7 +125,6 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
   }
 };
 
-SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(
-    DelegatingRendererTestResources);
+SINGLE_AND_MULTI_THREAD_TEST_F(DelegatingRendererTestResources);
 
 }  // namespace cc
