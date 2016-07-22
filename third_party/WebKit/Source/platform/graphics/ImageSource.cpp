@@ -51,16 +51,15 @@ PassRefPtr<SharedBuffer> ImageSource::data()
     return m_decoder ? m_decoder->data() : nullptr;
 }
 
-ImageDecoder::SniffResult ImageSource::setData(SharedBuffer& data, bool allDataReceived)
+void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
 {
-    ImageDecoder::SniffResult result = ImageDecoder::determineImageType(data);
+    // Create a decoder by sniffing the encoded data. If insufficient data bytes are available to
+    // determine the encoded image type, no decoder is created.
     if (!m_decoder)
-        m_decoder = DeferredImageDecoder::create(result, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+        m_decoder = DeferredImageDecoder::create(data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
 
     if (m_decoder)
         m_decoder->setData(data, allDataReceived);
-
-    return result;
 }
 
 String ImageSource::filenameExtension() const

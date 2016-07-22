@@ -621,20 +621,4 @@ TEST(ImageResourceTest, AddClientAfterPrune)
     EXPECT_TRUE(client2->notifyFinishedCalled());
 }
 
-TEST(ImageResourceTest, CancelOnDecodeError)
-{
-    KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-    URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
-
-    ResourceFetcher* fetcher = ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
-    FetchRequest request(testURL, FetchInitiatorInfo());
-    ImageResource* cachedImage = ImageResource::fetch(request, fetcher);
-    Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
-
-    cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(ResourceResponse(testURL, "image/jpeg", 18, nullAtom, String())), nullptr);
-    cachedImage->loader()->didReceiveData(nullptr, "notactuallyanimage", 18, 18, 18);
-    EXPECT_EQ(Resource::DecodeError, cachedImage->getStatus());
-    EXPECT_FALSE(cachedImage->isLoading());
-}
-
 } // namespace blink

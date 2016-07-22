@@ -360,7 +360,7 @@ TEST_F(DeferredImageDecoderTest, smallerFrameCount)
 
 TEST_F(DeferredImageDecoderTest, frameOpacity)
 {
-    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(ImageDecoder::determineImageType(*m_data),
+    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(*m_data,
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::createForTesting(std::move(actualDecoder));
     decoder->setData(*m_data, true);

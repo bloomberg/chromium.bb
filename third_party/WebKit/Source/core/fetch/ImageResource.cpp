@@ -375,7 +375,7 @@ void ImageResource::updateImage(bool allDataReceived)
     if (m_data)
         createImage();
 
-    Image::SizeAvailability sizeAvailable = Image::SizeUnavailable;
+    bool sizeAvailable = false;
 
     // Have the image update its data from its internal buffer.
     // It will not do anything now, but will delay decoding until
@@ -389,21 +389,19 @@ void ImageResource::updateImage(bool allDataReceived)
     // received all the data or the size is known. Each chunk from the
     // network causes observers to repaint, which will force that chunk
     // to decode.
-    if (sizeAvailable == Image::SizeUnavailable && !allDataReceived)
-        return;
-    if (errorOccurred())
-        return;
-    if (!m_image || m_image->isNull()) {
-        setStatus(DecodeError);
-        if (!allDataReceived && m_loader)
-            m_loader->didFinishLoading(nullptr, monotonicallyIncreasingTime(), encodedSize());
-        clear();
-        memoryCache()->remove(this);
-    }
+    if (sizeAvailable || allDataReceived) {
+        if (!m_image || m_image->isNull()) {
+            if (!errorOccurred())
+                setStatus(DecodeError);
+            clear();
+            if (memoryCache()->contains(this))
+                memoryCache()->remove(this);
+        }
 
-    // It would be nice to only redraw the decoded band of the image, but with the current design
-    // (decoding delayed until painting) that seems hard.
-    notifyObservers();
+        // It would be nice to only redraw the decoded band of the image, but with the current design
+        // (decoding delayed until painting) that seems hard.
+        notifyObservers();
+    }
 }
 
 void ImageResource::updateImageAndClearBuffer()

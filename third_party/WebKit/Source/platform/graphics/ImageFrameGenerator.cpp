@@ -160,7 +160,7 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data, size_t index, const S
         return false;
     }
 
-    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(ImageDecoder::determineImageType(*data), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     // getYUVComponentSizes was already called and was successful, so ImageDecoder::create must succeed.
     ASSERT(decoder);
 
@@ -267,7 +267,7 @@ bool ImageFrameGenerator::decode(SegmentReader* data, bool allDataReceived, size
             *decoder = m_imageDecoderFactory->create().release();
 
         if (!*decoder)
-            *decoder = ImageDecoder::create(ImageDecoder::determineImageType(*data), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied).release();
+            *decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied).release();
 
         if (!*decoder)
             return false;
@@ -327,7 +327,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SegmentReader* data, SkYUVSizeInf
     if (m_yuvDecodingFailed)
         return false;
 
-    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(ImageDecoder::determineImageType(*data), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     if (!decoder)
         return false;
 

@@ -2142,7 +2142,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     if ((!skiaImage || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {
         // Attempt to get raw unpremultiplied image data.
         std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
-            ImageDecoder::determineImageType(*(m_image->data())), ImageDecoder::AlphaNotPremultiplied,
+            *(m_image->data()), ImageDecoder::AlphaNotPremultiplied,
             ignoreGammaAndColorProfile ? ImageDecoder::GammaAndColorProfileIgnored : ImageDecoder::GammaAndColorProfileApplied));
         if (!decoder)
             return;

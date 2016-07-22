@@ -397,8 +397,7 @@ void Resource::error(const ResourceError& error)
     if (m_error.isCancellation() || !isPreloaded())
         memoryCache()->remove(this);
 
-    if (!errorOccurred())
-        setStatus(LoadError);
+    setStatus(LoadError);
     ASSERT(errorOccurred());
     m_data.clear();
     m_loader = nullptr;

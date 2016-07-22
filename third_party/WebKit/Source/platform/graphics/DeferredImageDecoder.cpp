@@ -57,9 +57,9 @@ public:
     uint32_t m_uniqueID;
 };
 
-std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(ImageDecoder::SniffResult sniffResult, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
+std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
 {
-    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(sniffResult, alphaOption, colorOptions);
+    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, colorOptions);
 
     if (!actualDecoder)
         return nullptr;

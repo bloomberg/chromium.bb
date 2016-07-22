@@ -232,7 +232,7 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied;
     if (colorSpaceConversionOption == "none")
         colorSpaceOp = ImageDecoder::GammaAndColorProfileIgnored;
-    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(ImageDecoder::determineImageType(*sharedBuffer), alphaOp, colorSpaceOp));
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, alphaOp, colorSpaceOp));
     RefPtr<SkImage> frame;
     if (decoder) {
         decoder->setData(sharedBuffer.get(), true);

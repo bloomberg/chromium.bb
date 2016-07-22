@@ -189,24 +189,21 @@ bool BitmapImage::getHotSpot(IntPoint& hotSpot) const
     return m_source.getHotSpot(hotSpot);
 }
 
-Image::SizeAvailability BitmapImage::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
+bool BitmapImage::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
     if (!data.get())
-        return SizeAvailable;
+        return true;
 
     int length = data->size();
     if (!length)
-        return SizeAvailable;
+        return true;
 
-    // If ImageSource::setData() returns Invalid, we know that this is a decode error.
-    // Report size available so that it gets registered as such in ImageResource.
-    if (m_source.setData(*data, allDataReceived) == ImageDecoder::SniffResult::Invalid)
-        return SizeAvailable;
+    m_source.setData(*data, allDataReceived);
 
     return dataChanged(allDataReceived);
 }
 
-Image::SizeAvailability BitmapImage::dataChanged(bool allDataReceived)
+bool BitmapImage::dataChanged(bool allDataReceived)
 {
     TRACE_EVENT0("blink", "BitmapImage::dataChanged");
 
@@ -242,7 +239,7 @@ Image::SizeAvailability BitmapImage::dataChanged(bool allDataReceived)
     m_allDataReceived = allDataReceived;
 
     m_haveFrameCount = false;
-    return isSizeAvailable() ? SizeAvailable : SizeUnavailable;
+    return isSizeAvailable();
 }
 
 bool BitmapImage::hasColorProfile() const
