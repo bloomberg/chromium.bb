@@ -151,13 +151,13 @@ function test()
             var parentWidget = new TestWidget("Parent");
             parentWidget.markAsRoot();
             var childWidget = new TestWidget("Child");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(document.body);
 
             parentWidget.doResize();
             childWidget.show(parentWidget.element);
             parentWidget.doResize();
             parentWidget.detach();
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(document.body);
             childWidget.detach();
             parentWidget.detach();
             next();
@@ -340,6 +340,20 @@ function test()
             parentWidget.resizeOnWasShown = childWidget;
             parentWidget.show(WebInspector.inspectorView.element);
             parentWidget.detach();
+            next();
+        },
+
+        function testAlienParent(next)
+        {
+            var parentWidget1 = new TestWidget("Parent");
+            var parentWidget2 = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            childWidget.attach(parentWidget1);
+            try {
+                childWidget.showWidget(parentWidget2.element);
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
             next();
         }
     ]);
