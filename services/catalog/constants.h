@@ -7,7 +7,7 @@
 
 namespace catalog {
 
-extern const char kMojoApplicationsDirName[];
+extern const char kPackagesDirName[];
 
 }  // namespace catalog
 

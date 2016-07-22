@@ -6,6 +6,6 @@
 
 namespace catalog {
 
-const char kMojoApplicationsDirName[] = "Mojo Applications";
+const char kPackagesDirName[] = "Packages";
 
 }  // namespace catalog

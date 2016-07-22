@@ -17,29 +17,20 @@ class Connector;
 
 namespace mojo {
 
-// Connects to mojo:tracing during your Application's Initialize() call once
-// per process.
-//
-// We need to deal with multiple ways of packaging mojo applications
-// together. We'll need to deal with packages that use the mojo.ContentHandler
-// interface to bundle several Applciations into a single physical on disk
-// mojo binary, and with those same services each in their own mojo binary.
-//
-// Have your bundle ContentHandler own a TracingImpl, and each Application own
-// a TracingImpl. In bundles, the second TracingImpl will be a no-op.
+// Connects to mojo:tracing during your Service's OnStart() call once per
+// process.
 class TracingImpl : public shell::InterfaceFactory<tracing::TraceProvider> {
  public:
   TracingImpl();
   ~TracingImpl() override;
 
-  // This connects to the tracing service and registers ourselves to provide
-  // tracing data on demand.
+  // Connect to the Tracing service & provide tracing data on demand.
   void Initialize(shell::Connector* connector, const std::string& url);
 
  private:
   // InterfaceFactory<tracing::TraceProvider> implementation.
   void Create(shell::Connection* connection,
-              InterfaceRequest<tracing::TraceProvider> request) override;
+              tracing::TraceProviderRequest request) override;
 
   std::unique_ptr<shell::Connection> connection_;
   TraceProviderImpl provider_impl_;

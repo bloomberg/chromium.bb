@@ -68,7 +68,7 @@ void TracingImpl::Initialize(shell::Connector* connector,
 }
 
 void TracingImpl::Create(shell::Connection* connection,
-                         InterfaceRequest<tracing::TraceProvider> request) {
+                         tracing::TraceProviderRequest request) {
   provider_impl_.Bind(std::move(request));
 }
 

@@ -65,7 +65,7 @@
         'type': 'exe',
         'name': 'content_browser',
         'packaged_manifests': [
-          '<(PRODUCT_DIR)/Mojo Applications/user/manifest.json',
+          '<(PRODUCT_DIR)/Packages/user/manifest.json',
         ],
         'source_manifest': '<(DEPTH)/content/public/app/mojo/content_browser_manifest.json',
       },

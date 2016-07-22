@@ -12,28 +12,28 @@ namespace shell {
 extern const char kNameType_Mojo[];
 extern const char kNameType_Exe[];
 
-// Mojo services and applications are identified by structured "names", of the
-// form:
+// Mojo services are identified by structured "names", of the form:
 //
 //    type:path.
 //
-// The type field tells the shell how to load the application. Two types are
-// currently recognized:
+// The type field tells the shell how to load the service. Two types are
+// recognized:
 //
 //  mojo
-//   Represents an application packaged as a .mojo, launched from the
-//   NativeRunner launch path. .mojo files are assumed to live alongside the
-//   shell executable at a path matching <path>/<path>.mojo. .mojo applications
-//   have a MojoMain() entrypoint that receives a handle to a ServiceRequest
-//   that must be bound to enable further communication with the shell.
+//   Represents a service packaged as a .library, launched from the NativeRunner
+//   launch path. .library files are assumed to live alongside the executable
+//   hosting the service manager at a path matching <path>/<path>.library.
+//   .library files have a MojoMain() entrypoint that receives a handle to a
+//   ServiceRequest that must be bound to enable further communication with the
+//   Service Manager.
 //
 //  exe
 //   Represents a native executable on the host platform, expected to live
 //   alongside the shell executable. Executables launched via this mechanism are
 //   passed a handle to the shell on the command line and are expected to bind
-//   a ServiceRequest enabling further communication with the shell. The
-//   path component contains the executable name, minus any platform-specific
-//   extension.
+//   a ServiceRequest enabling further communication with the Service Manager.
+//   The path component contains the executable name, minus any platform
+//   specific extension.
 //
 // Other types may be supplied but are not recognized by any of the
 // NativeRunners, and as such custom loaders must be specified for such names.

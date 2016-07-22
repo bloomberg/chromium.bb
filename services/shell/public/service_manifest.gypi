@@ -19,7 +19,7 @@
     'source_manifest%': '<(source_manifest)',
     'conditions': [
       ['type=="mojo"', {
-        'output_manifest%': '<(PRODUCT_DIR)/Mojo Applications/<(name)/manifest.json',
+        'output_manifest%': '<(PRODUCT_DIR)/Packages/<(name)/manifest.json',
       }, {
         'output_manifest%': '<(PRODUCT_DIR)/<(name)_manifest.json',
       }],

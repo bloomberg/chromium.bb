@@ -61,7 +61,7 @@ base::FilePath GetPathForApplicationName(const std::string& application_name) {
   base::FilePath base_path;
   PathService::Get(base::DIR_EXE, &base_path);
   // TODO(beng): this won't handle user-specific components.
-  return base_path.AppendASCII(kMojoApplicationsDirName).AppendASCII(path).
+  return base_path.AppendASCII(kPackagesDirName).AppendASCII(path).
       AppendASCII("resources");
 }
 
@@ -98,7 +98,7 @@ Catalog::Catalog(std::unique_ptr<Store> store)
 void Catalog::ScanSystemPackageDir() {
   base::FilePath system_package_dir;
   PathService::Get(base::DIR_MODULE, &system_package_dir);
-  system_package_dir = system_package_dir.AppendASCII(kMojoApplicationsDirName);
+  system_package_dir = system_package_dir.AppendASCII(kPackagesDirName);
   system_reader_->Read(system_package_dir, &system_cache_,
                        base::Bind(&Catalog::SystemPackageDirScanned,
                                   weak_factory_.GetWeakPtr()));

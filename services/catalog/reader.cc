@@ -27,7 +27,7 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
   std::string type = shell::GetNameType(name);
   std::string path = shell::GetNamePath(name);
   if (type == shell::kNameType_Mojo) {
-    return package_dir.AppendASCII(kMojoApplicationsDirName).AppendASCII(
+    return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
         path + "/manifest.json");
   }
   if (type == shell::kNameType_Exe)
@@ -127,7 +127,7 @@ std::unique_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
   if (!entry) {
     entry.reset(new Entry(mojo_name));
     entry->set_path(GetExecutablePath(
-        package_dir.AppendASCII(kMojoApplicationsDirName), mojo_name));
+        package_dir.AppendASCII(kPackagesDirName), mojo_name));
   }
   return entry;
 }

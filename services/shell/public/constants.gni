@@ -4,5 +4,5 @@
 
 declare_args() {
   # Service package directories are created within this subdirectory.
-  packages_directory = "Mojo Applications"
+  packages_directory = "Packages"
 }
