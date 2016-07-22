@@ -346,8 +346,6 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   [super setShowsBorderOnlyWhileMouseInside:showOnly];
   if (showOnly) {
     [self updateTrackingAreas];
-    if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback)
-      [self setHighlighted:isMouseInside_];
   } else {
     if (trackingArea_) {
       [[self controlView] removeTrackingArea:trackingArea_];
@@ -585,8 +583,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                     innerPath:&innerPath
                      clipPath:NULL];
 
-  BOOL pressed = ([((NSControl*)[self controlView]) isEnabled] &&
-                  [self isHighlighted]);
+  BOOL enabled = [((NSControl*)[self controlView]) isEnabled];
+  BOOL pressed = enabled && [self isHighlighted];
   NSWindow* window = [controlView window];
   const ui::ThemeProvider* themeProvider = [window themeProvider];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
@@ -598,7 +596,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   // |showsBorderOnlyWhileMouseInside| is true.
   BOOL hasMaterialHighlight =
       [self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
-      ![self showsBorderOnlyWhileMouseInside];
+      ![self showsBorderOnlyWhileMouseInside] &&
+      enabled;
   if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
       pressed || [self isMouseInside] || [self isContinuousPulsing] ||
       hasMaterialHighlight) {

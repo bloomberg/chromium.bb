@@ -360,16 +360,6 @@ BookmarkButton* gDraggedButton = nil; // Weak
   [delegate_ mouseExitedButton:self event:event];
 }
 
-- (void)mouseDown:(NSEvent*)theEvent {
-  // Clicking on a bookmark button in Material Design should highlight it.
-  const int kCellTag = [[self cell] tag];
-  if (kCellTag == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
-      [self isEnabled]) {
-    [self highlight:YES];
-  }
-  [super mouseDown:theEvent];
-}
-
 - (void)mouseMoved:(NSEvent*)theEvent {
   if ([delegate_ respondsToSelector:@selector(mouseMoved:)])
     [id(delegate_) mouseMoved:theEvent];

@@ -1971,12 +1971,10 @@ CGFloat BookmarkRightMargin() {
       [BookmarkButtonCell buttonCellWithText:text
                                        image:image
                               menuController:contextMenuController_];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
+  if (ui::MaterialDesignController::IsModeMaterial())
     [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
-    [cell setHighlightsBy:NSNoCellMask];
-  } else {
+  else
     [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
-  }
 
   // Note: a quirk of setting a cell's text color is that it won't work
   // until the cell is associated with a button, so we can't theme the cell yet.
@@ -2636,10 +2634,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // Update |hoverButton_| so that it corresponds to the open folder.
     hoverButton_.reset([sender retain]);
     [folderTarget_ openBookmarkFolderFromButton:sender];
-
-    const BookmarkButtonCell* cell = [sender cell];
-    if ([cell tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback)
-      [cell setHighlighted:YES];
   } else {
     // We're over a non-folder bookmark so close any old folders.
     [folderController_ close];
@@ -2691,7 +2685,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     parentButton = [folderController_ parentButton];
   }
   [folderController_ close];
-  [[parentButton cell] setHighlighted:NO];
   [parentButton setNeedsDisplay:YES];
   folderController_ = nil;
 }
