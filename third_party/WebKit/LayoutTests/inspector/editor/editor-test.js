@@ -95,7 +95,7 @@ var eventCodes = {
     ArrowDown: 40
 };
 
-function createCodeMirrorFakeEvent(eventType, code, charCode, modifiers)
+function createCodeMirrorFakeEvent(editor, eventType, code, charCode, modifiers)
 {
     function eventPreventDefault()
     {
@@ -108,6 +108,7 @@ function createCodeMirrorFakeEvent(eventType, code, charCode, modifiers)
         charCode: charCode,
         preventDefault: eventPreventDefault,
         stopPropagation: function(){},
+        target: editor._codeMirror.display.input.textarea
     };
     if (modifiers) {
         for (var i = 0; i < modifiers.length; ++i)
@@ -118,7 +119,7 @@ function createCodeMirrorFakeEvent(eventType, code, charCode, modifiers)
 
 function fakeCodeMirrorKeyEvent(editor, eventType, code, charCode, modifiers)
 {
-    var event = createCodeMirrorFakeEvent(eventType, code, charCode, modifiers);
+    var event = createCodeMirrorFakeEvent(editor, eventType, code, charCode, modifiers);
     switch(eventType) {
     case "keydown":
         editor._codeMirror.triggerOnKeyDown(event);
@@ -138,7 +139,7 @@ function fakeCodeMirrorKeyEvent(editor, eventType, code, charCode, modifiers)
 function fakeCodeMirrorInputEvent(editor, character)
 {
     if (typeof character === "string")
-        editor._codeMirror.display.input.value += character;
+        editor._codeMirror.display.input.textarea.value += character;
 }
 
 InspectorTest.fakeKeyEvent = function(editor, originalCode, modifiers, callback)
