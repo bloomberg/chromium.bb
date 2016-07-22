@@ -159,8 +159,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 InterfaceEndpointClient::~InterfaceEndpointClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (handle_.is_valid())
-    handle_.group_controller()->DetachEndpointClient(handle_);
+  handle_.group_controller()->DetachEndpointClient(handle_);
 }
 
 AssociatedGroup* InterfaceEndpointClient::associated_group() {

@@ -103,11 +103,10 @@ class IPC_EXPORT Channel : public Endpoint {
     virtual ~AssociatedInterfaceSupport() {}
 
     // Accesses the AssociatedGroup used to associate new interface endpoints
-    // with this Channel. Must be safe to call from any thread.
+    // with this Channel.
     virtual mojo::AssociatedGroup* GetAssociatedGroup() = 0;
 
-    // Adds an interface factory to this channel for interface |name|. Must be
-    // safe to call from any thread.
+    // Adds an interface factory to this channel for interface |name|.
     virtual void AddGenericAssociatedInterface(
         const std::string& name,
         const GenericAssociatedInterfaceFactory& factory) = 0;
@@ -116,6 +115,11 @@ class IPC_EXPORT Channel : public Endpoint {
     virtual void GetGenericRemoteAssociatedInterface(
         const std::string& name,
         mojo::ScopedInterfaceEndpointHandle handle) = 0;
+
+    // Sets the TaskRunner on which to support proxied dispatch for associated
+    // interfaces.
+    virtual void SetProxyTaskRunner(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
 
     // Template helper to add an interface factory to this channel.
     template <typename Interface>

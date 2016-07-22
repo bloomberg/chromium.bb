@@ -35,9 +35,10 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
   explicit TestingDelegate(const base::Closure& quit_callback)
       : passed_(false), quit_callback_(quit_callback) {}
 
-  void OnPipesAvailable(
-      IPC::mojom::ChannelAssociatedPtr sender,
-      IPC::mojom::ChannelAssociatedRequest receiver) override;
+  void OnPipesAvailable(IPC::mojom::ChannelAssociatedPtrInfo send_channel,
+                        IPC::mojom::ChannelAssociatedRequest receive_channel,
+                        int32_t peer_pid) override;
+  void OnBootstrapError() override;
 
   bool passed() const { return passed_; }
 
@@ -47,9 +48,14 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
 };
 
 void TestingDelegate::OnPipesAvailable(
-    IPC::mojom::ChannelAssociatedPtr sender,
-    IPC::mojom::ChannelAssociatedRequest receiver) {
+    IPC::mojom::ChannelAssociatedPtrInfo send_channel,
+    IPC::mojom::ChannelAssociatedRequest receive_channel,
+    int32_t peer_pid) {
   passed_ = true;
+  quit_callback_.Run();
+}
+
+void TestingDelegate::OnBootstrapError() {
   quit_callback_.Run();
 }
 
@@ -59,8 +65,7 @@ TEST_F(IPCMojoBootstrapTest, Connect) {
   TestingDelegate delegate(run_loop.QuitClosure());
   std::unique_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
       helper_.StartChild("IPCMojoBootstrapTestClient"),
-      IPC::Channel::MODE_SERVER, &delegate,
-      base::ThreadTaskRunnerHandle::Get());
+      IPC::Channel::MODE_SERVER, &delegate);
 
   bootstrap->Connect();
   run_loop.Run();
@@ -79,8 +84,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   std::unique_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
       mojo::edk::CreateChildMessagePipe(
           mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token),
-      IPC::Channel::MODE_CLIENT, &delegate,
-      base::ThreadTaskRunnerHandle::Get());
+      IPC::Channel::MODE_CLIENT, &delegate);
 
   bootstrap->Connect();
 
