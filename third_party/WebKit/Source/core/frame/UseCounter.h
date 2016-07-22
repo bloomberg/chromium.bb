@@ -639,8 +639,6 @@ public:
         V8HTMLLinkElement_Disabled_AttributeSetter = 811,
         V8HTMLStyleElement_Disabled_AttributeGetter = 812,
         V8HTMLStyleElement_Disabled_AttributeSetter = 813,
-        V8FileReader_ReadAsBinaryString_Method = 814,
-        V8FileReaderSync_ReadAsBinaryString_Method = 815,
         V8DOMError_Constructor = 816,
         V8DOMError_Name_AttributeGetter = 817,
         V8DOMError_Message_AttributeGetter = 818,

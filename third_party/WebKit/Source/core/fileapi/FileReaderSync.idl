@@ -35,9 +35,7 @@
     Constructor,
 ] interface FileReaderSync {
     [CallWith=ExecutionContext, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
-    // TODO(foolip): readAsBinaryString() was removed from the spec in 2012:
-    // https://github.com/w3c/FileAPI/commit/8cce54559dc27bf8b8244f3f0ca9fb3e4d96efdb
-    [CallWith=ExecutionContext, RaisesException, Measure] DOMString readAsBinaryString(Blob blob);
+    [CallWith=ExecutionContext, RaisesException] DOMString readAsBinaryString(Blob blob);
     [CallWith=ExecutionContext, RaisesException] DOMString readAsText(Blob blob, optional DOMString label);
     [CallWith=ExecutionContext, RaisesException] DOMString readAsDataURL(Blob blob);
 };
