@@ -36,7 +36,8 @@ def RunSteps(api):
       remote_name=api.properties.get('remote_name'),
       display_fetch_size=api.properties.get('display_fetch_size'),
       file_name=api.properties.get('checkout_file_name'),
-      submodule_update_recursive=submodule_update_recursive)
+      submodule_update_recursive=submodule_update_recursive,
+      use_git_cache=api.properties.get('use_git_cache'))
 
   assert retVal == "deadbeef", (
     "expected retVal to be %r but was %r" % ("deadbeef", retVal))
@@ -145,3 +146,7 @@ def GenTests(api):
       api.step_data('git cat-file abcdef12345:TestFile',
                     stdout=api.raw_io.output('TestOutput')) +
       api.properties(revision='abcdef12345', cat_file='TestFile'))
+
+  yield (
+      api.test('git-cache-checkout') +
+      api.properties(use_git_cache=True))

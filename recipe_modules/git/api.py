@@ -16,7 +16,7 @@ class GitApi(recipe_api.RecipeApi):
 
   def __call__(self, *args, **kwargs):
     """Return a git command step."""
-    name = kwargs.pop('name', 'git '+args[0])
+    name = kwargs.pop('name', 'git ' + args[0])
     infra_step = kwargs.pop('infra_step', True)
     if 'cwd' not in kwargs:
       kwargs.setdefault('cwd', self.m.path['checkout'])
@@ -133,8 +133,10 @@ class GitApi(recipe_api.RecipeApi):
                curl_trace_file=None, can_fail_build=True,
                set_got_revision=False, remote_name=None,
                display_fetch_size=None, file_name=None,
-               submodule_update_recursive=True):
-    """Returns an iterable of steps to perform a full git checkout.
+               submodule_update_recursive=True,
+               use_git_cache=False):
+    """Performs a full git checkout and returns sha1 of checked out revision.
+
     Args:
       url (str): url of remote repo to use as upstream
       ref (str): ref to fetch and check out
@@ -157,6 +159,13 @@ class GitApi(recipe_api.RecipeApi):
       file_name (str): optional path to a single file to checkout.
       submodule_update_recursive (bool): if True, updates submodules
           recursively.
+      use_git_cache (bool): if True, git cache will be used for this checkout.
+          WARNING, this is EXPERIMENTAL!!! This wasn't tested with:
+           * submodules
+           * since origin url is modified
+             to a local path, may cause problem with scripts that do
+             "git fetch origin" or "git push origin".
+           * arbitrary refs such refs/whatever/not-fetched-by-default-to-cache
 
     Returns: If the checkout was successful, this returns the commit hash of
       the checked-out-repo. Otherwise this returns None.
@@ -198,6 +207,12 @@ class GitApi(recipe_api.RecipeApi):
         'git setup%s' % step_suffix,
         self.resource('git_setup.py'),
         git_setup_args)
+
+    if use_git_cache:
+      self('retry', 'cache', 'fetch', '-c', self.m.path['git_cache'],
+           cwd=dir_path,
+           name='fetch cache',
+           can_fail_build=can_fail_build)
 
     # There are five kinds of refs we can be handed:
     # 0) None. In this case, we default to properties['branch'].
