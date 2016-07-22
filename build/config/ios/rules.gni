@@ -158,6 +158,7 @@ template("ios_app_bundle") {
       forward_variables_from(invoker,
                              "*",
                              [
+                               "bundle_deps",
                                "bundle_extension",
                                "entitlements_path",
                                "extra_substitutions",
@@ -236,6 +237,7 @@ template("ios_app_bundle") {
       forward_variables_from(invoker,
                              "*",
                              [
+                               "bundle_deps",
                                "bundle_extension",
                                "data_deps",
                                "entitlements_path",
@@ -379,6 +381,9 @@ template("ios_app_bundle") {
       } else {
         deps += [ ":$_bundle_data_executable" ]
       }
+      if (defined(invoker.bundle_deps)) {
+        deps += invoker.bundle_deps
+      }
 
       if (use_ios_simulator) {
         if (!defined(data_deps)) {
@@ -461,6 +466,9 @@ template("ios_app_bundle") {
   }
   if (defined(invoker.product_type)) {
     assert(invoker.product_type != "", "mark product_type as used")
+  }
+  if (defined(invoker.bundle_deps)) {
+    assert(invoker.bundle_deps != [], "mark bundle_deps as used")
   }
 }
 

@@ -244,6 +244,7 @@ template("framework_bundle") {
                              "*",
                              [
                                "assert_no_deps",
+                               "bundle_deps",
                                "data_deps",
                                "info_plist",
                                "output_name",
@@ -266,6 +267,10 @@ template("framework_bundle") {
       public_deps = [
         ":$_target_name($default_toolchain)",
       ]
+    }
+
+    if (defined(invoker.bundle_deps)) {
+      assert(invoker.bundle_deps != [], "mark bundle_deps as used")
     }
   } else {
     # If the framework is unversioned, the final _target_name will be the
@@ -299,6 +304,7 @@ template("framework_bundle") {
                              "*",
                              [
                                "assert_no_deps",
+                               "bundle_deps",
                                "data_deps",
                                "info_plist",
                                "output_name",
@@ -427,6 +433,10 @@ template("framework_bundle") {
         public_deps = []
       }
       public_deps += [ ":$_shared_library_bundle_data" ]
+
+      if (defined(invoker.bundle_deps)) {
+        public_deps += invoker.bundle_deps
+      }
 
       bundle_root_dir = _framework_root_dir
       bundle_resources_dir = "$bundle_root_dir/Resources"

@@ -281,7 +281,7 @@ template("test") {
     _resources_bundle_data = target_name + "_resources_bundle_data"
 
     bundle_data(_resources_bundle_data) {
-      visibility = [ ":*" ]
+      visibility = [ ":$_test_target" ]
       sources = [
         "//testing/gtest_ios/Default.png",
       ]
@@ -320,12 +320,14 @@ template("test") {
         deps = []
       }
       deps += [
-        ":$_resources_bundle_data",
-
         # All shared libraries must have the sanitizer deps to properly link in
         # asan mode (this target will be empty in other cases).
         "//build/config/sanitizers:deps",
       ]
+      if (!defined(bundle_deps)) {
+        bundle_deps = []
+      }
+      bundle_deps += [ ":$_resources_bundle_data" ]
     }
   } else {
     executable(target_name) {
