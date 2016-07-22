@@ -14,6 +14,7 @@
 #include "jni/VideoCapture_jni.h"
 #include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -208,7 +209,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     return;
   }
 
-  base::TimeTicks current_time = base::TimeTicks::Now();
+  const base::TimeTicks current_time = base::TimeTicks::Now();
   if (!got_first_frame_) {
     // Set aside one frame allowance for fluctuation.
     expected_next_frame_time_ = current_time - frame_interval_;
@@ -228,6 +229,58 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   }
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);
+}
+
+void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
+                                                     jobject obj,
+                                                     jobject y_buffer,
+                                                     jint y_stride,
+                                                     jobject u_buffer,
+                                                     jobject v_buffer,
+                                                     jint uv_row_stride,
+                                                     jint uv_pixel_stride,
+                                                     jint width,
+                                                     jint height,
+                                                     jint rotation) {
+  const base::TimeTicks current_time = base::TimeTicks::Now();
+  if (!got_first_frame_) {
+    // Set aside one frame allowance for fluctuation.
+    expected_next_frame_time_ = current_time - frame_interval_;
+    first_ref_time_ = current_time;
+    got_first_frame_ = true;
+  }
+
+  uint8_t* const y_src =
+      reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(y_buffer));
+  CHECK(y_src);
+  uint8_t* const u_src =
+      reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(u_buffer));
+  CHECK(u_src);
+  uint8_t* const v_src =
+      reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(v_buffer));
+  CHECK(v_src);
+
+  const int y_plane_length = width * height;
+  const int uv_plane_length = y_plane_length / 4;
+  const int buffer_length = y_plane_length + uv_plane_length * 2;
+  std::unique_ptr<uint8_t> buffer(new uint8_t[buffer_length]);
+
+  libyuv::Android420ToI420(y_src, y_stride, u_src, uv_row_stride, v_src,
+                           uv_row_stride, uv_pixel_stride, buffer.get(), width,
+                           buffer.get() + y_plane_length, width / 2,
+                           buffer.get() + y_plane_length + uv_plane_length,
+                           width / 2, width, height);
+
+  // Deliver the frame when it doesn't arrive too early.
+  if (expected_next_frame_time_ <= current_time) {
+    expected_next_frame_time_ += frame_interval_;
+
+    // TODO(qiangchen): Investigate how to get raw timestamp for Android,
+    // rather than using reference time to calculate timestamp.
+    client_->OnIncomingCapturedData(buffer.get(), buffer_length,
+                                    capture_format_, rotation, current_time,
+                                    current_time - first_ref_time_);
+  }
 }
 
 void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,

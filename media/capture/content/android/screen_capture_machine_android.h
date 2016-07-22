@@ -37,7 +37,7 @@ class ScreenCaptureMachineAndroid : public media::VideoCaptureMachine {
   void OnI420FrameAvailable(JNIEnv* env,
                             jobject obj,
                             jobject y_buffer,
-                            jint y_Zde,
+                            jint y_stride,
                             jobject u_buffer,
                             jobject v_buffer,
                             jint uv_row_stride,

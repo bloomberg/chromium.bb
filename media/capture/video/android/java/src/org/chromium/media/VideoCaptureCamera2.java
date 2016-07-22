@@ -127,9 +127,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     throw new IllegalStateException();
                 }
 
-                readImageIntoBuffer(image, mCapturedData);
-                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, mCapturedData,
-                        mCapturedData.length, getCameraRotation());
+                nativeOnI420FrameAvailable(mNativeVideoCaptureDeviceAndroid,
+                        image.getPlanes()[0].getBuffer(), image.getPlanes()[0].getRowStride(),
+                        image.getPlanes()[1].getBuffer(), image.getPlanes()[2].getBuffer(),
+                        image.getPlanes()[1].getRowStride(), image.getPlanes()[1].getPixelStride(),
+                        image.getWidth(), image.getHeight(), getCameraRotation());
             } catch (IllegalStateException ex) {
                 Log.e(TAG, "acquireLatestImage():", ex);
             }
@@ -225,8 +227,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     private final Object mCameraStateLock = new Object();
 
-    private byte[] mCapturedData;
-
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
     private CaptureRequest mPreviewRequest;
@@ -310,47 +310,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
         // Wait for trigger on CrPreviewSessionListener.onConfigured();
         return true;
-    }
-
-    private static void readImageIntoBuffer(Image image, byte[] data) {
-        final int imageWidth = image.getWidth();
-        final int imageHeight = image.getHeight();
-        final Image.Plane[] planes = image.getPlanes();
-
-        int offset = 0;
-        for (int plane = 0; plane < planes.length; ++plane) {
-            final ByteBuffer buffer = planes[plane].getBuffer();
-            final int rowStride = planes[plane].getRowStride();
-            // Experimentally, U and V planes have |pixelStride| = 2, which
-            // essentially means they are packed. That's silly, because we are
-            // forced to unpack here.
-            final int pixelStride = planes[plane].getPixelStride();
-            final int planeWidth = (plane == 0) ? imageWidth : imageWidth / 2;
-            final int planeHeight = (plane == 0) ? imageHeight : imageHeight / 2;
-
-            if (pixelStride == 1 && rowStride == planeWidth) {
-                // Copy whole plane from buffer into |data| at once.
-                buffer.get(data, offset, planeWidth * planeHeight);
-                offset += planeWidth * planeHeight;
-            } else {
-                // Copy pixels one by one respecting pixelStride and rowStride.
-                byte[] rowData = new byte[rowStride];
-                for (int row = 0; row < planeHeight - 1; ++row) {
-                    buffer.get(rowData, 0, rowStride);
-                    for (int col = 0; col < planeWidth; ++col) {
-                        data[offset++] = rowData[col * pixelStride];
-                    }
-                }
-
-                // Last row is special in some devices and may not contain the full
-                // |rowStride| bytes of data. See http://crbug.com/458701 and
-                // http://developer.android.com/reference/android/media/Image.Plane.html#getBuffer()
-                buffer.get(rowData, 0, Math.min(rowStride, buffer.remaining()));
-                for (int col = 0; col < planeWidth; ++col) {
-                    data[offset++] = rowData[col * pixelStride];
-                }
-            }
-        }
     }
 
     private void changeCameraStateAndNotify(CameraState state) {
@@ -497,9 +456,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // |mCaptureFormat| is also used to configure the ImageReader.
         mCaptureFormat = new VideoCaptureFormat(closestSupportedSize.getWidth(),
                 closestSupportedSize.getHeight(), frameRate, ImageFormat.YUV_420_888);
-        int expectedFrameSize = mCaptureFormat.mWidth * mCaptureFormat.mHeight
-                * ImageFormat.getBitsPerPixel(mCaptureFormat.mPixelFormat) / 8;
-        mCapturedData = new byte[expectedFrameSize];
         mCameraNativeOrientation =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
         // TODO(mcasas): The following line is correct for N5 with prerelease Build,

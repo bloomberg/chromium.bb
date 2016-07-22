@@ -12,6 +12,8 @@ import android.view.WindowManager;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.nio.ByteBuffer;
+
 /**
  * Video Capture Device base class, defines a set of methods that native code
  * needs to use to configure, start capture, and to be reached by callbacks and
@@ -121,6 +123,10 @@ public abstract class VideoCapture {
     // Method for VideoCapture implementations to call back native code.
     public native void nativeOnFrameAvailable(
             long nativeVideoCaptureDeviceAndroid, byte[] data, int length, int rotation);
+
+    public native void nativeOnI420FrameAvailable(long nativeVideoCaptureDeviceAndroid,
+            ByteBuffer yBuffer, int yStride, ByteBuffer uBuffer, ByteBuffer vBuffer,
+            int uvRowStride, int uvPixelStride, int width, int height, int rotation);
 
     // Method for VideoCapture implementations to signal an asynchronous error.
     public native void nativeOnError(long nativeVideoCaptureDeviceAndroid, String message);

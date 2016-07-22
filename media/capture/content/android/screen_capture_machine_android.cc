@@ -8,8 +8,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ScreenCapture_jni.h"
-#include "media/base/video_capture_types.h"
-#include "media/base/yuv_convert.h"
 #include "media/capture/content/video_capture_oracle.h"
 #include "third_party/libyuv/include/libyuv.h"
 
@@ -60,10 +58,10 @@ void ScreenCaptureMachineAndroid::OnRGBAFrameAvailable(JNIEnv* env,
   DCHECK(frame->format() == PIXEL_FORMAT_I420 ||
          frame->format() == PIXEL_FORMAT_YV12);
 
-  scoped_refptr<VideoFrame> unscaled_frame = frame;
+  scoped_refptr<VideoFrame> temp_frame = frame;
   if (frame->visible_rect().width() != width ||
       frame->visible_rect().height() != height) {
-    unscaled_frame = VideoFrame::CreateFrame(
+    temp_frame = VideoFrame::CreateFrame(
         PIXEL_FORMAT_I420, gfx::Size(width, height), gfx::Rect(width, height),
         gfx::Size(width, height), base::TimeDelta());
   }
@@ -74,33 +72,31 @@ void ScreenCaptureMachineAndroid::OnRGBAFrameAvailable(JNIEnv* env,
 
   const int offset = top * row_stride + left * 4;
   // ABGR little endian (rgba in memory) to I420.
-  libyuv::ABGRToI420(src + offset, row_stride,
-                     unscaled_frame->visible_data(VideoFrame::kYPlane),
-                     unscaled_frame->stride(VideoFrame::kYPlane),
-                     unscaled_frame->visible_data(VideoFrame::kUPlane),
-                     unscaled_frame->stride(VideoFrame::kUPlane),
-                     unscaled_frame->visible_data(VideoFrame::kVPlane),
-                     unscaled_frame->stride(VideoFrame::kVPlane),
-                     unscaled_frame->visible_rect().width(),
-                     unscaled_frame->visible_rect().height());
+  libyuv::ABGRToI420(
+      src + offset, row_stride, temp_frame->visible_data(VideoFrame::kYPlane),
+      temp_frame->stride(VideoFrame::kYPlane),
+      temp_frame->visible_data(VideoFrame::kUPlane),
+      temp_frame->stride(VideoFrame::kUPlane),
+      temp_frame->visible_data(VideoFrame::kVPlane),
+      temp_frame->stride(VideoFrame::kVPlane),
+      temp_frame->visible_rect().width(), temp_frame->visible_rect().height());
 
-  if (unscaled_frame != frame) {
-    libyuv::I420Scale(unscaled_frame->visible_data(VideoFrame::kYPlane),
-                      unscaled_frame->stride(VideoFrame::kYPlane),
-                      unscaled_frame->visible_data(VideoFrame::kUPlane),
-                      unscaled_frame->stride(VideoFrame::kUPlane),
-                      unscaled_frame->visible_data(VideoFrame::kVPlane),
-                      unscaled_frame->stride(VideoFrame::kVPlane),
-                      unscaled_frame->visible_rect().width(),
-                      unscaled_frame->visible_rect().height(),
-                      frame->visible_data(VideoFrame::kYPlane),
-                      frame->stride(VideoFrame::kYPlane),
-                      frame->visible_data(VideoFrame::kUPlane),
-                      frame->stride(VideoFrame::kUPlane),
-                      frame->visible_data(VideoFrame::kVPlane),
-                      frame->stride(VideoFrame::kVPlane),
-                      frame->visible_rect().width(),
-                      frame->visible_rect().height(), libyuv::kFilterBilinear);
+  if (temp_frame != frame) {
+    libyuv::I420Scale(
+        temp_frame->visible_data(VideoFrame::kYPlane),
+        temp_frame->stride(VideoFrame::kYPlane),
+        temp_frame->visible_data(VideoFrame::kUPlane),
+        temp_frame->stride(VideoFrame::kUPlane),
+        temp_frame->visible_data(VideoFrame::kVPlane),
+        temp_frame->stride(VideoFrame::kVPlane),
+        temp_frame->visible_rect().width(), temp_frame->visible_rect().height(),
+        frame->visible_data(VideoFrame::kYPlane),
+        frame->stride(VideoFrame::kYPlane),
+        frame->visible_data(VideoFrame::kUPlane),
+        frame->stride(VideoFrame::kUPlane),
+        frame->visible_data(VideoFrame::kVPlane),
+        frame->stride(VideoFrame::kVPlane), frame->visible_rect().width(),
+        frame->visible_rect().height(), libyuv::kFilterBilinear);
   }
 
   capture_frame_cb.Run(frame, start_time, true);
@@ -137,6 +133,14 @@ void ScreenCaptureMachineAndroid::OnI420FrameAvailable(JNIEnv* env,
   DCHECK(frame->format() == PIXEL_FORMAT_I420 ||
          frame->format() == PIXEL_FORMAT_YV12);
 
+  scoped_refptr<VideoFrame> temp_frame = frame;
+  if (frame->visible_rect().width() != width ||
+      frame->visible_rect().height() != height) {
+    temp_frame = VideoFrame::CreateFrame(
+        PIXEL_FORMAT_I420, gfx::Size(width, height), gfx::Rect(width, height),
+        gfx::Size(width, height), base::TimeDelta());
+  }
+
   uint8_t* const y_src =
       reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(y_buffer));
   CHECK(y_src);
@@ -147,43 +151,36 @@ void ScreenCaptureMachineAndroid::OnI420FrameAvailable(JNIEnv* env,
       reinterpret_cast<uint8_t*>(env->GetDirectBufferAddress(v_buffer));
   CHECK(v_src);
 
-  // De-interleave the U and V planes into temporary buffers, if needed.
-  int uv_stride = uv_row_stride;
-  std::unique_ptr<uint8_t[]> u_tmp, v_tmp;
-  if (uv_pixel_stride != 1) {
-    // U and V planes are actually interleaved, unpack them here.
-    // TODO(braveyao): According to
-    // https://developer.android.com/reference/android/graphics/ImageFormat.html#YUV_420_888,
-    // how U and V planes are interlaced is not guaranteed, so there is no an
-    // existing libyuv function suitable for such a job. Filed a request at
-    // https://bugs.chromium.org/p/libyuv/issues/detail?id=604. Switch to new
-    // function when it's available.
-    const int uv_plane_len = (int)env->GetDirectBufferCapacity(u_buffer);
-    u_tmp.reset(new uint8_t[(uv_plane_len + 1) / uv_pixel_stride]);
-    v_tmp.reset(new uint8_t[(uv_plane_len + 1) / uv_pixel_stride]);
-    for (int index = 0; index * uv_pixel_stride <= uv_plane_len; index++) {
-      u_tmp[index] = u_src[index * uv_pixel_stride];
-      v_tmp[index] = v_src[index * uv_pixel_stride];
-    }
-    u_src = u_tmp.get();
-    v_src = v_tmp.get();
-    uv_stride /= uv_pixel_stride;
-  }
-
   const int y_offset = top * y_stride + left;
-  const int uv_offset = (top / 2) * uv_stride + left / 2;
-  // Note: If source width/height are same as the frame's width/height, the
-  // following will, internally, just perform a copy without scaling.
-  libyuv::I420Scale(y_src + y_offset, y_stride, u_src + uv_offset, uv_stride,
-                    v_src + uv_offset, uv_stride, width, height,
-                    frame->visible_data(VideoFrame::kYPlane),
-                    frame->stride(VideoFrame::kYPlane),
-                    frame->visible_data(VideoFrame::kUPlane),
-                    frame->stride(VideoFrame::kUPlane),
-                    frame->visible_data(VideoFrame::kVPlane),
-                    frame->stride(VideoFrame::kVPlane),
-                    frame->visible_rect().width(),
-                    frame->visible_rect().height(), libyuv::kFilterBilinear);
+  const int uv_offset = (top / 2) * uv_row_stride + left / 2;
+  libyuv::Android420ToI420(
+      y_src + y_offset, y_stride, u_src + uv_offset, uv_row_stride,
+      v_src + uv_offset, uv_row_stride, uv_pixel_stride,
+      temp_frame->visible_data(VideoFrame::kYPlane),
+      temp_frame->stride(VideoFrame::kYPlane),
+      temp_frame->visible_data(VideoFrame::kUPlane),
+      temp_frame->stride(VideoFrame::kUPlane),
+      temp_frame->visible_data(VideoFrame::kVPlane),
+      temp_frame->stride(VideoFrame::kVPlane),
+      temp_frame->visible_rect().width(), temp_frame->visible_rect().height());
+
+  if (temp_frame != frame) {
+    libyuv::I420Scale(
+        temp_frame->visible_data(VideoFrame::kYPlane),
+        temp_frame->stride(VideoFrame::kYPlane),
+        temp_frame->visible_data(VideoFrame::kUPlane),
+        temp_frame->stride(VideoFrame::kUPlane),
+        temp_frame->visible_data(VideoFrame::kVPlane),
+        temp_frame->stride(VideoFrame::kVPlane),
+        temp_frame->visible_rect().width(), temp_frame->visible_rect().height(),
+        frame->visible_data(VideoFrame::kYPlane),
+        frame->stride(VideoFrame::kYPlane),
+        frame->visible_data(VideoFrame::kUPlane),
+        frame->stride(VideoFrame::kUPlane),
+        frame->visible_data(VideoFrame::kVPlane),
+        frame->stride(VideoFrame::kVPlane), frame->visible_rect().width(),
+        frame->visible_rect().height(), libyuv::kFilterBilinear);
+  }
 
   capture_frame_cb.Run(frame, start_time, true);
 

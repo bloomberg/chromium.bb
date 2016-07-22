@@ -68,6 +68,19 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
                         jint length,
                         jint rotation);
 
+  // Implement org.chromium.media.VideoCapture.nativeOnI420FrameAvailable.
+  void OnI420FrameAvailable(JNIEnv* env,
+                            jobject obj,
+                            jobject y_buffer,
+                            jint y_stride,
+                            jobject u_buffer,
+                            jobject v_buffer,
+                            jint uv_row_stride,
+                            jint uv_pixel_stride,
+                            jint width,
+                            jint height,
+                            jint rotation);
+
   // Implement org.chromium.media.VideoCapture.nativeOnError.
   void OnError(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
