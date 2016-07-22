@@ -320,6 +320,17 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
 
   auto* capabilities = image_capture_client_->capabilities();
   ASSERT_TRUE(capabilities);
+  EXPECT_EQ(100u, capabilities->iso->min);
+  EXPECT_EQ(100u, capabilities->iso->max);
+  EXPECT_EQ(100u, capabilities->iso->current);
+  EXPECT_EQ(capture_params.requested_format.frame_size.height(),
+            static_cast<int>(capabilities->height->current));
+  EXPECT_EQ(240u, capabilities->height->min);
+  EXPECT_EQ(1080u, capabilities->height->max);
+  EXPECT_EQ(capture_params.requested_format.frame_size.width(),
+            static_cast<int>(capabilities->width->current));
+  EXPECT_EQ(320u, capabilities->width->min);
+  EXPECT_EQ(1920u, capabilities->width->max);
   EXPECT_EQ(100u, capabilities->zoom->min);
   EXPECT_EQ(400u, capabilities->zoom->max);
   EXPECT_GE(capabilities->zoom->current, capabilities->zoom->min);

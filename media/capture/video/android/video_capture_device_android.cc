@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "jni/VideoCapture_jni.h"
 #include "media/capture/video/android/photo_capabilities.h"
@@ -151,7 +152,9 @@ void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
   std::unique_ptr<TakePhotoCallback> heap_callback(
       new TakePhotoCallback(std::move(callback)));
   const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
-  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id))
+  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id,
+                                   next_photo_resolution_.width(),
+                                   next_photo_resolution_.height()))
     return;
 
   {
@@ -171,6 +174,18 @@ void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
   // PhotoCapabilities to mojom::PhotoCapabilitiesPtr, https://crbug.com/622002.
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
+  photo_capabilities->iso = mojom::Range::New();
+  photo_capabilities->iso->current = caps.getCurrentIso();
+  photo_capabilities->iso->max = caps.getMaxIso();
+  photo_capabilities->iso->min = caps.getMinIso();
+  photo_capabilities->height = mojom::Range::New();
+  photo_capabilities->height->current = caps.getCurrentHeight();
+  photo_capabilities->height->max = caps.getMaxHeight();
+  photo_capabilities->height->min = caps.getMinHeight();
+  photo_capabilities->width = mojom::Range::New();
+  photo_capabilities->width->current = caps.getCurrentWidth();
+  photo_capabilities->width->max = caps.getMaxWidth();
+  photo_capabilities->width->min = caps.getMinWidth();
   photo_capabilities->zoom = mojom::Range::New();
   photo_capabilities->zoom->current = caps.getCurrentZoom();
   photo_capabilities->zoom->max = caps.getMaxZoom();
@@ -185,6 +200,18 @@ void VideoCaptureDeviceAndroid::SetPhotoOptions(
     mojom::PhotoSettingsPtr settings,
     SetPhotoOptionsCallback callback) {
   JNIEnv* env = AttachCurrentThread();
+  // |width| and/or |height| are kept for the next TakePhoto()s.
+  if (settings->has_width || settings->has_height)
+    next_photo_resolution_.SetSize(0, 0);
+  if (settings->has_width) {
+    next_photo_resolution_.set_width(
+        base::saturated_cast<int>(settings->width));
+  }
+  if (settings->has_height) {
+    next_photo_resolution_.set_height(
+        base::saturated_cast<int>(settings->height));
+  }
+
   if (settings->has_zoom)
     Java_VideoCapture_setZoom(env, j_capture_.obj(), settings->zoom);
   callback.Run(true);

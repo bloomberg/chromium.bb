@@ -14,7 +14,14 @@ let mockImageCaptureReady = define(
           imageCapture.ImageCapture.name,
           pipe => this.bindToPipe(pipe));
 
-      this.capabilities_ = { capabilities: { zoom : { min : 0, max : 10, current : 5 } } };
+      this.capabilities_ = { capabilities : {
+          iso : { min : 100, max : 12000, current : 400 },
+          height : { min : 240, max : 2448, current : 240 },
+          width : { min : 320, max : 3264, current : 320 },
+          width : { min : 320, max : 3264, current : 320 },
+          zoom : { min : 0, max : 10, current : 5 },
+          focusMode : "unavailable",
+      }};
       this.settings_ = null;
     }
 

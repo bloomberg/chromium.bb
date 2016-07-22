@@ -12,10 +12,6 @@ PhotoCapabilities* PhotoCapabilities::create()
     return new PhotoCapabilities();
 }
 
-MediaSettingsRange* PhotoCapabilities::zoom() const { return m_zoom; }
-
-void PhotoCapabilities::setZoom(MediaSettingsRange* value) { m_zoom = value; }
-
 String PhotoCapabilities::focusMode() const
 {
     switch (m_focusMode) {
@@ -31,13 +27,11 @@ String PhotoCapabilities::focusMode() const
     return emptyString();
 }
 
-void PhotoCapabilities::setFocusMode(media::mojom::blink::FocusMode focusMode)
-{
-    m_focusMode = focusMode;
-}
-
 DEFINE_TRACE(PhotoCapabilities)
 {
+    visitor->trace(m_iso);
+    visitor->trace(m_imageHeight);
+    visitor->trace(m_imageWidth);
     visitor->trace(m_zoom);
 }
 

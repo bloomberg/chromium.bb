@@ -19,7 +19,7 @@ async_test(function(t) {
   var stream = canvas.captureStream();
 
   var theMock = null;
-  const optionsDict = { zoom : 7 };
+  const optionsDict = { zoom : 7, imageWidth : 1080, imageHeight : 100 };
   mockImageCaptureReady
     .then(mock => {
       theMock = mock;
@@ -32,8 +32,12 @@ async_test(function(t) {
       return capturer.setOptions(optionsDict);
     })
     .then(function() {
-      assert_equals(1, theMock.options().has_zoom, 'has_zoom must be true');
+      assert_true(theMock.options().has_zoom, 'has_zoom must be true');
       assert_equals(optionsDict.zoom, theMock.options().zoom, 'zoom value');
+      assert_equals(true, theMock.options().has_width, 'has_width must be true');
+      assert_equals(optionsDict.imageWidth, theMock.options().width, 'width value');
+      assert_equals(true, theMock.options().has_height, 'has_height must be true');
+      assert_equals(optionsDict.imageHeight, theMock.options().height, 'height value');
       t.done();
     })
     .catch(error => {

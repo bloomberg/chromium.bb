@@ -21,6 +21,7 @@ import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Range;
 import android.util.Size;
 import android.view.Surface;
 
@@ -319,6 +320,27 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
+    // Finds the closest Size to (|width|x|height|) in |sizes|, and returns it or null.
+    // Ignores |width| or |height| if either is zero (== don't care).
+    private static Size findClosestSizeInArray(Size[] sizes, int width, int height) {
+        if (sizes == null) return null;
+        Size closestSize = null;
+        int minDiff = Integer.MAX_VALUE;
+        for (Size size : sizes) {
+            final int diff = ((width > 0) ? Math.abs(size.getWidth() - width) : 0)
+                    + ((height > 0) ? Math.abs(size.getHeight() - height) : 0);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestSize = size;
+            }
+        }
+        if (minDiff == Integer.MAX_VALUE) {
+            Log.e(TAG, "Couldn't find resolution close to (%dx%d)", width, height);
+            return null;
+        }
+        return closestSize;
+    }
+
     static boolean isLegacyDevice(Context appContext, int id) {
         final CameraCharacteristics cameraCharacteristics =
                 getCameraCharacteristics(appContext, id);
@@ -435,18 +457,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         // Find closest supported size.
         final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.YUV_420_888);
-        if (supportedSizes == null) return false;
-        Size closestSupportedSize = null;
-        int minDiff = Integer.MAX_VALUE;
-        for (Size size : supportedSizes) {
-            final int diff =
-                    Math.abs(size.getWidth() - width) + Math.abs(size.getHeight() - height);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closestSupportedSize = size;
-            }
-        }
-        if (minDiff == Integer.MAX_VALUE) {
+        final Size closestSupportedSize = findClosestSizeInArray(supportedSizes, width, height);
+        if (closestSupportedSize == null) {
             Log.e(TAG, "No supported resolutions.");
             return false;
         }
@@ -518,11 +530,36 @@ public class VideoCaptureCamera2 extends VideoCapture {
     public PhotoCapabilities getPhotoCapabilities() {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
 
+        int minIso = 0;
+        int maxIso = 0;
+        final Range<Integer> iso_range =
+                cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+        if (iso_range != null) {
+            minIso = iso_range.getLower();
+            maxIso = iso_range.getUpper();
+        }
+        final int currentIso = mPreviewRequest.get(CaptureRequest.SENSOR_SENSITIVITY);
+
+        final StreamConfigurationMap streamMap =
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.JPEG);
+        int minWidth = Integer.MAX_VALUE;
+        int minHeight = Integer.MAX_VALUE;
+        int maxWidth = 0;
+        int maxHeight = 0;
+        for (Size size : supportedSizes) {
+            if (size.getWidth() < minWidth) minWidth = size.getWidth();
+            if (size.getHeight() < minHeight) minHeight = size.getHeight();
+            if (size.getWidth() > maxWidth) maxWidth = size.getWidth();
+            if (size.getHeight() > maxHeight) maxHeight = size.getHeight();
+        }
+        final int currentHeight = mCaptureFormat.getHeight();
+        final int currentWidth = mCaptureFormat.getWidth();
+
         // The Min and Max zoom are returned as x100 by the API to avoid using floating point. There
         // is no min-zoom per se, so clamp it to always 100 (TODO(mcasas): make const member).
         final int minZoom = 100;
         final int maxZoom = Math.round(mMaxZoom * 100);
-
         // Width Ratio x100 is used as measure of current zoom.
         final int currentZoom = 100 * mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width()
                 / cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
@@ -533,7 +570,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final boolean isFocusManual = (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF)
                 || (focusMode == CameraMetadata.CONTROL_AF_MODE_EDOF);
 
-        return new PhotoCapabilities(maxZoom, minZoom, currentZoom, !isFocusManual);
+        return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
+                currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
+                !isFocusManual);
     }
 
     @Override
@@ -562,12 +601,24 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
-    public boolean takePhoto(final long callbackId) {
+    public boolean takePhoto(final long callbackId, int width, int height) {
         Log.d(TAG, "takePhoto " + callbackId);
         if (mCameraDevice == null || mCameraState != CameraState.STARTED) return false;
 
-        final ImageReader imageReader = ImageReader.newInstance(mCaptureFormat.getWidth(),
-                mCaptureFormat.getHeight(), ImageFormat.JPEG, 1 /* maxImages */);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final StreamConfigurationMap streamMap =
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.JPEG);
+        final Size closestSize = findClosestSizeInArray(supportedSizes, width, height);
+
+        Log.d(TAG, "requested resolution: (%dx%d)", width, height);
+        if (closestSize != null) {
+            Log.d(TAG, " matched (%dx%d)", closestSize.getWidth(), closestSize.getHeight());
+        }
+        final ImageReader imageReader = ImageReader.newInstance(
+                (closestSize != null) ? closestSize.getWidth() : mCaptureFormat.getWidth(),
+                (closestSize != null) ? closestSize.getHeight() : mCaptureFormat.getHeight(),
+                ImageFormat.JPEG, 1 /* maxImages */);
 
         HandlerThread thread = new HandlerThread("CameraPicture");
         thread.start();

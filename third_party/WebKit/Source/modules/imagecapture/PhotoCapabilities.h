@@ -20,17 +20,29 @@ public:
     static PhotoCapabilities* create();
     virtual ~PhotoCapabilities() = default;
 
-    MediaSettingsRange* zoom() const;
-    void setZoom(MediaSettingsRange* value);
+    MediaSettingsRange* iso() const { return m_iso; }
+    void setIso(MediaSettingsRange* value) { m_iso = value; }
+
+    MediaSettingsRange* imageHeight() const { return m_imageHeight; }
+    void setImageHeight(MediaSettingsRange* value) { m_imageHeight = value; }
+
+    MediaSettingsRange* imageWidth() const { return m_imageWidth; }
+    void setImageWidth(MediaSettingsRange* value) { m_imageWidth = value; }
+
+    MediaSettingsRange* zoom() const { return m_zoom; }
+    void setZoom(MediaSettingsRange* value) { m_zoom = value; }
 
     String focusMode() const;
-    void setFocusMode(media::mojom::blink::FocusMode);
+    void setFocusMode(media::mojom::blink::FocusMode focusMode) { m_focusMode = focusMode; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     PhotoCapabilities() = default;
 
+    Member<MediaSettingsRange> m_iso;
+    Member<MediaSettingsRange> m_imageHeight;
+    Member<MediaSettingsRange> m_imageWidth;
     Member<MediaSettingsRange> m_zoom;
     media::mojom::blink::FocusMode m_focusMode = media::mojom::blink::FocusMode::UNAVAILABLE;
 };

@@ -296,6 +296,27 @@ public abstract class VideoCaptureCamera
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
         final android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
+        Log.d(TAG, " CAM params: " + parameters.flatten());
+
+        // Before the Camera2 API there was no official way to retrieve the supported, if any, ISO
+        // values from |parameters|; some platforms had "iso-values", others "iso-mode-values" etc.
+        // Ignore them.
+        final int maxIso = 0;
+        final int currentIso = 0;
+        final int minIso = 0;
+
+        List<android.hardware.Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
+        int minWidth = Integer.MAX_VALUE;
+        int minHeight = Integer.MAX_VALUE;
+        int maxWidth = 0;
+        int maxHeight = 0;
+        for (android.hardware.Camera.Size size : supportedSizes) {
+            if (size.width < minWidth) minWidth = size.width;
+            if (size.height < minHeight) minHeight = size.height;
+            if (size.width > maxWidth) maxWidth = size.width;
+            if (size.height > maxHeight) maxHeight = size.height;
+        }
+        final android.hardware.Camera.Size currentSize = parameters.getPreviewSize();
 
         int maxZoom = 0;
         int currentZoom = 0;
@@ -316,7 +337,9 @@ public abstract class VideoCaptureCamera
                 || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_INFINITY)
                 || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_EDOF);
 
-        return new PhotoCapabilities(maxZoom, minZoom, currentZoom, !isFocusManual);
+        return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
+                currentSize.height, maxWidth, minWidth, currentSize.width, maxZoom, minZoom,
+                currentZoom, !isFocusManual);
     }
 
     @Override
@@ -338,7 +361,7 @@ public abstract class VideoCaptureCamera
     }
 
     @Override
-    public boolean takePhoto(final long callbackId) {
+    public boolean takePhoto(final long callbackId, int width, int height) {
         if (mCamera == null || !mIsRunning) {
             Log.e(TAG, "takePhoto: mCamera is null or is not running");
             return false;
@@ -352,9 +375,37 @@ public abstract class VideoCaptureCamera
 
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
         parameters.setRotation(getCameraRotation());
-        mCamera.setParameters(parameters);
+        final android.hardware.Camera.Size original_size = parameters.getPictureSize();
+
+        List<android.hardware.Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
+        android.hardware.Camera.Size closestSize = null;
+        int minDiff = Integer.MAX_VALUE;
+        for (android.hardware.Camera.Size size : supportedSizes) {
+            final int diff = ((width > 0) ? Math.abs(size.width - width) : 0)
+                    + ((height > 0) ? Math.abs(size.height - height) : 0);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestSize = size;
+            }
+        }
+        Log.d(TAG, "requested resolution: (%dx%d)", width, height);
+        if (minDiff != Integer.MAX_VALUE) {
+            Log.d(TAG, " matched (%dx%d)", closestSize.width, closestSize.height);
+            parameters.setPictureSize(closestSize.width, closestSize.height);
+        }
+
         try {
+            mCamera.setParameters(parameters);
             mCamera.takePicture(null, null, null, new CrPictureCallback());
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "takePicture ", ex);
+            return false;
+        }
+
+        // Restore original parameters.
+        parameters.setPictureSize(original_size.width, original_size.height);
+        try {
+            mCamera.setParameters(parameters);
         } catch (RuntimeException ex) {
             Log.e(TAG, "takePicture ", ex);
             return false;

@@ -13,6 +13,14 @@ enum FocusMode {
 [
     RuntimeEnabled=ImageCapture,
 ] interface PhotoCapabilities {
+    // TODO(mcasas): Update the Spec where these members are not readonly.
+    // https://github.com/w3c/mediacapture-image/issues/29
+
+    readonly attribute MediaSettingsRange iso;
+    // TODO(mcasas): Replace these two with supported and current resolutions.
+    // https://github.com/w3c/mediacapture-image/issues/30
+    readonly attribute MediaSettingsRange imageHeight;
+    readonly attribute MediaSettingsRange imageWidth;
     readonly attribute MediaSettingsRange zoom;
     readonly attribute FocusMode focusMode;
     // TODO(mcasas): Implement all other PhotoCapabilities fields

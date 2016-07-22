@@ -19,6 +19,9 @@ enum FocusMode { UNAVAILABLE, AUTO, MANUAL };
 // Equivalent to idl PhotoCapabilities,
 // https://w3c.github.io/mediacapture-image/#photocapabilities
 struct PhotoCapabilities {
+  Range iso;
+  Range height;
+  Range width;
   Range zoom;
   FocusMode focus_mode;
 };
@@ -29,6 +32,10 @@ struct PhotoSettings {
   // uint32 cannot be nullable, i.e. uint32? does not work, use instead a flag.
   bool has_zoom;
   uint32 zoom;
+  bool has_width;
+  uint32 width;
+  bool has_height;
+  uint32 height;
 };
 
 // |source_id| is the renderer-side UUID identifier of the image capture device.

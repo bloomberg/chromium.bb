@@ -57,7 +57,7 @@ public abstract class VideoCapture {
     public abstract void setZoom(int zoom);
 
     @CalledByNative
-    public abstract boolean takePhoto(final long callbackId);
+    public abstract boolean takePhoto(final long callbackId, int width, int height);
 
     @CalledByNative
     public abstract void deallocate();

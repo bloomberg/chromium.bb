@@ -24,6 +24,58 @@ bool PhotoCapabilities::RegisterPhotoCapabilities(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+int PhotoCapabilities::getMinIso() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMinIso(AttachCurrentThread(), object_.obj());
+}
+
+int PhotoCapabilities::getMaxIso() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMaxIso(AttachCurrentThread(), object_.obj());
+}
+
+int PhotoCapabilities::getCurrentIso() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getCurrentIso(AttachCurrentThread(),
+                                              object_.obj());
+}
+
+int PhotoCapabilities::getMinHeight() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMinHeight(AttachCurrentThread(),
+                                             object_.obj());
+}
+
+int PhotoCapabilities::getMaxHeight() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMaxHeight(AttachCurrentThread(),
+                                             object_.obj());
+}
+
+int PhotoCapabilities::getCurrentHeight() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getCurrentHeight(AttachCurrentThread(),
+                                                 object_.obj());
+}
+
+int PhotoCapabilities::getMinWidth() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMinWidth(AttachCurrentThread(),
+                                            object_.obj());
+}
+
+int PhotoCapabilities::getMaxWidth() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMaxWidth(AttachCurrentThread(),
+                                            object_.obj());
+}
+
+int PhotoCapabilities::getCurrentWidth() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getCurrentWidth(AttachCurrentThread(),
+                                                object_.obj());
+}
+
 int PhotoCapabilities::getMinZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMinZoom(AttachCurrentThread(),

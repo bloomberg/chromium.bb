@@ -19,6 +19,15 @@ class PhotoCapabilities {
 
   static bool RegisterPhotoCapabilities(JNIEnv* env);
 
+  int getMinIso() const;
+  int getMaxIso() const;
+  int getCurrentIso() const;
+  int getMinHeight() const;
+  int getMaxHeight() const;
+  int getCurrentHeight() const;
+  int getMinWidth() const;
+  int getMaxWidth() const;
+  int getCurrentWidth() const;
   int getMinZoom() const;
   int getMaxZoom() const;
   int getCurrentZoom() const;

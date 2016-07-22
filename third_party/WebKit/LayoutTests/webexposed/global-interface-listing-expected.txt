@@ -4444,6 +4444,9 @@ interface Permissions
 interface PhotoCapabilities
     attribute @@toStringTag
     getter focusMode
+    getter imageHeight
+    getter imageWidth
+    getter iso
     getter zoom
     method constructor
 interface Plugin

@@ -33,12 +33,36 @@ async_test(function(t) {
     })
     .then(capabilities => {
       assert_true(capabilities instanceof PhotoCapabilities);
-      assert_true(capabilities.zoom instanceof MediaSettingsRange);
 
+      assert_true(capabilities.iso instanceof MediaSettingsRange);
+      assert_equals(capabilities.iso.max, mock_capabilities.iso.max);
+      assert_equals(capabilities.iso.min, mock_capabilities.iso.min);
+      assert_equals(capabilities.iso.current,
+                    mock_capabilities.iso.current);
+
+      assert_true(capabilities.imageHeight instanceof MediaSettingsRange);
+      assert_equals(capabilities.imageHeight.max,
+                    mock_capabilities.height.max);
+      assert_equals(capabilities.imageHeight.min,
+                    mock_capabilities.height.min);
+      assert_equals(capabilities.imageHeight.current,
+                    mock_capabilities.height.current);
+
+      assert_true(capabilities.imageWidth instanceof MediaSettingsRange);
+      assert_equals(capabilities.imageWidth.max,
+                    mock_capabilities.width.max);
+      assert_equals(capabilities.imageWidth.min,
+                    mock_capabilities.width.min);
+      assert_equals(capabilities.imageWidth.current,
+                    mock_capabilities.width.current);
+
+      assert_true(capabilities.zoom instanceof MediaSettingsRange);
       assert_equals(capabilities.zoom.max, mock_capabilities.zoom.max);
       assert_equals(capabilities.zoom.min, mock_capabilities.zoom.min);
       assert_equals(capabilities.zoom.current,
                     mock_capabilities.zoom.current);
+
+      assert_equals(capabilities.focusMode, mock_capabilities.focusMode);
 
       t.done();
     })

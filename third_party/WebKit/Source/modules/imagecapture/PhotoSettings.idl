@@ -8,6 +8,8 @@
     RuntimeEnabled=ImageCapture
 ] dictionary PhotoSettings {
     unsigned long zoom;
+    unsigned long imageHeight;
+    unsigned long imageWidth;
     // TODO(mcasas): Implement all other PhotoSettings fields
     // https://crbug.com/518807
 };

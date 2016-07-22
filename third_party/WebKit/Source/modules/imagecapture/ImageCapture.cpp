@@ -118,6 +118,12 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     settings->has_zoom = photoSettings.hasZoom();
     if (settings->has_zoom)
         settings->zoom = photoSettings.zoom();
+    settings->has_height = photoSettings.hasImageHeight();
+    if (settings->has_height)
+        settings->height = photoSettings.imageHeight();
+    settings->has_width = photoSettings.hasImageWidth();
+    if (settings->has_width)
+        settings->width = photoSettings.imageWidth();
 
     m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), convertToBaseCallback(WTF::bind(&ImageCapture::onSetOptions, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
@@ -197,8 +203,14 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         resolver->reject(DOMException::create(UnknownError, "platform error"));
     } else {
         // TODO(mcasas): Should be using a mojo::StructTraits.
+        MediaSettingsRange* iso = MediaSettingsRange::create(capabilities->iso->max, capabilities->iso->min, capabilities->iso->current);
+        MediaSettingsRange* height = MediaSettingsRange::create(capabilities->height->max, capabilities->height->min, capabilities->height->current);
+        MediaSettingsRange* width = MediaSettingsRange::create(capabilities->width->max, capabilities->width->min, capabilities->width->current);
         MediaSettingsRange* zoom = MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->current);
         PhotoCapabilities* caps = PhotoCapabilities::create();
+        caps->setIso(iso);
+        caps->setImageHeight(height);
+        caps->setImageWidth(width);
         caps->setZoom(zoom);
         caps->setFocusMode(capabilities->focus_mode);
         resolver->resolve(caps);
