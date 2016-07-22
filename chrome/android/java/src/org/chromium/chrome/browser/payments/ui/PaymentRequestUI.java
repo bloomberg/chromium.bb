@@ -194,6 +194,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onPaymentRequestReadyToPay(PaymentRequestUI ui);
 
         /**
+         * Called when the UI has been updated to reflect checking a selected option.
+         */
+        void onPaymentRequestSelectionChecked(PaymentRequestUI ui);
+
+        /**
          * Called when edit dialog is showing.
          */
         void onPaymentRequestReadyToEdit();
@@ -329,6 +334,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     expand(null);
                 }
                 updatePayButtonEnabled();
+                notifySelectionChecked();
             }
         };
 
@@ -1166,6 +1172,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private void notifyReadyToClose() {
         if (sObserverForTest != null && isAcceptingCloseButton()) {
             sObserverForTest.onPaymentRequestReadyToClose(this);
+        }
+    }
+
+    private void notifySelectionChecked() {
+        if (sObserverForTest != null) {
+            sObserverForTest.onPaymentRequestSelectionChecked(this);
         }
     }
 }

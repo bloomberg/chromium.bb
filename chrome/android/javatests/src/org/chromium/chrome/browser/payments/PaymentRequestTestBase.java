@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryA
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.ui.EditorTextField;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.OptionRow;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -64,6 +65,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyForInput;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToClose;
+    protected final PaymentsCallbackHelper<PaymentRequestUI> mSelectionChecked;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mResultReady;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyForUnmaskInput;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
@@ -86,6 +88,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
         mReadyToClose = new PaymentsCallbackHelper<>();
+        mSelectionChecked = new PaymentsCallbackHelper<>();
         mResultReady = new PaymentsCallbackHelper<>();
         mReadyForUnmaskInput = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
@@ -325,7 +328,28 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     }
 
     /**
-     *  Returns the the number of shipping address suggestions,
+     *  Clicks on the label corresponding to the shipping address suggestion at the specified
+     *  |suggestionIndex|.
+     * @throws InterruptedException
+     */
+    protected void clickOnShippingAddressSuggestionOptionAndWait(
+            final int suggestionIndex, CallbackHelper helper)
+                    throws ExecutionException, TimeoutException, InterruptedException {
+        assert (suggestionIndex < getNumberOfShippingAddressSuggestions());
+
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ((OptionSection) mUI.getShippingAddressSectionForTest())
+                        .getOptionLabelsForTest(suggestionIndex).performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    /**
+     *  Returns the the number of shipping address suggestions.
      */
     protected int getNumberOfShippingAddressSuggestions() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
@@ -333,6 +357,18 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
             public Integer call() {
                 return ((OptionSection) mUI.getShippingAddressSectionForTest())
                         .getNumberOfOptionLabelsForTest();
+            }
+        });
+    }
+
+    /** Returns the {@link OptionRow} at the given index for the shipping address section. */
+    protected OptionRow getShippingAddressOptionRowAtIndex(final int index)
+            throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<OptionRow>() {
+            @Override
+            public OptionRow call() {
+                return ((OptionSection) mUI.getShippingAddressSectionForTest())
+                        .getOptionRowAtIndex(index);
             }
         });
     }
@@ -494,6 +530,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     public void onPaymentRequestReadyToClose(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
         mReadyToClose.notifyCalled(ui);
+    }
+
+    @Override
+    public void onPaymentRequestSelectionChecked(PaymentRequestUI ui) {
+        ThreadUtils.assertOnUiThread();
+        mSelectionChecked.notifyCalled(ui);
     }
 
     @Override

@@ -540,7 +540,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
          * + The "label" is text describing the row.
          * + The "icon" is a logo representing the option, like a credit card.
          */
-        private class OptionRow {
+        public class OptionRow {
             private static final int OPTION_ROW_TYPE_OPTION = 0;
             private static final int OPTION_ROW_TYPE_ADD = 1;
             private static final int OPTION_ROW_TYPE_DESCRIPTION = 2;
@@ -587,6 +587,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
             /** Set the button identifier for the option. */
             public void setButtonId(int id) {
                 mButton.setId(id);
+            }
+
+            /** @return the label for the row. */
+            @VisibleForTesting
+            public CharSequence getLabelText() {
+                return mLabel.getText();
             }
 
             private View createButton(
@@ -881,21 +887,22 @@ public abstract class PaymentRequestSection extends LinearLayout {
             mLabelsForTest.clear();
 
             // Show any additional text requested by the layout.
-            if (!TextUtils.isEmpty(mDelegate.getAdditionalText(this))) {
+            String additionalText = mDelegate.getAdditionalText(this);
+            if (!TextUtils.isEmpty(additionalText)) {
                 OptionRow descriptionRow = new OptionRow(mOptionLayout,
-                        mOptionLayout.getChildCount(),
+                        mOptionRows.size(),
                         mDelegate.isAdditionalTextDisplayingWarning(this)
                                 ? OptionRow.OPTION_ROW_TYPE_WARNING
                                 : OptionRow.OPTION_ROW_TYPE_DESCRIPTION,
                                 null, false);
                 mOptionRows.add(descriptionRow);
-                descriptionRow.setLabel(mDelegate.getAdditionalText(this));
+                descriptionRow.setLabel(additionalText);
             }
 
             // List out known payment options.
             int firstOptionIndex = INVALID_OPTION_INDEX;
             for (int i = 0; i < information.getSize(); i++) {
-                int currentRow = mOptionLayout.getChildCount();
+                int currentRow = mOptionRows.size();
                 if (firstOptionIndex == INVALID_OPTION_INDEX) firstOptionIndex = currentRow;
 
                 PaymentOption item = information.getItem(i);
@@ -956,6 +963,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
         @VisibleForTesting
         public int getNumberOfOptionLabelsForTest() {
             return mLabelsForTest.size();
+        }
+
+        /** Returns the OptionRow at the specified |index|. */
+        @VisibleForTesting
+        public OptionRow getOptionRowAtIndex(int index) {
+            return mOptionRows.get(index);
         }
     }
 
