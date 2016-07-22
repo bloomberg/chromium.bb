@@ -34,6 +34,5 @@ UINetworkQualityEstimatorServiceFactory::
 
 KeyedService* UINetworkQualityEstimatorServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new UINetworkQualityEstimatorService(profile);
+  return new UINetworkQualityEstimatorService();
 }

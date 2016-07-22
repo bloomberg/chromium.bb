@@ -7,16 +7,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/nqe/network_quality_estimator.h"
-
-class Profile;
 
 // UI service to determine the current EffectiveConnectionType.
 class UINetworkQualityEstimatorService : public KeyedService {
  public:
-  explicit UINetworkQualityEstimatorService(Profile* profile);
+  UINetworkQualityEstimatorService();
   ~UINetworkQualityEstimatorService() override;
 
   // The current EffectiveConnectionType.

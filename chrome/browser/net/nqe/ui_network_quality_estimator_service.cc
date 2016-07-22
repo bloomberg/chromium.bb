@@ -64,12 +64,15 @@ class UINetworkQualityEstimatorService::IONetworkQualityObserver
   DISALLOW_COPY_AND_ASSIGN(IONetworkQualityObserver);
 };
 
-UINetworkQualityEstimatorService::UINetworkQualityEstimatorService(
-    Profile* profile)
+UINetworkQualityEstimatorService::UINetworkQualityEstimatorService()
     : type_(net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       io_observer_(nullptr),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If this is running in a context without an IOThread, don't try to create
+  // the IO object.
+  if (!g_browser_process->io_thread())
+    return;
   io_observer_ = new IONetworkQualityObserver(weak_factory_.GetWeakPtr());
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
