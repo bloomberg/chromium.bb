@@ -617,6 +617,7 @@ public:
 
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
     void clearScrollAnchor();
+    bool shouldPerformScrollAnchoring() const override;
 
     // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into PaintInvalidator.
     void invalidatePaintIfNeeded(const PaintInvalidationState&);

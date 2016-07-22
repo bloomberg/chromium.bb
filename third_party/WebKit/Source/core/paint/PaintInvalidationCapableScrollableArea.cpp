@@ -135,10 +135,4 @@ void PaintInvalidationCapableScrollableArea::scrollControlWasSetNeedsPaintInvali
     layoutBox()->setMayNeedPaintInvalidation();
 }
 
-bool PaintInvalidationCapableScrollableArea::shouldPerformScrollAnchoring() const
-{
-    return RuntimeEnabledFeatures::scrollAnchoringEnabled()
-        && layoutBox()->style()->overflowAnchor() != AnchorNone;
-}
-
 } // namespace blink

@@ -36,8 +36,6 @@ public:
 
     LayoutRect visualRectForScrollbarParts() const override;
 
-    bool shouldPerformScrollAnchoring() const override;
-
 private:
     virtual LayoutScrollbarPart* scrollCorner() const = 0;
     virtual LayoutScrollbarPart* resizer() const = 0;

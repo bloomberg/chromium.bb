@@ -405,6 +405,7 @@ public:
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
     Widget* getWidget() override;
+    bool shouldPerformScrollAnchoring() const override;
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
     bool isPaintLayerScrollableArea() const override { return true; }
 

@@ -754,7 +754,7 @@ void PaintLayerScrollableArea::clampScrollPositionsAfterLayout()
 
     DoublePoint clamped = clampScrollPosition(scrollPositionDouble());
     // Restore before clamping because clamping clears the scroll anchor.
-    if (clamped != scrollPositionDouble() && shouldPerformScrollAnchoring() && m_scrollAnchor.hasScroller()) {
+    if (clamped != scrollPositionDouble() && shouldPerformScrollAnchoring()) {
         m_scrollAnchor.restore();
         clamped = clampScrollPosition(scrollPositionDouble());
     }
@@ -764,6 +764,13 @@ void PaintLayerScrollableArea::clampScrollPositionsAfterLayout()
     setNeedsScrollPositionClamp(false);
     resetScrollOriginChanged();
     m_scrollbarManager.destroyDetachedScrollbars();
+}
+
+bool PaintLayerScrollableArea::shouldPerformScrollAnchoring() const
+{
+    return RuntimeEnabledFeatures::scrollAnchoringEnabled()
+        && m_scrollAnchor.hasScroller()
+        && layoutBox()->style()->overflowAnchor() != AnchorNone;
 }
 
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const

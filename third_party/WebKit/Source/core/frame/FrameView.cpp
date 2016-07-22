@@ -828,6 +828,14 @@ void FrameView::performPreLayoutTasks()
         m_scrollAnchor.save();
 }
 
+bool FrameView::shouldPerformScrollAnchoring() const
+{
+    return RuntimeEnabledFeatures::scrollAnchoringEnabled()
+        && m_frame->settings() && !m_frame->settings()->rootLayerScrolls()
+        && m_scrollAnchor.hasScroller()
+        && layoutBox()->style()->overflowAnchor() != AnchorNone;
+}
+
 static inline void layoutFromRootObject(LayoutObject& root)
 {
     LayoutState layoutState(root);
@@ -3644,7 +3652,7 @@ void FrameView::adjustScrollPositionFromUpdateScrollbars()
     // Restore before clamping because clamping clears the scroll anchor.
     // TODO(ymalik): This same logic exists in PaintLayerScrollableArea.
     // Remove when root-layer-scrolls is enabled.
-    if (clamped != scrollPositionDouble() && shouldPerformScrollAnchoring() && m_scrollAnchor.hasScroller()) {
+    if (clamped != scrollPositionDouble() && shouldPerformScrollAnchoring()) {
         m_scrollAnchor.restore();
         clamped = clampScrollPosition(scrollPositionDouble());
     }
