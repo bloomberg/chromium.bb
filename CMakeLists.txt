@@ -233,6 +233,8 @@ if (ENABLE_WEBMTS)
   add_library(webmts
               "${LIBWEBM_SRC_DIR}/common/libwebm_util.cc"
               "${LIBWEBM_SRC_DIR}/common/libwebm_util.h"
+              "${LIBWEBM_SRC_DIR}/common/video_frame.cc"
+              "${LIBWEBM_SRC_DIR}/common/video_frame.h"
               "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.cc"
               "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.h"
               "${LIBWEBM_SRC_DIR}/m2ts/vpxpes_parser.cc"
@@ -288,6 +290,7 @@ if (ENABLE_TESTS)
     add_executable(webm2pes_tests
                   "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                   "${LIBWEBM_SRC_DIR}/testing/test_util.h"
+                  "${LIBWEBM_SRC_DIR}/testing/video_frame_tests.cc"
                   "${LIBWEBM_SRC_DIR}/m2ts/tests/webm2pes_tests.cc")
     target_link_libraries(webm2pes_tests LINK_PUBLIC gtest webm webmts)
   endif ()
