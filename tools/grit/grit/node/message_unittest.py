@@ -8,11 +8,15 @@
 
 import os
 import sys
-if __name__ == '__main__':
-  sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
 import unittest
 import StringIO
+
+if __name__ == '__main__':
+  # When executed as the main module, the first entry in sys.path will be
+  # the directory contain this module. This entry causes the io.py file in this
+  # directory to be selected whenever any file does "import io", rather than the
+  # system "io" module. As a work-around, remove the first sys.path entry.
+  sys.path[0] = os.path.join(os.path.dirname(__file__), '../..')
 
 from grit import tclib
 from grit import util
@@ -84,6 +88,18 @@ class MessageUnittest(unittest.TestCase):
     for key in expected_formatter_data:
       self.failUnlessEqual(expected_formatter_data[key],
                            msg.formatter_data[key])
+
+  def testReplaceEllipsis(self):
+    root = util.ParseGrdForUnittest('''
+        <messages>
+        <message name="IDS_GREETING" desc="">
+        A...B.... <ph name="PH">%s<ex>A</ex></ph>... B... C...
+        </message>
+        </messages>''')
+    msg, = root.GetChildrenOfType(message.MessageNode)
+    msg.SetReplaceEllipsis(True)
+    content = msg.Translate('en')
+    self.failUnlessEqual(u'A...B.... %s\u2026 B\u2026 C\u2026', content)
 
 
 if __name__ == '__main__':
