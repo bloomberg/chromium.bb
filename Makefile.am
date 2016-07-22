@@ -137,7 +137,9 @@ nodist_libweston_la_SOURCES =					\
 	protocol/linux-dmabuf-unstable-v1-protocol.c	\
 	protocol/linux-dmabuf-unstable-v1-server-protocol.h		\
 	protocol/relative-pointer-unstable-v1-protocol.c		\
-	protocol/relative-pointer-unstable-v1-server-protocol.h
+	protocol/relative-pointer-unstable-v1-server-protocol.h		\
+	protocol/pointer-constraints-unstable-v1-protocol.c		\
+	protocol/pointer-constraints-unstable-v1-server-protocol.h
 
 BUILT_SOURCES += $(nodist_libweston_la_SOURCES)
 

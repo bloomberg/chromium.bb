@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -38,12 +39,28 @@
 #include "shared/os-compatibility.h"
 #include "compositor.h"
 #include "protocol/relative-pointer-unstable-v1-server-protocol.h"
+#include "protocol/pointer-constraints-unstable-v1-server-protocol.h"
+
+enum pointer_constraint_type {
+	POINTER_CONSTRAINT_TYPE_LOCK,
+	POINTER_CONSTRAINT_TYPE_CONFINE,
+};
+
+static void
+maybe_warp_confined_pointer(struct weston_pointer_constraint *constraint);
 
 static void
 empty_region(pixman_region32_t *region)
 {
 	pixman_region32_fini(region);
 	pixman_region32_init(region);
+}
+
+static void
+region_init_infinite(pixman_region32_t *region)
+{
+	pixman_region32_init_rect(region, INT32_MIN, INT32_MIN,
+				  UINT32_MAX, UINT32_MAX);
 }
 
 static struct weston_pointer_client *
@@ -2921,6 +2938,70 @@ weston_seat_get_pointer(struct weston_seat *seat)
 	return NULL;
 }
 
+static const struct zwp_locked_pointer_v1_interface locked_pointer_interface;
+static const struct zwp_confined_pointer_v1_interface confined_pointer_interface;
+
+static enum pointer_constraint_type
+pointer_constraint_get_type(struct weston_pointer_constraint *constraint)
+{
+	if (wl_resource_instance_of(constraint->resource,
+				    &zwp_locked_pointer_v1_interface,
+				    &locked_pointer_interface)) {
+		return POINTER_CONSTRAINT_TYPE_LOCK;
+	} else if (wl_resource_instance_of(constraint->resource,
+					   &zwp_confined_pointer_v1_interface,
+					   &confined_pointer_interface)) {
+		return POINTER_CONSTRAINT_TYPE_CONFINE;
+	}
+
+	abort();
+	return 0;
+}
+
+static void
+pointer_constraint_notify_activated(struct weston_pointer_constraint *constraint)
+{
+	struct wl_resource *resource = constraint->resource;
+
+	switch (pointer_constraint_get_type(constraint)) {
+	case POINTER_CONSTRAINT_TYPE_LOCK:
+		zwp_locked_pointer_v1_send_locked(resource);
+		break;
+	case POINTER_CONSTRAINT_TYPE_CONFINE:
+		zwp_confined_pointer_v1_send_confined(resource);
+		break;
+	}
+}
+
+static void
+pointer_constraint_notify_deactivated(struct weston_pointer_constraint *constraint)
+{
+	struct wl_resource *resource = constraint->resource;
+
+	switch (pointer_constraint_get_type(constraint)) {
+	case POINTER_CONSTRAINT_TYPE_LOCK:
+		zwp_locked_pointer_v1_send_unlocked(resource);
+		break;
+	case POINTER_CONSTRAINT_TYPE_CONFINE:
+		zwp_confined_pointer_v1_send_unconfined(resource);
+		break;
+	}
+}
+
+static struct weston_pointer_constraint *
+get_pointer_constraint_for_pointer(struct weston_surface *surface,
+				   struct weston_pointer *pointer)
+{
+	struct weston_pointer_constraint *constraint;
+
+	wl_list_for_each(constraint, &surface->pointer_constraints, link) {
+		if (constraint->pointer == pointer)
+			return constraint;
+	}
+
+	return NULL;
+}
+
 /** Get a seat's touch pointer
  *
  * \param seat The seat to query
@@ -2969,12 +3050,730 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 	wl_signal_emit(&compositor->activate_signal, &activation_data);
 }
 
+static void
+enable_pointer_constraint(struct weston_pointer_constraint *constraint,
+			  struct weston_view *view)
+{
+	assert(constraint->view == NULL);
+	constraint->view = view;
+	pointer_constraint_notify_activated(constraint);
+	weston_pointer_start_grab(constraint->pointer, &constraint->grab);
+	wl_list_remove(&constraint->surface_destroy_listener.link);
+	wl_list_init(&constraint->surface_destroy_listener.link);
+}
+
+static bool
+is_pointer_constraint_enabled(struct weston_pointer_constraint *constraint)
+{
+	return constraint->view != NULL;
+}
+
+static void
+weston_pointer_constraint_disable(struct weston_pointer_constraint *constraint)
+{
+	constraint->view = NULL;
+	pointer_constraint_notify_deactivated(constraint);
+	weston_pointer_end_grab(constraint->grab.pointer);
+}
+
+void
+weston_pointer_constraint_destroy(struct weston_pointer_constraint *constraint)
+{
+	if (is_pointer_constraint_enabled(constraint))
+		weston_pointer_constraint_disable(constraint);
+
+	wl_list_remove(&constraint->pointer_destroy_listener.link);
+	wl_list_remove(&constraint->surface_destroy_listener.link);
+	wl_list_remove(&constraint->surface_commit_listener.link);
+	wl_list_remove(&constraint->surface_activate_listener.link);
+
+	wl_resource_set_user_data(constraint->resource, NULL);
+	pixman_region32_fini(&constraint->region);
+	wl_list_remove(&constraint->link);
+	free(constraint);
+}
+
+static void
+disable_pointer_constraint(struct weston_pointer_constraint *constraint)
+{
+	switch (constraint->lifetime) {
+	case ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT:
+		weston_pointer_constraint_destroy(constraint);
+		break;
+	case ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT:
+		weston_pointer_constraint_disable(constraint);
+		break;
+	}
+}
+
+static bool
+is_within_constraint_region(struct weston_pointer_constraint *constraint,
+			    wl_fixed_t sx, wl_fixed_t sy)
+{
+	struct weston_surface *surface = constraint->surface;
+	pixman_region32_t constraint_region;
+	bool result;
+
+	pixman_region32_init(&constraint_region);
+	pixman_region32_intersect(&constraint_region,
+				  &surface->input,
+				  &constraint->region);
+	result = pixman_region32_contains_point(&constraint_region,
+						wl_fixed_to_int(sx),
+						wl_fixed_to_int(sy),
+						NULL);
+	pixman_region32_fini(&constraint_region);
+
+	return result;
+}
+
+static void
+maybe_enable_pointer_constraint(struct weston_pointer_constraint *constraint)
+{
+	struct weston_surface *surface = constraint->surface;
+	struct weston_view *vit;
+	struct weston_view *view = NULL;
+	struct weston_pointer *pointer = constraint->pointer;
+	struct weston_keyboard *keyboard;
+	struct weston_seat *seat = pointer->seat;
+	int32_t x, y;
+
+	/* Postpone if no view of the surface was most recently clicked. */
+	wl_list_for_each(vit, &surface->views, surface_link) {
+		if (vit->click_to_activate_serial ==
+		    surface->compositor->activate_serial) {
+			view = vit;
+		}
+	}
+	if (view == NULL)
+		return;
+
+	/* Postpone if surface doesn't have keyboard focus. */
+	keyboard = weston_seat_get_keyboard(seat);
+	if (!keyboard || keyboard->focus != surface)
+		return;
+
+	/* Postpone constraint if the pointer is not within the
+	 * constraint region.
+	 */
+	weston_view_from_global(view,
+				wl_fixed_to_int(pointer->x),
+				wl_fixed_to_int(pointer->y),
+				&x, &y);
+	if (!is_within_constraint_region(constraint,
+					 wl_fixed_from_int(x),
+					 wl_fixed_from_int(y)))
+		return;
+
+	enable_pointer_constraint(constraint, view);
+}
+
+static void
+locked_pointer_grab_pointer_focus(struct weston_pointer_grab *grab)
+{
+}
+
+static void
+locked_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
+				   uint32_t time,
+				   struct weston_pointer_motion_event *event)
+{
+	weston_pointer_send_relative_motion(grab->pointer, time, event);
+}
+
+static void
+locked_pointer_grab_pointer_button(struct weston_pointer_grab *grab,
+				   uint32_t time,
+				   uint32_t button,
+				   uint32_t state_w)
+{
+	weston_pointer_send_button(grab->pointer, time, button, state_w);
+}
+
+static void
+locked_pointer_grab_pointer_axis(struct weston_pointer_grab *grab,
+				 uint32_t time,
+				 struct weston_pointer_axis_event *event)
+{
+	weston_pointer_send_axis(grab->pointer, time, event);
+}
+
+static void
+locked_pointer_grab_pointer_axis_source(struct weston_pointer_grab *grab,
+					uint32_t source)
+{
+	weston_pointer_send_axis_source(grab->pointer, source);
+}
+
+static void
+locked_pointer_grab_pointer_frame(struct weston_pointer_grab *grab)
+{
+	weston_pointer_send_frame(grab->pointer);
+}
+
+static void
+locked_pointer_grab_pointer_cancel(struct weston_pointer_grab *grab)
+{
+	struct weston_pointer_constraint *constraint =
+		container_of(grab, struct weston_pointer_constraint, grab);
+
+	disable_pointer_constraint(constraint);
+}
+
+static const struct weston_pointer_grab_interface
+				locked_pointer_grab_interface = {
+	locked_pointer_grab_pointer_focus,
+	locked_pointer_grab_pointer_motion,
+	locked_pointer_grab_pointer_button,
+	locked_pointer_grab_pointer_axis,
+	locked_pointer_grab_pointer_axis_source,
+	locked_pointer_grab_pointer_frame,
+	locked_pointer_grab_pointer_cancel,
+};
+
+static void
+pointer_constraint_constrain_resource_destroyed(struct wl_resource *resource)
+{
+	struct weston_pointer_constraint *constraint =
+		wl_resource_get_user_data(resource);
+
+	if (!constraint)
+		return;
+
+	weston_pointer_constraint_destroy(constraint);
+}
+
+static void
+pointer_constraint_surface_activate(struct wl_listener *listener, void *data)
+{
+	struct weston_surface_activation_data *activation = data;
+	struct weston_pointer *pointer;
+	struct weston_surface *focus = activation->surface;
+	struct weston_pointer_constraint *constraint =
+		container_of(listener, struct weston_pointer_constraint,
+			     surface_activate_listener);
+	bool is_constraint_surface;
+
+	pointer = weston_seat_get_pointer(activation->seat);
+	if (!pointer)
+		return;
+
+	is_constraint_surface =
+		get_pointer_constraint_for_pointer(focus, pointer) == constraint;
+
+	if (is_constraint_surface &&
+	    !is_pointer_constraint_enabled(constraint))
+		maybe_enable_pointer_constraint(constraint);
+	else if (!is_constraint_surface &&
+		 is_pointer_constraint_enabled(constraint))
+		disable_pointer_constraint(constraint);
+}
+
+static void
+pointer_constraint_pointer_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_pointer_constraint *constraint =
+		container_of(listener, struct weston_pointer_constraint,
+			     pointer_destroy_listener);
+
+	weston_pointer_constraint_destroy(constraint);
+}
+
+static void
+pointer_constraint_surface_destroyed(struct wl_listener *listener, void *data)
+{
+	struct weston_pointer_constraint *constraint =
+		container_of(listener, struct weston_pointer_constraint,
+			     surface_destroy_listener);
+
+	weston_pointer_constraint_destroy(constraint);
+}
+
+static void
+pointer_constraint_surface_committed(struct wl_listener *listener, void *data)
+{
+	struct weston_pointer_constraint *constraint =
+		container_of(listener, struct weston_pointer_constraint,
+			     surface_commit_listener);
+
+	if (constraint->region_is_pending) {
+		constraint->region_is_pending = false;
+		pixman_region32_copy(&constraint->region,
+				     &constraint->region_pending);
+		pixman_region32_fini(&constraint->region_pending);
+		pixman_region32_init(&constraint->region_pending);
+	}
+
+	if (constraint->hint_is_pending) {
+		constraint->hint_is_pending = false;
+
+		constraint->hint_is_pending = true;
+		constraint->hint_x = constraint->hint_x_pending;
+		constraint->hint_y = constraint->hint_y_pending;
+	}
+
+	if (pointer_constraint_get_type(constraint) ==
+	    POINTER_CONSTRAINT_TYPE_CONFINE &&
+	    is_pointer_constraint_enabled(constraint))
+		maybe_warp_confined_pointer(constraint);
+}
+
+static struct weston_pointer_constraint *
+weston_pointer_constraint_create(struct weston_surface *surface,
+				 struct weston_pointer *pointer,
+				 struct weston_region *region,
+				 enum zwp_pointer_constraints_v1_lifetime lifetime,
+				 struct wl_resource *cr,
+				 const struct weston_pointer_grab_interface *grab_interface)
+{
+	struct weston_pointer_constraint *constraint;
+
+	constraint = zalloc(sizeof *constraint);
+	if (!constraint)
+		return NULL;
+
+	constraint->lifetime = lifetime;
+	pixman_region32_init(&constraint->region);
+	pixman_region32_init(&constraint->region_pending);
+	wl_list_insert(&surface->pointer_constraints, &constraint->link);
+	constraint->surface = surface;
+	constraint->pointer = pointer;
+	constraint->resource = cr;
+	constraint->grab.interface = grab_interface;
+	if (region) {
+		pixman_region32_copy(&constraint->region,
+				     &region->region);
+	} else {
+		pixman_region32_fini(&constraint->region);
+		region_init_infinite(&constraint->region);
+	}
+
+	constraint->surface_activate_listener.notify =
+		pointer_constraint_surface_activate;
+	constraint->surface_destroy_listener.notify =
+		pointer_constraint_surface_destroyed;
+	constraint->surface_commit_listener.notify =
+		pointer_constraint_surface_committed;
+	constraint->pointer_destroy_listener.notify =
+		pointer_constraint_pointer_destroyed;
+
+	wl_signal_add(&surface->compositor->activate_signal,
+		      &constraint->surface_activate_listener);
+	wl_signal_add(&pointer->destroy_signal,
+		      &constraint->pointer_destroy_listener);
+	wl_signal_add(&surface->destroy_signal,
+		      &constraint->surface_destroy_listener);
+	wl_signal_add(&surface->commit_signal,
+		      &constraint->surface_commit_listener);
+
+	return constraint;
+}
+
+static void
+init_pointer_constraint(struct wl_resource *pointer_constraints_resource,
+			uint32_t id,
+			struct weston_surface *surface,
+			struct weston_pointer *pointer,
+			struct weston_region *region,
+			enum zwp_pointer_constraints_v1_lifetime lifetime,
+			const struct wl_interface *interface,
+			const void *implementation,
+			const struct weston_pointer_grab_interface *grab_interface)
+{
+	struct wl_client *client =
+		wl_resource_get_client(pointer_constraints_resource);
+	struct wl_resource *cr;
+	struct weston_pointer_constraint *constraint;
+
+	if (get_pointer_constraint_for_pointer(surface, pointer)) {
+		wl_resource_post_error(pointer_constraints_resource,
+				       ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
+				       "the pointer has a lock/confine request on this surface");
+		return;
+	}
+
+	cr = wl_resource_create(client, interface,
+				wl_resource_get_version(pointer_constraints_resource),
+				id);
+	if (cr == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	constraint = weston_pointer_constraint_create(surface, pointer,
+						      region, lifetime,
+						      cr, grab_interface);
+	if (constraint == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(cr, implementation, constraint,
+				       pointer_constraint_constrain_resource_destroyed);
+
+	maybe_enable_pointer_constraint(constraint);
+}
+
+static void
+pointer_constraints_destroy(struct wl_client *client,
+			    struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+locked_pointer_destroy(struct wl_client *client,
+		       struct wl_resource *resource)
+{
+	struct weston_pointer_constraint *constraint =
+		wl_resource_get_user_data(resource);
+	wl_fixed_t x, y;
+
+	if (constraint && constraint->view && constraint->hint_is_pending &&
+	    is_within_constraint_region(constraint,
+					constraint->hint_x,
+					constraint->hint_y)) {
+		weston_view_to_global_fixed(constraint->view,
+					    constraint->hint_x,
+					    constraint->hint_y,
+					    &x, &y);
+		weston_pointer_move_to(constraint->pointer, x, y);
+	}
+	wl_resource_destroy(resource);
+}
+
+static void
+locked_pointer_set_cursor_position_hint(struct wl_client *client,
+					struct wl_resource *resource,
+					wl_fixed_t surface_x,
+					wl_fixed_t surface_y)
+{
+	struct weston_pointer_constraint *constraint =
+		wl_resource_get_user_data(resource);
+
+	/* Ignore a set cursor hint that was sent after the lock was cancelled.
+	 */
+	if (!constraint ||
+	    !constraint->resource ||
+	    constraint->resource != resource)
+		return;
+
+	constraint->hint_is_pending = true;
+	constraint->hint_x_pending = surface_x;
+	constraint->hint_y_pending = surface_y;
+}
+
+static void
+locked_pointer_set_region(struct wl_client *client,
+			  struct wl_resource *resource,
+			  struct wl_resource *region_resource)
+{
+	struct weston_pointer_constraint *constraint =
+		wl_resource_get_user_data(resource);
+	struct weston_region *region = region_resource ?
+		wl_resource_get_user_data(region_resource) : NULL;
+
+	if (!constraint)
+		return;
+
+	if (region) {
+		pixman_region32_copy(&constraint->region_pending,
+				     &region->region);
+	} else {
+		pixman_region32_fini(&constraint->region_pending);
+		region_init_infinite(&constraint->region_pending);
+	}
+	constraint->region_is_pending = true;
+}
+
+
+static const struct zwp_locked_pointer_v1_interface locked_pointer_interface = {
+	locked_pointer_destroy,
+	locked_pointer_set_cursor_position_hint,
+	locked_pointer_set_region,
+};
+
+static void
+pointer_constraints_lock_pointer(struct wl_client *client,
+				 struct wl_resource *resource,
+				 uint32_t id,
+				 struct wl_resource *surface_resource,
+				 struct wl_resource *pointer_resource,
+				 struct wl_resource *region_resource,
+				 uint32_t lifetime)
+{
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct weston_pointer *pointer = wl_resource_get_user_data(pointer_resource);
+	struct weston_region *region = region_resource ?
+		wl_resource_get_user_data(region_resource) : NULL;
+
+	init_pointer_constraint(resource, id, surface, pointer, region, lifetime,
+				&zwp_locked_pointer_v1_interface,
+				&locked_pointer_interface,
+				&locked_pointer_grab_interface);
+}
+
+static void
+confined_pointer_grab_pointer_focus(struct weston_pointer_grab *grab)
+{
+}
+
+static void
+weston_pointer_clamp_event_to_region(struct weston_pointer *pointer,
+				     struct weston_pointer_motion_event *event,
+				     pixman_region32_t *region,
+				     wl_fixed_t *clamped_x,
+				     wl_fixed_t *clamped_y)
+{
+	wl_fixed_t x, y;
+	wl_fixed_t sx, sy;
+	wl_fixed_t min_sx = wl_fixed_from_int(region->extents.x1);
+	wl_fixed_t max_sx = wl_fixed_from_int(region->extents.x2 - 1);
+	wl_fixed_t max_sy = wl_fixed_from_int(region->extents.y2 - 1);
+	wl_fixed_t min_sy = wl_fixed_from_int(region->extents.y1);
+
+	weston_pointer_motion_to_abs(pointer, event, &x, &y);
+	weston_view_from_global_fixed(pointer->focus, x, y, &sx, &sy);
+
+	if (sx < min_sx)
+		sx = min_sx;
+	else if (sx > max_sx)
+		sx = max_sx;
+
+	if (sy < min_sy)
+		sy = min_sy;
+	else if (sy > max_sy)
+		sy = max_sy;
+
+	weston_view_to_global_fixed(pointer->focus, sx, sy,
+				    clamped_x, clamped_y);
+}
+
+static void
+maybe_warp_confined_pointer(struct weston_pointer_constraint *constraint)
+{
+	wl_fixed_t x;
+	wl_fixed_t y;
+	wl_fixed_t sx;
+	wl_fixed_t sy;
+
+	weston_view_from_global_fixed(constraint->view,
+				      constraint->pointer->x,
+				      constraint->pointer->y,
+				      &sx,
+				      &sy);
+
+	if (!is_within_constraint_region(constraint, sx, sy)) {
+		pixman_region32_t *region = &constraint->region;
+		wl_fixed_t min_sx = wl_fixed_from_int(region->extents.x1);
+		wl_fixed_t max_sx = wl_fixed_from_int(region->extents.x2 - 1);
+		wl_fixed_t max_sy = wl_fixed_from_int(region->extents.y2 - 1);
+		wl_fixed_t min_sy = wl_fixed_from_int(region->extents.y1);
+
+		if (sx < min_sx)
+			sx = min_sx;
+		else if (sx > max_sx)
+			sx = max_sx;
+
+		if (sy < min_sy)
+			sy = min_sy;
+		else if (sy > max_sy)
+			sy = max_sy;
+
+		weston_view_to_global_fixed(constraint->view, sx, sy, &x, &y);
+		weston_pointer_move_to(constraint->pointer, x, y);
+	}
+}
+
+static void
+confined_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
+				     uint32_t time,
+				     struct weston_pointer_motion_event *event)
+{
+	struct weston_pointer_constraint *constraint =
+		container_of(grab, struct weston_pointer_constraint, grab);
+	struct weston_pointer *pointer = grab->pointer;
+	struct weston_surface *surface;
+	wl_fixed_t x, y;
+	wl_fixed_t old_sx = pointer->sx;
+	wl_fixed_t old_sy = pointer->sy;
+	pixman_region32_t confine_region;
+
+	assert(pointer->focus);
+	assert(pointer->focus->surface == constraint->surface);
+
+	surface = pointer->focus->surface;
+
+	pixman_region32_init(&confine_region);
+	pixman_region32_intersect(&confine_region,
+				  &surface->input,
+				  &constraint->region);
+	weston_pointer_clamp_event_to_region(pointer, event,
+					     &confine_region, &x, &y);
+	weston_pointer_move_to(pointer, x, y);
+	pixman_region32_fini(&confine_region);
+
+	weston_view_from_global_fixed(pointer->focus, x, y,
+				      &pointer->sx, &pointer->sy);
+
+	if (old_sx != pointer->sx || old_sy != pointer->sy) {
+		weston_pointer_send_motion(pointer, time,
+					   pointer->sx, pointer->sy);
+	}
+
+	weston_pointer_send_relative_motion(pointer, time, event);
+}
+
+static void
+confined_pointer_grab_pointer_button(struct weston_pointer_grab *grab,
+				     uint32_t time,
+				     uint32_t button,
+				     uint32_t state_w)
+{
+	weston_pointer_send_button(grab->pointer, time, button, state_w);
+}
+
+static void
+confined_pointer_grab_pointer_axis(struct weston_pointer_grab *grab,
+				   uint32_t time,
+				   struct weston_pointer_axis_event *event)
+{
+	weston_pointer_send_axis(grab->pointer, time, event);
+}
+
+static void
+confined_pointer_grab_pointer_axis_source(struct weston_pointer_grab *grab,
+					  uint32_t source)
+{
+	weston_pointer_send_axis_source(grab->pointer, source);
+}
+
+static void
+confined_pointer_grab_pointer_frame(struct weston_pointer_grab *grab)
+{
+	weston_pointer_send_frame(grab->pointer);
+}
+
+static void
+confined_pointer_grab_pointer_cancel(struct weston_pointer_grab *grab)
+{
+	struct weston_pointer_constraint *constraint =
+		container_of(grab, struct weston_pointer_constraint, grab);
+
+	disable_pointer_constraint(constraint);
+
+	/* If this is a persistent constraint, re-add the surface destroy signal
+	 * listener only if we are currently not destroying the surface. */
+	switch (constraint->lifetime) {
+	case ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT:
+		if (constraint->surface->resource)
+			wl_signal_add(&constraint->surface->destroy_signal,
+				      &constraint->surface_destroy_listener);
+		break;
+	case ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT:
+		break;
+	}
+}
+
+static const struct weston_pointer_grab_interface
+				confined_pointer_grab_interface = {
+	confined_pointer_grab_pointer_focus,
+	confined_pointer_grab_pointer_motion,
+	confined_pointer_grab_pointer_button,
+	confined_pointer_grab_pointer_axis,
+	confined_pointer_grab_pointer_axis_source,
+	confined_pointer_grab_pointer_frame,
+	confined_pointer_grab_pointer_cancel,
+};
+
+static void
+confined_pointer_destroy(struct wl_client *client,
+			 struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+confined_pointer_set_region(struct wl_client *client,
+			    struct wl_resource *resource,
+			    struct wl_resource *region_resource)
+{
+	struct weston_pointer_constraint *constraint =
+		wl_resource_get_user_data(resource);
+	struct weston_region *region = region_resource ?
+		wl_resource_get_user_data(region_resource) : NULL;
+
+	if (!constraint)
+		return;
+
+	if (region) {
+		pixman_region32_copy(&constraint->region_pending,
+				     &region->region);
+	} else {
+		pixman_region32_fini(&constraint->region_pending);
+		region_init_infinite(&constraint->region_pending);
+	}
+	constraint->region_is_pending = true;
+}
+
+static const struct zwp_confined_pointer_v1_interface confined_pointer_interface = {
+	confined_pointer_destroy,
+	confined_pointer_set_region,
+};
+
+static void
+pointer_constraints_confine_pointer(struct wl_client *client,
+				    struct wl_resource *resource,
+				    uint32_t id,
+				    struct wl_resource *surface_resource,
+				    struct wl_resource *pointer_resource,
+				    struct wl_resource *region_resource,
+				    uint32_t lifetime)
+{
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct weston_pointer *pointer = wl_resource_get_user_data(pointer_resource);
+	struct weston_region *region = region_resource ?
+		wl_resource_get_user_data(region_resource) : NULL;
+
+	init_pointer_constraint(resource, id, surface, pointer, region, lifetime,
+				&zwp_confined_pointer_v1_interface,
+				&confined_pointer_interface,
+				&confined_pointer_grab_interface);
+}
+
+static const struct zwp_pointer_constraints_v1_interface pointer_constraints_interface = {
+	pointer_constraints_destroy,
+	pointer_constraints_lock_pointer,
+	pointer_constraints_confine_pointer,
+};
+
+static void
+bind_pointer_constraints(struct wl_client *client, void *data,
+			 uint32_t version, uint32_t id)
+{
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client,
+				      &zwp_pointer_constraints_v1_interface,
+				      1, id);
+
+	wl_resource_set_implementation(resource, &pointer_constraints_interface,
+				       NULL, NULL);
+}
+
 int
 weston_input_init(struct weston_compositor *compositor)
 {
 	if (!wl_global_create(compositor->wl_display,
 			      &zwp_relative_pointer_manager_v1_interface, 1,
 			      compositor, bind_relative_pointer_manager))
+		return -1;
+
+	if (!wl_global_create(compositor->wl_display,
+			      &zwp_pointer_constraints_v1_interface, 1,
+			      NULL, bind_pointer_constraints))
 		return -1;
 
 	return 0;

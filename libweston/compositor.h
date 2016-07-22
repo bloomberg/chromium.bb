@@ -59,6 +59,7 @@ struct input_method;
 struct weston_pointer;
 struct linux_dmabuf_buffer;
 struct weston_recorder;
+struct weston_pointer_constraint;
 
 enum weston_keyboard_modifier {
 	MODIFIER_CTRL = (1 << 0),
@@ -452,6 +453,9 @@ void
 weston_pointer_set_default_grab(struct weston_pointer *pointer,
 		const struct weston_pointer_grab_interface *interface);
 
+void
+weston_pointer_constraint_destroy(struct weston_pointer_constraint *constraint);
+
 struct weston_keyboard *
 weston_keyboard_create(void);
 void
@@ -810,6 +814,8 @@ struct weston_compositor {
 
 	unsigned int activate_serial;
 
+	struct wl_global *pointer_constraints;
+
 	int exit_code;
 
 	void *user_data;
@@ -1017,6 +1023,32 @@ struct weston_surface_activation_data {
 	struct weston_seat *seat;
 };
 
+struct weston_pointer_constraint {
+	struct wl_list link;
+
+	struct weston_surface *surface;
+	struct weston_view *view;
+	struct wl_resource *resource;
+	struct weston_pointer_grab grab;
+	struct weston_pointer *pointer;
+	uint32_t lifetime;
+
+	pixman_region32_t region;
+	pixman_region32_t region_pending;
+	bool region_is_pending;
+
+	wl_fixed_t hint_x;
+	wl_fixed_t hint_y;
+	wl_fixed_t hint_x_pending;
+	wl_fixed_t hint_y_pending;
+	bool hint_is_pending;
+
+	struct wl_listener pointer_destroy_listener;
+	struct wl_listener surface_destroy_listener;
+	struct wl_listener surface_commit_listener;
+	struct wl_listener surface_activate_listener;
+};
+
 struct weston_surface {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal; /* callback argument: this surface */
@@ -1104,6 +1136,9 @@ struct weston_surface {
 	struct weston_timeline_object timeline;
 
 	bool is_mapped;
+
+	/* An list of per seat pointer constraints. */
+	struct wl_list pointer_constraints;
 };
 
 struct weston_subsurface {
