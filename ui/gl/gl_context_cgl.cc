@@ -206,7 +206,7 @@ bool GLContextCGL::ForceGpuSwitchIfNeeded() {
 
 YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter() {
   if (!yuv_to_rgb_converter_)
-    yuv_to_rgb_converter_.reset(new YUVToRGBConverter);
+    yuv_to_rgb_converter_.reset(new YUVToRGBConverter(*GetVersionInfo()));
   return yuv_to_rgb_converter_.get();
 }
 

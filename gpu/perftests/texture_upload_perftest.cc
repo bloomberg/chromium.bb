@@ -222,7 +222,7 @@ class TextureUploadPerfTest : public testing::Test {
     // used to draw a quad on the offscreen surface.
     vertex_shader_ = LoadShader(GL_VERTEX_SHADER, kVertexShader);
 
-    bool is_gles = gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2;
+    bool is_gles = gl_context_->GetVersionInfo()->is_es;
     fragment_shader_ = LoadShader(
         GL_FRAGMENT_SHADER,
         base::StringPrintf("%s%s", is_gles ? kShaderDefaultFloatPrecision : "",

@@ -7,7 +7,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gl/gl_helper.h"
-#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_binders.h"
 
@@ -70,9 +70,8 @@ STRINGIZE(
 
 }  // namespace
 
-YUVToRGBConverter::YUVToRGBConverter() {
-  bool use_core_profile =
-      GetGLImplementation() == kGLImplementationDesktopGLCoreProfile;
+YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info) {
+  bool use_core_profile = gl_version_info.is_desktop_core_profile;
   ScopedSetGLToRealGLApi scoped_set_gl_api;
   glGenFramebuffersEXT(1, &framebuffer_);
   vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();

@@ -1184,16 +1184,6 @@ sh::OutputVariable TestHelper::ConstructOutputVariable(
       type, array_size, precision, static_use, name);
 }
 
-ScopedGLImplementationSetter::ScopedGLImplementationSetter(
-    gl::GLImplementation implementation)
-    : old_implementation_(gl::GetGLImplementation()) {
-  gl::SetGLImplementation(implementation);
-}
-
-ScopedGLImplementationSetter::~ScopedGLImplementationSetter() {
-  gl::SetGLImplementation(old_implementation_);
-}
-
 }  // namespace gles2
 }  // namespace gpu
 

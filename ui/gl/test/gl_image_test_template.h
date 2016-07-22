@@ -22,8 +22,8 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_helper.h"
 #include "ui/gl/gl_image.h"
-#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_image_test_support.h"
 #include "ui/gl/test/gl_test_helper.h"
@@ -51,7 +51,7 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
   );
   // clang-format on
 
-  bool is_gles = GetGLImplementation() == kGLImplementationEGLGLES2;
+  bool is_gles = GLContext::GetCurrent()->GetVersionInfo()->is_es;
   switch (target) {
     case GL_TEXTURE_2D:
       return GLHelper::LoadShader(

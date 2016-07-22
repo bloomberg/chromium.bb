@@ -9,9 +9,11 @@
 
 namespace gl {
 
+struct GLVersionInfo;
+
 class YUVToRGBConverter {
  public:
-  YUVToRGBConverter();
+  explicit YUVToRGBConverter(const GLVersionInfo& gl_version_info);
   ~YUVToRGBConverter();
 
   // The input Y and UV textures should be bound to these texture objects

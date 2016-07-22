@@ -65,6 +65,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetGLSurface, gl::GLSurface*());
   MOCK_METHOD0(GetGLContext, gl::GLContext*());
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
+  MOCK_CONST_METHOD0(GetFeatureInfo, const FeatureInfo*());
   MOCK_METHOD0(GetContextState, const ContextState*());
   MOCK_METHOD1(GetTranslator,
                scoped_refptr<ShaderTranslatorInterface>(unsigned int type));

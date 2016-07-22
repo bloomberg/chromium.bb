@@ -41,6 +41,7 @@ namespace gles2 {
 
 class ContextGroup;
 class ErrorState;
+class FeatureInfo;
 class GLES2Util;
 class ImageManager;
 class Logger;
@@ -184,6 +185,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;
+  virtual const FeatureInfo* GetFeatureInfo() const = 0;
 
   virtual Capabilities GetCapabilities() = 0;
 

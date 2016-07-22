@@ -30,7 +30,7 @@ GLFence::~GLFence() {
 bool GLFence::IsSupported() {
   DCHECK(GetGLVersionInfo());
   return g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
-         GetGLImplementation() == kGLImplementationDesktopGLCoreProfile ||
+         GetGLVersionInfo()->is_desktop_core_profile ||
 #if defined(OS_MACOSX)
          g_driver_gl.ext.b_GL_APPLE_fence ||
 #else
@@ -52,7 +52,7 @@ GLFence* GLFence::Create() {
   } else
 #endif
       if (g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
-          GetGLImplementation() == kGLImplementationDesktopGLCoreProfile) {
+          GetGLVersionInfo()->is_desktop_core_profile) {
     // Prefer ARB_sync which supports server-side wait.
     fence.reset(new GLFenceARB);
 #if defined(OS_MACOSX)

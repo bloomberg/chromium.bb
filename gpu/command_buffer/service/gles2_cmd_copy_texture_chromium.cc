@@ -10,7 +10,7 @@
 
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace {
 
@@ -94,11 +94,11 @@ const char* kShaderPrecisionPreamble = "\
     #define TexCoordPrecision\n\
     #endif\n";
 
-std::string GetVertexShaderSource() {
+std::string GetVertexShaderSource(const gl::GLVersionInfo& gl_version_info) {
   std::string source;
 
   // Preamble for core and compatibility mode.
-  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGLCoreProfile) {
+  if (gl_version_info.is_desktop_core_profile) {
     source += std::string("\
         #version 150\n\
         #define ATTRIBUTE in\n\
@@ -130,13 +130,14 @@ std::string GetVertexShaderSource() {
   return source;
 }
 
-std::string GetFragmentShaderSource(bool premultiply_alpha,
+std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
+                                    bool premultiply_alpha,
                                     bool unpremultiply_alpha,
                                     GLenum target) {
   std::string source;
 
   // Preamble for core and compatibility mode.
-  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGLCoreProfile) {
+  if (gl_version_info.is_desktop_core_profile) {
     source += std::string("\
         #version 150\n\
         out vec4 frag_color;\n\
@@ -574,12 +575,13 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     DLOG(ERROR) << "CopyTextureCHROMIUM: Uninitialized manager.";
     return;
   }
+  const gl::GLVersionInfo& gl_version_info =
+      decoder->GetFeatureInfo()->gl_version_info();
 
   if (vertex_array_object_id_) {
     glBindVertexArrayOES(vertex_array_object_id_);
   } else {
-    if (gl::GetGLImplementation() !=
-        gl::kGLImplementationDesktopGLCoreProfile) {
+    if (!gl_version_info.is_desktop_core_profile) {
       decoder->ClearAllAttributes();
     }
     glEnableVertexAttribArray(kVertexPositionAttrib);
@@ -598,15 +600,16 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     info->program = glCreateProgram();
     if (!vertex_shader_) {
       vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
-      std::string source = GetVertexShaderSource();
+      std::string source = GetVertexShaderSource(gl_version_info);
       CompileShader(vertex_shader_, source.c_str());
     }
     glAttachShader(info->program, vertex_shader_);
     GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
     if (!*fragment_shader) {
       *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-      std::string source = GetFragmentShaderSource(
-          premultiply_alpha, unpremultiply_alpha, source_target);
+      std::string source =
+          GetFragmentShaderSource(gl_version_info, premultiply_alpha,
+                                  unpremultiply_alpha, source_target);
       CompileShader(*fragment_shader, source.c_str());
     }
     glAttachShader(info->program, *fragment_shader);

@@ -73,6 +73,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Gets the associated ContextGroup
   ContextGroup* GetContextGroup() override;
 
+  const FeatureInfo* GetFeatureInfo() const override;
+
   Capabilities GetCapabilities() override;
 
   // Restores all of the decoder GL state.

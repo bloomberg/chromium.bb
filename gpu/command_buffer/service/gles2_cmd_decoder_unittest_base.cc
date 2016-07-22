@@ -24,7 +24,6 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -391,6 +390,12 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   if (group_->feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
     EXPECT_CALL(*gl_, Enable(GL_TEXTURE_CUBE_MAP_SEAMLESS))
         .Times(1)
+        .RetiresOnSaturation();
+  }
+
+  if (group_->feature_info()->gl_version_info().is_es) {
+    EXPECT_CALL(
+        *gl_, GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT, _, _))
         .RetiresOnSaturation();
   }
 
@@ -1486,8 +1491,7 @@ void GLES2DecoderTestBase::AddExpectationsForRestoreAttribState(GLuint attrib) {
       .Times(1)
       .RetiresOnSaturation();
 
-  if (attrib != 0 ||
-      gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
+  if (attrib != 0 || group_->feature_info()->gl_version_info().is_es) {
     // TODO(bajones): Not sure if I can tell which of these will be called
     EXPECT_CALL(*gl_, EnableVertexAttribArray(attrib))
         .Times(testing::AtMost(1))

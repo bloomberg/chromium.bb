@@ -217,7 +217,7 @@ static inline GLenum GetTexFormat(GLenum format) {
 }
 
 static inline GLenum GetTexType(GLenum type) {
-  if (GetGLImplementation() != kGLImplementationEGLGLES2) {
+  if (!g_version_info->is_es) {
     if (type == GL_HALF_FLOAT_OES)
       return GL_HALF_FLOAT_ARB;
   }

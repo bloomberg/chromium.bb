@@ -174,6 +174,10 @@ gpu::gles2::ContextGroup* GLES2DecoderPassthroughImpl::GetContextGroup() {
   return nullptr;
 }
 
+const FeatureInfo* GLES2DecoderPassthroughImpl::GetFeatureInfo() const {
+  return nullptr;
+}
+
 gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   DCHECK(initialized());
   Capabilities caps;

@@ -227,18 +227,6 @@ class TestHelper {
   static std::vector<std::string> split_extensions_;
 };
 
-// This object temporaritly Sets what gl::GetGLImplementation returns. During
-// testing the GLImplementation is set to kGLImplemenationMockGL but lots of
-// code branches based on what gl::GetGLImplementation returns.
-class ScopedGLImplementationSetter {
- public:
-  explicit ScopedGLImplementationSetter(gl::GLImplementation implementation);
-  ~ScopedGLImplementationSetter();
-
- private:
-  gl::GLImplementation old_implementation_;
-};
-
 }  // namespace gles2
 }  // namespace gpu
 

@@ -110,9 +110,11 @@ bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
   return (rangeMin >= 62) && (rangeMax >= 62) && (precision >= 16);
 }
 
-void GetShaderPrecisionFormatImpl(GLenum shader_type,
-                                         GLenum precision_type,
-                                         GLint* range, GLint* precision) {
+void GetShaderPrecisionFormatImpl(const gl::GLVersionInfo& gl_version_info,
+                                  GLenum shader_type,
+                                  GLenum precision_type,
+                                  GLint* range,
+                                  GLint* precision) {
   switch (precision_type) {
     case GL_LOW_INT:
     case GL_MEDIUM_INT:
@@ -135,8 +137,7 @@ void GetShaderPrecisionFormatImpl(GLenum shader_type,
       break;
   }
 
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
-      gl::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
+  if (gl_version_info.is_es) {
     // This function is sometimes defined even though it's really just
     // a stub, so we need to set range and precision as if it weren't
     // defined before calling it.
@@ -598,6 +599,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLES2Util* GetGLES2Util() override { return &util_; }
   gl::GLContext* GetGLContext() override { return context_.get(); }
   ContextGroup* GetContextGroup() override { return group_.get(); }
+  const FeatureInfo* GetFeatureInfo() const override {
+    return feature_info_.get();
+  }
   Capabilities GetCapabilities() override;
   void RestoreState(const ContextState* prev_state) override;
 
@@ -823,6 +827,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   MemoryTracker* memory_tracker() {
     return group_->memory_tracker();
+  }
+
+  const gl::GLVersionInfo& gl_version_info() {
+    return feature_info_->gl_version_info();
   }
 
   bool EnsureGPUMemoryAvailable(size_t estimated_size) {
@@ -3040,7 +3048,7 @@ bool GLES2DecoderImpl::Initialize(
     }
   }
 
-  bool needs_emulation = feature_info_->gl_version_info().IsLowerThanGL(4, 2);
+  bool needs_emulation = gl_version_info().IsLowerThanGL(4, 2);
   transform_feedback_manager_.reset(new TransformFeedbackManager(
       group_->max_transform_feedback_separate_attribs(), needs_emulation));
 
@@ -3097,7 +3105,7 @@ bool GLES2DecoderImpl::Initialize(
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
 
-  if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
+  if (!gl_version_info().BehavesLikeGLES()) {
     // We have to enable vertex array 0 on GL with compatibility profile or it
     // won't render. Note that ES or GL with core profile does not have this
     // issue.
@@ -3165,9 +3173,8 @@ bool GLES2DecoderImpl::Initialize(
     }
     offscreen_target_buffer_preserved_ = attrib_helper.buffer_preserved;
 
-    if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
-      const bool rgb8_supported =
-          context_->HasExtension("GL_OES_rgb8_rgba8");
+    if (gl_version_info().is_es) {
+      const bool rgb8_supported = context_->HasExtension("GL_OES_rgb8_rgba8");
       // The only available default render buffer formats in GLES2 have very
       // little precision.  Don't enable multisampling unless 8-bit render
       // buffer formats are available--instead fall back to 8-bit textures.
@@ -3314,7 +3321,7 @@ bool GLES2DecoderImpl::Initialize(
 
       bool default_fb = (GetBackbufferServiceId() == 0);
 
-      if (feature_info_->gl_version_info().is_desktop_core_profile) {
+      if (gl_version_info().is_desktop_core_profile) {
         glGetFramebufferAttachmentParameterivEXT(
             GL_FRAMEBUFFER,
             default_fb ? GL_BACK_LEFT : GL_COLOR_ATTACHMENT0,
@@ -3353,10 +3360,10 @@ bool GLES2DecoderImpl::Initialize(
   // mailing list archives. It also implicitly enables the desktop GL
   // capability GL_POINT_SPRITE to provide access to the gl_PointCoord
   // variable in fragment shaders.
-  if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
+  if (!gl_version_info().BehavesLikeGLES()) {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
-  } else if (feature_info_->gl_version_info().is_desktop_core_profile) {
+  } else if (gl_version_info().is_desktop_core_profile) {
     // The desktop core profile changed how program point size mode is
     // enabled.
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -3368,7 +3375,7 @@ bool GLES2DecoderImpl::Initialize(
   // Therefore, it seems OK to also always enable it on top of Desktop GL for
   // both ES2 and ES3 contexts.
   if (!feature_info_->workarounds().disable_texture_cube_map_seamless &&
-      feature_info_->gl_version_info().IsAtLeastGL(3, 2)) {
+      gl_version_info().IsAtLeastGL(3, 2)) {
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
   }
 
@@ -3459,11 +3466,14 @@ bool GLES2DecoderImpl::Initialize(
 Capabilities GLES2DecoderImpl::GetCapabilities() {
   DCHECK(initialized());
   Capabilities caps;
-  caps.VisitPrecisions([](GLenum shader, GLenum type,
-                          Capabilities::ShaderPrecision* shader_precision) {
+  const gl::GLVersionInfo& version_info = gl_version_info();
+  caps.VisitPrecisions([&version_info](
+      GLenum shader, GLenum type,
+      Capabilities::ShaderPrecision* shader_precision) {
     GLint range[2] = {0, 0};
     GLint precision = 0;
-    GetShaderPrecisionFormatImpl(shader, type, range, &precision);
+    GetShaderPrecisionFormatImpl(version_info, shader, type, range,
+                                 &precision);
     shader_precision->min_range = range[0];
     shader_precision->max_range = range[1];
     shader_precision->precision = precision;
@@ -3657,8 +3667,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
-  GetShaderPrecisionFormatImpl(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
-                               range, &precision);
+  GetShaderPrecisionFormatImpl(gl_version_info(), GL_FRAGMENT_SHADER,
+                               GL_HIGH_FLOAT, range, &precision);
   resources.FragmentPrecisionHigh =
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
@@ -3743,8 +3753,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       group_->gpu_preferences().emulate_shader_precision;
 
   ShShaderOutput shader_output_language =
-      ShaderTranslator::GetShaderOutputLanguageForContext(
-          feature_info_->gl_version_info());
+      ShaderTranslator::GetShaderOutputLanguageForContext(gl_version_info());
 
   vertex_translator_ = shader_translator_cache()->GetTranslator(
       GL_VERTEX_SHADER, shader_spec, &resources, shader_output_language,
@@ -5550,8 +5559,8 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
     glBindTexture(target, texture->service_id());
     if (texture->target() == 0) {
       texture_manager()->SetTarget(texture_ref, target);
-      if (!feature_info_->gl_version_info().BehavesLikeGLES() &&
-          feature_info_->gl_version_info().IsAtLeastGL(3, 2)) {
+      if (!gl_version_info().BehavesLikeGLES() &&
+          gl_version_info().IsAtLeastGL(3, 2)) {
         // In Desktop GL core profile and GL ES, depth textures are always
         // sampled to the RED channel, whereas on Desktop GL compatibility
         // proifle, they are sampled to RED, LUMINANCE, INTENSITY, or ALPHA
@@ -5673,7 +5682,7 @@ void GLES2DecoderImpl::DoResumeTransformFeedback() {
 
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
   if (state_.vertex_attrib_manager->Enable(index, false)) {
-    if (index != 0 || feature_info_->gl_version_info().BehavesLikeGLES()) {
+    if (index != 0 || gl_version_info().BehavesLikeGLES()) {
       glDisableVertexAttribArray(index);
     }
   } else {
@@ -5768,7 +5777,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
   bool dirty = false;
   switch (op) {
     case kFramebufferDiscard:
-      if (feature_info_->gl_version_info().is_es3) {
+      if (gl_version_info().is_es3) {
         glInvalidateFramebuffer(
             target, validated_count, translated_attachments.get());
       } else {
@@ -5778,7 +5787,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
       dirty = true;
       break;
     case kFramebufferInvalidate:
-      if (feature_info_->gl_version_info().IsLowerThanGL(4, 3)) {
+      if (gl_version_info().IsLowerThanGL(4, 3)) {
         // no-op since the function isn't supported.
       } else {
         glInvalidateFramebuffer(
@@ -6018,7 +6027,7 @@ bool GLES2DecoderImpl::GetHelper(
       break;
   }
 
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
+  if (!gl_version_info().is_es) {
     switch (pname) {
       case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
         *num_written = 1;
@@ -6043,7 +6052,7 @@ bool GLES2DecoderImpl::GetHelper(
   if (unsafe_es3_apis_enabled()) {
     switch (pname) {
       case GL_MAX_VARYING_COMPONENTS: {
-        if (feature_info_->gl_version_info().is_es) {
+        if (gl_version_info().is_es) {
           // We can just delegate this query to the driver.
           return false;
         }
@@ -6146,7 +6155,7 @@ bool GLES2DecoderImpl::GetHelper(
         if (framebuffer) {
           if (framebuffer->HasAlphaMRT() &&
               framebuffer->HasSameInternalFormatsMRT()) {
-            if (feature_info_->gl_version_info().is_desktop_core_profile) {
+            if (gl_version_info().is_desktop_core_profile) {
               for (uint32_t i = 0; i < group_->max_draw_buffers(); i++) {
                 if (framebuffer->HasColorAttachment(i)) {
                   glGetFramebufferAttachmentParameterivEXT(
@@ -6169,7 +6178,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+        if (gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -6193,7 +6202,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+        if (gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -6232,7 +6241,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+        if (gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -6483,7 +6492,7 @@ GLenum GLES2DecoderImpl::AdjustGetPname(GLenum pname) {
     return GL_MAX_SAMPLES_IMG;
   }
   if (GL_ALIASED_POINT_SIZE_RANGE == pname &&
-      feature_info_->gl_version_info().is_desktop_core_profile) {
+      gl_version_info().is_desktop_core_profile) {
     return GL_POINT_SIZE_RANGE;
   }
   return pname;
@@ -6528,8 +6537,8 @@ void GLES2DecoderImpl::DoGetInteger64v(GLenum pname, GLint64* params) {
   if (unsafe_es3_apis_enabled()) {
     switch (pname) {
       case GL_MAX_ELEMENT_INDEX: {
-        if (feature_info_->gl_version_info().IsAtLeastGLES(3, 0) ||
-            feature_info_->gl_version_info().IsAtLeastGL(4, 3)) {
+        if (gl_version_info().IsAtLeastGLES(3, 0) ||
+            gl_version_info().IsAtLeastGL(4, 3)) {
           glGetInteger64v(GL_MAX_ELEMENT_INDEX, params);
         } else {
           // Assume that desktop GL implementations can generally support
@@ -7609,7 +7618,7 @@ void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
   if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
     glBlitFramebuffer(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-  } else if (feature_info_->gl_version_info().is_angle) {
+  } else if (gl_version_info().is_angle) {
     // This is ES2 only.
     glBlitFramebufferANGLE(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
@@ -8906,7 +8915,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   DCHECK(simulated);
   *simulated = false;
 
-  if (feature_info_->gl_version_info().BehavesLikeGLES())
+  if (gl_version_info().BehavesLikeGLES())
     return true;
 
   const VertexAttrib* attrib =
@@ -8999,7 +9008,7 @@ void GLES2DecoderImpl::RestoreStateForAttrib(
   // Never touch vertex attribute 0's state (in particular, never disable it)
   // when running on desktop GL with compatibility profile because it will
   // never be re-enabled.
-  if (attrib_index != 0 || feature_info_->gl_version_info().BehavesLikeGLES()) {
+  if (attrib_index != 0 || gl_version_info().BehavesLikeGLES()) {
     if (attrib->enabled()) {
       glEnableVertexAttribArray(attrib_index);
     } else {
@@ -9013,7 +9022,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     GLuint max_vertex_accessed, bool* simulated, GLsizei primcount) {
   DCHECK(simulated);
   *simulated = false;
-  if (feature_info_->gl_version_info().BehavesLikeGLES())
+  if (gl_version_info().BehavesLikeGLES())
     return true;
 
   if (!state_.vertex_attrib_manager->HaveFixedAttribs()) {
@@ -9827,7 +9836,7 @@ void GLES2DecoderImpl::GetTexParameterImpl(
       }
       break;
     case GL_TEXTURE_IMMUTABLE_LEVELS:
-      if (feature_info_->gl_version_info().IsLowerThanGL(4, 2)) {
+      if (gl_version_info().IsLowerThanGL(4, 2)) {
         GLint levels = texture->GetImmutableLevels();
         if (fparams) {
           fparams[0] = static_cast<GLfloat>(levels);
@@ -10229,7 +10238,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                       offset,
                       GL_FALSE);
   // We support GL_FIXED natively on EGL/GLES2 implementations
-  if (type != GL_FIXED || feature_info_->gl_version_info().is_es) {
+  if (type != GL_FIXED || gl_version_info().is_es) {
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   }
   return error::kNoError;
@@ -10605,8 +10614,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         "format and type incompatible with the current read framebuffer");
     return error::kNoError;
   }
-  if (type == GL_HALF_FLOAT_OES &&
-      !(feature_info_->gl_version_info().is_es2)) {
+  if (type == GL_HALF_FLOAT_OES && !gl_version_info().is_es2) {
     type = GL_HALF_FLOAT;
   }
   if (width == 0 || height == 0) {
@@ -10670,8 +10678,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       glGenBuffersARB(1, &buffer);
       glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
       // For ANGLE client version 2, GL_STREAM_READ is not available.
-      const GLenum usage_hint = feature_info_->gl_version_info().is_angle ?
-          GL_STATIC_DRAW : GL_STREAM_READ;
+      const GLenum usage_hint =
+          gl_version_info().is_angle ? GL_STATIC_DRAW : GL_STREAM_READ;
       glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, usage_hint);
       GLenum error = glGetError();
       if (error == GL_NO_ERROR) {
@@ -11731,10 +11739,10 @@ const ASTCBlockArray kASTCBlockArray[] = {
     {12, 10},
     {12, 12}};
 
-bool CheckETCFormatSupport(const FeatureInfo& featureInfo) {
-  const gl::GLVersionInfo& versionInfo = featureInfo.gl_version_info();
-  return versionInfo.IsAtLeastGL(4, 3) || versionInfo.IsAtLeastGLES(3, 0) ||
-         featureInfo.feature_flags().arb_es3_compatibility;
+bool CheckETCFormatSupport(const FeatureInfo& feature_info) {
+  const gl::GLVersionInfo& version_info = feature_info.gl_version_info();
+  return version_info.IsAtLeastGL(4, 3) || version_info.IsAtLeastGLES(3, 0) ||
+         feature_info.feature_flags().arb_es3_compatibility;
 }
 
 using CompressedFormatSupportCheck = bool (*)(const FeatureInfo&);
@@ -13551,7 +13559,8 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
-  GetShaderPrecisionFormatImpl(shader_type, precision_type, range, &precision);
+  GetShaderPrecisionFormatImpl(gl_version_info(), shader_type, precision_type,
+                               range, &precision);
 
   result->min_range = range[0];
   result->max_range = range[1];
@@ -13988,7 +13997,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
       // Ensure the side effects of the copy are visible to the parent
       // context. There is no need to do this for ANGLE because it uses a
       // single D3D device for all contexts.
-      if (!feature_info_->gl_version_info().is_angle)
+      if (!gl_version_info().is_angle)
         glFlush();
     }
   } else if (supports_async_swap_) {
@@ -16262,7 +16271,7 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   typedef cmds::GetInternalformativ::Result Result;
   GLsizei num_values = 0;
   std::vector<GLint> samples;
-  if (feature_info_->gl_version_info().IsLowerThanGL(4, 2)) {
+  if (gl_version_info().IsLowerThanGL(4, 2)) {
     if (!GLES2Util::IsIntegerFormat(format) &&
         !GLES2Util::IsFloatFormat(format)) {
       // No multisampling for integer formats and float formats.
@@ -16311,7 +16320,7 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  if (feature_info_->gl_version_info().IsLowerThanGL(4, 2)) {
+  if (gl_version_info().IsLowerThanGL(4, 2)) {
     switch (pname) {
       case GL_NUM_SAMPLE_COUNTS:
         params[0] = static_cast<GLint>(samples.size());

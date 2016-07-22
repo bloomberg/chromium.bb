@@ -607,8 +607,14 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersBadSharedMemoryFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
-  ScopedGLImplementationSetter gl_impl(::gl::kGLImplementationEGLGLES2);
+TEST_P(GLES2DecoderManualInitTest, GetShaderPrecisionFormatSucceeds) {
+  // Force ES underlying implementation to ensure we check the shader precision
+  // format.
+  InitState init;
+  init.gl_version = "opengl es 2.0";
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
   GetShaderPrecisionFormat cmd;
   typedef GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
