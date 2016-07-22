@@ -15,6 +15,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,9 +27,11 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
+#include "net/http/http_status_code.h"
 #include "net/nqe/socket_watcher_factory.h"
 #include "net/nqe/throughput_analyzer.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -149,6 +153,22 @@ bool GetValueForVariationParam(
          base::StringToInt(it->second, variations_value);
 }
 
+// Returns the variation value for |parameter_name|. If the value is
+// unavailable, |default_value| is returned.
+double GetDoubleValueForVariationParamWithDefaultValue(
+    const std::map<std::string, std::string>& variation_params,
+    const std::string& parameter_name,
+    double default_value) {
+  const auto it = variation_params.find(parameter_name);
+  if (it == variation_params.end())
+    return default_value;
+
+  double variations_value = default_value;
+  if (!base::StringToDouble(it->second, &variations_value))
+    return default_value;
+  return variations_value;
+}
+
 // Returns the algorithm that should be used for computing effective connection
 // type based on field trial params. Returns an empty string if a valid
 // algorithm paramter is not present in the field trial params.
@@ -216,6 +236,39 @@ std::string GetHistogramSuffixObservedThroughput(
   return kSuffixes[arraysize(kSuffixes) - 1];
 }
 
+// The least significant kTrimBits of the metric will be discarded. If the
+// trimmed metric value is greater than what can be fit in kBitsPerMetric bits,
+// then the largest value that can be represented in kBitsPerMetric bits is
+// returned.
+const int32_t kTrimBits = 5;
+
+// Maximum number of bits in which one metric should fit. Restricting the amount
+// of space allocated to a single metric makes it possile to fit multiple
+// metrics in a single histogram sample, and ensures that all those metrics
+// are recorded together as a single tuple.
+const int32_t kBitsPerMetric = 7;
+
+static_assert(32 >= kBitsPerMetric * 4,
+              "Four metrics would not fit in a 32-bit int");
+
+// Trims the |metric| by removing the last kTrimBits, and then rounding down
+// the |metric| such that the |metric| fits in kBitsPerMetric.
+int32_t FitInKBitsPerMetricBits(int32_t metric) {
+  // Remove the last kTrimBits. This will allow the metric to fit within
+  // kBitsPerMetric while losing only the least significant bits.
+  metric = metric >> kTrimBits;
+
+  // kLargestValuePossible is the largest value that can be recorded using
+  // kBitsPerMetric.
+  static const int32_t kLargestValuePossible = (1 << kBitsPerMetric) - 1;
+  if (metric > kLargestValuePossible) {
+    // Fit |metric| in kBitsPerMetric by clamping it down.
+    metric = kLargestValuePossible;
+  }
+  DCHECK_EQ(0, metric >> kBitsPerMetric);
+  return metric;
+}
+
 }  // namespace
 
 namespace net {
@@ -265,6 +318,11 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       min_signal_strength_since_connection_change_(INT32_MAX),
       max_signal_strength_since_connection_change_(INT32_MIN),
+      correlation_uma_logging_probability_(
+          GetDoubleValueForVariationParamWithDefaultValue(
+              variation_params,
+              "correlation_logging_probability",
+              0.0)),
       weak_ptr_factory_(this) {
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
@@ -284,6 +342,8 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   DCHECK_NE(EffectiveConnectionTypeAlgorithm::
                 EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST,
             effective_connection_type_algorithm_);
+  DCHECK_LE(0.0, correlation_uma_logging_probability_);
+  DCHECK_GE(1.0, correlation_uma_logging_probability_);
 
   ObtainOperatingParams(variation_params);
   ObtainEffectiveConnectionTypeModelParams(variation_params);
@@ -543,6 +603,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
       load_timing_info.receive_headers_end.is_null()) {
     return;
   }
+  DCHECK(!request.response_info().was_cached);
 
   // Duration between when the resource was requested and when the response
   // headers were received.
@@ -684,13 +745,105 @@ void NetworkQualityEstimator::NotifyRequestCompleted(
     return;
 
   throughput_analyzer_->NotifyRequestCompleted(request);
+  RecordCorrelationMetric(request);
+}
+
+void NetworkQualityEstimator::RecordCorrelationMetric(
+    const URLRequest& request) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The histogram is recorded with probability
+  // |correlation_uma_logging_probability_| to reduce overhead involved with
+  // sparse histograms. Also, recording the correlation on each request is
+  // unnecessary.
+  if (RandDouble() >= correlation_uma_logging_probability_)
+    return;
+
+  if (request.response_info().was_cached ||
+      !request.response_info().network_accessed) {
+    return;
+  }
+
+  LoadTimingInfo load_timing_info;
+  request.GetLoadTimingInfo(&load_timing_info);
+  DCHECK(!load_timing_info.send_start.is_null() &&
+         !load_timing_info.receive_headers_end.is_null());
+
+  // Record UMA only for successful requests that have completed.
+  if (!request.status().is_success() || request.status().is_io_pending())
+    return;
+  if (request.GetResponseCode() != HTTP_OK)
+    return;
+  if (load_timing_info.receive_headers_end < last_main_frame_request_)
+    return;
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  // Record UMA only for requests that started recently.
+  if (now - last_main_frame_request_ > base::TimeDelta::FromSeconds(15))
+    return;
+
+  DCHECK_GE(now, load_timing_info.send_start);
+
+  int32_t rtt = 0;
+
+  if (UseTransportRTT()) {
+    rtt = estimated_quality_at_last_main_frame_.transport_rtt() !=
+                  nqe::internal::InvalidRTT()
+              ? FitInKBitsPerMetricBits(
+                    estimated_quality_at_last_main_frame_.transport_rtt()
+                        .InMilliseconds())
+              : 0;
+  } else {
+    rtt = estimated_quality_at_last_main_frame_.http_rtt() !=
+                  nqe::internal::InvalidRTT()
+              ? FitInKBitsPerMetricBits(
+                    estimated_quality_at_last_main_frame_.http_rtt()
+                        .InMilliseconds())
+              : 0;
+  }
+
+  const int32_t downstream_throughput =
+      estimated_quality_at_last_main_frame_.downstream_throughput_kbps() !=
+              nqe::internal::kInvalidThroughput
+          ? FitInKBitsPerMetricBits(estimated_quality_at_last_main_frame_
+                                        .downstream_throughput_kbps())
+          : 0;
+
+  const int32_t resource_load_time = FitInKBitsPerMetricBits(
+      (now - load_timing_info.send_start).InMilliseconds());
+
+  int64_t resource_size = (request.GetTotalReceivedBytes() * 8) / 1024;
+  if (resource_size >= (1 << kBitsPerMetric)) {
+    // Too large resource size (at least 128 Kb).
+    return;
+  }
+
+  DCHECK_EQ(
+      0, (rtt | downstream_throughput | resource_load_time | resource_size) >>
+             kBitsPerMetric);
+
+  // First 32 - (4* kBitsPerMetric) of the sample are unset. Next
+  // kBitsPerMetric of the sample contain |rtt|. Next
+  // kBitsPerMetric contain |downstream_throughput|. Next kBitsPerMetric
+  // contain |resource_load_time|. And, the last kBitsPerMetric
+  // contain |resource_size|.
+  int32_t sample = rtt;
+  sample = (sample << kBitsPerMetric) | downstream_throughput;
+  sample = (sample << kBitsPerMetric) | resource_load_time;
+  sample = (sample << kBitsPerMetric) | resource_size;
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NQE.Correlation.ResourceLoadTime.0Kb_128Kb",
+                              sample);
 }
 
 void NetworkQualityEstimator::NotifyURLRequestDestroyed(
     const URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  NotifyRequestCompleted(request);
+  if (!RequestSchemeIsHTTPOrHTTPS(request))
+    return;
+
+  throughput_analyzer_->NotifyRequestCompleted(request);
 }
 
 void NetworkQualityEstimator::AddRTTObserver(RTTObserver* rtt_observer) {
@@ -987,6 +1140,23 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionType(
   // Add additional algorithms here.
   NOTREACHED();
   return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+}
+
+bool NetworkQualityEstimator::UseTransportRTT() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (effective_connection_type_algorithm_ ==
+      EffectiveConnectionTypeAlgorithm::HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT) {
+    return false;
+  }
+  if (effective_connection_type_algorithm_ ==
+      EffectiveConnectionTypeAlgorithm::
+          TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT) {
+    return true;
+  }
+  // Add additional algorithms here.
+  NOTREACHED();
+  return false;
 }
 
 NetworkQualityEstimator::EffectiveConnectionType
@@ -1355,6 +1525,10 @@ void NetworkQualityEstimator::SetTickClockForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   tick_clock_ = std::move(tick_clock);
+}
+
+double NetworkQualityEstimator::RandDouble() const {
+  return base::RandDouble();
 }
 
 void NetworkQualityEstimator::CacheNetworkQualityEstimate() {

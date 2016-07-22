@@ -349,6 +349,9 @@ class NET_EXPORT NetworkQualityEstimator
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
+  // Returns a random double in the range [0.0, 1.0). Virtualized for testing.
+  virtual double RandDouble() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestAddObservation);
@@ -543,6 +546,15 @@ class NET_EXPORT NetworkQualityEstimator
   void RecordExternalEstimateProviderMetrics(
       NQEExternalEstimateProviderStatus status) const;
 
+  // Records a correlation metric that can be used for computing the correlation
+  // between HTTP-layer RTT, transport-layer RTT, throughput and the time
+  // taken to complete |request|.
+  void RecordCorrelationMetric(const URLRequest& request) const;
+
+  // Returns true if transport RTT should be used for computing the effective
+  // connection type.
+  bool UseTransportRTT() const;
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   bool use_localhost_requests_;
@@ -650,6 +662,13 @@ class NET_EXPORT NetworkQualityEstimator
   // change. Updated on connection change and main frame requests.
   int32_t min_signal_strength_since_connection_change_;
   int32_t max_signal_strength_since_connection_change_;
+
+  // It is costlier to add values to a sparse histogram. So, the correlation UMA
+  // is recorded with |correlation_uma_logging_probability_| since recording it
+  // in a sparse histogram for each request is unnecessary and cost-prohibitive.
+  // e.g., if it is 0.0, then the UMA will never be recorded. On the other hand,
+  // if it is 1.0, then it will be recorded for all valid HTTP requests.
+  const double correlation_uma_logging_probability_;
 
   base::ThreadChecker thread_checker_;
 

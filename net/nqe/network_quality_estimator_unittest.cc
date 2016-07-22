@@ -77,7 +77,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
         transport_rtt_set_(false),
         recent_transport_rtt_set_(false),
         downlink_throughput_kbps_set_(false),
-        recent_downlink_throughput_kbps_set_(false) {
+        recent_downlink_throughput_kbps_set_(false),
+        rand_double_(0.0) {
     // Set up embedded test server.
     embedded_test_server_.ServeFilesFromDirectory(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
@@ -263,6 +264,10 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     return NetworkQualityEstimator::GetAccuracyRecordingIntervals();
   }
 
+  void set_rand_double(double rand_double) { rand_double_ = rand_double; }
+
+  double RandDouble() const override { return rand_double_; }
+
   using NetworkQualityEstimator::SetTickClockForTesting;
   using NetworkQualityEstimator::ReadCachedNetworkQualityEstimate;
   using NetworkQualityEstimator::OnConnectionTypeChanged;
@@ -305,6 +310,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   bool recent_downlink_throughput_kbps_set_;
   int32_t recent_downlink_throughput_kbps_;
+
+  double rand_double_;
 
   // Embedded server used for testing.
   EmbeddedTestServer embedded_test_server_;
@@ -1982,6 +1989,144 @@ TEST(NetworkQualityEstimatorTest, TestRecordNetworkIDAvailability) {
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-1");
   histogram_tester.ExpectBucketCount("NQE.NetworkIdAvailable", 1, 3);
   histogram_tester.ExpectTotalCount("NQE.NetworkIdAvailable", 4);
+}
+
+// Tests that the correlation histogram is recorded correctly based on
+// correlation logging probability set in the variation params.
+TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
+  // Match the values set in network_quality_estimator.cc.
+  static const int32_t kTrimBits = 5;
+  static const int32_t kBitsPerMetric = 7;
+
+  const struct {
+    bool use_transport_rtt;
+    double rand_double;
+    double correlation_logging_probability;
+    base::TimeDelta transport_rtt;
+    int32_t expected_transport_rtt_milliseconds;
+    base::TimeDelta http_rtt;
+    int32_t expected_http_rtt_milliseconds;
+    int32_t downstream_throughput_kbps;
+    int32_t expected_downstream_throughput_kbps;
+
+  } tests[] = {
+      {
+          // Verify that the metric is not recorded if the logging probability
+          // is set to 0.0.
+          false, 0.5, 0.0, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that the metric is not recorded if the logging probability
+          // is lower than the value returned by the random number generator.
+          false, 0.3, 0.1, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that the metric is recorded if the logging probability is
+          // higher than the value returned by the random number generator.
+          false, 0.3, 0.4, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that the metric is recorded if the logging probability is
+          // set to 1.0.
+          false, 0.5, 1.0, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that the metric is recorded if the logging probability is
+          // set to 1.0.
+          true, 0.5, 1.0, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that if the metric is larger than
+          // 2^(kBitsPerMetric + kTrimBits), it is rounded down to
+          // (2^(kBitsPerMetric + kTrimBits) - 1) >> kTrimBits.
+          false, 0.5, 1.0, base::TimeDelta::FromSeconds(10), 4095 >> kTrimBits,
+          base::TimeDelta::FromSeconds(20), 4095 >> kTrimBits, 30000,
+          4095 >> kTrimBits,
+      },
+  };
+
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+
+    std::map<std::string, std::string> variation_params;
+    variation_params["correlation_logging_probability"] =
+        base::DoubleToString(test.correlation_logging_probability);
+    if (test.use_transport_rtt) {
+      variation_params["effective_connection_type_algorithm"] =
+          "TransportRTTOrDownstreamThroughput";
+    }
+    TestNetworkQualityEstimator estimator(variation_params);
+
+    estimator.set_transport_rtt(test.transport_rtt);
+    estimator.set_recent_transport_rtt(test.transport_rtt);
+    estimator.set_http_rtt(test.http_rtt);
+    estimator.set_recent_http_rtt(test.http_rtt);
+    estimator.set_downlink_throughput_kbps(test.downstream_throughput_kbps);
+    estimator.set_rand_double(test.rand_double);
+
+    TestDelegate test_delegate;
+    TestURLRequestContext context(true);
+    context.set_network_quality_estimator(&estimator);
+    context.Init();
+
+    // Start a main-frame request that should cause network quality estimator to
+    // record the network quality at the last main frame request.
+    std::unique_ptr<URLRequest> request_1(context.CreateRequest(
+        estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request_1->SetLoadFlags(request_1->load_flags() | LOAD_MAIN_FRAME);
+    request_1->Start();
+    base::RunLoop().Run();
+    histogram_tester.ExpectTotalCount(
+        "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
+
+    // Start another main-frame request which should cause network quality
+    // estimator to record the correlation UMA.
+    std::unique_ptr<URLRequest> request_2(context.CreateRequest(
+        estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request_2->Start();
+    base::RunLoop().Run();
+
+    if (test.rand_double >= test.correlation_logging_probability) {
+      histogram_tester.ExpectTotalCount(
+          "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
+      continue;
+    }
+    histogram_tester.ExpectTotalCount(
+        "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 1);
+    std::vector<base::Bucket> buckets = histogram_tester.GetAllSamples(
+        "NQE.Correlation.ResourceLoadTime.0Kb_128Kb");
+    // Get the bits at index 0-10 which contain the RTT.
+    // 128 is 2^kBitsPerMetric.
+    if (test.use_transport_rtt) {
+      EXPECT_EQ(test.expected_transport_rtt_milliseconds,
+                buckets.at(0).min >> kBitsPerMetric >> kBitsPerMetric >>
+                    kBitsPerMetric);
+    } else {
+      EXPECT_EQ(test.expected_http_rtt_milliseconds,
+                buckets.at(0).min >> kBitsPerMetric >> kBitsPerMetric >>
+                    kBitsPerMetric);
+    }
+
+    // Get the bits at index 11-17 which contain the downstream throughput.
+    EXPECT_EQ(test.expected_downstream_throughput_kbps,
+              (buckets.at(0).min >> kBitsPerMetric >> kBitsPerMetric) % 128);
+
+    // Get the bits at index 18-24 which contain the resource fetch time.
+    EXPECT_LE(0, (buckets.at(0).min >> kBitsPerMetric) % 128);
+
+    // Get the bits at index 25-31 which contain the resource load size.
+    EXPECT_LE(0, (buckets.at(0).min) % 128);
+  }
 }
 
 }  // namespace net

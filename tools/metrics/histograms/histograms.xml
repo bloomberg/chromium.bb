@@ -35766,6 +35766,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.Correlation.ResourceLoadTime.0Kb_128Kb">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records estimated network quality (estimated RTT, estimated downlink
+    bandwidth), resource load size, and the resource load time in a single UMA
+    sample. This metric is recorded randomly when a resource load finishes. Each
+    sample in this sparse histogram consists of multiple metrics (each occupying
+    few bits in the sample). The data in the histogram would be analyzed using
+    custom scripts. A sample is recorded only when the resource size is between
+    0 Kilobits (inclusive) and 128 Kilobits (exclusive).
+  </summary>
+</histogram>
+
 <histogram name="NQE.DifferenceRTTActualAndEstimated" units="ms">
   <obsolete>
     Replaced in June 2016 by NQE.Accuracy.HttpRTT.* metrics.
