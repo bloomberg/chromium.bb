@@ -91,67 +91,50 @@ bool PresentationRequest::hasPendingActivity() const
 
 ScriptPromise PresentationRequest::start(ScriptState* scriptState)
 {
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
     Settings* contextSettings = settings(getExecutionContext());
     bool isUserGestureRequired = !contextSettings || contextSettings->presentationRequiresUserGesture();
 
-    if (isUserGestureRequired && !UserGestureIndicator::utilizeUserGesture()) {
-        resolver->reject(DOMException::create(InvalidAccessError, "PresentationRequest::start() requires user gesture."));
-        return promise;
-    }
+    if (isUserGestureRequired && !UserGestureIndicator::utilizeUserGesture())
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidAccessError, "PresentationRequest::start() requires user gesture."));
 
-    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation)) {
-        resolver->reject(DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
-        return promise;
-    }
+    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
 
     WebPresentationClient* client = presentationClient(getExecutionContext());
-    if (!client) {
-        resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
-        return promise;
-    }
+    if (!client)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     client->startSession(m_url.getString(), new PresentationConnectionCallbacks(resolver, this));
-    return promise;
+    return resolver->promise();
 }
 
 ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState, const String& id)
 {
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation)) {
-        resolver->reject(DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
-        return promise;
-    }
+    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
 
     WebPresentationClient* client = presentationClient(getExecutionContext());
-    if (!client) {
-        resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
-        return promise;
-    }
+    if (!client)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     client->joinSession(m_url.getString(), id, new PresentationConnectionCallbacks(resolver, this));
-    return promise;
+    return resolver->promise();
 }
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
 {
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation)) {
-        resolver->reject(DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
-        return promise;
-    }
+    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
 
     WebPresentationClient* client = presentationClient(getExecutionContext());
-    if (!client) {
-        resolver->reject(DOMException::create(InvalidStateError, "The object is no longer associated to a frame."));
-        return promise;
-    }
+    if (!client)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     client->getAvailability(m_url.getString(), new PresentationAvailabilityCallbacks(resolver, m_url));
-    return promise;
+    return resolver->promise();
 }
 
 const KURL& PresentationRequest::url() const
