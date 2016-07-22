@@ -16,11 +16,12 @@ TEST(FuzzyPatternMatchingTest, StartsWithFuzzy) {
     const char* subpattern;
     bool expected_starts_with;
   } kTestCases[] = {
-      {"abc", "", true},       {"abc", "a", true},      {"abc", "ab", true},
-      {"abc", "abc", true},    {"abc", "abcd", false},  {"abc", "abc^", true},
-      {"abc", "abc^^", false}, {"abc", "abcd^", false}, {"abc", "ab^", false},
-      {"abc", "bc", false},    {"abc", "bc^", false},   {"abc", "^abc", false},
+      {"abc", "", true},       {"abc", "a", true},     {"abc", "ab", true},
+      {"abc", "abc", true},    {"abc", "abcd", false}, {"abc", "abc^^", false},
+      {"abc", "abcd^", false}, {"abc", "ab^", false},  {"abc", "bc", false},
+      {"abc", "bc^", false},   {"abc", "^abc", false},
   };
+  // TODO(pkalinnikov): Make end-of-string match '^' again.
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message()
@@ -39,11 +40,12 @@ TEST(FuzzyPatternMatchingTest, EndsWithFuzzy) {
     const char* subpattern;
     bool expected_ends_with;
   } kTestCases[] = {
-      {"abc", "", true},       {"abc", "c", true},      {"abc", "bc", true},
-      {"abc", "abc", true},    {"abc", "0abc", false},  {"abc", "abc^", true},
-      {"abc", "abc^^", false}, {"abc", "abcd^", false}, {"abc", "ab^", false},
-      {"abc", "ab", false},    {"abc", "bc^", true},    {"abc", "^abc", false},
+      {"abc", "", true},       {"abc", "c", true},     {"abc", "bc", true},
+      {"abc", "abc", true},    {"abc", "0abc", false}, {"abc", "abc^^", false},
+      {"abc", "abcd^", false}, {"abc", "ab^", false},  {"abc", "ab", false},
+      {"abc", "^abc", false},
   };
+  // TODO(pkalinnikov): Make end-of-string match '^' again.
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message()

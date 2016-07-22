@@ -25,31 +25,14 @@ bool StartsWithFuzzyImpl(base::StringPiece text, base::StringPiece subpattern) {
 }  // namespace
 
 bool StartsWithFuzzy(base::StringPiece text, base::StringPiece subpattern) {
-  if (subpattern.size() <= text.size())
-    return StartsWithFuzzyImpl(text, subpattern);
-
-  return subpattern.size() == text.size() + 1 &&
-         subpattern.back() == kSeparatorPlaceholder &&
-         StartsWithFuzzyImpl(text, subpattern.substr(0, text.size()));
+  return subpattern.size() <= text.size() &&
+         StartsWithFuzzyImpl(text, subpattern);
 }
 
 bool EndsWithFuzzy(base::StringPiece text, base::StringPiece subpattern) {
-  if (subpattern.size() > text.size() + 1)
-    return false;
-
-  if (subpattern.size() <= text.size() &&
-      StartsWithFuzzyImpl(text.substr(text.size() - subpattern.size()),
-                          subpattern)) {
-    return true;
-  }
-
-  DCHECK(!subpattern.empty());
-  if (subpattern.back() != kSeparatorPlaceholder)
-    return false;
-  subpattern.remove_suffix(1);
-  DCHECK_LE(subpattern.size(), text.size());
-  return StartsWithFuzzy(text.substr(text.size() - subpattern.size()),
-                         subpattern);
+  return subpattern.size() <= text.size() &&
+         StartsWithFuzzyImpl(text.substr(text.size() - subpattern.size()),
+                             subpattern);
 }
 
 }  // namespace subresource_filter

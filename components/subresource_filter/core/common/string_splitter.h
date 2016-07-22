@@ -29,8 +29,8 @@ class StringSplitter {
     // |splitter|'s |text|, starting from |head|.
     Iterator(const StringSplitter& splitter,
              base::StringPiece::const_iterator head)
-        : splitter_(splitter), current_(head, 0), end_(splitter.text_.end()) {
-      DCHECK_GE(head, splitter_.text_.begin());
+        : splitter_(&splitter), current_(head, 0), end_(splitter.text_.end()) {
+      DCHECK_GE(head, splitter_->text_.begin());
       DCHECK_LE(head, end_);
 
       Advance();
@@ -59,15 +59,15 @@ class StringSplitter {
    private:
     void Advance() {
       auto begin = current_.end();
-      while (begin != end_ && splitter_.is_separator_(*begin))
+      while (begin != end_ && splitter_->is_separator_(*begin))
         ++begin;
       auto end = begin;
-      while (end != end_ && !splitter_.is_separator_(*end))
+      while (end != end_ && !splitter_->is_separator_(*end))
         ++end;
       current_ = base::StringPiece(begin, end - begin);
     }
 
-    const StringSplitter& splitter_;
+    const StringSplitter* splitter_;
 
     // Contains the token currently pointed to by the iterator.
     base::StringPiece current_;

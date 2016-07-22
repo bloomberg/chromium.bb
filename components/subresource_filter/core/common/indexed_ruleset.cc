@@ -382,8 +382,9 @@ IndexedRulesetMatcher::IndexedRulesetMatcher(const uint8_t* buffer, size_t size)
 bool IndexedRulesetMatcher::IsAllowed(const GURL& url,
                                       const url::Origin& initiator,
                                       proto::ElementType element_type) const {
+  if (!url.is_valid())
+    return true;
   const bool is_third_party = IsThirdPartyUrl(url, initiator);
-
   return !IsMatch(root_->blacklist_index(), url, initiator, element_type,
                   is_third_party) ||
          IsMatch(root_->whitelist_index(), url, initiator, element_type,

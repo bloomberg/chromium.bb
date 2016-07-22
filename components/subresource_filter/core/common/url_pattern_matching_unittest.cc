@@ -112,6 +112,24 @@ TEST(UrlPatternMatchingTest, IsMatch) {
       {{"a^a&a^a&"}, "http://ex.com/a/a/a/a/?a&a&a&a&a", true},
 
       {{"abc*def^"}, "http://ex.com/abc/a/ddef/", true},
+
+      {{"https://example.com/"}, "http://example.com/", false},
+      {{"example.com/", kSubdomain, kAnchorNone}, "http://example.com/", true},
+      {{"examp", kSubdomain, kAnchorNone}, "http://example.com/", true},
+      {{"xamp", kSubdomain, kAnchorNone}, "http://example.com/", false},
+      {{"examp", kSubdomain, kAnchorNone}, "http://test.example.com/", true},
+      {{"t.examp", kSubdomain, kAnchorNone}, "http://test.example.com/", false},
+      {{"com^", kSubdomain, kAnchorNone}, "http://test.example.com/", true},
+      {{"x.com", kSubdomain, kAnchorNone}, "http://ex.com/?url=x.com", false},
+      {{"ex.com/", kSubdomain, kBoundary}, "http://ex.com/", true},
+      {{"ex.com^", kSubdomain, kBoundary}, "http://ex.com/", true},
+      {{"ex.co", kSubdomain, kBoundary}, "http://ex.com/", false},
+      {{"ex.com", kSubdomain, kBoundary}, "http://rex.com.ex.com/", false},
+      {{"ex.com/", kSubdomain, kBoundary}, "http://rex.com.ex.com/", true},
+      {{"http", kSubdomain, kBoundary}, "http://http.com/", false},
+      {{"http", kSubdomain, kAnchorNone}, "http://http.com/", true},
+      {{"/example.com", kSubdomain, kBoundary}, "http://example.com/", false},
+      {{"/example.com/", kSubdomain, kBoundary}, "http://example.com/", false},
   };
 
   for (const auto& test_case : kTestCases) {

@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <iterator>
 #include <vector>
 
@@ -28,6 +29,7 @@
 #include "components/subresource_filter/core/common/string_splitter.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
 #include "url/gurl.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace subresource_filter {
 
@@ -70,10 +72,28 @@ bool IsMatch(const GURL& url,
 
 namespace impl {
 
-inline bool IsWildcard(char c) {
-  return c == '*';
+class IsWildcard {
+ public:
+  bool operator()(char c) const { return c == '*'; }
+};
+
+// Returns whether |position| within the |url| belongs to its |host| component
+// and corresponds to the beginning of a (sub-)domain.
+inline bool IsSubdomainAnchored(base::StringPiece url,
+                                url::Component host,
+                                size_t position) {
+  DCHECK_LE(position, url.size());
+  const size_t host_begin = static_cast<size_t>(host.begin);
+  const size_t host_end = static_cast<size_t>(host.end());
+  DCHECK_LE(host_end, url.size());
+
+  return position == host_begin ||
+         (position > host_begin && position <= host_end &&
+          url[position - 1] == '.');
 }
 
+// Returns the position just beyond the leftmost fuzzy occurrence of
+// |subpattern| in the |text|.
 template <typename IntType>
 inline size_t FindFirstOccurrenceFuzzy(base::StringPiece text,
                                        base::StringPiece subpattern,
@@ -81,13 +101,44 @@ inline size_t FindFirstOccurrenceFuzzy(base::StringPiece text,
   return *AllOccurrencesFuzzy<IntType>(text, subpattern, failure).begin();
 }
 
+// Returns the position just beyond the leftmost occurrence of |subpattern| in
+// the |url|, such that it satisfies a SUBDOMAIN anchor.
+template <typename IntType>
+inline size_t FindSubdomainAnchored(base::StringPiece url,
+                                    url::Component host,
+                                    base::StringPiece subpattern,
+                                    const IntType* failure) {
+  auto occurrences = AllOccurrences<IntType>(url, subpattern, failure);
+  return *std::find_if(occurrences.begin(), occurrences.end(),
+                       [url, host, subpattern](size_t match_end_position) {
+                         DCHECK_GE(match_end_position, subpattern.size());
+                         return IsSubdomainAnchored(
+                             url, host, match_end_position - subpattern.size());
+                       });
+}
+
+// Returns the position just beyond the leftmost fuzzy occurrence of
+// |subpattern| in the |url|, such that it satisfies a SUBDOMAIN anchor.
+template <typename IntType>
+inline size_t FindSubdomainAnchoredFuzzy(base::StringPiece url,
+                                         url::Component host,
+                                         base::StringPiece subpattern,
+                                         const IntType* failure) {
+  auto occurrences = AllOccurrencesFuzzy<IntType>(url, subpattern, failure);
+  return *std::find_if(occurrences.begin(), occurrences.end(),
+                       [url, host, subpattern](size_t match_end_position) {
+                         DCHECK_GE(match_end_position, subpattern.size());
+                         return IsSubdomainAnchored(
+                             url, host, match_end_position - subpattern.size());
+                       });
+}
+
 }  // namespace impl
 
 template <typename IntType>
 void BuildFailureFunction(const UrlPattern& pattern,
                           std::vector<IntType>* failure) {
-  auto subpatterns =
-      CreateStringSplitter(pattern.url_pattern, impl::IsWildcard);
+  StringSplitter<impl::IsWildcard> subpatterns(pattern.url_pattern);
   auto subpattern_it = subpatterns.begin();
   auto subpattern_end = subpatterns.end();
 
@@ -116,14 +167,14 @@ void BuildFailureFunction(const UrlPattern& pattern,
   }
 }
 
-// TODO(pkalinnikov): Support SUBDOMAIN anchors.
 template <typename FailureIter>
 bool IsMatch(const GURL& url,
              const UrlPattern& pattern,
              FailureIter failure_begin,
              FailureIter failure_end) {
-  auto subpatterns =
-      CreateStringSplitter(pattern.url_pattern, impl::IsWildcard);
+  DCHECK(url.is_valid());
+
+  StringSplitter<impl::IsWildcard> subpatterns(pattern.url_pattern);
   auto subpattern_it = subpatterns.begin();
   auto subpattern_end = subpatterns.end();
 
@@ -133,20 +184,57 @@ bool IsMatch(const GURL& url,
            url.is_empty();
   }
 
-  base::StringPiece spec = url.spec();
+  const base::StringPiece spec = url.possibly_invalid_spec();
+  const url::Component host_part = url.parsed_for_possibly_invalid_spec().host;
 
-  if (pattern.anchor_left == proto::ANCHOR_TYPE_BOUNDARY) {
-    const base::StringPiece subpattern = *subpattern_it++;
-    if (!StartsWithFuzzy(spec, subpattern))
+  base::StringPiece subpattern = *subpattern_it++;
+  if (subpattern_it == subpattern_end &&
+      pattern.anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
+    if (!EndsWithFuzzy(spec, subpattern))
       return false;
-    if (subpattern_it == subpattern_end) {
-      return pattern.anchor_right != proto::ANCHOR_TYPE_BOUNDARY ||
-             spec.size() == subpattern.size();
+    if (pattern.anchor_left == proto::ANCHOR_TYPE_BOUNDARY)
+      return spec.size() == subpattern.size();
+    if (pattern.anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN) {
+      DCHECK_LE(subpattern.size(), spec.size());
+      return url.has_host() &&
+             impl::IsSubdomainAnchored(spec, host_part,
+                                       spec.size() - subpattern.size());
     }
-    spec.remove_prefix(subpattern.size());
+    return true;
   }
 
-  base::StringPiece subpattern;
+  base::StringPiece text = spec;
+  if (pattern.anchor_left == proto::ANCHOR_TYPE_BOUNDARY) {
+    if (!StartsWithFuzzy(spec, subpattern))
+      return false;
+    if (subpattern_it == subpattern_end)
+      return true;
+    text.remove_prefix(subpattern.size());
+  } else if (pattern.anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN) {
+    if (!url.has_host())
+      return false;
+
+    const bool has_separator_placeholders = (*failure_begin != 0);
+    if (has_separator_placeholders)
+      ++failure_begin;
+
+    const size_t position =
+        has_separator_placeholders
+            ? impl::FindSubdomainAnchoredFuzzy(spec, host_part, subpattern,
+                                               &*failure_begin)
+            : impl::FindSubdomainAnchored(spec, host_part, subpattern,
+                                          &*failure_begin);
+    if (position == base::StringPiece::npos)
+      return false;
+    if (subpattern_it == subpattern_end)
+      return true;
+    text.remove_prefix(position);
+  } else {
+    DCHECK_EQ(pattern.anchor_left, proto::ANCHOR_TYPE_NONE);
+    // Get back to the initial subpattern, process it in the loop below.
+    subpattern_it = subpatterns.begin();
+  }
+
   while (subpattern_it != subpattern_end) {
     subpattern = *subpattern_it++;
     DCHECK(!subpattern.empty());
@@ -172,16 +260,16 @@ bool IsMatch(const GURL& url,
     // substring.
     const size_t match_end =
         (has_separator_placeholders
-             ? impl::FindFirstOccurrenceFuzzy(spec, subpattern, &*failure_begin)
-             : FindFirstOccurrence(spec, subpattern, &*failure_begin));
+             ? impl::FindFirstOccurrenceFuzzy(text, subpattern, &*failure_begin)
+             : FindFirstOccurrence(text, subpattern, &*failure_begin));
     if (match_end == base::StringPiece::npos)
       return false;
-    spec.remove_prefix(match_end);
+    text.remove_prefix(match_end);
     failure_begin += subpattern.size();
   }
 
   return pattern.anchor_right != proto::ANCHOR_TYPE_BOUNDARY ||
-         EndsWithFuzzy(spec, subpattern);
+         EndsWithFuzzy(text, subpattern);
 }
 
 }  // namespace subresource_filter

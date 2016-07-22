@@ -142,12 +142,14 @@ TEST_F(IndexedRulesetTest, OneRuleWithoutMetaInfo) {
        "http://test.example.com",
        false},
       {{"example.com", kSubdomain, kAnchorNone},
+       "https://test.example.com.com",
+       false},
+      {{"example.com", kSubdomain, kAnchorNone},
        "https://test.rest.example.com",
        false},
-
-      // FIXME(pkalinnikov): Implement SUBDOMAIN matching.
-      // {"example.com", kSubdomain, kAnchorNone}, "https://test_example.com",
-      //  true},
+      {{"example.com", kSubdomain, kAnchorNone},
+       "https://test_example.com",
+       true},
 
       {{"http://example.com", kBoundary, kAnchorNone},
        "http://example.com/",
@@ -219,10 +221,9 @@ TEST_F(IndexedRulesetTest, OneRuleWithoutMetaInfo) {
       {{"test.example.com^", kSubdomain, kAnchorNone},
        "http://test.example.com.ua/42.swf",
        true},
-
-      // FIXME(pkalinnikov): Implement SUBDOMAIN matching.
-      // {"test.example.com^", kSubdomain, kAnchorNone},
-      //  "http://example.com/redirect/http://test.example.com/", true},
+      {{"test.example.com^", kSubdomain, kAnchorNone},
+       "http://example.com/redirect/http://test.example.com/",
+       true},
 
       {{"/abcd/*"}, "https://example.com/abcd/", false},
       {{"/abcd/*"}, "http://example.com/abcd/picture.jpeg", false},
