@@ -286,6 +286,10 @@ WmWindow* WmWindowAura::GetToplevelWindow() {
   return Get(window_->GetToplevelWindow());
 }
 
+WmWindow* WmWindowAura::GetToplevelWindowForFocus() {
+  return Get(::wm::GetToplevelWindow(window_));
+}
+
 void WmWindowAura::SetParentUsingContext(WmWindow* context,
                                          const gfx::Rect& screen_bounds) {
   aura::client::ParentWindowWithContext(window_, GetAuraWindow(context),

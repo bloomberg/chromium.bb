@@ -49,6 +49,8 @@
       'common/accelerators/accelerator_controller.cc',
       'common/accelerators/accelerator_controller.h',
       'common/accelerators/accelerator_controller_delegate.h',
+      'common/accelerators/accelerator_router.cc',
+      'common/accelerators/accelerator_router.h',
       'common/accelerators/accelerator_table.cc',
       'common/accelerators/accelerator_table.h',
       'common/accelerators/debug_commands.cc',

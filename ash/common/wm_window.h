@@ -126,7 +126,11 @@ class ASH_EXPORT WmWindow {
   }
   virtual const wm::WindowState* GetWindowState() const = 0;
 
+  // The implementation of this matches aura::Window::GetToplevelWindow().
   virtual WmWindow* GetToplevelWindow() = 0;
+  // The implementation of this matches
+  // aura::client::ActivationClient::GetToplevelWindow().
+  virtual WmWindow* GetToplevelWindowForFocus() = 0;
 
   // See aura::client::ParentWindowWithContext() for details of what this does.
   virtual void SetParentUsingContext(WmWindow* context,

@@ -4,114 +4,23 @@
 
 #include "ash/accelerators/accelerator_delegate.h"
 
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/wm/window_state_aura.h"
-#include "ui/base/accelerators/accelerator.h"
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/accelerators/accelerator_router.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
-namespace {
+AcceleratorDelegate::AcceleratorDelegate() : router_(new AcceleratorRouter) {}
 
-// Returns true if |key_code| is a key usually handled directly by the shell.
-bool IsSystemKey(ui::KeyboardCode key_code) {
-#if defined(OS_CHROMEOS)
-  switch (key_code) {
-    case ui::VKEY_MEDIA_LAUNCH_APP2:  // Fullscreen button.
-    case ui::VKEY_MEDIA_LAUNCH_APP1:  // Overview button.
-    case ui::VKEY_BRIGHTNESS_DOWN:
-    case ui::VKEY_BRIGHTNESS_UP:
-    case ui::VKEY_KBD_BRIGHTNESS_DOWN:
-    case ui::VKEY_KBD_BRIGHTNESS_UP:
-    case ui::VKEY_VOLUME_MUTE:
-    case ui::VKEY_VOLUME_DOWN:
-    case ui::VKEY_VOLUME_UP:
-    case ui::VKEY_POWER:
-      return true;
-    default:
-      return false;
-  }
-#endif  // defined(OS_CHROMEOS)
-  return false;
-}
-
-}  // namespace
-
-AcceleratorDelegate::AcceleratorDelegate() {}
 AcceleratorDelegate::~AcceleratorDelegate() {}
 
 bool AcceleratorDelegate::ProcessAccelerator(
     const ui::KeyEvent& key_event,
     const ui::Accelerator& accelerator) {
-  // Special hardware keys like brightness and volume are handled in
-  // special way. However, some windows can override this behavior
-  // (e.g. Chrome v1 apps by default and Chrome v2 apps with
-  // permission) by setting a window property.
-  if (IsSystemKey(key_event.key_code()) && !CanConsumeSystemKeys(key_event)) {
-    // System keys are always consumed regardless of whether they trigger an
-    // accelerator to prevent windows from seeing unexpected key up events.
-    WmShell::Get()->accelerator_controller()->Process(accelerator);
-    return true;
-  }
-  if (!ShouldProcessAcceleratorNow(key_event, accelerator))
-    return false;
-  return WmShell::Get()->accelerator_controller()->Process(accelerator);
-}
-
-// Uses the top level window so if the target is a web contents window the
-// containing parent window will be checked for the property.
-bool AcceleratorDelegate::CanConsumeSystemKeys(const ui::KeyEvent& event) {
-  aura::Window* target = static_cast<aura::Window*>(event.target());
-  DCHECK(target);
-  aura::Window* top_level = ::wm::GetToplevelWindow(target);
-  return top_level && wm::GetWindowState(top_level)->can_consume_system_keys();
-}
-
-// Returns true if the |accelerator| should be processed now, inside Ash's env
-// event filter.
-bool AcceleratorDelegate::ShouldProcessAcceleratorNow(
-    const ui::KeyEvent& event,
-    const ui::Accelerator& accelerator) {
-  // On ChromeOS, If the accelerator is Search+<key(s)> then it must never be
-  // intercepted by apps or windows.
-  if (accelerator.IsCmdDown())
-    return true;
-
-  aura::Window* target = static_cast<aura::Window*>(event.target());
-  DCHECK(target);
-
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  if (std::find(root_windows.begin(), root_windows.end(), target) !=
-      root_windows.end())
-    return true;
-
-  aura::Window* top_level = ::wm::GetToplevelWindow(target);
-  AcceleratorController* accelerator_controller =
-      WmShell::Get()->accelerator_controller();
-
-  // Reserved accelerators (such as Power button) always have a prority.
-  if (accelerator_controller->IsReserved(accelerator))
-    return true;
-
-  // A full screen window has a right to handle all key events including the
-  // reserved ones.
-  if (top_level && wm::GetWindowState(top_level)->IsFullscreen()) {
-    // On ChromeOS, fullscreen windows are either browser or apps, which
-    // send key events to a web content first, then will process keys
-    // if the web content didn't consume them.
-    return false;
-  }
-
-  // Handle preferred accelerators (such as ALT-TAB) before sending
-  // to the target.
-  if (accelerator_controller->IsPreferred(accelerator))
-    return true;
-
-  return WmShell::Get()->GetAppListTargetVisibility();
+  return router_->ProcessAccelerator(
+      WmWindowAura::Get(static_cast<aura::Window*>(key_event.target())),
+      key_event, accelerator);
 }
 
 }  // namespace ash

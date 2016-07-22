@@ -352,6 +352,12 @@ WmWindow* WmWindowMus::GetToplevelWindow() {
   return WmShellMus::GetToplevelAncestor(window_);
 }
 
+WmWindow* WmWindowMus::GetToplevelWindowForFocus() {
+  // TODO(sky): resolve if we really need two notions of top-level. In the mus
+  // world they are the same.
+  return WmShellMus::GetToplevelAncestor(window_);
+}
+
 void WmWindowMus::SetParentUsingContext(WmWindow* context,
                                         const gfx::Rect& screen_bounds) {
   wm::GetDefaultParent(context, this, screen_bounds)->AddChild(this);
