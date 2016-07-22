@@ -453,6 +453,7 @@ class BrowsingDataRemover : public KeyedService
   uint32_t deauthorize_flash_content_licenses_request_id_ = 0;
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
+  bool waiting_for_synchronous_clear_operations_ = false;
   bool waiting_for_clear_autofill_origin_urls_ = false;
   bool waiting_for_clear_cache_ = false;
   bool waiting_for_clear_channel_ids_ = false;

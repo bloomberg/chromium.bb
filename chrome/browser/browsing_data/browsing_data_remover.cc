@@ -380,6 +380,7 @@ void BrowsingDataRemover::RemoveImpl(
     const BrowsingDataFilterBuilder& filter_builder,
     int origin_type_mask) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_synchronous_clear_operations_ = true;
 
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max().
@@ -1040,6 +1041,7 @@ void BrowsingDataRemover::RemoveImpl(
   }
 
   // Notify in case all actions taken were synchronous.
+  waiting_for_synchronous_clear_operations_ = false;
   NotifyIfDone();
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -1086,7 +1088,8 @@ void BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
 }
 
 bool BrowsingDataRemover::AllDone() {
-  return !waiting_for_clear_autofill_origin_urls_ &&
+  return !waiting_for_synchronous_clear_operations_ &&
+         !waiting_for_clear_autofill_origin_urls_ &&
          !waiting_for_clear_cache_ &&
          !waiting_for_clear_flash_content_licenses_ &&
          !waiting_for_clear_channel_ids_ && !waiting_for_clear_cookies_count_ &&
