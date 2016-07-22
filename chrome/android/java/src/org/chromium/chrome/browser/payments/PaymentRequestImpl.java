@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -89,8 +90,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private static final String TAG = "cr_PaymentRequest";
-
     private static final int SUGGESTIONS_LIMIT = 4;
+    private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
+            new Comparator<Completable>() {
+                @Override
+                public int compare(Completable a, Completable b) {
+                    return (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
+                }
+            };
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
 
@@ -127,12 +134,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private SectionInformation mUiShippingOptions;
 
-    private HashMap<String, JSONObject> mMethodData;
+    private Map<String, JSONObject> mMethodData;
     private SectionInformation mShippingAddressesSection;
     private SectionInformation mContactSection;
     private List<PaymentApp> mPendingApps;
-    private int mFirstCompletePendingInstrument;
     private List<PaymentInstrument> mPendingInstruments;
+    private List<PaymentInstrument> mPendingAutofillInstruments;
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
     private Callback<PaymentInformation> mPaymentInformationCallback;
@@ -237,20 +244,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        // Create a comparator to sort the suggestions by completeness.
-        Comparator<Completable> completenessComparator = new Comparator<Completable>() {
-            @Override
-            public int compare(Completable a, Completable b) {
-                if (a.isComplete() == b.isComplete()) {
-                    return 0;
-                } else if (a.isComplete()) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
-        };
-
         // If the merchant requests shipping and does not provide a selected shipping option, then
         // the merchant needs the shipping address to calculate the shipping price and availability.
         boolean requestShipping = options != null && options.requestShipping;
@@ -277,7 +270,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
 
             // Suggest complete addresses first.
-            Collections.sort(addresses, completenessComparator);
+            Collections.sort(addresses, COMPLETENESS_COMPARATOR);
 
             // Limit the number of suggestions.
             addresses = addresses.subList(0, Math.min(addresses.size(), SUGGESTIONS_LIMIT));
@@ -324,7 +317,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
 
             // Suggest complete contact infos first.
-            Collections.sort(contacts, completenessComparator);
+            Collections.sort(contacts, COMPLETENESS_COMPARATOR);
 
             // Limit the number of suggestions.
             contacts = contacts.subList(0, Math.min(contacts.size(), SUGGESTIONS_LIMIT));
@@ -351,11 +344,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
     }
 
-    private static HashMap<String, JSONObject> getValidatedMethodData(
+    private static Map<String, JSONObject> getValidatedMethodData(
             PaymentMethodData[] methodData, CardEditor paymentMethodsCollector) {
         // Payment methodData are required.
         if (methodData == null || methodData.length == 0) return null;
-        HashMap<String, JSONObject> result = new HashMap<>();
+        Map<String, JSONObject> result = new HashMap<>();
         for (int i = 0; i < methodData.length; i++) {
             JSONObject data = null;
             if (!TextUtils.isEmpty(methodData[i].stringifiedData)) {
@@ -395,10 +388,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private boolean getMatchingPaymentInstruments() {
         mPendingApps = new ArrayList<>(mApps);
-        mFirstCompletePendingInstrument = SectionInformation.NO_SELECTION;
         mPendingInstruments = new ArrayList<>();
+        mPendingAutofillInstruments = new ArrayList<>();
         boolean arePaymentMethodsSupported = false;
 
+        Map<PaymentApp, JSONObject> queryApps = new HashMap<>();
         for (int i = 0; i < mApps.size(); i++) {
             PaymentApp app = mApps.get(i);
             Set<String> appMethods = app.getSupportedMethodNames();
@@ -407,9 +401,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mPendingApps.remove(app);
             } else {
                 arePaymentMethodsSupported = true;
-                mMerchantSupportsAutofillPaymentInstruments = app instanceof AutofillPaymentApp;
-                app.getInstruments(mMethodData.get(appMethods.iterator().next()), this);
+                mMerchantSupportsAutofillPaymentInstruments |= app instanceof AutofillPaymentApp;
+                queryApps.put(app, mMethodData.get(appMethods.iterator().next()));
             }
+        }
+
+        // Query instruments after mMerchantSupportsAutofillPaymentInstruments has been initialized,
+        // so a fast response from a non-autofill payment app at the front of the app list does not
+        // cause NOT_SUPPORTED payment rejection.
+        for (Map.Entry<PaymentApp, JSONObject> q : queryApps.entrySet()) {
+            q.getKey().getInstruments(q.getValue(), this);
         }
 
         return arePaymentMethodsSupported;
@@ -868,12 +869,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments) {
         mPendingApps.remove(app);
 
+        // Place the instruments into either "autofill" or "non-autofill" list to be displayed when
+        // all apps have responded.
         if (instruments != null) {
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
                 if (mMethodData.containsKey(instrument.getMethodName())) {
-                    checkForCompletePaymentInstrument(instrument, mPendingInstruments.size());
-                    mPendingInstruments.add(instrument);
+                    addPendingInstrument(instrument);
                 } else {
                     instrument.dismiss();
                 }
@@ -893,25 +895,56 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
+        // List order:
+        // > Non-autofill instruments.
+        // > Complete autofill instruments.
+        // > Incomplete autofill instruments.
+        Collections.sort(mPendingAutofillInstruments, COMPLETENESS_COMPARATOR);
+        mPendingInstruments.addAll(mPendingAutofillInstruments);
+
+        mPendingAutofillInstruments.clear();
+        mPendingAutofillInstruments = null;
+
+        // Pre-select the first instrument on the list, if it is complete.
+        int selection = SectionInformation.NO_SELECTION;
+        if (!mPendingInstruments.isEmpty()) {
+            PaymentInstrument first = mPendingInstruments.get(0);
+            if (!(first instanceof AutofillPaymentInstrument)
+                    || ((AutofillPaymentInstrument) first).isComplete()) {
+                selection = 0;
+            }
+        }
+
         // The list of payment instruments is ready to display.
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS,
-                mFirstCompletePendingInstrument, mPendingInstruments);
+                selection, mPendingInstruments);
+
         mPendingInstruments.clear();
+        mPendingInstruments = null;
 
         // UI has requested the full list of payment instruments. Provide it now.
         if (mPaymentInformationCallback != null) providePaymentInformation();
     }
 
-    private void checkForCompletePaymentInstrument(PaymentInstrument instrument, int index) {
-        boolean isComplete = true;
+    /**
+     * Saves the given instrument in either "autofill" or "non-autofill" list. The separation
+     * enables placing autofill instruments on the bottom of the list.
+     *
+     * Autofill instruments are also checked for completeness. A complete autofill instrument can be
+     * sent to the merchant as-is, without editing first. Such instruments should be displayed
+     * higher in the list.
+     *
+     * @param instrument The instrument to add to either "autofill" or "non-autofill" list.
+     */
+    private void addPendingInstrument(PaymentInstrument instrument) {
         if (instrument instanceof AutofillPaymentInstrument) {
             AutofillPaymentInstrument autofillInstrument = (AutofillPaymentInstrument) instrument;
-            isComplete = mCardEditor.isCardComplete(autofillInstrument.getCard());
-            if (isComplete) autofillInstrument.setIsComplete();
-        }
-
-        if (isComplete && mFirstCompletePendingInstrument == SectionInformation.NO_SELECTION) {
-            mFirstCompletePendingInstrument = index;
+            if (mCardEditor.isCardComplete(autofillInstrument.getCard())) {
+                autofillInstrument.setIsComplete();
+            }
+            mPendingAutofillInstruments.add(instrument);
+        } else {
+            mPendingInstruments.add(instrument);
         }
     }
 
