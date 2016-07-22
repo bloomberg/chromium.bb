@@ -13,7 +13,8 @@ namespace blink {
 class Document;
 class Element;
 class ResizeObserverCallback;
-class ResizeObserverEntry;
+class ResizeObserverController;
+class ResizeObservation;
 
 // ResizeObserver represents ResizeObserver javascript api:
 // https://github.com/WICG/ResizeObserver/
@@ -25,7 +26,6 @@ public:
 
     virtual ~ResizeObserver() {};
 
-
     // API methods
     void observe(Element*);
     void unobserve(Element*);
@@ -35,8 +35,16 @@ public:
 
 private:
 
+    using ObservationList = HeapLinkedHashSet<WeakMember<ResizeObservation>>;
+
     explicit ResizeObserver(ResizeObserverCallback*, Document&);
 
+    Member<ResizeObserverCallback> m_callback;
+
+    // List of elements we are observing
+    ObservationList m_observations;
+
+    WeakMember<ResizeObserverController> m_controller;
 };
 
 

@@ -6,7 +6,6 @@
 #define ResizeObserverEntry_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ClientRect.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -14,6 +13,7 @@ namespace blink {
 class Element;
 class DOMRectReadOnly;
 class ClientRect;
+class LayoutSize;
 
 class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

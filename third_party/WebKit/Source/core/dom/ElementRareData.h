@@ -44,6 +44,8 @@ namespace blink {
 
 class HTMLElement;
 class CompositorProxiedPropertySet;
+class ResizeObservation;
+class ResizeObserver;
 
 class ElementRareData : public NodeRareData {
 public:
@@ -138,6 +140,11 @@ public:
         return *m_intersectionObserverData;
     }
 
+    using ResizeObserverDataMap = HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>;
+
+    ResizeObserverDataMap* resizeObserverData() const { return m_resizeObserverData; }
+    ResizeObserverDataMap& ensureResizeObserverData();
+
     DECLARE_TRACE_AFTER_DISPATCH();
 
     DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
@@ -162,6 +169,7 @@ private:
 
     Member<ElementAnimations> m_elementAnimations;
     Member<NodeIntersectionObserverData> m_intersectionObserverData;
+    Member<ResizeObserverDataMap> m_resizeObserverData;
 
     RefPtr<ComputedStyle> m_computedStyle;
     Member<V0CustomElementDefinition> m_customElementDefinition;

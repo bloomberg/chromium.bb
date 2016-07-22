@@ -63,6 +63,8 @@ class MutableStylePropertySet;
 class NodeIntersectionObserverData;
 class PropertySetCSSStyleDeclaration;
 class PseudoElement;
+class ResizeObservation;
+class ResizeObserver;
 class ScrollState;
 class ScrollStateCallback;
 class ScrollToOptions;
@@ -577,6 +579,9 @@ public:
 
     NodeIntersectionObserverData* intersectionObserverData() const;
     NodeIntersectionObserverData& ensureIntersectionObserverData();
+
+    HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>* resizeObserverData() const;
+    HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>& ensureResizeObserverData();
 
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);

@@ -2651,6 +2651,18 @@ NodeIntersectionObserverData& Element::ensureIntersectionObserverData()
     return ensureElementRareData().ensureIntersectionObserverData();
 }
 
+HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>* Element::resizeObserverData() const
+{
+    if (hasRareData())
+        return elementRareData()->resizeObserverData();
+    return nullptr;
+}
+
+HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>& Element::ensureResizeObserverData()
+{
+    return ensureElementRareData().ensureResizeObserverData();
+}
+
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
 static Element* contextElementForInsertion(const String& where, Element* element, ExceptionState& exceptionState)
 {

@@ -191,6 +191,7 @@
 #include "core/loader/ImageLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/observer/ResizeObserverController.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
@@ -5198,6 +5199,13 @@ NodeIntersectionObserverData& Document::ensureIntersectionObserverData()
     return *m_intersectionObserverData;
 }
 
+ResizeObserverController& Document::ensureResizeObserverController()
+{
+    if (!m_resizeObserverController)
+        m_resizeObserverController = new ResizeObserverController();
+    return *m_resizeObserverController;
+}
+
 static void runAddConsoleMessageTask(MessageSource source, MessageLevel level, const String& message, ExecutionContext* context)
 {
     context->addConsoleMessage(ConsoleMessage::create(source, level, message));
@@ -6001,6 +6009,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_intersectionObserverController);
     visitor->trace(m_intersectionObserverData);
     visitor->trace(m_snapCoordinator);
+    visitor->trace(m_resizeObserverController);
     Supplementable<Document>::trace(visitor);
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);

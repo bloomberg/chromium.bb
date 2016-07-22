@@ -142,6 +142,7 @@ class PlatformMouseEvent;
 class ProcessingInstruction;
 class QualifiedName;
 class Range;
+class ResizeObserverController;
 class ResourceFetcher;
 class RootScrollerController;
 class SVGDocumentExtensions;
@@ -706,6 +707,9 @@ public:
     IntersectionObserverController* intersectionObserverController();
     IntersectionObserverController& ensureIntersectionObserverController();
     NodeIntersectionObserverData& ensureIntersectionObserverData();
+
+    ResizeObserverController* resizeObserverController() const { return m_resizeObserverController; }
+    ResizeObserverController& ensureResizeObserverController();
 
     void updateViewportDescription();
 
@@ -1410,6 +1414,7 @@ private:
 
     Member<IntersectionObserverController> m_intersectionObserverController;
     Member<NodeIntersectionObserverData> m_intersectionObserverData;
+    Member<ResizeObserverController> m_resizeObserverController;
 
     int m_nodeCount;
 

@@ -5,8 +5,9 @@
 #include "core/observer/ResizeObserver.h"
 
 #include "core/dom/Element.h"
+#include "core/observer/ResizeObservation.h"
 #include "core/observer/ResizeObserverCallback.h"
-#include "core/observer/ResizeObserverEntry.h"
+#include "core/observer/ResizeObserverController.h"
 
 namespace blink {
 
@@ -16,7 +17,10 @@ ResizeObserver* ResizeObserver::create(Document& document, ResizeObserverCallbac
 }
 
 ResizeObserver::ResizeObserver(ResizeObserverCallback* callback, Document& document)
+    : m_callback(callback)
 {
+    m_controller = &document.ensureResizeObserverController();
+    m_controller->addObserver(*this);
 }
 
 void ResizeObserver::observe(Element* target)
@@ -33,6 +37,9 @@ void ResizeObserver::disconnect()
 
 DEFINE_TRACE(ResizeObserver)
 {
+    visitor->trace(m_callback);
+    visitor->trace(m_observations);
+    visitor->trace(m_controller);
 }
 
 } // namespace blink
