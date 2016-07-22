@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/command_line.h"
+#include "base/environment.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -3740,13 +3740,14 @@ void InitializeWidgetForOpacity(
     Widget::InitParams init_params,
     const Widget::InitParams::WindowOpacity opacity) {
 #if defined(USE_X11)
-  // On Linux, transparent visuals is currently not activated by default.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableTransparentVisuals);
-
+  // testing/xvfb.py runs xvfb and xcompmgr.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  bool has_compositing_manager = env->HasVar("_CHROMIUM_INSIDE_XVFB");
   int depth = 0;
-  ui::ChooseVisualForWindow(NULL, &depth);
-  EXPECT_EQ(depth, 32);
+  ui::ChooseVisualForWindow(has_compositing_manager, NULL, &depth);
+
+  if (has_compositing_manager)
+    EXPECT_EQ(depth, 32);
 #endif
 
   init_params.opacity = opacity;
@@ -3758,7 +3759,8 @@ void InitializeWidgetForOpacity(
   widget.Init(init_params);
 
 #if defined(USE_X11)
-  EXPECT_TRUE(widget.IsTranslucentWindowOpacitySupported());
+  if (has_compositing_manager)
+    EXPECT_TRUE(widget.IsTranslucentWindowOpacitySupported());
 #endif
 }
 

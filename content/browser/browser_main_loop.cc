@@ -181,6 +181,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
 #include "ui/gfx/x/x11_switches.h"  // nogncheck
@@ -761,6 +762,22 @@ int BrowserMainLoop::PreCreateThreads() {
   // CommandLine::ForCurrentProcess object after threads are created.
   // 2) Must be after parts_->PreCreateThreads to pick up chrome://flags.
   GpuDataManagerImpl::GetInstance()->Initialize();
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  // PreCreateThreads is called before CreateStartupTasks which starts the gpu
+  // process.
+  bool enable_transparent_visuals =
+      !GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
+          gpu::DISABLE_TRANSPARENT_VISUALS);
+  Visual* visual = NULL;
+  int depth = 0;
+  ui::ChooseVisualForWindow(enable_transparent_visuals, &visual, &depth);
+  DCHECK(depth > 0);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWindowDepth, base::IntToString(depth));
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kX11VisualID, base::UintToString(visual->visualid));
+#endif
 
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)
   // Single-process is an unsupported and not fully tested mode, so
@@ -1385,20 +1402,6 @@ bool BrowserMainLoop::InitializeToolkit() {
     LOG(ERROR) << "Unable to open X display.";
     return false;
   }
-
-#if !defined(OS_CHROMEOS)
-  // InitializeToolkit is called before CreateStartupTasks which one starts the
-  // gpu process.
-  Visual* visual = NULL;
-  int depth = 0;
-  ui::ChooseVisualForWindow(&visual, &depth);
-  DCHECK(depth > 0);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWindowDepth, base::IntToString(depth));
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kX11VisualID, base::UintToString(visual->visualid));
-#endif
-
 #endif
 
   // Env creates the compositor. Aura widgets need the compositor to be created

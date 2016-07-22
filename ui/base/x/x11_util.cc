@@ -58,11 +58,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
-#if !defined(OS_CHROMEOS)
-#include "base/command_line.h"
-#include "ui/gfx/x/x11_switches.h"
-#endif
-
 #if defined(OS_FREEBSD)
 #include <sys/sysctl.h>
 #include <sys/types.h>
@@ -1417,7 +1412,9 @@ void LogErrorEventDescription(XDisplay* dpy,
 }
 
 #if !defined(OS_CHROMEOS)
-void ChooseVisualForWindow(Visual** visual, int* depth) {
+void ChooseVisualForWindow(bool enable_transparent_visuals,
+                           Visual** visual,
+                           int* depth) {
   static Visual* s_visual = NULL;
   static int s_depth = 0;
 
@@ -1425,8 +1422,7 @@ void ChooseVisualForWindow(Visual** visual, int* depth) {
     XDisplay* display = gfx::GetXDisplay();
     XAtom NET_WM_CM_S0 = XInternAtom(display, "_NET_WM_CM_S0", False);
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableTransparentVisuals) &&
+    if (enable_transparent_visuals &&
         XGetSelectionOwner(display, NET_WM_CM_S0) != None) {
       // Choose the first ARGB8888 visual
       XVisualInfo visual_template;
@@ -1439,12 +1435,6 @@ void ChooseVisualForWindow(Visual** visual, int* depth) {
         // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
         // gdkvisual-x11.cc, they look for this specific visual and use it for
         // all their alpha channel using needs.
-        //
-        // TODO(erg): While the following does find a valid visual, some GL
-        // drivers
-        // don't believe that this has an alpha channel. According to marcheu@,
-        // this should work on open source driver though. (It doesn't work with
-        // NVidia's binaries currently.) http://crbug.com/369209
         const XVisualInfo& info = visual_list[i];
         if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
             info.visual->green_mask == 0x00ff00 &&
