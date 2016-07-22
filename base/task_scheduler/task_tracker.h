@@ -44,12 +44,17 @@ class BASE_EXPORT TaskTracker {
   // must have allowed |task| to be posted.
   void RunTask(const Task* task);
 
-  // Returns true if shutdown has completed.
+  // Returns true once shutdown has started (Shutdown() has been called but
+  // might not have returned).
+  bool HasShutdownStarted() const;
+
+  // Returns true if shutdown has completed (Shutdown() has returned).
   bool IsShutdownComplete() const;
 
-  // Returns true while shutdown is in progress (i.e. Shutdown() has been called
-  // but hasn't returned).
-  bool IsShuttingDownForTesting() const;
+  // Causes HasShutdownStarted() to return true. Unlike when Shutdown() returns,
+  // IsShutdownComplete() won't return true after this returns. Shutdown()
+  // cannot be called after this.
+  void SetHasShutdownStartedForTesting();
 
  private:
   class State;

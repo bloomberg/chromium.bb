@@ -132,10 +132,8 @@ class TaskSchedulerTaskTrackerTest
     ASSERT_FALSE(thread_calling_shutdown_);
     thread_calling_shutdown_.reset(new ThreadCallingShutdown(&tracker_));
     thread_calling_shutdown_->Start();
-    while (!tracker_.IsShuttingDownForTesting() &&
-           !tracker_.IsShutdownComplete()) {
+    while (!tracker_.HasShutdownStarted())
       PlatformThread::YieldCurrentThread();
-    }
   }
 
   void WaitForAsyncIsShutdownComplete() {
@@ -148,8 +146,8 @@ class TaskSchedulerTaskTrackerTest
   void VerifyAsyncShutdownInProgress() {
     ASSERT_TRUE(thread_calling_shutdown_);
     EXPECT_FALSE(thread_calling_shutdown_->has_returned());
+    EXPECT_TRUE(tracker_.HasShutdownStarted());
     EXPECT_FALSE(tracker_.IsShutdownComplete());
-    EXPECT_TRUE(tracker_.IsShuttingDownForTesting());
   }
 
   size_t NumTasksExecuted() {

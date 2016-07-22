@@ -14,11 +14,14 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -418,6 +421,108 @@ TEST(TaskSchedulerWorkerTest, CreateDetached) {
   delegate->WaitForWorkToRun();
   delegate->WaitForDetachRequest();
   ASSERT_TRUE(worker->ThreadAliveForTesting());
+  worker->JoinForTesting();
+}
+
+namespace {
+
+class ExpectThreadPriorityDelegate : public SchedulerWorker::Delegate {
+ public:
+  ExpectThreadPriorityDelegate()
+      : priority_verified_in_get_work_event_(
+            WaitableEvent::ResetPolicy::AUTOMATIC,
+            WaitableEvent::InitialState::NOT_SIGNALED),
+        expected_thread_priority_(ThreadPriority::BACKGROUND) {}
+
+  void SetExpectedThreadPriority(ThreadPriority expected_thread_priority) {
+    expected_thread_priority_ = expected_thread_priority;
+  }
+
+  void WaitForPriorityVerifiedInGetWork() {
+    priority_verified_in_get_work_event_.Wait();
+  }
+
+  // SchedulerWorker::Delegate:
+  void OnMainEntry(SchedulerWorker* worker) override { VerifyThreadPriority(); }
+  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+    VerifyThreadPriority();
+    priority_verified_in_get_work_event_.Signal();
+    return nullptr;
+  }
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {}
+  TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
+  bool CanDetach(SchedulerWorker* worker) override { return false; }
+
+ private:
+  void VerifyThreadPriority() {
+    AutoSchedulerLock auto_lock(expected_thread_priority_lock_);
+    EXPECT_EQ(expected_thread_priority_,
+              PlatformThread::GetCurrentThreadPriority());
+  }
+
+  // Signaled after GetWork() has verified the priority of the worker thread.
+  WaitableEvent priority_verified_in_get_work_event_;
+
+  // Synchronizes access to |expected_thread_priority_|.
+  SchedulerLock expected_thread_priority_lock_;
+
+  // Expected thread priority for the next call to OnMainEntry() or GetWork().
+  ThreadPriority expected_thread_priority_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExpectThreadPriorityDelegate);
+};
+
+}  // namespace
+
+// Increasing the thread priority requires the CAP_SYS_NICE capability on Linux.
+#if !defined(OS_LINUX)
+TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
+  TaskTracker task_tracker;
+
+  std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
+      new ExpectThreadPriorityDelegate);
+  ExpectThreadPriorityDelegate* delegate_raw = delegate.get();
+  delegate_raw->SetExpectedThreadPriority(ThreadPriority::BACKGROUND);
+
+  std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
+      ThreadPriority::BACKGROUND, std::move(delegate), &task_tracker,
+      SchedulerWorker::InitialState::ALIVE);
+
+  // Verify that the initial thread priority is BACKGROUND.
+  worker->WakeUp();
+  delegate_raw->WaitForPriorityVerifiedInGetWork();
+
+  // Verify that the thread priority is bumped to NORMAL during shutdown.
+  delegate_raw->SetExpectedThreadPriority(ThreadPriority::NORMAL);
+  task_tracker.SetHasShutdownStartedForTesting();
+  worker->WakeUp();
+  delegate_raw->WaitForPriorityVerifiedInGetWork();
+
+  worker->JoinForTesting();
+}
+#endif  // defined(OS_LINUX)
+
+TEST(TaskSchedulerWorkerTest, BumpPriorityOfDetachedThreadDuringShutdown) {
+  TaskTracker task_tracker;
+
+  std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
+      new ExpectThreadPriorityDelegate);
+  ExpectThreadPriorityDelegate* delegate_raw = delegate.get();
+  delegate_raw->SetExpectedThreadPriority(ThreadPriority::NORMAL);
+
+  // Create a DETACHED thread.
+  std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
+      ThreadPriority::BACKGROUND, std::move(delegate), &task_tracker,
+      SchedulerWorker::InitialState::DETACHED);
+
+  // Pretend that shutdown has started.
+  task_tracker.SetHasShutdownStartedForTesting();
+
+  // Wake up the thread and verify that its priority is NORMAL when
+  // OnMainEntry() and GetWork() are called.
+  worker->WakeUp();
+  delegate_raw->WaitForPriorityVerifiedInGetWork();
+
   worker->JoinForTesting();
 }
 

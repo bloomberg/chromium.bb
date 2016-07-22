@@ -124,6 +124,7 @@ void TaskTracker::Shutdown() {
     // This method can only be called once.
     DCHECK(!shutdown_event_);
     DCHECK(!num_block_shutdown_tasks_posted_during_shutdown_);
+    DCHECK(!state_->HasShutdownStarted());
 
     shutdown_event_.reset(
         new WaitableEvent(WaitableEvent::ResetPolicy::MANUAL,
@@ -214,14 +215,17 @@ void TaskTracker::RunTask(const Task* task) {
   AfterRunTask(shutdown_behavior);
 }
 
+bool TaskTracker::HasShutdownStarted() const {
+  return state_->HasShutdownStarted();
+}
+
 bool TaskTracker::IsShutdownComplete() const {
   AutoSchedulerLock auto_lock(shutdown_lock_);
   return shutdown_event_ && shutdown_event_->IsSignaled();
 }
 
-bool TaskTracker::IsShuttingDownForTesting() const {
-  AutoSchedulerLock auto_lock(shutdown_lock_);
-  return shutdown_event_ && !shutdown_event_->IsSignaled();
+void TaskTracker::SetHasShutdownStartedForTesting() {
+  state_->StartShutdown();
 }
 
 bool TaskTracker::BeforePostTask(TaskShutdownBehavior shutdown_behavior) {
