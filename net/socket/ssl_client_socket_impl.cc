@@ -21,6 +21,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -74,7 +75,7 @@ const int kNoPendingResult = 1;
 const char kDefaultSupportedNPNProtocol[] = "http/1.1";
 
 // Default size of the internal BoringSSL buffers.
-const int KDefaultOpenSSLBufferSize = 17 * 1024;
+const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
 // TLS extension number use for Token Binding.
 const unsigned int kTbExtNum = 24;
@@ -918,10 +919,35 @@ int SSLClientSocketImpl::Init() {
   if (session)
     SSL_set_session(ssl_, session.get());
 
+  // Get read and write buffer sizes from field trials, if possible. If values
+  // not present, use default.  Also make sure values are in reasonable range.
+  int send_buffer_size = kDefaultOpenSSLBufferSize;
+#if !defined(OS_NACL)
+  int override_send_buffer_size;
+  if (base::StringToInt(base::FieldTrialList::FindFullName("SSLBufferSizeSend"),
+                        &override_send_buffer_size)) {
+    send_buffer_size = override_send_buffer_size;
+    send_buffer_size = std::max(send_buffer_size, 1000);
+    send_buffer_size =
+        std::min(send_buffer_size, 2 * kDefaultOpenSSLBufferSize);
+  }
+#endif  // !defined(OS_NACL)
   send_buffer_ = new GrowableIOBuffer();
-  send_buffer_->SetCapacity(KDefaultOpenSSLBufferSize);
+  send_buffer_->SetCapacity(send_buffer_size);
+
+  int recv_buffer_size = kDefaultOpenSSLBufferSize;
+#if !defined(OS_NACL)
+  int override_recv_buffer_size;
+  if (base::StringToInt(base::FieldTrialList::FindFullName("SSLBufferSizeRecv"),
+                        &override_recv_buffer_size)) {
+    recv_buffer_size = override_recv_buffer_size;
+    recv_buffer_size = std::max(recv_buffer_size, 1000);
+    recv_buffer_size =
+        std::min(recv_buffer_size, 2 * kDefaultOpenSSLBufferSize);
+  }
+#endif  // !defined(OS_NACL)
   recv_buffer_ = new GrowableIOBuffer();
-  recv_buffer_->SetCapacity(KDefaultOpenSSLBufferSize);
+  recv_buffer_->SetCapacity(recv_buffer_size);
 
   BIO* ssl_bio = NULL;
 

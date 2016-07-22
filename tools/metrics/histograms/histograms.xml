@@ -28568,6 +28568,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpTimeToFirstByte.LargeUpload" units="ms">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Time from when an HTTP request is issued to when the first byte is
+    processed, for requests with an upload that is &gt; 1 MiB. Excludes chunked
+    uploads.
+  </summary>
+</histogram>
+
 <histogram name="Net.IOError_SocketReuseType" enum="HttpSocketType">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
