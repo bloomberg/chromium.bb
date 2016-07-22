@@ -244,13 +244,10 @@ class GerritAccessor(object):
     return self.GetChangeInfo(issue)['owner']['email']
 
   def GetChangeReviewers(self, issue, approving_only=True):
-    # Gerrit has 'approved' sub-section, but it only lists 1 approver.
-    # So, if we look only for approvers, we have to look at all anyway.
-    # Also, assume LGTM means Code-Review label == 2. Other configurations
-    # aren't supported.
-    return [r['email']
-            for r in self.GetChangeInfo(issue)['labels']['Code-Review']['all']
-            if not approving_only or '2' == str(r.get('value', 0))]
+    cr = self.GetChangeInfo(issue)['labels']['Code-Review']
+    max_value = max(int(k) for k in cr['values'].keys())
+    return [r['email'] for r in cr['all']
+            if not approving_only or r.get('value', 0) == max_value]
 
 
 class OutputApi(object):

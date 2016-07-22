@@ -2725,6 +2725,29 @@ class CannedChecksUnittest(PresubmitTestsBase):
         gerrit_response=response,
         expected_output='')
 
+    # Testing configuration with on -1..+1.
+    response = {
+      "owner": {"email": "john@example.com"},
+      "labels": {"Code-Review": {
+        u'all': [
+          {
+            u'email': u'ben@example.com',
+            u'value': 1
+          },
+        ],
+        u'approved': {u'email': u'ben@example.org'},
+        u'default_value': 0,
+        u'values': {u' 0': u'No score',
+                    u'+1': u'Looks good to me',
+                    u'-1': u"I would prefer that you didn't submit this"}
+      }},
+    }
+    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
+        gerrit_response=response,
+        is_committing=True,
+        expected_output='')
+
+
   def testCannedCheckOwners_Approved(self):
     response = {
       "owner_email": "john@example.com",
@@ -2743,6 +2766,69 @@ class CannedChecksUnittest(PresubmitTestsBase):
         is_committing=False,
         rietveld_response=response,
         expected_output='')
+
+  def testCannedCheckOwners_NotApproved_Gerrit(self):
+    response = {
+      "owner": {"email": "john@example.com"},
+      "labels": {"Code-Review": {
+        u'all': [
+          {
+            u'email': u'john@example.com',  # self +1 :)
+            u'value': 1
+          },
+          {
+            u'email': u'ben@example.com',
+            u'value': 1
+          },
+        ],
+        u'approved': {u'email': u'ben@example.org'},
+        u'default_value': 0,
+        u'values': {u' 0': u'No score',
+                    u'+1': u'Looks good to me, but someone else must approve',
+                    u'+2': u'Looks good to me, approved',
+                    u'-1': u"I would prefer that you didn't submit this",
+                    u'-2': u'Do not submit'}
+      }},
+    }
+    self.AssertOwnersWorks(
+        approvers=set(),
+        reviewers=set(["ben@example.com"]),
+        gerrit_response=response,
+        is_committing=True,
+        expected_output=
+            'Missing LGTM from someone other than john@example.com\n')
+
+    self.AssertOwnersWorks(
+        approvers=set(),
+        reviewers=set(["ben@example.com"]),
+        is_committing=False,
+        gerrit_response=response,
+        expected_output='')
+
+    # Testing configuration with on -1..+1.
+    response = {
+      "owner": {"email": "john@example.com"},
+      "labels": {"Code-Review": {
+        u'all': [
+          {
+            u'email': u'ben@example.com',
+            u'value': 0
+          },
+        ],
+        u'approved': {u'email': u'ben@example.org'},
+        u'default_value': 0,
+        u'values': {u' 0': u'No score',
+                    u'+1': u'Looks good to me',
+                    u'-1': u"I would prefer that you didn't submit this"}
+      }},
+    }
+    self.AssertOwnersWorks(
+        approvers=set(),
+        reviewers=set(["ben@example.com"]),
+        gerrit_response=response,
+        is_committing=True,
+        expected_output=
+            'Missing LGTM from someone other than john@example.com\n')
 
   def testCannedCheckOwners_NotApproved(self):
     response = {
