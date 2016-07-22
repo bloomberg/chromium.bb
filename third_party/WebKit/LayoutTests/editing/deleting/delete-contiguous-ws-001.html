@@ -1,41 +1,13 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-
-function editingTest() {
-    for (i = 0; i < 4; i++) {
-        moveSelectionForwardByCharacterCommand();    
-    }
-    for (i = 0; i < 3; i++) {
-        extendSelectionForwardByCharacterCommand();    
-    }
-    deleteCommand();
-}
-
+test(() => {
+    assert_selection(
+        '<div contenteditable><span>foo    ^bar|   \nbaz</span></div>',
+        'delete',
+        '<div contenteditable><span>foo |\u{00A0}baz</span></div>',
+        'foo');
+}, 'Delete collapses whitespaces into U+00A0');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div contenteditable id="root" class="editing">
-<span id="test">foo    bar   
-
-baz</span>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
