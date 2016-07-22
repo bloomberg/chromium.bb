@@ -136,9 +136,14 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
         // Create a new blockquote and insert it as a child of the root editable element. We accomplish
         // this by splitting all parents of the current paragraph up to that point.
         targetBlockquote = createBlockElement();
-        if (outerBlock == start.computeContainerNode())
-            insertNodeAt(targetBlockquote, start, editingState);
-        else
+        if (outerBlock == start.computeContainerNode()) {
+            // When we apply indent to an empty <blockquote>, we should call insertNodeAfter().
+            // See http://crbug.com/625802 for more details.
+            if (outerBlock->hasTagName(blockquoteTag))
+                insertNodeAfter(targetBlockquote, outerBlock, editingState);
+            else
+                insertNodeAt(targetBlockquote, start, editingState);
+        } else
             insertNodeBefore(targetBlockquote, outerBlock, editingState);
         if (editingState->isAborted())
             return;
