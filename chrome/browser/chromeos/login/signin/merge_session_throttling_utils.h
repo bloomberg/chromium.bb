@@ -25,6 +25,11 @@ namespace merge_session_throttling_utils {
 // page load.
 using CompletionCallback = base::Closure;
 
+// Policy for when it is valid to attach a MergeSessionNavigationThrottle.
+// Namely, this will be false for unit tests, where the UserManager is not
+// initialized.
+bool ShouldAttachNavigationThrottle();
+
 // Checks if session is already merged. This is safe to call on all threads.
 bool AreAllSessionMergedAlready();
 

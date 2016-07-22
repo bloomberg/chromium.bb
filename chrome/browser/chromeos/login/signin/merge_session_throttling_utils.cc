@@ -63,6 +63,10 @@ base::AtomicRefCount g_all_profiles_restored_ = 0;
 
 }  // namespace
 
+bool ShouldAttachNavigationThrottle() {
+  return user_manager::UserManager::IsInitialized();
+}
+
 bool AreAllSessionMergedAlready() {
   return !base::AtomicRefCountIsZero(&g_all_profiles_restored_);
 }

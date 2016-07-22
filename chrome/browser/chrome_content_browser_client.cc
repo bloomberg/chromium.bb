@@ -2964,7 +2964,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     // Add interstitial page while merge session process (cookie reconstruction
     // from OAuth2 refresh token in ChromeOS login) is still in progress while
     // we are attempting to load a google property.
-    if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
+    if (merge_session_throttling_utils::ShouldAttachNavigationThrottle() &&
+        !merge_session_throttling_utils::AreAllSessionMergedAlready() &&
         handle->GetURL().SchemeIsHTTPOrHTTPS()) {
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
     }

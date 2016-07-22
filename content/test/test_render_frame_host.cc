@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
@@ -106,6 +107,7 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
 
   OnDidStartLoading(true);
   OnDidStartProvisionalLoad(url, base::TimeTicks::Now());
+  SimulateWillStartRequest(ui::PAGE_TRANSITION_LINK);
 }
 
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
@@ -290,6 +292,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // so we keep a copy of it to use below.
   GURL url_copy(url);
   OnDidStartProvisionalLoad(url_copy, base::TimeTicks::Now());
+  SimulateWillStartRequest(transition);
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = page_id;
@@ -438,6 +441,15 @@ int32_t TestRenderFrameHost::ComputeNextPageID() {
     page_id = web_contents->GetMaxPageIDForSiteInstance(GetSiteInstance()) + 1;
   }
   return page_id;
+}
+
+void TestRenderFrameHost::SimulateWillStartRequest(
+    ui::PageTransition transition) {
+  if (!navigation_handle())
+    return;
+  navigation_handle()->CallWillStartRequestForTesting(
+      false /* is_post */, Referrer(GURL(), blink::WebReferrerPolicyDefault),
+      true /* user_gesture */, transition, false /* is_external_protocol */);
 }
 
 }  // namespace content

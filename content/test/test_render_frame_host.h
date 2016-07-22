@@ -149,6 +149,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Computes the page ID for a pending navigation in this RenderFrameHost;
   int32_t ComputeNextPageID();
 
+  void SimulateWillStartRequest(ui::PageTransition transition);
+
   TestRenderFrameHostCreationObserver child_creation_observer_;
 
   std::string contents_mime_type_;
