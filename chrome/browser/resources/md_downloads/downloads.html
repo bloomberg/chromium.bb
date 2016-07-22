@@ -23,12 +23,13 @@
 </head>
 <body>
   <downloads-manager></downloads-manager>
-  <command id="clear-all-command" shortcut="Alt|c">
 <if expr="is_macosx">
+  <command id="clear-all-command" shortcut="Alt|c Alt|ç">
   <command id="undo-command" shortcut="Meta|z">
   <command id="find-command" shortcut="Meta|f">
 </if>
 <if expr="not is_macosx">
+  <command id="clear-all-command" shortcut="Alt|c">
   <command id="undo-command" shortcut="Ctrl|z">
   <command id="find-command" shortcut="Ctrl|f">
 </if>

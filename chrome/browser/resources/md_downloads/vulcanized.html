@@ -2764,12 +2764,13 @@ paper-button {
   </dom-module>
 </div>
   <downloads-manager></downloads-manager>
-  <command id="clear-all-command" shortcut="Alt|c"></command>
 <if expr="is_macosx">
+  <command id="clear-all-command" shortcut="Alt|c Alt|ç"></command>
   <command id="undo-command" shortcut="Meta|z"></command>
   <command id="find-command" shortcut="Meta|f"></command>
 </if>
 <if expr="not is_macosx">
+  <command id="clear-all-command" shortcut="Alt|c"></command>
   <command id="undo-command" shortcut="Ctrl|z"></command>
   <command id="find-command" shortcut="Ctrl|f"></command>
 </if>
