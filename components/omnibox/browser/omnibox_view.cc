@@ -92,14 +92,9 @@ gfx::VectorIconId OmniboxView::GetVectorIcon() const {
   if (!IsEditingOrEmpty())
     return controller_->GetToolbarModel()->GetVectorIcon();
 
-  // Reuse the dropdown icons...
-  gfx::VectorIconId id = AutocompleteMatch::TypeToVectorIcon(
+  return AutocompleteMatch::TypeToVectorIcon(
       model_ ? model_->CurrentTextType()
              : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-  // but use a different version for the HTTP icon.
-  return (id == gfx::VectorIconId::OMNIBOX_HTTP)
-             ? gfx::VectorIconId::LOCATION_BAR_HTTP
-             : id;
 #else
   NOTIMPLEMENTED();
   return gfx::VectorIconId::VECTOR_ICON_NONE;
