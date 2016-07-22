@@ -79,6 +79,17 @@ void ChannelProxy::Context::CreateChannel(
   channel_ = factory->BuildChannel(this);
   channel_send_thread_safe_ = channel_->IsSendThreadSafe();
   channel_->SetAttachmentBrokerEndpoint(attachment_broker_endpoint_);
+
+  Channel::AssociatedInterfaceSupport* support =
+      channel_->GetAssociatedInterfaceSupport();
+  if (support) {
+    associated_group_ = *support->GetAssociatedGroup();
+
+    base::AutoLock l(pending_filters_lock_);
+    for (auto& entry : pending_interfaces_)
+      support->AddGenericAssociatedInterface(entry.first, entry.second);
+    pending_interfaces_.clear();
+  }
 }
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {
@@ -162,23 +173,6 @@ void ChannelProxy::Context::OnChannelOpened() {
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());
-
-  Channel::AssociatedInterfaceSupport* support =
-      channel_->GetAssociatedInterfaceSupport();
-  if (support) {
-    support->SetProxyTaskRunner(listener_task_runner_);
-    for (auto& entry : io_thread_interfaces_)
-      support->AddGenericAssociatedInterface(entry.first, entry.second);
-    for (auto& entry : proxy_thread_interfaces_) {
-      support->AddGenericAssociatedInterface(
-          entry.first, base::Bind(&BindAssociatedInterfaceOnTaskRunner,
-                                  listener_task_runner_, entry.second));
-    }
-  } else {
-    // Sanity check to ensure nobody's expecting to use associated interfaces on
-    // a Channel that doesn't support them.
-    DCHECK(io_thread_interfaces_.empty() && proxy_thread_interfaces_.empty());
-  }
 }
 
 // Called on the IPC::Channel thread
@@ -332,18 +326,6 @@ void ChannelProxy::Context::OnDispatchConnected() {
   if (channel_connected_called_)
     return;
 
-  {
-    base::AutoLock l(channel_lifetime_lock_);
-    if (channel_) {
-      Channel::AssociatedInterfaceSupport* associated_interface_support =
-          channel_->GetAssociatedInterfaceSupport();
-      if (associated_interface_support) {
-        channel_associated_group_.reset(new mojo::AssociatedGroup(
-            *associated_interface_support->GetAssociatedGroup()));
-      }
-    }
-  }
-
   base::ProcessId peer_pid;
   {
     base::AutoLock l(peer_pid_lock_);
@@ -369,6 +351,30 @@ void ChannelProxy::Context::OnDispatchBadMessage(const Message& message) {
 void ChannelProxy::Context::ClearChannel() {
   base::AutoLock l(channel_lifetime_lock_);
   channel_.reset();
+  associated_group_ = mojo::AssociatedGroup();
+}
+
+void ChannelProxy::Context::AddGenericAssociatedInterface(
+    const std::string& name,
+    const GenericAssociatedInterfaceFactory& factory) {
+  AddGenericAssociatedInterfaceForIOThread(
+      name, base::Bind(&BindAssociatedInterfaceOnTaskRunner,
+                       listener_task_runner_, factory));
+}
+
+void ChannelProxy::Context::AddGenericAssociatedInterfaceForIOThread(
+    const std::string& name,
+    const GenericAssociatedInterfaceFactory& factory) {
+  base::AutoLock l(channel_lifetime_lock_);
+  if (!channel_) {
+    base::AutoLock l(pending_filters_lock_);
+    pending_interfaces_.emplace_back(name, factory);
+    return;
+  }
+  Channel::AssociatedInterfaceSupport* support =
+      channel_->GetAssociatedInterfaceSupport();
+  DCHECK(support);
+  support->AddGenericAssociatedInterface(name, factory);
 }
 
 void ChannelProxy::Context::SendFromThisThread(Message* message) {
@@ -546,24 +552,20 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
                             base::RetainedRef(filter)));
 }
 
-void ChannelProxy::AddGenericAssociatedInterfaceForIOThread(
-    const std::string& name,
-    const GenericAssociatedInterfaceFactory& factory) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!did_init_);
-  context_->io_thread_interfaces_.insert({ name, factory });
-}
-
 void ChannelProxy::AddGenericAssociatedInterface(
     const std::string& name,
     const GenericAssociatedInterfaceFactory& factory) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!did_init_);
-  context_->proxy_thread_interfaces_.insert({ name, factory });
+  context()->AddGenericAssociatedInterface(name, factory);
+}
+
+void ChannelProxy::AddGenericAssociatedInterfaceForIOThread(
+    const std::string& name,
+    const GenericAssociatedInterfaceFactory& factory) {
+  context()->AddGenericAssociatedInterfaceForIOThread(name, factory);
 }
 
 mojo::AssociatedGroup* ChannelProxy::GetAssociatedGroup() {
-  return context_->channel_associated_group_.get();
+  return context()->associated_group();
 }
 
 void ChannelProxy::GetGenericRemoteAssociatedInterface(

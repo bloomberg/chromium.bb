@@ -189,8 +189,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   }
 
   // Gets the AssociatedGroup used to create new associated endpoints on this
-  // ChannelProxy. This must only be called after the listener's
-  // OnChannelConnected is called.
+  // ChannelProxy.
   mojo::AssociatedGroup* GetAssociatedGroup();
 
   // Requests an associated interface from the remote endpoint.
@@ -199,7 +198,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
       mojo::ScopedInterfaceEndpointHandle handle);
 
   // Template helper to request associated interfaces from the remote endpoint.
-  // Must only be called after the listener's OnChannelConnected is called.
   template <typename Interface>
   void GetRemoteAssociatedInterface(
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
@@ -231,7 +229,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   class Context;
   // A subclass uses this constructor if it needs to add more information
   // to the internal state.
-  ChannelProxy(Context* context);
+  explicit ChannelProxy(Context* context);
 
 
   // Used internally to hold state that is referenced on the IPC thread.
@@ -312,6 +310,15 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     void SendFromThisThread(Message* message);
     void ClearChannel();
 
+    mojo::AssociatedGroup* associated_group() { return &associated_group_; }
+
+    void AddGenericAssociatedInterface(
+        const std::string& name,
+        const GenericAssociatedInterfaceFactory& factory);
+    void AddGenericAssociatedInterfaceForIOThread(
+        const std::string& name,
+        const GenericAssociatedInterfaceFactory& factory);
+
     scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
     Listener* listener_;
 
@@ -353,15 +360,14 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // brokerable attachment messages to/from the broker process.
     bool attachment_broker_endpoint_;
 
-    // Modified only on the listener's thread before Init() is called.
-    std::map<std::string, GenericAssociatedInterfaceFactory>
-        io_thread_interfaces_;
-    std::map<std::string, GenericAssociatedInterfaceFactory>
-        proxy_thread_interfaces_;
+    mojo::AssociatedGroup associated_group_;
 
-    // Valid and constant any time after the ChannelProxy's Listener receives
-    // OnChannelConnected on its own thread.
-    std::unique_ptr<mojo::AssociatedGroup> channel_associated_group_;
+    // Holds associated interface binders added by AddGenericAssociatedInterface
+    // or AddGenericAssociatedInterfaceForIOThread until the underlying channel
+    // has been initialized.
+    base::Lock pending_interfaces_lock_;
+    std::vector<std::pair<std::string, GenericAssociatedInterfaceFactory>>
+        pending_interfaces_;
   };
 
   Context* context() { return context_.get(); }
