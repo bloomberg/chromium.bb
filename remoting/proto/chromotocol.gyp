@@ -18,6 +18,7 @@
         'internal.proto',
         'mux.proto',
         'video.proto',
+        'video_stats.proto',
       ],
       'variables': {
         'proto_out_dir': 'remoting/proto',

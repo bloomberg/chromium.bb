@@ -5,6 +5,7 @@
 #include "remoting/protocol/frame_stats.h"
 
 #include "remoting/proto/video.pb.h"
+#include "remoting/proto/video_stats.pb.h"
 
 namespace remoting {
 namespace protocol {
@@ -52,6 +53,75 @@ HostFrameStats HostFrameStats::GetForVideoPacket(const VideoPacket& packet) {
         base::TimeDelta::FromMilliseconds(packet.send_pending_time_ms());
   }
   return result;
+}
+
+// static
+HostFrameStats HostFrameStats::FromFrameStatsMessage(
+    const FrameStatsMessage& message) {
+  HostFrameStats result;
+  result.frame_size = message.frame_size();
+  if (message.has_latest_event_timestamp()) {
+    result.latest_event_timestamp =
+        base::TimeTicks::FromInternalValue(message.latest_event_timestamp());
+  }
+  if (message.has_capture_time_ms()) {
+    result.capture_delay =
+        base::TimeDelta::FromMilliseconds(message.capture_time_ms());
+  }
+  if (message.has_encode_time_ms()) {
+    result.encode_delay =
+        base::TimeDelta::FromMilliseconds(message.encode_time_ms());
+  }
+  if (message.has_capture_pending_time_ms()) {
+    result.capture_pending_delay =
+        base::TimeDelta::FromMilliseconds(message.capture_pending_time_ms());
+  }
+  if (message.has_capture_overhead_time_ms()) {
+    result.capture_overhead_delay =
+        base::TimeDelta::FromMilliseconds(message.capture_overhead_time_ms());
+  }
+  if (message.has_encode_pending_time_ms()) {
+    result.encode_pending_delay =
+        base::TimeDelta::FromMilliseconds(message.encode_pending_time_ms());
+  }
+
+  if (message.has_send_pending_time_ms()) {
+    result.send_pending_delay =
+        base::TimeDelta::FromMilliseconds(message.send_pending_time_ms());
+  }
+
+  return result;
+}
+
+void HostFrameStats::ToFrameStatsMessage(FrameStatsMessage* message_out) const {
+  message_out->set_frame_size(frame_size);
+
+  if (!latest_event_timestamp.is_null()) {
+    message_out->set_latest_event_timestamp(
+        latest_event_timestamp.ToInternalValue());
+  }
+  if (capture_delay != base::TimeDelta::Max()) {
+    message_out->set_capture_time_ms(capture_delay.InMilliseconds());
+  }
+  if (encode_delay != base::TimeDelta::Max()) {
+    message_out->set_encode_time_ms(encode_delay.InMilliseconds());
+  }
+  if (capture_pending_delay != base::TimeDelta::Max()) {
+    message_out->set_capture_pending_time_ms(
+        capture_pending_delay.InMilliseconds());
+  }
+  if (capture_overhead_delay != base::TimeDelta::Max()) {
+    message_out->set_capture_overhead_time_ms(
+        capture_overhead_delay.InMilliseconds());
+  }
+  if (encode_pending_delay != base::TimeDelta::Max()) {
+    message_out->set_encode_pending_time_ms(
+        encode_pending_delay.InMilliseconds());
+  }
+  if (send_pending_delay != base::TimeDelta::Max()) {
+    message_out->set_send_pending_time_ms(send_pending_delay.InMilliseconds());
+  }
+
 }
 
 FrameStats::FrameStats() = default;

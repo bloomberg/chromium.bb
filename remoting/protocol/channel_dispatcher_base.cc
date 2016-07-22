@@ -14,7 +14,7 @@
 namespace remoting {
 namespace protocol {
 
-ChannelDispatcherBase::ChannelDispatcherBase(const char* channel_name)
+ChannelDispatcherBase::ChannelDispatcherBase(const std::string& channel_name)
     : channel_name_(channel_name) {}
 
 ChannelDispatcherBase::~ChannelDispatcherBase() {
@@ -57,6 +57,7 @@ void ChannelDispatcherBase::OnMessageReceived(
 
 void ChannelDispatcherBase::OnMessagePipeClosed() {
   is_connected_ = false;
+  message_pipe_.reset();
   event_handler_->OnChannelClosed(this);
 }
 

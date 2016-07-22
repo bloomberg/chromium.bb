@@ -12,5 +12,6 @@ proto_library("proto") {
     "internal.proto",
     "mux.proto",
     "video.proto",
+    "video_stats.proto",
   ]
 }

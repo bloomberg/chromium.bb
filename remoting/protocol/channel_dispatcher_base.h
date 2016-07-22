@@ -40,10 +40,6 @@ class ChannelDispatcherBase : public MessagePipe::EventHandler {
     virtual void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) = 0;
   };
 
-  // The callback is called when initialization is finished. The
-  // parameter is set to true on success.
-  typedef base::Callback<void(bool)> InitializedCallback;
-
   ~ChannelDispatcherBase() override;
 
   // Creates and connects the channel using |channel_factory|.
@@ -60,7 +56,7 @@ class ChannelDispatcherBase : public MessagePipe::EventHandler {
   bool is_connected() { return is_connected_; }
 
  protected:
-  explicit ChannelDispatcherBase(const char* channel_name);
+  explicit ChannelDispatcherBase(const std::string& channel_name);
 
   MessagePipe* message_pipe() { return message_pipe_.get(); }
 

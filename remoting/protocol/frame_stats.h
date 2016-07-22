@@ -22,6 +22,10 @@ struct HostFrameStats {
   // Extracts timing fields from the |packet|.
   static HostFrameStats GetForVideoPacket(const VideoPacket& packet);
 
+  // Converts FrameStatsMessage protobuf message to HostFrameStats.
+  static HostFrameStats FromFrameStatsMessage(const FrameStatsMessage& message);
+  void ToFrameStatsMessage(FrameStatsMessage* message_out) const;
+
   // Frame Size.
   int frame_size {};
 
