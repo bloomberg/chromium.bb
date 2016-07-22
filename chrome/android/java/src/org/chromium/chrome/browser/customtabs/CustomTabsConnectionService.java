@@ -20,12 +20,11 @@ import java.util.List;
  */
 public class CustomTabsConnectionService extends CustomTabsService {
     private CustomTabsConnection mConnection;
+    private Intent mBindIntent;
 
     @Override
     public IBinder onBind(Intent intent) {
-        boolean firstRunNecessary = FirstRunFlowSequencer
-                .checkIfFirstRunIsNecessary(getApplicationContext(), intent) != null;
-        if (firstRunNecessary) return null;
+        mBindIntent = intent;
         mConnection = CustomTabsConnection.getInstance(getApplication());
         mConnection.logCall("Service#onBind()", true);
         return super.onBind(intent);
@@ -40,6 +39,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
 
     @Override
     protected boolean warmup(long flags) {
+        if (!isFirstRunDone()) return false;
         return mConnection.warmup(flags);
     }
 
@@ -51,6 +51,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
     @Override
     protected boolean mayLaunchUrl(CustomTabsSessionToken sessionToken, Uri url, Bundle extras,
             List<Bundle> otherLikelyBundles) {
+        if (!isFirstRunDone()) return false;
         return mConnection.mayLaunchUrl(sessionToken, url, extras, otherLikelyBundles);
     }
 
@@ -61,6 +62,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
 
     @Override
     protected boolean updateVisuals(CustomTabsSessionToken sessionToken, Bundle bundle) {
+        if (!isFirstRunDone()) return false;
         return mConnection.updateVisuals(sessionToken, bundle);
     }
 
@@ -68,5 +70,16 @@ public class CustomTabsConnectionService extends CustomTabsService {
     protected boolean cleanUpSession(CustomTabsSessionToken sessionToken) {
         mConnection.cleanUpSession(sessionToken);
         return super.cleanUpSession(sessionToken);
+    }
+
+    private boolean isFirstRunDone() {
+        if (mBindIntent == null) return true;
+        boolean firstRunNecessary = FirstRunFlowSequencer
+                .checkIfFirstRunIsNecessary(getApplicationContext(), mBindIntent) != null;
+        if (!firstRunNecessary) {
+            mBindIntent = null;
+            return true;
+        }
+        return false;
     }
 }
