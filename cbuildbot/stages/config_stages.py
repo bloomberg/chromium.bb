@@ -225,14 +225,12 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     show_waterfall_path = os.path.join(
         self.chromite_dir, 'bin', 'cros_show_waterfall_layout')
     cmd = [show_waterfall_path]
-
-    with cros_build_lib.OutputCapturer() as output:
-      cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
-
     layout_file_name = os.path.join(
         self.chromite_dir, 'cbuildbot/waterfall_layout_dump.txt')
-    with open(layout_file_name, 'w') as layout_file:
-      layout_file.write(output.GetStdout())
+    with cros_build_lib.OutputCapturer(stdout_path=layout_file_name) as output:
+      cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
+
+    logging.info("waterfall_layout_dump %s" % output.GetStdout())
 
     view_config_path = os.path.join(
         self.chromite_dir, 'bin', 'cbuildbot_view_config')
@@ -274,9 +272,9 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     try:
       self._CheckoutBranch()
       self._DownloadTemplate()
-      if self._ContainsUpdates([self.GE_CONFIG_LOCAL_PATH]):
-        self._UpdateConfigDump()
-        self._RunUnitTest()
+      self._UpdateConfigDump()
+      self._RunUnitTest()
+      if self._ContainsUpdates(candidate_files):
         self._PushCommits(candidate_files)
       else:
         logging.info('Nothing changed. No need to update configs for %s',

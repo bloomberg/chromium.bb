@@ -2910,10 +2910,6 @@ def GetConfig():
     return merged_configs
 
   overwritten_configs = {
-      'samus-release' : {
-          'important': True,
-      },
-
       ### Arm release configs
       'smaug-release' : {
           'images':['base', 'recovery', 'test'],
@@ -2928,7 +2924,6 @@ def GetConfig():
               'paygen': False,
               'signer_tests': False,
               'images': ['base', 'test'],
-              'important': True,
               'boards':['beaglebone'],
               'buildslave_type':constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
           }
@@ -2940,7 +2935,6 @@ def GetConfig():
               'paygen': False,
               'signer_tests': False,
               'images': ['base', 'test'],
-              'important': True,
               'boards':['beaglebone_servo'],
               'payload_image':'base',
               'buildslave_type':constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
@@ -2965,7 +2959,6 @@ def GetConfig():
           lakitu_test_customizations,
           {
               'sign_types':['base'],
-              'important': True,
               'images':['base', 'recovery', 'test'],
           }
       ),
