@@ -83,30 +83,6 @@ bool ThrottlingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return next_handler_->OnWillStart(url, defer);
 }
 
-bool ThrottlingResourceHandler::OnBeforeNetworkStart(const GURL& url,
-                                                     bool* defer) {
-  DCHECK(!cancelled_by_resource_throttle_);
-
-  *defer = false;
-  while (next_index_ < throttles_.size()) {
-    int index = next_index_;
-    throttles_[index]->WillStartUsingNetwork(defer);
-    next_index_++;
-    if (cancelled_by_resource_throttle_)
-      return false;
-    if (*defer) {
-      OnRequestDefered(index);
-      deferred_stage_ = DEFERRED_NETWORK_START;
-      deferred_url_ = url;
-      return true;  // Do not cancel.
-    }
-  }
-
-  next_index_ = 0;  // Reset for next time.
-
-  return next_handler_->OnBeforeNetworkStart(url, defer);
-}
-
 bool ThrottlingResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                   bool* defer) {
   DCHECK(!cancelled_by_resource_throttle_);
@@ -159,9 +135,6 @@ void ThrottlingResourceHandler::Resume() {
     case DEFERRED_START:
       ResumeStart();
       break;
-    case DEFERRED_NETWORK_START:
-      ResumeNetworkStart();
-      break;
     case DEFERRED_REDIRECT:
       ResumeRedirect();
       break;
@@ -179,20 +152,6 @@ void ThrottlingResourceHandler::ResumeStart() {
 
   bool defer = false;
   if (!OnWillStart(url, &defer)) {
-    controller()->Cancel();
-  } else if (!defer) {
-    controller()->Resume();
-  }
-}
-
-void ThrottlingResourceHandler::ResumeNetworkStart() {
-  DCHECK(!cancelled_by_resource_throttle_);
-
-  GURL url = deferred_url_;
-  deferred_url_ = GURL();
-
-  bool defer = false;
-  if (!OnBeforeNetworkStart(url, &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();

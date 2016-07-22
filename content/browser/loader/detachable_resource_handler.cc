@@ -128,19 +128,6 @@ bool DetachableResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return ret;
 }
 
-bool DetachableResourceHandler::OnBeforeNetworkStart(const GURL& url,
-                                                     bool* defer) {
-  DCHECK(!is_deferred_);
-
-  if (!next_handler_)
-    return true;
-
-  bool ret =
-      next_handler_->OnBeforeNetworkStart(url, &is_deferred_);
-  *defer = is_deferred_;
-  return ret;
-}
-
 bool DetachableResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                            int* buf_size,
                                            int min_size) {

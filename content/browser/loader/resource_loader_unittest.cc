@@ -352,10 +352,6 @@ class ResourceHandlerStub : public ResourceHandler {
     return true;
   }
 
-  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override {
-    return true;
-  }
-
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override {

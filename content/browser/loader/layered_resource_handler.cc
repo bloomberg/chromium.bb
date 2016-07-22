@@ -49,12 +49,6 @@ bool LayeredResourceHandler::OnWillStart(const GURL& url,
   return next_handler_->OnWillStart(url, defer);
 }
 
-bool LayeredResourceHandler::OnBeforeNetworkStart(const GURL& url,
-                                                  bool* defer) {
-  DCHECK(next_handler_.get());
-  return next_handler_->OnBeforeNetworkStart(url, defer);
-}
-
 bool LayeredResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                         int* buf_size,
                                         int min_size) {

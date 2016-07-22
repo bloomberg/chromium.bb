@@ -52,9 +52,6 @@ class CONTENT_EXPORT DownloadResourceHandler
   // Pass-through implementation.
   bool OnWillStart(const GURL& url, bool* defer) override;
 
-  // Pass-through implementation.
-  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
-
   // Create a new buffer, which will be handed to the download thread for file
   // writing and deletion.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,

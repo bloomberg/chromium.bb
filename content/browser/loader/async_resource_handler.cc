@@ -411,10 +411,6 @@ bool AsyncResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool AsyncResourceHandler::OnBeforeNetworkStart(const GURL& url, bool* defer) {
-  return true;
-}
-
 bool AsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                       int* buf_size,
                                       int min_size) {

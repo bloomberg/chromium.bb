@@ -39,7 +39,6 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
                            bool* defer) override;
   bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
   bool OnWillStart(const GURL& url, bool* defer) override;
-  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
 
   // ResourceController implementation:
   void Cancel() override;
@@ -49,7 +48,6 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
 
  private:
   void ResumeStart();
-  void ResumeNetworkStart();
   void ResumeRedirect();
   void ResumeResponse();
 
@@ -60,7 +58,6 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   enum DeferredStage {
     DEFERRED_NONE,
     DEFERRED_START,
-    DEFERRED_NETWORK_START,
     DEFERRED_REDIRECT,
     DEFERRED_RESPONSE
   };

@@ -95,10 +95,6 @@ bool SyncResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool SyncResourceHandler::OnBeforeNetworkStart(const GURL& url, bool* defer) {
-  return true;
-}
-
 bool SyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                      int* buf_size,
                                      int min_size) {

@@ -27,9 +27,6 @@ class ResourceThrottle {
   // Called before the resource request is started.
   virtual void WillStartRequest(bool* defer) {}
 
-  // Called before the resource request uses the network for the first time.
-  virtual void WillStartUsingNetwork(bool* defer) {}
-
   // Called when the request was redirected.  |redirect_info| contains the
   // redirect responses's HTTP status code and some information about the new
   // request that will be sent if the redirect is followed, including the new

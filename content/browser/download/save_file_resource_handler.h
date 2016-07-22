@@ -48,9 +48,6 @@ class SaveFileResourceHandler : public ResourceHandler {
   // Pass-through implementation.
   bool OnWillStart(const GURL& url, bool* defer) override;
 
-  // Pass-through implementation.
-  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
-
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,

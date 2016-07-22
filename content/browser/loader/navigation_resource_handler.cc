@@ -121,11 +121,6 @@ bool NavigationResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool NavigationResourceHandler::OnBeforeNetworkStart(const GURL& url,
-                                                     bool* defer) {
-  return true;
-}
-
 bool NavigationResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                            int* buf_size,
                                            int min_size) {

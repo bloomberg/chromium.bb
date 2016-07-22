@@ -149,11 +149,6 @@ bool DownloadResourceHandler::OnWillStart(const GURL& url, bool* defer) {
   return true;
 }
 
-bool DownloadResourceHandler::OnBeforeNetworkStart(const GURL& url,
-                                                   bool* defer) {
-  return true;
-}
-
 // Create a new buffer, which will be handed to the download thread for file
 // writing and deletion.
 bool DownloadResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,

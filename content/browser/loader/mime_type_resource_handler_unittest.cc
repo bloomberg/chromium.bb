@@ -52,11 +52,6 @@ class TestResourceHandler : public ResourceHandler {
     return false;
   }
 
-  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override {
-    NOTREACHED();
-    return false;
-  }
-
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override {

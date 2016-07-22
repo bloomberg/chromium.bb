@@ -40,7 +40,6 @@ class SyncResourceHandler : public ResourceHandler {
                            bool* defer) override;
   bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
   bool OnWillStart(const GURL& url, bool* defer) override;
-  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
