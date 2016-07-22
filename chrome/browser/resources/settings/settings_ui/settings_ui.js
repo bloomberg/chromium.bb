@@ -66,6 +66,17 @@ Polymer({
     'sideNav.iron-activate': 'onIronActivate_',
   },
 
+  /** @override */
+  ready: function() {
+    this.$$('cr-toolbar').addEventListener('search-changed', function(e) {
+      this.$$('settings-main').searchContents(e.detail);
+    }.bind(this));
+
+    window.addEventListener('popstate', function(e) {
+      this.$$('app-drawer').close();
+    }.bind(this));
+  },
+
   /** @private */
   onCloseAppealTap_: function() {
     window.sessionStorage.appealClosed_ = this.appealClosed_ = true;
@@ -83,13 +94,6 @@ Polymer({
   /** @private */
   onMenuButtonTap_: function() {
     this.$$('app-drawer').toggle();
-  },
-
-  /** @override */
-  ready: function() {
-    this.$$('cr-toolbar').addEventListener('search-changed', function(e) {
-      this.$$('settings-main').searchContents(e.detail);
-    }.bind(this));
   },
 
   /** @private */
