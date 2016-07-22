@@ -26,6 +26,14 @@ class CorePageLoadMetricsObserverTest
     tracker->AddObserver(base::WrapUnique(new CorePageLoadMetricsObserver()));
   }
 
+  void AssertNoHistogramsLogged() {
+    histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded,
+                                        0);
+    histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
+    histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
+    histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  }
+
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
     TestingBrowserProcess::GetGlobal()->SetRapporService(&rappor_tester_);
@@ -35,10 +43,7 @@ class CorePageLoadMetricsObserverTest
 };
 
 TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {
-  histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  AssertNoHistogramsLogged();
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, SamePageNoTriggerUntilTrueNavCommit) {
@@ -54,7 +59,7 @@ TEST_F(CorePageLoadMetricsObserverTest, SamePageNoTriggerUntilTrueNavCommit) {
 
   NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
   // A same page navigation shouldn't trigger logging UMA for the original.
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
+  AssertNoHistogramsLogged();
 
   // But we should keep the timing info and log it when we get another
   // navigation.
@@ -86,7 +91,7 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
+  AssertNoHistogramsLogged();
 
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
@@ -130,11 +135,15 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
+  // Verify that the non-immediate FCP has not yet been logged, but the
+  // immediate FCP is logged before the next navigation.
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
-                                      1);
-  histogram_tester().ExpectBucketCount(internal::kHistogramFirstContentfulPaint,
-                                       first_contentful_paint.InMilliseconds(),
-                                       1);
+                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFirstContentfulPaintImmediate, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFirstContentfulPaintImmediate,
+      first_contentful_paint.InMilliseconds(), 1);
 
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
@@ -155,11 +164,29 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstLayout,
                                        first_layout_2.InMilliseconds(), 1);
 
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramDomLoadingToDomContentLoaded, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramDomLoadingToDomContentLoaded,
+      (dom_content - dom_loading).InMilliseconds(), 1);
+
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
                                       1);
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstContentfulPaint,
                                        first_contentful_paint.InMilliseconds(),
                                        1);
+
+  // Verify that no additional immediate metrics were logged as a result of
+  // navigation.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFirstContentfulPaintImmediate, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramDomLoadingToFirstContentfulPaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramDomLoadingToFirstContentfulPaint,
+      (first_contentful_paint - dom_loading).InMilliseconds(), 1);
+
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 1);
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstTextPaint,
                                        first_text_paint.InMilliseconds(), 1);
@@ -188,6 +215,7 @@ TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
 
   // Simulate switching to the tab and making another navigation.
   web_contents()->WasShown();
+  AssertNoHistogramsLogged();
 
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
