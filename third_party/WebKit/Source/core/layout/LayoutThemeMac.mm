@@ -111,6 +111,22 @@
 
 namespace blink {
 
+namespace {
+
+bool fontSizeMatchesToControlSize(const ComputedStyle& style)
+{
+    int fontSize = style.fontSize();
+    if (fontSize == [NSFont systemFontSizeForControlSize:NSRegularControlSize])
+        return true;
+    if (fontSize == [NSFont systemFontSizeForControlSize:NSSmallControlSize])
+        return true;
+    if (fontSize == [NSFont systemFontSizeForControlSize:NSMiniControlSize])
+        return true;
+    return false;
+}
+
+} // namespace
+
 using namespace HTMLNames;
 
 LayoutThemeMac::LayoutThemeMac()
@@ -445,14 +461,22 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const
     if (style.appearance() == TextFieldPart || style.appearance() == TextAreaPart)
         return style.hasAuthorBorder() || style.boxShadow();
 
-    // FIXME: This is horrible, but there is not much else that can be done.
-    // Menu lists cannot draw properly when scaled. They can't really draw
-    // properly when transformed either. We can't detect the transform case at
-    // style adjustment time so that will just have to stay broken.  We can
-    // however detect that we're zooming. If zooming is in effect we treat it
-    // like the control is styled.
-    if (style.appearance() == MenulistPart && style.effectiveZoom() != 1.0f)
-        return true;
+    if (style.appearance() == MenulistPart) {
+        // FIXME: This is horrible, but there is not much else that can be done.
+        // Menu lists cannot draw properly when scaled. They can't really draw
+        // properly when transformed either. We can't detect the transform case
+        // at style adjustment time so that will just have to stay broken.  We
+        // can however detect that we're zooming. If zooming is in effect we
+        // treat it like the control is styled.
+        if (style.effectiveZoom() != 1.0f)
+            return true;
+        if (!fontSizeMatchesToControlSize(style))
+            return true;
+        if (style.getFontDescription().family().family() != "BlinkMacSystemFont")
+            return true;
+        if (!style.height().isIntrinsicOrAuto())
+            return true;
+    }
     // Some other cells don't work well when scaled.
     if (style.effectiveZoom() != 1) {
         switch (style.appearance()) {
