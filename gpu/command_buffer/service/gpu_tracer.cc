@@ -271,6 +271,10 @@ bool GPUTracer::Begin(const std::string& category, const std::string& name,
   // Push new marker from given 'source'
   markers_[source].push_back(TraceMarker(category, name));
 
+  if (!outputter_) {
+    outputter_ = CreateOutputter(gpu_timing_client_->GetTimerTypeName());
+  }
+
   // Create trace
   if (IsTracing()) {
     began_device_traces_ |= (*gpu_trace_dev_category != 0);
