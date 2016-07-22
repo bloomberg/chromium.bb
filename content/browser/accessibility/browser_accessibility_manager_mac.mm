@@ -425,10 +425,14 @@ NSDictionary* BrowserAccessibilityManagerMac::
     focus_object = focus_object->GetClosestPlatformObject();
     auto native_focus_object = ToBrowserAccessibilityCocoa(focus_object);
     if (native_focus_object && [native_focus_object instanceActive]) {
-      [user_info setObject:[native_focus_object selectedTextMarkerRange]
-                    forKey:NSAccessibilitySelectedTextMarkerRangeAttribute];
       [user_info setObject:native_focus_object
                     forKey:NSAccessibilityTextChangeElement];
+
+      id selected_text = [native_focus_object selectedTextMarkerRange];
+      if (selected_text) {
+        [user_info setObject:selected_text
+                      forKey:NSAccessibilitySelectedTextMarkerRangeAttribute];
+      }
     }
   }
 
