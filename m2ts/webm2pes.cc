@@ -241,8 +241,8 @@ bool Webm2Pes::ConvertToFile() {
               block->GetFrame(frame_num);
 
           // Read the frame.
-          VpxFrame vpx_frame(block->GetTime(cluster), codec_);
-          if (ReadVpxFrame(mkvparser_frame, &vpx_frame) == false) {
+          VideoFrame vpx_frame(block->GetTime(cluster), codec_);
+          if (ReadVideoFrame(mkvparser_frame, &vpx_frame) == false) {
             fprintf(stderr, "Webm2Pes: frame read failed.\n");
             return false;
           }
@@ -309,14 +309,14 @@ bool Webm2Pes::ConvertToPacketReceiver() {
               block->GetFrame(frame_num);
 
           // Read the frame.
-          VpxFrame vpx_frame(block->GetTime(cluster), codec_);
-          if (ReadVpxFrame(mkvparser_frame, &vpx_frame) == false) {
+          VideoFrame frame(block->GetTime(cluster), codec_);
+          if (ReadVideoFrame(mkvparser_frame, &frame) == false) {
             fprintf(stderr, "Webm2Pes: frame read failed.\n");
             return false;
           }
 
           // Write frame out as PES packet(s).
-          if (WritePesPacket(vpx_frame, &packet_data_) == false) {
+          if (WritePesPacket(frame, &packet_data_) == false) {
             std::fprintf(stderr, "Webm2Pes: WritePesPacket failed.\n");
             return false;
           }
@@ -379,9 +379,9 @@ bool Webm2Pes::InitWebmParser() {
     const mkvparser::Track* track = tracks->GetTrackByIndex(track_index);
     if (track && track->GetType() == mkvparser::Track::kVideo) {
       if (std::string(track->GetCodecId()) == std::string("V_VP8")) {
-        codec_ = VpxFrame::kVP8;
+        codec_ = VideoFrame::kVP8;
       } else if (std::string(track->GetCodecId()) == std::string("V_VP9")) {
-        codec_ = VpxFrame::kVP9;
+        codec_ = VideoFrame::kVP9;
       } else {
         fprintf(stderr, "Webm2Pes: Codec must be VP8 or VP9.\n");
         return false;
@@ -398,45 +398,47 @@ bool Webm2Pes::InitWebmParser() {
   return true;
 }
 
-bool Webm2Pes::ReadVpxFrame(const mkvparser::Block::Frame& mkvparser_frame,
-                            VpxFrame* frame) {
+bool Webm2Pes::ReadVideoFrame(const mkvparser::Block::Frame& mkvparser_frame,
+                              VideoFrame* frame) {
   if (mkvparser_frame.len < 1 || frame == nullptr)
     return false;
 
-  frame->length = mkvparser_frame.len;
-  frame->data.reset(new (std::nothrow) uint8_t[mkvparser_frame.len]);
-  if (frame->data.get() == nullptr) {
-    std::fprintf(stderr, "Webm2Pes: Out of memory.\n");
-    return false;
+  const std::size_t mkv_len = static_cast<std::size_t>(mkvparser_frame.len);
+  if (mkv_len > frame->buffer().capacity) {
+    const std::size_t new_size = 2 * mkv_len;
+    if (frame->Init(new_size) == false) {
+      std::fprintf(stderr, "Webm2Pes: Out of memory.\n");
+      return false;
+    }
   }
-  if (mkvparser_frame.Read(&webm_reader_, frame->data.get()) != 0) {
+  if (mkvparser_frame.Read(&webm_reader_, frame->buffer().data.get()) != 0) {
     std::fprintf(stderr, "Webm2Pes: Error reading VPx frame!\n");
     return false;
   }
-  return true;
+  return frame->SetBufferLength(mkv_len);
 }
 
-bool Webm2Pes::WritePesPacket(const VpxFrame& vpx_frame,
+bool Webm2Pes::WritePesPacket(const VideoFrame& frame,
                               PacketDataBuffer* packet_data) {
-  if (vpx_frame.data.get() == nullptr || vpx_frame.length < 1)
+  if (frame.buffer().data.get() == nullptr || frame.buffer().length < 1)
     return false;
 
   Ranges frame_ranges;
-  if (vpx_frame.codec == VpxFrame::kVP9) {
+  if (frame.codec() == VideoFrame::kVP9) {
     const bool has_superframe_index = ParseVP9SuperFrameIndex(
-        vpx_frame.data.get(), vpx_frame.length, &frame_ranges);
+        frame.buffer().data.get(), frame.buffer().length, &frame_ranges);
     if (has_superframe_index == false) {
-      frame_ranges.push_back(Range(0, vpx_frame.length));
+      frame_ranges.push_back(Range(0, frame.buffer().length));
     }
   } else {
-    frame_ranges.push_back(Range(0, vpx_frame.length));
+    frame_ranges.push_back(Range(0, frame.buffer().length));
   }
 
   ///
   /// TODO: DEBUG/REMOVE
   ///
   printf("-FRAME TOTAL LENGTH %u\n",
-         static_cast<unsigned int>(vpx_frame.length));
+         static_cast<unsigned int>(frame.buffer().length));
   for (const Range& frame_range : frame_ranges) {
     printf("--frame range: off:%u len:%u\n",
            static_cast<unsigned int>(frame_range.offset),
@@ -444,7 +446,7 @@ bool Webm2Pes::WritePesPacket(const VpxFrame& vpx_frame,
   }
 
   const std::int64_t khz90_pts =
-      NanosecondsTo90KhzTicks(vpx_frame.nanosecond_pts);
+      NanosecondsTo90KhzTicks(frame.nanosecond_pts());
   PesHeader header;
   header.optional_header.SetPtsBits(khz90_pts);
 
@@ -471,7 +473,7 @@ bool Webm2Pes::WritePesPacket(const VpxFrame& vpx_frame,
 
     // Insert the payload at the end of |packet_data|.
     const std::uint8_t* payload_start =
-        vpx_frame.data.get() + packet_payload_range.offset;
+        frame.buffer().data.get() + packet_payload_range.offset;
 
     const std::size_t bytes_to_copy = packet_payload_range.length - extra_bytes;
     if (CopyAndEscapeStartCodes(payload_start, bytes_to_copy, packet_data) ==
