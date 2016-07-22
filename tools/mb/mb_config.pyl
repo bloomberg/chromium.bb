@@ -340,7 +340,7 @@
       'ASan Release Media (32-bit x86 with V8-ARM)':
         'gyp_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
       'ChromiumOS ASAN Release':
-        'gyp_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
+        'gn_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'MSAN Release (chained origins)': 'gn_msan_edge_release_bot',
       'MSAN Release (no origins)': 'gn_msan_no_origins_edge_release_bot',
       'Mac ASAN Debug': 'gyp_asan_edge_fuzzer_v8_heap_debug_symbols_static_bot',
@@ -390,7 +390,7 @@
 
     'chromium.memory.fyi': {
       'Chromium Linux ChromeOS MSan Builder':
-        'swarming_gyp_chromeos_msan_release_bot',
+        'swarming_gn_chromeos_msan_release_bot',
       'Chromium Linux MSan Builder':
         'swarming_msan_gn_release_bot',
       'Chromium Linux TSan Builder':
@@ -1308,8 +1308,8 @@
       'gn', 'asan', 'lsan', 'edge', 'v8_heap', 'symbolized', 'release_bot',
     ],
 
-    'gyp_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
-      'gyp', 'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap',
+    'gn_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
+      'gn', 'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap',
       'release_bot',
     ],
 
@@ -1509,7 +1509,7 @@
     ],
 
     'swarming_asan_lsan_chromeos_gn_release_trybot': [
-      'swarming', 'asan', 'lsan', 'chromeos', 'gyp', 'release_trybot',
+      'swarming', 'asan', 'lsan', 'chromeos', 'gn', 'release_trybot',
     ],
 
     'swarming_asan_lsan_full_symbols_gyp_release_trybot': [
@@ -1743,8 +1743,8 @@
       'release',
     ],
 
-    'swarming_gyp_chromeos_msan_release_bot': [
-      'swarming', 'gyp', 'chromeos', 'msan', 'release_bot',
+    'swarming_gn_chromeos_msan_release_bot': [
+      'swarming', 'gn', 'chromeos', 'msan', 'release_bot',
     ],
 
     'swarming_gyp_clang_debug_bot_minimal_symbols_x86': [
