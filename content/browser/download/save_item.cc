@@ -46,7 +46,7 @@ SaveItem::~SaveItem() {}
 
 // Set start state for save item.
 void SaveItem::Start() {
-  DCHECK(state_ == WAIT_START);
+  DCHECK_EQ(state_, WAIT_START);
   state_ = IN_PROGRESS;
 }
 
@@ -93,7 +93,8 @@ void SaveItem::Finish(int64_t size, bool is_success) {
 }
 
 void SaveItem::SetTargetPath(const base::FilePath& full_path) {
-  DCHECK(!full_path.empty() && !has_final_name());
+  DCHECK(!full_path.empty());
+  DCHECK(!has_final_name());
   full_path_ = full_path;
 }
 

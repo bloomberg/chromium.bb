@@ -158,7 +158,7 @@ void BrowserThreadImpl::ShutdownThreadPool() {
 // static
 void BrowserThreadImpl::FlushThreadPoolHelperForTesting() {
   // We don't want to create a pool if none exists.
-  if (g_globals == NULL)
+  if (g_globals == nullptr)
     return;
   g_globals.Get().blocking_pool->FlushForTesting();
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
@@ -286,15 +286,16 @@ void BrowserThreadImpl::CleanUp() {
   // to prevent a race with accessing the message loop in PostTaskHelper(),
   // remove this thread from the global array now.
   base::AutoLock lock(globals.lock);
-  globals.threads[identifier_] = NULL;
+  globals.threads[identifier_] = nullptr;
 }
 
 void BrowserThreadImpl::Initialize() {
   BrowserThreadGlobals& globals = g_globals.Get();
 
   base::AutoLock lock(globals.lock);
-  DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
-  DCHECK(globals.threads[identifier_] == NULL);
+  DCHECK_GE(identifier_, 0);
+  DCHECK_LT(identifier_, ID_COUNT);
+  DCHECK_EQ(globals.threads[identifier_], nullptr);
   globals.threads[identifier_] = this;
 }
 
@@ -306,7 +307,7 @@ BrowserThreadImpl::~BrowserThreadImpl() {
 
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  globals.threads[identifier_] = NULL;
+  globals.threads[identifier_] = nullptr;
 #ifndef NDEBUG
   // Double check that the threads are ordered correctly in the enumeration.
   for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
@@ -332,7 +333,8 @@ bool BrowserThreadImpl::PostTaskHelper(
     const base::Closure& task,
     base::TimeDelta delay,
     bool nestable) {
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  DCHECK_GE(identifier, 0);
+  DCHECK_LT(identifier, ID_COUNT);
   // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
   // order of lifetime.  So no need to lock if we know that the target thread
   // outlives current thread.
@@ -350,7 +352,7 @@ bool BrowserThreadImpl::PostTaskHelper(
 
   base::MessageLoop* message_loop =
       globals.threads[identifier] ? globals.threads[identifier]->message_loop()
-                                  : NULL;
+                                  : nullptr;
   if (message_loop) {
     if (nestable) {
       message_loop->task_runner()->PostDelayedTask(from_here, task, delay);
@@ -407,20 +409,22 @@ base::SequencedWorkerPool* BrowserThread::GetBlockingPool() {
 
 // static
 bool BrowserThread::IsThreadInitialized(ID identifier) {
-  if (g_globals == NULL)
+  if (g_globals == nullptr)
     return false;
 
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return globals.threads[identifier] != NULL;
+  DCHECK_GE(identifier, 0);
+  DCHECK_LT(identifier, ID_COUNT);
+  return globals.threads[identifier] != nullptr;
 }
 
 // static
 bool BrowserThread::CurrentlyOn(ID identifier) {
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  DCHECK_GE(identifier, 0);
+  DCHECK_LT(identifier, ID_COUNT);
   return globals.threads[identifier] &&
          globals.threads[identifier]->message_loop() ==
              base::MessageLoop::current();
@@ -442,12 +446,13 @@ std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
 
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
-  if (g_globals == NULL)
+  if (g_globals == nullptr)
     return false;
 
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  DCHECK_GE(identifier, 0);
+  DCHECK_LT(identifier, ID_COUNT);
   return globals.threads[identifier] &&
          globals.threads[identifier]->message_loop();
 }
@@ -500,7 +505,7 @@ bool BrowserThread::PostTaskAndReply(
 
 // static
 bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
-  if (g_globals == NULL)
+  if (g_globals == nullptr)
     return false;
 
   base::MessageLoop* cur_message_loop = base::MessageLoop::current();
@@ -529,8 +534,8 @@ BrowserThread::GetTaskRunnerForThread(ID identifier) {
 
 // static
 base::MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
-  if (g_globals == NULL)
-    return NULL;
+  if (g_globals == nullptr)
+    return nullptr;
 
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
