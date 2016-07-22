@@ -882,7 +882,9 @@ bool ShouldCreateRenderSurface(LayerType* layer,
       num_descendants_that_draw_content > 0 &&
       (layer->DrawsContent() || num_descendants_that_draw_content > 1);
 
-  if (EffectiveOpacity(layer) != 1.f && ShouldFlattenTransform(layer) &&
+  bool may_have_transparency = EffectiveOpacity(layer) != 1.f ||
+                               HasPotentiallyRunningOpacityAnimation(layer);
+  if (may_have_transparency && ShouldFlattenTransform(layer) &&
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface opacity",

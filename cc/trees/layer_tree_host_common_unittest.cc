@@ -8503,6 +8503,34 @@ TEST_F(LayerTreeHostCommonTest,
             descendant_of_animation->visible_layer_rect_for_testing());
 }
 
+// Verify that having animated opacity but current opacity 1 still creates
+// a render surface.
+TEST_F(LayerTreeHostCommonTest, AnimatedOpacityCreatesRenderSurface) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grandchild = AddChild<LayerImpl>(child);
+  child->SetDrawsContent(true);
+  grandchild->SetDrawsContent(true);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(grandchild, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+
+  SetElementIdsForTesting();
+  AddOpacityTransitionToElementWithPlayer(child->element_id(), timeline_impl(),
+                                          10.0, 1.f, 0.2f, false);
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_EQ(1.f, child->Opacity());
+  EXPECT_TRUE(root->has_render_surface());
+  EXPECT_TRUE(child->has_render_surface());
+  EXPECT_FALSE(grandchild->has_render_surface());
+}
+
 // Verify that having an animated filter (but no current filter, as these
 // are mutually exclusive) correctly creates a render surface.
 TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
