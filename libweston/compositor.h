@@ -1011,6 +1011,11 @@ struct weston_surface_state {
 	struct weston_buffer_viewport buffer_viewport;
 };
 
+struct weston_surface_activation_data {
+	struct weston_surface *surface;
+	struct weston_seat *seat;
+};
+
 struct weston_surface {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal; /* callback argument: this surface */

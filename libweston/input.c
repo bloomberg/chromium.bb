@@ -2930,6 +2930,7 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
+	struct weston_surface_activation_data activation_data;
 
 	if (keyboard && keyboard->focus != surface) {
 		weston_keyboard_set_focus(keyboard, surface);
@@ -2937,7 +2938,12 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 	}
 
 	inc_activate_serial(compositor);
-	wl_signal_emit(&compositor->activate_signal, surface);
+
+	activation_data = (struct weston_surface_activation_data) {
+		.surface = surface,
+		.seat = seat,
+	};
+	wl_signal_emit(&compositor->activate_signal, &activation_data);
 }
 
 int
