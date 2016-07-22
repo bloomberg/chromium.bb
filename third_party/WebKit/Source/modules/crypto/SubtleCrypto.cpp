@@ -87,12 +87,52 @@ static bool copySequenceOfStringProperty(const char* property, const Dictionary&
     return true;
 }
 
-// FIXME: At the time of writing this is not a part of the spec. It is based an
-// an unpublished editor's draft for:
-//   https://www.w3.org/Bugs/Public/show_bug.cgi?id=24963
-// See http://crbug.com/373917.
-static bool copyJwkDictionaryToJson(const Dictionary& dict, WebVector<uint8_t>& jsonUtf8, CryptoResult* result)
+// Parses a JsonWebKey dictionary. On success writes the result to
+// |jsonUtf8| as a UTF8-encoded JSON octet string and returns true.
+// On failure sets an error on |result| and returns false.
+//
+// Note: The choice of output as an octet string is to facilitate interop
+// with the non-JWK formats, but does mean there is a second parsing step.
+// This design choice should be revisited after crbug.com/614385).
+//
+// Defined by the WebCrypto spec as:
+//
+//    dictionary JsonWebKey {
+//      DOMString kty;
+//      DOMString use;
+//      sequence<DOMString> key_ops;
+//      DOMString alg;
+//
+//      boolean ext;
+//
+//      DOMString crv;
+//      DOMString x;
+//      DOMString y;
+//      DOMString d;
+//      DOMString n;
+//      DOMString e;
+//      DOMString p;
+//      DOMString q;
+//      DOMString dp;
+//      DOMString dq;
+//      DOMString qi;
+//      sequence<RsaOtherPrimesInfo> oth;
+//      DOMString k;
+//    };
+//
+//    dictionary RsaOtherPrimesInfo {
+//      DOMString r;
+//      DOMString d;
+//      DOMString t;
+//    };
+static bool parseJsonWebKey(const Dictionary& dict, WebVector<uint8_t>& jsonUtf8, CryptoResult* result)
 {
+    // TODO(eroman): This implementation is incomplete and not spec compliant:
+    //  * Properties need to be read in the definition order above
+    //  * Preserve the type of optional parameters (crbug.com/385376)
+    //  * Parse "oth" (crbug.com/441396)
+    //  * Fail with TypeError (not DataError) if the input does not conform
+    //    to a JsonWebKey
     RefPtr<JSONObject> jsonObject = JSONObject::create();
 
     if (!copyStringProperty("kty", dict, jsonObject.get())) {
@@ -346,29 +386,49 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationImportKey, normalizedAlgorithm, result))
         return promise;
 
-    // TODO(eroman): Match the procedure given in the spec to more
-    // easily provide a normative reference.
-    if (rawKeyData.isDictionary()) {
-        if (format != WebCryptoKeyFormatJwk) {
-            result->completeWithError(WebCryptoErrorTypeType, "Key data must be a buffer for non-JWK formats");
-            return promise;
-        }
-    } else if (format == WebCryptoKeyFormatJwk) {
-        result->completeWithError(WebCryptoErrorTypeType, "Key data must be an object for JWK import");
-        return promise;
-    }
-
+    // In the case of JWK keyData will hold the UTF8-encoded JSON for the
+    // JsonWebKey, otherwise it holds a copy of the BufferSource.
     WebVector<uint8_t> keyData;
 
-    // TODO(eroman): Match the procedure given in the spec to more
-    // easily provide a normative reference.
-    if (rawKeyData.isArrayBuffer()) {
-        keyData = copyBytes(rawKeyData.getAsArrayBuffer());
-    } else if (rawKeyData.isArrayBufferView()) {
-        keyData = copyBytes(rawKeyData.getAsArrayBufferView());
-    } else if (rawKeyData.isDictionary()) {
-        if (!copyJwkDictionaryToJson(rawKeyData.getAsDictionary(), keyData, result))
+    switch (format) {
+    // 14.3.9.6: If format is equal to the string "raw", "pkcs8", or "spki":
+    //
+    //  (1) If the keyData parameter passed to the importKey method is a
+    //      JsonWebKey dictionary, throw a TypeError.
+    //
+    //  (2) Let keyData be the result of getting a copy of the bytes held by
+    //      the keyData parameter passed to the importKey method.
+    case WebCryptoKeyFormatRaw:
+    case WebCryptoKeyFormatPkcs8:
+    case WebCryptoKeyFormatSpki:
+        if (rawKeyData.isArrayBuffer()) {
+            keyData = copyBytes(rawKeyData.getAsArrayBuffer());
+        } else if (rawKeyData.isArrayBufferView()) {
+            keyData = copyBytes(rawKeyData.getAsArrayBufferView());
+        } else {
+            result->completeWithError(WebCryptoErrorTypeType, "Key data must be a BufferSource for non-JWK formats");
             return promise;
+        }
+        break;
+    // 14.3.9.6: If format is equal to the string "jwk":
+    //
+    //  (1) If the keyData parameter passed to the importKey method is not a
+    //      JsonWebKey dictionary, throw a TypeError.
+    //
+    //  (2) Let keyData be the keyData parameter passed to the importKey
+    //      method.
+    case WebCryptoKeyFormatJwk:
+        if (rawKeyData.isDictionary()) {
+            // TODO(eroman): To match the spec error order, parsing of the
+            // JsonWebKey should be done earlier (at the WebIDL layer of
+            // parameter checking), regardless of the format being "jwk".
+            if (!parseJsonWebKey(rawKeyData.getAsDictionary(), keyData, result))
+                return promise;
+        } else {
+            result->completeWithError(WebCryptoErrorTypeType, "Key data must be an object for JWK import");
+            return promise;
+        }
+        break;
     }
     histogramAlgorithm(scriptState->getExecutionContext(), normalizedAlgorithm);
     Platform::current()->crypto()->importKey(format, std::move(keyData), normalizedAlgorithm, extractable, keyUsages, result->result());
