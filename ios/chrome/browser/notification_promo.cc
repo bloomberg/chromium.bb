@@ -232,18 +232,17 @@ bool NotificationPromo::CanShow() const {
 
 void NotificationPromo::HandleClosed() {
   if (!closed_) {
-    closed_ = true;
-    WritePrefs();
+    WritePrefs(promo_id_, first_view_time_, views_, true);
   }
 }
 
-bool NotificationPromo::HandleViewed() {
-  ++views_;
-  if (first_view_time_ == 0) {
-    first_view_time_ = base::Time::Now().ToDoubleT();
+void NotificationPromo::HandleViewed() {
+  int views = views_ + 1;
+  double first_view_time = first_view_time_;
+  if (first_view_time == 0) {
+    first_view_time = base::Time::Now().ToDoubleT();
   }
-  WritePrefs();
-  return ExceedsMaxViews() || ExceedsMaxSeconds();
+  WritePrefs(promo_id_, first_view_time, views, closed_);
 }
 
 bool NotificationPromo::ExceedsMaxViews() const {

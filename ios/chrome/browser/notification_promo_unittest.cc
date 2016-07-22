@@ -162,9 +162,7 @@ class NotificationPromoTest : public testing::Test {
     NotificationPromo first_promo(&local_state_);
     first_promo.InitFromVariations();
     first_promo.InitFromPrefs(promo_type_);
-
-    first_promo.HandleViewed();
-    EXPECT_EQ(first_promo.max_views_ - 1, first_promo.views_);
+    EXPECT_EQ(first_promo.max_views_ - 2, first_promo.views_);
     EXPECT_TRUE(first_promo.CanShow());
     first_promo.HandleViewed();
 
@@ -173,19 +171,26 @@ class NotificationPromoTest : public testing::Test {
     NotificationPromo second_promo(&local_state_);
     second_promo.InitFromVariations();
     second_promo.InitFromPrefs(promo_type_);
-    EXPECT_EQ(second_promo.max_views_, second_promo.views_);
-    EXPECT_FALSE(second_promo.CanShow());
+    EXPECT_EQ(second_promo.max_views_ - 1, second_promo.views_);
+    EXPECT_TRUE(second_promo.CanShow());
+    second_promo.HandleViewed();
+
+    NotificationPromo third_promo(&local_state_);
+    third_promo.InitFromVariations();
+    third_promo.InitFromPrefs(promo_type_);
+    EXPECT_EQ(third_promo.max_views_, third_promo.views_);
+    EXPECT_FALSE(third_promo.CanShow());
 
     // Test out of range views.
     for (int i = max_views_; i < max_views_ * 2; ++i) {
-      second_promo.views_ = i;
-      EXPECT_FALSE(second_promo.CanShow());
+      third_promo.views_ = i;
+      EXPECT_FALSE(third_promo.CanShow());
     }
 
     // Test in range views.
     for (int i = 0; i < max_views_; ++i) {
-      second_promo.views_ = i;
-      EXPECT_TRUE(second_promo.CanShow());
+      third_promo.views_ = i;
+      EXPECT_TRUE(third_promo.CanShow());
     }
 
     // Reset prefs to default.
@@ -200,10 +205,7 @@ class NotificationPromoTest : public testing::Test {
     first_promo.InitFromPrefs(promo_type_);
     EXPECT_FALSE(first_promo.closed_);
     EXPECT_TRUE(first_promo.CanShow());
-
     first_promo.HandleClosed();
-    EXPECT_TRUE(first_promo.closed_);
-    EXPECT_FALSE(first_promo.CanShow());
 
     // Initialize another promo to test that the the closing of the promo was
     // recorded correctly in prefs.
@@ -274,14 +276,11 @@ class NotificationPromoTest : public testing::Test {
   void TestFirstViewTimeRecorded() {
     EXPECT_EQ(0, notification_promo_.first_view_time_);
     notification_promo_.HandleViewed();
-    EXPECT_NE(0, notification_promo_.first_view_time_);
-    double first_viewed = notification_promo_.first_view_time_;
 
     NotificationPromo temp_promo(&local_state_);
     temp_promo.InitFromVariations();
     temp_promo.InitFromPrefs(promo_type_);
-
-    EXPECT_EQ(first_viewed, temp_promo.first_view_time_);
+    EXPECT_NE(0, temp_promo.first_view_time_);
 
     notification_promo_.views_ = 0;
     notification_promo_.first_view_time_ = 0;

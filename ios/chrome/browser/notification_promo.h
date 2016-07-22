@@ -57,9 +57,8 @@ class NotificationPromo {
 
   // Mark the promo as closed when the user dismisses it.
   void HandleClosed();
-  // Mark the promo has having been viewed. This returns true if views
-  // exceeds the maximum allowed.
-  bool HandleViewed();
+  // Mark the promo has having been viewed.
+  void HandleViewed();
 
   const std::string& promo_text() const { return promo_text_; }
   PromoType promo_type() const { return promo_type_; }
