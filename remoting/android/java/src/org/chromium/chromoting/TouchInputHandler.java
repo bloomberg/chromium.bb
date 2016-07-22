@@ -394,9 +394,9 @@ public class TouchInputHandler {
         // If the user is dragging, then the viewport should always follow the user's finger.
         PointF newPos = mDesktopCanvas.moveViewportCenter(!followCursor, deltaX, deltaY);
 
-        // If we are in an indirect mode or are in the middle of a drag operation, then we want to
-        // keep the cursor centered, if possible, as the viewport moves.
-        if (followCursor) {
+        // If we are in an indirect mode, then we want to keep the cursor centered, if possible, as
+        // the viewport moves.
+        if (mInputStrategy.isIndirectInputMode()) {
             moveCursor((int) newPos.x, (int) newPos.y);
         }
 
@@ -503,6 +503,11 @@ public class TouchInputHandler {
             }
 
             moveViewportByOffset(delta[0], delta[1]);
+            if (!mInputStrategy.isIndirectInputMode() && mIsDragging) {
+                // Ensure the cursor follows the user's finger when the user is dragging under
+                // direct input mode.
+                moveCursorToScreenPoint(e2.getX(), e2.getY());
+            }
             return true;
         }
 
