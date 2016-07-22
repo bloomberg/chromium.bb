@@ -12,7 +12,13 @@ extern const char kEnableSnippets[];
 
 extern const char kSnippetHosts[];
 
+// The pref name for today's count of NTPSnippetsFetcher requests, so far.
+extern const char kSnippetFetcherQuotaCount[];
+// The pref name for the current day for the counter of NTPSnippetsFetcher
+// requests.
+extern const char kSnippetFetcherQuotaDay[];
+
 }  // namespace prefs
 }  // namespace ntp_snippets
 
-#endif
+#endif  // COMPONENTS_NTP_SNIPPETS_PREF_NAMES_H_

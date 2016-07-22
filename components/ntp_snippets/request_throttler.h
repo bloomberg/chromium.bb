@@ -1,0 +1,88 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_NTP_SNIPPETS_REQUEST_THROTTLER_H_
+#define COMPONENTS_NTP_SNIPPETS_REQUEST_THROTTLER_H_
+
+#include <string>
+
+#include "base/macros.h"
+
+class PrefRegistrySimple;
+class PrefService;
+
+namespace base {
+class HistogramBase;
+}  // namespace base
+
+namespace ntp_snippets {
+
+struct RequestTypeInfo;
+
+// Counts requests to external services, compares them to a daily quota, reports
+// them to UMA. In the application code, create one local instance for each type
+// of requests, identified by the RequestType. The request counter is based on:
+//  - daily quota from a variation param "quota_|type|" in the NTPSnippets trial
+//  - pref "ntp.request_throttler.|type|.count" to store the current counter,
+//  - pref "ntp.request_throttler.|type|.day" to store current day to which the
+//    current counter value applies.
+// Furthermore the counter reports to histograms:
+//  - "NewTabPage.RequestThrottler.RequestStatus_|type|" - status of each
+//  request;
+//  - "NewTabPage.RequestThrottler.PerDay_|type|" - the daily count of requests.
+//
+// Implementation notes: When extending this class for a new RequestType, please
+//  1) define in request_counter.cc in kRequestTypeInfo
+//     a) the string value for your |type| and
+//     b) constants for day/count prefs;
+//  2) define a new RequestThrottlerTypes histogram suffix in histogram.xml
+//     (with the same string value as in 1a)).
+class RequestThrottler {
+ public:
+  // Enumeration listing all current applications of the request counter.
+  enum class RequestType {
+    CONTENT_SUGGESTION_FETCHER
+  };
+
+  RequestThrottler(PrefService* pref_service,
+                 RequestType type,
+                 int default_quota);
+
+  // Registers profile prefs for all RequestTypes. Called from browser_prefs.cc.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Returns whether quota is available for another request and reports this
+  // information to UMA. Forced requests always return true -- should be only
+  // used for requests initiated by the user (if it is safe to assume that all
+  // users cannot generate an amount of requests we cannot handle).
+  bool DemandQuotaForRequest(bool force_request);
+
+ private:
+  // Also emits the PerDay histogram if the day changed.
+  void ResetCounterIfDayChanged();
+
+  const char* GetRequestTypeAsString() const;
+
+  int GetCount() const;
+  void SetCount(int count);
+  int GetDay() const;
+  void SetDay(int day);
+  bool HasDay() const;
+
+  PrefService* pref_service_;
+  const RequestTypeInfo& type_info_;
+
+  // It comes from a variation parameter or |default_quota| as a fallback.
+  int quota_;
+
+  // The histograms for reporting the requests of the given |type_|.
+  base::HistogramBase* histogram_request_status_;
+  base::HistogramBase* histogram_per_day_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestThrottler);
+};
+
+}  // namespace ntp_snippets
+
+#endif  // COMPONENTS_NTP_SNIPPETS_REQUEST_THROTTLER_H_

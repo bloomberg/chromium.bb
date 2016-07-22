@@ -57,6 +57,8 @@
         'ntp_snippets/pref_names.cc',
         'ntp_snippets/pref_names.h',
         'ntp_snippets/proto/ntp_snippets.proto',
+        'ntp_snippets/request_throttler.cc',
+        'ntp_snippets/request_throttler.h',
         'ntp_snippets/switches.cc',
         'ntp_snippets/switches.h',
       ],

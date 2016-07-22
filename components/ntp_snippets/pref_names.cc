@@ -11,5 +11,10 @@ const char kEnableSnippets[] = "ntp_snippets.enable";
 
 const char kSnippetHosts[] = "ntp_snippets.hosts";
 
+const char kSnippetFetcherQuotaDay[] =
+    "ntp.request_throttler.suggestion_fetcher.day";
+const char kSnippetFetcherQuotaCount[] =
+    "ntp.request_throttler.suggestion_fetcher.count";
+
 }  // namespace prefs
 }  // namespace ntp_snippets
