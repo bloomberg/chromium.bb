@@ -33,42 +33,26 @@ base::LazyInstance<base::ThreadLocalBoolean> lazy_tls_bool =
 
 }  // namespace
 
-Thread::Options::Options()
-    : message_loop_type(MessageLoop::TYPE_DEFAULT),
-      timer_slack(TIMER_SLACK_NONE),
-      stack_size(0),
-      priority(ThreadPriority::NORMAL) {
-}
+Thread::Options::Options() = default;
 
-Thread::Options::Options(MessageLoop::Type type,
-                         size_t size)
-    : message_loop_type(type),
-      timer_slack(TIMER_SLACK_NONE),
-      stack_size(size),
-      priority(ThreadPriority::NORMAL) {
-}
+Thread::Options::Options(MessageLoop::Type type, size_t size)
+    : message_loop_type(type), stack_size(size) {}
 
 Thread::Options::Options(const Options& other) = default;
 
-Thread::Options::~Options() {
-}
+Thread::Options::~Options() = default;
 
 Thread::Thread(const std::string& name)
-    :
-#if defined(OS_WIN)
-      com_status_(NONE),
-#endif
-      stopping_(false),
-      running_(false),
-      thread_(0),
-      id_(kInvalidThreadId),
-      id_event_(WaitableEvent::ResetPolicy::MANUAL,
+    : id_event_(WaitableEvent::ResetPolicy::MANUAL,
                 WaitableEvent::InitialState::NOT_SIGNALED),
-      message_loop_(nullptr),
-      message_loop_timer_slack_(TIMER_SLACK_NONE),
       name_(name),
       start_event_(WaitableEvent::ResetPolicy::MANUAL,
                    WaitableEvent::InitialState::NOT_SIGNALED) {
+  // Only bind the sequence on Start(): the state is constant between
+  // construction and Start() and it's thus valid for Start() to be called on
+  // another sequence as long as every other operation is then performed on that
+  // sequence.
+  owning_sequence_checker_.DetachFromSequence();
 }
 
 Thread::~Thread() {
@@ -76,6 +60,8 @@ Thread::~Thread() {
 }
 
 bool Thread::Start() {
+  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+
   Options options;
 #if defined(OS_WIN)
   if (com_status_ == STA)
@@ -85,7 +71,9 @@ bool Thread::Start() {
 }
 
 bool Thread::StartWithOptions(const Options& options) {
+  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!message_loop_);
+  DCHECK(!IsRunning());
 #if defined(OS_WIN)
   DCHECK((com_status_ != STA) ||
       (options.message_loop_type == MessageLoop::TYPE_UI));
@@ -102,13 +90,14 @@ bool Thread::StartWithOptions(const Options& options) {
     type = MessageLoop::TYPE_CUSTOM;
 
   message_loop_timer_slack_ = options.timer_slack;
-  std::unique_ptr<MessageLoop> message_loop =
+  std::unique_ptr<MessageLoop> message_loop_owned =
       MessageLoop::CreateUnbound(type, options.message_pump_factory);
-  message_loop_ = message_loop.get();
+  message_loop_ = message_loop_owned.get();
   start_event_.Reset();
 
-  // Hold the thread_lock_ while starting a new thread, so that we can make sure
-  // that thread_ is populated before the newly created thread accesses it.
+  // Hold |thread_lock_| while starting the new thread to synchronize with
+  // Stop() while it's not guaranteed to be sequenced (until crbug/629139 is
+  // fixed).
   {
     AutoLock lock(thread_lock_);
     if (!PlatformThread::CreateWithPriority(options.stack_size, this, &thread_,
@@ -119,15 +108,16 @@ bool Thread::StartWithOptions(const Options& options) {
     }
   }
 
-  // The ownership of message_loop is managemed by the newly created thread
+  // The ownership of |message_loop_| is managed by the newly created thread
   // within the ThreadMain.
-  ignore_result(message_loop.release());
+  ignore_result(message_loop_owned.release());
 
   DCHECK(message_loop_);
   return true;
 }
 
 bool Thread::StartAndWaitForTesting() {
+  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
   bool result = Start();
   if (!result)
     return false;
@@ -136,6 +126,7 @@ bool Thread::StartAndWaitForTesting() {
 }
 
 bool Thread::WaitUntilThreadStarted() const {
+  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
   if (!message_loop_)
     return false;
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -144,7 +135,12 @@ bool Thread::WaitUntilThreadStarted() const {
 }
 
 void Thread::Stop() {
+  // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
+  // enable this check, until then synchronization with Start() via
+  // |thread_lock_| is required...
+  // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
   AutoLock lock(thread_lock_);
+
   if (thread_.is_null())
     return;
 
@@ -152,22 +148,23 @@ void Thread::Stop() {
 
   // Wait for the thread to exit.
   //
-  // TODO(darin): Unfortunately, we need to keep message_loop_ around until
+  // TODO(darin): Unfortunately, we need to keep |message_loop_| around until
   // the thread exits.  Some consumers are abusing the API.  Make them stop.
   //
   PlatformThread::Join(thread_);
   thread_ = base::PlatformThreadHandle();
 
-  // The thread should nullify message_loop_ on exit.
+  // The thread should nullify |message_loop_| on exit (note: Join() adds an
+  // implicit memory barrier and no lock is thus required for this check).
   DCHECK(!message_loop_);
 
   stopping_ = false;
 }
 
 void Thread::StopSoon() {
-  // We should only be called on the same thread that started us.
-
-  DCHECK_NE(GetThreadId(), PlatformThread::CurrentId());
+  // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
+  // enable this check.
+  // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
 
   if (stopping_ || !message_loop_)
     return;
@@ -185,26 +182,35 @@ PlatformThreadId Thread::GetThreadId() const {
 }
 
 bool Thread::IsRunning() const {
-  // If the thread's already started (i.e. message_loop_ is non-null) and
-  // not yet requested to stop (i.e. stopping_ is false) we can just return
-  // true. (Note that stopping_ is touched only on the same thread that
-  // starts / started the new thread so we need no locking here.)
+  // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
+  // enable this check.
+  // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+
+  // If the thread's already started (i.e. |message_loop_| is non-null) and not
+  // yet requested to stop (i.e. |stopping_| is false) we can just return true.
+  // (Note that |stopping_| is touched only on the same sequence that starts /
+  // started the new thread so we need no locking here.)
   if (message_loop_ && !stopping_)
     return true;
-  // Otherwise check the running_ flag, which is set to true by the new thread
+  // Otherwise check the |running_| flag, which is set to true by the new thread
   // only while it is inside Run().
   AutoLock lock(running_lock_);
   return running_;
 }
 
 void Thread::Run(RunLoop* run_loop) {
+  // Overridable protected method to be called from our |thread_| only.
+  DCHECK_EQ(id_, PlatformThread::CurrentId());
+
   run_loop->Run();
 }
 
+// static
 void Thread::SetThreadWasQuitProperly(bool flag) {
   lazy_tls_bool.Pointer()->Set(flag);
 }
 
+// static
 bool Thread::GetThreadWasQuitProperly() {
   bool quit_properly = true;
 #ifndef NDEBUG
@@ -224,7 +230,7 @@ void Thread::ThreadMain() {
   PlatformThread::SetName(name_.c_str());
   ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
 
-  // Lazily initialize the message_loop so that it can run on this thread.
+  // Lazily initialize the |message_loop| so that it can run on this thread.
   DCHECK(message_loop_);
   std::unique_ptr<MessageLoop> message_loop(message_loop_);
   message_loop_->BindToCurrentThread();

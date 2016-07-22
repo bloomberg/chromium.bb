@@ -157,16 +157,11 @@ TEST_F(ThreadTest, StartWithOptions_StackSize) {
   EXPECT_TRUE(a.message_loop());
   EXPECT_TRUE(a.IsRunning());
 
-  bool was_invoked = false;
-  a.task_runner()->PostTask(FROM_HERE, base::Bind(&ToggleValue, &was_invoked));
-
-  // wait for the task to run (we could use a kernel event here
-  // instead to avoid busy waiting, but this is sufficient for
-  // testing purposes).
-  for (int i = 100; i >= 0 && !was_invoked; --i) {
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-  }
-  EXPECT_TRUE(was_invoked);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  a.task_runner()->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
+                                                  base::Unretained(&event)));
+  event.Wait();
 }
 
 TEST_F(ThreadTest, TwoTasks) {
@@ -195,7 +190,42 @@ TEST_F(ThreadTest, StopSoon) {
   EXPECT_TRUE(a.message_loop());
   EXPECT_TRUE(a.IsRunning());
   a.StopSoon();
+  a.Stop();
+  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.IsRunning());
+}
+
+TEST_F(ThreadTest, StopTwiceNop) {
+  Thread a("StopTwiceNop");
+  EXPECT_TRUE(a.Start());
+  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.IsRunning());
   a.StopSoon();
+  // Calling StopSoon() a second time should be a nop.
+  a.StopSoon();
+  a.Stop();
+  // Same with Stop().
+  a.Stop();
+  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.IsRunning());
+  // Calling them when not running should also nop.
+  a.StopSoon();
+  a.Stop();
+}
+
+TEST_F(ThreadTest, StartTwice) {
+  Thread a("StartTwice");
+
+  EXPECT_TRUE(a.Start());
+  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.IsRunning());
+  a.Stop();
+  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.IsRunning());
+
+  EXPECT_TRUE(a.Start());
+  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.IsRunning());
   a.Stop();
   EXPECT_FALSE(a.message_loop());
   EXPECT_FALSE(a.IsRunning());
