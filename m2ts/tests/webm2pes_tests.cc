@@ -68,7 +68,7 @@ TEST_F(Webm2PesTests, CreatePesFile) { CreateAndLoadTestInput(); }
 TEST_F(Webm2PesTests, CanParseFirstPacket) {
   CreateAndLoadTestInput();
   libwebm::VpxPesParser::PesHeader header;
-  libwebm::VpxPesParser::VpxFrame frame;
+  libwebm::VideoFrame frame;
   ASSERT_TRUE(parser()->ParseNextPacket(&header, &frame));
   EXPECT_TRUE(VerifyPacketStartCode(header));
 

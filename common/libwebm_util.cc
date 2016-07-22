@@ -13,9 +13,13 @@
 namespace libwebm {
 
 std::int64_t NanosecondsTo90KhzTicks(std::int64_t nanoseconds) {
-  const double kNanosecondsPerSecond = 1000000000.0;
   const double pts_seconds = nanoseconds / kNanosecondsPerSecond;
   return static_cast<std::int64_t>(pts_seconds * 90000);
+}
+
+std::int64_t Khz90TicksToNanoseconds(std::int64_t ticks) {
+  const double seconds = ticks / 90000.0;
+  return static_cast<std::int64_t>(seconds * kNanosecondsPerSecond);
 }
 
 bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,

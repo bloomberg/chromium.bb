@@ -53,6 +53,9 @@ class VideoFrame {
   std::int64_t nanosecond_pts() const { return nanosecond_pts_; }
   Codec codec() const { return codec_; }
 
+  // Mutators.
+  void set_nanosecond_pts(std::int64_t nano_pts) { nanosecond_pts_ = nano_pts; }
+
  private:
   Buffer buffer_;
   bool keyframe_ = false;
