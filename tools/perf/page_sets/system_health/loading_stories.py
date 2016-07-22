@@ -17,12 +17,11 @@ class _LoadingStory(system_health_story.SystemHealthStory):
 ################################################################################
 # Search and e-commerce.
 ################################################################################
-# TODO(petrcermak): Split these into 'portal' and 'shopping' stories.
 
 
 class LoadGoogleStory(_LoadingStory):
   NAME = 'load:search:google'
-  URL = 'https://www.google.co.uk/'
+  URL = 'https://www.google.com/#hl=en&q=science'
 
 
 class LoadBaiduStory(_LoadingStory):

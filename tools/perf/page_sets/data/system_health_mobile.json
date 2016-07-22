@@ -4,6 +4,7 @@
             "load:search:amazon",
             "load:search:baidu",
             "load:search:yandex",
+            "load:search:google",
             "load:search:taobao",
             "load:search:ebay",
             "load:search:yahoo"
@@ -93,10 +94,6 @@
         ],
         "system_health_mobile_027.wpr": [
             "browse:news:reddit"
-        ],
-        "system_health_mobile_028.wpr": [
-            "load:search:google",
-            "search:portal:google"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."

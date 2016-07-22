@@ -4,6 +4,7 @@
             "load:search:amazon",
             "load:search:flipkart",
             "load:search:ebay",
+            "load:search:google",
             "load:search:yandex",
             "load:search:taobao",
             "load:search:yahoo",
@@ -84,10 +85,6 @@
         ],
         "system_health_desktop_021.wpr": [
             "browse:news:flipboard"
-        ],
-        "system_health_desktop_022.wpr": [
-            "load:search:google",
-            "search:portal:google"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."
