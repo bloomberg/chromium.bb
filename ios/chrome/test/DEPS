@@ -6,5 +6,6 @@ include_rules = [
   "+ios/public/test",
   "+ios/web/public",
   "+net/url_request",
+  "+third_party/google_toolbox_for_mac",
   "+ui",
 ]

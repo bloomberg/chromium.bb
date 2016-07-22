@@ -45,11 +45,15 @@
         'src/AppKit/GTMUILocalizerAndLayoutTweaker.h',
         'src/AppKit/GTMUILocalizerAndLayoutTweaker.m',
         'src/DebugUtils/GTMDebugSelectorValidation.h',
+        'src/DebugUtils/GTMMethodCheck.h',
+        'src/DebugUtils/GTMMethodCheck.m',
         'src/DebugUtils/GTMTypeCasting.h',
         'src/Foundation/GTMLightweightProxy.h',
         'src/Foundation/GTMLightweightProxy.m',
         'src/Foundation/GTMLogger.h',
         'src/Foundation/GTMLogger.m',
+        'src/Foundation/GTMNSDictionary+URLArguments.h',
+        'src/Foundation/GTMNSDictionary+URLArguments.m',
         'src/Foundation/GTMNSString+URLArguments.h',
         'src/Foundation/GTMNSString+URLArguments.m',
         'src/Foundation/GTMServiceManagement.c',
@@ -83,7 +87,9 @@
         ['OS!="ios"', {
           'sources/': [
             ['exclude', '^src/iPhone/'],
+            ['exclude', '^src/DebugUtils/GTMMethodCheck\\.m$'],
             ['exclude', '^src/Foundation/GTMLogger\\.m$'],
+            ['exclude', '^src/Foundation/GTMNSDictionary\\+URLArguments\\.m$'],
           ],
           'link_settings': {
             'libraries': [
@@ -98,8 +104,10 @@
           'sources/': [
             # Exclude everything except what's needed for iOS.
             ['exclude', '\\.(c|m)$'],
+            ['include', '^src/DebugUtils/GTMMethodCheck\\.m$'],
             ['include', '^src/Foundation/GTMLightweightProxy\\.m$'],
             ['include', '^src/Foundation/GTMLogger\\.m$'],
+            ['include', '^src/Foundation/GTMNSDictionary\\+URLArguments\\.m$'],
             ['include', '^src/Foundation/GTMNSString\\+URLArguments\\.m$'],
             ['include', '^src/Foundation/GTMStringEncoding\\.m$'],
             ['include', '^src/iPhone/'],

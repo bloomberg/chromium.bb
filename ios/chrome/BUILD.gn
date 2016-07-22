@@ -77,6 +77,7 @@ test("ios_chrome_unittests") {
     "browser/web_resource/web_resource_util_unittest.cc",
     "browser/webp_transcode/webp_decoder_unittest.mm",
     "common/string_util_unittest.mm",
+    "test/google_toolbox_unittest.mm",
   ]
 
   deps = [
@@ -116,6 +117,7 @@ test("ios_chrome_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/google_toolbox_for_mac",
     "//third_party/ocmock",
     "//ui/gfx:test_support",
   ]

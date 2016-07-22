@@ -60,12 +60,16 @@ component("google_toolbox_for_mac") {
     ]
   } else {  # is_ios
     sources += [
+      "src/DebugUtils/GTMMethodCheck.h",
+      "src/DebugUtils/GTMMethodCheck.m",
       "src/Foundation/GTMLightweightProxy.h",
       "src/Foundation/GTMLightweightProxy.m",
 
       # GTMLogger is used by breakpad, which is still used on iOS.
       "src/Foundation/GTMLogger.h",
       "src/Foundation/GTMLogger.m",
+      "src/Foundation/GTMNSDictionary+URLArguments.h",
+      "src/Foundation/GTMNSDictionary+URLArguments.m",
       "src/Foundation/GTMNSString+URLArguments.h",
       "src/Foundation/GTMNSString+URLArguments.m",
       "src/iPhone/GTMFadeTruncatingLabel.h",
