@@ -21,9 +21,16 @@ namespace blink {
 // for the root.
 class PLATFORM_EXPORT TransformPaintPropertyNode : public RefCounted<TransformPaintPropertyNode> {
 public:
-    static PassRefPtr<TransformPaintPropertyNode> create(const TransformationMatrix& matrix, const FloatPoint3D& origin, PassRefPtr<TransformPaintPropertyNode> parent = nullptr)
+    static PassRefPtr<TransformPaintPropertyNode> create(PassRefPtr<TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin)
     {
-        return adoptRef(new TransformPaintPropertyNode(matrix, origin, parent));
+        return adoptRef(new TransformPaintPropertyNode(parent, matrix, origin));
+    }
+
+    void update(PassRefPtr<TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin)
+    {
+        m_parent = parent;
+        m_matrix = matrix;
+        m_origin = origin;
     }
 
     const TransformationMatrix& matrix() const { return m_matrix; }
@@ -34,13 +41,12 @@ public:
     TransformPaintPropertyNode* parent() const { return m_parent.get(); }
 
 private:
+    TransformPaintPropertyNode(PassRefPtr<TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin)
+        : m_parent(parent), m_matrix(matrix), m_origin(origin) { }
 
-    TransformPaintPropertyNode(const TransformationMatrix& matrix, const FloatPoint3D& origin, PassRefPtr<TransformPaintPropertyNode> parent)
-        : m_matrix(matrix), m_origin(origin), m_parent(parent) { }
-
-    const TransformationMatrix m_matrix;
-    const FloatPoint3D m_origin;
     RefPtr<TransformPaintPropertyNode> m_parent;
+    TransformationMatrix m_matrix;
+    FloatPoint3D m_origin;
 };
 
 // Redeclared here to avoid ODR issues.

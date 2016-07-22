@@ -1109,4 +1109,78 @@ TEST_F(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset)
     EXPECT_EQ(svgWithTransformProperties->transform(), rectWithTransformProperties->transform()->parent());
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
+{
+    setBodyInnerHTML(
+        "<div id='a' style='transform: translate(33px, 44px)'>"
+        "  <div id='b' style='transform: translate(55px, 66px)'>"
+        "    <div id='c' style='transform: translate(77px, 88px)'>C<div>"
+        "  </div>"
+        "</div>");
+
+    Element* a = document().getElementById("a");
+    ObjectPaintProperties* aProperties = a->layoutObject()->objectPaintProperties();
+    TransformPaintPropertyNode* aTransformNode = aProperties->transform();
+    EXPECT_EQ(TransformationMatrix().translate(33, 44), aTransformNode->matrix());
+
+    Element* b = document().getElementById("b");
+    ObjectPaintProperties* bProperties = b->layoutObject()->objectPaintProperties();
+    TransformPaintPropertyNode* bTransformNode = bProperties->transform();
+    EXPECT_EQ(TransformationMatrix().translate(55, 66), bTransformNode->matrix());
+
+    Element* c = document().getElementById("c");
+    ObjectPaintProperties* cProperties = c->layoutObject()->objectPaintProperties();
+    TransformPaintPropertyNode* cTransformNode = cProperties->transform();
+    EXPECT_EQ(TransformationMatrix().translate(77, 88), cTransformNode->matrix());
+
+    // Change transform of b. B's transform node should be a new node with the new value,
+    // and a and c's transform nodes should be unchanged (with c's parent adjusted).
+    b->setAttribute(HTMLNames::styleAttr, "transform: translate(111px, 222px)");
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_EQ(aProperties, a->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(aTransformNode, aProperties->transform());
+
+    EXPECT_EQ(bProperties, b->layoutObject()->objectPaintProperties());
+    bTransformNode = bProperties->transform();
+    EXPECT_EQ(TransformationMatrix().translate(111, 222), bTransformNode->matrix());
+    EXPECT_EQ(aTransformNode, bTransformNode->parent());
+
+    EXPECT_EQ(cProperties, c->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(cTransformNode, cProperties->transform());
+    EXPECT_EQ(bTransformNode, cTransformNode->parent());
+
+    // Remove transform from b. B's transform node should be removed from the tree,
+    // and a and c's transform nodes should be unchanged (with c's parent adjusted).
+    b->setAttribute(HTMLNames::styleAttr, "");
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_EQ(aProperties, a->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(aTransformNode, aProperties->transform());
+
+    EXPECT_EQ(bProperties, b->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(nullptr, bProperties->transform());
+
+    EXPECT_EQ(cProperties, c->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(cTransformNode, cProperties->transform());
+    EXPECT_EQ(aTransformNode, cTransformNode->parent());
+
+    // Re-add transform to b. B's transform node should be inserted into the tree,
+    // and a and c's transform nodes should be unchanged (with c's parent adjusted).
+    b->setAttribute(HTMLNames::styleAttr, "transform: translate(4px, 5px)");
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_EQ(aProperties, a->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(aTransformNode, aProperties->transform());
+
+    EXPECT_EQ(bProperties, b->layoutObject()->objectPaintProperties());
+    bTransformNode = bProperties->transform();
+    EXPECT_EQ(TransformationMatrix().translate(4, 5), bTransformNode->matrix());
+    EXPECT_EQ(aTransformNode, bTransformNode->parent());
+
+    EXPECT_EQ(cProperties, c->layoutObject()->objectPaintProperties());
+    EXPECT_EQ(cTransformNode, cProperties->transform());
+    EXPECT_EQ(bTransformNode, cTransformNode->parent());
+}
+
 } // namespace blink

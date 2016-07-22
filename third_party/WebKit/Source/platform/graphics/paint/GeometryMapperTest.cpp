@@ -35,9 +35,9 @@ public:
 private:
     void SetUp() override
     {
-        rootTransformNode = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
-        rootClipNode = ClipPaintPropertyNode::create(rootTransformNode, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
-        rootEffectNode = EffectPaintPropertyNode::create(1.0, nullptr);
+        rootTransformNode = TransformPaintPropertyNode::create(nullptr, TransformationMatrix(), FloatPoint3D());
+        rootClipNode = ClipPaintPropertyNode::create(nullptr, rootTransformNode, FloatRoundedRect(LayoutRect::infiniteIntRect()));
+        rootEffectNode = EffectPaintPropertyNode::create(nullptr, 1.0);
         geometryMapper = wrapUnique(new GeometryMapper());
     }
 
@@ -80,7 +80,7 @@ TEST_F(GeometryMapperTest, Root)
 
 TEST_F(GeometryMapperTest, IdentityTransform)
 {
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, TransformationMatrix(), FloatPoint3D());
     PropertyTreeState localState = rootPropertyTreeState();
     localState.transform = transform.get();
 
@@ -93,7 +93,7 @@ TEST_F(GeometryMapperTest, TranslationTransform)
 {
     TransformationMatrix transformMatrix;
     transformMatrix.translate(20, 10);
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(transformMatrix, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, transformMatrix, FloatPoint3D());
     PropertyTreeState localState = rootPropertyTreeState();
     localState.transform = transform.get();
 
@@ -113,7 +113,7 @@ TEST_F(GeometryMapperTest, RotationAndScaleTransform)
     TransformationMatrix transformMatrix;
     transformMatrix.rotate(45);
     transformMatrix.scale(2);
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(transformMatrix, FloatPoint3D(0, 0, 0), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, transformMatrix, FloatPoint3D(0, 0, 0));
     PropertyTreeState localState = rootPropertyTreeState();
     localState.transform = transform.get();
 
@@ -128,7 +128,7 @@ TEST_F(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin)
     TransformationMatrix transformMatrix;
     transformMatrix.rotate(45);
     transformMatrix.scale(2);
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(transformMatrix, FloatPoint3D(50, 50, 0), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, transformMatrix, FloatPoint3D(50, 50, 0));
     PropertyTreeState localState = rootPropertyTreeState();
     localState.transform = transform.get();
 
@@ -143,11 +143,11 @@ TEST_F(GeometryMapperTest, NestedTransforms)
 {
     TransformationMatrix rotateTransform;
     rotateTransform.rotate(45);
-    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rotateTransform, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform, FloatPoint3D());
 
     TransformationMatrix scaleTransform;
     scaleTransform.scale(2);
-    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(scaleTransform, FloatPoint3D(), transform1);
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(transform1, scaleTransform, FloatPoint3D());
 
     PropertyTreeState localState = rootPropertyTreeState();
     localState.transform = transform2.get();
@@ -166,11 +166,11 @@ TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination)
 {
     TransformationMatrix rotateTransform;
     rotateTransform.rotate(45);
-    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rotateTransform, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform, FloatPoint3D());
 
     TransformationMatrix scaleTransform;
     scaleTransform.scale(2);
-    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(scaleTransform, FloatPoint3D(), transform1);
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(transform1, scaleTransform, FloatPoint3D());
 
     PropertyTreeState localState = rootPropertyTreeState();
     localState.transform = transform2.get();
@@ -186,7 +186,7 @@ TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination)
 
 TEST_F(GeometryMapperTest, SimpleClip)
 {
-    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(rootTransformNode, FloatRoundedRect(10, 10, 50, 50), rootClipNode);
+    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(rootClipNode, rootTransformNode, FloatRoundedRect(10, 10, 50, 50));
 
     PropertyTreeState localState = rootPropertyTreeState();
     localState.clip = clip.get();
@@ -207,9 +207,9 @@ TEST_F(GeometryMapperTest, ClipBeforeTransform)
 {
     TransformationMatrix rotateTransform;
     rotateTransform.rotate(45);
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rotateTransform, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform, FloatPoint3D());
 
-    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(transform.get(), FloatRoundedRect(10, 10, 50, 50), rootClipNode);
+    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(rootClipNode, transform.get(), FloatRoundedRect(10, 10, 50, 50));
 
     PropertyTreeState localState = rootPropertyTreeState();
     localState.clip = clip.get();
@@ -233,9 +233,9 @@ TEST_F(GeometryMapperTest, ClipAfterTransform)
 {
     TransformationMatrix rotateTransform;
     rotateTransform.rotate(45);
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rotateTransform, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform, FloatPoint3D());
 
-    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(rootTransformNode.get(), FloatRoundedRect(10, 10, 200, 200), rootClipNode);
+    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(rootClipNode, rootTransformNode.get(), FloatRoundedRect(10, 10, 200, 200));
 
     PropertyTreeState localState = rootPropertyTreeState();
     localState.clip = clip.get();
@@ -257,13 +257,13 @@ TEST_F(GeometryMapperTest, ClipAfterTransform)
 
 TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween)
 {
-    RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(rootTransformNode.get(), FloatRoundedRect(10, 10, 200, 200), rootClipNode);
+    RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(rootClipNode, rootTransformNode.get(), FloatRoundedRect(10, 10, 200, 200));
 
     TransformationMatrix rotateTransform;
     rotateTransform.rotate(45);
-    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rotateTransform, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform, FloatPoint3D());
 
-    RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(transform.get(), FloatRoundedRect(10, 10, 200, 200), clip1.get());
+    RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(clip1, transform.get(), FloatRoundedRect(10, 10, 200, 200));
 
     FloatRect input(0, 0, 100, 100);
 
@@ -317,11 +317,11 @@ TEST_F(GeometryMapperTest, SiblingTransforms)
     // These transforms are siblings. Thus mapping from one to the other requires going through the root.
     TransformationMatrix rotateTransform1;
     rotateTransform1.rotate(45);
-    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rotateTransform1, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform1, FloatPoint3D());
 
     TransformationMatrix rotateTransform2;
     rotateTransform2.rotate(-45);
-    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(rotateTransform2, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform2, FloatPoint3D());
 
     PropertyTreeState transform1State = rootPropertyTreeState();
     transform1State.transform = transform1;

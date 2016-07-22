@@ -15,6 +15,7 @@ namespace blink {
 
 class FrameView;
 class LayoutObject;
+class ObjectPaintProperties;
 
 // The context for PaintPropertyTreeBuilder.
 // It's responsible for bookkeeping tree state in other order, for example, the most recent
@@ -67,6 +68,16 @@ public:
     void buildTreeNodes(const LayoutObject&, PaintPropertyTreeBuilderContext&);
 
 private:
+    template <typename PropertyNode, void (ObjectPaintProperties::*Setter)(PassRefPtr<PropertyNode>)>
+    static void clearPaintProperty(const LayoutObject&);
+
+    template <
+        typename PropertyNode,
+        PropertyNode* (ObjectPaintProperties::*Getter)() const,
+        void (ObjectPaintProperties::*Setter)(PassRefPtr<PropertyNode>),
+        typename... Args>
+    static void updateOrCreatePaintProperty(const LayoutObject&, const PaintPropertyTreeBuilderContext&, PropertyNode*& contextProperty, const Args&...);
+
     static void updatePaintOffsetTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateEffect(const LayoutObject&, PaintPropertyTreeBuilderContext&);

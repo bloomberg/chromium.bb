@@ -17,16 +17,23 @@
 namespace blink {
 
 // A clip rect created by a css property such as "overflow" or "clip".
-// Along with a refernce to the transform space the clip rect is based on,
+// Along with a reference to the transform space the clip rect is based on,
 // and an (optional) parent ClipPaintPropertyNode for inherited clips.
 class PLATFORM_EXPORT ClipPaintPropertyNode : public RefCounted<ClipPaintPropertyNode> {
 public:
     static PassRefPtr<ClipPaintPropertyNode> create(
+        PassRefPtr<ClipPaintPropertyNode> parent,
         PassRefPtr<TransformPaintPropertyNode> localTransformSpace,
-        const FloatRoundedRect& clipRect,
-        PassRefPtr<ClipPaintPropertyNode> parent = nullptr)
+        const FloatRoundedRect& clipRect)
     {
-        return adoptRef(new ClipPaintPropertyNode(localTransformSpace, clipRect, parent));
+        return adoptRef(new ClipPaintPropertyNode(parent, localTransformSpace, clipRect));
+    }
+
+    void update(PassRefPtr<ClipPaintPropertyNode> parent, PassRefPtr<TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
+    {
+        m_parent = parent;
+        m_localTransformSpace = localTransformSpace;
+        m_clipRect = clipRect;
     }
 
     const TransformPaintPropertyNode* localTransformSpace() const { return m_localTransformSpace.get(); }
@@ -36,12 +43,12 @@ public:
     const ClipPaintPropertyNode* parent() const { return m_parent.get(); }
 
 private:
-    ClipPaintPropertyNode(PassRefPtr<TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect, PassRefPtr<ClipPaintPropertyNode> parent)
-        : m_localTransformSpace(localTransformSpace), m_clipRect(clipRect), m_parent(parent) { }
+    ClipPaintPropertyNode(PassRefPtr<ClipPaintPropertyNode> parent, PassRefPtr<TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
+        : m_parent(parent), m_localTransformSpace(localTransformSpace), m_clipRect(clipRect) { }
 
-    RefPtr<TransformPaintPropertyNode> m_localTransformSpace;
-    const FloatRoundedRect m_clipRect;
     RefPtr<ClipPaintPropertyNode> m_parent;
+    RefPtr<TransformPaintPropertyNode> m_localTransformSpace;
+    FloatRoundedRect m_clipRect;
 };
 
 // Redeclared here to avoid ODR issues.

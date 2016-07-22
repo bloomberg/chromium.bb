@@ -27,20 +27,20 @@ public:
 private:
     void SetUp() override
     {
-        rootTransformNode = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
-        rootClipNode = ClipPaintPropertyNode::create(rootTransformNode, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
-        rootEffectNode = EffectPaintPropertyNode::create(1.0, nullptr);
+        rootTransformNode = TransformPaintPropertyNode::create(nullptr, TransformationMatrix(), FloatPoint3D());
+        rootClipNode = ClipPaintPropertyNode::create(nullptr, rootTransformNode, FloatRoundedRect(LayoutRect::infiniteIntRect()));
+        rootEffectNode = EffectPaintPropertyNode::create(nullptr, 1.0);
     }
 };
 
 TEST_F(PropertyTreeStateTest, LeastCommonAncestor)
 {
     TransformationMatrix matrix;
-    RefPtr<TransformPaintPropertyNode> child1 = TransformPaintPropertyNode::create(matrix, FloatPoint3D(), rootPropertyTreeState().transform);
-    RefPtr<TransformPaintPropertyNode> child2 = TransformPaintPropertyNode::create(matrix, FloatPoint3D(), rootPropertyTreeState().transform);
+    RefPtr<TransformPaintPropertyNode> child1 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, matrix, FloatPoint3D());
+    RefPtr<TransformPaintPropertyNode> child2 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, matrix, FloatPoint3D());
 
-    RefPtr<TransformPaintPropertyNode> childOfChild1 = TransformPaintPropertyNode::create(matrix, FloatPoint3D(), child1);
-    RefPtr<TransformPaintPropertyNode> childOfChild2 = TransformPaintPropertyNode::create(matrix, FloatPoint3D(), child2);
+    RefPtr<TransformPaintPropertyNode> childOfChild1 = TransformPaintPropertyNode::create(child1, matrix, FloatPoint3D());
+    RefPtr<TransformPaintPropertyNode> childOfChild2 = TransformPaintPropertyNode::create(child2, matrix, FloatPoint3D());
 
     EXPECT_EQ(rootPropertyTreeState().transform, propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(childOfChild1.get(), childOfChild2.get()));
     EXPECT_EQ(rootPropertyTreeState().transform, propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(childOfChild1.get(), child2.get()));

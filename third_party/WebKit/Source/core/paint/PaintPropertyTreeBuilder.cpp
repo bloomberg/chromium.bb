@@ -21,17 +21,18 @@ namespace blink {
 
 void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderContext& context)
 {
-    RefPtr<TransformPaintPropertyNode> transformRoot = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
-    context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = transformRoot.get();
-    rootFrame.setRootTransform(std::move(transformRoot));
+    if (!rootFrame.rootTransform() || rootFrame.rootTransform()->parent()) {
+        rootFrame.setRootTransform(TransformPaintPropertyNode::create(nullptr, TransformationMatrix(), FloatPoint3D()));
+        rootFrame.setRootClip(ClipPaintPropertyNode::create(nullptr, rootFrame.rootTransform(), FloatRoundedRect(LayoutRect::infiniteIntRect())));
+        rootFrame.setRootEffect(EffectPaintPropertyNode::create(nullptr, 1.0));
+    } else {
+        DCHECK(rootFrame.rootClip() && !rootFrame.rootClip()->parent());
+        DCHECK(rootFrame.rootEffect() && !rootFrame.rootEffect()->parent());
+    }
 
-    RefPtr<ClipPaintPropertyNode> clipRoot = ClipPaintPropertyNode::create(transformRoot, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
-    context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = clipRoot.get();
-    rootFrame.setRootClip(std::move(clipRoot));
-
-    RefPtr<EffectPaintPropertyNode> effectRoot = EffectPaintPropertyNode::create(1.0, nullptr);
-    context.currentEffect = effectRoot.get();
-    rootFrame.setRootEffect(std::move(effectRoot));
+    context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootFrame.rootTransform();
+    context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootFrame.rootClip();
+    context.currentEffect = rootFrame.rootEffect();
 }
 
 void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropertyTreeBuilderContext& context)
@@ -42,58 +43,84 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
 
     TransformationMatrix frameTranslate;
     frameTranslate.translate(frameView.x() + context.current.paintOffset.x(), frameView.y() + context.current.paintOffset.y());
-    RefPtr<TransformPaintPropertyNode> newTransformNodeForPreTranslation = TransformPaintPropertyNode::create(frameTranslate, FloatPoint3D(), context.current.transform);
+    if (TransformPaintPropertyNode* existingPreTranslation = frameView.preTranslation())
+        existingPreTranslation->update(context.current.transform, frameTranslate, FloatPoint3D());
+    else
+        frameView.setPreTranslation(TransformPaintPropertyNode::create(context.current.transform, frameTranslate, FloatPoint3D()));
 
     FloatRoundedRect contentClip(IntRect(IntPoint(), frameView.visibleContentSize()));
-    RefPtr<ClipPaintPropertyNode> newClipNodeForContentClip = ClipPaintPropertyNode::create(newTransformNodeForPreTranslation.get(), contentClip, context.current.clip);
+    if (ClipPaintPropertyNode* existingContentClip = frameView.contentClip())
+        existingContentClip->update(context.current.clip, frameView.preTranslation(), contentClip);
+    else
+        frameView.setContentClip(ClipPaintPropertyNode::create(context.current.clip, frameView.preTranslation(), contentClip));
 
     DoubleSize scrollOffset = frameView.scrollOffsetDouble();
     TransformationMatrix frameScroll;
     frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
-    RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollTranslation = TransformPaintPropertyNode::create(frameScroll, FloatPoint3D(), newTransformNodeForPreTranslation);
+    if (TransformPaintPropertyNode* existingScrollTranslation = frameView.scrollTranslation())
+        existingScrollTranslation->update(frameView.preTranslation(), frameScroll, FloatPoint3D());
+    else
+        frameView.setScrollTranslation(TransformPaintPropertyNode::create(frameView.preTranslation(), frameScroll, FloatPoint3D()));
 
     // Initialize the context for current, absolute and fixed position cases.
     // They are the same, except that scroll translation does not apply to
     // fixed position descendants.
-    context.current.transform = newTransformNodeForScrollTranslation.get();
+    context.current.transform = frameView.scrollTranslation();
     context.current.paintOffset = LayoutPoint();
-    context.current.clip = newClipNodeForContentClip.get();
+    context.current.clip = frameView.contentClip();
     context.absolutePosition = context.current;
     context.containerForAbsolutePosition = nullptr;
     context.fixedPosition = context.current;
-    context.fixedPosition.transform = newTransformNodeForPreTranslation.get();
+    context.fixedPosition.transform = frameView.preTranslation();
+}
 
-    frameView.setPreTranslation(newTransformNodeForPreTranslation.release());
-    frameView.setScrollTranslation(newTransformNodeForScrollTranslation.release());
-    frameView.setContentClip(newClipNodeForContentClip.release());
+template <typename PropertyNode, void (ObjectPaintProperties::*Setter)(PassRefPtr<PropertyNode>)>
+void PaintPropertyTreeBuilder::clearPaintProperty(const LayoutObject& object)
+{
+    if (ObjectPaintProperties* existingProperties = object.objectPaintProperties())
+        (existingProperties->*Setter)(nullptr);
+}
+
+template <
+    typename PropertyNode,
+    PropertyNode* (ObjectPaintProperties::*Getter)() const,
+    void (ObjectPaintProperties::*Setter)(PassRefPtr<PropertyNode>),
+    typename... Args>
+void PaintPropertyTreeBuilder::updateOrCreatePaintProperty(const LayoutObject& object, const PaintPropertyTreeBuilderContext& context, PropertyNode*& contextProperty, const Args&... args)
+{
+    ObjectPaintProperties* existingProperties = object.objectPaintProperties();
+    PropertyNode* existingPropertyNode = existingProperties ? (existingProperties->*Getter)() : nullptr;
+    if (existingPropertyNode) {
+        existingPropertyNode->update(contextProperty, args...);
+        contextProperty = existingPropertyNode;
+    } else {
+        RefPtr<PropertyNode> newPropertyNode = PropertyNode::create(contextProperty, args...);
+        contextProperty = newPropertyNode.get();
+        (object.getMutableForPainting().ensureObjectPaintProperties().*Setter)(newPropertyNode.release());
+    }
 }
 
 void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (object.isBoxModelObject()) {
+    if (object.isBoxModelObject() && context.current.paintOffset != LayoutPoint()) {
         // TODO(trchen): Eliminate PaintLayer dependency.
         PaintLayer* layer = toLayoutBoxModelObject(object).layer();
-        if (!layer || !layer->paintsWithTransform(GlobalPaintNormalPhase))
+        if (layer && layer->paintsWithTransform(GlobalPaintNormalPhase)) {
+            // We should use the same subpixel paint offset values for snapping regardless of whether a
+            // transform is present. If there is a transform we round the paint offset but keep around
+            // the residual fractional component for the transformed content to paint with.
+            // In spv1 this was called "subpixel accumulation". For more information, see
+            // PaintLayer::subpixelAccumulation() and PaintLayerPainter::paintFragmentByApplyingTransform.
+            IntPoint roundedPaintOffset = roundedIntPoint(context.current.paintOffset);
+            LayoutPoint fractionalPaintOffset = LayoutPoint(context.current.paintOffset - roundedPaintOffset);
+
+            updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::paintOffsetTranslation, &ObjectPaintProperties::setPaintOffsetTranslation>(
+                object, context, context.current.transform, TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y()), FloatPoint3D());
+            context.current.paintOffset = fractionalPaintOffset;
             return;
+        }
     }
-
-    if (context.current.paintOffset == LayoutPoint())
-        return;
-
-    // We should use the same subpixel paint offset values for snapping regardless of whether a
-    // transform is present. If there is a transform we round the paint offset but keep around
-    // the residual fractional component for the transformed content to paint with.
-    // In spv1 this was called "subpixel accumulation". For more information, see
-    // PaintLayer::subpixelAccumulation() and PaintLayerPainter::paintFragmentByApplyingTransform.
-    IntPoint roundedPaintOffset = roundedIntPoint(context.current.paintOffset);
-    LayoutPoint fractionalPaintOffset = LayoutPoint(context.current.paintOffset - roundedPaintOffset);
-
-    RefPtr<TransformPaintPropertyNode> paintOffsetTranslation = TransformPaintPropertyNode::create(
-        TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y()),
-        FloatPoint3D(), context.current.transform);
-    context.current.transform = paintOffsetTranslation.get();
-    context.current.paintOffset = fractionalPaintOffset;
-    object.getMutableForPainting().ensureObjectPaintProperties().setPaintOffsetTranslation(paintOffsetTranslation.release());
+    clearPaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::setPaintOffsetTranslation>(object);
 }
 
 static FloatPoint3D transformOrigin(const LayoutBox& box)
@@ -117,56 +144,52 @@ void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, Paint
         // the animation passes through the identity matrix.
         // FIXME(pdr): Refactor this so all non-root SVG objects use the same transform function.
         const AffineTransform& transform = object.isSVGForeignObject() ? object.localSVGTransform() : object.localToSVGParentTransform();
-        if (transform.isIdentity())
+        if (!transform.isIdentity()) {
+            // The origin is included in the local transform, so leave origin empty.
+            updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::transform, &ObjectPaintProperties::setTransform>(
+                object, context, context.current.transform, TransformationMatrix(transform), FloatPoint3D());
             return;
-
-        // The origin is included in the local transform, so use an empty origin.
-        RefPtr<TransformPaintPropertyNode> svgTransform = TransformPaintPropertyNode::create(
-            transform, FloatPoint3D(0, 0, 0), context.current.transform);
-        context.current.transform = svgTransform.get();
-        object.getMutableForPainting().ensureObjectPaintProperties().setTransform(svgTransform.release());
-        return;
+        }
+    } else {
+        const ComputedStyle& style = object.styleRef();
+        if (object.isBox() && style.hasTransform()) {
+            TransformationMatrix matrix;
+            style.applyTransform(matrix, toLayoutBox(object).size(), ComputedStyle::ExcludeTransformOrigin,
+                ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
+            FloatPoint3D origin = transformOrigin(toLayoutBox(object));
+            updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::transform, &ObjectPaintProperties::setTransform>(
+                object, context, context.current.transform, matrix, origin);
+            return;
+        }
     }
-
-    const ComputedStyle& style = object.styleRef();
-    if (!object.isBox() || !style.hasTransform())
-        return;
-
-    TransformationMatrix matrix;
-    style.applyTransform(matrix, toLayoutBox(object).size(), ComputedStyle::ExcludeTransformOrigin,
-        ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
-    RefPtr<TransformPaintPropertyNode> transformNode = TransformPaintPropertyNode::create(
-        matrix, transformOrigin(toLayoutBox(object)), context.current.transform);
-    context.current.transform = transformNode.get();
-    object.getMutableForPainting().ensureObjectPaintProperties().setTransform(transformNode.release());
+    clearPaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::setTransform>(object);
 }
 
 void PaintPropertyTreeBuilder::updateEffect(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (!object.styleRef().hasOpacity())
+    if (!object.styleRef().hasOpacity()) {
+        clearPaintProperty<EffectPaintPropertyNode, &ObjectPaintProperties::setEffect>(object);
         return;
-    RefPtr<EffectPaintPropertyNode> effectNode = EffectPaintPropertyNode::create(object.styleRef().opacity(), context.currentEffect);
-    context.currentEffect = effectNode.get();
-    object.getMutableForPainting().ensureObjectPaintProperties().setEffect(effectNode.release());
+    }
+
+    updateOrCreatePaintProperty<EffectPaintPropertyNode, &ObjectPaintProperties::effect, &ObjectPaintProperties::setEffect>(
+        object, context, context.currentEffect, object.styleRef().opacity());
 }
 
 void PaintPropertyTreeBuilder::updateCssClip(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (!object.hasClip())
+    if (object.hasClip()) {
+        // Create clip node for descendants that are not fixed position.
+        // We don't have to setup context.absolutePosition.clip here because this object must be
+        // a container for absolute position descendants, and will copy from in-flow context later
+        // at updateOutOfFlowContext() step.
+        DCHECK(object.canContainAbsolutePositionObjects());
+        LayoutRect clipRect = toLayoutBox(object).clipRect(context.current.paintOffset);
+        updateOrCreatePaintProperty<ClipPaintPropertyNode, &ObjectPaintProperties::cssClip, &ObjectPaintProperties::setCssClip>(
+            object, context, context.current.clip, context.current.transform, FloatRoundedRect(FloatRect(clipRect)));
         return;
-    ASSERT(object.canContainAbsolutePositionObjects());
-
-    // Create clip node for descendants that are not fixed position.
-    // We don't have to setup context.absolutePosition.clip here because this object must be
-    // a container for absolute position descendants, and will copy from in-flow context later
-    // at updateOutOfFlowContext() step.
-    LayoutRect clipRect = toLayoutBox(object).clipRect(context.current.paintOffset);
-    RefPtr<ClipPaintPropertyNode> clipNode = ClipPaintPropertyNode::create(
-        context.current.transform,
-        FloatRoundedRect(FloatRect(clipRect)),
-        context.current.clip);
-    context.current.clip = clipNode.get();
-    object.getMutableForPainting().ensureObjectPaintProperties().setCssClip(clipNode.release());
+    }
+    clearPaintProperty<ClipPaintPropertyNode, &ObjectPaintProperties::setCssClip>(object);
 }
 
 void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& object, const PaintPropertyTreeBuilderContext& context)
@@ -186,20 +209,20 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& o
 void PaintPropertyTreeBuilder::updateScrollbarPaintOffset(const LayoutObject& object, const PaintPropertyTreeBuilderContext& context)
 {
     IntPoint roundedPaintOffset = roundedIntPoint(context.current.paintOffset);
-    if (roundedPaintOffset == IntPoint())
-        return;
-
-    if (!object.isBoxModelObject())
-        return;
-    PaintLayerScrollableArea* scrollableArea = toLayoutBoxModelObject(object).getScrollableArea();
-    if (!scrollableArea)
-        return;
-    if (!scrollableArea->horizontalScrollbar() && !scrollableArea->verticalScrollbar())
-        return;
-
-    auto paintOffset = TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y());
-    object.getMutableForPainting().ensureObjectPaintProperties().setScrollbarPaintOffset(
-        TransformPaintPropertyNode::create(paintOffset, FloatPoint3D(), context.current.transform));
+    if (roundedPaintOffset != IntPoint() && object.isBoxModelObject()) {
+        if (PaintLayerScrollableArea* scrollableArea = toLayoutBoxModelObject(object).getScrollableArea()) {
+            if (scrollableArea->horizontalScrollbar() || scrollableArea->verticalScrollbar()) {
+                auto paintOffset = TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y());
+                // Make a copy of context.current.transform because we don't want to set the scrollbarPaintOffset node
+                // as the current transform.
+                TransformPaintPropertyNode* parentTransform = context.current.transform;
+                updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::scrollbarPaintOffset, &ObjectPaintProperties::setScrollbarPaintOffset>(
+                    object, context, parentTransform, paintOffset, FloatPoint3D());
+                return;
+            }
+        }
+    }
+    clearPaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::setScrollbarPaintOffset>(object);
 }
 
 void PaintPropertyTreeBuilder::updateOverflowClip(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -213,27 +236,26 @@ void PaintPropertyTreeBuilder::updateOverflowClip(const LayoutObject& object, Pa
     // We should clip the overflow from those children. This is called control clip and we
     // technically treat them like overflow clip.
     LayoutRect clipRect;
-    if (box.hasControlClip())
+    if (box.hasControlClip()) {
         clipRect = box.controlClipRect(context.current.paintOffset);
-    else if (box.hasOverflowClip())
+    } else if (box.hasOverflowClip()) {
         clipRect = box.overflowClipRect(context.current.paintOffset);
-    else
+    } else {
+        clearPaintProperty<ClipPaintPropertyNode, &ObjectPaintProperties::setOverflowClip>(object);
         return;
+    }
 
+    // This need to be in top-level block to hold the reference until we finish creating the normal clip node.
     RefPtr<ClipPaintPropertyNode> borderRadiusClip;
     if (box.styleRef().hasBorderRadius()) {
         auto innerBorder = box.styleRef().getRoundedInnerBorderFor(
             LayoutRect(context.current.paintOffset, box.size()));
-        borderRadiusClip = ClipPaintPropertyNode::create(
-            context.current.transform, innerBorder, context.current.clip);
+        borderRadiusClip = ClipPaintPropertyNode::create(context.current.clip, context.current.transform, innerBorder);
+        context.current.clip = borderRadiusClip.get();
     }
 
-    RefPtr<ClipPaintPropertyNode> overflowClip = ClipPaintPropertyNode::create(
-        context.current.transform,
-        FloatRoundedRect(FloatRect(clipRect)),
-        borderRadiusClip ? borderRadiusClip.release() : context.current.clip);
-    context.current.clip = overflowClip.get();
-    object.getMutableForPainting().ensureObjectPaintProperties().setOverflowClip(overflowClip.release());
+    updateOrCreatePaintProperty<ClipPaintPropertyNode, &ObjectPaintProperties::overflowClip, &ObjectPaintProperties::setOverflowClip>(
+        object, context, context.current.clip, context.current.transform, FloatRoundedRect(FloatRect(clipRect)));
 }
 
 static FloatPoint perspectiveOrigin(const LayoutBox& box)
@@ -248,15 +270,14 @@ static FloatPoint perspectiveOrigin(const LayoutBox& box)
 void PaintPropertyTreeBuilder::updatePerspective(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     const ComputedStyle& style = object.styleRef();
-    if (!object.isBox() || !style.hasPerspective())
+    if (!object.isBox() || !style.hasPerspective()) {
+        clearPaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::setPerspective>(object);
         return;
+    }
 
-    RefPtr<TransformPaintPropertyNode> perspective = TransformPaintPropertyNode::create(
-        TransformationMatrix().applyPerspective(style.perspective()),
-        perspectiveOrigin(toLayoutBox(object)) + toLayoutSize(context.current.paintOffset),
-        context.current.transform);
-    context.current.transform = perspective.get();
-    object.getMutableForPainting().ensureObjectPaintProperties().setPerspective(perspective.release());
+    FloatPoint3D origin = perspectiveOrigin(toLayoutBox(object)) + toLayoutSize(context.current.paintOffset);
+    updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::perspective, &ObjectPaintProperties::setPerspective>(
+        object, context, context.current.transform, TransformationMatrix().applyPerspective(style.perspective()), origin);
 }
 
 void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -270,33 +291,30 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutOb
     // offset internally.
     context.current.paintOffset = LayoutPoint();
 
-    if (transformToBorderBox.isIdentity())
+    if (transformToBorderBox.isIdentity()) {
+        clearPaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::setSvgLocalToBorderBoxTransform>(object);
         return;
+    }
 
-    RefPtr<TransformPaintPropertyNode> svgLocalToBorderBoxTransform = TransformPaintPropertyNode::create(
-        transformToBorderBox, FloatPoint3D(0, 0, 0), context.current.transform);
-    context.current.transform = svgLocalToBorderBoxTransform.get();
-    context.current.paintOffset = LayoutPoint();
-    object.getMutableForPainting().ensureObjectPaintProperties().setSvgLocalToBorderBoxTransform(svgLocalToBorderBoxTransform.release());
+    updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::svgLocalToBorderBoxTransform, &ObjectPaintProperties::setSvgLocalToBorderBoxTransform>(
+        object, context, context.current.transform, transformToBorderBox, FloatPoint3D());
 }
 
 void PaintPropertyTreeBuilder::updateScrollTranslation(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (!object.isBoxModelObject() || !object.hasOverflowClip())
-        return;
+    if (object.isBoxModelObject() && object.hasOverflowClip()) {
+        PaintLayer* layer = toLayoutBoxModelObject(object).layer();
+        DCHECK(layer);
+        DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
 
-    PaintLayer* layer = toLayoutBoxModelObject(object).layer();
-    ASSERT(layer);
-    DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
-    if (scrollOffset.isZero() && !layer->scrollsOverflow())
-        return;
-
-    RefPtr<TransformPaintPropertyNode> scrollTranslation = TransformPaintPropertyNode::create(
-        TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height()),
-        FloatPoint3D(),
-        context.current.transform);
-    context.current.transform = scrollTranslation.get();
-    object.getMutableForPainting().ensureObjectPaintProperties().setScrollTranslation(scrollTranslation.release());
+        if (!scrollOffset.isZero() || layer->scrollsOverflow()) {
+            TransformationMatrix matrix = TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height());
+            updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::scrollTranslation, &ObjectPaintProperties::setScrollTranslation>(
+                object, context, context.current.transform, matrix, FloatPoint3D());
+            return;
+        }
+    }
+    clearPaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::setScrollTranslation>(object);
 }
 
 void PaintPropertyTreeBuilder::updateOutOfFlowContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -322,16 +340,13 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(const LayoutObject& object
         // context has exactly the same clip. Reuse if possible.
         if (context.fixedPosition.clip == cssClip->parent()) {
             context.fixedPosition.clip = cssClip;
+        } else {
+            updateOrCreatePaintProperty<ClipPaintPropertyNode, &ObjectPaintProperties::cssClipFixedPosition, &ObjectPaintProperties::setCssClipFixedPosition>(
+                object, context, context.fixedPosition.clip, const_cast<TransformPaintPropertyNode*>(cssClip->localTransformSpace()), cssClip->clipRect());
             return;
         }
-
-        RefPtr<ClipPaintPropertyNode> clipFixedPosition = ClipPaintPropertyNode::create(
-            const_cast<TransformPaintPropertyNode*>(cssClip->localTransformSpace()),
-            cssClip->clipRect(),
-            context.fixedPosition.clip);
-        context.fixedPosition.clip = clipFixedPosition.get();
-        object.getMutableForPainting().ensureObjectPaintProperties().setCssClipFixedPosition(clipFixedPosition.release());
     }
+    clearPaintProperty<ClipPaintPropertyNode, &ObjectPaintProperties::setCssClipFixedPosition>(object);
 }
 
 static void deriveBorderBoxFromContainerContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -385,8 +400,6 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
 
 void PaintPropertyTreeBuilder::buildTreeNodes(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    object.getMutableForPainting().clearObjectPaintProperties();
-
     if (!object.isBoxModelObject() && !object.isSVG())
         return;
 

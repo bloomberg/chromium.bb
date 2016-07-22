@@ -92,12 +92,12 @@ private:
     void setPerspective(PassRefPtr<TransformPaintPropertyNode> perspective) { m_perspective = perspective; }
     void setSvgLocalToBorderBoxTransform(PassRefPtr<TransformPaintPropertyNode> transform)
     {
-        DCHECK(!scrollTranslation()) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
+        DCHECK(!scrollTranslation() || !transform) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
         m_svgLocalToBorderBoxTransform = transform;
     }
     void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> translation)
     {
-        DCHECK(!svgLocalToBorderBoxTransform()) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
+        DCHECK(!svgLocalToBorderBoxTransform() || !translation) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
         m_scrollTranslation = translation;
     }
     void setScrollbarPaintOffset(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_scrollbarPaintOffset = paintOffset; }

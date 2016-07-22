@@ -37,7 +37,7 @@ gfx::Transform translation(SkMScalar x, SkMScalar y)
 
 EffectPaintPropertyNode* dummyRootEffect()
 {
-    DEFINE_STATIC_REF(EffectPaintPropertyNode, node, EffectPaintPropertyNode::create(1.0));
+    DEFINE_STATIC_REF(EffectPaintPropertyNode, node, EffectPaintPropertyNode::create(nullptr, 1.0));
     return node;
 }
 
@@ -102,7 +102,7 @@ TEST_F(PaintArtifactCompositorTest, OneTransform)
 {
     // A 90 degree clockwise rotation about (100, 100).
     RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(
-        TransformationMatrix().rotate(90), FloatPoint3D(100, 100, 0));
+        nullptr, TransformationMatrix().rotate(90), FloatPoint3D(100, 100, 0));
 
     TestPaintArtifact artifact;
     artifact.chunk(transform, nullptr, dummyRootEffect())
@@ -142,9 +142,9 @@ TEST_F(PaintArtifactCompositorTest, TransformCombining)
 {
     // A translation by (5, 5) within a 2x scale about (10, 10).
     RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
-        TransformationMatrix().scale(2), FloatPoint3D(10, 10, 0));
+        nullptr, TransformationMatrix().scale(2), FloatPoint3D(10, 10, 0));
     RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(
-        TransformationMatrix().translate(5, 5), FloatPoint3D(), transform1);
+        transform1, TransformationMatrix().translate(5, 5), FloatPoint3D());
 
     TestPaintArtifact artifact;
     artifact.chunk(transform1, nullptr, dummyRootEffect())
@@ -175,9 +175,9 @@ TEST_F(PaintArtifactCompositorTest, TransformCombining)
 TEST_F(PaintArtifactCompositorTest, LayerOriginCancellation)
 {
     RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(100, 100, 100, 100));
+        nullptr, nullptr, FloatRoundedRect(100, 100, 100, 100));
     RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(
-        TransformationMatrix().scale(2), FloatPoint3D());
+        nullptr, TransformationMatrix().scale(2), FloatPoint3D());
 
     TestPaintArtifact artifact;
     artifact.chunk(transform, clip, nullptr)
@@ -203,7 +203,7 @@ TEST_F(PaintArtifactCompositorTest, LayerOriginCancellation)
 TEST_F(PaintArtifactCompositorTest, OneClip)
 {
     RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(100, 100, 300, 200));
+        nullptr, nullptr, FloatRoundedRect(100, 100, 300, 200));
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, clip, nullptr)
@@ -226,9 +226,9 @@ TEST_F(PaintArtifactCompositorTest, OneClip)
 TEST_F(PaintArtifactCompositorTest, NestedClips)
 {
     RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(100, 100, 700, 700));
+        nullptr, nullptr, FloatRoundedRect(100, 100, 700, 700));
     RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(200, 200, 700, 100), clip1);
+        clip1, nullptr, FloatRoundedRect(200, 200, 700, 100));
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, clip1, dummyRootEffect())
@@ -289,8 +289,8 @@ TEST_F(PaintArtifactCompositorTest, DeeplyNestedClips)
     Vector<RefPtr<ClipPaintPropertyNode>> clips;
     for (unsigned i = 1; i <= 10; i++) {
         clips.append(ClipPaintPropertyNode::create(
-            nullptr, FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i),
-            clips.isEmpty() ? nullptr : clips.last()));
+            clips.isEmpty() ? nullptr : clips.last(),
+            nullptr, FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i)));
     }
 
     TestPaintArtifact artifact;
@@ -319,11 +319,11 @@ TEST_F(PaintArtifactCompositorTest, DeeplyNestedClips)
 TEST_F(PaintArtifactCompositorTest, SiblingClips)
 {
     RefPtr<ClipPaintPropertyNode> commonClip = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(0, 0, 800, 600));
+        nullptr, nullptr, FloatRoundedRect(0, 0, 800, 600));
     RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(0, 0, 400, 600), commonClip);
+        commonClip, nullptr, FloatRoundedRect(0, 0, 400, 600));
     RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(400, 0, 400, 600), commonClip);
+        commonClip, nullptr, FloatRoundedRect(400, 0, 400, 600));
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, clip1, nullptr)
@@ -454,7 +454,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneTransform)
 {
     // A 90 degree clockwise rotation about (100, 100).
     RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(
-        TransformationMatrix().rotate(90), FloatPoint3D(100, 100, 0));
+        nullptr, TransformationMatrix().rotate(90), FloatPoint3D(100, 100, 0));
 
     TestPaintArtifact artifact;
     artifact.chunk(transform, nullptr, dummyRootEffect())
@@ -494,9 +494,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining)
 {
     // A translation by (5, 5) within a 2x scale about (10, 10).
     RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
-        TransformationMatrix().scale(2), FloatPoint3D(10, 10, 0));
+        nullptr, TransformationMatrix().scale(2), FloatPoint3D(10, 10, 0));
     RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(
-        TransformationMatrix().translate(5, 5), FloatPoint3D(), transform1);
+        transform1, TransformationMatrix().translate(5, 5), FloatPoint3D());
 
     TestPaintArtifact artifact;
     artifact.chunk(transform1, nullptr, dummyRootEffect())
@@ -530,7 +530,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining)
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneClip)
 {
     RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(100, 100, 300, 200));
+        nullptr, nullptr, FloatRoundedRect(100, 100, 300, 200));
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, clip, nullptr)
@@ -552,9 +552,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneClip)
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedClips)
 {
     RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(100, 100, 700, 700));
+        nullptr, nullptr, FloatRoundedRect(100, 100, 700, 700));
     RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(200, 200, 700, 100), clip1);
+        clip1, nullptr, FloatRoundedRect(200, 200, 700, 100));
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, clip1, dummyRootEffect())
@@ -608,8 +608,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips)
     Vector<RefPtr<ClipPaintPropertyNode>> clips;
     for (unsigned i = 1; i <= 10; i++) {
         clips.append(ClipPaintPropertyNode::create(
-            nullptr, FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i),
-            clips.isEmpty() ? nullptr : clips.last()));
+            clips.isEmpty() ? nullptr : clips.last(),
+            nullptr, FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i)));
     }
 
     TestPaintArtifact artifact;
@@ -638,11 +638,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips)
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips)
 {
     RefPtr<ClipPaintPropertyNode> commonClip = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(0, 0, 800, 600));
+        nullptr, nullptr, FloatRoundedRect(0, 0, 800, 600));
     RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(0, 0, 400, 600), commonClip);
+        commonClip, nullptr, FloatRoundedRect(0, 0, 400, 600));
     RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(400, 0, 400, 600), commonClip);
+        commonClip, nullptr, FloatRoundedRect(400, 0, 400, 600));
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, clip1, dummyRootEffect())
@@ -695,9 +695,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ForeignLayerPassesThrough)
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion)
 {
-    RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::create(0.5, dummyRootEffect());
-    RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(0.3, effect1.get());
-    RefPtr<EffectPaintPropertyNode> effect3 = EffectPaintPropertyNode::create(0.2, dummyRootEffect());
+    RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::create(dummyRootEffect(), 0.5);
+    RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(effect1, 0.3);
+    RefPtr<EffectPaintPropertyNode> effect3 = EffectPaintPropertyNode::create(dummyRootEffect(), 0.2);
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, nullptr, effect2.get())

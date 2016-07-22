@@ -120,10 +120,10 @@ TEST_F(PaintArtifactToSkCanvasTest, TransformCombining)
     TransformationMatrix matrix1;
     matrix1.scale(2);
     FloatPoint3D origin1(10, 10, 0);
-    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(matrix1, origin1);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(nullptr, matrix1, origin1);
     TransformationMatrix matrix2;
     matrix2.translate(5, 5);
-    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(matrix2, FloatPoint3D(), transform1.get());
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(transform1, matrix2, FloatPoint3D());
 
     TestPaintArtifact artifact;
     artifact.chunk(transform1.get(), nullptr, nullptr)
@@ -147,8 +147,8 @@ TEST_F(PaintArtifactToSkCanvasTest, OpacityEffectsCombining)
     }
 
     // Build an opacity effect tree.
-    RefPtr<EffectPaintPropertyNode> opacityEffect1 = EffectPaintPropertyNode::create(0.5);
-    RefPtr<EffectPaintPropertyNode> opacityEffect2 = EffectPaintPropertyNode::create(0.25, opacityEffect1);
+    RefPtr<EffectPaintPropertyNode> opacityEffect1 = EffectPaintPropertyNode::create(nullptr, 0.5);
+    RefPtr<EffectPaintPropertyNode> opacityEffect2 = EffectPaintPropertyNode::create(opacityEffect1, 0.25);
 
     TestPaintArtifact artifact;
     artifact.chunk(nullptr, nullptr, opacityEffect1.get())
@@ -181,10 +181,10 @@ TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
     // 0.1  a      c  0.3
     //      |      |
     // 0.2  b      d  0.4
-    RefPtr<EffectPaintPropertyNode> opacityEffectA = EffectPaintPropertyNode::create(0.1);
-    RefPtr<EffectPaintPropertyNode> opacityEffectB = EffectPaintPropertyNode::create(0.2, opacityEffectA);
-    RefPtr<EffectPaintPropertyNode> opacityEffectC = EffectPaintPropertyNode::create(0.3);
-    RefPtr<EffectPaintPropertyNode> opacityEffectD = EffectPaintPropertyNode::create(0.4, opacityEffectC);
+    RefPtr<EffectPaintPropertyNode> opacityEffectA = EffectPaintPropertyNode::create(nullptr, 0.1);
+    RefPtr<EffectPaintPropertyNode> opacityEffectB = EffectPaintPropertyNode::create(opacityEffectA, 0.2);
+    RefPtr<EffectPaintPropertyNode> opacityEffectC = EffectPaintPropertyNode::create(nullptr, 0.3);
+    RefPtr<EffectPaintPropertyNode> opacityEffectD = EffectPaintPropertyNode::create(opacityEffectC, 0.4);
 
     // Build a two-chunk artifact directly.
     // chunk1 references opacity node b, chunk2 references opacity node d.
@@ -220,13 +220,13 @@ TEST_F(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
 
     // Setup transform tree.
     RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
-        TransformationMatrix().translate(0, -100), FloatPoint3D());
+        nullptr, TransformationMatrix().translate(0, -100), FloatPoint3D());
 
     // Setup clip tree.
     RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
-        transform1.get(), FloatRoundedRect(100, 200, 100, 100));
+        nullptr, transform1.get(), FloatRoundedRect(100, 200, 100, 100));
     RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
-        nullptr, FloatRoundedRect(150, 150, 100, 100), clip1.get());
+        clip1, nullptr, FloatRoundedRect(150, 150, 100, 100));
 
     MockCanvas canvas(kCanvasWidth, kCanvasHeight);
 
