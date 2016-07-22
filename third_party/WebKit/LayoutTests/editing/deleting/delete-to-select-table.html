@@ -1,34 +1,21 @@
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function editingTest() {
-    for (i = 0; i < 30; i++) {
-        moveSelectionForwardByCharacterCommand();    
-    }
-    for (i = 0; i < 1; i++) {
-        deleteCommand();
-    }
-}
-</script>
-<div contenteditable="true" id="test">
-  <table style="border:3px solid #aaa;">
-    <tr>
-      <td>
-        Foo
-      </td>
-      <td>
-        baz
-      </td>
-    </tr>
-    <tr>
-      <td>
-        bar
-      </td>
-      <td>
-        buffalo
-      </td>
-    </tr>
-  </table>
-</div>
-<script>
-runEditingTest();
+test(() => assert_selection(
+    [
+        '<div contenteditable><table>',
+        '<tr><td>Foo</td><td>baz</td></tr>',
+        '<tr><td>bar</td><td>buffalo</td></tr>',
+        '</table>|</div>',
+    ].join(''),
+    'delete',
+    [
+        '<div contenteditable>^<table><tbody>',
+        '<tr><td>Foo</td><td>baz</td></tr>',
+        '<tr><td>bar</td><td>buffalo</td></tr>',
+        '</tbody></table>|</div>',
+    ].join('')),
+    'Delete-on-caret selectes TABLE instead of delete something');
 </script>
