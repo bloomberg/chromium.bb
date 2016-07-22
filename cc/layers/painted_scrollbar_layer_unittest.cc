@@ -27,7 +27,7 @@ class MockScrollbar : public FakeScrollbar {
 };
 
 TEST(PaintedScrollbarLayerTest, NeedsPaint) {
-  FakeLayerTreeHostClient fake_client_(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
 

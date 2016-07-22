@@ -18,13 +18,7 @@ class OutputSurface;
 class FakeLayerTreeHostClient : public LayerTreeHostClient,
                                 public LayerTreeHostSingleThreadClient {
  public:
-  enum RendererOptions {
-    DIRECT_3D,
-    DIRECT_SOFTWARE,
-    DELEGATED_3D,
-    DELEGATED_SOFTWARE
-  };
-  explicit FakeLayerTreeHostClient(RendererOptions options);
+  FakeLayerTreeHostClient();
   ~FakeLayerTreeHostClient() override;
 
   // Caller responsible for unsetting this and maintaining the host's lifetime.
@@ -55,10 +49,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   void DidAbortSwapBuffers() override {}
 
  private:
-  bool use_software_rendering_;
-  bool use_delegating_renderer_;
-
-  LayerTreeHost* host_;
+  LayerTreeHost* host_ = nullptr;
 };
 
 }  // namespace cc

@@ -29,11 +29,6 @@ namespace {
 static constexpr uint32_t kArbitraryClientId = 0;
 
 class SurfaceLayerTest : public testing::Test {
- public:
-  SurfaceLayerTest()
-      : fake_client_(
-            FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)) {}
-
  protected:
   void SetUp() override {
     layer_tree_host_ =
@@ -182,8 +177,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
   SurfaceLayerSwapPromiseWithDraw() : SurfaceLayerSwapPromise() {}
 
   std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    auto ret = delegating_renderer() ? FakeOutputSurface::CreateDelegating3d()
-                                     : FakeOutputSurface::Create3d();
+    auto ret = FakeOutputSurface::CreateDelegating3d();
     output_surface_ = ret.get();
     return std::move(ret);
   }
@@ -229,9 +223,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
   FakeOutputSurface* output_surface_;
 };
 
-// TODO(jbauman): Reenable on single thread once http://crbug.com/421923 is
-// fixed.
-MULTI_THREAD_TEST_F(SurfaceLayerSwapPromiseWithDraw);
+SINGLE_AND_MULTI_THREAD_TEST_F(SurfaceLayerSwapPromiseWithDraw);
 
 // Check that SurfaceSequence is sent through swap promise and resolved when
 // swap fails.

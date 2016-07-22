@@ -129,7 +129,7 @@ class TestSerializationPictureLayer : public PictureLayer {
 namespace {
 
 TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings;
   std::unique_ptr<FakeImageSerializationProcessor>
@@ -163,7 +163,7 @@ TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
 }
 
 TEST(PictureLayerTest, TestSerializationDeserialization) {
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
@@ -194,7 +194,7 @@ TEST(PictureLayerTest, TestEmptySerializationDeserialization) {
   std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
           base::WrapUnique(new FakeImageSerializationProcessor);
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
       &host_client, &task_graph_runner, LayerTreeSettings(),
@@ -215,7 +215,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(client);
   layer->SetBounds(gfx::Size(10, 10));
 
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
@@ -261,7 +261,7 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   layer->SetBounds(gfx::Size(50, 50));
 
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
@@ -278,7 +278,8 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateDelegating3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
@@ -305,7 +306,7 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   layer->SetBounds(gfx::Size(50, 50));
 
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
@@ -321,7 +322,8 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateDelegating3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
@@ -349,7 +351,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   layer->SetBounds(gfx::Size(10, 10));
 
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
@@ -368,7 +370,8 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateDelegating3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
@@ -430,7 +433,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
       FakePictureLayer::CreateWithRecordingSource(
           client, std::move(recording_source_owned));
 
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
@@ -464,8 +467,8 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   settings.verify_clip_tree_calculations = true;
   settings.verify_transform_tree_calculations = true;
 
-  FakeLayerTreeHostClient host_client1(FakeLayerTreeHostClient::DIRECT_3D);
-  FakeLayerTreeHostClient host_client2(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client1;
+  FakeLayerTreeHostClient host_client2;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
 

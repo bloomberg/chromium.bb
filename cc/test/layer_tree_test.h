@@ -230,13 +230,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }                                                              \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-// The Remote mode tests don't need to run for delegated renderer.
-#define REMOTE_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
-  TEST_F(TEST_FIXTURE_NAME, RunRemote_DirectRenderer) {  \
-    RunTest(CompositorMode::REMOTE, false);              \
-  }                                                      \
-  class RemoteDirectImplNeedsSemicolon##TEST_FIXTURE_NAME {}
-
 #define SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)

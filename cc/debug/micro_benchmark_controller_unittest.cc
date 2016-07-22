@@ -23,9 +23,6 @@ namespace {
 
 class MicroBenchmarkControllerTest : public testing::Test {
  public:
-  MicroBenchmarkControllerTest()
-      : layer_tree_host_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
   void SetUp() override {
     impl_task_runner_provider_ =
         base::WrapUnique(new FakeImplTaskRunnerProvider);

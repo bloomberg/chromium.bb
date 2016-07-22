@@ -35,7 +35,7 @@ LayerTreeSettings TestLayerTreeHostBase::CreateSettings() {
 }
 
 std::unique_ptr<OutputSurface> TestLayerTreeHostBase::CreateOutputSurface() {
-  return FakeOutputSurface::Create3d();
+  return FakeOutputSurface::CreateDelegating3d();
 }
 
 std::unique_ptr<FakeLayerTreeHostImpl> TestLayerTreeHostBase::CreateHostImpl(

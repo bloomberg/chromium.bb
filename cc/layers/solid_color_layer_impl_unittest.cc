@@ -137,7 +137,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   scoped_refptr<Layer> root = Layer::Create();
   root->AddChild(layer);
 
-  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&client, &task_graph_runner);

@@ -131,8 +131,10 @@ class LayerTreeHostCopyRequestTestMultipleRequests
       return FakeOutputSurface::CreateSoftware(
           base::WrapUnique(new SoftwareOutputDevice));
     }
+
     std::unique_ptr<FakeOutputSurface> output_surface =
-        FakeOutputSurface::Create3d();
+        FakeOutputSurface::Create3d(TestContextProvider::Create(),
+                                    TestContextProvider::CreateWorker());
     TestContextSupport* context_support = static_cast<TestContextSupport*>(
         output_surface->context_provider()->ContextSupport());
     context_support->set_out_of_order_callbacks(out_of_order_callbacks_);

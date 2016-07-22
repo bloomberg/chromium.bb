@@ -24,7 +24,8 @@ namespace {
 
 class LayerTreeImplTest : public LayerTreeHostCommonTest {
  public:
-  LayerTreeImplTest() : output_surface_(FakeOutputSurface::Create3d()) {
+  LayerTreeImplTest()
+      : output_surface_(FakeOutputSurface::CreateDelegating3d()) {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.verify_clip_tree_calculations = true;
@@ -116,7 +117,8 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   LayerTreeSettings settings;
   settings.verify_clip_tree_calculations = true;
   settings.verify_transform_tree_calculations = true;
-  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  std::unique_ptr<OutputSurface> output_surface =
+      FakeOutputSurface::CreateDelegating3d();
   std::unique_ptr<FakeLayerTreeHostImpl> host_impl;
   host_impl.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider,
                                             &shared_bitmap_manager,

@@ -21,9 +21,6 @@
 namespace cc {
 
 class AnimationHostPerfTest : public testing::Test {
- public:
-  AnimationHostPerfTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
  protected:
   void SetUp() override {
     LayerTreeSettings settings;

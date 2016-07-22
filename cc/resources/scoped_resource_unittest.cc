@@ -18,7 +18,8 @@ namespace {
 
 TEST(ScopedResourceTest, NewScopedResource) {
   FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateDelegating3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -40,7 +41,8 @@ TEST(ScopedResourceTest, NewScopedResource) {
 
 TEST(ScopedResourceTest, CreateScopedResource) {
   FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateDelegating3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
@@ -65,7 +67,8 @@ TEST(ScopedResourceTest, CreateScopedResource) {
 
 TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
   FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateDelegating3d());
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(

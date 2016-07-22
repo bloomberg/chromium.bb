@@ -23,14 +23,6 @@ FakeOutputSurface::FakeOutputSurface(
                         delegated_rendering) {}
 
 FakeOutputSurface::FakeOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device,
-    bool delegated_rendering)
-    : FakeOutputSurface(nullptr,
-                        nullptr,
-                        std::move(software_device),
-                        delegated_rendering) {}
-
-FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     std::unique_ptr<SoftwareOutputDevice> software_device,
@@ -106,12 +98,6 @@ bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
 void FakeOutputSurface::DetachFromClient() {
   ReturnResourcesHeldByParent();
   OutputSurface::DetachFromClient();
-}
-
-void FakeOutputSurface::SetTreeActivationCallback(
-    const base::Closure& callback) {
-  DCHECK(client_);
-  client_->SetTreeActivationCallback(callback);
 }
 
 bool FakeOutputSurface::HasExternalStencilTest() const {

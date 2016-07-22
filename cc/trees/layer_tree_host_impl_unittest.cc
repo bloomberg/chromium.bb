@@ -573,8 +573,7 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
 
 TEST_F(LayerTreeHostImplTest, ResourcelessDrawWithEmptyViewport) {
   CreateHostImpl(DefaultSettings(),
-                 FakeOutputSurface::CreateDelegatingSoftware(
-                     base::WrapUnique(new SoftwareOutputDevice())));
+                 FakeOutputSurface::CreateDelegatingSoftware());
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
@@ -3800,8 +3799,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
 TEST_F(LayerTreeHostImplTest,
        PrepareToDrawWhenDrawAndSwapFullViewportEveryFrame) {
   CreateHostImpl(DefaultSettings(),
-                 FakeOutputSurface::CreateDelegatingSoftware(
-                     base::WrapUnique(new SoftwareOutputDevice())));
+                 FakeOutputSurface::CreateDelegatingSoftware());
 
   const gfx::Transform external_transform;
   const gfx::Rect external_viewport;
@@ -6759,10 +6757,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
       did_activate_pending_tree_(false) {}
 
   std::unique_ptr<OutputSurface> CreateFakeOutputSurface(bool software) {
-    if (software) {
-      return FakeOutputSurface::CreateDelegatingSoftware(
-          base::WrapUnique(new SoftwareOutputDevice()));
-    }
+    if (software)
+      return FakeOutputSurface::CreateDelegatingSoftware();
     return FakeOutputSurface::CreateDelegating3d();
   }
 
@@ -7643,9 +7639,8 @@ class CountingSoftwareDevice : public SoftwareOutputDevice {
 TEST_F(LayerTreeHostImplTest,
        ForcedDrawToSoftwareDeviceSkipsUnsupportedLayers) {
   set_reduce_memory_result(false);
-  EXPECT_TRUE(CreateHostImpl(
-      DefaultSettings(), FakeOutputSurface::CreateDelegatingSoftware(
-                             base::WrapUnique(new CountingSoftwareDevice))));
+  EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
+                             FakeOutputSurface::CreateDelegatingSoftware()));
 
   const gfx::Transform external_transform;
   const gfx::Rect external_viewport;
@@ -10857,8 +10852,7 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnOutputSurfaceChange) {
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 
   // Re-initialize with a software output surface.
-  output_surface_ = FakeOutputSurface::CreateDelegatingSoftware(
-      base::WrapUnique(new SoftwareOutputDevice));
+  output_surface_ = FakeOutputSurface::CreateDelegatingSoftware();
   host_impl_->InitializeRenderer(output_surface_.get());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 }

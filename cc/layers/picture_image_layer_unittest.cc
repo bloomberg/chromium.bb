@@ -19,7 +19,7 @@ namespace {
 
 TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
-  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&client, &task_graph_runner);

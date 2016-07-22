@@ -96,10 +96,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       context3d_->set_have_extension_egl_image(true);
     }
 
-    if (delegating_renderer())
-      return FakeOutputSurface::CreateDelegating3d(std::move(context3d));
-    else
-      return FakeOutputSurface::Create3d(std::move(context3d));
+    DCHECK(delegating_renderer());
+    return FakeOutputSurface::CreateDelegating3d(std::move(context3d));
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -780,21 +778,9 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 };
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_SingleThread_DirectRenderer) {
-  lose_after_evict_ = true;
-  RunTest(CompositorMode::SINGLE_THREADED, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = true;
   RunTest(CompositorMode::SINGLE_THREADED, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_MultiThread_DirectRenderer) {
-  lose_after_evict_ = true;
-  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
@@ -804,21 +790,9 @@ TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseBeforeEvict_SingleThread_DirectRenderer) {
-  lose_after_evict_ = false;
-  RunTest(CompositorMode::SINGLE_THREADED, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseBeforeEvict_SingleThread_DelegatingRenderer) {
   lose_after_evict_ = false;
   RunTest(CompositorMode::SINGLE_THREADED, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseBeforeEvict_MultiThread_DirectRenderer) {
-  lose_after_evict_ = false;
-  RunTest(CompositorMode::THREADED, false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
@@ -903,7 +877,7 @@ class LayerTreeHostContextTestDontUseLostResources
   LayerTreeHostContextTestDontUseLostResources() : lost_context_(false) {
     context_should_support_io_surface_ = true;
 
-    child_output_surface_ = FakeOutputSurface::Create3d();
+    child_output_surface_ = FakeOutputSurface::CreateDelegating3d();
     child_output_surface_->BindToClient(&output_surface_client_);
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     child_resource_provider_ = FakeResourceProvider::Create(

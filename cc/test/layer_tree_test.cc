@@ -854,8 +854,14 @@ void LayerTreeTest::RequestNewOutputSurface() {
 }
 
 std::unique_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
-  return delegating_renderer_ ? FakeOutputSurface::CreateDelegating3d()
-                              : FakeOutputSurface::Create3d();
+  if (delegating_renderer_)
+    return FakeOutputSurface::CreateDelegating3d();
+
+  // Make a worker context in a non-delegating OutputSurface. This is an
+  // exceptional situation for these tests as they put a non-delegating
+  // OutputSurface into the LayerTreeHost.
+  return FakeOutputSurface::Create3d(TestContextProvider::Create(),
+                                     TestContextProvider::CreateWorker());
 }
 
 void LayerTreeTest::DestroyLayerTreeHost() {

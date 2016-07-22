@@ -42,7 +42,7 @@ class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
       : task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
-        output_surface_(FakeOutputSurface::Create3d()),
+        output_surface_(FakeOutputSurface::CreateDelegating3d()),
         host_impl_(LayerTreeSettings(),
                    &task_runner_provider_,
                    &shared_bitmap_manager_,

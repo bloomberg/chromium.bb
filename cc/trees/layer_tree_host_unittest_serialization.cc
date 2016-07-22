@@ -63,9 +63,7 @@ class LayerTreeHostSerializationTest : public testing::Test {
  public:
   LayerTreeHostSerializationTest()
       : image_serialization_processor_(
-            base::WrapUnique(new FakeImageSerializationProcessor)),
-        client_src_(FakeLayerTreeHostClient::DIRECT_3D),
-        client_dst_(FakeLayerTreeHostClient::DIRECT_3D) {}
+            base::MakeUnique<FakeImageSerializationProcessor>()) {}
 
  protected:
   void SetUp() override {

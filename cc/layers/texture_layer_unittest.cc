@@ -205,9 +205,7 @@ struct CommonMailboxObjects {
 class TextureLayerTest : public testing::Test {
  public:
   TextureLayerTest()
-      : fake_client_(
-            FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
-        output_surface_(FakeOutputSurface::Create3d()),
+      : output_surface_(FakeOutputSurface::CreateDelegating3d()),
         host_impl_(&task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
@@ -841,10 +839,6 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 
 class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
-  TextureLayerImplWithMailboxTest()
-      : fake_client_(
-          FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)) {}
-
   void SetUp() override {
     TextureLayerTest::SetUp();
     layer_tree_host_ =

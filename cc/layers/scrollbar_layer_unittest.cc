@@ -99,7 +99,7 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
 
 class ScrollbarLayerTest : public testing::Test {
  public:
-  ScrollbarLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {
+  ScrollbarLayerTest() {
     layer_tree_settings_.single_thread_proxy_scheduler = false;
     layer_tree_settings_.use_zero_copy = true;
     layer_tree_settings_.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;

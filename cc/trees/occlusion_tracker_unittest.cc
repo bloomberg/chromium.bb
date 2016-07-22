@@ -87,7 +87,6 @@ class OcclusionTrackerTest : public testing::Test {
  protected:
   explicit OcclusionTrackerTest(bool opaque_layers)
       : opaque_layers_(opaque_layers),
-        client_(FakeLayerTreeHostClient::DIRECT_3D),
         host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)),
         next_layer_impl_id_(1) {}
 

@@ -1357,7 +1357,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
 
   ThreadCheckingInputHandlerClient input_handler_client(
       impl_thread.task_runner().get(), &received_stop_flinging);
-  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient client;
 
   ASSERT_TRUE(impl_thread.task_runner());
   TestSharedBitmapManager shared_bitmap_manager;

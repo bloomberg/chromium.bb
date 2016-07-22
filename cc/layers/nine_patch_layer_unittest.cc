@@ -27,9 +27,6 @@ namespace cc {
 namespace {
 
 class NinePatchLayerTest : public testing::Test {
- public:
-  NinePatchLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
  protected:
   void SetUp() override {
     layer_tree_host_ =

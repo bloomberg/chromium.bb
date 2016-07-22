@@ -90,8 +90,7 @@ class ResourceManagerTest : public testing::Test {
  public:
   ResourceManagerTest()
       : window_android_(WindowAndroid::createForTesting()),
-        resource_manager_(window_android_),
-        fake_client_(cc::FakeLayerTreeHostClient::DIRECT_3D) {
+        resource_manager_(window_android_) {
     cc::LayerTreeHost::InitParams params;
     cc::LayerTreeSettings settings;
     params.client = &fake_client_;

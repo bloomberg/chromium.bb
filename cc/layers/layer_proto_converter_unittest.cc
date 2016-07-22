@@ -18,10 +18,6 @@
 namespace cc {
 namespace {
 class LayerProtoConverterTest : public testing::Test {
- public:
-  LayerProtoConverterTest()
-      : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
  protected:
   void SetUp() override {
     layer_tree_host_ =

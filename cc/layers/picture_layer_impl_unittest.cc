@@ -1450,7 +1450,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
-  ResetOutputSurface(FakeOutputSurface::Create3d(std::move(context)));
+  ResetOutputSurface(FakeOutputSurface::CreateDelegating3d(std::move(context)));
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -1485,7 +1485,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   std::unique_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
-  ResetOutputSurface(FakeOutputSurface::Create3d(std::move(context)));
+  ResetOutputSurface(FakeOutputSurface::CreateDelegating3d(std::move(context)));
 
   SetupDrawPropertiesAndUpdateTiles(active_layer(), 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -4317,7 +4317,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   FakeContentLayerClient client;
   client.set_bounds(layer_bounds);
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
@@ -4380,7 +4380,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   FakeContentLayerClient client;
   client.set_bounds(layer_bounds);
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);

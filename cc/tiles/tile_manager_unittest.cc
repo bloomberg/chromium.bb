@@ -1667,7 +1667,7 @@ class ActivationTasksDoNotBlockReadyToDrawTest : public TileManagerTest {
   }
 
   std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    return FakeOutputSurface::Create3d();
+    return FakeOutputSurface::CreateDelegating3d();
   }
 
   LayerTreeSettings CreateSettings() override {

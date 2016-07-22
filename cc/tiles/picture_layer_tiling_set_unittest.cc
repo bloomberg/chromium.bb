@@ -236,7 +236,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
                float expected_scale) {
     FakeOutputSurfaceClient output_surface_client;
     std::unique_ptr<FakeOutputSurface> output_surface =
-        FakeOutputSurface::Create3d();
+        FakeOutputSurface::CreateDelegating3d();
     CHECK(output_surface->BindToClient(&output_surface_client));
 
     std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(

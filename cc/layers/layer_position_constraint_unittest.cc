@@ -61,8 +61,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
 class LayerPositionConstraintTest : public testing::Test {
  public:
   LayerPositionConstraintTest()
-      : fake_client_(FakeLayerTreeHostClient::DIRECT_3D),
-        layer_tree_host_(
+      : layer_tree_host_(
             FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_)),
         root_impl_(nullptr),
         inner_viewport_container_layer_impl_(nullptr),

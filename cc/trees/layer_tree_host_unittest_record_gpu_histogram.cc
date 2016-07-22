@@ -12,7 +12,7 @@ namespace cc {
 namespace {
 
 TEST(LayerTreeHostRecordGpuHistogramTest, SingleThreaded) {
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings;
   std::unique_ptr<FakeLayerTreeHost> host =
@@ -23,7 +23,7 @@ TEST(LayerTreeHostRecordGpuHistogramTest, SingleThreaded) {
 }
 
 TEST(LayerTreeHostRecordGpuHistogramTest, Threaded) {
-  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings;
   std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(

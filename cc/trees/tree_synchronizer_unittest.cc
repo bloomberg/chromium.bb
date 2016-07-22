@@ -142,15 +142,9 @@ void ExpectTreesAreIdentical(Layer* root_layer,
 }
 
 class TreeSynchronizerTest : public testing::Test {
- public:
-  TreeSynchronizerTest()
-      : client_(FakeLayerTreeHostClient::DIRECT_3D),
-        host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)) {}
-
  protected:
-  FakeLayerTreeHostClient client_;
-  TestTaskGraphRunner task_graph_runner_;
-  std::unique_ptr<FakeLayerTreeHost> host_;
+  TreeSynchronizerTest()
+      : host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)) {}
 
   bool is_equal(ScrollTree::ScrollOffsetMap map,
                 ScrollTree::ScrollOffsetMap other) {
@@ -169,6 +163,10 @@ class TreeSynchronizerTest : public testing::Test {
     }
     return true;
   }
+
+  FakeLayerTreeHostClient client_;
+  TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<FakeLayerTreeHost> host_;
 };
 
 // Attempts to synchronizes a null tree. This should not crash, and should

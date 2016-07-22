@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "cc/layers/layer_collections.h"
-#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -26,7 +25,6 @@ class Transform;
 
 namespace cc {
 
-class FakeLayerTreeHost;
 class Layer;
 class LayerImpl;
 

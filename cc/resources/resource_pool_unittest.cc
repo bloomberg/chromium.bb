@@ -22,7 +22,7 @@ namespace {
 class ResourcePoolTest : public testing::Test {
  public:
   void SetUp() override {
-    output_surface_ = FakeOutputSurface::Create3d();
+    output_surface_ = FakeOutputSurface::CreateDelegating3d();
     ASSERT_TRUE(output_surface_->BindToClient(&output_surface_client_));
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(

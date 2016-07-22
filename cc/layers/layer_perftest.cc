@@ -27,7 +27,6 @@ class LayerPerfTest : public testing::Test {
       : host_impl_(&task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
-        fake_client_(FakeLayerTreeHostClient::DIRECT_3D),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}

@@ -108,9 +108,6 @@ namespace cc {
 // The tests still have helpful names, and a test with the name FooBar would
 // have a wrapper method in this class called RunFooBarTest.
 class LayerSerializationTest : public testing::Test {
- public:
-  LayerSerializationTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
  protected:
   void SetUp() override {
     layer_tree_host_ =
@@ -899,8 +896,7 @@ class LayerTest : public testing::Test {
       : host_impl_(LayerTreeSettings(),
                    &task_runner_provider_,
                    &shared_bitmap_manager_,
-                   &task_graph_runner_),
-        fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {
+                   &task_graph_runner_) {
     timeline_impl_ =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
     timeline_impl_->set_is_impl_only(true);
@@ -1846,8 +1842,6 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
 
 class LayerTreeHostFactory {
  public:
-  LayerTreeHostFactory() : client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
   std::unique_ptr<LayerTreeHost> Create() {
     return Create(LayerTreeSettings());
   }

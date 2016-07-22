@@ -45,9 +45,6 @@ class TestUIResourceLayer : public UIResourceLayer {
 };
 
 class UIResourceLayerTest : public testing::Test {
- public:
-  UIResourceLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
-
  protected:
   void SetUp() override {
     layer_tree_host_ =
