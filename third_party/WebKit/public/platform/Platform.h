@@ -94,7 +94,6 @@ class WebMediaStreamTrack;
 class WebMessagePortChannel;
 class WebMimeRegistry;
 class WebNotificationManager;
-class WebPermissionClient;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebProcessMemoryDump;
@@ -581,11 +580,6 @@ public:
     // Push API------------------------------------------------------------
 
     virtual WebPushProvider* pushProvider() { return nullptr; }
-
-
-    // Permissions --------------------------------------------------------
-
-    virtual WebPermissionClient* permissionClient() { return nullptr; }
 
 
     // Background Sync API------------------------------------------------------------

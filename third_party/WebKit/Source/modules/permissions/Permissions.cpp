@@ -14,14 +14,14 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/permissions/PermissionCallback.h"
-#include "modules/permissions/PermissionController.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
-#include "modules/permissions/PermissionsCallback.h"
 #include "platform/Logging.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/permissions/WebPermissionClient.h"
+#include "public/platform/ServiceRegistry.h"
+#include "wtf/Functional.h"
 #include "wtf/NotFound.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
@@ -29,29 +29,32 @@
 
 namespace blink {
 
+using mojom::blink::PermissionName;
+using mojom::blink::PermissionService;
+
 namespace {
 
 // Websites will be able to run code when `name()` is called, changing the
 // current context. The caller should make sure that no assumption is made
 // after this has been called.
-WebPermissionType getPermissionType(ScriptState* scriptState, const Dictionary& rawPermission, const PermissionDescriptor& permission, ExceptionState& exceptionState)
+PermissionName getPermissionName(ScriptState* scriptState, const Dictionary& rawPermission, const PermissionDescriptor& permission, ExceptionState& exceptionState)
 {
     const String& name = permission.name();
     if (name == "geolocation")
-        return WebPermissionTypeGeolocation;
+        return PermissionName::GEOLOCATION;
     if (name == "notifications")
-        return WebPermissionTypeNotifications;
+        return PermissionName::NOTIFICATIONS;
     if (name == "push")
-        return WebPermissionTypePushNotifications;
+        return PermissionName::PUSH_NOTIFICATIONS;
     if (name == "midi") {
         MidiPermissionDescriptor midiPermission = NativeValueTraits<MidiPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-        return midiPermission.sysex() ? WebPermissionTypeMidiSysEx : WebPermissionTypeMidi;
+        return midiPermission.sysex() ? PermissionName::MIDI_SYSEX : PermissionName::MIDI;
     }
     if (name == "background-sync")
-        return WebPermissionTypeBackgroundSync;
+        return PermissionName::BACKGROUND_SYNC;
 
     ASSERT_NOT_REACHED();
-    return WebPermissionTypeGeolocation;
+    return PermissionName::GEOLOCATION;
 }
 
 // Parses the raw permission dictionary and returns the PermissionType if
@@ -59,65 +62,69 @@ WebPermissionType getPermissionType(ScriptState* scriptState, const Dictionary& 
 // |exceptionState| and null will be returned. Therefore, the |exceptionState|
 // should be checked before attempting to use the returned permission as the
 // non-null assert will be fired otherwise.
-Nullable<WebPermissionType> parsePermission(ScriptState* scriptState, const Dictionary rawPermission, ExceptionState& exceptionState)
+Nullable<PermissionName> parsePermission(ScriptState* scriptState, const Dictionary rawPermission, ExceptionState& exceptionState)
 {
     PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
 
     if (exceptionState.hadException()) {
         exceptionState.throwTypeError(exceptionState.message());
-        return Nullable<WebPermissionType>();
+        return Nullable<PermissionName>();
     }
 
-    WebPermissionType type = getPermissionType(scriptState, rawPermission, permission, exceptionState);
+    PermissionName name = getPermissionName(scriptState, rawPermission, permission, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwTypeError(exceptionState.message());
-        return Nullable<WebPermissionType>();
+        return Nullable<PermissionName>();
     }
 
     // Here we reject any permissions which are not yet supported by Blink.
-    if (type == WebPermissionTypePushNotifications) {
+    if (name == PermissionName::PUSH_NOTIFICATIONS) {
         PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
         if (exceptionState.hadException()) {
             exceptionState.throwTypeError(exceptionState.message());
-            return Nullable<WebPermissionType>();
+            return Nullable<PermissionName>();
         }
 
         // Only "userVisibleOnly" push is supported for now.
         if (!pushPermission.userVisibleOnly()) {
             exceptionState.throwDOMException(NotSupportedError, "Push Permission without userVisibleOnly:true isn't supported yet.");
-            return Nullable<WebPermissionType>();
+            return Nullable<PermissionName>();
         }
     }
 
-    return Nullable<WebPermissionType>(type);
+    return Nullable<PermissionName>(name);
 }
 
 } // anonymous namespace
 
 // static
-WebPermissionClient* Permissions::getClient(ExecutionContext* executionContext)
+bool Permissions::connectToService(ExecutionContext* executionContext, mojom::blink::PermissionServiceRequest request)
 {
+    ServiceRegistry* serviceRegistry = nullptr;
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
-        if (!document->frame())
-            return nullptr;
-        PermissionController* controller = PermissionController::from(*document->frame());
-        return controller ? controller->client() : nullptr;
+        if (document->frame())
+            serviceRegistry = document->frame()->serviceRegistry();
+    } else {
+        serviceRegistry = Platform::current()->serviceRegistry();
     }
-    return Platform::current()->permissionClient();
+
+    if (serviceRegistry)
+        serviceRegistry->connectToRemoteService(std::move(request));
+    return serviceRegistry;
 }
 
 ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& rawPermission)
 {
     ExceptionState exceptionState(ExceptionState::GetterContext,  "query", "Permissions", scriptState->context()->Global(), scriptState->isolate());
-    Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
+    Nullable<PermissionName> name = parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
     // This must be called after `parsePermission` because the website might
     // be able to run code.
-    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
-    if (!client)
+    PermissionService* service = getService(scriptState->getExecutionContext());
+    if (!service)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -127,88 +134,123 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& raw
     // meaningful value because most APIs are broken on file scheme and no
     // permission prompt will be shown even if the returned permission will most
     // likely be "prompt".
-    client->queryPermission(type.get(), KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
+    service->HasPermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
     return promise;
 }
 
 ScriptPromise Permissions::request(ScriptState* scriptState, const Dictionary& rawPermission)
 {
     ExceptionState exceptionState(ExceptionState::GetterContext,  "request", "Permissions", scriptState->context()->Global(), scriptState->isolate());
-    Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
+    Nullable<PermissionName> name = parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
     // This must be called after `parsePermission` because the website might
     // be able to run code.
-    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
-    if (!client)
+    PermissionService* service = getService(scriptState->getExecutionContext());
+    if (!service)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    client->requestPermission(type.get(), KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
+    service->RequestPermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
     return promise;
 }
 
 ScriptPromise Permissions::revoke(ScriptState* scriptState, const Dictionary& rawPermission)
 {
     ExceptionState exceptionState(ExceptionState::GetterContext,  "revoke", "Permissions", scriptState->context()->Global(), scriptState->isolate());
-    Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
+    Nullable<PermissionName> name = parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
     // This must be called after `parsePermission` because the website might
     // be able to run code.
-    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
-    if (!client)
+    PermissionService* service = getService(scriptState->getExecutionContext());
+    if (!service)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't revoke permissions."));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    client->revokePermission(type.get(), KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
+    service->RevokePermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
     return promise;
 }
 
 ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dictionary>& rawPermissions)
 {
     ExceptionState exceptionState(ExceptionState::GetterContext,  "request", "Permissions", scriptState->context()->Global(), scriptState->isolate());
-    std::unique_ptr<Vector<WebPermissionType>> internalPermissions = wrapUnique(new Vector<WebPermissionType>());
-    std::unique_ptr<Vector<int>> callerIndexToInternalIndex = wrapUnique(new Vector<int>(rawPermissions.size()));
+    Vector<PermissionName> internalPermissions;
+    Vector<int> callerIndexToInternalIndex;
+    callerIndexToInternalIndex.resize(rawPermissions.size());
     for (size_t i = 0; i < rawPermissions.size(); ++i) {
         const Dictionary& rawPermission = rawPermissions[i];
 
-        Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
+        Nullable<PermissionName> name = parsePermission(scriptState, rawPermission, exceptionState);
         if (exceptionState.hadException())
             return exceptionState.reject(scriptState);
 
         // Only append permissions to the vector that is passed to the client if it is not already
         // in the vector (i.e. do not duplicate permisison types).
         int internalIndex;
-        auto it = internalPermissions->find(type.get());
+        auto it = internalPermissions.find(name.get());
         if (it == kNotFound) {
-            internalIndex = internalPermissions->size();
-            internalPermissions->append(type.get());
+            internalIndex = internalPermissions.size();
+            internalPermissions.append(name.get());
         } else {
             internalIndex = it;
         }
-        callerIndexToInternalIndex->operator[](i) = internalIndex;
+        callerIndexToInternalIndex[i] = internalIndex;
     }
 
     // This must be called after `parsePermission` because the website might
     // be able to run code.
-    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
-    if (!client)
+    PermissionService* service = getService(scriptState->getExecutionContext());
+    if (!service)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebVector<WebPermissionType> internalWebPermissions = *internalPermissions;
-    client->requestPermissions(internalWebPermissions, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()),
-        new PermissionsCallback(resolver, std::move(internalPermissions), std::move(callerIndexToInternalIndex)));
+    Vector<PermissionName> internalPermissionsCopy(internalPermissions);
+    service->RequestPermissions(std::move(internalPermissions), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(),
+        convertToBaseCallback(WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this), wrapPersistent(resolver), std::move(internalPermissionsCopy), std::move(callerIndexToInternalIndex))));
     return promise;
+}
+
+PermissionService* Permissions::getService(ExecutionContext* executionContext)
+{
+    if (!m_service && connectToService(executionContext, mojo::GetProxy(&m_service)))
+        m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(&Permissions::serviceConnectionError, wrapWeakPersistent(this))));
+    return m_service.get();
+}
+
+void Permissions::serviceConnectionError()
+{
+    m_service.reset();
+}
+
+void Permissions::taskComplete(ScriptPromiseResolver* resolver, PermissionName name, mojom::blink::PermissionStatus result)
+{
+    if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        return;
+    resolver->resolve(PermissionStatus::take(resolver, result, name));
+}
+
+void Permissions::batchTaskComplete(ScriptPromiseResolver* resolver, Vector<PermissionName> names, Vector<int> callerIndexToInternalIndex, mojo::WTFArray<mojom::blink::PermissionStatus> results)
+{
+    if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        return;
+
+    // Create the response vector by finding the status for each index by
+    // using the caller to internal index mapping and looking up the status
+    // using the internal index obtained.
+    HeapVector<Member<PermissionStatus>> result;
+    result.reserveInitialCapacity(callerIndexToInternalIndex.size());
+    for (int internalIndex : callerIndexToInternalIndex)
+        result.append(PermissionStatus::createAndListen(resolver->getExecutionContext(), results[internalIndex], names[internalIndex]));
+    resolver->resolve(result);
 }
 
 } // namespace blink

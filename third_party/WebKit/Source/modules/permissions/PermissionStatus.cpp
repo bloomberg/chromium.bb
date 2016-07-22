@@ -8,33 +8,31 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "modules/EventTargetModulesNames.h"
-#include "modules/permissions/PermissionController.h"
 #include "modules/permissions/Permissions.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/permissions/WebPermissionClient.h"
+#include "wtf/Functional.h"
 
 namespace blink {
 
 // static
-PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus status, WebPermissionType type)
+PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, MojoPermissionStatus status, MojoPermissionName name)
 {
-    return PermissionStatus::createAndListen(resolver->getExecutionContext(), status, type);
+    return PermissionStatus::createAndListen(resolver->getExecutionContext(), status, name);
 }
 
-PermissionStatus* PermissionStatus::createAndListen(ExecutionContext* executionContext, WebPermissionStatus status, WebPermissionType type)
+PermissionStatus* PermissionStatus::createAndListen(ExecutionContext* executionContext, MojoPermissionStatus status, MojoPermissionName name)
 {
-    PermissionStatus* permissionStatus = new PermissionStatus(executionContext, status, type);
+    PermissionStatus* permissionStatus = new PermissionStatus(executionContext, status, name);
     permissionStatus->suspendIfNeeded();
     permissionStatus->startListening();
     return permissionStatus;
 }
 
-PermissionStatus::PermissionStatus(ExecutionContext* executionContext, WebPermissionStatus status, WebPermissionType type)
+PermissionStatus::PermissionStatus(ExecutionContext* executionContext, MojoPermissionStatus status, MojoPermissionName name)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
     , m_status(status)
-    , m_type(type)
-    , m_listening(false)
+    , m_name(name)
 {
 }
 
@@ -53,19 +51,19 @@ ExecutionContext* PermissionStatus::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-void PermissionStatus::permissionChanged(WebPermissionType type, WebPermissionStatus status)
+void PermissionStatus::permissionChanged(MojoPermissionStatus status)
 {
-    ASSERT(m_type == type);
     if (m_status == status)
         return;
 
     m_status = status;
     dispatchEvent(Event::create(EventTypeNames::change));
+    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin()->toString(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
 }
 
 bool PermissionStatus::hasPendingActivity() const
 {
-    return m_listening;
+    return m_service;
 }
 
 void PermissionStatus::resume()
@@ -85,37 +83,24 @@ void PermissionStatus::stop()
 
 void PermissionStatus::startListening()
 {
-    ASSERT(!m_listening);
-
-    WebPermissionClient* client = Permissions::getClient(getExecutionContext());
-    if (!client)
-        return;
-    m_listening = true;
-    client->startListening(m_type, KURL(KURL(), getExecutionContext()->getSecurityOrigin()->toString()), this);
+    DCHECK(!m_service);
+    Permissions::connectToService(getExecutionContext(), mojo::GetProxy(&m_service));
+    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin()->toString(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
 }
 
 void PermissionStatus::stopListening()
 {
-    if (!m_listening)
-        return;
-
-    ASSERT(getExecutionContext());
-
-    m_listening = false;
-    WebPermissionClient* client = Permissions::getClient(getExecutionContext());
-    if (!client)
-        return;
-    client->stopListening(this);
+    m_service.reset();
 }
 
 String PermissionStatus::state() const
 {
     switch (m_status) {
-    case WebPermissionStatusGranted:
+    case MojoPermissionStatus::GRANTED:
         return "granted";
-    case WebPermissionStatusDenied:
+    case MojoPermissionStatus::DENIED:
         return "denied";
-    case WebPermissionStatusPrompt:
+    case MojoPermissionStatus::ASK:
         return "prompt";
     }
 

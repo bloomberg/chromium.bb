@@ -136,7 +136,6 @@ class NavigationState;
 class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
-class PermissionDispatcher;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
 class RenderAccessibilityImpl;
@@ -624,7 +623,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeManifest() override;
   void enterFullscreen() override;
   void exitFullscreen() override;
-  blink::WebPermissionClient* permissionClient() override;
   blink::WebAppBannerClient* appBannerClient() override;
   void registerProtocolHandler(const blink::WebString& scheme,
                                const blink::WebURL& url,
@@ -1227,8 +1225,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RenderAccessibilityImpl* render_accessibility_;
-
-  std::unique_ptr<PermissionDispatcher> permission_client_;
 
   std::unique_ptr<blink::WebAppBannerClient> app_banner_client_;
 

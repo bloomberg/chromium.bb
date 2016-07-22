@@ -35,7 +35,6 @@
 #include "cc/base/switches.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/appcache/appcache_dispatcher.h"
-#include "content/child/permissions/permission_dispatcher.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
@@ -4454,14 +4453,6 @@ void RenderFrameImpl::enterFullscreen() {
 
 void RenderFrameImpl::exitFullscreen() {
   Send(new FrameHostMsg_ToggleFullscreen(routing_id_, false));
-}
-
-blink::WebPermissionClient* RenderFrameImpl::permissionClient() {
-  if (!permission_client_) {
-    permission_client_.reset(
-        new PermissionDispatcher(GetRemoteInterfaces()));
-  }
-  return permission_client_.get();
 }
 
 blink::WebAppBannerClient* RenderFrameImpl::appBannerClient() {

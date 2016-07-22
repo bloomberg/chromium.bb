@@ -44,8 +44,6 @@
 #include "content/child/content_child_helpers.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
-#include "content/child/permissions/permission_dispatcher.h"
-#include "content/child/permissions/permission_dispatcher_thread_proxy.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
@@ -386,8 +384,6 @@ void BlinkPlatformImpl::InternalInit() {
     notification_dispatcher_ =
         ChildThreadImpl::current()->notification_dispatcher();
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
-    permission_client_.reset(new PermissionDispatcher(
-        ChildThreadImpl::current()->GetRemoteInterfaces()));
     main_thread_sync_provider_.reset(
         new BackgroundSyncProvider(main_thread_task_runner_.get()));
   }
@@ -879,17 +875,6 @@ blink::WebPushProvider* BlinkPlatformImpl::pushProvider() {
 
   return PushProvider::ThreadSpecificInstance(thread_safe_sender_.get(),
                                               push_dispatcher_.get());
-}
-
-blink::WebPermissionClient* BlinkPlatformImpl::permissionClient() {
-  if (!permission_client_.get())
-    return nullptr;
-
-  if (IsMainThread())
-    return permission_client_.get();
-
-  return PermissionDispatcherThreadProxy::GetThreadInstance(
-      main_thread_task_runner_.get(), permission_client_.get());
 }
 
 blink::WebSyncProvider* BlinkPlatformImpl::backgroundSyncProvider() {

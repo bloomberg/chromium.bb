@@ -9,9 +9,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/permissions/WebPermissionObserver.h"
-#include "public/platform/modules/permissions/WebPermissionStatus.h"
-#include "public/platform/modules/permissions/WebPermissionType.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -25,22 +23,22 @@ class ScriptPromiseResolver;
 class PermissionStatus final
     : public EventTargetWithInlineData
     , public ActiveScriptWrappable
-    , public ActiveDOMObject
-    , public WebPermissionObserver {
+    , public ActiveDOMObject {
     USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
-public:
-    static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus, WebPermissionType);
 
-    static PermissionStatus* createAndListen(ExecutionContext*, WebPermissionStatus, WebPermissionType);
+    using MojoPermissionName = mojom::blink::PermissionName;
+    using MojoPermissionStatus = mojom::blink::PermissionStatus;
+
+public:
+    static PermissionStatus* take(ScriptPromiseResolver*, MojoPermissionStatus, MojoPermissionName);
+
+    static PermissionStatus* createAndListen(ExecutionContext*, MojoPermissionStatus, MojoPermissionName);
     ~PermissionStatus() override;
 
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
-
-    // WebPermissionObserver implementation.
-    void permissionChanged(WebPermissionType, WebPermissionStatus) override;
 
     // ActiveScriptWrappable implementation.
     bool hasPendingActivity() const final;
@@ -51,20 +49,21 @@ public:
     void stop() override;
 
     String state() const;
+    void permissionChanged(mojom::blink::PermissionStatus);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PermissionStatus(ExecutionContext*, WebPermissionStatus, WebPermissionType);
+    PermissionStatus(ExecutionContext*, MojoPermissionStatus, MojoPermissionName);
 
     void startListening();
     void stopListening();
 
-    WebPermissionStatus m_status;
-    WebPermissionType m_type;
-    bool m_listening;
+    MojoPermissionStatus m_status;
+    MojoPermissionName m_name;
+    mojom::blink::PermissionServicePtr m_service;
 };
 
 } // namespace blink

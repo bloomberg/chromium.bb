@@ -12,34 +12,17 @@
 #include "modules/permissions/Permissions.h"
 #include "modules/quota/StorageEstimate.h"
 #include "platform/StorageQuotaCallbacks.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/modules/permissions/WebPermissionClient.h"
-#include "public/platform/modules/permissions/WebPermissionStatus.h"
+#include "wtf/Functional.h"
 
 namespace blink {
 
+using mojom::blink::PermissionName;
+using mojom::blink::PermissionService;
+using mojom::blink::PermissionStatus;
+
 namespace {
-
-class DurableStorageCallbacks final : public WebPermissionCallback {
-public:
-    DurableStorageCallbacks(ScriptPromiseResolver* resolver)
-        : m_resolver(resolver)
-    {
-    }
-
-    void onSuccess(WebPermissionStatus status) override
-    {
-        m_resolver->resolve(status == WebPermissionStatusGranted);
-    }
-    void onError() override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-};
 
 class EstimateCallbacks final : public StorageQuotaCallbacks {
     WTF_MAKE_NONCOPYABLE(EstimateCallbacks);
@@ -93,12 +76,12 @@ ScriptPromise StorageManager::persist(ScriptState* scriptState)
         return promise;
     }
     ASSERT(executionContext->isDocument());
-    WebPermissionClient* permissionClient = Permissions::getClient(executionContext);
-    if (!permissionClient) {
+    PermissionService* permissionService = getPermissionService(scriptState->getExecutionContext());
+    if (!permissionService) {
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
         return promise;
     }
-    permissionClient->requestPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageCallbacks(resolver));
+    permissionService->RequestPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
 
     return promise;
 }
@@ -107,12 +90,12 @@ ScriptPromise StorageManager::persisted(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    WebPermissionClient* permissionClient = Permissions::getClient(scriptState->getExecutionContext());
-    if (!permissionClient) {
+    PermissionService* permissionService = getPermissionService(scriptState->getExecutionContext());
+    if (!permissionService) {
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
         return promise;
     }
-    permissionClient->queryPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageCallbacks(resolver));
+    permissionService->HasPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin()->toString(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
 
@@ -140,6 +123,25 @@ ScriptPromise StorageManager::estimate(ScriptState* scriptState)
 
 DEFINE_TRACE(StorageManager)
 {
+}
+
+mojom::blink::PermissionService* StorageManager::getPermissionService(ExecutionContext* executionContext)
+{
+    if (!m_permissionService && Permissions::connectToService(executionContext, mojo::GetProxy(&m_permissionService)))
+        m_permissionService.set_connection_error_handler(convertToBaseCallback(WTF::bind(&StorageManager::permissionServiceConnectionError, wrapWeakPersistent(this))));
+    return m_permissionService.get();
+}
+
+void StorageManager::permissionServiceConnectionError()
+{
+    m_permissionService.reset();
+}
+
+void StorageManager::permissionRequestComplete(ScriptPromiseResolver* resolver, PermissionStatus status)
+{
+    if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+        return;
+    resolver->resolve(status == PermissionStatus::GRANTED);
 }
 
 } // namespace blink

@@ -91,7 +91,6 @@ class WebMediaSession;
 class WebMediaStream;
 class WebMIDIClient;
 class WebNotificationPermissionCallback;
-class WebPermissionClient;
 class WebServiceWorkerProvider;
 class WebSocketHandle;
 class WebPlugin;
@@ -669,11 +668,6 @@ public:
     };
     virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) { }
 
-
-    // Permissions ---------------------------------------------------------
-
-    // Access the embedder API for permission client.
-    virtual WebPermissionClient* permissionClient() { return 0; }
 
     // App Banners ---------------------------------------------------------
     virtual WebAppBannerClient* appBannerClient() { return 0; }

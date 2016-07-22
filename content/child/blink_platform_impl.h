@@ -45,7 +45,6 @@ namespace content {
 class BackgroundSyncProvider;
 class FlingCurveConfiguration;
 class NotificationDispatcher;
-class PermissionDispatcher;
 class PushDispatcher;
 class ThreadSafeSender;
 class TraceLogObserverAdapter;
@@ -127,7 +126,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebCrypto* crypto() override;
   blink::WebNotificationManager* notificationManager() override;
   blink::WebPushProvider* pushProvider() override;
-  blink::WebPermissionClient* permissionClient() override;
   blink::WebSyncProvider* backgroundSyncProvider() override;
 
   blink::WebString domCodeStringFromEnum(int dom_code) override;
@@ -159,7 +157,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
-  std::unique_ptr<PermissionDispatcher> permission_client_;
   std::unique_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
 
   scheduler::WebThreadBase* compositor_thread_;
