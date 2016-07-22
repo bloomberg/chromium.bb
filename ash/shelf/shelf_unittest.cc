@@ -6,12 +6,10 @@
 
 #include <utility>
 
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -25,18 +23,11 @@
 #include "base/win/windows_version.h"
 #endif
 
-using ash::ShelfView;
-using ash::ShelfButton;
-
 namespace ash {
 
-class ShelfTest : public ash::test::AshTestBase {
+class ShelfTest : public test::AshTestBase {
  public:
-  ShelfTest()
-      : shelf_(NULL),
-        shelf_view_(NULL),
-        shelf_model_(NULL),
-        item_delegate_manager_(NULL) {}
+  ShelfTest() : shelf_(nullptr), shelf_view_(nullptr), shelf_model_(nullptr) {}
 
   ~ShelfTest() override {}
 
@@ -49,13 +40,9 @@ class ShelfTest : public ash::test::AshTestBase {
     test::ShelfTestAPI test(shelf_);
     shelf_view_ = test.shelf_view();
     shelf_model_ = shelf_view_->model();
-    item_delegate_manager_ =
-        Shell::GetInstance()->shelf_item_delegate_manager();
 
-    test_.reset(new ash::test::ShelfViewTestAPI(shelf_view_));
+    test_.reset(new test::ShelfViewTestAPI(shelf_view_));
   }
-
-  void TearDown() override { test::AshTestBase::TearDown(); }
 
   Shelf* shelf() { return shelf_; }
 
@@ -63,15 +50,12 @@ class ShelfTest : public ash::test::AshTestBase {
 
   ShelfModel* shelf_model() { return shelf_model_; }
 
-  ShelfItemDelegateManager* item_manager() { return item_delegate_manager_; }
-
-  ash::test::ShelfViewTestAPI* test_api() { return test_.get(); }
+  test::ShelfViewTestAPI* test_api() { return test_.get(); }
 
  private:
   Shelf* shelf_;
   ShelfView* shelf_view_;
   ShelfModel* shelf_model_;
-  ShelfItemDelegateManager* item_delegate_manager_;
   std::unique_ptr<test::ShelfViewTestAPI> test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTest);
@@ -98,7 +82,7 @@ TEST_F(ShelfTest, StatusReflection) {
 
 // Confirm that using the menu will clear the hover attribute. To avoid another
 // browser test we check this here.
-TEST_F(ShelfTest, checkHoverAfterMenu) {
+TEST_F(ShelfTest, CheckHoverAfterMenu) {
   // Initially we have the app list.
   int button_count = test_api()->GetButtonCount();
 
@@ -110,8 +94,8 @@ TEST_F(ShelfTest, checkHoverAfterMenu) {
 
   std::unique_ptr<ShelfItemDelegate> delegate(
       new test::TestShelfItemDelegate(NULL));
-  item_manager()->SetShelfItemDelegate(shelf_model()->items()[index].id,
-                                       std::move(delegate));
+  shelf_model()->SetShelfItemDelegate(shelf_model()->items()[index].id,
+                                      std::move(delegate));
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   ShelfButton* button = test_api()->GetButton(index);

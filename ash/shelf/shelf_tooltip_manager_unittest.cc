@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 
 #include "ash/common/shelf/app_list_button.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
@@ -83,7 +82,7 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   item.type = TYPE_APP_SHORTCUT;
   const int index = model->Add(item);
   const ShelfID id = model->items()[index].id;
-  Shell::GetInstance()->shelf_item_delegate_manager()->SetShelfItemDelegate(
+  model->SetShelfItemDelegate(
       id, base::WrapUnique(new TestShelfItemDelegate(nullptr)));
   // Note: There's no easy way to correlate shelf a model index/id to its view.
   tooltip_manager_->ShowTooltipWithDelay(

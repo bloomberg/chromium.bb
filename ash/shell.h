@@ -122,7 +122,6 @@ class ScreenPositionController;
 class SessionStateDelegate;
 class Shelf;
 class ShelfDelegate;
-class ShelfItemDelegateManager;
 class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
@@ -369,10 +368,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return activation_client_;
   }
 
-  ShelfItemDelegateManager* shelf_item_delegate_manager() {
-    return shelf_item_delegate_manager_.get();
-  }
-
   base::SequencedWorkerPool* blocking_pool() { return blocking_pool_; }
 
   // Force the shelf to query for it's current visibility state.
@@ -561,7 +556,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
-  std::unique_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 

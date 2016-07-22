@@ -374,11 +374,11 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     }
   }
 
-  std::unique_ptr<LauncherContextMenu> CreateLauncherContextMenu(
-      ash::ShelfItemType shelf_item_type) {
-    ash::ShelfItem item;
-    item.id = 1;  // dummy id
-    item.type = shelf_item_type;
+  // Creates a context menu for the existing browser shortcut item.
+  std::unique_ptr<LauncherContextMenu> CreateBrowserItemContextMenu() {
+    int index = model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
+    DCHECK_GE(index, 0);
+    ash::ShelfItem item = model_->items()[index];
     ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
     std::unique_ptr<LauncherContextMenu> menu(LauncherContextMenu::Create(
         controller_, &item, ash::test::ShelfTestAPI(shelf).wm_shelf()));
@@ -2395,24 +2395,18 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
 // windows.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
                        LauncherContextMenuVerifyCloseItemAppearance) {
-  // Open a new window.
-  aura::Window* window1 = browser()->window()->GetNativeWindow();
-  ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1);
-  window1->Show();
-  window1_state->Activate();
-  std::unique_ptr<LauncherContextMenu> menu1 =
-      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT);
+  // Open a context menu for the existing browser window.
+  std::unique_ptr<LauncherContextMenu> menu1 = CreateBrowserItemContextMenu();
   // Check if "Close" is added to in the context menu.
   ASSERT_TRUE(
       IsItemPresentInMenu(menu1.get(), LauncherContextMenu::MENU_CLOSE));
 
-  // Close all windows.
+  // Close all windows via the menu item.
   CloseBrowserWindow(browser(), menu1.get(), LauncherContextMenu::MENU_CLOSE);
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 
   // Check if "Close" is removed from the context menu.
-  std::unique_ptr<LauncherContextMenu> menu2 =
-      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT);
+  std::unique_ptr<LauncherContextMenu> menu2 = CreateBrowserItemContextMenu();
   ASSERT_FALSE(
       IsItemPresentInMenu(menu2.get(), LauncherContextMenu::MENU_CLOSE));
 }

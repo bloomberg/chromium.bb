@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -23,7 +22,6 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/shelf_item_delegate_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
@@ -153,6 +151,9 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
   void ShelfItemMoved(int start_index, int target_index) override {
     last_index_ = target_index;
   }
+
+  void OnSetShelfItemDelegate(ash::ShelfID id,
+                              ash::ShelfItemDelegate* item_delegate) override {}
 
   void clear_counts() {
     added_ = 0;
@@ -330,14 +331,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     model_observer_.reset(new TestShelfModelObserver);
     model_->AddObserver(model_observer_.get());
 
-    if (ash::Shell::HasInstance()) {
-      item_delegate_manager_ =
-          ash::Shell::GetInstance()->shelf_item_delegate_manager();
-    } else {
-      item_delegate_manager_ =
-          new ash::ShelfItemDelegateManager(model_.get());
-    }
-
     base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName,
                        "launcher controller test extension");
@@ -473,17 +466,12 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     arc_test_.TearDown();
-    launcher_controller_->SetShelfItemDelegateManagerForTest(nullptr);
     model_->RemoveObserver(model_observer_.get());
     model_observer_.reset();
     launcher_controller_.reset();
 
-    // item_delegate_manager_ must be deleted after launch_controller_,
-    // because launch_controller_ has a map of pointers to the data
-    // hold by item_delegate_manager_.
-    if (!ash::Shell::HasInstance())
-      delete item_delegate_manager_;
-
+    // |model_| must be deleted after |launch_controller_|, because
+    // |launch_controller_| has a map of pointers to the data held by |model_|.
     model_.reset();
 
     BrowserWithTestWindowTest::TearDown();
@@ -511,8 +499,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     AddAppListLauncherItem();
     launcher_controller_.reset(
         new ChromeLauncherControllerImpl(profile(), model_.get()));
-    if (!ash::Shell::HasInstance())
-      SetShelfItemDelegateManager(item_delegate_manager_);
     launcher_controller_->Init();
   }
 
@@ -558,10 +544,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   void SetLauncherControllerHelper(LauncherControllerHelper* helper) {
     launcher_controller_->SetLauncherControllerHelperForTest(helper);
-  }
-
-  void SetShelfItemDelegateManager(ash::ShelfItemDelegateManager* manager) {
-    launcher_controller_->SetShelfItemDelegateManagerForTest(manager);
   }
 
   void InsertPrefValue(base::ListValue* pref_value,
@@ -933,8 +915,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   ExtensionService* extension_service_;
 
   app_list::AppListSyncableService* app_service_;
-
-  ash::ShelfItemDelegateManager* item_delegate_manager_;
 
  private:
   TestBrowserWindow* CreateTestBrowserWindowAura() {
@@ -3231,15 +3211,7 @@ TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[2].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[3].type);
 
-  SetShelfItemDelegateManager(nullptr);
   launcher_controller_.reset();
-  if (!ash::Shell::HasInstance()) {
-    delete item_delegate_manager_;
-  } else {
-    // Clear already registered ShelfItemDelegate.
-    ash::test::ShelfItemDelegateManagerTestAPI test(item_delegate_manager_);
-    test.RemoveAllShelfItemDelegateForTest();
-  }
   model_.reset(new ash::ShelfModel);
 
   AddAppListLauncherItem();
@@ -3249,10 +3221,6 @@ TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
   SetLauncherControllerHelper(helper);
-  if (!ash::Shell::HasInstance()) {
-    item_delegate_manager_ = new ash::ShelfItemDelegateManager(model_.get());
-    SetShelfItemDelegateManager(item_delegate_manager_);
-  }
   launcher_controller_->Init();
 
   // Check ShelfItems are restored after resetting ChromeLauncherControllerImpl.
@@ -3289,15 +3257,7 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned("0"));
   EXPECT_EQ(initial_size + 1, model_->items().size());
 
-  SetShelfItemDelegateManager(nullptr);
   launcher_controller_.reset();
-  if (!ash::Shell::HasInstance()) {
-    delete item_delegate_manager_;
-  } else {
-    // Clear already registered ShelfItemDelegate.
-    ash::test::ShelfItemDelegateManagerTestAPI test(item_delegate_manager_);
-    test.RemoveAllShelfItemDelegateForTest();
-  }
   model_.reset(new ash::ShelfModel);
 
   AddAppListLauncherItem();
@@ -3310,10 +3270,6 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   app_icon_loader = new TestAppIconLoaderImpl;
   app_icon_loader->AddSupportedApp("1");
   SetAppIconLoader(std::unique_ptr<AppIconLoader>(app_icon_loader));
-  if (!ash::Shell::HasInstance()) {
-    item_delegate_manager_ = new ash::ShelfItemDelegateManager(model_.get());
-    SetShelfItemDelegateManager(item_delegate_manager_);
-  }
   launcher_controller_->Init();
 
   EXPECT_EQ(1, app_icon_loader->fetch_count());

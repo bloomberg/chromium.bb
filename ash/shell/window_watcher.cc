@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
@@ -114,11 +113,9 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   model->Add(item);
 
-  ShelfItemDelegateManager* manager =
-      Shell::GetInstance()->shelf_item_delegate_manager();
   std::unique_ptr<ShelfItemDelegate> delegate(
       new WindowWatcherShelfItemDelegate(id, this));
-  manager->SetShelfItemDelegate(id, std::move(delegate));
+  model->SetShelfItemDelegate(id, std::move(delegate));
   SetShelfIDForWindow(id, new_window);
 }
 

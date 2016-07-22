@@ -45,6 +45,8 @@ class TestShelfModelObserver : public ShelfModelObserver {
   void ShelfItemMoved(int start_index, int target_index) override {
     moved_count_++;
   }
+  void OnSetShelfItemDelegate(ShelfID id,
+                              ShelfItemDelegate* item_delegate) override {}
 
  private:
   void AddToResult(const std::string& format, int count, std::string* result) {

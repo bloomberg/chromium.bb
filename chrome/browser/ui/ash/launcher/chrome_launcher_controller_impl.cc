@@ -10,7 +10,6 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -192,6 +191,7 @@ ChromeLauncherControllerImpl::ChromeLauncherControllerImpl(
     Profile* profile,
     ash::ShelfModel* model)
     : model_(model), profile_(profile) {
+  DCHECK(model_);
   if (!profile_) {
     // If no profile was passed, we take the currently active profile and use it
     // as the owner of the current desktop.
@@ -253,22 +253,11 @@ ChromeLauncherControllerImpl::ChromeLauncherControllerImpl(
 
   // Right now ash::Shell isn't created for tests.
   // TODO(mukai): Allows it to observe display change and write tests.
-  if (ash::Shell::HasInstance()) {
+  if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-    // If it got already set, we remove the observer first again and swap the
-    // ItemDelegateManager.
-    if (item_delegate_manager_)
-      item_delegate_manager_->RemoveObserver(this);
-    item_delegate_manager_ =
-        ash::Shell::GetInstance()->shelf_item_delegate_manager();
-    item_delegate_manager_->AddObserver(this);
-  }
 }
 
 ChromeLauncherControllerImpl::~ChromeLauncherControllerImpl() {
-  if (item_delegate_manager_)
-    item_delegate_manager_->RemoveObserver(this);
-
   // Reset the BrowserStatusMonitor as it has a weak pointer to this.
   browser_status_monitor_.reset();
 
@@ -435,7 +424,7 @@ bool ChromeLauncherControllerImpl::IsPinnable(ash::ShelfID id) const {
   std::string app_id;
   return ((type == ash::TYPE_APP_SHORTCUT || type == ash::TYPE_PLATFORM_APP ||
            type == ash::TYPE_WINDOWED_APP) &&
-          item_delegate_manager_->GetShelfItemDelegate(id)->CanPin());
+          model_->GetShelfItemDelegate(id)->CanPin());
 }
 
 void ChromeLauncherControllerImpl::LockV1AppWithID(const std::string& app_id) {
@@ -1027,17 +1016,6 @@ const std::string& ChromeLauncherControllerImpl::GetAppIdFromShelfIdForTest(
   return id_to_item_controller_map_[id]->app_id();
 }
 
-void ChromeLauncherControllerImpl::SetShelfItemDelegateManagerForTest(
-    ash::ShelfItemDelegateManager* manager) {
-  if (item_delegate_manager_)
-    item_delegate_manager_->RemoveObserver(this);
-
-  item_delegate_manager_ = manager;
-
-  if (item_delegate_manager_)
-    item_delegate_manager_->AddObserver(this);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeLauncherControllerImpl private:
 
@@ -1457,7 +1435,7 @@ ash::ShelfID ChromeLauncherControllerImpl::CreateBrowserShortcutLauncherItem() {
   id_to_item_controller_map_[id] =
       new BrowserShortcutLauncherItemController(this, model_);
   id_to_item_controller_map_[id]->set_shelf_id(id);
-  // ShelfItemDelegateManager owns BrowserShortcutLauncherItemController.
+  // ShelfModel owns BrowserShortcutLauncherItemController.
   SetShelfItemDelegate(id, id_to_item_controller_map_[id]);
   return id;
 }
@@ -1515,8 +1493,7 @@ void ChromeLauncherControllerImpl::SetShelfItemDelegate(
     ash::ShelfItemDelegate* item_delegate) {
   DCHECK_GT(id, 0);
   DCHECK(item_delegate);
-  DCHECK(item_delegate_manager_);
-  item_delegate_manager_->SetShelfItemDelegate(
+  model_->SetShelfItemDelegate(
       id, std::unique_ptr<ash::ShelfItemDelegate>(item_delegate));
 }
 
@@ -1619,21 +1596,6 @@ AppIconLoader* ChromeLauncherControllerImpl::GetAppIconLoaderForApp(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::ShelfItemDelegateManagerObserver:
-
-void ChromeLauncherControllerImpl::OnSetShelfItemDelegate(
-    ash::ShelfID id,
-    ash::ShelfItemDelegate* item_delegate) {
-  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
-  // get into this state in the first place.
-  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
-  if (iter == id_to_item_controller_map_.end() || item_delegate == iter->second)
-    return;
-  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
-  id_to_item_controller_map_.erase(iter);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // ash::ShelfModelObserver:
 
 void ChromeLauncherControllerImpl::ShelfItemAdded(int index) {
@@ -1665,6 +1627,18 @@ void ChromeLauncherControllerImpl::ShelfItemMoved(int start_index,
 void ChromeLauncherControllerImpl::ShelfItemChanged(
     int index,
     const ash::ShelfItem& old_item) {}
+
+void ChromeLauncherControllerImpl::OnSetShelfItemDelegate(
+    ash::ShelfID id,
+    ash::ShelfItemDelegate* item_delegate) {
+  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
+  // get into this state in the first place.
+  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
+  if (iter == id_to_item_controller_map_.end() || item_delegate == iter->second)
+    return;
+  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
+  id_to_item_controller_map_.erase(iter);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // ash::WindowTreeHostManager::Observer:

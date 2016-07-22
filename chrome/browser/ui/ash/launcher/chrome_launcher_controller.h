@@ -78,8 +78,7 @@ class ChromeLauncherController {
   virtual void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) = 0;
 
   // Updates the controller associated with id (which should be a shortcut).
-  // |controller| will be owned by the |ChromeLauncherController| and then
-  // passed on to |ShelfItemDelegateManager|.
+  // Takes ownership of |controller|.
   // TODO(skuhne): Pass in scoped_ptr to make ownership clear.
   virtual void SetItemController(ash::ShelfID id,
                                  LauncherItemController* controller) = 0;

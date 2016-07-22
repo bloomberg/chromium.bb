@@ -10,6 +10,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -55,11 +56,17 @@ void WmShell::Initialize() {
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
   toast_manager_.reset(new ToastManager);
+
+  // Create the app list item in the shelf data model.
+  AppListShelfItemDelegate::CreateAppListItemAndDelegate(shelf_model_.get());
 }
 
 void WmShell::Shutdown() {
   // Accesses WmShell in its destructor.
   accessibility_delegate_.reset();
+  // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
+  // shelf items in Chrome) so explicitly shutdown early.
+  shelf_model_->DestroyItemDelegates();
 }
 
 void WmShell::OnMaximizeModeStarted() {
@@ -104,14 +111,14 @@ void WmShell::RemoveLockStateObserver(LockStateObserver* observer) {
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       focus_cycler_(new FocusCycler),
-      shelf_model_(new ShelfModel),
+      shelf_model_(new ShelfModel),  // Must create before ShelfDelegate.
       system_tray_notifier_(new SystemTrayNotifier),
+      window_cycle_controller_(new WindowCycleController),
       window_selector_controller_(new WindowSelectorController) {
 #if defined(OS_CHROMEOS)
   brightness_control_delegate_.reset(new system::BrightnessControllerChromeos);
   keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);
 #endif
-  window_cycle_controller_.reset(new WindowCycleController());
 }
 
 WmShell::~WmShell() {}

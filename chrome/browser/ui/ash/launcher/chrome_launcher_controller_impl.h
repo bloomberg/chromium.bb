@@ -8,7 +8,6 @@
 #include <list>
 #include <memory>
 
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -32,7 +31,6 @@ class AppWindowLauncherController;
 class TabContents;
 
 namespace ash {
-class ShelfItemDelegateManager;
 class ShelfModel;
 namespace launcher {
 class ChromeLauncherPrefsObserver;
@@ -65,7 +63,6 @@ class ChromeLauncherControllerImpl
       private ash::WindowTreeHostManager::Observer,
       private AppIconLoaderDelegate,
       private AppSyncUIStateObserver,
-      private ash::ShelfItemDelegateManagerObserver,
       private app_list::AppListSyncableService::Observer {
  public:
   ChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model);
@@ -185,11 +182,6 @@ class ChromeLauncherControllerImpl
       std::vector<std::unique_ptr<AppIconLoader>>& loaders);
   const std::string& GetAppIdFromShelfIdForTest(ash::ShelfID id);
 
-  // Sets the ash::ShelfItemDelegateManager only for unittests and doesn't
-  // take an ownership of it.
-  void SetShelfItemDelegateManagerForTest(
-      ash::ShelfItemDelegateManager* manager);
-
  private:
   friend class ChromeLauncherControllerImplTest;
   friend class ShelfAppBrowserTest;
@@ -295,15 +287,13 @@ class ChromeLauncherControllerImpl
 
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
-  // ash::ShelfItemDelegateManagerObserver:
-  void OnSetShelfItemDelegate(ash::ShelfID id,
-                              ash::ShelfItemDelegate* item_delegate) override;
-
   // ash::ShelfModelObserver:
   void ShelfItemAdded(int index) override;
   void ShelfItemRemoved(int index, ash::ShelfID id) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
+  void OnSetShelfItemDelegate(ash::ShelfID id,
+                              ash::ShelfItemDelegate* item_delegate) override;
 
   // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -320,13 +310,11 @@ class ChromeLauncherControllerImpl
 
   ash::ShelfModel* model_;
 
-  ash::ShelfItemDelegateManager* item_delegate_manager_ = nullptr;
-
   // Profile used for prefs and loading extensions. This is NOT necessarily the
   // profile new windows are created with.
   Profile* profile_;
 
-  // Controller items in this map are owned by |ShelfItemDelegateManager|.
+  // Controller items in this map are owned by |ShelfModel|.
   IDToItemControllerMap id_to_item_controller_map_;
 
   // Direct access to app_id for a web contents.

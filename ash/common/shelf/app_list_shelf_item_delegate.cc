@@ -6,21 +6,32 @@
 
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
+#include "base/memory/ptr_util.h"
 #include "grit/ash_strings.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
-AppListShelfItemDelegate::AppListShelfItemDelegate() {
+// static
+void AppListShelfItemDelegate::CreateAppListItemAndDelegate(
+    ShelfModel* shelf_model) {
+  // Add the app list item to the shelf model.
   ShelfItem app_list;
   app_list.type = TYPE_APP_LIST;
-  WmShell::Get()->shelf_model()->Add(app_list);
+  int app_list_index = shelf_model->Add(app_list);
+  DCHECK_GE(app_list_index, 0);
+
+  // Create an AppListShelfItemDelegate for that item.
+  ShelfID app_list_id = shelf_model->items()[app_list_index].id;
+  DCHECK_GE(app_list_id, 0);
+  shelf_model->SetShelfItemDelegate(
+      app_list_id, base::MakeUnique<AppListShelfItemDelegate>());
 }
 
-AppListShelfItemDelegate::~AppListShelfItemDelegate() {
-  // ShelfItemDelegateManager owns and destroys this class.
-}
+AppListShelfItemDelegate::AppListShelfItemDelegate() {}
+
+AppListShelfItemDelegate::~AppListShelfItemDelegate() {}
 
 ShelfItemDelegate::PerformedAction AppListShelfItemDelegate::ItemSelected(
     const ui::Event& event) {

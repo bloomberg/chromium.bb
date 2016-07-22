@@ -47,7 +47,6 @@ class Shelf;
 class ShelfButton;
 class ShelfDelegate;
 class ShelfIconObserver;
-class ShelfItemDelegateManager;
 class ShelfModel;
 struct ShelfItem;
 class WmShelf;
@@ -288,6 +287,8 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemRemoved(int model_index, ShelfID id) override;
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
+  void OnSetShelfItemDelegate(ShelfID id,
+                              ShelfItemDelegate* item_delegate) override;
 
   // Overridden from InkDropButtonListener:
   void ButtonPressed(views::Button* sender,
@@ -444,9 +445,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The rip off view when a snap back operation is underway.
   views::View* snap_back_from_rip_off_view_;
-
-  // Holds ShelfItemDelegateManager.
-  ShelfItemDelegateManager* item_manager_;
 
   // True when this ShelfView is used for Overflow Bubble.
   bool overflow_mode_;

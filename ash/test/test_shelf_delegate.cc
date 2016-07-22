@@ -6,10 +6,8 @@
 
 #include <utility>
 
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
 #include "ash/test/test_shelf_item_delegate.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,12 +49,9 @@ void TestShelfDelegate::AddShelfItem(aura::Window* window,
   model_->Add(item);
   window->AddObserver(this);
 
-  ShelfItemDelegateManager* manager =
-      Shell::GetInstance()->shelf_item_delegate_manager();
-  // |manager| owns TestShelfItemDelegate.
   std::unique_ptr<ShelfItemDelegate> delegate(
       new TestShelfItemDelegate(window));
-  manager->SetShelfItemDelegate(id, std::move(delegate));
+  model_->SetShelfItemDelegate(id, std::move(delegate));
   SetShelfIDForWindow(id, window);
 }
 

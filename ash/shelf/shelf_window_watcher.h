@@ -28,7 +28,6 @@ class ActivationClient;
 namespace ash {
 
 class ShelfModel;
-class ShelfItemDelegateManager;
 class WmWindow;
 
 // ShelfWindowWatcher creates and handles a ShelfItem for windows that have
@@ -37,8 +36,7 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
                            public aura::WindowObserver,
                            public display::DisplayObserver {
  public:
-  ShelfWindowWatcher(ShelfModel* model,
-                     ShelfItemDelegateManager* item_delegate_manager);
+  explicit ShelfWindowWatcher(ShelfModel* model);
   ~ShelfWindowWatcher() override;
 
  private:
@@ -127,7 +125,6 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   // Owned by Shell.
   ShelfModel* model_;
-  ShelfItemDelegateManager* item_delegate_manager_;
 
   RootWindowObserver root_window_observer_;
 

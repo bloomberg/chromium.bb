@@ -15,7 +15,6 @@
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/overflow_button.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
@@ -385,7 +384,6 @@ ShelfView::ShelfView(ShelfModel* model,
       drag_replaced_view_(nullptr),
       dragged_off_shelf_(false),
       snap_back_from_rip_off_view_(nullptr),
-      item_manager_(Shell::GetInstance()->shelf_item_delegate_manager()),
       overflow_mode_(false),
       main_shelf_(nullptr),
       dragged_off_from_overflow_to_shelf_(false),
@@ -538,14 +536,14 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   const ShelfItem* item = ShelfItemForView(view);
   if (!item)
     return false;
-  return item_manager_->GetShelfItemDelegate(item->id)->ShouldShowTooltip();
+  return model_->GetShelfItemDelegate(item->id)->ShouldShowTooltip();
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
   const ShelfItem* item = ShelfItemForView(view);
-  if (!item || !item_manager_->GetShelfItemDelegate(item->id))
+  if (!item || !model_->GetShelfItemDelegate(item->id))
     return base::string16();
-  return item_manager_->GetShelfItemDelegate(item->id)->GetTitle();
+  return model_->GetShelfItemDelegate(item->id)->GetTitle();
 }
 
 gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
@@ -742,7 +740,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     return;  // View is being deleted, ignore request.
 
   ShelfItemDelegate* item_delegate =
-      item_manager_->GetShelfItemDelegate(model_->items()[index].id);
+      model_->GetShelfItemDelegate(model_->items()[index].id);
   if (!item_delegate->IsDraggable())
     return;  // View is not draggable, ignore request.
 
@@ -1049,8 +1047,8 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   }
 
   // If the item is no longer draggable, bail out.
-  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
-      model_->items()[start_drag_index_].id);
+  ShelfItemDelegate* item_delegate =
+      model_->GetShelfItemDelegate(model_->items()[start_drag_index_].id);
   if (!item_delegate->IsDraggable()) {
     CancelDrag(-1);
     return;
@@ -1070,7 +1068,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   DCHECK_NE(-1, current_index);
 
   ShelfItemDelegate* item_delegate =
-      item_manager_->GetShelfItemDelegate(model_->items()[current_index].id);
+      model_->GetShelfItemDelegate(model_->items()[current_index].id);
   if (!item_delegate->IsDraggable()) {
     CancelDrag(-1);
     return;
@@ -1130,8 +1128,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 
   int first_draggable_item = 0;
   while (first_draggable_item < static_cast<int>(model_->items().size()) &&
-         !item_manager_
-              ->GetShelfItemDelegate(model_->items()[first_draggable_item].id)
+         !model_->GetShelfItemDelegate(model_->items()[first_draggable_item].id)
               ->IsDraggable()) {
     first_draggable_item++;
   }
@@ -1314,7 +1311,7 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
 
   std::string app_id = delegate_->GetAppIDForShelfID(model_->items()[index].id);
   ShelfItemDelegate* item_delegate =
-      item_manager_->GetShelfItemDelegate(model_->items()[index].id);
+      model_->GetShelfItemDelegate(model_->items()[index].id);
   if (!item_delegate->CanPin())
     return NOT_REMOVABLE;
   // Note: Only pinned app shortcuts can be removed!
@@ -1681,6 +1678,9 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
+void ShelfView::OnSetShelfItemDelegate(ShelfID id,
+                                       ShelfItemDelegate* item_delegate) {}
+
 void ShelfView::ButtonPressed(views::Button* sender,
                               const ui::Event& event,
                               views::InkDrop* ink_drop) {
@@ -1734,8 +1734,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   }
 
   ShelfItemDelegate::PerformedAction performed_action =
-      item_manager_
-          ->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
+      model_->GetShelfItemDelegate(model_->items()[last_pressed_index_].id)
           ->ItemSelected(event);
 
   shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
@@ -1758,8 +1757,7 @@ bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     views::View* source,
                                     const ui::Event& event,
                                     views::InkDrop* ink_drop) {
-  ShelfItemDelegate* item_delegate =
-      item_manager_->GetShelfItemDelegate(item.id);
+  ShelfItemDelegate* item_delegate = model_->GetShelfItemDelegate(item.id);
   std::unique_ptr<ui::MenuModel> list_menu_model(
       item_delegate->CreateApplicationMenu(event.flags()));
 

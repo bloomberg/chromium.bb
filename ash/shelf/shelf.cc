@@ -9,7 +9,6 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_navigator.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -139,8 +138,7 @@ void Shelf::ActivateShelfItem(int index) {
 
   const ShelfItem& item = shelf_view_->model()->items()[index];
   ShelfItemDelegate* item_delegate =
-      Shell::GetInstance()->shelf_item_delegate_manager()->GetShelfItemDelegate(
-          item.id);
+      shelf_view_->model()->GetShelfItemDelegate(item.id);
   item_delegate->ItemSelected(event);
 }
 

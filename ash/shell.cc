@@ -23,7 +23,6 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -507,25 +506,9 @@ SystemTray* Shell::GetPrimarySystemTray() {
 ShelfDelegate* Shell::GetShelfDelegate() {
   if (!shelf_delegate_) {
     ShelfModel* shelf_model = wm_shell_->shelf_model();
-    // Creates ShelfItemDelegateManager before ShelfDelegate.
-    // TODO(jamescook): Move this into WmShell.
-    shelf_item_delegate_manager_.reset(
-        new ShelfItemDelegateManager(shelf_model));
-
     shelf_delegate_.reset(
         wm_shell_->delegate()->CreateShelfDelegate(shelf_model));
-    std::unique_ptr<ShelfItemDelegate> controller(new AppListShelfItemDelegate);
-
-    // Finding the shelf model's location of the app list and setting its
-    // ShelfItemDelegate.
-    int app_list_index = shelf_model->GetItemIndexForType(TYPE_APP_LIST);
-    DCHECK_GE(app_list_index, 0);
-    ShelfID app_list_id = shelf_model->items()[app_list_index].id;
-    DCHECK(app_list_id);
-    shelf_item_delegate_manager_->SetShelfItemDelegate(app_list_id,
-                                                       std::move(controller));
-    shelf_window_watcher_.reset(new ShelfWindowWatcher(
-        shelf_model, shelf_item_delegate_manager_.get()));
+    shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model));
   }
   return shelf_delegate_.get();
 }
@@ -698,8 +681,6 @@ Shell::~Shell() {
   event_client_.reset();
   toplevel_window_event_handler_.reset();
   visibility_controller_.reset();
-  // |shelf_item_delegate_manager_| observes the shelf model.
-  shelf_item_delegate_manager_.reset();
 
   power_button_controller_.reset();
   lock_state_controller_.reset();

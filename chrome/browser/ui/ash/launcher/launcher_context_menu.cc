@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -122,9 +123,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
         ash::ShelfItemDelegate* item_delegate =
-            ash::Shell::GetInstance()
-                ->shelf_item_delegate_manager()
-                ->GetShelfItemDelegate(item_.id);
+            ash::WmShell::Get()->shelf_model()->GetShelfItemDelegate(item_.id);
         DCHECK(item_delegate);
         item_delegate->Close();
       } else {

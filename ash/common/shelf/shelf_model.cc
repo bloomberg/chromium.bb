@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 
 namespace ash {
@@ -49,6 +50,12 @@ ShelfModel::ShelfModel() : next_id_(1), status_(STATUS_NORMAL) {}
 
 ShelfModel::~ShelfModel() {}
 
+void ShelfModel::DestroyItemDelegates() {
+  // Some ShelfItemDelegates access this model in their destructors and hence
+  // need early cleanup.
+  id_to_item_delegate_map_.clear();
+}
+
 int ShelfModel::Add(const ShelfItem& item) {
   return AddAt(items_.size(), item);
 }
@@ -68,6 +75,10 @@ void ShelfModel::RemoveItemAt(int index) {
          items_[index].type != TYPE_BROWSER_SHORTCUT);
   ShelfID id = items_[index].id;
   items_.erase(items_.begin() + index);
+  RemoveShelfItemDelegate(id);
+  // TODO(jamescook): Fold this into ShelfItemRemoved in existing observers.
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
+                    OnSetShelfItemDelegate(id, nullptr));
   FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
                     ShelfItemRemoved(index, id));
 }
@@ -151,6 +162,26 @@ int ShelfModel::FirstPanelIndex() const {
          items_.begin();
 }
 
+void ShelfModel::SetShelfItemDelegate(
+    ShelfID id,
+    std::unique_ptr<ShelfItemDelegate> item_delegate) {
+  // If another ShelfItemDelegate is already registered for |id|, we assume
+  // that this request is replacing ShelfItemDelegate for |id| with
+  // |item_delegate|.
+  RemoveShelfItemDelegate(id);
+
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
+                    OnSetShelfItemDelegate(id, item_delegate.get()));
+
+  id_to_item_delegate_map_[id] = std::move(item_delegate);
+}
+
+ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(ShelfID id) {
+  if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end())
+    return id_to_item_delegate_map_[id].get();
+  return nullptr;
+}
+
 void ShelfModel::AddObserver(ShelfModelObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -175,6 +206,11 @@ int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
                    static_cast<ShelfItems::difference_type>(index));
 
   return index;
+}
+
+void ShelfModel::RemoveShelfItemDelegate(ShelfID id) {
+  if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end())
+    id_to_item_delegate_map_.erase(id);
 }
 
 }  // namespace ash

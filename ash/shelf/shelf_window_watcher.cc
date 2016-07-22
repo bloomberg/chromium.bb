@@ -9,7 +9,6 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
@@ -100,11 +99,8 @@ void ShelfWindowWatcher::RemovedWindowObserver::OnWindowDestroyed(
   window_watcher_->FinishObservingRemovedWindow(window);
 }
 
-ShelfWindowWatcher::ShelfWindowWatcher(
-    ShelfModel* model,
-    ShelfItemDelegateManager* item_delegate_manager)
+ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
     : model_(model),
-      item_delegate_manager_(item_delegate_manager),
       root_window_observer_(this),
       removed_window_observer_(this),
       observed_windows_(this),
@@ -132,8 +128,7 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   SetShelfIDForWindow(id, window);
   std::unique_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window));
-  // |item_delegate| is owned by |item_delegate_manager_|.
-  item_delegate_manager_->SetShelfItemDelegate(id, std::move(item_delegate));
+  model_->SetShelfItemDelegate(id, std::move(item_delegate));
   model_->Add(item);
 }
 
