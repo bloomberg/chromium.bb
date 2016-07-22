@@ -286,12 +286,14 @@ void Shell::UpdateNavigationControls(bool to_different_document) {
 }
 
 void Shell::ShowDevTools() {
-  InnerShowDevTools();
-}
+  if (!devtools_frontend_) {
+    devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
+    devtools_observer_.reset(new DevToolsWebContentsObserver(
+        this, devtools_frontend_->frontend_shell()->web_contents()));
+  }
 
-void Shell::ShowDevToolsForElementAt(int x, int y) {
-  InnerShowDevTools();
-  devtools_frontend_->InspectElementAt(x, y);
+  devtools_frontend_->Activate();
+  devtools_frontend_->Focus();
 }
 
 void Shell::CloseDevTools() {
@@ -438,10 +440,6 @@ void Shell::ActivateContents(WebContents* contents) {
   contents->GetRenderViewHost()->GetWidget()->Focus();
 }
 
-bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
-  return PlatformHandleContextMenu(params);
-}
-
 gfx::Size Shell::GetShellDefaultSize() {
   static gfx::Size default_shell_size;
   if (!default_shell_size.IsEmpty())
@@ -463,17 +461,6 @@ gfx::Size Shell::GetShellDefaultSize() {
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
   if (entry)
     PlatformSetTitle(entry->GetTitle());
-}
-
-void Shell::InnerShowDevTools() {
-  if (!devtools_frontend_) {
-    devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
-    devtools_observer_.reset(new DevToolsWebContentsObserver(
-        this, devtools_frontend_->frontend_shell()->web_contents()));
-  }
-
-  devtools_frontend_->Activate();
-  devtools_frontend_->Focus();
 }
 
 void Shell::OnDevToolsWebContentsDestroyed() {

@@ -66,9 +66,4 @@ void Shell::Close() {
 void Shell::PlatformSetTitle(const base::string16& title) {
 }
 
-bool Shell::PlatformHandleContextMenu(
-    const content::ContextMenuParams& params) {
-  return false;
-}
-
 }  // namespace content

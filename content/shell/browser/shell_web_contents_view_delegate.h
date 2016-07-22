@@ -5,11 +5,21 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_WEB_CONTENTS_VIEW_DELEGATE_H_
 #define CONTENT_SHELL_BROWSER_SHELL_WEB_CONTENTS_VIEW_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
+
+namespace ui {
+class SimpleMenuModel;
+}
+
+namespace views {
+class MenuRunner;
+}
 
 namespace content {
 
@@ -24,13 +34,18 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
 
 #if defined(OS_MACOSX)
   void ActionPerformed(int id);
-#elif defined(OS_WIN)
-  void MenuItemSelected(int selection);
 #endif
 
  private:
   WebContents* web_contents_;
+#if defined(OS_MACOSX)
   ContextMenuParams params_;
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellWebContentsViewDelegate);
 };

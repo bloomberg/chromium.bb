@@ -13,22 +13,16 @@
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/webview/webview.h"
@@ -54,44 +48,6 @@
 namespace content {
 
 namespace {
-
-// Model for the "Debug" menu
-class ContextMenuModel : public ui::SimpleMenuModel,
-                         public ui::SimpleMenuModel::Delegate {
- public:
-  explicit ContextMenuModel(
-      Shell* shell, const content::ContextMenuParams& params)
-    : ui::SimpleMenuModel(this),
-      shell_(shell),
-      params_(params) {
-    AddItem(COMMAND_OPEN_DEVTOOLS, base::ASCIIToUTF16("Inspect Element"));
-  }
-
-  // ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override { return false; }
-  bool IsCommandIdEnabled(int command_id) const override { return true; }
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override {
-    return false;
-  }
-  void ExecuteCommand(int command_id, int event_flags) override {
-    switch (command_id) {
-      case COMMAND_OPEN_DEVTOOLS:
-        shell_->ShowDevToolsForElementAt(params_.x, params_.y);
-        break;
-    };
-  }
-
- private:
-  enum CommandID {
-    COMMAND_OPEN_DEVTOOLS
-  };
-
-  Shell* shell_;
-  content::ContextMenuParams params_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuModel);
-};
 
 // Maintain the UI controls and web view for content shell
 class ShellWindowDelegateView : public views::WidgetDelegateView,
@@ -147,35 +103,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     } else if (control == STOP_BUTTON) {
       stop_button_->SetState(is_enabled ? views::CustomButton::STATE_NORMAL
           : views::CustomButton::STATE_DISABLED);
-    }
-  }
-
-  void ShowWebViewContextMenu(const content::ContextMenuParams& params) {
-    gfx::Point screen_point(params.x, params.y);
-
-    // Convert from content coordinates to window coordinates.
-    // This code copied from chrome_web_contents_view_delegate_views.cc
-    aura::Window* web_contents_window =
-        shell_->web_contents()->GetNativeView();
-    aura::Window* root_window = web_contents_window->GetRootWindow();
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root_window);
-    if (screen_position_client) {
-        screen_position_client->ConvertPointToScreen(web_contents_window,
-                &screen_point);
-    }
-
-    context_menu_model_.reset(new ContextMenuModel(shell_, params));
-    context_menu_runner_.reset(new views::MenuRunner(
-        context_menu_model_.get(), views::MenuRunner::CONTEXT_MENU));
-
-    if (context_menu_runner_->RunMenuAt(web_view_->GetWidget(),
-                                        NULL,
-                                        gfx::Rect(screen_point, gfx::Size()),
-                                        views::MENU_ANCHOR_TOPRIGHT,
-                                        ui::MENU_SOURCE_NONE) ==
-        views::MenuRunner::MENU_DELETED) {
-      return;
     }
   }
 
@@ -372,8 +299,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   views::LabelButton* refresh_button_;
   views::LabelButton* stop_button_;
   views::Textfield* url_entry_;
-  std::unique_ptr<ContextMenuModel> context_menu_model_;
-  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // Contents view contains the web contents view
   View* contents_view_;
@@ -523,16 +448,6 @@ void Shell::PlatformSetTitle(const base::string16& title) {
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWindowTitle(title);
   window_widget_->UpdateWindowTitle();
-}
-
-bool Shell::PlatformHandleContextMenu(
-    const content::ContextMenuParams& params) {
-  if (headless_)
-    return true;
-  ShellWindowDelegateView* delegate_view =
-    static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
-  delegate_view->ShowWebViewContextMenu(params);
-  return true;
 }
 
 }  // namespace content

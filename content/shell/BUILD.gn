@@ -151,7 +151,6 @@ static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_android.cc",
     "browser/shell_web_contents_view_delegate_creator.h",
     "browser/shell_web_contents_view_delegate_mac.mm",
-    "browser/shell_web_contents_view_delegate_win.cc",
     "common/layout_test/layout_test_content_client.cc",
     "common/layout_test/layout_test_content_client.h",
     "common/layout_test/layout_test_messages.cc",
@@ -328,7 +327,10 @@ static_library("content_shell_lib") {
     ]
 
     if (toolkit_views) {
-      sources += [ "browser/shell_views.cc" ]
+      sources += [
+        "browser/shell_views.cc",
+        "browser/shell_web_contents_view_delegate_views.cc",
+      ]
       deps += [
         "//ui/resources",
         "//ui/views",
@@ -337,7 +339,10 @@ static_library("content_shell_lib") {
         "//ui/wm:test_support",
       ]
     } else {
-      sources += [ "browser/shell_aura.cc" ]
+      sources += [
+        "browser/shell_aura.cc",
+        "browser/shell_web_contents_view_delegate_aura.cc",
+      ]
     }
   } else {
     sources -= [
