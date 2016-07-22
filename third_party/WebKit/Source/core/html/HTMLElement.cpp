@@ -782,6 +782,8 @@ void HTMLElement::dirAttributeChanged(const AtomicString& value)
 {
     // If an ancestor has dir=auto, and this node has the first character,
     // changes to dir attribute may affect the ancestor.
+    if (!canParticipateInFlatTree())
+        return;
     updateDistribution();
     Element* parent = FlatTreeTraversal::parentElement(*this);
     if (parent && parent->isHTMLElement() && toHTMLElement(parent)->selfOrAncestorHasDirAutoAttribute())
