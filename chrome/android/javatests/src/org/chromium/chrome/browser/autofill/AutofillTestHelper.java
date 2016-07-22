@@ -74,7 +74,7 @@ public class AutofillTestHelper {
         return guid;
     }
 
-    void deleteProfile(final String guid) throws InterruptedException, TimeoutException {
+    public void deleteProfile(final String guid) throws InterruptedException, TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

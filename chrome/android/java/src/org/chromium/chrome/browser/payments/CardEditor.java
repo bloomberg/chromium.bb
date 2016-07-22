@@ -487,7 +487,10 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
             }
         });
 
-        mBillingAddressField.setValue(card.getBillingAddressId());
+        if (mBillingAddressField.getDropdownKeys().contains(card.getBillingAddressId())) {
+            mBillingAddressField.setValue(card.getBillingAddressId());
+        }
+
         editor.addField(mBillingAddressField);
     }
 
