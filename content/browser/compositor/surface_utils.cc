@@ -158,12 +158,12 @@ void PrepareBitmapCopyOutputResult(
 
 namespace content {
 
-std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() {
+uint32_t AllocateSurfaceClientId() {
 #if defined(OS_ANDROID)
-  return CompositorImpl::CreateSurfaceIdAllocator();
+  return CompositorImpl::AllocateSurfaceClientId();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  return factory->GetContextFactory()->CreateSurfaceIdAllocator();
+  return factory->GetContextFactory()->AllocateSurfaceClientId();
 #endif
 }
 

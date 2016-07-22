@@ -99,7 +99,11 @@ class DisplayTest : public testing::Test {
       : factory_(&manager_, &surface_factory_client_),
         id_allocator_(kArbitraryClientId),
         task_runner_(new base::NullTaskRunner) {
-    id_allocator_.RegisterSurfaceClientId(&manager_);
+    manager_.RegisterSurfaceClientId(id_allocator_.client_id());
+  }
+
+  ~DisplayTest() override {
+    manager_.InvalidateSurfaceClientId(id_allocator_.client_id());
   }
 
   void SetUpDisplay(const RendererSettings& settings,

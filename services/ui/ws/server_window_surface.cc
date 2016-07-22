@@ -27,7 +27,7 @@ ServerWindowSurface::ServerWindowSurface(
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-  surface_id_allocator_.RegisterSurfaceClientId(surface_manager);
+  surface_manager->RegisterSurfaceClientId(surface_id_allocator_.client_id());
   surface_manager->RegisterSurfaceFactoryClient(
       surface_id_allocator_.client_id(), this);
 }
@@ -40,6 +40,7 @@ ServerWindowSurface::~ServerWindowSurface() {
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
   surface_manager->UnregisterSurfaceFactoryClient(
       surface_id_allocator_.client_id());
+  surface_manager->InvalidateSurfaceClientId(surface_id_allocator_.client_id());
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(

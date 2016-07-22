@@ -55,8 +55,6 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
   capabilities_.can_force_reclaim_resources = true;
   capabilities_.delegated_sync_points_required =
       !context_shared_with_compositor;
-
-  surface_id_allocator_->RegisterSurfaceClientId(surface_manager_.get());
 }
 
 TestDelegatingOutputSurface::~TestDelegatingOutputSurface() {}
@@ -72,6 +70,7 @@ bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (!capabilities_.delegated_sync_points_required && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
+  surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->client_id(), this);
   display_->Initialize(this, surface_manager_.get(),
@@ -86,6 +85,8 @@ void TestDelegatingOutputSurface::DetachFromClient() {
     if (!delegated_surface_id_.is_null())
       surface_factory_->Destroy(delegated_surface_id_);
     surface_manager_->UnregisterSurfaceFactoryClient(
+        surface_id_allocator_->client_id());
+    surface_manager_->InvalidateSurfaceClientId(
         surface_id_allocator_->client_id());
     bound_ = false;
   }

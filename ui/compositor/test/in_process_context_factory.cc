@@ -247,13 +247,8 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-std::unique_ptr<cc::SurfaceIdAllocator>
-InProcessContextFactory::CreateSurfaceIdAllocator() {
-  std::unique_ptr<cc::SurfaceIdAllocator> allocator(
-      new cc::SurfaceIdAllocator(next_surface_client_id_++));
-  if (surface_manager_)
-    allocator->RegisterSurfaceClientId(surface_manager_);
-  return allocator;
+uint32_t InProcessContextFactory::AllocateSurfaceClientId() {
+  return next_surface_client_id_++;
 }
 
 cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {

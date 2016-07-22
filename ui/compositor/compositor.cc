@@ -29,6 +29,7 @@
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
@@ -82,7 +83,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       widget_(gfx::kNullAcceleratedWidget),
       widget_valid_(false),
       output_surface_requested_(false),
-      surface_id_allocator_(context_factory->CreateSurfaceIdAllocator()),
+      surface_id_allocator_(new cc::SurfaceIdAllocator(
+          context_factory->AllocateSurfaceClientId())),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
       device_scale_factor_(0.0f),
@@ -90,6 +92,10 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
+  if (context_factory->GetSurfaceManager()) {
+    context_factory->GetSurfaceManager()->RegisterSurfaceClientId(
+        surface_id_allocator_->client_id());
+  }
   root_web_layer_ = cc::Layer::Create();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -238,6 +244,10 @@ Compositor::~Compositor() {
   host_.reset();
 
   context_factory_->RemoveCompositor(this);
+  if (context_factory_->GetSurfaceManager()) {
+    context_factory_->GetSurfaceManager()->InvalidateSurfaceClientId(
+        surface_id_allocator_->client_id());
+  }
 }
 
 void Compositor::SetOutputSurface(

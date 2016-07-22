@@ -192,7 +192,12 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceFactoryOwner, private:
 
-SurfaceFactoryOwner::~SurfaceFactoryOwner() {}
+SurfaceFactoryOwner::~SurfaceFactoryOwner() {
+  if (surface_factory_->manager()) {
+    surface_factory_->manager()->InvalidateSurfaceClientId(
+        id_allocator_->client_id());
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
@@ -210,8 +215,10 @@ Surface::Surface()
   window_->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   window_->set_owned_by_parent(false);
   factory_owner_->surface_ = this;
-  factory_owner_->id_allocator_ =
-      aura::Env::GetInstance()->context_factory()->CreateSurfaceIdAllocator();
+  factory_owner_->id_allocator_.reset(new cc::SurfaceIdAllocator(
+      aura::Env::GetInstance()->context_factory()->AllocateSurfaceClientId()));
+  surface_manager_->RegisterSurfaceClientId(
+      factory_owner_->id_allocator_->client_id());
   factory_owner_->surface_factory_.reset(
       new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
   aura::Env::GetInstance()->context_factory()->AddObserver(this);

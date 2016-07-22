@@ -27,10 +27,13 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
     : render_thread_manager_(state),
       last_egl_context_(eglGetCurrentContext()),
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
-      surface_id_allocator_(surfaces_->CreateSurfaceIdAllocator()),
+      surface_id_allocator_(
+          new cc::SurfaceIdAllocator(surfaces_->AllocateSurfaceClientId())),
       last_committed_output_surface_id_(0u),
       last_submitted_output_surface_id_(0u) {
   DCHECK(last_egl_context_);
+  surfaces_->GetSurfaceManager()->RegisterSurfaceClientId(
+      surface_id_allocator_->client_id());
   surfaces_->GetSurfaceManager()->RegisterSurfaceFactoryClient(
       surface_id_allocator_->client_id(), this);
 }
@@ -42,6 +45,8 @@ HardwareRenderer::~HardwareRenderer() {
     DestroySurface();
   surface_factory_.reset();
   surfaces_->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
+      surface_id_allocator_->client_id());
+  surfaces_->GetSurfaceManager()->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
 
   // Reset draw constraints.

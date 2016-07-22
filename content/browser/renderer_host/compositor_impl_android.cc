@@ -337,14 +337,8 @@ cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
 }
 
 // static
-std::unique_ptr<cc::SurfaceIdAllocator>
-CompositorImpl::CreateSurfaceIdAllocator() {
-  std::unique_ptr<cc::SurfaceIdAllocator> allocator(
-      new cc::SurfaceIdAllocator(++g_surface_client_id));
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  DCHECK(manager);
-  allocator->RegisterSurfaceClientId(manager);
-  return allocator;
+uint32_t CompositorImpl::AllocateSurfaceClientId() {
+  return ++g_surface_client_id;
 }
 
 // static
@@ -363,7 +357,8 @@ CompositorImpl::SharedVulkanContextProviderAndroid() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : surface_id_allocator_(CreateSurfaceIdAllocator()),
+    : surface_id_allocator_(
+          new cc::SurfaceIdAllocator(AllocateSurfaceClientId())),
       resource_manager_(root_window),
       has_transparent_background_(false),
       device_scale_factor_(1),
@@ -377,6 +372,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       output_surface_request_pending_(false),
       needs_begin_frames_(false),
       weak_factory_(this) {
+  GetSurfaceManager()->RegisterSurfaceClientId(
+      surface_id_allocator_->client_id());
   DCHECK(client);
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
@@ -391,6 +388,8 @@ CompositorImpl::~CompositorImpl() {
   root_window_->SetLayer(nullptr);
   // Clean-up any surface references.
   SetSurface(NULL);
+  GetSurfaceManager()->InvalidateSurfaceClientId(
+      surface_id_allocator_->client_id());
 }
 
 ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {

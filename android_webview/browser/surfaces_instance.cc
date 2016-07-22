@@ -52,7 +52,7 @@ SurfacesInstance::SurfacesInstance()
   surface_manager_.reset(new cc::SurfaceManager);
   surface_id_allocator_.reset(
       new cc::SurfaceIdAllocator(next_surface_client_id_++));
-  surface_id_allocator_->RegisterSurfaceClientId(surface_manager_.get());
+  surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
       new cc::StubBeginFrameSource);
@@ -87,14 +87,13 @@ SurfacesInstance::~SurfacesInstance() {
   DCHECK(child_ids_.empty());
   if (!root_id_.is_null())
     surface_factory_->Destroy(root_id_);
+
+  surface_manager_->InvalidateSurfaceClientId(
+      surface_id_allocator_->client_id());
 }
 
-std::unique_ptr<cc::SurfaceIdAllocator>
-SurfacesInstance::CreateSurfaceIdAllocator() {
-  std::unique_ptr<cc::SurfaceIdAllocator> allocator =
-      base::WrapUnique(new cc::SurfaceIdAllocator(next_surface_client_id_++));
-  allocator->RegisterSurfaceClientId(surface_manager_.get());
-  return allocator;
+uint32_t SurfacesInstance::AllocateSurfaceClientId() {
+  return next_surface_client_id_++;
 }
 
 cc::SurfaceManager* SurfacesInstance::GetSurfaceManager() {

@@ -31,7 +31,7 @@ DisplayCompositor::DisplayCompositor(
       surfaces_state_(surfaces_state),
       factory_(surfaces_state->manager(), this),
       allocator_(surfaces_state->next_client_id()) {
-  allocator_.RegisterSurfaceClientId(surfaces_state_->manager());
+  surfaces_state_->manager()->RegisterSurfaceClientId(allocator_.client_id());
   surfaces_state_->manager()->RegisterSurfaceFactoryClient(
       allocator_.client_id(), this);
 
@@ -78,6 +78,7 @@ DisplayCompositor::DisplayCompositor(
 DisplayCompositor::~DisplayCompositor() {
   surfaces_state_->manager()->UnregisterSurfaceFactoryClient(
       allocator_.client_id());
+  surfaces_state_->manager()->InvalidateSurfaceClientId(allocator_.client_id());
 }
 
 void DisplayCompositor::SubmitCompositorFrame(

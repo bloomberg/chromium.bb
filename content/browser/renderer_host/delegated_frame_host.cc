@@ -75,7 +75,10 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
-  id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();
+  id_allocator_.reset(new cc::SurfaceIdAllocator(
+      factory->GetContextFactory()->AllocateSurfaceClientId()));
+  factory->GetSurfaceManager()->RegisterSurfaceClientId(
+      id_allocator_->client_id());
   factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(
       id_allocator_->client_id(), this);
 }
@@ -817,6 +820,8 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   if (!surface_id_.is_null())
     surface_factory_->Destroy(surface_id_);
   factory->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
+      id_allocator_->client_id());
+  factory->GetSurfaceManager()->InvalidateSurfaceClientId(
       id_allocator_->client_id());
 
   DCHECK(!vsync_manager_.get());

@@ -37,7 +37,7 @@ class StubContextFactory : public ui::ContextFactory {
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
+  uint32_t AllocateSurfaceClientId() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;

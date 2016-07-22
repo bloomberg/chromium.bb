@@ -50,7 +50,8 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       observing_begin_frame_source_(false),
       parent_surface_client_id_(0),
       weak_factory_(this) {
-  id_allocator_ = CreateSurfaceIdAllocator();
+  id_allocator_.reset(new cc::SurfaceIdAllocator(AllocateSurfaceClientId()));
+  GetSurfaceManager()->RegisterSurfaceClientId(id_allocator_->client_id());
   RegisterSurfaceNamespaceId();
 
   host_->SetView(this);
@@ -59,6 +60,9 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
   if (!surface_id_.is_null())
     surface_factory_->Destroy(surface_id_);
+
+  if (GetSurfaceManager())
+    GetSurfaceManager()->InvalidateSurfaceClientId(id_allocator_->client_id());
 }
 
 void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(

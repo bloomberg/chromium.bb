@@ -64,7 +64,7 @@ class CONTENT_EXPORT CompositorImpl
   static bool IsInitialized();
 
   static cc::SurfaceManager* GetSurfaceManager();
-  static std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
+  static uint32_t AllocateSurfaceClientId();
 
   static scoped_refptr<cc::VulkanInProcessContextProvider>
   SharedVulkanContextProviderAndroid();

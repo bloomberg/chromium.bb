@@ -90,10 +90,8 @@ cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
 }
 
-std::unique_ptr<cc::SurfaceIdAllocator>
-SurfaceContextFactory::CreateSurfaceIdAllocator() {
-  return base::WrapUnique(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+uint32_t SurfaceContextFactory::AllocateSurfaceClientId() {
+  return next_surface_id_namespace_++;
 }
 
 cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {

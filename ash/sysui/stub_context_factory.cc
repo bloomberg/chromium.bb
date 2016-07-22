@@ -71,10 +71,8 @@ cc::TaskGraphRunner* StubContextFactory::GetTaskGraphRunner() {
   return task_graph_runner_.get();
 }
 
-std::unique_ptr<cc::SurfaceIdAllocator>
-StubContextFactory::CreateSurfaceIdAllocator() {
-  return base::WrapUnique(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+uint32_t StubContextFactory::AllocateSurfaceClientId() {
+  return next_surface_id_namespace_++;
 }
 
 cc::SurfaceManager* StubContextFactory::GetSurfaceManager() {

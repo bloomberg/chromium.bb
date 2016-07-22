@@ -64,17 +64,28 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
       is_occluded_(false),
       did_swap_compositor_frame_(false) {
 #if defined(OS_ANDROID)
-    surface_id_allocator_ = CreateSurfaceIdAllocator();
+  surface_id_allocator_.reset(
+      new cc::SurfaceIdAllocator(AllocateSurfaceClientId()));
+  GetSurfaceManager()->RegisterSurfaceClientId(
+      surface_id_allocator_->client_id());
 #else
   // Not all tests initialize or need an image transport factory.
-  if (ImageTransportFactory::GetInstance())
-    surface_id_allocator_ = CreateSurfaceIdAllocator();
+  if (ImageTransportFactory::GetInstance()) {
+    surface_id_allocator_.reset(
+        new cc::SurfaceIdAllocator(AllocateSurfaceClientId()));
+    GetSurfaceManager()->RegisterSurfaceClientId(
+        surface_id_allocator_->client_id());
+  }
 #endif
 
   rwh_->SetView(this);
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
+  if (GetSurfaceManager()) {
+    GetSurfaceManager()->InvalidateSurfaceClientId(
+        surface_id_allocator_->client_id());
+  }
 }
 
 RenderWidgetHost* TestRenderWidgetHostView::GetRenderWidgetHost() const {

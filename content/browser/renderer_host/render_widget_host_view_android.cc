@@ -345,8 +345,10 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       locks_on_frame_count_(0),
       observing_root_window_(false),
       weak_ptr_factory_(this) {
-  if (CompositorImpl::GetSurfaceManager())
-    id_allocator_ = CompositorImpl::CreateSurfaceIdAllocator();
+  id_allocator_.reset(
+      new cc::SurfaceIdAllocator(CompositorImpl::AllocateSurfaceClientId()));
+  CompositorImpl::GetSurfaceManager()->RegisterSurfaceClientId(
+      id_allocator_->client_id());
   host_->SetView(this);
   SetContentViewCore(content_view_core);
 }
@@ -795,6 +797,8 @@ void RenderWidgetHostViewAndroid::Destroy() {
     surface_id_ = cc::SurfaceId();
   }
   surface_factory_.reset();
+  CompositorImpl::GetSurfaceManager()->InvalidateSurfaceClientId(
+      id_allocator_->client_id());
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;

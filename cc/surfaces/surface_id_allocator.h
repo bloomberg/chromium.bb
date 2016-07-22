@@ -25,24 +25,11 @@ class CC_SURFACES_EXPORT SurfaceIdAllocator {
 
   SurfaceId GenerateId();
 
-  // This needs to be called before any sequences with this allocator's
-  // namespace will be used to enforce destruction dependencies.
-  // When this SurfaceIdAllocator is destroyed, its namespace is
-  // automatically invalidated and any remaining sequences with that
-  // namespace will be ignored. This method does not need to be called in
-  // contexts where there is no SurfaceManager (e.g. a renderer process).
-  void RegisterSurfaceClientId(SurfaceManager* manager);
-
   uint32_t client_id() const { return client_id_; }
-
-  // SurfaceIdAllocator's owner can call this when it find out that
-  // SurfaceManager is no longer alive during destruction.
-  void DidDestroySurfaceManager() { manager_ = nullptr; }
 
  private:
   const uint32_t client_id_;
   uint32_t next_id_;
-  SurfaceManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceIdAllocator);
 };

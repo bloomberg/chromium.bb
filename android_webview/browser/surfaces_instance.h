@@ -38,7 +38,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
  public:
   static scoped_refptr<SurfacesInstance> GetOrCreateInstance();
 
-  std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
+  uint32_t AllocateSurfaceClientId();
   cc::SurfaceManager* GetSurfaceManager();
   void SetBackingFrameBufferObject(int framebuffer_binding_ext);
 

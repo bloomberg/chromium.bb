@@ -14,17 +14,14 @@
 
 namespace cc {
 class CopyOutputResult;
-class SurfaceIdAllocator;
 class SurfaceManager;
 }  // namespace cc
 
 namespace content {
 
-CONTENT_EXPORT
-std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
+CONTENT_EXPORT uint32_t AllocateSurfaceClientId();
 
-CONTENT_EXPORT
-cc::SurfaceManager* GetSurfaceManager();
+CONTENT_EXPORT cc::SurfaceManager* GetSurfaceManager();
 
 void CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,

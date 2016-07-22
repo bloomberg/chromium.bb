@@ -128,9 +128,8 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Gets the task graph runner.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
 
-  // Creates a Surface ID allocator with a new namespace.
-  virtual std::unique_ptr<cc::SurfaceIdAllocator>
-  CreateSurfaceIdAllocator() = 0;
+  // Allocate a new client ID for the display compositor.
+  virtual uint32_t AllocateSurfaceClientId() = 0;
 
   // Gets the surface manager.
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;

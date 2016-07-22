@@ -12,17 +12,9 @@
 namespace cc {
 
 SurfaceIdAllocator::SurfaceIdAllocator(uint32_t client_id)
-    : client_id_(client_id), next_id_(1u), manager_(nullptr) {}
-
-void SurfaceIdAllocator::RegisterSurfaceClientId(SurfaceManager* manager) {
-  DCHECK(!manager_);
-  manager_ = manager;
-  manager_->RegisterSurfaceClientId(client_id_);
-}
+    : client_id_(client_id), next_id_(1u) {}
 
 SurfaceIdAllocator::~SurfaceIdAllocator() {
-  if (manager_)
-    manager_->InvalidateSurfaceClientId(client_id_);
 }
 
 SurfaceId SurfaceIdAllocator::GenerateId() {

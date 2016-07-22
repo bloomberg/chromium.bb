@@ -690,13 +690,8 @@ ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
   return this;
 }
 
-std::unique_ptr<cc::SurfaceIdAllocator>
-GpuProcessTransportFactory::CreateSurfaceIdAllocator() {
-  std::unique_ptr<cc::SurfaceIdAllocator> allocator =
-      base::WrapUnique(new cc::SurfaceIdAllocator(next_surface_client_id_++));
-  if (GetSurfaceManager())
-    allocator->RegisterSurfaceClientId(GetSurfaceManager());
-  return allocator;
+uint32_t GpuProcessTransportFactory::AllocateSurfaceClientId() {
+  return next_surface_client_id_++;
 }
 
 void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
