@@ -11,6 +11,7 @@ source_set("earl_grey_support") {
   testonly = true
 
   deps = [
+    "//base/test:test_support",
     "//ios/third_party/earl_grey",
   ]
 
