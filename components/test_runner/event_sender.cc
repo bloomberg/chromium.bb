@@ -1923,6 +1923,14 @@ void EventSender::GestureFlingStart(float x,
     return;
   }
 
+  float max_start_velocity = std::max(fabs(velocity_x), fabs(velocity_y));
+  if (!max_start_velocity) {
+    v8::Isolate* isolate = blink::mainThreadIsolate();
+    isolate->ThrowException(v8::Exception::TypeError(
+      gin::StringToV8(isolate, "Invalid max start velocity.")));
+    return;
+  }
+
   event.x = x;
   event.y = y;
   event.globalX = event.x;
