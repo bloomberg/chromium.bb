@@ -772,6 +772,11 @@ void FocusController::focusDocumentView(Frame* frame, bool notifyEmbedder)
             dispatchFocusEvent(*document, *focusedElement);
     }
 
+    // dispatchBlurEvent/dispatchFocusEvent could have changed the focused frame, or
+    // detached the frame.
+    if (newFocusedFrame && !newFocusedFrame->view())
+        return;
+
     setFocusedFrame(frame, notifyEmbedder);
 }
 
