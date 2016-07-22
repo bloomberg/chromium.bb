@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
 
@@ -28,6 +29,8 @@ public class PasswordEntryEditor extends Fragment {
     // If false this represents a saved name/password.
     private boolean mException;
 
+    public static final String VIEW_PASSWORDS = "view-passwords";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +40,12 @@ public class PasswordEntryEditor extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        View v = inflater.inflate(R.layout.password_entry_editor, container, false);
+        View v;
+        if (ChromeFeatureList.isEnabled(VIEW_PASSWORDS)) {
+            v = inflater.inflate(R.layout.password_entry_editor_interactive, container, false);
+        } else {
+            v = inflater.inflate(R.layout.password_entry_editor, container, false);
+        }
         getActivity().setTitle(R.string.password_entry_editor_title);
 
         // Extras are set on this intent in class SavePasswordsPreferences.
@@ -58,8 +66,9 @@ public class PasswordEntryEditor extends Fragment {
         String url = extras.getString(SavePasswordsPreferences.PASSWORD_LIST_URL);
         TextView urlView = (TextView) v.findViewById(R.id.password_entry_editor_url);
         urlView.setText(url);
-
-        hookupCancelDeleteButtons(v);
+        if (!ChromeFeatureList.isEnabled(VIEW_PASSWORDS)) {
+            hookupCancelDeleteButtons(v);
+        }
         return v;
     }
 
