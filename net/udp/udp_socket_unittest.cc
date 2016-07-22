@@ -29,6 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_IOS)
 #include <TargetConditionals.h>
 #endif
@@ -685,6 +689,53 @@ TEST_F(UDPSocketTest, SetDSCP) {
   client.SetDiffServCodePoint(DSCP_NO_CHANGE);
   client.SetDiffServCodePoint(DSCP_DEFAULT);
   client.Close();
+}
+
+TEST_F(UDPSocketTest, TestBindToNetwork) {
+  UDPSocket socket(DatagramSocket::RANDOM_BIND, base::Bind(&PrivilegedRand),
+                   NULL, NetLog::Source());
+  ASSERT_EQ(OK, socket.Open(ADDRESS_FAMILY_IPV4));
+  // Test unsuccessful binding, by attempting to bind to a bogus NetworkHandle.
+  int rv = socket.BindToNetwork(65536);
+#if !defined(OS_ANDROID)
+  EXPECT_EQ(ERR_NOT_IMPLEMENTED, rv);
+#else
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_LOLLIPOP) {
+    EXPECT_EQ(ERR_NOT_IMPLEMENTED, rv);
+  } else if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_LOLLIPOP &&
+             base::android::BuildInfo::GetInstance()->sdk_int() <
+             base::android::SDK_VERSION_MARSHMALLOW) {
+    // On Lollipop, we assume if the user has a NetworkHandle that they must
+    // have gotten it from a legitimate source, so if binding to the network
+    // fails it's assumed to be because the network went away so
+    // ERR_NETWORK_CHANGED is returned. In this test the network never existed
+    // anyhow.  ConnectivityService.MAX_NET_ID is 65535, so 65536 won't be used.
+    EXPECT_EQ(ERR_NETWORK_CHANGED, rv);
+  } else if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_MARSHMALLOW) {
+    // On Marshmallow and newer releases, the NetworkHandle is munged by
+    // Network.getNetworkHandle() and 65536 isn't munged so it's rejected.
+    EXPECT_EQ(ERR_INVALID_ARGUMENT, rv);
+  }
+
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_LOLLIPOP) {
+    EXPECT_EQ(
+        ERR_INVALID_ARGUMENT,
+        socket.BindToNetwork(NetworkChangeNotifier::kInvalidNetworkHandle));
+
+    // Test successful binding, if possible.
+    if (NetworkChangeNotifier::AreNetworkHandlesSupported()) {
+      NetworkChangeNotifier::NetworkHandle network_handle =
+          NetworkChangeNotifier::GetDefaultNetwork();
+      if (network_handle != NetworkChangeNotifier::kInvalidNetworkHandle) {
+        EXPECT_EQ(OK, socket.BindToNetwork(network_handle));
+      }
+    }
+  }
+#endif
 }
 
 }  // namespace

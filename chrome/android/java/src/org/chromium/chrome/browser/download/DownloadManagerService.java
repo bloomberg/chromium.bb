@@ -1549,16 +1549,16 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
 
     @Override
-    public void onNetworkConnect(int netId, int connectionType) {}
+    public void onNetworkConnect(long netId, int connectionType) {}
 
     @Override
-    public void onNetworkSoonToDisconnect(int netId) {}
+    public void onNetworkSoonToDisconnect(long netId) {}
 
     @Override
-    public void onNetworkDisconnect(int netId) {}
+    public void onNetworkDisconnect(long netId) {}
 
     @Override
-    public void purgeActiveNetworkList(int[] activeNetIds) {}
+    public void purgeActiveNetworkList(long[] activeNetIds) {}
 
     private native long nativeInit();
     private native void nativeResumeDownload(

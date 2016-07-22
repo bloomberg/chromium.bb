@@ -93,7 +93,7 @@ public class NetworkChangeNotifier {
      * auto-detection has been enabled, returns NetId.INVALID otherwise.
      */
     @CalledByNative
-    public int getCurrentDefaultNetId() {
+    public long getCurrentDefaultNetId() {
         return mAutoDetector == null ? NetId.INVALID : mAutoDetector.getDefaultNetId();
     }
 
@@ -106,8 +106,8 @@ public class NetworkChangeNotifier {
      * been enabled.
      */
     @CalledByNative
-    public int[] getCurrentNetworksAndTypes() {
-        return mAutoDetector == null ? new int[0] : mAutoDetector.getNetworksAndTypes();
+    public long[] getCurrentNetworksAndTypes() {
+        return mAutoDetector == null ? new long[0] : mAutoDetector.getNetworksAndTypes();
     }
 
     /**
@@ -198,19 +198,19 @@ public class NetworkChangeNotifier {
                                 updateCurrentMaxBandwidth(maxBandwidthMbps);
                             }
                             @Override
-                            public void onNetworkConnect(int netId, int connectionType) {
+                            public void onNetworkConnect(long netId, int connectionType) {
                                 notifyObserversOfNetworkConnect(netId, connectionType);
                             }
                             @Override
-                            public void onNetworkSoonToDisconnect(int netId) {
+                            public void onNetworkSoonToDisconnect(long netId) {
                                 notifyObserversOfNetworkSoonToDisconnect(netId);
                             }
                             @Override
-                            public void onNetworkDisconnect(int netId) {
+                            public void onNetworkDisconnect(long netId) {
                                 notifyObserversOfNetworkDisconnect(netId);
                             }
                             @Override
-                            public void purgeActiveNetworkList(int[] activeNetIds) {
+                            public void purgeActiveNetworkList(long[] activeNetIds) {
                                 notifyObserversToPurgeActiveNetworkList(activeNetIds);
                             }
                         },
@@ -249,35 +249,35 @@ public class NetworkChangeNotifier {
 
     // For testing, pretend a network connected.
     @CalledByNative
-    public static void fakeNetworkConnected(int netId, int connectionType) {
+    public static void fakeNetworkConnected(long netId, int connectionType) {
         setAutoDetectConnectivityState(false);
         getInstance().notifyObserversOfNetworkConnect(netId, connectionType);
     }
 
     // For testing, pretend a network will soon disconnect.
     @CalledByNative
-    public static void fakeNetworkSoonToBeDisconnected(int netId) {
+    public static void fakeNetworkSoonToBeDisconnected(long netId) {
         setAutoDetectConnectivityState(false);
         getInstance().notifyObserversOfNetworkSoonToDisconnect(netId);
     }
 
     // For testing, pretend a network disconnected.
     @CalledByNative
-    public static void fakeNetworkDisconnected(int netId) {
+    public static void fakeNetworkDisconnected(long netId) {
         setAutoDetectConnectivityState(false);
         getInstance().notifyObserversOfNetworkDisconnect(netId);
     }
 
     // For testing, pretend a network lists should be purged.
     @CalledByNative
-    public static void fakePurgeActiveNetworkList(int[] activeNetIds) {
+    public static void fakePurgeActiveNetworkList(long[] activeNetIds) {
         setAutoDetectConnectivityState(false);
         getInstance().notifyObserversToPurgeActiveNetworkList(activeNetIds);
     }
 
     // For testing, pretend a default network changed.
     @CalledByNative
-    public static void fakeDefaultNetwork(int netId, int connectionType) {
+    public static void fakeDefaultNetwork(long netId, int connectionType) {
         setAutoDetectConnectivityState(false);
         getInstance().notifyObserversOfConnectionTypeChange(connectionType, netId);
     }
@@ -311,7 +311,7 @@ public class NetworkChangeNotifier {
         notifyObserversOfConnectionTypeChange(newConnectionType, getCurrentDefaultNetId());
     }
 
-    private void notifyObserversOfConnectionTypeChange(int newConnectionType, int defaultNetId) {
+    private void notifyObserversOfConnectionTypeChange(int newConnectionType, long defaultNetId) {
         for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
             nativeNotifyConnectionTypeChanged(
                     nativeChangeNotifier, newConnectionType, defaultNetId);
@@ -333,7 +333,7 @@ public class NetworkChangeNotifier {
     /**
      * Alerts all observers of a network connect.
      */
-    void notifyObserversOfNetworkConnect(int netId, int connectionType) {
+    void notifyObserversOfNetworkConnect(long netId, int connectionType) {
         for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
             nativeNotifyOfNetworkConnect(nativeChangeNotifier, netId, connectionType);
         }
@@ -342,7 +342,7 @@ public class NetworkChangeNotifier {
     /**
      * Alerts all observers of a network soon to be disconnected.
      */
-    void notifyObserversOfNetworkSoonToDisconnect(int netId) {
+    void notifyObserversOfNetworkSoonToDisconnect(long netId) {
         for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
             nativeNotifyOfNetworkSoonToDisconnect(nativeChangeNotifier, netId);
         }
@@ -351,7 +351,7 @@ public class NetworkChangeNotifier {
     /**
      * Alerts all observers of a network disconnect.
      */
-    void notifyObserversOfNetworkDisconnect(int netId) {
+    void notifyObserversOfNetworkDisconnect(long netId) {
         for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
             nativeNotifyOfNetworkDisconnect(nativeChangeNotifier, netId);
         }
@@ -363,7 +363,7 @@ public class NetworkChangeNotifier {
      * issued if a period elapsed where disconnected notifications may have
      * been missed, and acts to keep cached lists of active networks accurate.
      */
-    void notifyObserversToPurgeActiveNetworkList(int[] activeNetIds) {
+    void notifyObserversToPurgeActiveNetworkList(long[] activeNetIds) {
         for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
             nativeNotifyPurgeActiveNetworkList(nativeChangeNotifier, activeNetIds);
         }
@@ -393,22 +393,23 @@ public class NetworkChangeNotifier {
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
     private native void nativeNotifyConnectionTypeChanged(
-            long nativePtr, int newConnectionType, int defaultNetId);
+            long nativePtr, int newConnectionType, long defaultNetId);
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
     private native void nativeNotifyMaxBandwidthChanged(long nativePtr, double maxBandwidthMbps);
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
-    private native void nativeNotifyOfNetworkConnect(long nativePtr, int netId, int connectionType);
+    private native void nativeNotifyOfNetworkConnect(
+            long nativePtr, long netId, int connectionType);
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
-    private native void nativeNotifyOfNetworkSoonToDisconnect(long nativePtr, int netId);
+    private native void nativeNotifyOfNetworkSoonToDisconnect(long nativePtr, long netId);
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
-    private native void nativeNotifyOfNetworkDisconnect(long nativePtr, int netId);
+    private native void nativeNotifyOfNetworkDisconnect(long nativePtr, long netId);
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
-    private native void nativeNotifyPurgeActiveNetworkList(long nativePtr, int[] activeNetIds);
+    private native void nativeNotifyPurgeActiveNetworkList(long nativePtr, long[] activeNetIds);
 
     private static native double nativeGetMaxBandwidthForConnectionSubtype(int subtype);
 

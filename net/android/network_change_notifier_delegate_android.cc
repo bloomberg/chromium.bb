@@ -47,16 +47,16 @@ NetworkChangeNotifier::ConnectionSubtype ConvertConnectionSubtype(
 }  // namespace
 
 // static
-void NetworkChangeNotifierDelegateAndroid::JavaIntArrayToNetworkMap(
+void NetworkChangeNotifierDelegateAndroid::JavaLongArrayToNetworkMap(
     JNIEnv* env,
-    jintArray int_array,
+    jlongArray long_array,
     NetworkMap* network_map) {
-  std::vector<int> int_list;
-  base::android::JavaIntArrayToIntVector(env, int_array, &int_list);
+  std::vector<int64_t> int64_list;
+  base::android::JavaLongArrayToInt64Vector(env, long_array, &int64_list);
   network_map->clear();
-  for (auto i = int_list.begin(); i != int_list.end(); ++i) {
+  for (auto i = int64_list.begin(); i != int64_list.end(); ++i) {
     NetworkChangeNotifier::NetworkHandle network_handle = *i;
-    CHECK(++i != int_list.end());
+    CHECK(++i != int64_list.end());
     (*network_map)[network_handle] = static_cast<ConnectionType>(*i);
   }
 }
@@ -87,10 +87,10 @@ NetworkChangeNotifierDelegateAndroid::NetworkChangeNotifierDelegateAndroid()
   SetCurrentDefaultNetwork(Java_NetworkChangeNotifier_getCurrentDefaultNetId(
       env, java_network_change_notifier_.obj()));
   NetworkMap network_map;
-  ScopedJavaLocalRef<jintArray> networks_and_types =
+  ScopedJavaLocalRef<jlongArray> networks_and_types =
       Java_NetworkChangeNotifier_getCurrentNetworksAndTypes(
           env, java_network_change_notifier_.obj());
-  JavaIntArrayToNetworkMap(env, networks_and_types.obj(), &network_map);
+  JavaLongArrayToNetworkMap(env, networks_and_types.obj(), &network_map);
   SetCurrentNetworksAndTypes(network_map);
 }
 
@@ -155,7 +155,7 @@ void NetworkChangeNotifierDelegateAndroid::NotifyConnectionTypeChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint new_connection_type,
-    jint default_netid) {
+    jlong default_netid) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const ConnectionType actual_connection_type = ConvertConnectionType(
       new_connection_type);
@@ -204,7 +204,7 @@ void NetworkChangeNotifierDelegateAndroid::NotifyMaxBandwidthChanged(
 void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkConnect(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jint net_id,
+    jlong net_id,
     jint connection_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NetworkHandle network = net_id;
@@ -228,7 +228,7 @@ void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkConnect(
 void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkSoonToDisconnect(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jint net_id) {
+    jlong net_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NetworkHandle network = net_id;
   {
@@ -242,7 +242,7 @@ void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkSoonToDisconnect(
 void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkDisconnect(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jint net_id) {
+    jlong net_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NetworkHandle network = net_id;
   {
@@ -258,11 +258,11 @@ void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkDisconnect(
 void NetworkChangeNotifierDelegateAndroid::NotifyPurgeActiveNetworkList(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jintArray>& active_networks) {
+    const JavaParamRef<jlongArray>& active_networks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NetworkList active_network_list;
-  base::android::JavaIntArrayToIntVector(env, active_networks,
-                                         &active_network_list);
+  base::android::JavaLongArrayToInt64Vector(env, active_networks,
+                                            &active_network_list);
   NetworkList disconnected_networks;
   {
     base::AutoLock auto_lock(connection_lock_);
@@ -355,7 +355,7 @@ void NetworkChangeNotifierDelegateAndroid::FakePurgeActiveNetworkList(
     NetworkChangeNotifier::NetworkList networks) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_NetworkChangeNotifier_fakePurgeActiveNetworkList(
-      env, base::android::ToJavaIntArray(env, networks).obj());
+      env, base::android::ToJavaLongArray(env, networks).obj());
 }
 
 void NetworkChangeNotifierDelegateAndroid::FakeDefaultNetwork(

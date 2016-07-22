@@ -149,7 +149,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         @Override
         protected NetworkCapabilities getNetworkCapabilities(Network network) {
-            int netId = NetworkChangeNotifierAutoDetect.networkToNetId(network);
+            long netId = NetworkChangeNotifierAutoDetect.networkToNetId(network);
             for (MockNetwork mockNetwork : mMockNetworks) {
                 if (netId == mockNetwork.mNetId) {
                     return mockNetwork.getCapabilities();
@@ -160,7 +160,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         @Override
         protected boolean vpnAccessible(Network network) {
-            int netId = NetworkChangeNotifierAutoDetect.networkToNetId(network);
+            long netId = NetworkChangeNotifierAutoDetect.networkToNetId(network);
             for (MockNetwork mockNetwork : mMockNetworks) {
                 if (netId == mockNetwork.mNetId) {
                     return mockNetwork.mVpnAccessible;
@@ -181,7 +181,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // Dummy implementations to avoid NullPointerExceptions in default implementations:
 
         @Override
-        public int getDefaultNetId() {
+        public long getDefaultNetId() {
             return NetId.INVALID;
         }
 
@@ -278,13 +278,13 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // The type of change.
         final ChangeType mChangeType;
         // The network identifier of the network changing.
-        final int mNetId;
+        final long mNetId;
 
         /**
          * @param changeType the type of change.
          * @param netId the network identifier of the network changing.
          */
-        ChangeInfo(ChangeType changeType, int netId) {
+        ChangeInfo(ChangeType changeType, long netId) {
             mChangeType = changeType;
             mNetId = netId;
         }
@@ -303,25 +303,25 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
 
         @Override
-        public void onNetworkConnect(int netId, int connectionType) {
+        public void onNetworkConnect(long netId, int connectionType) {
             ThreadUtils.assertOnUiThread();
             mChanges.add(new ChangeInfo(ChangeType.CONNECT, netId));
         }
 
         @Override
-        public void onNetworkSoonToDisconnect(int netId) {
+        public void onNetworkSoonToDisconnect(long netId) {
             ThreadUtils.assertOnUiThread();
             mChanges.add(new ChangeInfo(ChangeType.SOON_TO_DISCONNECT, netId));
         }
 
         @Override
-        public void onNetworkDisconnect(int netId) {
+        public void onNetworkDisconnect(long netId) {
             ThreadUtils.assertOnUiThread();
             mChanges.add(new ChangeInfo(ChangeType.DISCONNECT, netId));
         }
 
         @Override
-        public void purgeActiveNetworkList(int[] activeNetIds) {
+        public void purgeActiveNetworkList(long[] activeNetIds) {
             ThreadUtils.assertOnUiThread();
             if (activeNetIds.length == 1) {
                 mChanges.add(new ChangeInfo(ChangeType.PURGE_LIST, activeNetIds[0]));
@@ -766,7 +766,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
             }
 
             @Override
-            int getDefaultNetId() {
+            long getDefaultNetId() {
                 return Integer.parseInt(mNetworks[1].toString());
             }
 

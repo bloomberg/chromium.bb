@@ -201,7 +201,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * Only callable on Lollipop and newer releases.
          */
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        int getDefaultNetId() {
+        long getDefaultNetId() {
             // Android Lollipop had no API to get the default network; only an
             // API to return the NetworkInfo for the default network. To
             // determine the default network one can find the network with
@@ -211,7 +211,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 return NetId.INVALID;
             }
             final Network[] networks = getAllNetworksFiltered(this, null);
-            int defaultNetId = NetId.INVALID;
+            long defaultNetId = NetId.INVALID;
             for (Network network : networks) {
                 final NetworkInfo networkInfo = getNetworkInfo(network);
                 if (networkInfo != null
@@ -381,7 +381,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             if (makeVpnDefault) {
                 mVpnInPlace = network;
             }
-            final int netId = networkToNetId(network);
+            final long netId = networkToNetId(network);
             final int connectionType =
                     getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
             ThreadUtils.postOnUiThread(new Runnable() {
@@ -392,7 +392,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                         // Make VPN the default network.
                         mObserver.onConnectionTypeChanged(connectionType);
                         // Purge all other networks as they're inaccessible to Chrome now.
-                        mObserver.purgeActiveNetworkList(new int[] {netId});
+                        mObserver.purgeActiveNetworkList(new long[] {netId});
                     }
                 }
             });
@@ -406,7 +406,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             }
             // A capabilities change may indicate the ConnectionType has changed,
             // so forward the new ConnectionType along to observer.
-            final int netId = networkToNetId(network);
+            final long netId = networkToNetId(network);
             final int connectionType =
                     getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
             ThreadUtils.postOnUiThread(new Runnable() {
@@ -422,7 +422,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             if (ignoreConnectedNetwork(network, null)) {
                 return;
             }
-            final int netId = networkToNetId(network);
+            final long netId = networkToNetId(network);
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -536,7 +536,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * connectionType is the type of the network; a member of
          * ConnectionType. Only called on Android L and above.
          */
-        public void onNetworkConnect(int netId, int connectionType);
+        public void onNetworkConnect(long netId, int connectionType);
         /**
          * Called when device determines the connection to the network with
          * NetID netId is no longer preferred, for example when a device
@@ -545,12 +545,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * the network in 30s allowing network communications on that network
          * to wrap up. Only called on Android L and above.
          */
-        public void onNetworkSoonToDisconnect(int netId);
+        public void onNetworkSoonToDisconnect(long netId);
         /**
          * Called when device disconnects from network with NetID netId.
          * Only called on Android L and above.
          */
-        public void onNetworkDisconnect(int netId);
+        public void onNetworkDisconnect(long netId);
         /**
          * Called to cause a purge of cached lists of active networks, of any
          * networks not in the accompanying list of active networks. This is
@@ -558,7 +558,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * been missed, and acts to keep cached lists of active networks
          * accurate. Only called on Android L and above.
          */
-        public void purgeActiveNetworkList(int[] activeNetIds);
+        public void purgeActiveNetworkList(long[] activeNetIds);
     }
 
     /**
@@ -653,7 +653,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             // while mNetworkCallback was unregistered.
             final Network[] networks = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
             // Convert Networks to NetIDs.
-            final int[] netIds = new int[networks.length];
+            final long[] netIds = new long[networks.length];
             for (int i = 0; i < networks.length; i++) {
                 netIds[i] = networkToNetId(networks[i]);
             }
@@ -721,12 +721,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * Only available on Lollipop and newer releases and when auto-detection has
      * been enabled.
      */
-    public int[] getNetworksAndTypes() {
+    public long[] getNetworksAndTypes() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return new int[0];
+            return new long[0];
         }
         final Network networks[] = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
-        final int networksAndTypes[] = new int[networks.length * 2];
+        final long networksAndTypes[] = new long[networks.length * 2];
         int index = 0;
         for (Network network : networks) {
             networksAndTypes[index++] = networkToNetId(network);
@@ -742,7 +742,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * Only implemented on Lollipop and newer releases, returns NetId.INVALID
      * when not implemented.
      */
-    public int getDefaultNetId() {
+    public long getDefaultNetId() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return NetId.INVALID;
         }
@@ -915,14 +915,20 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     /**
-     * Extracts NetID of network. Only available on Lollipop and newer releases.
+     * Extracts NetID of Network on Lollipop and NetworkHandle (which is munged NetID) on
+     * Marshmallow and newer releases. Only available on Lollipop and newer releases.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @VisibleForTesting
-    static int networkToNetId(Network network) {
-        // NOTE(pauljensen): This depends on Android framework implementation details.
-        // Fortunately this functionality is unlikely to ever change.
-        // TODO(pauljensen): When we update to Android M SDK, use Network.getNetworkHandle().
-        return Integer.parseInt(network.toString());
+    static long networkToNetId(Network network) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return network.getNetworkHandle();
+        } else {
+            // NOTE(pauljensen): This depends on Android framework implementation details. These
+            // details cannot change because Lollipop is long since released.
+            // NetIDs are only 16-bit so use parseInt. This function returns a long because
+            // getNetworkHandle() returns a long.
+            return Integer.parseInt(network.toString());
+        }
     }
 }
