@@ -310,8 +310,11 @@ SelectFileDialogImpl::SetAccessoryView(
       if (ext == default_extension)
         default_extension_index = i;
 
+      // Crash reports suggest that CreateUTIFromExtension may return nil. Hence
+      // we nil check before adding to |file_type_set|. See crbug.com/630101.
       base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
-      [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
+      if (uti)
+        [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
 
       // Always allow the extension itself, in case the UTI doesn't map
       // back to the original extension correctly. This occurs with dynamic
