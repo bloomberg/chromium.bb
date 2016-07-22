@@ -308,9 +308,9 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     //         .-- .TimeRemaining() is known.
     //        |       .-- .GetOpenWhenComplete()
     //        |      |      .---- .IsPaused()
-    { 0, 0, false, false, false, "Starting\xE2\x80\xA6" },
+    { 0, 0, false, false, false, "Starting..." },
     { 1, 0, false, false, false, "1 B" },
-    { 0, 2, false, false, false, "Starting\xE2\x80\xA6"},
+    { 0, 2, false, false, false, "Starting..." },
     { 1, 2, false, false, false, "1/2 B" },
     { 0, 2, true,  false, false, "0/2 B, 10 secs left" },
     { 1, 2, true,  false, false, "1/2 B, 10 secs left" },
@@ -318,8 +318,8 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     { 1, 0, false, true,  false, "Opening when complete" },
     { 0, 2, false, true,  false, "Opening when complete" },
     { 1, 2, false, true,  false, "Opening when complete" },
-    { 0, 2, true,  true,  false, "Opening in 10 secs\xE2\x80\xA6"},
-    { 1, 2, true,  true,  false, "Opening in 10 secs\xE2\x80\xA6"},
+    { 0, 2, true,  true,  false, "Opening in 10 secs..." },
+    { 1, 2, true,  true,  false, "Opening in 10 secs..." },
     { 0, 0, false, false, true,  "0 B, Paused" },
     { 1, 0, false, false, true,  "1 B, Paused" },
     { 0, 2, false, false, true,  "0/2 B, Paused" },

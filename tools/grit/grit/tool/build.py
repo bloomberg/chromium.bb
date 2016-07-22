@@ -15,12 +15,9 @@ import shutil
 import sys
 
 from grit import grd_reader
-from grit import shortcuts
 from grit import util
-from grit.node import include
-from grit.node import message
-from grit.node import structure
 from grit.tool import interface
+from grit import shortcuts
 
 
 # It would be cleaner to have each module register itself, but that would
@@ -148,12 +145,10 @@ are exported to translation interchange files (e.g. XMB files), etc.
     output_all_resource_defines = None
     write_only_new = False
     depend_on_stamp = False
-    replace_ellipsis = True
     (own_opts, args) = getopt.getopt(args, 'a:o:D:E:f:w:t:h:',
         ('depdir=','depfile=','assert-file-list=',
          'output-all-resource-defines',
          'no-output-all-resource-defines',
-         'no-replace-ellipsis',
          'depend-on-stamp',
          'write-only-new='))
     for (key, val) in own_opts:
@@ -181,8 +176,6 @@ are exported to translation interchange files (e.g. XMB files), etc.
         output_all_resource_defines = True
       elif key == '--no-output-all-resource-defines':
         output_all_resource_defines = False
-      elif key == '--no-replace-ellipsis':
-        replace_ellipsis = False
       elif key == '-t':
         target_platform = val
       elif key == '-h':
@@ -234,13 +227,6 @@ are exported to translation interchange files (e.g. XMB files), etc.
     if rc_header_format:
       self.res.AssignRcHeaderFormat(rc_header_format)
     self.res.RunGatherers()
-
-    # Replace ... with the single-character version. http://crbug.com/621772
-    if replace_ellipsis:
-      for node in self.res:
-        if isinstance(node, message.MessageNode):
-          node.SetReplaceEllipsis(True)
-
     self.Process()
 
     if assert_output_files:
@@ -281,6 +267,9 @@ are exported to translation interchange files (e.g. XMB files), etc.
   def AddWhitelistTags(start_node, whitelist_names):
     # Walk the tree of nodes added attributes for the nodes that shouldn't
     # be written into the target files (skip markers).
+    from grit.node import include
+    from grit.node import message
+    from grit.node import structure
     for node in start_node:
       # Same trick data_pack.py uses to see what nodes actually result in
       # real items.
