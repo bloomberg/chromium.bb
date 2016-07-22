@@ -92,6 +92,12 @@ GIT_TRANSIENT_ERRORS = (
     # crbug.com/430343
     # TODO(dnj): Resync with Chromite.
     r'The requested URL returned error: 5\d+',
+
+    r'Connection reset by peer',
+
+    r'Unable to look up',
+
+    r'Couldn\'t resolve host',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
