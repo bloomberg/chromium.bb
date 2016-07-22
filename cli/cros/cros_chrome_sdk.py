@@ -613,8 +613,6 @@ class ChromeSDKCommand(command.CliCommand):
       env['CXX'] = ' '.join([sdk_ctx.target_tc + '-clang++'] +
                             env['CXX'].split()[1:] + clang_flags)
       env['LD'] = env['CXX']
-      # TODO(llozano): remove the workaround below. See crosbug/628524.
-      env['LD'] += ' -Wl,--as-needed -lstdc++ -lm'
 
     # For host compiler, we use the compiler that comes with Chrome
     # instead of the target compiler.
