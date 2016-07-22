@@ -12,6 +12,10 @@
 #include "base/task_scheduler/task_tracker.h"
 #include "build/build_config.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
 namespace base {
 namespace internal {
 
@@ -40,6 +44,10 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     while (!outer_->task_tracker_->IsShutdownComplete() &&
            !outer_->ShouldExitForTesting()) {
       DCHECK(outer_);
+
+#if defined(OS_MACOSX)
+      mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
 
 #if !defined(OS_LINUX)
       UpdateThreadPriority(GetDesiredThreadPriority());
