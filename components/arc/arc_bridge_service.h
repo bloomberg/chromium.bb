@@ -120,9 +120,6 @@ class ArcBridgeService {
     return &storage_manager_;
   }
   InstanceHolder<mojom::VideoInstance>* video() { return &video_; }
-  InstanceHolder<mojom::WindowManagerInstance>* window_manager() {
-    return &window_manager_;
-  }
 
   // Gets if ARC is available in this system.
   bool available() const { return available_; }
@@ -191,7 +188,6 @@ class ArcBridgeService {
   InstanceHolder<mojom::ProcessInstance> process_;
   InstanceHolder<mojom::StorageManagerInstance> storage_manager_;
   InstanceHolder<mojom::VideoInstance> video_;
-  InstanceHolder<mojom::WindowManagerInstance> window_manager_;
 
   // Gets the current state of the bridge service.
   State state() const { return state_; }

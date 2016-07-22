@@ -69,8 +69,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   void OnStorageManagerInstanceReady(
       mojom::StorageManagerInstancePtr storage_manager_ptr) override;
   void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
-  void OnWindowManagerInstanceReady(
-      mojom::WindowManagerInstancePtr window_manager_ptr) override;
 
  private:
   friend class ArcBridgeTest;

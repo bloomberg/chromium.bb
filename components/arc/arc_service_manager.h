@@ -46,9 +46,6 @@ class ArcServiceManager {
       const AccountId& account_id,
       std::unique_ptr<BooleanPrefMember> arc_enabled_pref);
 
-  // Called once the windowing system (ash) has been started.
-  void OnAshStarted();
-
   // Called to shut down all ARC services.
   void Shutdown();
 
@@ -77,10 +74,6 @@ class ArcServiceManager {
   std::vector<std::unique_ptr<ArcService>> services_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
-
-  // True once the window manager service got added, barring adding any more
-  // of those since OnAshStarted() might be called multiple times.
-  bool on_ash_started_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

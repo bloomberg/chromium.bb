@@ -193,7 +193,6 @@ void ArcBridgeServiceImpl::OnChannelClosed() {
   process_.CloseChannel();
   storage_manager_.CloseChannel();
   video_.CloseChannel();
-  window_manager_.CloseChannel();
 }
 
 void ArcBridgeServiceImpl::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
@@ -299,12 +298,6 @@ void ArcBridgeServiceImpl::OnVideoInstanceReady(
     mojom::VideoInstancePtr video_ptr) {
   DCHECK(CalledOnValidThread());
   video_.OnInstanceReady(std::move(video_ptr));
-}
-
-void ArcBridgeServiceImpl::OnWindowManagerInstanceReady(
-    mojom::WindowManagerInstancePtr window_manager_ptr) {
-  DCHECK(CalledOnValidThread());
-  window_manager_.OnInstanceReady(std::move(window_manager_ptr));
 }
 
 }  // namespace arc
