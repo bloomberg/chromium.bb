@@ -169,12 +169,27 @@ component("printing") {
     # of the print backend and enables a custom implementation instead.
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
 
-    sources += [
-      "backend/cups_helper.cc",
-      "backend/cups_helper.h",
-      "backend/print_backend_cups.cc",
-      "backend/print_backend_cups.h",
-    ]
+    if (is_chromeos) {
+      sources += [
+        "backend/cups_connection.cc",
+        "backend/cups_connection.h",
+        "backend/cups_deleters.cc",
+        "backend/cups_deleters.h",
+        "backend/cups_ipp_util.cc",
+        "backend/cups_ipp_util.h",
+        "backend/cups_printer.cc",
+        "backend/cups_printer.h",
+        "backend/print_backend_cups_ipp.cc",
+        "backend/print_backend_cups_ipp.h",
+      ]
+    } else {
+      sources += [
+        "backend/cups_helper.cc",
+        "backend/cups_helper.h",
+        "backend/print_backend_cups.cc",
+        "backend/print_backend_cups.h",
+      ]
+    }
   }
 
   if (is_chromeos) {
@@ -240,7 +255,12 @@ test("printing_unittests") {
 
   if (use_cups) {
     configs += [ ":cups" ]
-    sources += [ "backend/cups_helper_unittest.cc" ]
+
+    if (is_chromeos) {
+      sources += [ "backend/cups_ipp_util_unittest.cc" ]
+    } else {
+      sources += [ "backend/cups_helper_unittest.cc" ]
+    }
   }
 }
 

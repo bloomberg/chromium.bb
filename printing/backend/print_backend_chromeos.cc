@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,14 @@
 #include "url/gurl.h"
 
 #if defined(USE_CUPS)
-#include "printing/backend/print_backend_cups.h"
+#include "base/memory/ptr_util.h"
+#include "printing/backend/print_backend_cups_ipp.h"
 #endif  // defined(USE_CUPS)
 
 namespace printing {
 
-// Provides a stubbed out PrintBackend implementation for use on ChromeOS.
+// Provides either a stubbed out PrintBackend implementation or a CUPS IPP
+// implementation for use on ChromeOS.
 class PrintBackendChromeOS : public PrintBackend {
  public:
   PrintBackendChromeOS();
@@ -93,9 +95,13 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
       print_backend_settings->GetInteger(kCUPSEncryption, &encryption);
     }
     GURL print_server_url(print_server_url_str.c_str());
-    return new PrintBackendCUPS(print_server_url,
-                                static_cast<http_encryption_t>(encryption),
-                                cups_blocking == kValueTrue);
+
+    std::unique_ptr<CupsConnection> connection =
+        base::MakeUnique<CupsConnection>(
+            print_server_url, static_cast<http_encryption_t>(encryption),
+            cups_blocking == kValueTrue);
+
+    return new PrintBackendCupsIpp(std::move(connection));
 #endif  // defined(USE_CUPS)
   }
 
