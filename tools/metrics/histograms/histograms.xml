@@ -40975,6 +40975,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PlatformFile.FlushTime" units="ms">
+  <obsolete>
+    Deprecated as of 2016-07 because the histogram's purpose of adding colour to
+    the description of File::Flush() has been fulfilled.
+  </obsolete>
   <owner>tnagel@chromium.org</owner>
   <summary>The time it takes to run File::Flush().</summary>
 </histogram>
