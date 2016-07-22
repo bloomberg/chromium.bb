@@ -42,13 +42,13 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String COOKIES_KEY = "cookies";
     static final String FULLSCREEN_KEY = "fullscreen";
     static final String JAVASCRIPT_KEY = "javascript";
-    static final String LANGUAGE_KEY = "language";
     static final String LOCATION_KEY = "device_location";
     static final String MEDIA_KEY = "media";
     static final String MICROPHONE_KEY = "microphone";
     static final String NOTIFICATIONS_KEY = "notifications";
     static final String POPUPS_KEY = "popups";
     static final String PROTECTED_CONTENT_KEY = "protected_content";
+    static final String TRANSLATE_KEY = "translate";
     static final String STORAGE_KEY = "use_storage";
 
     static final String AUTOPLAY_MUTED_VIDEOS = "AutoplayMutedVideos";
@@ -130,8 +130,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(MICROPHONE_KEY));
             getPreferenceScreen().removePreference(findPreference(NOTIFICATIONS_KEY));
             getPreferenceScreen().removePreference(findPreference(POPUPS_KEY));
-            getPreferenceScreen().removePreference(findPreference(LANGUAGE_KEY));
             getPreferenceScreen().removePreference(findPreference(STORAGE_KEY));
+            getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
         } else {
             // If both Autoplay and Protected Content menus are available, they'll be tucked under
             // the Media key. Otherwise, we can remove the Media menu entry.
@@ -154,6 +154,12 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
     private void updatePreferenceStates() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+
+        // Translate preference.
+        Preference translatePref = findPreference(TRANSLATE_KEY);
+        if (translatePref != null) {
+            setTranslateStateSummary(translatePref);
+        }
 
         // Preferences that navigate to Website Settings.
         List<String> websitePrefs = new ArrayList<String>();
@@ -257,5 +263,12 @@ public class SiteSettingsPreferences extends PreferenceFragment
         preference.getExtras().putString(SingleCategoryPreferences.EXTRA_TITLE,
                 preference.getTitle().toString());
         return false;
+    }
+
+    private void setTranslateStateSummary(Preference translatePref) {
+        boolean translateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
+        translatePref.setSummary(translateEnabled
+                ? R.string.website_settings_category_ask
+                : R.string.website_settings_category_blocked);
     }
 }

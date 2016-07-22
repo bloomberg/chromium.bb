@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,7 +16,8 @@ import android.view.MenuItem;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ButtonPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -24,55 +26,55 @@ import org.chromium.ui.widget.Toast;
 /**
  * Fragment to keep track of the translate preferences.
  */
-public class LanguagePreferences extends PreferenceFragment {
+public class TranslatePreferences extends PreferenceFragment {
 
-    private static final String PREF_TRANSLATE_CHECKBOX = "translate_checkbox";
-    public static final String PREF_AUTO_DETECT_CHECKBOX = "auto_detect_encoding_checkbox";
+    public static final String PREF_TRANSLATE_SWITCH = "translate_switch";
+    public static final String PREF_RESET_TRANSLATE_BUTTON = "reset_translate_button";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.language_preferences);
-        getActivity().setTitle(R.string.language);
+        addPreferencesFromResource(R.xml.translate_preferences);
+        getActivity().setTitle(R.string.google_translate);
         setHasOptionsMenu(true);
 
         final Context context = getActivity();
         if (context == null) return;
 
-        ChromeBaseCheckBoxPreference translateCheckBox =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_TRANSLATE_CHECKBOX);
+        ChromeSwitchPreference translateSwitch =
+                (ChromeSwitchPreference) findPreference(PREF_TRANSLATE_SWITCH);
 
         boolean isTranslateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
-        translateCheckBox.setChecked(isTranslateEnabled);
+        translateSwitch.setChecked(isTranslateEnabled);
 
-        translateCheckBox.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+        translateSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PrefServiceBridge.getInstance().setTranslateEnabled((boolean) newValue);
                 return true;
             }
         });
-        translateCheckBox.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        translateSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PrefServiceBridge.getInstance().isTranslateManaged();
             }
         });
 
-        ChromeBaseCheckBoxPreference autoDetectCheckBox =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_AUTO_DETECT_CHECKBOX);
+        ButtonPreference resetTranslateButton = (ButtonPreference)
+                findPreference(PREF_RESET_TRANSLATE_BUTTON);
 
-        boolean isAutoDetectEncodingEnabled =
-                PrefServiceBridge.getInstance().isAutoDetectEncodingEnabled();
-        autoDetectCheckBox.setChecked(isAutoDetectEncodingEnabled);
-
-        autoDetectCheckBox.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+        resetTranslateButton.setOnPreferenceClickListener(new OnPreferenceClickListener(){
             @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                PrefServiceBridge.getInstance().setAutoDetectEncodingEnabled((boolean) newValue);
+            public boolean onPreferenceClick(Preference preference) {
+                PrefServiceBridge.getInstance().resetTranslateDefaults();
+                Toast.makeText(getActivity(), getString(
+                        R.string.translate_prefs_toast_description),
+                        Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
+
     }
 
     @Override

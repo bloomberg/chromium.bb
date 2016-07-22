@@ -55,18 +55,18 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="autoplay" />
-    <!-- Language -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.LanguagePreferences"
-        android:key="language"
-        android:title="@string/language"
-        android:icon="@drawable/settings_language" />
     <!-- Media -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SiteSettingsPreferences"
         android:key="media"
         android:title="@string/media_permission_title"
         android:icon="@drawable/settings_media" />
+    <!-- Google Translate -->
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.TranslatePreferences"
+        android:key="translate"
+        android:title="@string/google_translate"
+        android:icon="@drawable/settings_translate" />
     <!-- Storage -->
     <!-- TODO(finnur): Move this over to the new Usage screen, once it exists. -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference

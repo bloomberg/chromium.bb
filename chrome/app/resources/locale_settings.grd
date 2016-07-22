@@ -133,7 +133,7 @@
 
       <!-- The default value for |WebPreference::uses_universal_detector|. -->
       <message name="IDS_USES_UNIVERSAL_DETECTOR" use_name_for_id="true">
-        false
+        true
       </message>
 
       <!-- The file name of the spellchecking dictionary without the extension (case-sensitive). -->

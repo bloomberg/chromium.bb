@@ -23,10 +23,8 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -261,31 +259,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                         enabled, PrefServiceBridge.getInstance().isMicEnabled());
             }
         });
-        preferenceActivity.finish();
-    }
-
-    private void setAutoDetectEncoding(final boolean enabled) {
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getInstrumentation().getTargetContext(), LanguagePreferences.class.getName());
-        final Preferences preferenceActivity =
-                (Preferences) getInstrumentation().startActivitySync(intent);
-
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                LanguagePreferences languagePreferences =
-                        (LanguagePreferences) preferenceActivity.getFragmentForTest();
-                ChromeBaseCheckBoxPreference checkbox = (ChromeBaseCheckBoxPreference)
-                        languagePreferences.findPreference(
-                                LanguagePreferences.PREF_AUTO_DETECT_CHECKBOX);
-                if (checkbox.isChecked() != enabled) {
-                    PreferencesTest.clickPreference(languagePreferences, checkbox);
-                }
-                assertEquals("Auto detect encoding should be " + (enabled ? "enabled" : "disabled"),
-                        enabled, PrefServiceBridge.getInstance().isAutoDetectEncodingEnabled());
-            }
-        });
-
         preferenceActivity.finish();
     }
 
@@ -607,35 +580,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
 
         assertTrue("InfoBar not added.", listener.addInfoBarAnimationFinished());
         assertEquals("Wrong infobar count", 1, getInfoBars().size());
-    }
-
-    /**
-     * Toggles auto detect encoding, makes sure it is set correctly, and makes sure the page is
-     * encoded correctly.
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testToggleAutoDetectEncoding() throws Exception {
-        String testUrl = mTestServer.getURL(
-                "/chrome/test/data/encoding_tests/auto_detect/"
-                + "Big5_with_no_encoding_specified.html");
-
-        setAutoDetectEncoding(false);
-        loadUrl(testUrl);
-        assertEquals("Wrong page encoding while auto detect encoding disabled", "windows-1252",
-                getActivity().getCurrentContentViewCore().getWebContents().getEncoding());
-
-        setAutoDetectEncoding(true);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().getActivityTab().reload();
-            }
-        });
-        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), testUrl);
-        assertEquals("Wrong page encoding while auto detect encoding enabled", "Big5",
-                getActivity().getCurrentContentViewCore().getWebContents().getEncoding());
-
     }
 
     /**
