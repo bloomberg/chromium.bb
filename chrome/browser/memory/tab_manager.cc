@@ -617,6 +617,10 @@ bool TabManager::CanDiscardTab(int64_t target_web_contents_id) const {
       return false;
   }
 
+  // Do not discard a tab that was explicitly disallowed to.
+  if (!IsTabAutoDiscardable(web_contents))
+    return false;
+
   return true;
 }
 
@@ -727,6 +731,10 @@ bool TabManager::CompareTabStats(TabStats first, TabStats second) {
   // Being currently selected is most important to protect.
   if (first.is_selected != second.is_selected)
     return first.is_selected;
+
+  // Non auto-discardable tabs are more important to protect.
+  if (first.is_auto_discardable != second.is_auto_discardable)
+    return !first.is_auto_discardable;
 
   // Protect tabs with pending form entries.
   if (first.has_form_entry != second.has_form_entry)
@@ -904,6 +912,22 @@ void TabManager::OnDiscardedStateChange(content::WebContents* contents,
                                         bool is_discarded) {
   FOR_EACH_OBSERVER(TabManagerObserver, observers_,
                     OnDiscardedStateChange(contents, is_discarded));
+}
+
+void TabManager::OnAutoDiscardableStateChange(content::WebContents* contents,
+                                              bool is_auto_discardable) {
+  FOR_EACH_OBSERVER(
+      TabManagerObserver, observers_,
+      OnAutoDiscardableStateChange(contents, is_auto_discardable));
+}
+
+bool TabManager::IsTabAutoDiscardable(content::WebContents* contents) const {
+  return GetWebContentsData(contents)->IsAutoDiscardable();
+}
+
+void TabManager::SetTabAutoDiscardableState(content::WebContents* contents,
+                                            bool state) {
+  GetWebContentsData(contents)->SetAutoDiscardableState(state);
 }
 
 }  // namespace memory

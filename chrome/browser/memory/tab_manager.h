@@ -128,7 +128,18 @@ class TabManager : public TabStripModelObserver {
   void AddObserver(TabManagerObserver* observer);
   void RemoveObserver(TabManagerObserver* observer);
 
+  // Returns the auto-discardable state of the tab. When true, the tab is
+  // eligible to be automatically discarded when critical memory pressure hits,
+  // otherwise the tab is ignored and will never be automatically discarded.
+  // Note that this property doesn't block the discarding of the tab via other
+  // methods (about:discards for instance).
+  bool IsTabAutoDiscardable(content::WebContents* contents) const;
+
+  // Sets/clears the auto-discardable state of the tab.
+  void SetTabAutoDiscardableState(content::WebContents* contents, bool state);
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, Comparator);
@@ -150,6 +161,11 @@ class TabManager : public TabStripModelObserver {
   // changes, so that observers can be informed.
   void OnDiscardedStateChange(content::WebContents* contents,
                               bool is_discarded);
+
+  // Called by WebContentsData whenever the auto-discardable state of a
+  // WebContents changes, so that observers can be informed.
+  void OnAutoDiscardableStateChange(content::WebContents* contents,
+                                    bool is_auto_discardable);
 
   // The time that a renderer is given to react to a memory pressure
   // notification before another renderer is also notified. This prevents all

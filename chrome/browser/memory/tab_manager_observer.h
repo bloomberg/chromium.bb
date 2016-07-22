@@ -20,6 +20,10 @@ class TabManagerObserver {
   virtual void OnDiscardedStateChange(content::WebContents* contents,
                                       bool is_discarded);
 
+  // Invoked when the auto-discardable state changes.
+  virtual void OnAutoDiscardableStateChange(content::WebContents* contents,
+                                            bool is_auto_discardable);
+
  protected:
   virtual ~TabManagerObserver();
 };

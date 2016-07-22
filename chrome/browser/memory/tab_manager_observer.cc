@@ -13,6 +13,10 @@ namespace memory {
 void TabManagerObserver::OnDiscardedStateChange(content::WebContents* contents,
                                                 bool is_discarded) {}
 
+void TabManagerObserver::OnAutoDiscardableStateChange(
+    content::WebContents* contents,
+    bool is_auto_discardable) {}
+
 TabManagerObserver::~TabManagerObserver() {}
 
 }  // namespace memory

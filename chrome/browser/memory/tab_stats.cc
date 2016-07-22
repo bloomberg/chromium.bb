@@ -22,7 +22,8 @@ TabStats::TabStats()
 #if defined(OS_CHROMEOS)
       oom_score(0),
 #endif
-      tab_contents_id(0) {
+      tab_contents_id(0),
+      is_auto_discardable(true) {
 }
 
 TabStats::TabStats(const TabStats& other) = default;

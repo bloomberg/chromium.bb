@@ -6,6 +6,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_manager_observer.h"
+#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -46,7 +47,10 @@ class TabManagerObserverTest : public InProcessBrowserTest {
 class MockTabManagerObserver : public TabManagerObserver {
  public:
   MockTabManagerObserver()
-      : nb_events_(0), contents_(nullptr), is_discarded_(false) {}
+      : nb_events_(0),
+        contents_(nullptr),
+        is_discarded_(false),
+        is_auto_discardable_(true) {}
 
   // TabManagerObserver implementation:
   void OnDiscardedStateChange(content::WebContents* contents,
@@ -56,14 +60,23 @@ class MockTabManagerObserver : public TabManagerObserver {
     is_discarded_ = is_discarded;
   }
 
+  void OnAutoDiscardableStateChange(content::WebContents* contents,
+                                    bool is_auto_discardable) override {
+    nb_events_++;
+    contents_ = contents;
+    is_auto_discardable_ = is_auto_discardable;
+  }
+
   int nb_events() const { return nb_events_; }
   WebContents* content() const { return contents_; }
   bool is_discarded() const { return is_discarded_; }
+  bool is_auto_discardable() const { return is_auto_discardable_; }
 
  private:
   int nb_events_;
   WebContents* contents_;
   bool is_discarded_;
+  bool is_auto_discardable_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTabManagerObserver);
 };
@@ -129,6 +142,45 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
   tab_manager->RemoveObserver(&tabmanager_observer);
   EXPECT_TRUE(tab_manager->DiscardTabById(ContentsId(GetContents(index_1))));
   EXPECT_EQ(4, tabmanager_observer.nb_events());
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  ASSERT_TRUE(tab_manager);
+  auto tsm = browser()->tab_strip_model();
+  set_tab_strip_model(tsm);
+
+  // Open two tabs.
+  OpenURLParams open(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
+                     NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+  WebContents* contents = browser()->OpenURL(open);
+
+  // Subscribe observer to TabManager's observer list.
+  MockTabManagerObserver observer;
+  tab_manager->AddObserver(&observer);
+
+  // No events initially.
+  EXPECT_EQ(0, observer.nb_events());
+
+  // Should maintain at zero since the default value of the state is true.
+  tab_manager->SetTabAutoDiscardableState(contents, true);
+  EXPECT_EQ(0, observer.nb_events());
+
+  // Now it has to change.
+  tab_manager->SetTabAutoDiscardableState(contents, false);
+  EXPECT_EQ(1, observer.nb_events());
+  EXPECT_FALSE(observer.is_auto_discardable());
+  EXPECT_EQ(ContentsId(contents), ContentsId(observer.content()));
+
+  // No changes since it's not a new state.
+  tab_manager->SetTabAutoDiscardableState(contents, false);
+  EXPECT_EQ(1, observer.nb_events());
+
+  // Change it back and we should have another event.
+  tab_manager->SetTabAutoDiscardableState(contents, true);
+  EXPECT_EQ(2, observer.nb_events());
+  EXPECT_TRUE(observer.is_auto_discardable());
+  EXPECT_EQ(ContentsId(contents), ContentsId(observer.content()));
 }
 
 }  // namespace memory

@@ -72,6 +72,13 @@ class TabManager::WebContentsData
   // |test_tick_clock_| for more details.
   void set_test_tick_clock(base::TickClock* test_tick_clock);
 
+  // Returns the auto-discardable state of the tab.
+  // See tab_manager.h for more information.
+  bool IsAutoDiscardable();
+
+  // Sets/clears the auto-discardable state of the tab.
+  void SetAutoDiscardableState(bool state);
+
  private:
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
@@ -99,6 +106,8 @@ class TabManager::WebContentsData
     base::TimeTicks last_inactive_time_;
     // Site Engagement score (set to -1 if not available).
     double engagement_score_;
+    // Is tab eligible for auto discarding? Defaults to true.
+    bool is_auto_discardable;
   };
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|

@@ -174,6 +174,7 @@ class TaskRunnerProxy : public base::TaskRunner {
 
 enum TestIndicies {
   kSelected,
+  kAutoDiscardable,
   kPinned,
   kApp,
   kPlayingAudio,
@@ -277,6 +278,14 @@ TEST_F(TabManagerTest, Comparator) {
     test_list.push_back(stats);
   }
 
+  {
+    TabStats stats;
+    stats.last_active = now;
+    stats.is_auto_discardable = false;
+    stats.child_process_host_id = kAutoDiscardable;
+    test_list.push_back(stats);
+  }
+
   // This entry sorts to the front, so by adding it last, it verifies that the
   // array is being sorted.
   {
@@ -291,6 +300,7 @@ TEST_F(TabManagerTest, Comparator) {
 
   int index = 0;
   EXPECT_EQ(kSelected, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kAutoDiscardable, test_list[index++].child_process_host_id);
   EXPECT_EQ(kFormEntry, test_list[index++].child_process_host_id);
   EXPECT_EQ(kPlayingAudio, test_list[index++].child_process_host_id);
   EXPECT_EQ(kPinned, test_list[index++].child_process_host_id);

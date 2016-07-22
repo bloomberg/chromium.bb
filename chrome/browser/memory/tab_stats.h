@@ -41,6 +41,7 @@ struct TabStats {
   int oom_score;
 #endif
   int64_t tab_contents_id;  // Unique ID per WebContents.
+  bool is_auto_discardable;
 };
 
 typedef std::vector<TabStats> TabStatsList;

@@ -98,12 +98,8 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
   }
 
   tab_data_.is_discarded_ = state;
-
-  // TabManager could not exist in tests.
-  if (g_browser_process->GetTabManager()) {
-    g_browser_process->GetTabManager()->OnDiscardedStateChange(web_contents(),
-                                                               state);
-  }
+  g_browser_process->GetTabManager()->OnDiscardedStateChange(web_contents(),
+                                                             state);
 }
 
 int TabManager::WebContentsData::DiscardCount() {
@@ -172,7 +168,8 @@ TabManager::WebContentsData::Data::Data()
       last_discard_time_(TimeTicks::UnixEpoch()),
       last_reload_time_(TimeTicks::UnixEpoch()),
       last_inactive_time_(TimeTicks::UnixEpoch()),
-      engagement_score_(-1.0) {}
+      engagement_score_(-1.0),
+      is_auto_discardable(true) {}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
   return is_discarded_ == right.is_discarded_ &&
@@ -186,6 +183,19 @@ bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
 
 bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {
   return !(*this == right);
+}
+
+void TabManager::WebContentsData::SetAutoDiscardableState(bool state) {
+  if (tab_data_.is_auto_discardable == state)
+    return;
+
+  tab_data_.is_auto_discardable = state;
+  g_browser_process->GetTabManager()->OnAutoDiscardableStateChange(
+      web_contents(), state);
+}
+
+bool TabManager::WebContentsData::IsAutoDiscardable() {
+  return tab_data_.is_auto_discardable;
 }
 
 }  // namespace memory
