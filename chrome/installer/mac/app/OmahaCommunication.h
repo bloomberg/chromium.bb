@@ -7,20 +7,27 @@
 
 #import <Foundation/Foundation.h>
 
-#include "NetworkCommunication.h"
+#import "NetworkCommunication.h"
 
-typedef void (^OmahaRequestCompletionHandler)(NSData*, NSError*);
+@protocol OmahaCommunicationDelegate
+- (void)onOmahaSuccessWithResponseBody:(NSData*)responseBody
+                              AndError:(NSError*)error;
+@end
 
-@interface OmahaCommunication : NSObject
+@interface OmahaCommunication : NSObject<NSURLSessionDataDelegate> {
+  id<OmahaCommunicationDelegate> _delegate;
+}
 
 @property(nonatomic, copy) NSXMLDocument* requestXMLBody;
+// TODO: talk to @sdy about use of NetworkCommunication
 @property(nonatomic, copy) NetworkCommunication* sessionHelper;
+@property(nonatomic, assign) id<OmahaCommunicationDelegate> delegate;
 
 - (id)init;
 - (id)initWithBody:(NSXMLDocument*)xmlBody;
 
 // Sends the request created using the session helper.
-- (void)sendRequestWithBlock:(OmahaRequestCompletionHandler)block;
+- (void)sendRequest;
 
 @end
 

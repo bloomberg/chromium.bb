@@ -2,16 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-executable("downloader") {
+static_library("mac_installer_base") {
   sources = [
-    "DownloadDelegate.m",
     "Downloader.m",
+    "MainDelegate.m",
     "NetworkCommunication.m",
     "OmahaCommunication.m",
     "OmahaXMLParser.m",
     "OmahaXMLRequest.m",
     "SystemInfo.m",
+  ]
+}
+
+executable("mac_installer") {
+  sources = [
     "main.m",
   ]
-  libs = [ "Foundation.framework" ]
+  deps = [
+    ":mac_installer_base",
+  ]
+  libs = [
+    "AppKit.framework",
+    "CoreFoundation.framework",
+    "Foundation.framework",
+  ]
 }

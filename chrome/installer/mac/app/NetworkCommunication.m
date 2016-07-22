@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Foundation/Foundation.h>
-
 #import "NetworkCommunication.h"
 
 @interface NSURLSession (PartialAvailability)
@@ -24,7 +22,6 @@ downloadTaskWithRequest:(NSURLRequest*)request
 @synthesize session = session_;
 @synthesize request = request_;
 @synthesize dataResponseHandler = dataResponseHandler_;
-@synthesize downloadResponseHandler = downloadResponseHandler_;
 
 - (id)init {
   return [self initWithDelegate:nil];
@@ -54,24 +51,21 @@ downloadTaskWithRequest:(NSURLRequest*)request
   return request_;
 }
 
-- (void)sendDataRequestWithCompletionHandler:
-    (DataTaskCompletionHandler)completionHandler {
-  dataResponseHandler_ = completionHandler;
-  NSURLSessionDataTask* dataTask =
-      [session_ dataTaskWithRequest:request_
-                  completionHandler:dataResponseHandler_];
+- (void)sendDataRequest {
+  NSURLSessionDataTask* dataTask;
+  if (dataResponseHandler_) {
+    dataTask = [session_ dataTaskWithRequest:request_
+                           completionHandler:dataResponseHandler_];
+  } else {
+    dataTask = [session_ dataTaskWithRequest:request_];
+  }
 
   [dataTask resume];
 }
 
 - (void)sendDownloadRequest {
-  NSURLSessionDownloadTask* downloadTask;
-  if (downloadResponseHandler_) {
-    downloadTask = [session_ downloadTaskWithRequest:request_
-                                   completionHandler:downloadResponseHandler_];
-  } else {
-    downloadTask = [session_ downloadTaskWithRequest:request_];
-  }
+  NSURLSessionDownloadTask* downloadTask =
+      [session_ downloadTaskWithRequest:request_];
   [downloadTask resume];
 }
 

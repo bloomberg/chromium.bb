@@ -7,7 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-@interface Downloader : NSObject<NSXMLParserDelegate>
+@protocol DownloaderDelegate
+- (void)onDownloadSuccess;
+@end
+
+@interface Downloader
+    : NSObject<NSXMLParserDelegate, NSURLSessionDownloadDelegate>
+
+@property(nonatomic, assign) id<DownloaderDelegate> delegate;
 
 // Returns a path to a user's home download folder.
 + (NSString*)getDownloadsFilePath;

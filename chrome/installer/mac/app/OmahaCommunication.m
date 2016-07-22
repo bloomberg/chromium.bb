@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Foundation/Foundation.h>
+#import "OmahaCommunication.h"
 
-#include "OmahaCommunication.h"
+#import "OmahaXMLRequest.h"
 
-@implementation OmahaCommunication : NSObject
+@implementation OmahaCommunication
 
 @synthesize requestXMLBody = requestXMLBody_;
 @synthesize sessionHelper = sessionHelper_;
+@synthesize delegate = delegate_;
 
 - (id)init {
-  return [self initWithBody:[[NSXMLDocument alloc] init]];
+  return [self initWithBody:[OmahaXMLRequest createXMLRequestBody]];
 }
 
 - (id)initWithBody:(NSXMLDocument*)xmlBody {
   if ((self = [super init])) {
-    sessionHelper_ = [[NetworkCommunication alloc] init];
+    sessionHelper_ = [[NetworkCommunication alloc] initWithDelegate:self];
     requestXMLBody_ = xmlBody;
     [self createOmahaRequest];
   }
@@ -33,27 +34,13 @@
   return request;
 }
 
-- (void)sendRequestWithBlock:(OmahaRequestCompletionHandler)block {
-  DataTaskCompletionHandler cHandler =
-      ^(NSData* _Nullable data, NSURLResponse* _Nullable response,
-        NSError* _Nullable error) {
-        if (error) {
-          NSLog(@"%@", error);
-          block(data, error);
-          return;
-        }
-
-        NSHTTPURLResponse* HTTPResponse = (NSHTTPURLResponse*)response;
-        if (HTTPResponse.statusCode != 200) {
-          // TODO: make these logging statements more rare
-          NSLog(@"HTTP response: %ld", (unsigned long)HTTPResponse.statusCode);
-        }
-
-        block(data, error);
-
-      };
-
-  [sessionHelper_ sendDataRequestWithCompletionHandler:cHandler];
+- (void)sendRequest {
+  [sessionHelper_ setDataResponseHandler:^(NSData* _Nullable data,
+                                           NSURLResponse* _Nullable response,
+                                           NSError* _Nullable error) {
+    [delegate_ onOmahaSuccessWithResponseBody:data AndError:error];
+  }];
+  [sessionHelper_ sendDataRequest];
 }
 
 @end

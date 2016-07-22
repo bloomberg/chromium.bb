@@ -7,16 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-typedef void (^DataTaskCompletionHandler)(NSData*, NSURLResponse*, NSError*);
-typedef void (^DownloadTaskCompletionHandler)(NSURL*, NSURLResponse*, NSError*);
-
+// TODO: talk to @sdy about this class
 @interface NetworkCommunication : NSObject
+
+typedef void (^DataTaskCompletionHandler)(NSData*, NSURLResponse*, NSError*);
 
 @property(nonatomic, copy) NSMutableURLRequest* request;
 @property(nonatomic, copy) NSURLSession* session;
 @property(nonatomic, copy) DataTaskCompletionHandler dataResponseHandler;
-@property(nonatomic, copy)
-    DownloadTaskCompletionHandler downloadResponseHandler;
 
 - (id)init;
 - (id)initWithDelegate:(id)delegate;
@@ -26,8 +24,7 @@ typedef void (^DownloadTaskCompletionHandler)(NSURL*, NSURLResponse*, NSError*);
 - (NSMutableURLRequest*)createRequestWithUrlAsString:(NSString*)urlString
                                           andXMLBody:(NSXMLDocument*)body;
 // Adds a data task to the run loop using the request instance variable.
-- (void)sendDataRequestWithCompletionHandler:
-    (DataTaskCompletionHandler)completionHandler;
+- (void)sendDataRequest;
 // Adds a download task to the run loop using the request instance variable.
 - (void)sendDownloadRequest;
 

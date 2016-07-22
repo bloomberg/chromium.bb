@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Foundation/Foundation.h>
-
-#import "DownloadDelegate.h"
 #import "Downloader.h"
+
+#include <assert.h>
+
 #import "NetworkCommunication.h"
 #import "OmahaXMLParser.h"
 
 @implementation Downloader
+
+@synthesize delegate = delegate_;
 
 // TODO: make this overrideable with commandline argument? or enviro variable
 + (NSString*)getDownloadsFilePath {
@@ -59,9 +61,8 @@
 // Downloads contents of chromeURL to downloads folders and delegates the work
 // to the DownloadDelegate class.
 - (BOOL)writeChromeImageToDownloadsDirectory:(NSURL*)chromeURL {
-  DownloadDelegate* delegate = [[DownloadDelegate alloc] init];
   NetworkCommunication* downloadTask =
-      [[NetworkCommunication alloc] initWithDelegate:delegate];
+      [[NetworkCommunication alloc] initWithDelegate:self];
 
   // TODO: What if file already exists?
   [downloadTask createRequestWithUrlAsString:[chromeURL absoluteString]
@@ -79,6 +80,39 @@
   BOOL writeWasSuccessful =
       [self writeChromeImageToDownloadsDirectory:chromeURL];
   return writeWasSuccessful;
+}
+
+// Skeleton of delegate method to provide download progress updates.
+// TODO: Make use of (totalBytesWritten/totalBytesExpectedToWrite)*100
+// to generate download progress percentage.
+- (void)URLSession:(NSURLSession*)session
+                 downloadTask:(NSURLSessionDownloadTask*)downloadTask
+                 didWriteData:(int64_t)bytesWritten
+            totalBytesWritten:(int64_t)totalBytesWritten
+    totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+}
+
+// Delegate method to move downloaded disk image to user's Download directory.
+- (void)URLSession:(NSURLSession*)session
+                 downloadTask:(NSURLSessionDownloadTask*)downloadTask
+    didFinishDownloadingToURL:(NSURL*)location {
+  assert([location isFileURL]);
+  NSFileManager* manager = [[NSFileManager alloc] init];
+  NSURL* downloadsDirectory =
+      [[NSURL alloc] initFileURLWithPath:[Downloader getDownloadsFilePath]];
+  if ([manager fileExistsAtPath:location.path]) {
+    [manager moveItemAtURL:location toURL:downloadsDirectory error:nil];
+  } else {
+    // TODO: Error Handling
+  }
+}
+
+- (void)URLSession:(NSURLSession*)session
+                    task:(NSURLSessionTask*)task
+    didCompleteWithError:(NSError*)error {
+  // TODO: Error Handling
+
+  [delegate_ onDownloadSuccess];
 }
 
 @end
