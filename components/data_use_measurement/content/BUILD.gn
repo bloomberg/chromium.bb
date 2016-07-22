@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("content") {
+static_library("content") {
   sources = [
     "data_use_measurement.cc",
     "data_use_measurement.h",
@@ -15,6 +15,7 @@ source_set("content") {
     "//net",
   ]
 }
+
 source_set("unit_tests") {
   sources = [
     "data_use_measurement_unittest.cc",

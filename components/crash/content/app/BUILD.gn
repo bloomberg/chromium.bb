@@ -146,7 +146,7 @@ source_set("app_non_mac_win") {
 # removed shortly and all consumers will be expected to use Crashpad as
 # the Mac crash-reporting client. See the comment in the
 # crash_component_non_mac target for more details.
-source_set("app_breakpad_mac_win_to_be_deleted") {
+static_library("app_breakpad_mac_win_to_be_deleted") {
   deps = [
     ":app_non_mac_win",
   ]
@@ -185,7 +185,7 @@ source_set("app_breakpad_mac_win_to_be_deleted") {
 }
 
 if (is_mac) {
-  source_set("breakpad_stubs") {
+  static_library("breakpad_stubs") {
     sources = [
       "breakpad_mac.h",
       "breakpad_mac_stubs.mm",

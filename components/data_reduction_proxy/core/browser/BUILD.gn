@@ -51,7 +51,7 @@ browser_sources = [
 ]
 
 if (is_android) {
-  source_set("browser_small") {
+  static_library("browser_small") {
     sources = browser_sources
 
     deps = [
@@ -69,7 +69,7 @@ if (is_android) {
   }
 }
 
-source_set("browser") {
+static_library("browser") {
   sources = browser_sources
   sources += [
     "data_store_impl.cc",

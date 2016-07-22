@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("common") {
+static_library("common") {
   sources = [
     "browser_sync_switches.cc",
     "browser_sync_switches.h",

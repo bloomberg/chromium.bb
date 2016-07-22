@@ -5,7 +5,7 @@
 import("//build/config/chrome_build.gni")
 
 # GYP version: components/autofill.gyp:autofill_core_browser
-source_set("browser") {
+static_library("browser") {
   sources = [
     "address.cc",
     "address.h",

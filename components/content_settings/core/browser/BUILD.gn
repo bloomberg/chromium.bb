@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("browser") {
+static_library("browser") {
   sources = [
     "content_settings_binary_value_map.cc",
     "content_settings_binary_value_map.h",

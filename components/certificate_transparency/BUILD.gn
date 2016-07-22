@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("certificate_transparency") {
+static_library("certificate_transparency") {
   sources = [
     "ct_policy_manager.cc",
     "ct_policy_manager.h",

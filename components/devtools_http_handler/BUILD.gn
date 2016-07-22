@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("devtools_http_handler") {
+static_library("devtools_http_handler") {
   sources = [
     "devtools_http_handler.cc",
     "devtools_http_handler.h",

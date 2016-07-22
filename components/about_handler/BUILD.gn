@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("about_handler") {
+static_library("about_handler") {
   sources = [
     "about_protocol_handler.cc",
     "about_protocol_handler.h",
