@@ -36,17 +36,6 @@ SearchProviderInstallStateImpl::~SearchProviderInstallStateImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-// Register the given interface impl. The impl is owned by the host. Messages
-// will be dispatched on |task_runner| (or on the default task runner if not
-// given). The impl will also be deleted on |task_runner|.
-template <typename InterfaceImpl>
-void InstallService2(
-    content::RenderProcessHost* host,
-    std::unique_ptr<InterfaceImpl> impl,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner = nullptr) {
-  host->AddOwnedInterface(std::move(impl), task_runner);
-}
-
 void SearchProviderInstallStateImpl::Bind(
     chrome::mojom::SearchProviderInstallStateRequest request) {
   binding_set_.AddBinding(this, std::move(request));
