@@ -63,10 +63,12 @@ struct LayoutFlexibleBox::LineContext {
 };
 
 struct LayoutFlexibleBox::FlexItem {
-    FlexItem(LayoutBox* box, LayoutUnit flexBaseContentSize, LayoutUnit hypotheticalMainContentSize)
+    FlexItem(LayoutBox* box, LayoutUnit flexBaseContentSize, LayoutUnit hypotheticalMainContentSize, LayoutUnit mainAxisBorderAndPadding, LayoutUnit mainAxisMargin)
         : box(box)
         , flexBaseContentSize(flexBaseContentSize)
         , hypotheticalMainContentSize(hypotheticalMainContentSize)
+        , mainAxisBorderAndPadding(mainAxisBorderAndPadding)
+        , mainAxisMargin(mainAxisMargin)
         , frozen(false)
     {
     }
@@ -76,12 +78,26 @@ struct LayoutFlexibleBox::FlexItem {
         : box(box)
         , flexBaseContentSize()
         , hypotheticalMainContentSize()
+        , mainAxisBorderAndPadding()
         , frozen(true)
     {
     }
+
+    LayoutUnit hypotheticalMainAxisMarginBoxSize() const
+    {
+        return hypotheticalMainContentSize + mainAxisBorderAndPadding + mainAxisMargin;
+    }
+
+    LayoutUnit flexBaseMarginBoxSize() const
+    {
+        return flexBaseContentSize + mainAxisBorderAndPadding + mainAxisMargin;
+    }
+
     LayoutBox* box;
     const LayoutUnit flexBaseContentSize;
     const LayoutUnit hypotheticalMainContentSize;
+    const LayoutUnit mainAxisBorderAndPadding;
+    const LayoutUnit mainAxisMargin;
     LayoutUnit flexedContentSize;
     bool frozen;
 };
@@ -769,11 +785,6 @@ void LayoutFlexibleBox::setFlowAwareLocationForChild(LayoutBox& child, const Lay
         child.setLocationAndUpdateOverflowControlsIfNeeded(location.transposedPoint());
 }
 
-LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(const LayoutBox& child) const
-{
-    return isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
-}
-
 bool LayoutFlexibleBox::mainAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const
 {
     if (flexBasis.isAuto())
@@ -837,7 +848,7 @@ void LayoutFlexibleBox::clearCachedMainSizeForChild(const LayoutBox& child)
     m_intrinsicSizeAlongMainAxis.remove(&child);
 }
 
-LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType childLayoutType)
+LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, LayoutUnit mainAxisBorderAndPadding, ChildLayoutType childLayoutType)
 {
     child.clearOverrideSize();
 
@@ -865,8 +876,8 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
         // of this if.
         mainAxisExtent = child.maxPreferredLogicalWidth();
     }
-    ASSERT(mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child) >= 0);
-    return mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child);
+    DCHECK_GE(mainAxisExtent - mainAxisBorderAndPadding, LayoutUnit()) << mainAxisExtent << " - " << mainAxisBorderAndPadding;
+    return mainAxisExtent - mainAxisBorderAndPadding;
 }
 
 void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
@@ -901,11 +912,11 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
         // use remainingFreeSpace here.
         remainingFreeSpace = containerMainInnerSize;
         for (size_t i = 0; i < orderedChildren.size(); ++i) {
+            FlexItem& flexItem = orderedChildren[i];
             LayoutBox* child = orderedChildren[i].box;
             if (child->isOutOfFlowPositioned())
                 continue;
-            remainingFreeSpace -= (orderedChildren[i].flexedContentSize + mainAxisBorderAndPaddingExtentForChild(*child)
-                + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight()));
+            remainingFreeSpace -= orderedChildren[i].flexedContentSize + flexItem.mainAxisBorderAndPadding + flexItem.mainAxisMargin;
         }
         layoutAndPlaceChildren(crossAxisOffset, orderedChildren, remainingFreeSpace, relayoutChildren, layoutScope, lineContexts);
     }
@@ -1200,6 +1211,15 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForAspectRatioCrossAxisMinAndMax(co
     return childSize;
 }
 
+LayoutFlexibleBox::FlexItem LayoutFlexibleBox::constructFlexItem(LayoutBox& child, ChildLayoutType layoutType)
+{
+    LayoutUnit borderAndPadding = isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
+    LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(child, borderAndPadding, layoutType);
+    LayoutUnit childMinMaxAppliedMainAxisExtent = adjustChildSizeForMinAndMax(child, childInnerFlexBaseSize);
+    LayoutUnit margin = isHorizontalFlow() ? child.marginWidth() : child.marginHeight();
+    return FlexItem(&child, childInnerFlexBaseSize, childMinMaxAppliedMainAxisExtent, borderAndPadding, margin);
+}
+
 bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren)
 {
     orderedChildren.clear();
@@ -1232,23 +1252,16 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             layoutType = LayoutIfNeeded;
         }
 
-        LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child, layoutType);
-        LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(*child)
-            + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight());
-        LayoutUnit childOuterFlexBaseSize = childInnerFlexBaseSize + childMainAxisMarginBorderPadding;
-
-        LayoutUnit childMinMaxAppliedMainAxisExtent = adjustChildSizeForMinAndMax(*child, childInnerFlexBaseSize);
-        LayoutUnit childHypotheticalMainSize = childMinMaxAppliedMainAxisExtent + childMainAxisMarginBorderPadding;
-
-        if (isMultiline() && sumHypotheticalMainSize + childHypotheticalMainSize > lineBreakLength && lineHasInFlowItem)
+        FlexItem flexItem = constructFlexItem(*child, layoutType);
+        if (isMultiline() && sumHypotheticalMainSize + flexItem.hypotheticalMainAxisMarginBoxSize() > lineBreakLength && lineHasInFlowItem)
             break;
-        orderedChildren.append(FlexItem(child, childInnerFlexBaseSize, childMinMaxAppliedMainAxisExtent));
+        orderedChildren.append(flexItem);
         lineHasInFlowItem  = true;
-        sumFlexBaseSize += childOuterFlexBaseSize;
+        sumFlexBaseSize += flexItem.flexBaseMarginBoxSize();
         totalFlexGrow += child->style()->flexGrow();
         totalFlexShrink += child->style()->flexShrink();
-        totalWeightedFlexShrink += child->style()->flexShrink() * childInnerFlexBaseSize;
-        sumHypotheticalMainSize += childHypotheticalMainSize;
+        totalWeightedFlexShrink += child->style()->flexShrink() * flexItem.flexBaseContentSize;
+        sumHypotheticalMainSize += flexItem.hypotheticalMainAxisMarginBoxSize();
     }
     return true;
 }

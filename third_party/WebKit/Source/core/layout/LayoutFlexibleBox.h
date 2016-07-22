@@ -147,8 +147,7 @@ private:
     void setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
     void adjustAlignmentForChild(LayoutBox& child, LayoutUnit);
     ItemPosition alignmentForChild(const LayoutBox& child) const;
-    LayoutUnit mainAxisBorderAndPaddingExtentForChild(const LayoutBox& child) const;
-    LayoutUnit computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType = LayoutIfNeeded);
+    LayoutUnit computeInnerFlexBaseSizeForChild(LayoutBox& child, LayoutUnit mainAxisBorderAndPadding, ChildLayoutType = LayoutIfNeeded);
     bool mainAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const;
     bool crossAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const;
     bool childFlexBaseSizeRequiresLayout(const LayoutBox& child) const;
@@ -174,6 +173,7 @@ private:
     void prepareOrderIteratorAndMargins();
     LayoutUnit adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize);
     LayoutUnit adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize);
+    FlexItem constructFlexItem(LayoutBox& child, ChildLayoutType);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
 
