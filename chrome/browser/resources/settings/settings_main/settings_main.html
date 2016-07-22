@@ -38,25 +38,26 @@
       }
     </style>
     <content select="paper-icon-button"></content>
-    <template is="dom-if" if="[[showBasicPage_]]">
+    <template is="dom-if" if="[[showPages_.basic]]">
       <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}">
       </settings-basic-page>
     </template>
-    <template is="dom-if" if="[[showAdvancedToggle_]]">
+    <template is="dom-if"
+        if="[[showAdvancedToggle_(showPages_.basic, inSubpage_)]]">
       <div id="toggleSpacer"></div>
       <div id="toggleContainer">
         <div id="advancedToggle" on-tap="toggleAdvancedPage_">
           <span>$i18n{advancedPageTitle}</span>
-          <iron-icon icon="[[arrowState_(showAdvancedPage_)]]"></iron-icon>
+          <iron-icon icon="[[arrowState_(showPages_.advanced)]]"></iron-icon>
         </div>
       </div>
     </template>
-    <template is="dom-if" if="[[showAdvancedPage_]]">
+    <template is="dom-if" if="[[showPages_.advanced]]">
       <settings-advanced-page prefs="{{prefs}}"
           current-route="{{currentRoute}}">
       </settings-advanced-page>
     </template>
-    <template is="dom-if" if="[[showAboutPage_]]">
+    <template is="dom-if" if="[[showPages_.about]]">
       <settings-about-page current-route="{{currentRoute}}">
       </settings-about-page>
     </template>

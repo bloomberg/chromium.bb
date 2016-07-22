@@ -10,12 +10,6 @@ Polymer({
   is: 'settings-main',
 
   properties: {
-    /** @private */
-    isAdvancedMenuOpen_: {
-      type: Boolean,
-      value: false,
-    },
-
     /**
      * Preferences state.
      */
@@ -35,27 +29,24 @@ Polymer({
     },
 
     /** @private */
-    showAdvancedPage_: {
+    advancedToggleExpanded_: {
       type: Boolean,
       value: false,
     },
 
     /** @private */
-    showAdvancedToggle_: {
-      type: Boolean,
-      value: true,
-    },
+    inSubpage_: Boolean,
 
-    /** @private */
-    showBasicPage_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** @private */
-    showAboutPage_: {
-      type: Boolean,
-      value: false,
+    /**
+     * Controls which main pages are displayed via dom-ifs.
+     * @type {!{about: boolean, basic: boolean, advanced: boolean}}
+     * @private
+     */
+    showPages_: {
+      type: Object,
+      value: function() {
+        return {about: false, basic: false, advanced: false};
+      },
     },
 
     toolbarSpinnerActive: {
@@ -82,10 +73,9 @@ Polymer({
   /** @override */
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
-      this.showAdvancedPage_ = e.detail;
-      this.isAdvancedMenuOpen_ = e.detail;
+      this.advancedToggleExpanded_ = e.detail;
       this.currentRoute = {
-        page: this.isAdvancedMenuOpen_ ? 'advanced' : 'basic',
+        page: this.advancedToggleExpanded_ ? 'advanced' : 'basic',
         section: '',
         subpage: [],
       };
@@ -105,9 +95,18 @@ Polymer({
    * @param {boolean} opened Whether the menu is expanded.
    * @return {string} Which icon to use.
    * @private
-   * */
+   */
   arrowState_: function(opened) {
     return opened ? 'settings:arrow-drop-up' : 'cr:arrow-drop-down';
+  },
+
+  /**
+   * @param {boolean} showBasicPage
+   * @param {boolean} inSubpage
+   * @return {boolean}
+   */
+  showAdvancedToggle_: function(showBasicPage, inSubpage) {
+    return showBasicPage && !inSubpage;
   },
 
   /**
@@ -115,24 +114,27 @@ Polymer({
    * @private
    */
   currentRouteChanged_: function(newRoute) {
-    var isSubpage = !!newRoute.subpage.length;
+    this.inSubpage_ = newRoute.subpage.length > 0;
+    this.style.height = this.inSubpage_ ? '100%' : '';
 
-    this.showAboutPage_ = newRoute.page == 'about';
+    if (newRoute.page == 'about') {
+      this.showPages_ = {about: true, basic: false, advanced: false};
+    } else {
+      this.showPages_ = {
+        about: false,
+        basic: newRoute.page == 'basic' || !this.inSubpage_,
+        advanced: newRoute.page == 'advanced' ||
+            (!this.inSubpage_ && this.advancedToggleExpanded_),
+      };
 
-    this.showAdvancedToggle_ = !this.showAboutPage_ && !isSubpage;
-
-    this.showBasicPage_ = this.showAdvancedToggle_ || newRoute.page == 'basic';
-
-    this.showAdvancedPage_ =
-        (this.isAdvancedMenuOpen_ && this.showAdvancedToggle_) ||
-        newRoute.page == 'advanced';
-
-    this.style.height = isSubpage ? '100%' : '';
+      if (this.showPages_.advanced)
+        this.advancedToggleExpanded_ = true;
+    }
   },
 
   /** @private */
   toggleAdvancedPage_: function() {
-    this.fire('toggle-advanced-page', !this.isAdvancedMenuOpen_);
+    this.fire('toggle-advanced-page', !this.advancedToggleExpanded_);
   },
 
   /**
@@ -156,13 +158,11 @@ Polymer({
     // Trigger rendering of the basic and advanced pages and search once ready.
     // Even if those are already rendered, yield to the message loop before
     // initiating searching.
-    this.showBasicPage_ = true;
+    this.showPages_ = {about: false, basic: true, advanced: true};
     setTimeout(function() {
       settings.getSearchManager().search(
           query, assert(this.$$('settings-basic-page')));
     }.bind(this), 0);
-
-    this.showAdvancedPage_ = true;
     setTimeout(function() {
       settings.getSearchManager().search(
           query, assert(this.$$('settings-advanced-page')));
