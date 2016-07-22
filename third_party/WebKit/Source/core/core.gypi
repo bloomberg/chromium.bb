@@ -1215,8 +1215,6 @@
             'css/CSSRule.h',
             'css/CSSRuleList.cpp',
             'css/CSSRuleList.h',
-            'css/CSSSVGDocumentValue.cpp',
-            'css/CSSSVGDocumentValue.h',
             'css/CSSSegmentedFontFace.cpp',
             'css/CSSSegmentedFontFace.h',
             'css/CSSSelector.cpp',

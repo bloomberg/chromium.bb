@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/animation/css/CSSAnimationUpdate.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
-#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/ElementResolveContext.h"

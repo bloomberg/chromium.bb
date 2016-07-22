@@ -29,7 +29,6 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
-#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
@@ -1458,10 +1457,9 @@ static CSSValue* consumeFilter(CSSParserTokenRange& range, const CSSParserContex
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     do {
         String url = consumeUrl(range);
-        CSSFunctionValue* filterValue = nullptr;
+        CSSValue* filterValue = nullptr;
         if (!url.isNull()) {
-            filterValue = CSSFunctionValue::create(CSSValueUrl);
-            filterValue->append(*CSSSVGDocumentValue::create(url));
+            filterValue = CSSURIValue::create(url);
         } else {
             filterValue = consumeFilterFunction(range, context);
             if (!filterValue)

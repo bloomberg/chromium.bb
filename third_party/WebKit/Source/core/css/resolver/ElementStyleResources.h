@@ -37,7 +37,7 @@ class CSSCursorImageValue;
 class CSSImageGeneratorValue;
 class CSSImageSetValue;
 class CSSImageValue;
-class CSSSVGDocumentValue;
+class CSSURIValue;
 class CSSValue;
 class ComputedStyle;
 class Document;
@@ -59,7 +59,7 @@ public:
 
     void loadPendingResources(ComputedStyle*);
 
-    void addPendingSVGDocument(FilterOperation*, const CSSSVGDocumentValue*);
+    void addPendingSVGDocument(FilterOperation*, const CSSURIValue*);
 
 private:
     StyleImage* cursorOrPendingFromValue(CSSPropertyID, const CSSCursorImageValue&);
@@ -72,7 +72,7 @@ private:
 
     Member<Document> m_document;
     HashSet<CSSPropertyID> m_pendingImageProperties;
-    HeapHashMap<Member<FilterOperation>, Member<const CSSSVGDocumentValue>> m_pendingSVGDocuments;
+    HeapHashMap<Member<FilterOperation>, Member<const CSSURIValue>> m_pendingSVGDocuments;
     float m_deviceScaleFactor;
 };
 

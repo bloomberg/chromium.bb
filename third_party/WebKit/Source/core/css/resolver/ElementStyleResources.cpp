@@ -26,7 +26,7 @@
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/CSSSVGDocumentValue.h"
+#include "core/css/CSSURIValue.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
@@ -104,9 +104,9 @@ StyleImage* ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID proper
     return value.cachedImage(m_deviceScaleFactor);
 }
 
-void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperation, const CSSSVGDocumentValue* cssSVGDocumentValue)
+void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperation, const CSSURIValue* cssUriValue)
 {
-    m_pendingSVGDocuments.set(filterOperation, cssSVGDocumentValue);
+    m_pendingSVGDocuments.set(filterOperation, cssUriValue);
 }
 
 void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle)
@@ -120,10 +120,10 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
         if (filterOperation->type() == FilterOperation::REFERENCE) {
             ReferenceFilterOperation* referenceFilter = toReferenceFilterOperation(filterOperation);
 
-            const CSSSVGDocumentValue* value = m_pendingSVGDocuments.get(referenceFilter);
+            const CSSURIValue* value = m_pendingSVGDocuments.get(referenceFilter);
             if (!value)
                 continue;
-            DocumentResource* resource = value->load(m_document);
+            DocumentResource* resource = value->load(*m_document);
             if (!resource)
                 continue;
 

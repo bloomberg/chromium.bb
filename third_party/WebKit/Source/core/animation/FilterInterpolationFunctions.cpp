@@ -91,8 +91,11 @@ double clampParameter(double value, FilterOperation::OperationType type)
 
 InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSSValue& value)
 {
+    if (value.isURIValue())
+        return nullptr;
+
     const CSSFunctionValue& filter = toCSSFunctionValue(value);
-    ASSERT(filter.length() <= 1);
+    DCHECK_LE(filter.length(), 1u);
     FilterOperation::OperationType type = FilterOperationResolver::filterOperationForType(filter.functionType());
     InterpolationValue result = nullptr;
 
@@ -135,9 +138,6 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSS
         result = ShadowInterpolationFunctions::maybeConvertCSSValue(filter.item(0));
         break;
     }
-
-    case FilterOperation::REFERENCE:
-        return nullptr;
 
     default:
         NOTREACHED();

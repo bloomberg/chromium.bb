@@ -53,7 +53,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
-#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
@@ -177,8 +176,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSValuePair>(*this, other);
         case ImageSetClass:
             return compareCSSValues<CSSImageSetValue>(*this, other);
-        case CSSSVGDocumentClass:
-            return compareCSSValues<CSSSVGDocumentValue>(*this, other);
         case CSSContentDistributionClass:
             return compareCSSValues<CSSContentDistributionValue>(*this, other);
         case CustomPropertyDeclarationClass:
@@ -271,8 +268,6 @@ String CSSValue::cssText() const
         return toCSSValueList(this)->customCSSText();
     case ImageSetClass:
         return toCSSImageSetValue(this)->customCSSText();
-    case CSSSVGDocumentClass:
-        return toCSSSVGDocumentValue(this)->customCSSText();
     case CSSContentDistributionClass:
         return toCSSContentDistributionValue(this)->customCSSText();
     case VariableReferenceClass:
@@ -399,9 +394,6 @@ void CSSValue::destroy()
         return;
     case ImageSetClass:
         delete toCSSImageSetValue(this);
-        return;
-    case CSSSVGDocumentClass:
-        delete toCSSSVGDocumentValue(this);
         return;
     case CSSContentDistributionClass:
         delete toCSSContentDistributionValue(this);
@@ -533,9 +525,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case ImageSetClass:
         toCSSImageSetValue(this)->~CSSImageSetValue();
         return;
-    case CSSSVGDocumentClass:
-        toCSSSVGDocumentValue(this)->~CSSSVGDocumentValue();
-        return;
     case CSSContentDistributionClass:
         toCSSContentDistributionValue(this)->~CSSContentDistributionValue();
         return;
@@ -665,9 +654,6 @@ DEFINE_TRACE(CSSValue)
         return;
     case ImageSetClass:
         toCSSImageSetValue(this)->traceAfterDispatch(visitor);
-        return;
-    case CSSSVGDocumentClass:
-        toCSSSVGDocumentValue(this)->traceAfterDispatch(visitor);
         return;
     case CSSContentDistributionClass:
         toCSSContentDistributionValue(this)->traceAfterDispatch(visitor);
