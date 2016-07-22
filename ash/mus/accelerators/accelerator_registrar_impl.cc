@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/accelerator_registrar_impl.h"
+#include "ash/mus/accelerators/accelerator_registrar_impl.h"
 
 #include <stdint.h>
 #include <utility>
 
+#include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
@@ -16,7 +17,6 @@ namespace ash {
 namespace mus {
 
 namespace {
-const int kAcceleratorIdMask = 0xffff;
 
 void CallAddAcceleratorCallback(
     const ::ui::mojom::AcceleratorRegistrar::AddAcceleratorCallback& callback,
@@ -28,14 +28,15 @@ void CallAddAcceleratorCallback(
 
 AcceleratorRegistrarImpl::AcceleratorRegistrarImpl(
     WindowManager* window_manager,
-    uint32_t accelerator_namespace,
+    uint16_t accelerator_namespace,
     mojo::InterfaceRequest<AcceleratorRegistrar> request,
     const DestroyCallback& destroy_callback)
     : window_manager_(window_manager),
       binding_(this, std::move(request)),
-      accelerator_namespace_(accelerator_namespace & 0xffff),
+      accelerator_namespace_(accelerator_namespace),
       destroy_callback_(destroy_callback) {
   window_manager_->AddObserver(this);
+  window_manager_->AddAcceleratorHandler(accelerator_namespace_, this);
   binding_.set_connection_error_handler(base::Bind(
       &AcceleratorRegistrarImpl::OnBindingGone, base::Unretained(this)));
 }
@@ -53,19 +54,15 @@ void AcceleratorRegistrarImpl::ProcessAccelerator(uint32_t accelerator_id,
   DCHECK(OwnsAccelerator(accelerator_id));
   // TODO(moshayedi): crbug.com/617167. Don't clone even once we map
   // mojom::Event directly to ui::Event.
-  accelerator_handler_->OnAccelerator(accelerator_id & kAcceleratorIdMask,
+  accelerator_handler_->OnAccelerator(accelerator_id & kLocalIdMask,
                                       ui::Event::Clone(event));
 }
 
 AcceleratorRegistrarImpl::~AcceleratorRegistrarImpl() {
+  window_manager_->RemoveAcceleratorHandler(accelerator_namespace_);
   window_manager_->RemoveObserver(this);
   RemoveAllAccelerators();
   destroy_callback_.Run(this);
-}
-
-uint32_t AcceleratorRegistrarImpl::ComputeAcceleratorId(
-    uint32_t accelerator_id) const {
-  return (accelerator_namespace_ << 16) | (accelerator_id & kAcceleratorIdMask);
 }
 
 void AcceleratorRegistrarImpl::OnBindingGone() {
@@ -107,13 +104,14 @@ void AcceleratorRegistrarImpl::AddAccelerator(
     uint32_t accelerator_id,
     ::ui::mojom::EventMatcherPtr matcher,
     const AddAcceleratorCallback& callback) {
-  if (!accelerator_handler_ ||
-      (accelerator_id & kAcceleratorIdMask) != accelerator_id) {
+  if (!accelerator_handler_ || accelerator_id > 0xFFFF) {
     // The |accelerator_id| is too large, and it can't be handled correctly.
     callback.Run(false);
+    DVLOG(1) << "AddAccelerator failed because of bogus id";
     return;
   }
-  uint32_t namespaced_accelerator_id = ComputeAcceleratorId(accelerator_id);
+  uint32_t namespaced_accelerator_id = ComputeAcceleratorId(
+      accelerator_namespace_, static_cast<uint16_t>(accelerator_id));
   accelerators_.insert(namespaced_accelerator_id);
   window_manager_->window_manager_client()->AddAccelerator(
       namespaced_accelerator_id, std::move(matcher),
@@ -121,7 +119,11 @@ void AcceleratorRegistrarImpl::AddAccelerator(
 }
 
 void AcceleratorRegistrarImpl::RemoveAccelerator(uint32_t accelerator_id) {
-  uint32_t namespaced_accelerator_id = ComputeAcceleratorId(accelerator_id);
+  if (accelerator_id > 0xFFFF)
+    return;
+
+  uint32_t namespaced_accelerator_id = ComputeAcceleratorId(
+      accelerator_namespace_, static_cast<uint16_t>(accelerator_id));
   if (accelerators_.erase(namespaced_accelerator_id) == 0)
     return;
   window_manager_->window_manager_client()->RemoveAccelerator(
@@ -134,10 +136,12 @@ void AcceleratorRegistrarImpl::RemoveAccelerator(uint32_t accelerator_id) {
     delete this;
 }
 
-void AcceleratorRegistrarImpl::OnAccelerator(uint32_t id,
-                                             const ui::Event& event) {
+ui::mojom::EventResult AcceleratorRegistrarImpl::OnAccelerator(
+    uint32_t id,
+    const ui::Event& event) {
   if (OwnsAccelerator(id))
     ProcessAccelerator(id, event);
+  return ui::mojom::EventResult::HANDLED;
 }
 
 void AcceleratorRegistrarImpl::OnWindowTreeClientDestroyed() {

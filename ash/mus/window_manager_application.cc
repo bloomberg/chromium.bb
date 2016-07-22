@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/mus/accelerator_registrar_impl.h"
+#include "ash/mus/accelerators/accelerator_registrar_impl.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/shelf_layout_impl.h"
 #include "ash/mus/user_window_controller_impl.h"
@@ -154,17 +154,15 @@ void WindowManagerApplication::Create(
   if (!window_manager_->window_manager_client())
     return;  // Can happen during shutdown.
 
-  static int accelerator_registrar_count = 0;
-  if (accelerator_registrar_count == std::numeric_limits<int>::max()) {
-    // Restart from zero if we have reached the limit. It is technically
-    // possible to end up with multiple active registrars with the same
-    // namespace, but it is highly unlikely. In the event that multiple
-    // registrars have the same namespace, this new registrar will be unable to
-    // install accelerators.
-    accelerator_registrar_count = 0;
+  uint16_t accelerator_namespace_id;
+  if (!window_manager_->GetNextAcceleratorNamespaceId(
+          &accelerator_namespace_id)) {
+    DVLOG(1) << "Max number of accelerators registered, ignoring request.";
+    // All ids are used. Normally shouldn't happen, so we close the connection.
+    return;
   }
   accelerator_registrars_.insert(new AcceleratorRegistrarImpl(
-      window_manager_.get(), ++accelerator_registrar_count, std::move(request),
+      window_manager_.get(), accelerator_namespace_id, std::move(request),
       base::Bind(&WindowManagerApplication::OnAcceleratorRegistrarDestroyed,
                  base::Unretained(this))));
 }

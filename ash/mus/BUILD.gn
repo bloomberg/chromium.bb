@@ -10,10 +10,12 @@ import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
-    "accelerator_registrar_impl.cc",
-    "accelerator_registrar_impl.h",
     "accelerators/accelerator_controller_delegate_mus.cc",
     "accelerators/accelerator_controller_delegate_mus.h",
+    "accelerators/accelerator_handler.h",
+    "accelerators/accelerator_ids.h",
+    "accelerators/accelerator_registrar_impl.cc",
+    "accelerators/accelerator_registrar_impl.h",
     "accessibility_delegate_mus.cc",
     "accessibility_delegate_mus.h",
     "bridge/mus_layout_manager_adapter.cc",
@@ -177,7 +179,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
-    "accelerator_registrar_unittest.cc",
+    "accelerators/accelerator_registrar_unittest.cc",
     "app_launch_unittest.cc",
     "layout_manager_unittest.cc",
     "root_window_controller_unittest.cc",

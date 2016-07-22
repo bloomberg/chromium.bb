@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/mus/accelerators/accelerator_handler.h"
+#include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
@@ -35,8 +37,6 @@
 
 namespace ash {
 namespace mus {
-
-const uint32_t kWindowSwitchAccelerator = 1;
 
 void AssertTrue(bool success) {
   DCHECK(success);
@@ -78,8 +78,6 @@ void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
   window_tree_client_ = window_tree_client;
 
   shadow_controller_.reset(new ShadowController(window_tree_client));
-
-  AddAccelerators();
 
   // The insets are roughly what is needed by CustomFrameView. The expectation
   // is at some point we'll write our own NonClientFrameView and get the insets
@@ -127,22 +125,32 @@ std::set<RootWindowController*> WindowManager::GetRootWindowControllers() {
   return result;
 }
 
+bool WindowManager::GetNextAcceleratorNamespaceId(uint16_t* id) {
+  if (accelerator_handlers_.size() == std::numeric_limits<uint16_t>::max())
+    return false;
+  while (accelerator_handlers_.count(next_accelerator_namespace_id_) > 0)
+    ++next_accelerator_namespace_id_;
+  *id = next_accelerator_namespace_id_;
+  ++next_accelerator_namespace_id_;
+  return true;
+}
+
+void WindowManager::AddAcceleratorHandler(uint16_t id_namespace,
+                                          AcceleratorHandler* handler) {
+  DCHECK_EQ(0u, accelerator_handlers_.count(id_namespace));
+  accelerator_handlers_[id_namespace] = handler;
+}
+
+void WindowManager::RemoveAcceleratorHandler(uint16_t id_namespace) {
+  accelerator_handlers_.erase(id_namespace);
+}
+
 void WindowManager::AddObserver(WindowManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void WindowManager::AddAccelerators() {
-  // TODO(sky): this is broke for multi-display case. Need to fix mus to
-  // deal correctly.
-  window_manager_client_->AddAccelerator(
-      kWindowSwitchAccelerator,
-      ::ui::CreateKeyMatcher(ui::mojom::KeyboardCode::TAB,
-                             ui::mojom::kEventFlagControlDown),
-      base::Bind(&AssertTrue));
 }
 
 RootWindowController* WindowManager::CreateRootWindowController(
@@ -288,17 +296,11 @@ void WindowManager::OnWmCancelMoveLoop(::ui::Window* window) {
 
 ui::mojom::EventResult WindowManager::OnAccelerator(uint32_t id,
                                                     const ui::Event& event) {
-  switch (id) {
-    case kWindowSwitchAccelerator:
-      window_manager_client()->ActivateNextWindow();
-      break;
-    default:
-      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                        OnAccelerator(id, event));
-      break;
-  }
+  auto iter = accelerator_handlers_.find(GetAcceleratorNamespaceId(id));
+  if (iter == accelerator_handlers_.end())
+    return ui::mojom::EventResult::HANDLED;
 
-  return ui::mojom::EventResult::HANDLED;
+  return iter->second->OnAccelerator(id, event);
 }
 
 }  // namespace mus

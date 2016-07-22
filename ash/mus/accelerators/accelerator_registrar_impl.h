@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_ACCELERATOR_REGISTRAR_IMPL_H_
-#define ASH_MUS_ACCELERATOR_REGISTRAR_IMPL_H_
+#ifndef ASH_MUS_ACCELERATORS_ACCELERATOR_REGISTRAR_IMPL_H_
+#define ASH_MUS_ACCELERATORS_ACCELERATOR_REGISTRAR_IMPL_H_
 
 #include <stdint.h>
 
 #include <map>
 
+#include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/window_manager_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -26,11 +27,12 @@ class WindowManager;
 // AcceleratorRegistrar and all its AcceleratorHandlers are disconnected. Upon
 // destruction, it calls the DestroyCallback.
 class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
-                                 public WindowManagerObserver {
+                                 public WindowManagerObserver,
+                                 public AcceleratorHandler {
  public:
   using DestroyCallback = base::Callback<void(AcceleratorRegistrarImpl*)>;
   AcceleratorRegistrarImpl(WindowManager* window_manager,
-                           uint32_t accelerator_namespace,
+                           uint16_t accelerator_namespace,
                            mojo::InterfaceRequest<AcceleratorRegistrar> request,
                            const DestroyCallback& destroy_callback);
 
@@ -45,7 +47,6 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
  private:
   ~AcceleratorRegistrarImpl() override;
 
-  uint32_t ComputeAcceleratorId(uint32_t accelerator_id) const;
   void OnBindingGone();
   void OnHandlerGone();
 
@@ -58,14 +59,17 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t accelerator_id) override;
 
+  // AcceleratorHandler:
+  ui::mojom::EventResult OnAccelerator(uint32_t id,
+                                       const ui::Event& event) override;
+
   // WindowManagerObserver:
-  void OnAccelerator(uint32_t id, const ui::Event& event) override;
   void OnWindowTreeClientDestroyed() override;
 
   WindowManager* window_manager_;
   ::ui::mojom::AcceleratorHandlerPtr accelerator_handler_;
   mojo::Binding<AcceleratorRegistrar> binding_;
-  uint32_t accelerator_namespace_;
+  uint16_t accelerator_namespace_;
   std::set<uint32_t> accelerators_;
   DestroyCallback destroy_callback_;
 
@@ -75,4 +79,4 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
 }  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_MUS_ACCELERATOR_REGISTRAR_IMPL_H_
+#endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_REGISTRAR_IMPL_H_

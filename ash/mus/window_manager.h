@@ -30,6 +30,7 @@ class Connector;
 namespace ash {
 namespace mus {
 
+class AcceleratorHandler;
 class RootWindowController;
 class ShadowController;
 class WindowManagerObserver;
@@ -68,13 +69,18 @@ class WindowManager : public ::ui::WindowManagerDelegate,
 
   std::set<RootWindowController*> GetRootWindowControllers();
 
+  // Returns the next accelerator namespace id by value in |id|. Returns true
+  // if there is another slot available, false if all slots are taken up.
+  bool GetNextAcceleratorNamespaceId(uint16_t* id);
+  void AddAcceleratorHandler(uint16_t id_namespace,
+                             AcceleratorHandler* handler);
+  void RemoveAcceleratorHandler(uint16_t id_namespace);
+
   void AddObserver(WindowManagerObserver* observer);
   void RemoveObserver(WindowManagerObserver* observer);
 
  private:
   friend class WmTestHelper;
-
-  void AddAccelerators();
 
   RootWindowController* CreateRootWindowController(
       ::ui::Window* window,
@@ -127,6 +133,9 @@ class WindowManager : public ::ui::WindowManagerDelegate,
   std::unique_ptr<WmShellMus> shell_;
 
   std::unique_ptr<WmLookupMus> lookup_;
+
+  std::map<uint16_t, AcceleratorHandler*> accelerator_handlers_;
+  uint16_t next_accelerator_namespace_id_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
