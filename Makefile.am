@@ -150,9 +150,10 @@ weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON 		\
 				 -DMODULEDIR='"$(moduledir)"' \
 				 -DXSERVER_PATH='"@XSERVER_PATH@"'
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
-weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
+weston_LDADD = libshared.la libweston-@LIBWESTON_MAJOR@.la \
+	$(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) $(LIBINPUT_BACKEND_LIBS) \
-	-lm libshared.la libweston-@LIBWESTON_MAJOR@.la
+	-lm
 
 weston_SOURCES = 					\
 	compositor/main.c				\
@@ -866,7 +867,7 @@ desktop_shell_la_CPPFLAGS =			\
 	-DIN_WESTON
 
 desktop_shell_la_LDFLAGS = -module -avoid-version
-desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+desktop_shell_la_LIBADD = libshared.la $(COMPOSITOR_LIBS)
 desktop_shell_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 desktop_shell_la_SOURCES =				\
 	desktop-shell/shell.h				\
@@ -915,7 +916,7 @@ module_LTLIBRARIES +=				\
 
 ivi_shell = ivi-shell.la
 ivi_shell_la_LDFLAGS = -module -avoid-version
-ivi_shell_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+ivi_shell_la_LIBADD = libshared.la $(COMPOSITOR_LIBS)
 ivi_shell_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_shell_la_SOURCES =				\
 	ivi-shell/ivi-layout-export.h		\
@@ -935,7 +936,7 @@ BUILT_SOURCES += $(nodist_ivi_shell_la_SOURCES)
 
 hmi_controller = hmi-controller.la
 hmi_controller_la_LDFLAGS = -module -avoid-version
-hmi_controller_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+hmi_controller_la_LIBADD = libshared.la $(COMPOSITOR_LIBS)
 hmi_controller_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 hmi_controller_la_SOURCES =				\
 	ivi-shell/ivi-layout-export.h			\
@@ -957,9 +958,9 @@ module_LTLIBRARIES += screen-share.la
 screen_share_la_CPPFLAGS = $(AM_CPPFLAGS) -DBINDIR='"$(bindir)"'
 screen_share_la_LDFLAGS = -module -avoid-version
 screen_share_la_LIBADD =			\
+	libshared-cairo.la			\
 	$(COMPOSITOR_LIBS)			\
-	$(SCREEN_SHARE_LIBS)			\
-	libshared-cairo.la
+	$(SCREEN_SHARE_LIBS)
 screen_share_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(SCREEN_SHARE_CFLAGS)			\
@@ -989,8 +990,8 @@ xwayland_la_CPPFLAGS =				\
 
 xwayland_la_LDFLAGS = -module -avoid-version
 xwayland_la_LIBADD =			\
-	$(XWAYLAND_LIBS)		\
-	$(top_builddir)/libshared-cairo.la
+	libshared-cairo.la		\
+	$(XWAYLAND_LIBS)
 xwayland_la_CFLAGS =				\
 	$(AM_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
@@ -1178,7 +1179,7 @@ surface_test_la_SOURCES = tests/surface-test.c
 surface_test_la_LDFLAGS = $(test_module_ldflags)
 surface_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
-weston_test_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+weston_test_la_LIBADD = libshared.la $(COMPOSITOR_LIBS)
 weston_test_la_LDFLAGS = $(test_module_ldflags)
 weston_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_SOURCES = 			\
@@ -1222,7 +1223,7 @@ nodist_libtest_client_la_SOURCES =		\
 	protocol/weston-test-protocol.c	\
 	protocol/weston-test-client-protocol.h
 libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS) $(CAIRO_CFLAGS)
-libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) $(CAIRO_LIBS) libshared.la libtest-runner.la
+libtest_client_la_LIBADD = libshared.la libtest-runner.la $(TEST_CLIENT_LIBS) $(CAIRO_LIBS)
 
 
 #
@@ -1411,7 +1412,7 @@ EXTRA_DIST +=					\
 noinst_LTLIBRARIES +=				\
 	surface-screenshot.la
 
-surface_screenshot_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
+surface_screenshot_la_LIBADD = libshared.la $(COMPOSITOR_LIBS)
 surface_screenshot_la_LDFLAGS = $(test_module_ldflags)
 surface_screenshot_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 surface_screenshot_la_SOURCES = tests/surface-screenshot.c
