@@ -253,12 +253,12 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   scoped_refptr<IndexedDBDatabaseCallbacks> dummy_database_callbacks =
       new IndexedDBDatabaseCallbacks(NULL, 0, 0);
   const base::string16 name(ASCIIToUTF16("name"));
-  IndexedDBPendingConnection connection(callbacks,
-                                        dummy_database_callbacks,
-                                        0, /* child_process_id */
-                                        2, /* transaction_id */
-                                        1 /* version */);
-  factory->Open(name, connection, NULL /* request_context */, origin,
+  std::unique_ptr<IndexedDBPendingConnection> connection(
+      new IndexedDBPendingConnection(callbacks, dummy_database_callbacks,
+                                     0, /* child_process_id */
+                                     2, /* transaction_id */
+                                     1 /* version */));
+  factory->Open(name, std::move(connection), NULL /* request_context */, origin,
                 temp_directory.path());
   EXPECT_TRUE(callbacks->error_called());
 }
@@ -273,11 +273,12 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
-  IndexedDBPendingConnection connection(
-      callbacks, db_callbacks, 0, /* child_process_id */
-      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION);
-  factory()->Open(ASCIIToUTF16("db"), connection, NULL /* request_context */,
-                  origin, temp_directory.path());
+  std::unique_ptr<IndexedDBPendingConnection> connection(
+      new IndexedDBPendingConnection(
+          callbacks, db_callbacks, 0, /* child_process_id */
+          transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION));
+  factory()->Open(ASCIIToUTF16("db"), std::move(connection),
+                  NULL /* request_context */, origin, temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
 
@@ -300,11 +301,12 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
-  IndexedDBPendingConnection connection(
-      callbacks, db_callbacks, 0, /* child_process_id */
-      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION);
-  factory()->Open(ASCIIToUTF16("db"), connection, NULL /* request_context */,
-                  origin, temp_directory.path());
+  std::unique_ptr<IndexedDBPendingConnection> connection(
+      new IndexedDBPendingConnection(
+          callbacks, db_callbacks, 0, /* child_process_id */
+          transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION));
+  factory()->Open(ASCIIToUTF16("db"), std::move(connection),
+                  NULL /* request_context */, origin, temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
   IndexedDBBackingStore* store =
@@ -386,11 +388,12 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
-  IndexedDBPendingConnection connection(
-      callbacks, db_callbacks, 0, /* child_process_id */
-      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION);
-  factory()->Open(ASCIIToUTF16("db"), connection, NULL /* request_context */,
-                  origin, temp_directory.path());
+  std::unique_ptr<IndexedDBPendingConnection> connection(
+      new IndexedDBPendingConnection(
+          callbacks, db_callbacks, 0, /* child_process_id */
+          transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION));
+  factory()->Open(ASCIIToUTF16("db"), std::move(connection),
+                  NULL /* request_context */, origin, temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
@@ -420,10 +423,10 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
     EXPECT_FALSE(connection.get());
   }
 
-  void OnUpgradeNeeded(
-      int64_t old_version,
-      std::unique_ptr<IndexedDBConnection> connection,
-      const content::IndexedDBDatabaseMetadata& metadata) override {
+  void OnUpgradeNeeded(int64_t old_version,
+                       std::unique_ptr<IndexedDBConnection> connection,
+                       const content::IndexedDBDatabaseMetadata& metadata,
+                       const IndexedDBDataLossInfo& data_loss_info) override {
     connection_ = std::move(connection);
   }
 
@@ -466,13 +469,12 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   {
     scoped_refptr<MockIndexedDBCallbacks> callbacks(
         new UpgradeNeededCallbacks());
-    IndexedDBPendingConnection connection(callbacks,
-                                          db_callbacks,
-                                          0, /* child_process_id */
-                                          transaction_id,
-                                          db_version);
-    factory()->Open(db_name, connection, NULL /* request_context */, origin,
-                    temp_directory.path());
+    std::unique_ptr<IndexedDBPendingConnection> connection(
+        new IndexedDBPendingConnection(callbacks, db_callbacks,
+                                       0, /* child_process_id */
+                                       transaction_id, db_version));
+    factory()->Open(db_name, std::move(connection), NULL /* request_context */,
+                    origin, temp_directory.path());
     EXPECT_TRUE(factory()->IsDatabaseOpen(origin, db_name));
 
     // Pump the message loop so the upgrade transaction can run.
@@ -488,13 +490,12 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   // the database object.
   {
     scoped_refptr<ErrorCallbacks> callbacks(new ErrorCallbacks());
-    IndexedDBPendingConnection connection(callbacks,
-                                          db_callbacks,
-                                          0, /* child_process_id */
-                                          transaction_id,
-                                          db_version - 1);
-    factory()->Open(db_name, connection, NULL /* request_context */, origin,
-                    temp_directory.path());
+    std::unique_ptr<IndexedDBPendingConnection> connection(
+        new IndexedDBPendingConnection(callbacks, db_callbacks,
+                                       0, /* child_process_id */
+                                       transaction_id, db_version - 1));
+    factory()->Open(db_name, std::move(connection), NULL /* request_context */,
+                    origin, temp_directory.path());
     EXPECT_TRUE(callbacks->saw_error());
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }

@@ -79,7 +79,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                 int64_t new_max_index_id);
   void RemoveIndex(int64_t object_store_id, int64_t index_id);
 
-  void OpenConnection(const IndexedDBPendingConnection& connection);
+  void OpenConnection(std::unique_ptr<IndexedDBPendingConnection> connection);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 

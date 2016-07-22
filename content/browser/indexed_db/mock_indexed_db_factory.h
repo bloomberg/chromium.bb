@@ -26,12 +26,20 @@ class MockIndexedDBFactory : public IndexedDBFactory {
                     const url::Origin& origin,
                     const base::FilePath& data_directory,
                     net::URLRequestContext* request_context));
-  MOCK_METHOD5(Open,
+  MOCK_METHOD5(OpenProxy,
                void(const base::string16& name,
-                    const IndexedDBPendingConnection& connection,
+                    IndexedDBPendingConnection* connection,
                     net::URLRequestContext* request_context,
                     const url::Origin& origin,
                     const base::FilePath& data_directory));
+  // Googlemock can't deal with move-only types, so *Proxy() is a workaround.
+  virtual void Open(const base::string16& name,
+                    std::unique_ptr<IndexedDBPendingConnection> connection,
+                    net::URLRequestContext* request_context,
+                    const url::Origin& origin,
+                    const base::FilePath& data_directory) {
+    OpenProxy(name, connection.get(), request_context, origin, data_directory);
+  }
   MOCK_METHOD5(DeleteDatabase,
                void(const base::string16& name,
                     net::URLRequestContext* request_context,

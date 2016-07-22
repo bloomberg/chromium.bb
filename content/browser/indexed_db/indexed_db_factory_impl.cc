@@ -397,11 +397,12 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
   return 0;
 }
 
-void IndexedDBFactoryImpl::Open(const base::string16& name,
-                                const IndexedDBPendingConnection& connection,
-                                net::URLRequestContext* request_context,
-                                const Origin& origin,
-                                const base::FilePath& data_directory) {
+void IndexedDBFactoryImpl::Open(
+    const base::string16& name,
+    std::unique_ptr<IndexedDBPendingConnection> connection,
+    net::URLRequestContext* request_context,
+    const Origin& origin,
+    const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::Open");
   scoped_refptr<IndexedDBDatabase> database;
   IndexedDBDatabase::Identifier unique_identifier(origin, name);
@@ -416,18 +417,17 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
                          &data_loss_info, &disk_full, &s);
     if (!backing_store.get()) {
       if (disk_full) {
-        connection.callbacks->OnError(
-            IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError,
-                                   ASCIIToUTF16(
-                                       "Encountered full disk while opening "
-                                       "backing store for indexedDB.open.")));
+        connection->callbacks->OnError(IndexedDBDatabaseError(
+            blink::WebIDBDatabaseExceptionQuotaError,
+            ASCIIToUTF16("Encountered full disk while opening "
+                         "backing store for indexedDB.open.")));
         return;
       }
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    ASCIIToUTF16(
                                        "Internal error opening backing store"
                                        " for indexedDB.open."));
-      connection.callbacks->OnError(error);
+      connection->callbacks->OnError(error);
       if (s.IsCorruption()) {
         HandleBackingStoreCorruption(origin, error);
       }
@@ -443,7 +443,7 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
                                        "Internal error creating "
                                        "database backend for "
                                        "indexedDB.open."));
-      connection.callbacks->OnError(error);
+      connection->callbacks->OnError(error);
       if (s.IsCorruption()) {
         backing_store = NULL;  // Closes the LevelDB so that it can be deleted
         HandleBackingStoreCorruption(origin, error);
@@ -454,10 +454,9 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
     database = it->second;
   }
 
-  if (data_loss_info.status != blink::WebIDBDataLossNone)
-    connection.callbacks->OnDataLoss(data_loss_info);
+  connection->data_loss_info = data_loss_info;
 
-  database->OpenConnection(connection);
+  database->OpenConnection(std::move(connection));
 
   if (!was_open && database->ConnectionCount() > 0) {
     database_map_[unique_identifier] = database.get();

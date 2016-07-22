@@ -193,20 +193,18 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     test_path = idb_context->GetFilePathForTesting(kTestOrigin);
 
-    IndexedDBPendingConnection open_connection(open_callbacks,
-                                               open_db_callbacks,
-                                               0 /* child_process_id */,
-                                               0 /* host_transaction_id */,
-                                               0 /* version */);
-    factory->Open(base::ASCIIToUTF16("opendb"), open_connection,
+    std::unique_ptr<IndexedDBPendingConnection> open_connection(
+        new IndexedDBPendingConnection(
+            open_callbacks, open_db_callbacks, 0 /* child_process_id */,
+            0 /* host_transaction_id */, 0 /* version */));
+    factory->Open(base::ASCIIToUTF16("opendb"), std::move(open_connection),
                   NULL /* request_context */, Origin(kTestOrigin),
                   idb_context->data_path());
-    IndexedDBPendingConnection closed_connection(closed_callbacks,
-                                                 closed_db_callbacks,
-                                                 0 /* child_process_id */,
-                                                 0 /* host_transaction_id */,
-                                                 0 /* version */);
-    factory->Open(base::ASCIIToUTF16("closeddb"), closed_connection,
+    std::unique_ptr<IndexedDBPendingConnection> closed_connection(
+        new IndexedDBPendingConnection(
+            closed_callbacks, closed_db_callbacks, 0 /* child_process_id */,
+            0 /* host_transaction_id */, 0 /* version */));
+    factory->Open(base::ASCIIToUTF16("closeddb"), std::move(closed_connection),
                   NULL /* request_context */, Origin(kTestOrigin),
                   idb_context->data_path());
 
@@ -274,10 +272,11 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
-  IndexedDBPendingConnection connection(
-      callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
-  factory->Open(base::ASCIIToUTF16("db"), connection,
+  std::unique_ptr<IndexedDBPendingConnection> connection(
+      new IndexedDBPendingConnection(
+          callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
+          IndexedDBDatabaseMetadata::DEFAULT_VERSION));
+  factory->Open(base::ASCIIToUTF16("db"), std::move(connection),
                 NULL /* request_context */, Origin(kTestOrigin),
                 temp_dir.path());
 

@@ -899,6 +899,7 @@
       'browser/indexed_db/indexed_db_context_impl.h',
       'browser/indexed_db/indexed_db_cursor.cc',
       'browser/indexed_db/indexed_db_cursor.h',
+      'browser/indexed_db/indexed_db_data_loss_info.h',
       'browser/indexed_db/indexed_db_database.cc',
       'browser/indexed_db/indexed_db_database.h',
       'browser/indexed_db/indexed_db_database_callbacks.cc',

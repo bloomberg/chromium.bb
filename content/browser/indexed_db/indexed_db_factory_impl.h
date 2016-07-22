@@ -36,7 +36,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                         const base::FilePath& data_directory,
                         net::URLRequestContext* request_context) override;
   void Open(const base::string16& name,
-            const IndexedDBPendingConnection& connection,
+            std::unique_ptr<IndexedDBPendingConnection> connection,
             net::URLRequestContext* request_context,
             const url::Origin& origin,
             const base::FilePath& data_directory) override;

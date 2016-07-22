@@ -27,14 +27,10 @@ class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacks;
+struct IndexedDBDataLossInfo;
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBReturnValue;
 struct IndexedDBValue;
-
-struct IndexedDBDataLossInfo {
-  blink::WebIDBDataLoss status = blink::WebIDBDataLossNone;
-  std::string message;
-};
 
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
@@ -67,11 +63,11 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnBlocked(int64_t existing_version);
 
   // IndexedDBFactory::Open
-  virtual void OnDataLoss(const IndexedDBDataLossInfo& data_loss_info);
   virtual void OnUpgradeNeeded(
       int64_t old_version,
       std::unique_ptr<IndexedDBConnection> connection,
-      const content::IndexedDBDatabaseMetadata& metadata);
+      const content::IndexedDBDatabaseMetadata& metadata,
+      const IndexedDBDataLossInfo& data_loss_info);
   virtual void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                          const content::IndexedDBDatabaseMetadata& metadata);
 
@@ -111,10 +107,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Continue / Advance (when complete)
   virtual void OnSuccess();
 
-  const IndexedDBDataLossInfo& data_loss_info() const {
-    return data_loss_info_;
-  }
-
   void SetConnectionOpenStartTime(const base::TimeTicks& start_time);
 
  protected:
@@ -141,7 +133,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   int32_t ipc_database_callbacks_id_;
 
   // Used to assert that OnSuccess is only called if there was no data loss.
-  IndexedDBDataLossInfo data_loss_info_;
+  blink::WebIDBDataLoss data_loss_;
 
   // The "blocked" event should be sent at most once per request.
   bool sent_blocked_;

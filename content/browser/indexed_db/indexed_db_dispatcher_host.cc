@@ -379,14 +379,14 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
       new IndexedDBDatabaseCallbacks(
           this, params.ipc_thread_id, params.ipc_database_callbacks_id);
-  IndexedDBPendingConnection connection(callbacks,
-                                        database_callbacks,
-                                        ipc_process_id_,
-                                        host_transaction_id,
-                                        params.version);
+  std::unique_ptr<IndexedDBPendingConnection> connection =
+      base::WrapUnique(new IndexedDBPendingConnection(
+          callbacks, database_callbacks, ipc_process_id_, host_transaction_id,
+          params.version));
   DCHECK(request_context_);
-  context()->GetIDBFactory()->Open(params.name, connection, request_context_,
-                                   params.origin, indexed_db_path);
+  context()->GetIDBFactory()->Open(params.name, std::move(connection),
+                                   request_context_, params.origin,
+                                   indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(

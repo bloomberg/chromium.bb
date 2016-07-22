@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/common/content_export.h"
 
@@ -31,6 +32,7 @@ struct CONTENT_EXPORT IndexedDBPendingConnection {
   int child_process_id;
   int64_t transaction_id;
   int64_t version;
+  IndexedDBDataLossInfo data_loss_info;
 };
 
 }  // namespace content
