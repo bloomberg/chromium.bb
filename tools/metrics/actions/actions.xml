@@ -13520,6 +13520,14 @@ should be able to be added at any place in this file.
   <obsolete>Removed from codebase.</obsolete>
 </action>
 
+<action name="Signin_MoreButton_Shown">
+  <owner>gogerald@chromium.org</owner>
+  <owner>bzanotti@chromium.org</owner>
+  <description>
+    Recorded when the More button is shown on the sign in confirmation screen.
+  </description>
+</action>
+
 <action name="Signin_Show_EnterpriseAccountPrompt">
   <owner>gogerald@chromium.org</owner>
   <description>
