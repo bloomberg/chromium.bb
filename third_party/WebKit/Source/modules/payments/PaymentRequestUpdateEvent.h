@@ -10,6 +10,7 @@
 #include "core/events/Event.h"
 #include "modules/ModulesExport.h"
 #include "modules/payments/PaymentRequestUpdateEventInit.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -31,6 +32,8 @@ public:
 
     void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
 
+    void onTimerFired(Timer<PaymentRequestUpdateEvent>*);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -39,6 +42,7 @@ private:
 
     Member<PaymentUpdater> m_updater;
     bool m_waitForUpdate;
+    Timer<PaymentRequestUpdateEvent> m_abortTimer;
 };
 
 } // namespace blink

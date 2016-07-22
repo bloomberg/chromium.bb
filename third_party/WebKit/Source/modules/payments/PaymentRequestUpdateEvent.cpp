@@ -9,9 +9,12 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/payments/PaymentUpdater.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace {
+
+static const int abortTimeout = 60; // Reject the payment request if the page does not resolve the promise from updateWith within 60 seconds.
 
 class UpdatePaymentDetailsFunction : public ScriptFunction {
 public:
@@ -93,6 +96,8 @@ PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::create(const AtomicString&
 
 void PaymentRequestUpdateEvent::setPaymentDetailsUpdater(PaymentUpdater* updater)
 {
+    DCHECK(!m_abortTimer.isActive());
+    m_abortTimer.startOneShot(abortTimeout, BLINK_FROM_HERE);
     m_updater = updater;
 }
 
@@ -113,9 +118,18 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* scriptState, ScriptPromi
 
     stopImmediatePropagation();
     m_waitForUpdate = true;
+    m_abortTimer.stop();
 
     promise.then(UpdatePaymentDetailsFunction::createFunction(scriptState, m_updater),
         UpdatePaymentDetailsErrorFunction::createFunction(scriptState, m_updater));
+}
+
+void PaymentRequestUpdateEvent::onTimerFired(Timer<PaymentRequestUpdateEvent>*)
+{
+    if (!m_updater)
+        return;
+
+    m_updater->onUpdatePaymentDetailsFailure(ScriptValue());
 }
 
 DEFINE_TRACE(PaymentRequestUpdateEvent)
@@ -126,12 +140,14 @@ DEFINE_TRACE(PaymentRequestUpdateEvent)
 
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent()
     : m_waitForUpdate(false)
+    , m_abortTimer(this, &PaymentRequestUpdateEvent::onTimerFired)
 {
 }
 
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(const AtomicString& type, const PaymentRequestUpdateEventInit& init)
     : Event(type, init)
     , m_waitForUpdate(false)
+    , m_abortTimer(this, &PaymentRequestUpdateEvent::onTimerFired)
 {
 }
 

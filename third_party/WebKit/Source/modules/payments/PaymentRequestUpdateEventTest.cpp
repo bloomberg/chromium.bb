@@ -101,5 +101,18 @@ TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired)
     EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
+TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout)
+{
+    V8TestingScope scope;
+    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create();
+    MockPaymentUpdater* updater = new MockPaymentUpdater;
+    event->setPaymentDetailsUpdater(updater);
+
+    EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_)).Times(0);
+    EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_));
+
+    event->onTimerFired(0);
+}
+
 } // namespace
 } // namespace blink
