@@ -4,7 +4,7 @@
 from page_sets.login_helpers import login_utils
 
 
-def LoginAccount(
+def LoginWithMobileSite(
     action_runner, credential,
     credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
   """Logs in into mobile Facebook account.
