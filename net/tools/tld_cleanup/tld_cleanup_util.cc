@@ -165,7 +165,7 @@ NormalizeResult NormalizeDataToRuleMap(const std::string data,
       line_end = data.find_first_of("\r\n \t", line_start);
       if (line_end == std::string::npos)
         line_end = data.size();
-      domain.assign(data.data(), line_start, line_end - line_start);
+      domain.assign(data, line_start, line_end - line_start);
 
       Rule rule;
       rule.wildcard = false;
