@@ -83,6 +83,9 @@ android_resources("chrome_java_resources") {
     "//content/public/android:content_java_resources",
     "//third_party/android_data_chart:android_data_chart_java_resources",
     "//third_party/android_media:android_media_resources",
+    "//third_party/android_tools:android_support_design_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_tools:android_support_v7_recyclerview_java",
   ]
   custom_package = "org.chromium.chrome"
 }
