@@ -123,7 +123,7 @@ void SpellCheckerClientImpl::checkSpellingOfString(const String& text, int* miss
 
     // Check to see if the provided text is spelled correctly.
     if (m_webView->spellCheckClient()) {
-        m_webView->spellCheckClient()->spellCheck(text, spellLocation, spellLength, 0);
+        m_webView->spellCheckClient()->spellCheck(text, spellLocation, spellLength, nullptr);
     } else {
         spellLocation = 0;
         spellLength = 0;
