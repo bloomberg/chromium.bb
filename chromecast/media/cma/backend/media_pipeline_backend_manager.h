@@ -23,6 +23,8 @@ namespace media {
 // All functions in this class should be called on the media thread.
 class MediaPipelineBackendManager {
  public:
+  enum DecoderType { AUDIO_DECODER, VIDEO_DECODER, NUM_DECODER_TYPES };
+
   explicit MediaPipelineBackendManager(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
   ~MediaPipelineBackendManager();
@@ -49,6 +51,11 @@ class MediaPipelineBackendManager {
  private:
   friend class MediaPipelineBackendWrapper;
 
+  // Backend wrapper instances must use these APIs when allocating and releasing
+  // decoder objects, so we can enforce global limit on #concurrent decoders.
+  bool IncrementDecoderCount(DecoderType type);
+  void DecrementDecoderCount(DecoderType type);
+
   // Internal clean up when a new media pipeline backend is destroyed.
   void OnMediaPipelineBackendDestroyed(const MediaPipelineBackend* backend);
 
@@ -58,6 +65,9 @@ class MediaPipelineBackendManager {
 
   // A vector that stores all of the existing media_pipeline_backends_.
   std::vector<MediaPipelineBackend*> media_pipeline_backends_;
+
+  // Total count of decoders created
+  int decoder_count_[NUM_DECODER_TYPES];
 
   // Volume multiplier for each type of audio streams.
   std::map<int, float> volume_by_stream_type_;

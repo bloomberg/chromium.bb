@@ -10,6 +10,8 @@
 namespace chromecast {
 namespace media {
 
+using DecoderType = MediaPipelineBackendManager::DecoderType;
+
 MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
     std::unique_ptr<MediaPipelineBackend> backend,
     int stream_type,
@@ -20,18 +22,27 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
       audio_decoder_wrapper_(nullptr),
       stream_type_volume_(stream_type_volume),
       is_initialized_(false),
+      have_video_decoder_(false),
       backend_manager_(backend_manager) {
   DCHECK(backend_);
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
   backend_manager_->OnMediaPipelineBackendDestroyed(this);
+
+  if (audio_decoder_wrapper_)
+    backend_manager_->DecrementDecoderCount(DecoderType::AUDIO_DECODER);
+  if (have_video_decoder_)
+    backend_manager_->DecrementDecoderCount(DecoderType::VIDEO_DECODER);
 }
 
 MediaPipelineBackend::AudioDecoder*
 MediaPipelineBackendWrapper::CreateAudioDecoder() {
   DCHECK(!is_initialized_);
   if (audio_decoder_wrapper_)
+    return nullptr;
+
+  if (!backend_manager_->IncrementDecoderCount(DecoderType::AUDIO_DECODER))
     return nullptr;
 
   audio_decoder_wrapper_.reset(
@@ -42,6 +53,12 @@ MediaPipelineBackendWrapper::CreateAudioDecoder() {
 MediaPipelineBackend::VideoDecoder*
 MediaPipelineBackendWrapper::CreateVideoDecoder() {
   DCHECK(!is_initialized_);
+  DCHECK(!have_video_decoder_);
+
+  if (!backend_manager_->IncrementDecoderCount(DecoderType::VIDEO_DECODER))
+    return nullptr;
+  have_video_decoder_ = true;
+
   return backend_->CreateVideoDecoder();
 }
 

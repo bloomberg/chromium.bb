@@ -49,6 +49,7 @@ class MediaPipelineBackendWrapper : public MediaPipelineBackend {
   std::unique_ptr<AudioDecoderWrapper> audio_decoder_wrapper_;
   float stream_type_volume_;
   bool is_initialized_;
+  bool have_video_decoder_;
   MediaPipelineBackendManager* const backend_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendWrapper);

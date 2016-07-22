@@ -16,6 +16,9 @@ namespace media {
 MediaPipelineBackendManager::MediaPipelineBackendManager(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
     : media_task_runner_(std::move(media_task_runner)) {
+  DCHECK_EQ(2, NUM_DECODER_TYPES);
+  decoder_count_[AUDIO_DECODER] = 0;
+  decoder_count_[VIDEO_DECODER] = 0;
 }
 
 MediaPipelineBackendManager::~MediaPipelineBackendManager() {
@@ -40,6 +43,26 @@ MediaPipelineBackendManager::CreateMediaPipelineBackend(
           stream_type, GetVolumeMultiplier(stream_type), this));
   media_pipeline_backends_.push_back(backend_ptr.get());
   return backend_ptr;
+}
+
+bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(type < NUM_DECODER_TYPES);
+  const int limit = (type == AUDIO_DECODER) ? 2 : 1;
+  if (decoder_count_[type] >= limit) {
+    LOG(WARNING) << "Decoder limit reached for type " << type;
+    return false;
+  }
+
+  ++decoder_count_[type];
+  return true;
+}
+
+void MediaPipelineBackendManager::DecrementDecoderCount(DecoderType type) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(type < NUM_DECODER_TYPES);
+  DCHECK(decoder_count_[type] > 0);
+  decoder_count_[type]--;
 }
 
 void MediaPipelineBackendManager::OnMediaPipelineBackendDestroyed(
