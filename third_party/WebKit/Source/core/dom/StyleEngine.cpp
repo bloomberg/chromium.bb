@@ -192,7 +192,6 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node)
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
-    DCHECK(isStyleElement(*node) || treeScope == m_document);
     DCHECK(!isXSLStyleSheet(*node));
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     DCHECK(collection);
