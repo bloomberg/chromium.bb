@@ -625,13 +625,6 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
-     * @return Whether the GIF animation is playing in the logo.
-     */
-    boolean isAnimatedLogoShowing() {
-        return mSearchProviderLogoView.isAnimatedLogoShowing();
-    }
-
-    /**
      * @return Whether URL focus animations are currently disabled.
      */
     boolean urlFocusAnimationsDisabled() {

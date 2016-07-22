@@ -134,7 +134,7 @@ public class LogoView extends FrameLayout implements OnClickListener {
     /**
      * @return True after we receive an animated logo from the server.
      */
-    public boolean isAnimatedLogoShowing() {
+    private boolean isAnimatedLogoShowing() {
         return mAnimatedLogoDrawable != null;
     }
 
