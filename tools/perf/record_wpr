@@ -25,10 +25,9 @@ def _WarnPythonVersion():
           'For best recording results, please run record_wpr with Python '
           'version 2.7.9 or after (See '
           'https://github.com/chromium/web-page-replay/issues/73 '
-          'for more information).'))
-
-  print ('For instructions on how to upgrade Python on Ubuntu 14.04, see:\n'
-         'http://mbless.de/blog/2016/01/09/upgrade-to-python-2711-on-ubuntu-1404-lts.html')
+          'for more information).\n'
+          'For instructions on how to upgrade Python on Ubuntu 14.04, see:\n'
+          'http://mbless.de/blog/2016/01/09/upgrade-to-python-2711-on-ubuntu-1404-lts.html'))
 
 
 if __name__ == '__main__':
