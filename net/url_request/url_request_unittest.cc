@@ -9463,8 +9463,6 @@ static const struct OCSPVerifyTestData {
 
 };
 
-// Flaky on Android Tests (dbg) bot, crbug.com/630286.
-#if !defined(OS_ANDROID)
 class HTTPSOCSPVerifyTest
     : public HTTPSOCSPTest,
       public testing::WithParamInterface<OCSPVerifyTestData> {};
@@ -9499,7 +9497,6 @@ TEST_P(HTTPSOCSPVerifyTest, VerifyResult) {
 INSTANTIATE_TEST_CASE_P(OCSPVerify,
                         HTTPSOCSPVerifyTest,
                         testing::ValuesIn(kOCSPVerifyData));
-#endif
 
 class HTTPSHardFailTest : public HTTPSOCSPTest {
  protected:

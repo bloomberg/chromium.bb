@@ -1941,10 +1941,6 @@ class ServerRunner(testserver_base.TestServerRunner):
               ocsp_date = minica.OCSP_DATE_EARLY
             elif ocsp_date_arg == 'long':
               ocsp_date = minica.OCSP_DATE_LONG
-            elif ocsp_date_arg == 'before_cert':
-              ocsp_date = minica.OCSP_DATE_AFTER_CERT
-            elif ocsp_date_arg == 'after_cert':
-              ocsp_date = minica.OCSP_DATE_AFTER_CERT
             else:
               raise testserver_base.OptionError('unknown OCSP date: ' +
                   ocsp_date_arg)

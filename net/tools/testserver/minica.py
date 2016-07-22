@@ -287,20 +287,14 @@ def MakeOCSPSingleResponse(
     thisUpdate = now - datetime.timedelta(days=1)
     nextUpdate = thisUpdate + datetime.timedelta(weeks=1)
   elif ocsp_date == OCSP_DATE_OLD:
-    thisUpdate = now - datetime.timedelta(hours=1, weeks=1)
+    thisUpdate = now - datetime.timedelta(days=1, weeks=1)
     nextUpdate = thisUpdate + datetime.timedelta(weeks=1)
   elif ocsp_date == OCSP_DATE_EARLY:
-    thisUpdate = now + datetime.timedelta(hours=1)
+    thisUpdate = now + datetime.timedelta(days=1)
     nextUpdate = thisUpdate + datetime.timedelta(weeks=1)
   elif ocsp_date == OCSP_DATE_LONG:
     thisUpdate = now - datetime.timedelta(days=365)
-    nextUpdate = thisUpdate + datetime.timedelta(hours=1, days=365)
-  elif ocsp_date == OCSP_DATE_BEFORE_CERT:
-    thisUpdate = now - datetime.timedelta(days=1)
-    nextUpdate = thisUpdate + datetime.timedelta(weeks=1)
-  elif ocsp_date == OCSP_DATE_AFTER_CERT:
-    thisUpdate = now - datetime.timedelta(days=1)
-    nextUpdate = thisUpdate + datetime.timedelta(weeks=1)
+    nextUpdate = thisUpdate + datetime.timedelta(days=366)
   else:
     raise ValueError('Bad OCSP date: ' + str(ocsp_date))
 
