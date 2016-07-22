@@ -68,7 +68,7 @@ void SpeculationsPumpSession::addedElementTokens(size_t count)
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
     : m_parser(parser)
-    , m_loadingTaskRunner(wrapUnique(loadingTaskRunner->clone()))
+    , m_loadingTaskRunner(loadingTaskRunner->clone())
     , m_cancellableContinueParse(CancellableTaskFactory::create(this, &HTMLParserScheduler::continueParsing))
     , m_isSuspendedWithActiveTimer(false)
 {

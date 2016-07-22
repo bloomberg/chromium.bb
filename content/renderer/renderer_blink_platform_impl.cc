@@ -315,7 +315,7 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      base::WrapUnique(currentThread()->getWebTaskRunner()->clone()));
+      currentThread()->getWebTaskRunner()->clone());
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

@@ -550,7 +550,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetRequestContextFrameTypeForWebURLRequest(request);
   request_info.extra_data = request.getExtraData();
   request_info.report_raw_headers = request.reportRawHeaders();
-  request_info.loading_web_task_runner.reset(web_task_runner_->clone());
+  request_info.loading_web_task_runner = web_task_runner_->clone();
   request_info.lofi_state = static_cast<LoFiState>(request.getLoFiState());
 
   scoped_refptr<ResourceRequestBodyImpl> request_body =
@@ -1187,7 +1187,7 @@ void WebURLLoaderImpl::setLoadingTaskRunner(
     blink::WebTaskRunner* loading_task_runner) {
   // There's no guarantee on the lifetime of |loading_task_runner| so we take a
   // copy.
-  context_->SetWebTaskRunner(base::WrapUnique(loading_task_runner->clone()));
+  context_->SetWebTaskRunner(loading_task_runner->clone());
 }
 
 // This function is implemented here because it uses net functions. it is

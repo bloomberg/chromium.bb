@@ -447,7 +447,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_compositorPendingAnimations(new CompositorPendingAnimations())
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
-    , m_timers(TaskRunnerHelper::getTimerTaskRunner(this)->adoptClone())
+    , m_timers(TaskRunnerHelper::getTimerTaskRunner(this)->clone())
     , m_hasViewportUnits(false)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
     , m_nodeCount(0)
@@ -2232,7 +2232,7 @@ void Document::detach(const AttachContext& context)
     }
 
     m_timers.setTimerTaskRunner(
-        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone());
+        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone());
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never

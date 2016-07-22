@@ -63,7 +63,6 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-
 namespace {
 
 void removeURLFromMemoryCacheInternal(const KURL& url)
@@ -297,7 +296,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)
-    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone())
+    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone())
     , m_timeOrigin(timeOrigin)
     , m_consoleMessageStorage(new ConsoleMessageStorage())
 {

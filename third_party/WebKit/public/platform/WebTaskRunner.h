@@ -7,11 +7,10 @@
 
 #include "WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
+#include <memory>
 
 #ifdef INSIDE_BLINK
 #include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 #endif
 
 namespace blink {
@@ -36,7 +35,7 @@ public:
     virtual void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) = 0;
 
     // Returns a clone of the WebTaskRunner.
-    virtual WebTaskRunner* clone() = 0;
+    virtual std::unique_ptr<WebTaskRunner> clone() = 0;
 
     // Returns true if the current thread is a thread on which a task may be run.
     // Can be called from any thread.
@@ -70,11 +69,6 @@ public:
     // For same-thread posting. Must be called from the associated WebThread.
     void postTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
     void postDelayedTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>, long long delayMs);
-
-    std::unique_ptr<WebTaskRunner> adoptClone()
-    {
-        return wrapUnique(clone());
-    }
 #endif
 };
 

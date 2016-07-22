@@ -31,7 +31,7 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   bool runsTasksOnCurrentThread() override;
   double virtualTimeSeconds() const override;
   double monotonicallyIncreasingVirtualTimeSeconds() const override;
-  blink::WebTaskRunner* clone() override;
+  std::unique_ptr<blink::WebTaskRunner> clone() override;
 
   // blink::WebTaskRunner::Task should be wrapped by base::Passed() when
   // used with base::Bind(). See https://crbug.com/551356.

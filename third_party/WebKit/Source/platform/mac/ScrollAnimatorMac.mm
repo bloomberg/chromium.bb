@@ -683,7 +683,7 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     : ScrollAnimatorBase(scrollableArea)
     , m_initialScrollbarPaintTaskFactory(CancellableTaskFactory::create(this, &ScrollAnimatorMac::initialScrollbarPaintTask))
     , m_sendContentAreaScrolledTaskFactory(CancellableTaskFactory::create(this, &ScrollAnimatorMac::sendContentAreaScrolledTask))
-    , m_taskRunner(wrapUnique(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone()))
+    , m_taskRunner(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone())
     , m_haveScrolledSincePageLoad(false)
     , m_needsScrollerStyleUpdate(false)
 {

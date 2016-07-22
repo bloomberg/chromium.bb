@@ -181,7 +181,7 @@ public:
         , m_queueTailPosition(0)
         , m_bookmarkPosition(0)
         , m_lengthOfBOM(0)
-        , m_loadingTaskRunner(wrapUnique(loadingTaskRunner->clone()))
+        , m_loadingTaskRunner(loadingTaskRunner->clone())
     {
     }
 
@@ -590,7 +590,7 @@ ScriptStreamer::ScriptStreamer(PendingScript* script, Type scriptType, ScriptSta
     , m_scriptURLString(m_resource->url().copy().getString())
     , m_scriptResourceIdentifier(m_resource->identifier())
     , m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE) // Unfortunately there's no dummy encoding value in the enum; let's use one we don't stream.
-    , m_loadingTaskRunner(wrapUnique(loadingTaskRunner->clone()))
+    , m_loadingTaskRunner(loadingTaskRunner->clone())
 {
 }
 

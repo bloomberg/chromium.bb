@@ -94,7 +94,7 @@ public:
         return true;
     }
 
-    WebTaskRunner* clone() override
+    std::unique_ptr<WebTaskRunner> clone() override
     {
         NOTREACHED();
         return nullptr;

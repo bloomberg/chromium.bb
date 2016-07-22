@@ -112,7 +112,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy c
     , m_options(&document)
     , m_token(syncPolicy == ForceSynchronousParsing ? wrapUnique(new HTMLToken) : nullptr)
     , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
-    , m_loadingTaskRunner(wrapUnique(TaskRunnerHelper::getLoadingTaskRunner(&document)->clone()))
+    , m_loadingTaskRunner(TaskRunnerHelper::getLoadingTaskRunner(&document)->clone())
     , m_parserScheduler(syncPolicy == AllowAsynchronousParsing ? HTMLParserScheduler::create(this, m_loadingTaskRunner.get()) : nullptr)
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
@@ -747,7 +747,7 @@ void HTMLDocumentParser::startBackgroundParser()
         document()->url(),
         passed(CachedDocumentParameters::create(document())),
         MediaValuesCached::MediaValuesCachedData(*document()),
-        passed(wrapUnique(m_loadingTaskRunner->clone())));
+        passed(m_loadingTaskRunner->clone()));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()

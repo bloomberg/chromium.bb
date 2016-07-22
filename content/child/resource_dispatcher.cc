@@ -594,7 +594,7 @@ int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
       request_info.loading_web_task_runner) {
     resource_scheduling_filter_->SetRequestIdTaskRunner(
         request_id,
-        base::WrapUnique(request_info.loading_web_task_runner->clone()));
+        request_info.loading_web_task_runner->clone());
   }
 
   message_sender_->Send(new ResourceHostMsg_RequestResource(

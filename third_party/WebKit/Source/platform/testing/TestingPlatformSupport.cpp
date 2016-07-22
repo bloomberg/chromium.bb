@@ -90,9 +90,9 @@ public:
         return true;
     }
 
-    WebTaskRunner* clone() override
+    std::unique_ptr<WebTaskRunner> clone() override
     {
-        return new TestingPlatformMockWebTaskRunner(m_tasks);
+        return WTF::wrapUnique(new TestingPlatformMockWebTaskRunner(m_tasks));
     }
 
     double virtualTimeSeconds() const override

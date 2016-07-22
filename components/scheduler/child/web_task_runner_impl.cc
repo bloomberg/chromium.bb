@@ -60,8 +60,8 @@ base::TimeTicks WebTaskRunnerImpl::Now() const {
   return time_domain->Now();
 }
 
-blink::WebTaskRunner* WebTaskRunnerImpl::clone() {
-  return new WebTaskRunnerImpl(task_queue_);
+std::unique_ptr<blink::WebTaskRunner> WebTaskRunnerImpl::clone() {
+  return base::WrapUnique(new WebTaskRunnerImpl(task_queue_));
 }
 
 void WebTaskRunnerImpl::runTask(
