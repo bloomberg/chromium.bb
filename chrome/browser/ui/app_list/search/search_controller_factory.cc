@@ -33,7 +33,7 @@ namespace app_list {
 namespace {
 
 // Maximum number of results to show in each mixer group.
-const size_t kMaxAppsGroupResults = 4;
+const size_t kMaxAppsGroupResults = 8;
 const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
 const size_t kMaxSuggestionsResults = 6;

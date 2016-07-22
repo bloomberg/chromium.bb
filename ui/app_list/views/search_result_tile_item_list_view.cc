@@ -14,13 +14,12 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 
 namespace {
 
 // Layout constants.
-const size_t kNumSearchResultTiles = 5;
-const int kTileSpacing = 7;
+const size_t kNumSearchResultTiles = 8;
 const int kTopBottomPadding = 8;
 
 }  // namespace
@@ -31,8 +30,15 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
     : search_box_(search_box) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing));
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                          views::GridLayout::USE_PREF, 0, 0);
+  }
+  layout->StartRow(0, 0);
+
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
     SearchResultTileItemView* tile_item =
         new SearchResultTileItemView(this, view_delegate);
@@ -40,7 +46,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     tile_item->SetBorder(views::Border::CreateEmptyBorder(
         kTopBottomPadding, 0, kTopBottomPadding, 0));
     tile_views_.push_back(tile_item);
-    AddChildView(tile_item);
+    layout->AddView(tile_item);
   }
 }
 
