@@ -2,7 +2,6 @@
 <head>
   <script type="text/javascript" src="webrtc_test_utilities.js"></script>
   <script type="text/javascript" src="webrtc_test_common.js"></script>
-  <script type="text/javascript" src="webrtc_test_audio.js"></script>
   <script type="text/javascript">
   $ = function(id) {
     return document.getElementById(id);
@@ -21,7 +20,6 @@
   var gSentTones = '';
 
   var gRemoteStreams = {};
-
 
   setAllEventsOccuredHandler(reportTestSuccess);
 
@@ -96,28 +94,6 @@
           addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
       waitForVideo('remote-view-1');
       waitForVideo('remote-view-2');
-    });
-  }
-
-  // The second set of constraints should request audio (e.g. audio:true) since
-  // we expect audio to be playing after the second renegotiation.
-  function callAndRenegotiateToAudio(constraints, renegotiationConstraints) {
-    createConnections(null);
-    navigator.webkitGetUserMedia(constraints,
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-
-    waitForConnectionToStabilize(gFirstConnection, function() {
-      gFirstConnection.removeStream(gLocalStream);
-      gSecondConnection.removeStream(gLocalStream);
-
-      navigator.webkitGetUserMedia(renegotiationConstraints,
-          addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
-
-      var onCallEstablished = function() {
-        ensureAudioPlaying(gSecondConnection);
-      };
-
-      waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
     });
   }
 
@@ -270,33 +246,6 @@
         offerOptions);
   }
 
-  function callAndEnsureAudioIsPlaying(constraints) {
-    createConnections(null);
-
-    // Add the local stream to gFirstConnection to play one-way audio.
-    navigator.webkitGetUserMedia(constraints,
-      addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
-
-    var onCallEstablished = function() {
-      ensureAudioPlaying(gSecondConnection);
-    };
-
-    waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
-  }
-
-  function callWithIsac16KAndEnsureAudioIsPlaying(constraints) {
-    setOfferSdpTransform(function(sdp) {
-      sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
-                        'm=audio $1 RTP/SAVPF 103 126\r\n');
-      sdp = sdp.replace('a=fmtp:111 minptime=10', 'a=fmtp:103 minptime=10');
-      if (sdp.search('a=rtpmap:103 ISAC/16000') == -1)
-        failTest('Missing iSAC 16K codec on Android; cannot force codec.');
-
-      return sdp;
-    });
-    callAndEnsureAudioIsPlaying(constraints);
-  }
-
   function enableRemoteVideo(peerConnection, enabled) {
     remoteStream = peerConnection.getRemoteStreams()[0];
     remoteStream.getVideoTracks()[0].enabled = enabled;
@@ -305,78 +254,6 @@
   function enableRemoteAudio(peerConnection, enabled) {
     remoteStream = peerConnection.getRemoteStreams()[0];
     remoteStream.getAudioTracks()[0].enabled = enabled;
-  }
-
-  function enableLocalVideo(peerConnection, enabled) {
-    localStream = peerConnection.getLocalStreams()[0];
-    localStream.getVideoTracks()[0].enabled = enabled;
-  }
-
-  function enableLocalAudio(peerConnection, enabled) {
-    localStream = peerConnection.getLocalStreams()[0];
-    localStream.getAudioTracks()[0].enabled = enabled;
-  }
-
-  function callAndEnsureRemoteAudioTrackMutingWorks() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-
-      // Call is up, now mute the remote track and check we stop playing out
-      // audio (after a small delay, we don't expect it to happen instantly).
-      enableRemoteAudio(gSecondConnection, false);
-      ensureSilence(gSecondConnection);
-    });
-  }
-
-  function callAndEnsureLocalAudioTrackMutingWorks() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-
-      // Call is up, now mute the local track of the sending side and ensure
-      // the receiving side stops receiving audio.
-      enableLocalAudio(gFirstConnection, false);
-      ensureSilence(gSecondConnection);
-    });
-  }
-
-  function callAndEnsureAudioTrackUnmutingWorks() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-
-      // Mute, wait a while, unmute, verify audio gets back up.
-      // (Also, ensure video muting doesn't affect audio).
-      enableRemoteAudio(gSecondConnection, false);
-      enableRemoteVideo(gSecondConnection, false);
-
-      setTimeout(function() {
-        enableRemoteAudio(gSecondConnection, true);
-      }, 500);
-
-      setTimeout(function() {
-        ensureAudioPlaying(gSecondConnection);
-      }, 1500);
-    });
-  }
-
-  function callAndEnsureLocalVideoMutingDoesntMuteAudio() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-      enableLocalVideo(gFirstConnection, false);
-      ensureAudioPlaying(gSecondConnection);
-    });
-  }
-
-  function callAndEnsureRemoteVideoMutingDoesntMuteAudio() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-      enableRemoteVideo(gSecondConnection, false);
-      ensureAudioPlaying(gSecondConnection);
-    });
   }
 
   function callAndEnsureVideoTrackMutingWorks() {
@@ -709,7 +586,6 @@
   function removeBundle(sdp) {
     return sdp.replace(/a=group:BUNDLE .*\r\n/g, '');
   }
-
 
   function onRemoteStream(e, target) {
     console.log("Receiving remote stream...");

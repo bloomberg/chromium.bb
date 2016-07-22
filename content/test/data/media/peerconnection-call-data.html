@@ -3,7 +3,6 @@
 <head>
   <script type="text/javascript" src="webrtc_test_utilities.js"></script>
   <script type="text/javascript" src="webrtc_test_common.js"></script>
-  <script type="text/javascript" src="webrtc_test_audio.js"></script>
   <script type="text/javascript">
   $ = function(id) {
     return document.getElementById(id);
@@ -17,7 +16,6 @@
 
   var gFirstConnection = null;
   var gSecondConnection = null;
-  var gTestWithoutMsid = false;
   var gLocalStream = null;
 
   var gRemoteStreams = {};
@@ -235,10 +233,6 @@
 
   function onRemoteStream(e, target) {
     console.log("Receiving remote stream...");
-    if (gTestWithoutMsid && e.stream.id != "default") {
-      failTest('a default remote stream was expected but instead ' +
-          e.stream.id + ' was received.');
-    }
     gRemoteStreams[target] = e.stream;
     var remoteStreamUrl = URL.createObjectURL(e.stream);
     var remoteVideo = $(target);
