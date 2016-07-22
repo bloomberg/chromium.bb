@@ -170,7 +170,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_inStopAllLoaders(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_didAccessInitialDocument(false)
-    , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_forcedSandboxFlags(SandboxNone)
     , m_dispatchingDidClearWindowObjectInMainWorld(false)
     , m_protectProvisionalLoader(false)
@@ -1066,22 +1065,12 @@ void FrameLoader::didAccessInitialDocument()
     // We only need to notify the client once, and only for the main frame.
     if (isLoadingMainFrame() && !m_didAccessInitialDocument) {
         m_didAccessInitialDocument = true;
-        // Notify asynchronously, since this is called within a JavaScript security check.
-        m_didAccessInitialDocumentTimer.startOneShot(0, BLINK_FROM_HERE);
-    }
-}
 
-void FrameLoader::didAccessInitialDocumentTimerFired(Timer<FrameLoader>*)
-{
-    if (client())
-        client()->didAccessInitialDocument();
-}
-
-void FrameLoader::notifyIfInitialDocumentAccessed()
-{
-    if (m_didAccessInitialDocumentTimer.isActive()) {
-        m_didAccessInitialDocumentTimer.stop();
-        didAccessInitialDocumentTimerFired(0);
+        // Forbid script execution to prevent re-entering V8, since this is
+        // called from a binding security check.
+        ScriptForbiddenScope forbidScripts;
+        if (client())
+            client()->didAccessInitialDocument();
     }
 }
 

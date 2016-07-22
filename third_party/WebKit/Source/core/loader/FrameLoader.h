@@ -100,15 +100,11 @@ public:
 
     void replaceDocumentWhileExecutingJavaScriptURL(const String& source, Document* ownerDocument);
 
-    // Sets a timer to notify the client that the initial empty document has
-    // been accessed, and thus it is no longer safe to show a provisional URL
-    // above the document without risking a URL spoof.
+    // Notifies the client that the initial empty document has been accessed,
+    // and thus it is no longer safe to show a provisional URL above the
+    // document without risking a URL spoof. The client must not call back into
+    // JavaScript.
     void didAccessInitialDocument();
-
-    // If the initial empty document is showing and has been accessed, this
-    // cancels the timer and immediately notifies the client in cases that
-    // waiting to notify would allow a URL spoof.
-    void notifyIfInitialDocumentAccessed();
 
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
@@ -281,7 +277,6 @@ private:
     Timer<FrameLoader> m_checkTimer;
 
     bool m_didAccessInitialDocument;
-    Timer<FrameLoader> m_didAccessInitialDocumentTimer;
 
     SandboxFlags m_forcedSandboxFlags;
 

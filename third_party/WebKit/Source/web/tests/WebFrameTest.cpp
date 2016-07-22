@@ -5545,13 +5545,13 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
     runPendingTasks();
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
-    // Access the initial document by modifying the body. We normally set a
-    // timer to notify the client.
+    // Access the initial document by modifying the body.
     newView->mainFrame()->executeScript(
         WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
-    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 
-    // Make sure that a modal dialog forces us to notify right away.
+    // Run a modal dialog, which used to run a nested message loop and require
+    // a special case for notifying about the access.
     newView->mainFrame()->executeScript(
         WebScriptSource("window.opener.confirm('Modal');"));
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
@@ -5585,13 +5585,13 @@ TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
     // Access the initial document with document.write, which moves us past the
-    // initial empty document state of the state machine. We normally set a
-    // timer to notify the client.
+    // initial empty document state of the state machine.
     newView->mainFrame()->executeScript(
         WebScriptSource("window.opener.document.write('Modified'); window.opener.document.close();"));
-    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 
-    // Make sure that a modal dialog forces us to notify right away.
+    // Run a modal dialog, which used to run a nested message loop and require
+    // a special case for notifying about the access.
     newView->mainFrame()->executeScript(
         WebScriptSource("window.opener.confirm('Modal');"));
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);

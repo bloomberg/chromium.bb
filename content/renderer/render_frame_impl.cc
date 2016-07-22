@@ -2769,6 +2769,9 @@ RenderFrameImpl::createServiceWorkerProvider() {
 }
 
 void RenderFrameImpl::didAccessInitialDocument() {
+  // NOTE: Do not call back into JavaScript here, since this call is made from a
+  // V8 security check.
+
   // If the request hasn't yet committed, notify the browser process that it is
   // no longer safe to show the pending URL of the main frame, since a URL spoof
   // is now possible. (If the request has committed, the browser already knows.)
