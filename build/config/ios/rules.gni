@@ -841,6 +841,7 @@ template("ios_framework_bundle") {
       visibility = [
         ":$_target_name$_toolchain_suffix",
         ":$_target_name+link$_toolchain_suffix",
+        ":$_target_name+bundle$_toolchain_suffix",
       ]
       configs += [ ":$_headers_map_config$_toolchain_suffix" ]
 
@@ -882,6 +883,25 @@ template("ios_framework_bundle") {
                              ])
       public_deps = [
         ":$_framework_target+link$_toolchain_suffix",
+      ]
+    }
+  }
+
+  if (!_is_fat_build || _is_fat_build_main_target) {
+    bundle_data(_target_name + "+bundle") {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                             ])
+      public_deps = [
+        ":$_framework_target",
+      ]
+      sources = [
+        "$root_out_dir/$_output_name.framework",
+      ]
+      outputs = [
+        "{{bundle_resources_dir}}/Frameworks/$_output_name.framework",
       ]
     }
   }
