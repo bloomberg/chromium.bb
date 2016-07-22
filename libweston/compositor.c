@@ -455,6 +455,7 @@ weston_surface_create(struct weston_compositor *compositor)
 		return NULL;
 
 	wl_signal_init(&surface->destroy_signal);
+	wl_signal_init(&surface->commit_signal);
 
 	surface->compositor = compositor;
 	surface->ref_count = 1;
@@ -2888,6 +2889,8 @@ weston_surface_commit_state(struct weston_surface *surface,
 	wl_list_insert_list(&surface->feedback_list,
 			    &state->feedback_list);
 	wl_list_init(&state->feedback_list);
+
+	wl_signal_emit(&surface->commit_signal, surface);
 }
 
 static void
