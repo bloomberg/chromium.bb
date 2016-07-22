@@ -1804,7 +1804,6 @@ body.check-select #list-container li[selected] .detail-checkmark {
 #list-container list li .detail-thumbnail {
   height: 28px;
   overflow: hidden;
-  position: absolute;
   width: 28px;
 }
 
@@ -1816,7 +1815,6 @@ body.check-select #list-container li[selected] .detail-checkmark {
   border-radius: 14px;
   height: 100%;
   opacity: 1;
-  position: absolute;
   width: 100%;
 }
 
