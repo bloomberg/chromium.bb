@@ -1478,15 +1478,13 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
 
 // Sent when the renderer displays content that was loaded with
 // certificate errors.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidDisplayContentWithCertificateErrors,
-                    GURL /* resource url */,
-                    std::string /* serialized security info */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidDisplayContentWithCertificateErrors,
+                    GURL /* resource url */)
 
 // Sent when the renderer runs content that was loaded with certificate
 // errors.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunContentWithCertificateErrors,
-                    GURL /* resource url */,
-                    std::string /* serialized security info */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidRunContentWithCertificateErrors,
+                    GURL /* resource url */)
 
 // Response to FrameMsg_GetSavableResourceLinks.
 IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,

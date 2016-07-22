@@ -31,7 +31,6 @@ struct LoadCommittedDetails;
 struct LoadFromMemoryCacheDetails;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
-struct SSLStatus;
 
 // The SSLManager SSLManager controls the SSL UI elements in a WebContents.  It
 // listens for various events that influence when these elements should or

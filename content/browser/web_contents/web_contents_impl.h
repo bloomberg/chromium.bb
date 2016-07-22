@@ -905,11 +905,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const GURL& security_origin,
                                const GURL& target_url);
-  void OnDidDisplayContentWithCertificateErrors(
-      const GURL& url,
-      const std::string& security_info);
-  void OnDidRunContentWithCertificateErrors(const GURL& url,
-                                            const std::string& security_info);
+  void OnDidDisplayContentWithCertificateErrors(const GURL& url);
+  void OnDidRunContentWithCertificateErrors(const GURL& url);
   void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(const GURL& url);
   void OnGoToEntryAtOffset(int offset);

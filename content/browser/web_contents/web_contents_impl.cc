@@ -3478,8 +3478,7 @@ void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
 }
 
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
-    const GURL& url,
-    const std::string& security_info) {
+    const GURL& url) {
   // Check that the main frame navigation entry has a cryptographic
   // scheme; the security UI is associated with the main frame rather
   // than the subframe (if any) that actually displayed the subresource
@@ -3487,14 +3486,6 @@ void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
   NavigationEntry* entry = controller_.GetLastCommittedEntry();
   if (!entry || !entry->GetURL().SchemeIsCryptographic())
     return;
-
-  SSLStatus ssl;
-  if (!DeserializeSecurityInfo(security_info, &ssl)) {
-    bad_message::ReceivedBadMessage(
-        GetRenderProcessHost(),
-        bad_message::WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO);
-    return;
-  }
 
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(
@@ -3502,8 +3493,7 @@ void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
 }
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
-    const GURL& url,
-    const std::string& security_info) {
+    const GURL& url) {
   // Check that the main frame navigation entry has a cryptographic
   // scheme; the security UI is associated with the main frame rather
   // than the subframe (if any) that actually displayed the subresource
@@ -3511,14 +3501,6 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
   NavigationEntry* entry = controller_.GetLastCommittedEntry();
   if (!entry || !entry->GetURL().SchemeIsCryptographic())
     return;
-
-  SSLStatus ssl;
-  if (!DeserializeSecurityInfo(security_info, &ssl)) {
-    bad_message::ReceivedBadMessage(
-        GetRenderProcessHost(),
-        bad_message::WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO);
-    return;
-  }
 
   // TODO(estark): check that this does something reasonable for
   // about:blank and sandboxed origins. https://crbug.com/609527

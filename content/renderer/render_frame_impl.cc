@@ -827,8 +827,6 @@ bool IsContentWithCertificateErrorsRelevantToUI(
   // subresource errors duplicative.
   return (!url::Origin(GURL(url)).IsSameOriginWith(
               url::Origin(GURL(main_ds->request().url()))) ||
-          main_resource_ssl_status.security_style !=
-              ssl_status.security_style ||
           main_resource_ssl_status.cert_id != ssl_status.cert_id ||
           main_resource_ssl_status.cert_status != ssl_status.cert_status ||
           main_resource_ssl_status.security_bits != ssl_status.security_bits ||
@@ -4218,17 +4216,15 @@ void RenderFrameImpl::didDisplayContentWithCertificateErrors(
     const blink::WebCString& security_info) {
   if (IsContentWithCertificateErrorsRelevantToUI(frame_, url, security_info)) {
     Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
-        routing_id_, url, security_info));
+        routing_id_, url));
   }
 }
 
 void RenderFrameImpl::didRunContentWithCertificateErrors(
     const blink::WebURL& url,
     const blink::WebCString& security_info) {
-  if (IsContentWithCertificateErrorsRelevantToUI(frame_, url, security_info)) {
-    Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_, url,
-                                                             security_info));
-  }
+  if (IsContentWithCertificateErrorsRelevantToUI(frame_, url, security_info))
+    Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_, url));
 }
 
 void RenderFrameImpl::didChangePerformanceTiming() {

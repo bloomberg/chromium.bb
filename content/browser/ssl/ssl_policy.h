@@ -21,7 +21,6 @@ class SSLCertErrorHandler;
 class SSLPolicyBackend;
 class SSLRequestInfo;
 class WebContents;
-struct SSLStatus;
 
 // SSLPolicy
 //
