@@ -155,9 +155,7 @@ Polymer({
         e.canExecute = true;
         break;
       case 'slash-command':
-        e.canExecute =
-            !(this.$.toolbar.searchBar.showingSearch &&
-              this.$.toolbar.searchBar.isSearchFocused());
+        e.canExecute = !this.$.toolbar.searchBar.isSearchFocused();
         break;
       case 'delete-command':
         e.canExecute = this.$.toolbar.count > 0;
