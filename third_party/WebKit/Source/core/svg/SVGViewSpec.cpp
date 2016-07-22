@@ -25,7 +25,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "platform/ParsingUtilities.h"
+#include "platform/text/ParserUtilities.h"
 
 namespace blink {
 
@@ -132,10 +132,17 @@ void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& exceptionState)
     exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
+static const LChar svgViewSpec[] = {'s', 'v', 'g', 'V', 'i', 'e', 'w'};
+static const LChar viewBoxSpec[] = {'v', 'i', 'e', 'w', 'B', 'o', 'x'};
+static const LChar preserveAspectRatioSpec[] = {'p', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'A', 's', 'p', 'e', 'c', 't', 'R', 'a', 't', 'i', 'o'};
+static const LChar transformSpec[] = {'t', 'r', 'a', 'n', 's', 'f', 'o', 'r', 'm'};
+static const LChar zoomAndPanSpec[] = {'z', 'o', 'o', 'm', 'A', 'n', 'd', 'P', 'a', 'n'};
+static const LChar viewTargetSpec[] =  {'v', 'i', 'e', 'w', 'T', 'a', 'r', 'g', 'e', 't'};
+
 template<typename CharType>
 bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end)
 {
-    if (!skipToken(ptr, end, "svgView"))
+    if (!skipString(ptr, end, svgViewSpec, WTF_ARRAY_LENGTH(svgViewSpec)))
         return false;
 
     if (ptr >= end || *ptr != '(')
@@ -144,7 +151,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
 
     while (ptr < end && *ptr != ')') {
         if (*ptr == 'v') {
-            if (skipToken(ptr, end, "viewBox")) {
+            if (skipString(ptr, end, viewBoxSpec, WTF_ARRAY_LENGTH(viewBoxSpec))) {
                 if (ptr >= end || *ptr != '(')
                     return false;
                 ptr++;
@@ -158,7 +165,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
                 if (ptr >= end || *ptr != ')')
                     return false;
                 ptr++;
-            } else if (skipToken(ptr, end, "viewTarget")) {
+            } else if (skipString(ptr, end, viewTargetSpec, WTF_ARRAY_LENGTH(viewTargetSpec))) {
                 if (ptr >= end || *ptr != '(')
                     return false;
                 const CharType* viewTargetStart = ++ptr;
@@ -171,7 +178,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
             } else
                 return false;
         } else if (*ptr == 'z') {
-            if (!skipToken(ptr, end, "zoomAndPan"))
+            if (!skipString(ptr, end, zoomAndPanSpec, WTF_ARRAY_LENGTH(zoomAndPanSpec)))
                 return false;
             if (ptr >= end || *ptr != '(')
                 return false;
@@ -182,7 +189,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
                 return false;
             ptr++;
         } else if (*ptr == 'p') {
-            if (!skipToken(ptr, end, "preserveAspectRatio"))
+            if (!skipString(ptr, end, preserveAspectRatioSpec, WTF_ARRAY_LENGTH(preserveAspectRatioSpec)))
                 return false;
             if (ptr >= end || *ptr != '(')
                 return false;
@@ -193,7 +200,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
                 return false;
             ptr++;
         } else if (*ptr == 't') {
-            if (!skipToken(ptr, end, "transform"))
+            if (!skipString(ptr, end, transformSpec, WTF_ARRAY_LENGTH(transformSpec)))
                 return false;
             if (ptr >= end || *ptr != '(')
                 return false;

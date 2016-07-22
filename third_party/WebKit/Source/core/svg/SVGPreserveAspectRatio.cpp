@@ -23,8 +23,8 @@
 
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "platform/ParsingUtilities.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/text/ParserUtilities.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/WTFString.h"
 
@@ -65,7 +65,7 @@ SVGParsingError SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, cons
         return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
 
     if (*ptr == 'n') {
-        if (!skipToken(ptr, end, "none"))
+        if (!skipString(ptr, end, "none"))
             return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
         align = SVG_PRESERVEASPECTRATIO_NONE;
         skipOptionalSVGSpaces(ptr, end);
@@ -128,11 +128,11 @@ SVGParsingError SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, cons
 
     if (ptr < end) {
         if (*ptr == 'm') {
-            if (!skipToken(ptr, end, "meet"))
+            if (!skipString(ptr, end, "meet"))
                 return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             skipOptionalSVGSpaces(ptr, end);
         } else if (*ptr == 's') {
-            if (!skipToken(ptr, end, "slice"))
+            if (!skipString(ptr, end, "slice"))
                 return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             skipOptionalSVGSpaces(ptr, end);
             if (align != SVG_PRESERVEASPECTRATIO_NONE)

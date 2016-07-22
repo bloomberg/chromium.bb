@@ -26,7 +26,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGTransformDistance.h"
-#include "platform/ParsingUtilities.h"
+#include "platform/text/ParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -64,6 +64,13 @@ bool SVGTransformList::concatenate(AffineTransform& result) const
 
 namespace {
 
+const LChar skewXDesc[] =  {'s', 'k', 'e', 'w', 'X'};
+const LChar skewYDesc[] =  {'s', 'k', 'e', 'w', 'Y'};
+const LChar scaleDesc[] =  {'s', 'c', 'a', 'l', 'e'};
+const LChar translateDesc[] =  {'t', 'r', 'a', 'n', 's', 'l', 'a', 't', 'e'};
+const LChar rotateDesc[] =  {'r', 'o', 't', 'a', 't', 'e'};
+const LChar matrixDesc[] =  {'m', 'a', 't', 'r', 'i', 'x'};
+
 template<typename CharType>
 SVGTransformType parseAndSkipTransformType(const CharType*& ptr, const CharType* end)
 {
@@ -71,20 +78,20 @@ SVGTransformType parseAndSkipTransformType(const CharType*& ptr, const CharType*
         return SVG_TRANSFORM_UNKNOWN;
 
     if (*ptr == 's') {
-        if (skipToken(ptr, end, "skewX"))
+        if (skipString(ptr, end, skewXDesc, WTF_ARRAY_LENGTH(skewXDesc)))
             return SVG_TRANSFORM_SKEWX;
-        if (skipToken(ptr, end, "skewY"))
+        if (skipString(ptr, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
             return SVG_TRANSFORM_SKEWY;
-        if (skipToken(ptr, end, "scale"))
+        if (skipString(ptr, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
             return SVG_TRANSFORM_SCALE;
 
         return SVG_TRANSFORM_UNKNOWN;
     }
-    if (skipToken(ptr, end, "translate"))
+    if (skipString(ptr, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc)))
         return SVG_TRANSFORM_TRANSLATE;
-    if (skipToken(ptr, end, "rotate"))
+    if (skipString(ptr, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc)))
         return SVG_TRANSFORM_ROTATE;
-    if (skipToken(ptr, end, "matrix"))
+    if (skipString(ptr, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc)))
         return SVG_TRANSFORM_MATRIX;
 
     return SVG_TRANSFORM_UNKNOWN;
