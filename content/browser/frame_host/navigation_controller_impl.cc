@@ -663,16 +663,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   // Checks based on params.load_type.
   switch (params.load_type) {
     case LOAD_TYPE_DEFAULT:
-      break;
     case LOAD_TYPE_HTTP_POST:
-      // TODO(lukasza): This assertion is false - it is also possible to POST to
-      // an chrome-extension://... URI.  This might be more common when
-      // allowing renderer-initiated POST after fixing https://crbug.com/344348.
-      if (!params.url.SchemeIs(url::kHttpScheme) &&
-          !params.url.SchemeIs(url::kHttpsScheme)) {
-        NOTREACHED() << "Http post load must use http(s) scheme.";
-        return;
-      }
       break;
     case LOAD_TYPE_DATA:
       if (!params.url.SchemeIs(url::kDataScheme)) {
