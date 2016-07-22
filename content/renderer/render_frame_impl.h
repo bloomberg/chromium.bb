@@ -1022,10 +1022,6 @@ class CONTENT_EXPORT RenderFrameImpl
   template <typename Interface>
   void GetInterface(mojo::InterfaceRequest<Interface> request);
 
-  // Connects to a Mojo application and returns a proxy to its exposed
-  // ServiceProvider.
-  shell::mojom::InterfaceProviderPtr ConnectToApplication(const GURL& url);
-
   // Returns the media delegate for WebMediaPlayer usage.  If
   // |media_player_delegate_| is NULL, one is created.
   media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();

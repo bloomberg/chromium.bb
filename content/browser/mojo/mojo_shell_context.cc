@@ -173,54 +173,7 @@ class MojoShellContext::BuiltinManifestProvider
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
 
-// Thread-safe proxy providing access to the shell context from any thread.
-class MojoShellContext::Proxy {
- public:
-  Proxy(MojoShellContext* shell_context)
-      : shell_context_(shell_context),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
-
-  ~Proxy() {}
-
-  void ConnectToApplication(
-      const std::string& user_id,
-      const std::string& name,
-      const std::string& requestor_name,
-      shell::mojom::InterfaceProviderRequest request,
-      shell::mojom::InterfaceProviderPtr exposed_services,
-      const shell::mojom::Connector::ConnectCallback& callback) {
-    if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
-      if (shell_context_) {
-        shell_context_->ConnectToApplicationOnOwnThread(
-            user_id, name, requestor_name, std::move(request),
-            std::move(exposed_services), callback);
-      }
-    } else {
-      // |shell_context_| outlives the main MessageLoop, so it's safe for it to
-      // be unretained here.
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&MojoShellContext::ConnectToApplicationOnOwnThread,
-                     base::Unretained(shell_context_), user_id, name,
-                     requestor_name, base::Passed(&request),
-                     base::Passed(&exposed_services), callback));
-    }
-  }
-
- private:
-  MojoShellContext* shell_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(Proxy);
-};
-
-// static
-base::LazyInstance<std::unique_ptr<MojoShellContext::Proxy>>
-    MojoShellContext::proxy_ = LAZY_INSTANCE_INITIALIZER;
-
 MojoShellContext::MojoShellContext() {
-  proxy_.Get().reset(new Proxy(this));
-
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   std::unique_ptr<shell::NativeRunnerFactory> native_runner_factory(
@@ -317,39 +270,9 @@ MojoShellContext::~MojoShellContext() {
 }
 
 // static
-void MojoShellContext::ConnectToApplication(
-    const std::string& user_id,
-    const std::string& name,
-    const std::string& requestor_name,
-    shell::mojom::InterfaceProviderRequest request,
-    shell::mojom::InterfaceProviderPtr exposed_services,
-    const shell::mojom::Connector::ConnectCallback& callback) {
-  proxy_.Get()->ConnectToApplication(user_id, name, requestor_name,
-                                     std::move(request),
-                                     std::move(exposed_services), callback);
-}
-
-// static
 shell::Connector* MojoShellContext::GetConnectorForIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return g_io_thread_connector.Get().get();
-}
-
-void MojoShellContext::ConnectToApplicationOnOwnThread(
-    const std::string& user_id,
-    const std::string& name,
-    const std::string& requestor_name,
-    shell::mojom::InterfaceProviderRequest request,
-    shell::mojom::InterfaceProviderPtr exposed_services,
-    const shell::mojom::Connector::ConnectCallback& callback) {
-  std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
-  shell::Identity source_id(requestor_name, user_id);
-  params->set_source(source_id);
-  params->set_target(shell::Identity(name, user_id));
-  params->set_remote_interfaces(std::move(request));
-  params->set_local_interfaces(std::move(exposed_services));
-  params->set_connect_callback(callback);
-  service_manager_->Connect(std::move(params));
 }
 
 }  // namespace content

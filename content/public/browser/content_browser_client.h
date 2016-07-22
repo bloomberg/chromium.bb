@@ -657,9 +657,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       shell::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) {}
 
-  // Allows to register browser Mojo interfaces exposed through the
-  // FrameMojoShell.
-  virtual void RegisterFrameMojoShellInterfaces(
+  // Called when RenderFrameHostImpl connects to the Media service. Expose
+  // interfaces to the service using |registry|.
+  virtual void ExposeInterfacesToMediaService(
       shell::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 

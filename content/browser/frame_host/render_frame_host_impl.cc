@@ -25,7 +25,6 @@
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
-#include "content/browser/frame_host/frame_mojo_shell.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -82,14 +81,23 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/vibration/vibration_manager_impl.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "url/gurl.h"
 
+// media::mojom::ServiceFactory is generated in GN builds only.
+#if defined(MOJO_SHELL_CLIENT)
+#include "media/mojo/interfaces/service_factory.mojom.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "content/browser/mojo/service_registrar_android.h"
+#if defined(ENABLE_MOJO_CDM)
+#include "content/browser/media/android/provision_fetcher_impl.h"
+#endif
 #endif
 
 #if defined(OS_MACOSX)
@@ -171,6 +179,26 @@ void GrantFileAccess(int child_id,
       policy->GrantReadFile(child_id, file);
   }
 }
+
+#if defined(MOJO_SHELL_CLIENT)
+// media::mojom::ServiceFactory is generated in GN builds only.
+void CreateMediaServiceFactory(
+    BrowserContext* browser_context,
+    RenderFrameHost* render_frame_host,
+    media::mojom::ServiceFactoryRequest request) {
+  shell::Connector* connector =
+      BrowserContext::GetShellConnectorFor(browser_context);
+  std::unique_ptr<shell::Connection> connection =
+      connector->Connect("mojo:media");
+#if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
+  connection->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&ProvisionFetcherImpl::Create, this));
+#endif
+  GetContentClient()->browser()->ExposeInterfacesToMediaService(
+      connection->GetInterfaceRegistry(), render_frame_host);
+  connection->GetInterface(std::move(request));
+}
+#endif  // defined(MOJO_SHELL_CLIENT)
 
 }  // namespace
 
@@ -2077,11 +2105,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(this)));
   }
 
-  if (!frame_mojo_shell_)
-    frame_mojo_shell_.reset(new FrameMojoShell(this));
-
-  GetInterfaceRegistry()->AddInterface<shell::mojom::Connector>(base::Bind(
-      &FrameMojoShell::BindRequest, base::Unretained(frame_mojo_shell_.get())));
+#if defined(MOJO_SHELL_CLIENT)
+  // media::mojom::ServiceFactory is generated in GN builds only.
+  GetInterfaceRegistry()->AddInterface<media::mojom::ServiceFactory>(
+      base::Bind(&CreateMediaServiceFactory,
+                 GetProcess()->GetBrowserContext(), this));
+#endif  // defined(MOJO_SHELL_CLIENT)
 
 #if defined(ENABLE_WEBVR)
   const base::CommandLine& browser_command_line =

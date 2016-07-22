@@ -2804,7 +2804,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 #endif
 }
 
-void ChromeContentBrowserClient::RegisterFrameMojoShellInterfaces(
+void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
     shell::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
 // TODO(xhwang): Only register this when ENABLE_MOJO_MEDIA.

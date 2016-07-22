@@ -13,20 +13,19 @@
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "url/gurl.h"
 
+namespace shell {
+class InterfaceProvider;
+}
+
 namespace content {
 
 // MediaInterfaceProvider is an implementation of mojo InterfaceProvider that
-// provides media related services and handles app disconnection automatically.
+// provides media related services and handles disconnection automatically.
 // This class is single threaded.
 class CONTENT_EXPORT MediaInterfaceProvider
     : public shell::mojom::InterfaceProvider {
  public:
-  // Callback used to connect to a mojo application.
-  using ConnectToApplicationCB =
-      base::Callback<shell::mojom::InterfaceProviderPtr(const GURL& url)>;
-
-  explicit MediaInterfaceProvider(
-      const ConnectToApplicationCB& connect_to_app_cb);
+  explicit MediaInterfaceProvider(shell::InterfaceProvider* remote_interfaces);
   ~MediaInterfaceProvider() final;
 
   // InterfaceProvider implementation.
@@ -38,7 +37,7 @@ class CONTENT_EXPORT MediaInterfaceProvider
   void OnConnectionError();
 
   base::ThreadChecker thread_checker_;
-  ConnectToApplicationCB connect_to_app_cb_;
+  shell::InterfaceProvider* remote_interfaces_;
   media::mojom::ServiceFactoryPtr media_service_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProvider);

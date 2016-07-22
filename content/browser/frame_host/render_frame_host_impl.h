@@ -74,7 +74,6 @@ namespace content {
 
 class CrossProcessFrameConnector;
 class CrossSiteTransferringRequest;
-class FrameMojoShell;
 class FrameTree;
 class FrameTreeNode;
 class NavigationHandleImpl;
@@ -1002,9 +1001,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Context shared for each mojom::PermissionService instance created for this
   // RFH.
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
-
-  // The frame's Mojo Shell service.
-  std::unique_ptr<FrameMojoShell> frame_mojo_shell_;
 
   // Holder of Mojo connection with ImageDownloader service in RenderFrame.
   content::mojom::ImageDownloaderPtr mojo_image_downloader_;

@@ -753,8 +753,6 @@
       'browser/frame_host/cross_site_transferring_request.h',
       'browser/frame_host/debug_urls.cc',
       'browser/frame_host/debug_urls.h',
-      'browser/frame_host/frame_mojo_shell.cc',
-      'browser/frame_host/frame_mojo_shell.h',
       'browser/frame_host/frame_navigation_entry.cc',
       'browser/frame_host/frame_navigation_entry.h',
       'browser/frame_host/frame_tree.cc',

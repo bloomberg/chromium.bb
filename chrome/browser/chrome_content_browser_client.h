@@ -281,7 +281,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToRenderer(
       shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
-  void RegisterFrameMojoShellInterfaces(
+  void ExposeInterfacesToMediaService(
       shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RegisterRenderFrameMojoInterfaces(

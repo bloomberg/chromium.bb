@@ -684,10 +684,6 @@ WebFrameLoadType ReloadFrameLoadTypeFor(
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
-void OnGotInstanceID(shell::mojom::ConnectResult result,
-                     mojo::String user_id,
-                     uint32_t instance_id) {}
-
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());
   return WebString::fromUTF8(
@@ -6130,8 +6126,8 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 #if defined(ENABLE_MOJO_MEDIA)
 shell::mojom::InterfaceProvider* RenderFrameImpl::GetMediaInterfaceProvider() {
   if (!media_interface_provider_) {
-    media_interface_provider_.reset(new MediaInterfaceProvider(base::Bind(
-        &RenderFrameImpl::ConnectToApplication, base::Unretained(this))));
+    media_interface_provider_.reset(
+        new MediaInterfaceProvider(GetRemoteInterfaces()));
   }
 
   return media_interface_provider_.get();
@@ -6193,20 +6189,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 template <typename Interface>
 void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
   GetRemoteInterfaces()->GetInterface(std::move(request));
-}
-
-shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
-    const GURL& url) {
-  if (!connector_)
-    GetRemoteInterfaces()->GetInterface(&connector_);
-  shell::mojom::InterfaceProviderPtr interface_provider;
-  shell::mojom::IdentityPtr target(shell::mojom::Identity::New());
-  target->name = url.spec();
-  target->user_id = shell::mojom::kInheritUserID;
-  target->instance = "";
-  connector_->Connect(std::move(target), GetProxy(&interface_provider), nullptr,
-                      nullptr, base::Bind(&OnGotInstanceID));
-  return interface_provider;
 }
 
 media::RendererWebMediaPlayerDelegate*

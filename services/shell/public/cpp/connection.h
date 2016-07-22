@@ -90,6 +90,10 @@ class Connection {
   void GetInterface(mojo::InterfacePtr<Interface>* ptr) {
     GetRemoteInterfaces()->GetInterface(ptr);
   }
+  template <typename Interface>
+  void GetInterface(mojo::InterfaceRequest<Interface> request) {
+    GetRemoteInterfaces()->GetInterface(std::move(request));
+  }
 
   // Returns true if the remote application has the specified capability class
   // specified in its manifest. Only valid for inbound connections. Will return
