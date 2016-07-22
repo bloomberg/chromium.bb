@@ -123,6 +123,7 @@ private:
     bool rewindToFirstMidWordBreak(LineLayoutText, const ComputedStyle&, const Font&, bool breakAll, WordMeasurement&);
     bool rewindToMidWordBreak(LineLayoutText, const ComputedStyle&, const Font&, bool breakAll, WordMeasurement&);
     bool hyphenate(LineLayoutText, const ComputedStyle&, const Font&, const Hyphenation&, float lastSpaceWordSpacing, WordMeasurement&);
+    bool isBreakAtSoftHyphen() const;
 
     InlineBidiResolver& m_resolver;
 
@@ -697,6 +698,13 @@ ALWAYS_INLINE bool BreakingContext::hyphenate(LineLayoutText text,
         font.getCharacterRange(run, 0, prefixLength).width() + hyphenWidth);
 }
 
+ALWAYS_INLINE bool BreakingContext::isBreakAtSoftHyphen() const
+{
+    return m_lineBreak != m_resolver.position()
+        ? m_lineBreak.previousInSameNode() == softHyphenCharacter
+        : m_current.previousInSameNode() == softHyphenCharacter;
+}
+
 inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool& hyphenated)
 {
     if (!m_current.offset())
@@ -983,9 +991,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             }
             m_width.addUncommittedWidth(wordMeasurement.width);
         }
-        if (!hyphenated
-            && m_lineBreak.previousInSameNode() == softHyphenCharacter
-            && !disableSoftHyphen) {
+        if (!hyphenated && isBreakAtSoftHyphen() && !disableSoftHyphen) {
             hyphenated = true;
             m_atEnd = true;
         }
@@ -1081,7 +1087,7 @@ inline bool BreakingContext::canBreakAtWhitespace(bool breakWords, WordMeasureme
             m_lineInfo.setPreviousLineBrokeCleanly(true);
             wordMeasurement.endOffset = m_lineBreak.offset();
         }
-        if (m_lineBreak.getLineLayoutItem() && m_lineBreak.offset() && m_lineBreak.getLineLayoutItem().isText() && LineLayoutText(m_lineBreak.getLineLayoutItem()).textLength() && LineLayoutText(m_lineBreak.getLineLayoutItem()).characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter && !disableSoftHyphen)
+        if (isBreakAtSoftHyphen() && !disableSoftHyphen)
             hyphenated = true;
         if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
             if (charWidth) {
