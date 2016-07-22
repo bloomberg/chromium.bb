@@ -78,8 +78,13 @@ public:
     bool contains(const FloatPoint&) const;
     bool contains(const FloatPoint&, WindRule) const;
     bool strokeContains(const FloatPoint&, const StrokeData&) const;
-    FloatRect boundingRect() const;
-    FloatRect strokeBoundingRect(const StrokeData&) const;
+
+    enum class BoundsType {
+        Conservative, // Fast version, includes control points.
+        Exact, // Tight, slower version.
+    };
+    FloatRect boundingRect(BoundsType = BoundsType::Conservative) const;
+    FloatRect strokeBoundingRect(const StrokeData&, BoundsType = BoundsType::Conservative) const;
 
     float length() const;
     FloatPoint pointAtLength(float length) const;

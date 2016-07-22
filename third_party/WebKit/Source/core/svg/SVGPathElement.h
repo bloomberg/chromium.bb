@@ -50,6 +50,8 @@ public:
     bool isPresentationAttribute(const QualifiedName&) const override;
     bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
 
+    FloatRect getBBox() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

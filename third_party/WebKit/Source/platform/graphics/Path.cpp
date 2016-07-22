@@ -115,14 +115,31 @@ bool Path::strokeContains(const FloatPoint& point, const StrokeData& strokeData)
     return strokePath(strokeData).contains(WebCoreFloatToSkScalar(point.x()), WebCoreFloatToSkScalar(point.y()));
 }
 
-FloatRect Path::boundingRect() const
+namespace {
+
+FloatRect pathBounds(const SkPath& path, Path::BoundsType boundsType)
 {
-    return m_path.getBounds();
+    SkRect bounds;
+    if (boundsType == Path::BoundsType::Conservative
+        || !TightBounds(path, &bounds)
+        || bounds.isEmpty()) // workaround for https://bugs.chromium.org/p/skia/issues/detail?id=5555
+        return path.getBounds();
+
+    DCHECK_EQ(boundsType, Path::BoundsType::Exact);
+    return bounds;
 }
 
-FloatRect Path::strokeBoundingRect(const StrokeData& strokeData) const
+} // anonymous ns
+
+// TODO(fmalita): evaluate returning exact bounds in all cases.
+FloatRect Path::boundingRect(BoundsType boundsType) const
 {
-    return strokePath(strokeData).getBounds();
+    return pathBounds(m_path, boundsType);
+}
+
+FloatRect Path::strokeBoundingRect(const StrokeData& strokeData, BoundsType boundsType) const
+{
+    return pathBounds(strokePath(strokeData), boundsType);
 }
 
 static FloatPoint* convertPathPoints(FloatPoint dst[], const SkPoint src[], int count)

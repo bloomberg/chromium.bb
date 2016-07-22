@@ -207,4 +207,12 @@ void SVGPathElement::removedFrom(ContainerNode* rootParent)
     invalidateMPathDependencies();
 }
 
+FloatRect SVGPathElement::getBBox()
+{
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+    // We want the exact bounds.
+    return SVGPathElement::asPath().boundingRect(Path::BoundsType::Exact);
+}
+
 } // namespace blink
