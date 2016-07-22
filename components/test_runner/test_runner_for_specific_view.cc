@@ -30,7 +30,7 @@
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -78,15 +78,15 @@ using namespace blink;
 namespace test_runner {
 
 TestRunnerForSpecificView::TestRunnerForSpecificView(
-    WebTestProxyBase* web_test_proxy_base)
-    : web_test_proxy_base_(web_test_proxy_base), weak_factory_(this) {
+    WebViewTestProxyBase* web_view_test_proxy_base)
+    : web_view_test_proxy_base_(web_view_test_proxy_base), weak_factory_(this) {
   Reset();
 }
 
 TestRunnerForSpecificView::~TestRunnerForSpecificView() {}
 
 void TestRunnerForSpecificView::Install(blink::WebLocalFrame* frame) {
-  web_test_proxy_base_->test_interfaces()->GetTestRunner()->Install(
+  web_view_test_proxy_base_->test_interfaces()->GetTestRunner()->Install(
       frame, weak_factory_.GetWeakPtr());
 }
 
@@ -235,10 +235,13 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
   v8::UniquePersistent<v8::Function> persistent_callback(
       blink::mainThreadIsolate(), callback);
 
-  web_test_proxy_base_->test_interfaces()->GetTestRunner()->DumpPixelsAsync(
-      web_view(), base::Bind(&TestRunnerForSpecificView::CapturePixelsCallback,
-                             weak_factory_.GetWeakPtr(),
-                             base::Passed(std::move(persistent_callback))));
+  web_view_test_proxy_base_->test_interfaces()
+      ->GetTestRunner()
+      ->DumpPixelsAsync(
+          web_view(),
+          base::Bind(&TestRunnerForSpecificView::CapturePixelsCallback,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(std::move(persistent_callback))));
 }
 
 void TestRunnerForSpecificView::CapturePixelsCallback(
@@ -527,8 +530,8 @@ void TestRunnerForSpecificView::ForceNextDrawingBufferCreationToFail() {
 }
 
 void TestRunnerForSpecificView::SetWindowIsKey(bool value) {
-  web_test_proxy_base_->test_interfaces()->GetTestRunner()->SetFocus(web_view(),
-                                                                     value);
+  web_view_test_proxy_base_->test_interfaces()->GetTestRunner()->SetFocus(
+      web_view(), value);
 }
 
 void TestRunnerForSpecificView::DidAcquirePointerLock() {
@@ -690,11 +693,11 @@ void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {
-  return web_test_proxy_base_->web_view();
+  return web_view_test_proxy_base_->web_view();
 }
 
 WebTestDelegate* TestRunnerForSpecificView::delegate() {
-  return web_test_proxy_base_->delegate();
+  return web_view_test_proxy_base_->delegate();
 }
 
 }  // namespace test_runner

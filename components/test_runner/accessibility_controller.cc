@@ -5,7 +5,7 @@
 #include "components/test_runner/accessibility_controller.h"
 
 #include "base/macros.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -136,9 +136,9 @@ v8::Local<v8::Object> AccessibilityControllerBindings::AccessibleElementById(
 }
 
 AccessibilityController::AccessibilityController(
-    WebTestProxyBase* web_test_proxy_base)
+    WebViewTestProxyBase* web_view_test_proxy_base)
     : log_accessibility_events_(false),
-      web_test_proxy_base_(web_test_proxy_base),
+      web_view_test_proxy_base_(web_view_test_proxy_base),
       weak_factory_(this) {}
 
 AccessibilityController::~AccessibilityController() {}
@@ -270,7 +270,7 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
 }
 
 blink::WebView* AccessibilityController::web_view() {
-  return web_test_proxy_base_->web_view();
+  return web_view_test_proxy_base_->web_view();
 }
 
 }  // namespace test_runner

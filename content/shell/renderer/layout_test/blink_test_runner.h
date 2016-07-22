@@ -36,7 +36,7 @@ struct WebRect;
 }
 
 namespace test_runner {
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 }
 
 namespace content {

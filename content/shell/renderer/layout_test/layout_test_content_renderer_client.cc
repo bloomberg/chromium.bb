@@ -10,8 +10,8 @@
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_interfaces.h"
-#include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -52,8 +52,8 @@ namespace content {
 
 namespace {
 
-void WebTestProxyCreated(RenderView* render_view,
-                         test_runner::WebTestProxyBase* proxy) {
+void WebViewTestProxyCreated(RenderView* render_view,
+                             test_runner::WebViewTestProxyBase* proxy) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
 
@@ -80,18 +80,18 @@ void WebTestProxyCreated(RenderView* render_view,
 
 void WebFrameTestProxyCreated(RenderFrame* render_frame,
                               test_runner::WebFrameTestProxyBase* proxy) {
-  test_runner::WebTestProxyBase* web_test_proxy_base =
-      GetWebTestProxyBase(render_frame->GetRenderView());
+  test_runner::WebViewTestProxyBase* web_view_test_proxy_base =
+      GetWebViewTestProxyBase(render_frame->GetRenderView());
   proxy->set_test_client(
       LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
-          ->CreateWebFrameTestClient(web_test_proxy_base, proxy));
+          ->CreateWebFrameTestClient(web_view_test_proxy_base, proxy));
 }
 
 }  // namespace
 
 LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
-  EnableWebTestProxyCreation(base::Bind(&WebTestProxyCreated),
+  EnableWebTestProxyCreation(base::Bind(&WebViewTestProxyCreated),
                              base::Bind(&WebFrameTestProxyCreated));
 }
 
@@ -115,11 +115,12 @@ void LayoutTestContentRendererClient::RenderViewCreated(
     RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
 
-  test_runner::WebTestProxyBase* proxy = GetWebTestProxyBase(render_view);
+  test_runner::WebViewTestProxyBase* proxy =
+      GetWebViewTestProxyBase(render_view);
   proxy->set_web_view(render_view->GetWebView());
   // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
   // local root in WebFrameTestProxy instead of having only the WebWidget for
-  // the main frame in WebTestProxy.
+  // the main frame in WebViewTestProxy.
   proxy->set_web_widget(render_view->GetWebView()->widget());
   proxy->Reset();
 

@@ -17,7 +17,7 @@
 #include "components/test_runner/test_runner_for_specific_view.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -28,12 +28,13 @@
 
 namespace test_runner {
 
-WebViewTestClient::WebViewTestClient(TestRunner* test_runner,
-                                     WebTestProxyBase* web_test_proxy_base)
+WebViewTestClient::WebViewTestClient(
+    TestRunner* test_runner,
+    WebViewTestProxyBase* web_view_test_proxy_base)
     : test_runner_(test_runner),
-      web_test_proxy_base_(web_test_proxy_base) {
+      web_view_test_proxy_base_(web_view_test_proxy_base) {
   DCHECK(test_runner);
-  DCHECK(web_test_proxy_base);
+  DCHECK(web_view_test_proxy_base);
 }
 
 WebViewTestClient::~WebViewTestClient() {}
@@ -47,7 +48,7 @@ void WebViewTestClient::startDragging(blink::WebLocalFrame* frame,
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
-  web_test_proxy_base_->event_sender()->DoDragDrop(data, mask);
+  web_view_test_proxy_base_->event_sender()->DoDragDrop(data, mask);
 }
 
 // The output from these methods in layout test mode should match that
@@ -78,8 +79,8 @@ blink::WebView* WebViewTestClient::createView(
     delegate()->PrintMessage(std::string("createView(") +
                              URLDescription(request.url()) + ")\n");
 
-  // The return value below is used to communicate to WebTestProxy whether it
-  // should forward the createView request to RenderViewImpl or not.  The
+  // The return value below is used to communicate to WebViewTestProxy whether
+  // it should forward the createView request to RenderViewImpl or not.  The
   // somewhat ugly cast is used to do this while fitting into the existing
   // WebViewClient interface.
   return reinterpret_cast<blink::WebView*>(0xdeadbeef);
@@ -143,11 +144,11 @@ blink::WebString WebViewTestClient::acceptLanguages() {
 }
 
 WebTestDelegate* WebViewTestClient::delegate() {
-  return web_test_proxy_base_->delegate();
+  return web_view_test_proxy_base_->delegate();
 }
 
 void WebViewTestClient::didFocus() {
-  test_runner_->SetFocus(web_test_proxy_base_->web_view(), true);
+  test_runner_->SetFocus(web_view_test_proxy_base_->web_view(), true);
 }
 
 }  // namespace test_runner

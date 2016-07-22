@@ -17,7 +17,7 @@ class AccessibilityController;
 class TestRunner;
 class WebFrameTestProxyBase;
 class WebTestDelegate;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 
 // WebFrameTestClient implements WebFrameClient interface, providing behavior
 // expected by tests.  WebFrameTestClient ends up used by WebFrameTestProxy
@@ -29,7 +29,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   // forth) live longer than |this|.
   WebFrameTestClient(TestRunner* test_runner,
                      WebTestDelegate* delegate,
-                     WebTestProxyBase* web_test_proxy_base,
+                     WebViewTestProxyBase* web_view_test_proxy_base,
                      WebFrameTestProxyBase* web_frame_test_proxy_base);
 
   ~WebFrameTestClient() override;
@@ -113,7 +113,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   // Borrowed pointers to other parts of Layout Tests state.
   TestRunner* test_runner_;
   WebTestDelegate* delegate_;
-  WebTestProxyBase* web_test_proxy_base_;
+  WebViewTestProxyBase* web_view_test_proxy_base_;
   WebFrameTestProxyBase* web_frame_test_proxy_base_;
 
   // Map from request identifier into resource url description.  The map is used

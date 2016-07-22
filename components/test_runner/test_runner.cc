@@ -31,7 +31,7 @@
 #include "components/test_runner/test_runner_for_specific_view.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -2228,7 +2228,7 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = WebScreenOrientationLandscapeSecondary;
   }
 
-  for (WebTestProxyBase* window : test_interfaces_->GetWindowList()) {
+  for (WebViewTestProxyBase* window : test_interfaces_->GetWindowList()) {
     WebFrame* main_frame = window->web_view()->mainFrame();
     // TODO(lukasza): Need to make this work for remote frames.
     if (main_frame->isWebLocalFrame()) {
@@ -2341,7 +2341,7 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
   layout_test_runtime_flags_.set_accept_languages(accept_languages);
   OnLayoutTestRuntimeFlagsChanged();
 
-  for (WebTestProxyBase* window : test_interfaces_->GetWindowList())
+  for (WebViewTestProxyBase* window : test_interfaces_->GetWindowList())
     window->web_view()->acceptLanguagesChanged();
 }
 

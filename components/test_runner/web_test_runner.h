@@ -31,7 +31,7 @@ class WebTestRunner {
   virtual blink::WebContentSettingsClient* GetWebContentSettings() const = 0;
 
   // After WebTestDelegate::TestFinished was invoked, the following methods
-  // can be used to determine what kind of dump the main WebTestProxy can
+  // can be used to determine what kind of dump the main WebViewTestProxy can
   // provide.
 
   // If true, WebTestDelegate::audioData returns an audio dump and no text
@@ -65,11 +65,11 @@ class WebTestRunner {
   // |custom_text_dump| argument.  Otherwise returns |false|.
   virtual bool HasCustomTextDump(std::string* custom_text_dump) const = 0;
 
-  // Returns true if the call to WebTestProxy::captureTree will invoke
+  // Returns true if the call to WebViewTestProxy::captureTree will invoke
   // WebTestDelegate::captureHistoryForWindow.
   virtual bool ShouldDumpBackForwardList() const = 0;
 
-  // Returns true if WebTestProxy::capturePixels should be invoked after
+  // Returns true if WebViewTestProxy::capturePixels should be invoked after
   // capturing text results.
   virtual bool ShouldGeneratePixelResults() = 0;
 

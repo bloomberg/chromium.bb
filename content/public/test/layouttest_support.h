@@ -34,7 +34,7 @@ class BluetoothAdapter;
 
 namespace test_runner {
 class WebFrameTestProxyBase;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 }
 
 namespace content {
@@ -53,22 +53,24 @@ void EnableBrowserLayoutTestMode();
 // Turn a renderer into layout test mode.
 void EnableRendererLayoutTestMode();
 
-// "Casts" |render_view| to |WebTestProxyBase|.  Caller has to ensure that prior
-// to construction of |render_view|, EnableWebTestProxyCreation was called.
-test_runner::WebTestProxyBase* GetWebTestProxyBase(RenderView* render_view);
+// "Casts" |render_view| to |WebViewTestProxyBase|.  Caller has to ensure that
+// prior to construction of |render_view|, EnableWebTestProxyCreation was
+// called.
+test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
+    RenderView* render_view);
 
 // "Casts" |render_frame| to |WebFrameTestProxyBase|.  Caller has to ensure
-// that prior to construction of |render_frame|, EnableWebTestProxyCreation was
-// called.
+// that prior to construction of |render_frame|, EnableiewTestProxyCreation
+// was called.
 test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
     RenderFrame* render_frame);
 
-// Enable injecting of a WebTestProxy between WebViews and RenderViews
+// Enable injecting of a WebViewTestProxy between WebViews and RenderViews
 // and WebFrameTestProxy between WebFrames and RenderFrames.
-// |view_proxy_creation_callback| is invoked after creating WebTestProxy.
+// |view_proxy_creation_callback| is invoked after creating WebViewTestProxy.
 // |frame_proxy_creation_callback| is called after creating WebFrameTestProxy.
 using ViewProxyCreationCallback =
-    base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>;
+    base::Callback<void(RenderView*, test_runner::WebViewTestProxyBase*)>;
 using FrameProxyCreationCallback =
     base::Callback<void(RenderFrame*, test_runner::WebFrameTestProxyBase*)>;
 void EnableWebTestProxyCreation(

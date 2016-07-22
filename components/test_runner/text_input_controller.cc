@@ -5,7 +5,7 @@
 #include "components/test_runner/text_input_controller.h"
 
 #include "base/macros.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -148,8 +148,10 @@ void TextInputControllerBindings::SetComposition(const std::string& text) {
 
 // TextInputController ---------------------------------------------------------
 
-TextInputController::TextInputController(WebTestProxyBase* web_test_proxy_base)
-    : web_test_proxy_base_(web_test_proxy_base), weak_factory_(this) {}
+TextInputController::TextInputController(
+    WebViewTestProxyBase* web_view_test_proxy_base)
+    : web_view_test_proxy_base_(web_view_test_proxy_base),
+      weak_factory_(this) {}
 
 TextInputController::~TextInputController() {}
 
@@ -292,7 +294,7 @@ void TextInputController::SetComposition(const std::string& text) {
 }
 
 blink::WebView* TextInputController::view() {
-  return web_test_proxy_base_->web_view();
+  return web_view_test_proxy_base_->web_view();
 }
 
 }  // namespace test_runner

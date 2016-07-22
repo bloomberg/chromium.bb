@@ -150,7 +150,7 @@ void DumpPixelsAsync(blink::WebView* web_view,
                      const LayoutTestRuntimeFlags& layout_test_runtime_flags,
                      float device_scale_factor_for_test,
                      const base::Callback<void(const SkBitmap&)>& callback) {
-  TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
+  TRACE_EVENT0("shell", "WebViewTestProxyBase::CapturePixelsAsync");
   DCHECK(!callback.is_null());
   DCHECK(!layout_test_runtime_flags.dump_drag_image());
 

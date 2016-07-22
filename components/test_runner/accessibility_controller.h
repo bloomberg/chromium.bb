@@ -21,11 +21,12 @@ class WebView;
 
 namespace test_runner {
 
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 
 class AccessibilityController {
  public:
-  explicit AccessibilityController(WebTestProxyBase* web_test_proxy_base);
+  explicit AccessibilityController(
+      WebViewTestProxyBase* web_view_test_proxy_base);
   ~AccessibilityController();
 
   void Reset();
@@ -56,7 +57,7 @@ class AccessibilityController {
   v8::Persistent<v8::Function> notification_callback_;
 
   blink::WebView* web_view();
-  WebTestProxyBase* web_test_proxy_base_;
+  WebViewTestProxyBase* web_view_test_proxy_base_;
 
   base::WeakPtrFactory<AccessibilityController> weak_factory_;
 

@@ -1218,8 +1218,8 @@ name=bug_162825
 
 UNINITIALIZED READ
 name=bug_176616_a
-*!WebTestRunner::WebTestProxyBase::didCreateDataSource
-*!WebTestRunner::WebTestProxy<>::didCreateDataSource
+*!WebTestRunner::WebViewTestProxyBase::didCreateDataSource
+*!WebTestRunner::WebViewTestProxy<>::didCreateDataSource
 *!blink::FrameLoaderClientImpl::createDocumentLoader
 *!blink::FrameLoader::init
 *!blink::Frame::init

@@ -53,7 +53,7 @@ namespace test_runner {
 class DeviceLightData;
 class GamepadController;
 class WebTask;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 struct TestPreferences;
 
 class WebTestDelegate {

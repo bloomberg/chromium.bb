@@ -17,22 +17,23 @@ namespace test_runner {
 
 class TestRunner;
 class WebTestDelegate;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 
 // WebWidgetTestClient implements WebWidgetClient interface, providing behavior
-// expected by tests.  WebWidgetTestClient ends up used by WebTestProxy which
-// coordinates forwarding WebWidgetClient calls either to WebWidgetTestClient or
-// to the product code (i.e. currently to RenderViewImpl).
+// expected by tests.  WebWidgetTestClient ends up used by WebViewTestProxy
+// which coordinates forwarding WebWidgetClient calls either to
+// WebWidgetTestClient or to the product code (i.e. currently to
+// RenderViewImpl).
 class WebWidgetTestClient : public blink::WebWidgetClient {
  public:
   // Caller has to ensure that all arguments (i.e. |test_runner| and |delegate|)
   // live longer than |this|.
   WebWidgetTestClient(TestRunner* test_runner,
-                      WebTestProxyBase* web_test_proxy_base);
+                      WebViewTestProxyBase* web_view_test_proxy_base);
 
   virtual ~WebWidgetTestClient();
 
-  // WebWidgetClient overrides needed by WebTestProxy.
+  // WebWidgetClient overrides needed by WebViewTestProxy.
   blink::WebScreenInfo screenInfo() override;
   void scheduleAnimation() override;
   bool requestPointerLock() override;
@@ -47,7 +48,7 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
 
   // Borrowed pointers to other parts of Layout Tests state.
   TestRunner* test_runner_;
-  WebTestProxyBase* web_test_proxy_base_;
+  WebViewTestProxyBase* web_view_test_proxy_base_;
 
   bool animation_scheduled_;
 

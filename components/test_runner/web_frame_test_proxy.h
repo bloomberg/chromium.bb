@@ -45,9 +45,9 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxyBase);
 };
 
-// WebTestProxy is used during LayoutTests and always instantiated, at time of
-// writing with Base=RenderFrameImpl. It does not directly inherit from it for
-// layering purposes.
+// WebFrameTestProxy is used during LayoutTests and always instantiated, at time
+// of writing with Base=RenderFrameImpl. It does not directly inherit from it
+// for layering purposes.
 template <class Base, typename P>
 class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
  public:

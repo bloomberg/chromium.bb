@@ -17,7 +17,7 @@
 #include "components/scheduler/test/renderer_scheduler_test_support.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -70,17 +70,18 @@ base::LazyInstance<ViewProxyCreationCallback>::Leaky
 base::LazyInstance<FrameProxyCreationCallback>::Leaky
     g_frame_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
 
-using WebTestProxyType = test_runner::WebTestProxy<RenderViewImpl,
-                                                   CompositorDependencies*,
-                                                   const ViewMsg_New_Params&>;
+using WebViewTestProxyType =
+    test_runner::WebViewTestProxy<RenderViewImpl,
+                                  CompositorDependencies*,
+                                  const ViewMsg_New_Params&>;
 using WebFrameTestProxyType =
     test_runner::WebFrameTestProxy<RenderFrameImpl,
                                    const RenderFrameImpl::CreateParams&>;
 
-RenderViewImpl* CreateWebTestProxy(CompositorDependencies* compositor_deps,
-                                   const ViewMsg_New_Params& params) {
-  WebTestProxyType* render_view_proxy =
-      new WebTestProxyType(compositor_deps, params);
+RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
+                                       const ViewMsg_New_Params& params) {
+  WebViewTestProxyType* render_view_proxy =
+      new WebViewTestProxyType(compositor_deps, params);
   if (g_view_test_proxy_callback == 0)
     return render_view_proxy;
   g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
@@ -112,10 +113,11 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
 
 }  // namespace
 
-test_runner::WebTestProxyBase* GetWebTestProxyBase(RenderView* render_view) {
-  WebTestProxyType* render_view_proxy =
-      static_cast<WebTestProxyType*>(render_view);
-  return static_cast<test_runner::WebTestProxyBase*>(render_view_proxy);
+test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
+    RenderView* render_view) {
+  WebViewTestProxyType* render_view_proxy =
+      static_cast<WebViewTestProxyType*>(render_view);
+  return static_cast<test_runner::WebViewTestProxyBase*>(render_view_proxy);
 }
 
 test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
@@ -130,7 +132,7 @@ void EnableWebTestProxyCreation(
     const FrameProxyCreationCallback& frame_proxy_creation_callback) {
   g_view_test_proxy_callback.Get() = view_proxy_creation_callback;
   g_frame_test_proxy_callback.Get() = frame_proxy_creation_callback;
-  RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
+  RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
 

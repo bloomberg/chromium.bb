@@ -18,7 +18,7 @@
 #include "components/test_runner/gc_controller.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/text_input_controller.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -69,8 +69,8 @@ void TestInterfaces::ResetTestHelperControllers() {
     gamepad_controller_->Reset();
   blink::WebCache::clear();
 
-  for (WebTestProxyBase* web_test_proxy_base : window_list_)
-    web_test_proxy_base->Reset();
+  for (WebViewTestProxyBase* web_view_test_proxy_base : window_list_)
+    web_view_test_proxy_base->Reset();
 }
 
 void TestInterfaces::ResetAll() {
@@ -121,12 +121,12 @@ void TestInterfaces::SetAppBannerClient(AppBannerClient* app_banner_client) {
   app_banner_client_ = app_banner_client;
 }
 
-void TestInterfaces::WindowOpened(WebTestProxyBase* proxy) {
+void TestInterfaces::WindowOpened(WebViewTestProxyBase* proxy) {
   window_list_.push_back(proxy);
 }
 
-void TestInterfaces::WindowClosed(WebTestProxyBase* proxy) {
-  std::vector<WebTestProxyBase*>::iterator pos =
+void TestInterfaces::WindowClosed(WebViewTestProxyBase* proxy) {
+  std::vector<WebViewTestProxyBase*>::iterator pos =
       std::find(window_list_.begin(), window_list_.end(), proxy);
   if (pos == window_list_.end()) {
     NOTREACHED();
@@ -146,7 +146,7 @@ WebTestDelegate* TestInterfaces::GetDelegate() {
   return delegate_;
 }
 
-const std::vector<WebTestProxyBase*>& TestInterfaces::GetWindowList() {
+const std::vector<WebViewTestProxyBase*>& TestInterfaces::GetWindowList() {
   return window_list_;
 }
 

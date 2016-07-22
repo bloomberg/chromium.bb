@@ -50,12 +50,12 @@ class TextInputController;
 class WebTestDelegate;
 class WebTestInterfaces;
 
-// WebTestProxyBase is the "brain" of WebTestProxy in the sense that
-// WebTestProxy does the bridge between RenderViewImpl and WebTestProxyBase and
-// when it requires a behavior to be different from the usual, it will call
-// WebTestProxyBase that implements the expected behavior.
-// See WebTestProxy class comments for more information.
-class TEST_RUNNER_EXPORT WebTestProxyBase {
+// WebViewTestProxyBase is the "brain" of WebViewTestProxy in the sense that
+// WebViewTestProxy does the bridge between RenderViewImpl and
+// WebViewTestProxyBase and when it requires a behavior to be different from the
+// usual, it will call WebViewTestProxyBase that implements the expected
+// behavior. See WebViewTestProxy class comments for more information.
+class TEST_RUNNER_EXPORT WebViewTestProxyBase {
  public:
   blink::WebWidget* web_widget() { return web_widget_; }
   void set_web_widget(blink::WebWidget* widget) {
@@ -111,8 +111,8 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   void GetScreenOrientationForTesting(blink::WebScreenInfo&);
 
  protected:
-  WebTestProxyBase();
-  ~WebTestProxyBase();
+  WebViewTestProxyBase();
+  ~WebViewTestProxyBase();
 
   blink::WebViewClient* view_test_client() { return view_test_client_.get(); }
   blink::WebWidgetClient* widget_test_client() {
@@ -131,35 +131,36 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   std::unique_ptr<TextInputController> text_input_controller_;
   std::unique_ptr<TestRunnerForSpecificView> view_test_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
+  DISALLOW_COPY_AND_ASSIGN(WebViewTestProxyBase);
 };
 
-// WebTestProxy is used during LayoutTests and always instantiated, at time of
-// writing with Base=RenderViewImpl. It does not directly inherit from it for
+// WebViewTestProxy is used during LayoutTests and always instantiated, at time
+// of writing with Base=RenderViewImpl. It does not directly inherit from it for
 // layering purposes.
 // The intent of that class is to wrap RenderViewImpl for tests purposes in
 // order to reduce the amount of test specific code in the production code.
-// WebTestProxy is only doing the glue between RenderViewImpl and
-// WebTestProxyBase, that means that there is no logic living in this class
+// WebViewTestProxy is only doing the glue between RenderViewImpl and
+// WebViewTestProxyBase, that means that there is no logic living in this class
 // except deciding which base class should be called (could be both).
 //
 // Examples of usage:
-//  * when a fooClient has a mock implementation, WebTestProxy can override the
-//    fooClient() call and have WebTestProxyBase return the mock implementation.
-//  * when a value needs to be overridden by LayoutTests, WebTestProxy can
-//    override RenderViewImpl's getter and call a getter from WebTestProxyBase
-//    instead. In addition, WebTestProxyBase will have a public setter that
-//    could be called from the TestRunner.
+//  * when a fooClient has a mock implementation, WebViewTestProxy can override
+//    the fooClient() call and have WebViewTestProxyBase return the mock
+//    implementation.
+//  * when a value needs to be overridden by LayoutTests, WebViewTestProxy can
+//    override RenderViewImpl's getter and call a getter from
+//    WebViewTestProxyBase instead. In addition, WebViewTestProxyBase will have
+//    a public setter that could be called from the TestRunner.
 #if defined(OS_WIN)
-// WebTestProxy is a diamond-shaped hierarchy, with WebWidgetClient at the root.
-// VS warns when we inherit the WebWidgetClient method implementations from
-// RenderWidget. It's safe to ignore that warning.
-#pragma warning(disable: 4250)
+// WebViewTestProxy is a diamond-shaped hierarchy, with WebWidgetClient at the
+// root. VS warns when we inherit the WebWidgetClient method implementations
+// from RenderWidget. It's safe to ignore that warning.
+#pragma warning(disable : 4250)
 #endif
 template <class Base, typename... Args>
-class WebTestProxy : public Base, public WebTestProxyBase {
+class WebViewTestProxy : public Base, public WebViewTestProxyBase {
  public:
-  explicit WebTestProxy(Args... args) : Base(args...) {}
+  explicit WebViewTestProxy(Args... args) : Base(args...) {}
 
   // WebWidgetClient implementation.
   blink::WebScreenInfo screenInfo() override {
@@ -217,8 +218,8 @@ class WebTestProxy : public Base, public WebTestProxyBase {
     if (!view_test_client()->createView(creator, request, features, frame_name,
                                         policy, suppress_opener))
       return nullptr;
-    return Base::createView(
-        creator, request, features, frame_name, policy, suppress_opener);
+    return Base::createView(creator, request, features, frame_name, policy,
+                            suppress_opener);
   }
   void setStatusText(const blink::WebString& text) override {
     view_test_client()->setStatusText(text);
@@ -245,9 +246,9 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   }
 
  private:
-  virtual ~WebTestProxy() {}
+  virtual ~WebViewTestProxy() {}
 
-  DISALLOW_COPY_AND_ASSIGN(WebTestProxy);
+  DISALLOW_COPY_AND_ASSIGN(WebViewTestProxy);
 };
 
 }  // namespace test_runner

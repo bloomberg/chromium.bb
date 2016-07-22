@@ -34,7 +34,7 @@ class TestInterfaces;
 class WebFrameTestClient;
 class WebFrameTestProxyBase;
 class WebTestDelegate;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 class WebTestRunner;
 class WebViewTestClient;
 class WebWidgetTestClient;
@@ -71,24 +71,24 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // Creates a WebFrameClient implementation providing test behavior (i.e.
   // forwarding javascript console output to the test harness).  The caller
   // should guarantee that the returned object won't be used beyond the lifetime
-  // of WebTestInterfaces and/or the lifetime of |web_test_proxy_base|.
+  // of WebTestInterfaces and/or the lifetime of |web_view_test_proxy_base|.
   std::unique_ptr<WebFrameTestClient> CreateWebFrameTestClient(
-      WebTestProxyBase* web_test_proxy_base,
+      WebViewTestProxyBase* web_view_test_proxy_base,
       WebFrameTestProxyBase* web_frame_test_proxy_base);
 
   // Creates a WebViewClient implementation providing test behavior (i.e.
   // providing a mocked speech recognizer).  The caller should guarantee that
   // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
-  // and/or the lifetime of |web_test_proxy_base|.
+  // and/or the lifetime of |web_view_test_proxy_base|.
   std::unique_ptr<WebViewTestClient> CreateWebViewTestClient(
-      WebTestProxyBase* web_test_proxy_base);
+      WebViewTestProxyBase* web_view_test_proxy_base);
 
   // Creates a WebWidgetClient implementation providing test behavior (i.e.
   // providing a mocked screen orientation).  The caller should guarantee that
   // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
-  // and/or the lifetime of |web_test_proxy_base|.
+  // and/or the lifetime of |web_view_test_proxy_base|.
   std::unique_ptr<WebWidgetTestClient> CreateWebWidgetTestClient(
-      WebTestProxyBase* web_test_proxy_base);
+      WebViewTestProxyBase* web_view_test_proxy_base);
 
   // Gets a list of currently opened windows created by the current test.
   std::vector<blink::WebView*> GetWindowList();

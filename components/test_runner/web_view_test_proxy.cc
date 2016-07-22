@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,7 +19,7 @@
 
 namespace test_runner {
 
-WebTestProxyBase::WebTestProxyBase()
+WebViewTestProxyBase::WebViewTestProxyBase()
     : test_interfaces_(nullptr),
       delegate_(nullptr),
       web_view_(nullptr),
@@ -29,23 +29,23 @@ WebTestProxyBase::WebTestProxyBase()
       text_input_controller_(new TextInputController(this)),
       view_test_runner_(new TestRunnerForSpecificView(this)) {}
 
-WebTestProxyBase::~WebTestProxyBase() {
+WebViewTestProxyBase::~WebViewTestProxyBase() {
   test_interfaces_->WindowClosed(this);
 }
 
-void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
+void WebViewTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
   test_interfaces_ = interfaces->GetTestInterfaces();
   test_interfaces_->WindowOpened(this);
 }
 
-void WebTestProxyBase::Reset() {
+void WebViewTestProxyBase::Reset() {
   accessibility_controller_->Reset();
   event_sender_->Reset();
   // text_input_controller_ doesn't have any state to reset.
   view_test_runner_->Reset();
 }
 
-void WebTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
+void WebViewTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
   accessibility_controller_->Install(frame);
   event_sender_->Install(frame);
   text_input_controller_->Install(frame);

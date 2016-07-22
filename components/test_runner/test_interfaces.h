@@ -26,7 +26,7 @@ class AppBannerClient;
 class GamepadController;
 class TestRunner;
 class WebTestDelegate;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 
 class TestInterfaces {
  public:
@@ -43,12 +43,12 @@ class TestInterfaces {
                                bool generate_pixels);
   void SetAppBannerClient(AppBannerClient* app_banner_client);
 
-  void WindowOpened(WebTestProxyBase* proxy);
-  void WindowClosed(WebTestProxyBase* proxy);
+  void WindowOpened(WebViewTestProxyBase* proxy);
+  void WindowClosed(WebViewTestProxyBase* proxy);
 
   TestRunner* GetTestRunner();
   WebTestDelegate* GetDelegate();
-  const std::vector<WebTestProxyBase*>& GetWindowList();
+  const std::vector<WebViewTestProxyBase*>& GetWindowList();
   blink::WebThemeEngine* GetThemeEngine();
   AppBannerClient* GetAppBannerClient();
 
@@ -58,7 +58,7 @@ class TestInterfaces {
   WebTestDelegate* delegate_;
   AppBannerClient* app_banner_client_;
 
-  std::vector<WebTestProxyBase*> window_list_;
+  std::vector<WebViewTestProxyBase*> window_list_;
   blink::WebView* main_view_;
 
   std::unique_ptr<MockWebThemeEngine> theme_engine_;

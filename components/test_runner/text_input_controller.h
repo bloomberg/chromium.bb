@@ -18,14 +18,14 @@ class WebView;
 
 namespace test_runner {
 
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 
 // TextInputController is bound to window.textInputController in Javascript
 // when content_shell is running. Layout tests use it to exercise various
 // corners of text input.
 class TextInputController {
  public:
-  explicit TextInputController(WebTestProxyBase* web_test_proxy_base);
+  explicit TextInputController(WebViewTestProxyBase* web_view_test_proxy_base);
   ~TextInputController();
 
   void Install(blink::WebLocalFrame* frame);
@@ -45,7 +45,7 @@ class TextInputController {
   void SetComposition(const std::string& text);
 
   blink::WebView* view();
-  WebTestProxyBase* web_test_proxy_base_;
+  WebViewTestProxyBase* web_view_test_proxy_base_;
 
   base::WeakPtrFactory<TextInputController> weak_factory_;
 

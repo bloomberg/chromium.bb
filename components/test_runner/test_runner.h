@@ -459,7 +459,7 @@ class TestRunner : public WebTestRunner {
   // results will be the drag image instead of a snapshot of the page.
   void DumpDragImage();
 
-  // Sets a flag that tells the WebTestProxy to dump the default navigation
+  // Sets a flag that tells the WebViewTestProxy to dump the default navigation
   // policy passed to the decidePolicyForNavigation callback.
   void DumpNavigationPolicy();
 
@@ -468,7 +468,7 @@ class TestRunner : public WebTestRunner {
   void SetDumpConsoleMessages(bool value);
 
   ///////////////////////////////////////////////////////////////////////////
-  // Methods interacting with the WebTestProxy
+  // Methods interacting with the WebViewTestProxy
 
   ///////////////////////////////////////////////////////////////////////////
   // Methods forwarding to the WebTestDelegate

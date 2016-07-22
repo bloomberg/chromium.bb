@@ -31,7 +31,7 @@ class Arguments;
 namespace test_runner {
 
 class WebTestDelegate;
-class WebTestProxyBase;
+class WebViewTestProxyBase;
 
 // TestRunnerForSpecificView implements part of |testRunner| javascript bindings
 // that work with a view where the javascript call originated from.  Examples:
@@ -40,7 +40,8 @@ class WebTestProxyBase;
 // Note that "global" bindings are handled by TestRunner class.
 class TestRunnerForSpecificView {
  public:
-  explicit TestRunnerForSpecificView(WebTestProxyBase* web_test_proxy_base);
+  explicit TestRunnerForSpecificView(
+      WebViewTestProxyBase* web_view_test_proxy_base);
   ~TestRunnerForSpecificView();
 
   // Installs view-specific bindings (handled by |this|) and *also* global
@@ -216,10 +217,10 @@ class TestRunnerForSpecificView {
   std::string SelectionAsMarkup();
   void SetViewSourceForFrame(const std::string& name, bool enabled);
 
-  // Helpers for accessing pointers exposed by |web_test_proxy_base_|.
+  // Helpers for accessing pointers exposed by |web_view_test_proxy_base_|.
   blink::WebView* web_view();
   WebTestDelegate* delegate();
-  WebTestProxyBase* web_test_proxy_base_;
+  WebViewTestProxyBase* web_view_test_proxy_base_;
 
   base::WeakPtrFactory<TestRunnerForSpecificView> weak_factory_;
 

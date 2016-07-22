@@ -15,8 +15,8 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_frame_test_client.h"
-#include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_view_test_client.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "components/test_runner/web_widget_test_client.h"
 
 using namespace blink;
@@ -90,30 +90,29 @@ WebTestInterfaces::CreateAppBannerClient() {
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
-    WebTestProxyBase* web_test_proxy_base,
+    WebViewTestProxyBase* web_view_test_proxy_base,
     WebFrameTestProxyBase* web_frame_test_proxy_base) {
-  return base::WrapUnique(new WebFrameTestClient(interfaces_->GetTestRunner(),
-                                                 interfaces_->GetDelegate(),
-                                                 web_test_proxy_base,
-                                                 web_frame_test_proxy_base));
+  return base::WrapUnique(new WebFrameTestClient(
+      interfaces_->GetTestRunner(), interfaces_->GetDelegate(),
+      web_view_test_proxy_base, web_frame_test_proxy_base));
 }
 
 std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
-    WebTestProxyBase* web_test_proxy_base) {
-  return base::WrapUnique(
-      new WebViewTestClient(interfaces_->GetTestRunner(), web_test_proxy_base));
+    WebViewTestProxyBase* web_view_test_proxy_base) {
+  return base::WrapUnique(new WebViewTestClient(interfaces_->GetTestRunner(),
+                                                web_view_test_proxy_base));
 }
 
 std::unique_ptr<WebWidgetTestClient>
 WebTestInterfaces::CreateWebWidgetTestClient(
-    WebTestProxyBase* web_test_proxy_base) {
+    WebViewTestProxyBase* web_view_test_proxy_base) {
   return base::WrapUnique(new WebWidgetTestClient(interfaces_->GetTestRunner(),
-                                                  web_test_proxy_base));
+                                                  web_view_test_proxy_base));
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {
   std::vector<blink::WebView*> result;
-  for (WebTestProxyBase* proxy : interfaces_->GetWindowList())
+  for (WebViewTestProxyBase* proxy : interfaces_->GetWindowList())
     result.push_back(proxy->web_view());
   return result;
 }

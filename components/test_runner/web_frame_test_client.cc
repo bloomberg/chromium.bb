@@ -21,7 +21,7 @@
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_view_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -186,15 +186,15 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
 WebFrameTestClient::WebFrameTestClient(
     TestRunner* test_runner,
     WebTestDelegate* delegate,
-    WebTestProxyBase* web_test_proxy_base,
+    WebViewTestProxyBase* web_view_test_proxy_base,
     WebFrameTestProxyBase* web_frame_test_proxy_base)
     : test_runner_(test_runner),
       delegate_(delegate),
-      web_test_proxy_base_(web_test_proxy_base),
+      web_view_test_proxy_base_(web_view_test_proxy_base),
       web_frame_test_proxy_base_(web_frame_test_proxy_base) {
   DCHECK(test_runner);
   DCHECK(delegate_);
-  DCHECK(web_test_proxy_base_);
+  DCHECK(web_view_test_proxy_base_);
 }
 
 WebFrameTestClient::~WebFrameTestClient() {}
@@ -354,7 +354,7 @@ void WebFrameTestClient::postAccessibilityEvent(const blink::WebAXObject& obj,
   }
 
   AccessibilityController* accessibility_controller =
-      web_test_proxy_base_->accessibility_controller();
+      web_view_test_proxy_base_->accessibility_controller();
   accessibility_controller->NotificationReceived(obj, event_name);
   if (accessibility_controller->ShouldLogAccessibilityEvents()) {
     std::string message("AccessibilityNotification - ");
@@ -390,7 +390,8 @@ blink::WebPlugin* WebFrameTestClient::createPlugin(
 
 void WebFrameTestClient::showContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
-  web_test_proxy_base_->event_sender()->SetContextMenuData(context_menu_data);
+  web_view_test_proxy_base_->event_sender()->SetContextMenuData(
+      context_menu_data);
 }
 
 blink::WebUserMediaClient* WebFrameTestClient::userMediaClient() {
@@ -748,8 +749,8 @@ void WebFrameTestClient::checkIfAudioSinkExistsAndIsAuthorized(
 }
 
 void WebFrameTestClient::didClearWindowObject(blink::WebLocalFrame* frame) {
-  web_test_proxy_base_->test_interfaces()->BindTo(frame);
-  web_test_proxy_base_->BindTo(frame);
+  web_view_test_proxy_base_->test_interfaces()->BindTo(frame);
+  web_view_test_proxy_base_->BindTo(frame);
 }
 
 bool WebFrameTestClient::runFileChooser(
