@@ -177,7 +177,6 @@
         '../inspector_protocol/String16STL.h',
         '../inspector_protocol/Values.cpp',
         '../inspector_protocol/Values.h',
-        '../inspector_protocol/ValueConversions.cpp',
         '../inspector_protocol/ValueConversions.h',
 
         'Atomics.h',

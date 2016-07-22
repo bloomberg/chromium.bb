@@ -69,22 +69,22 @@ std::unique_ptr<AXProperty> createProperty(IgnoredReason reason)
 
 std::unique_ptr<AXValue> createValue(const String& value, const String& type)
 {
-    return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
+    return AXValue::create().setType(type).setValue(protocol::ValueConversions<String>::serialize(value)).build();
 }
 
 std::unique_ptr<AXValue> createValue(int value, const String& type)
 {
-    return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
+    return AXValue::create().setType(type).setValue(protocol::ValueConversions<int>::serialize(value)).build();
 }
 
 std::unique_ptr<AXValue> createValue(float value, const String& type)
 {
-    return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
+    return AXValue::create().setType(type).setValue(protocol::ValueConversions<double>::serialize(value)).build();
 }
 
 std::unique_ptr<AXValue> createBooleanValue(bool value, const String& type)
 {
-    return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
+    return AXValue::create().setType(type).setValue(protocol::ValueConversions<bool>::serialize(value)).build();
 }
 
 std::unique_ptr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, String* name = nullptr)

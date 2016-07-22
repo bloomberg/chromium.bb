@@ -857,7 +857,6 @@
       'inspector_protocol/String16WTF.h',
       'inspector_protocol/Values.cpp',
       'inspector_protocol/Values.h',
-      'inspector_protocol/ValueConversions.cpp',
       'inspector_protocol/ValueConversions.h',
       'mac/BlockExceptions.h',
       'mac/BlockExceptions.mm',
