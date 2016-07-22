@@ -247,6 +247,7 @@ template("framework_bundle") {
                                "bundle_deps",
                                "data_deps",
                                "info_plist",
+                               "info_plist_target",
                                "output_name",
                              ])
       if (defined(visibility)) {

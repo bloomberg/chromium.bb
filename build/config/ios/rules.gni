@@ -786,6 +786,33 @@ template("ios_framework_bundle") {
     }
   }
 
+  if (!_is_fat_build || _is_fat_build_main_target) {
+    _info_plist_target = _target_name + "_info_plist"
+    _info_plist_bundle = _target_name + "_info_plist_bundle"
+    ios_info_plist(_info_plist_target) {
+      visibility = [ ":$_info_plist_bundle" ]
+      executable_name = _output_name
+      forward_variables_from(invoker,
+                             [
+                               "extra_substitutions",
+                               "info_plist",
+                               "info_plist_target",
+                             ])
+    }
+
+    bundle_data(_info_plist_bundle) {
+      visibility = [ ":$_framework_target" ]
+      forward_variables_from(invoker, [ "testonly" ])
+      sources = get_target_outputs(":$_info_plist_target")
+      outputs = [
+        "{{bundle_root_dir}}/Info.plist",
+      ]
+      public_deps = [
+        ":$_info_plist_target",
+      ]
+    }
+  }
+
   framework_bundle(_framework_target) {
     forward_variables_from(invoker,
                            "*",
@@ -795,6 +822,13 @@ template("ios_framework_bundle") {
                              "visibility",
                            ])
     output_name = _output_name
+
+    if (!_is_fat_build || _is_fat_build_main_target) {
+      if (!defined(bundle_deps)) {
+        bundle_deps = []
+      }
+      bundle_deps += [ ":$_info_plist_bundle" ]
+    }
 
     if (_has_public_headers) {
       if (!defined(public_configs)) {

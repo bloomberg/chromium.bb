@@ -6,6 +6,7 @@ import("//build/config/ios/rules.gni")
 
 ios_framework_bundle("ochamcrest") {
   output_name = "OCHamcrest"
+  info_plist = "Info.plist"
 
   testonly = true
   sources = [

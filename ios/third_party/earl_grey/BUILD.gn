@@ -18,6 +18,7 @@ config("config") {
 
 ios_framework_bundle("earl_grey") {
   output_name = "EarlGrey"
+  info_plist = "Info.plist"
 
   testonly = true
   sources = [
