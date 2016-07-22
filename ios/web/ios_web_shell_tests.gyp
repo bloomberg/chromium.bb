@@ -63,8 +63,8 @@
         '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
       ],
       'sources': [
-        'shell/test/web_shell_navigation_egtest.mm',
-        'shell/test/web_shell_page_state_egtest.mm',
+        'shell/test/navigation_egtest.mm',
+        'shell/test/page_state_egtest.mm',
       ],
       'actions': [{
         'action_name': 'copy_test_data',

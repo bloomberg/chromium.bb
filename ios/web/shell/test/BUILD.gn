@@ -7,8 +7,8 @@ import("//ios/third_party/earl_grey/ios_eg_test.gni")
 
 ios_eg_test("ios_web_shell_test") {
   sources = [
-    "web_shell_navigation_egtest.mm",
-    "web_shell_page_state_egtest.mm",
+    "navigation_egtest.mm",
+    "page_state_egtest.mm",
   ]
 
   deps = [
