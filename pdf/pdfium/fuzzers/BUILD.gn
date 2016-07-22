@@ -33,6 +33,7 @@ fuzzer_test("pdf_jpx_fuzzer") {
   deps = [
     "//third_party/pdfium/testing/libfuzzer:pdf_jpx_fuzzer",
   ]
+  seed_corpus = "corpora/pdf_jpx"
 }
 
 if (pdf_enable_xfa) {
@@ -41,6 +42,7 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_bmp_fuzzer",
     ]
+    seed_corpus = "corpora/pdf_codec_bmp"
   }
 
   fuzzer_test("pdf_codec_gif_fuzzer") {
@@ -48,6 +50,8 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_gif_fuzzer",
     ]
+    dict = "dicts/pdf_codec_gif.dict"
+    seed_corpus = "corpora/pdf_codec_gif"
   }
 
   fuzzer_test("pdf_codec_jpeg_fuzzer") {
@@ -55,6 +59,8 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_jpeg_fuzzer",
     ]
+    dict = "dicts/pdf_codec_jpeg.dict"
+    seed_corpus = "corpora/pdf_codec_jpeg"
   }
 
   fuzzer_test("pdf_codec_png_fuzzer") {
@@ -62,6 +68,8 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_png_fuzzer",
     ]
+    dict = "dicts/pdf_codec_png.dict"
+    seed_corpus = "corpora/pdf_codec_png"
   }
 
   fuzzer_test("pdf_codec_tiff_fuzzer") {
@@ -69,6 +77,8 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_tiff_fuzzer",
     ]
+    dict = "dicts/pdf_codec_tiff.dict"
+    seed_corpus = "corpora/pdf_codec_tiff"
   }
 
   fuzzer_test("pdf_css_fuzzer") {
