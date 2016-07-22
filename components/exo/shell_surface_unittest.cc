@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
@@ -605,6 +607,41 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   ASSERT_TRUE(shadow);
   EXPECT_TRUE(shadow->layer()->visible());
   EXPECT_EQ(gfx::Rect(10, 10, 100, 100), shadow->layer()->parent()->bounds());
+}
+
+TEST_F(ShellSurfaceTest, ToggleFullscreen) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(
+      buffer_size.ToString(),
+      shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
+
+  shell_surface->Maximize();
+  EXPECT_EQ(CurrentContext()->bounds().width(),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
+
+  ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  ash::WmWindow* window =
+      ash::WmWindowAura::Get(shell_surface->GetWidget()->GetNativeWindow());
+
+  // Enter fullscreen mode.
+  window->GetWindowState()->OnWMEvent(&event);
+
+  EXPECT_EQ(CurrentContext()->bounds().ToString(),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
+
+  // Leave fullscreen mode.
+  window->GetWindowState()->OnWMEvent(&event);
+
+  // Check that shell surface is maximized.
+  EXPECT_EQ(CurrentContext()->bounds().width(),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
 }  // namespace
