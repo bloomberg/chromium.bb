@@ -2,11 +2,10 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
-pkgincludedir=${includedir}/libweston-@LIBWESTON_ABI_VERSION@
 
 Name: libweston API
 Description: Header files for libweston compositors development
 Version: @WESTON_VERSION@
 Requires.private: wayland-server pixman-1 xkbcommon
-Cflags: -I${pkgincludedir}
+Cflags: -I${includedir}/libweston-@LIBWESTON_ABI_VERSION@
 Libs: -L${libdir} -lweston-@LIBWESTON_ABI_VERSION@
