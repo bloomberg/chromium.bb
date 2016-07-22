@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/run_loop.h"
+
 namespace arc {
 
 FakeArcBridgeInstance::FakeArcBridgeInstance() : binding_(this) {}
@@ -14,6 +16,11 @@ FakeArcBridgeInstance::~FakeArcBridgeInstance() {}
 void FakeArcBridgeInstance::Init(mojom::ArcBridgeHostPtr host) {
   host_ptr_ = std::move(host);
   init_calls_++;
+
+  // Wake WaitForInitCall().
+  if (!quit_closure_.is_null())
+    quit_closure_.Run();
+  quit_closure_.Reset();
 }
 
 void FakeArcBridgeInstance::Unbind() {
@@ -28,7 +35,10 @@ void FakeArcBridgeInstance::Bind(
 }
 
 void FakeArcBridgeInstance::WaitForInitCall() {
-  binding_.WaitForIncomingMethodCall();
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  binding_.set_connection_error_handler(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void FakeArcBridgeInstance::Stop(ArcBridgeService::StopReason reason) {

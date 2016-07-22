@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_ARC_BRIDGE_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_ARC_BRIDGE_INSTANCE_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/arc_bridge.mojom.h"
@@ -46,6 +47,9 @@ class FakeArcBridgeInstance : public mojom::ArcBridgeInstance {
 
  private:
   Delegate* delegate_ = nullptr;
+
+  // Keeps quit closure to wake the running nested RunLoop.
+  base::Closure quit_closure_;
 
   // Mojo endpoints.
   mojo::Binding<mojom::ArcBridgeInstance> binding_;

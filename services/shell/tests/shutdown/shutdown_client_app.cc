@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
@@ -52,7 +53,12 @@ class ShutdownClientApp
 
     service->SetClient(std::move(client_ptr));
 
-    client_binding.WaitForIncomingMethodCall();
+    base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
+        base::MessageLoop::current());
+    base::RunLoop run_loop;
+    client_binding.set_connection_error_handler(run_loop.QuitClosure());
+    run_loop.Run();
+
     callback.Run();
   }
 
