@@ -429,17 +429,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Get the URL from the appropriate stream headers, or the empty
   // GURL() if it is unknown.
-  //
-  // TODO(akalin): Figure out if we really need this function,
-  // i.e. can we just use the URL this stream was created with and/or
-  // one we receive headers validate that the URL from them is the
-  // same.
-  GURL GetUrlFromHeaders() const;
-
-  // Returns whether the URL for this stream is known.
-  //
-  // TODO(akalin): Remove this, as it's only used in tests.
-  bool HasUrlFromHeaders() const;
+  const GURL& GetUrlFromHeaders() const { return url_from_header_block_; }
 
  private:
   class SynStreamBufferProducer;
@@ -522,11 +512,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
   SpdyStream::Delegate* delegate_;
 
   // The headers for the request to send.
-  //
-  // TODO(akalin): Hang onto this only until we send it. This
-  // necessitates stashing the URL separately.
   bool request_headers_valid_;
   SpdyHeaderBlock request_headers_;
+
+  // The URL from the request headers.
+  GURL url_from_header_block_;
 
   // Data waiting to be sent, and the close state of the local endpoint
   // after the data is fully written.

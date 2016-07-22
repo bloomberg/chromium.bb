@@ -209,7 +209,8 @@ std::unique_ptr<SpdySerializedFrame> SpdyStream::ProduceSynStreamFrame() {
       (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
   std::unique_ptr<SpdySerializedFrame> frame(session_->CreateSynStream(
-      stream_id_, priority_, flags, request_headers_.Clone()));
+      stream_id_, priority_, flags, std::move(request_headers_)));
+  request_headers_valid_ = false;
   send_time_ = base::TimeTicks::Now();
   return frame;
 }
@@ -473,6 +474,7 @@ void SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
   io_state_ = STATE_RESERVED_REMOTE;
   request_headers_ = headers.Clone();
   request_headers_valid_ = true;
+  url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
 }
 
 void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
@@ -691,6 +693,7 @@ int SpdyStream::SendRequestHeaders(SpdyHeaderBlock request_headers,
   CHECK_EQ(io_state_, STATE_IDLE);
   request_headers_ = std::move(request_headers);
   request_headers_valid_ = true;
+  url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
   pending_send_status_ = send_status;
   session_->EnqueueStreamWrite(GetWeakPtr(), SYN_STREAM,
                                std::unique_ptr<SpdyBufferProducer>(
@@ -773,17 +776,6 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
       load_timing_info->push_end = recv_last_byte_time_;
   }
   return result;
-}
-
-GURL SpdyStream::GetUrlFromHeaders() const {
-  if (!request_headers_valid_)
-    return GURL();
-
-  return GetUrlFromHeaderBlock(request_headers_);
-}
-
-bool SpdyStream::HasUrlFromHeaders() const {
-  return !GetUrlFromHeaders().is_empty();
 }
 
 void SpdyStream::UpdateHistograms() {
