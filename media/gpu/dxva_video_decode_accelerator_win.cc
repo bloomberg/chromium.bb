@@ -39,7 +39,6 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
-#include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/dxva_picture_buffer_win.h"
 #include "media/video/video_decode_accelerator.h"
@@ -188,6 +187,42 @@ static const DWORD g_IntelLegacyGPUList[] = {
     0x102, 0x106, 0x116, 0x126,
 };
 
+// Provides scoped access to the underlying buffer in an IMFMediaBuffer
+// instance.
+class MediaBufferScopedPointer {
+ public:
+  explicit MediaBufferScopedPointer(IMFMediaBuffer* media_buffer)
+      : media_buffer_(media_buffer),
+        buffer_(nullptr),
+        max_length_(0),
+        current_length_(0) {
+    HRESULT hr = media_buffer_->Lock(&buffer_, &max_length_, &current_length_);
+    CHECK(SUCCEEDED(hr));
+  }
+
+  ~MediaBufferScopedPointer() {
+    HRESULT hr = media_buffer_->Unlock();
+    CHECK(SUCCEEDED(hr));
+  }
+
+  uint8_t* get() { return buffer_; }
+
+  DWORD current_length() const { return current_length_; }
+
+ private:
+  base::win::ScopedComPtr<IMFMediaBuffer> media_buffer_;
+  uint8_t* buffer_;
+  DWORD max_length_;
+  DWORD current_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaBufferScopedPointer);
+};
+
+void LogDXVAError(int line) {
+  LOG(ERROR) << "Error in dxva_video_decode_accelerator_win.cc on line "
+             << line;
+}
+
 }  // namespace
 
 namespace media {
@@ -199,6 +234,34 @@ static const VideoCodecProfile kSupportedProfiles[] = {
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
+
+#define RETURN_ON_FAILURE(result, log, ret) \
+  do {                                      \
+    if (!(result)) {                        \
+      DLOG(ERROR) << log;                   \
+      LogDXVAError(__LINE__);               \
+      return ret;                           \
+    }                                       \
+  } while (0)
+
+#define RETURN_ON_HR_FAILURE(result, log, ret) \
+  RETURN_ON_FAILURE(SUCCEEDED(result),         \
+                    log << ", HRESULT: 0x" << std::hex << result, ret);
+
+#define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
+  do {                                                             \
+    if (!(result)) {                                               \
+      DVLOG(1) << log;                                             \
+      LogDXVAError(__LINE__);                                      \
+      StopOnError(error_code);                                     \
+      return ret;                                                  \
+    }                                                              \
+  } while (0)
+
+#define RETURN_AND_NOTIFY_ON_HR_FAILURE(result, log, error_code, ret)        \
+  RETURN_AND_NOTIFY_ON_FAILURE(SUCCEEDED(result),                            \
+                               log << ", HRESULT: 0x" << std::hex << result, \
+                               error_code, ret);
 
 enum {
   // Maximum number of iterations we allow before aborting the attempt to flush
@@ -219,6 +282,41 @@ enum {
   kAcquireSyncWaitMs = 0,
 };
 
+static IMFSample* CreateEmptySample() {
+  base::win::ScopedComPtr<IMFSample> sample;
+  HRESULT hr = MFCreateSample(sample.Receive());
+  RETURN_ON_HR_FAILURE(hr, "MFCreateSample failed", NULL);
+  return sample.Detach();
+}
+
+// Creates a Media Foundation sample with one buffer of length |buffer_length|
+// on a |align|-byte boundary. Alignment must be a perfect power of 2 or 0.
+static IMFSample* CreateEmptySampleWithBuffer(uint32_t buffer_length,
+                                              int align) {
+  CHECK_GT(buffer_length, 0U);
+
+  base::win::ScopedComPtr<IMFSample> sample;
+  sample.Attach(CreateEmptySample());
+
+  base::win::ScopedComPtr<IMFMediaBuffer> buffer;
+  HRESULT hr = E_FAIL;
+  if (align == 0) {
+    // Note that MFCreateMemoryBuffer is same as MFCreateAlignedMemoryBuffer
+    // with the align argument being 0.
+    hr = MFCreateMemoryBuffer(buffer_length, buffer.Receive());
+  } else {
+    hr =
+        MFCreateAlignedMemoryBuffer(buffer_length, align - 1, buffer.Receive());
+  }
+  RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample", NULL);
+
+  hr = sample->AddBuffer(buffer.get());
+  RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample", NULL);
+
+  buffer->SetCurrentLength(0);
+  return sample.Detach();
+}
+
 // Creates a Media Foundation sample with one buffer containing a copy of the
 // given Annex B stream data.
 // If duration and sample time are not known, provide 0.
@@ -232,7 +330,7 @@ static IMFSample* CreateInputSample(const uint8_t* stream,
   CHECK_GT(size, 0U);
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(
-      mf::CreateEmptySampleWithBuffer(std::max(min_size, size), alignment));
+      CreateEmptySampleWithBuffer(std::max(min_size, size), alignment));
   RETURN_ON_FAILURE(sample.get(), "Failed to create empty sample", NULL);
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
@@ -2653,7 +2751,7 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(IMFSample* sample,
   HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from input sample", hr);
 
-  mf::MediaBufferScopedPointer scoped_media_buffer(buffer.get());
+  MediaBufferScopedPointer scoped_media_buffer(buffer.get());
 
   if (!config_change_detector_->DetectConfig(
           scoped_media_buffer.get(), scoped_media_buffer.current_length())) {

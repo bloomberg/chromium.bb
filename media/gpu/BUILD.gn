@@ -337,8 +337,6 @@ component("gpu") {
       "dxva_picture_buffer_win.h",
       "dxva_video_decode_accelerator_win.cc",
       "dxva_video_decode_accelerator_win.h",
-      "media_foundation_video_encode_accelerator_win.cc",
-      "media_foundation_video_encode_accelerator_win.h",
     ]
     configs += [
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -346,10 +344,7 @@ component("gpu") {
       "//third_party/khronos:khronos_headers",
     ]
     public_deps += [ "//media/base/win" ]
-    deps += [
-      "//third_party/angle:includes",
-      "//third_party/libyuv",
-    ]
+    deps += [ "//third_party/angle:includes" ]
     libs += [
       "d3d9.lib",
       "d3d11.lib",
@@ -439,7 +434,7 @@ if (is_win || is_android || is_chromeos) {
   }
 }
 
-if (is_chromeos || is_mac || is_win) {
+if (is_chromeos || is_mac) {
   test("video_encode_accelerator_unittest") {
     deps = [
       "//base",
