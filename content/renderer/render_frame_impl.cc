@@ -4810,6 +4810,9 @@ void RenderFrameImpl::didStopLoading() {
                "id", routing_id_);
   render_view_->FrameDidStopLoading(frame_);
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
+
+  // Clear any pending NavigationParams if they didn't get used.
+  pending_navigation_params_.reset();
 }
 
 void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
@@ -5649,9 +5652,6 @@ void RenderFrameImpl::NavigateInternal(
     if (!frame_->isLoading() && !has_history_navigation_in_frame)
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
-
-  // In case LoadRequest failed before didCreateDataSource was called.
-  pending_navigation_params_.reset();
 }
 
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,

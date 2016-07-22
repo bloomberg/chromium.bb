@@ -58,6 +58,8 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
     IPC_BEGIN_MESSAGE_MAP(RequestPrintPreviewObserver, message)
       IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
                           OnRequestPrintPreview)
+      IPC_MESSAGE_HANDLER(PrintHostMsg_SetupScriptedPrintPreview,
+                          OnSetupScriptedPrintPreview)
       IPC_MESSAGE_UNHANDLED(break)
     IPC_END_MESSAGE_MAP()
     return false;  // Report not handled so the real handler receives it.
@@ -65,6 +67,10 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
 
   void OnRequestPrintPreview(
       const PrintHostMsg_RequestPrintPreview_Params& /* params */) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+  }
+
+  void OnSetupScriptedPrintPreview() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
   }
 
@@ -97,21 +103,65 @@ class PrintPreviewDialogClonedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogClonedObserver);
 };
 
+class PrintPreviewDialogStartedObserver : public WebContentsObserver {
+ public:
+  explicit PrintPreviewDialogStartedObserver(WebContents* dialog)
+      : WebContentsObserver(dialog), waiting_(false), dialog_started_(false) {}
+  ~PrintPreviewDialogStartedObserver() override {}
+
+  bool dialog_started() const { return dialog_started_; }
+
+  void WaitForDialogStarted() {
+    waiting_ = true;
+    run_loop_.Run();
+  }
+
+ private:
+  // content::WebContentsObserver implementation.
+  void RenderViewReady() override {
+    dialog_started_ = true;
+    if (waiting_)
+      run_loop_.Quit();
+  }
+
+  void WebContentsDestroyed() override {
+    if (waiting_)
+      run_loop_.Quit();
+  }
+
+  bool waiting_;
+  bool dialog_started_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogStartedObserver);
+};
+
 class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
  public:
   explicit PrintPreviewDialogDestroyedObserver(WebContents* dialog)
       : WebContentsObserver(dialog),
-        dialog_destroyed_(false) {
-  }
+        waiting_(false),
+        dialog_destroyed_(false) {}
   ~PrintPreviewDialogDestroyedObserver() override {}
 
   bool dialog_destroyed() const { return dialog_destroyed_; }
 
+  void WaitForDialogDestroyed() {
+    waiting_ = true;
+    run_loop_.Run();
+  }
+
  private:
   // content::WebContentsObserver implementation.
-  void WebContentsDestroyed() override { dialog_destroyed_ = true; }
+  void WebContentsDestroyed() override {
+    dialog_destroyed_ = true;
+    if (waiting_)
+      run_loop_.Quit();
+  }
 
+  bool waiting_;
   bool dialog_destroyed_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDestroyedObserver);
 };
@@ -165,6 +215,14 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     request_preview_dialog_observer()->set_quit_closure(run_loop.QuitClosure());
     chrome::Print(browser());
+    run_loop.Run();
+  }
+
+  void PrintPreviewViaScript(base::StringPiece script) {
+    base::RunLoop run_loop;
+    request_preview_dialog_observer()->set_quit_closure(run_loop.QuitClosure());
+    initiator()->GetMainFrame()->ExecuteJavaScriptForTests(
+        base::ASCIIToUTF16(script));
     run_loop.Run();
   }
 
@@ -238,6 +296,52 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   // Check a new preview dialog got created.
   EXPECT_TRUE(new_preview_dialog);
+}
+
+// Ensure that back/forward navigations with ScopedPageLoadDeferrers (e.g.,
+// during printing) end up committing to the correct NavigationEntry.
+// See https://crbug.com/626838.
+IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
+                       HistoryNavigateDuringPrint) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,page1"));
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,page2"));
+  EXPECT_EQ(2, tab->GetController().GetEntryCount());
+  EXPECT_EQ(1, tab->GetController().GetLastCommittedEntryIndex());
+
+  // Go back via script, but before that gets a chance to commit, show a print
+  // dialog with a nested message loop and ScopedPageLoadDeferrer.
+  PrintPreviewViaScript("history.back(); print();");
+
+  // Get the preview dialog for the initiator tab.
+  WebContents* preview_dialog = GetPrintPreviewDialog();
+
+  // Check a new print preview dialog got created.
+  ASSERT_TRUE(preview_dialog);
+  ASSERT_NE(initiator(), preview_dialog);
+
+  bool started = preview_dialog->GetRenderProcessHost()->IsReady();
+  if (!started) {
+    PrintPreviewDialogStartedObserver started_observer(preview_dialog);
+    started_observer.WaitForDialogStarted();
+    started = started_observer.dialog_started();
+  }
+
+  if (started) {
+    // Dismiss the dialog.
+    PrintPreviewDialogDestroyedObserver destroyed_observer(preview_dialog);
+    ASSERT_TRUE(preview_dialog->GetRenderProcessHost()->Shutdown(0, true));
+    if (!destroyed_observer.dialog_destroyed()) {
+      destroyed_observer.WaitForDialogDestroyed();
+      ASSERT_TRUE(destroyed_observer.dialog_destroyed());
+    }
+  }
+  ASSERT_FALSE(GetPrintPreviewDialog());
+
+  // The back navigation should put us back on the first entry.
+  content::WaitForLoadStop(tab);
+  EXPECT_EQ(2, tab->GetController().GetEntryCount());
+  EXPECT_EQ(0, tab->GetController().GetLastCommittedEntryIndex());
 }
 
 // Test to verify that after reloading the initiator, it creates a new print
