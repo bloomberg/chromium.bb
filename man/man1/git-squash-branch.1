@@ -2,12 +2,12 @@
 .\"     Title: git-squash-branch
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\"      Date: 07/21/2016
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 68b1017
+.\"    Source: depot_tools bf2a341
 .\"  Language: English
 .\"
-.TH "GIT\-SQUASH\-BRANCH" "1" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
+.TH "GIT\-SQUASH\-BRANCH" "1" "07/21/2016" "depot_tools bf2a341" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -55,7 +55,7 @@ Optional message to use for the first line of the squashed commit\&. If omitted,
 .\}
 .nf
 \fB$ git map\fR
-\fB* d0fb9c7	\fR (\fBfrozen_branch\fR) 2014\-04\-10 ~ FREEZE\&.unindexed
+* \fBd0fb9c7	\fR (HEAD \-> frozen_branch) 2014\-04\-10 ~ FREEZE\&.unindexed
 * \fBf48f415	\fR 2014\-04\-10 ~ modfile
 * \fB4c5b9c0	\fR 2014\-04\-10 ~ a deleted file
 * \fBf7ce1e4	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
@@ -77,7 +77,7 @@ Optional message to use for the first line of the squashed commit\&. If omitted,
 * \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
 \fB$ git squash\-branch \-m \*(Aqcool squash demo\*(Aq\fR
 \fB$ git map\fR
-\fB* 98e69e8	\fR (\fBfrozen_branch\fR) 2014\-04\-10 ~ cool squash demo
+* \fB98e69e8	\fR (HEAD \-> frozen_branch) 2014\-04\-10 ~ cool squash demo
 * \fBf7ce1e4	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
 * \fB3726937	\fR 2014\-04\-10 ~ Epic README update
 | * \fB14db2e5	\fR (\fBcool_feature\fR) 2014\-04\-10 ~ Respond to CL comments
@@ -125,5 +125,5 @@ Part of the chromium \fBdepot_tools\fR(7) suite\&. These tools are meant to assi
 .IP " 1." 4
 here
 .RS 4
-\%https://chromium.googlesource.com/chromium/tools/depot_tools.git
+\%https://chromium.googlesource.com/chromium/tools/depot_tools
 .RE

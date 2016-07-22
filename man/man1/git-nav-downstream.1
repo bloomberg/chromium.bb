@@ -2,12 +2,12 @@
 .\"     Title: git-nav-downstream
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\"      Date: 07/21/2016
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 1ce0237
+.\"    Source: depot_tools bf2a341
 .\"  Language: English
 .\"
-.TH "GIT\-NAV\-DOWNSTREAM" "1" "04/10/2014" "depot_tools 1ce0237" "Chromium depot_tools Manual"
+.TH "GIT\-NAV\-DOWNSTREAM" "1" "07/21/2016" "depot_tools bf2a341" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -47,20 +47,20 @@ git-nav-downstream \- Checkout a downstream branch of the currently checked out 
 .\}
 .nf
 \fB$ git map\-branches\fR
-\fBorigin/master *
+\fBorigin/master
 \fR  cool_feature
     subfeature
   fixit
     frozen_branch
 \fB$ git nav\-downstream\fR
-Please select a downstream branch
-  0\&. cool_feature
-  1\&. fixit
-Selection (0\-1)[0]: 0
 Previous HEAD position was beec6f4\&.\&.\&. Make ReflectorImpl use mailboxes
 Switched to branch \*(Aqcool_feature\*(Aq
 Your branch is ahead of \*(Aqorigin/master\*(Aq by 4 commits\&.
   (use "git push" to publish your local commits)
+Please select a downstream branch
+  0\&. cool_feature
+  1\&. fixit
+Selection (0\-1)[0]: 0
 \fB$ git map\-branches\fR
 origin/master
 \fB  cool_feature *
@@ -108,5 +108,5 @@ Part of the chromium \fBdepot_tools\fR(7) suite\&. These tools are meant to assi
 .IP " 1." 4
 here
 .RS 4
-\%https://chromium.googlesource.com/chromium/tools/depot_tools.git
+\%https://chromium.googlesource.com/chromium/tools/depot_tools
 .RE
