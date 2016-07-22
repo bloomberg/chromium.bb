@@ -131,10 +131,10 @@ void VertexAttribManager::Initialize(uint32_t max_vertex_attribs,
   uint32_t packed_size = max_vertex_attribs_ / 16;
   packed_size += (max_vertex_attribs_ % 16 == 0) ? 0 : 1;
   attrib_base_type_mask_.resize(packed_size);
-  attrib_type_written_mask_.resize(packed_size);
+  attrib_enabled_mask_.resize(packed_size);
 
   for (uint32_t ii = 0; ii < packed_size; ++ii) {
-    attrib_type_written_mask_[ii] = 0u;
+    attrib_enabled_mask_[ii] = 0u;
     attrib_base_type_mask_[ii] = 0u;
   }
 
@@ -160,9 +160,9 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   DCHECK(index < max_vertex_attribs_);
   GLuint shift_bits = (index % 16) * 2;
   if (enable) {
-    attrib_type_written_mask_[index / 16] |= (0x3 << shift_bits);
+    attrib_enabled_mask_[index / 16] |= (0x3 << shift_bits);
   } else {
-    attrib_type_written_mask_[index / 16] &= ~(0x3 << shift_bits);
+    attrib_enabled_mask_[index / 16] &= ~(0x3 << shift_bits);
   }
 
   VertexAttrib& info = vertex_attribs_[index];

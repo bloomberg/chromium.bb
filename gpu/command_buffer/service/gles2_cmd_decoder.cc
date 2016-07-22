@@ -9142,14 +9142,14 @@ bool GLES2DecoderImpl::AttribsTypeMatch() {
   for (uint32_t index = 0; index < group_->max_vertex_attribs(); index += 16) {
     uint32_t shader_attrib_written_mask =
         state_.current_program->vertex_input_type_written_mask(index);
-    uint32_t vao_attrib_written_mask =
-        state_.vertex_attrib_manager->attrib_type_written_mask(index);
+    uint32_t vao_attrib_enabled_mask =
+        state_.vertex_attrib_manager->attrib_enabled_mask(index);
 
     uint32_t vertex_attrib_base_type_mask =
-        (~vao_attrib_written_mask &
-        state_.GetGenericVertexAttribBaseTypeMask(index)) |
-        (vao_attrib_written_mask &
-        state_.vertex_attrib_manager->attrib_base_type_mask(index));
+        (~vao_attrib_enabled_mask &
+         state_.GetGenericVertexAttribBaseTypeMask(index)) |
+        (vao_attrib_enabled_mask &
+         state_.vertex_attrib_manager->attrib_base_type_mask(index));
 
     if ((state_.current_program->vertex_input_base_type_mask(index)
          & shader_attrib_written_mask) !=

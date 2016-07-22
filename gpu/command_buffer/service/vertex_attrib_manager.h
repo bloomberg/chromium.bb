@@ -203,7 +203,7 @@ class GPU_EXPORT VertexAttribManager :
   void UpdateAttribBaseTypeAndMask(GLuint loc, GLenum base_type) {
     DCHECK(loc < max_vertex_attribs_);
     int shift_bits = (loc % 16) * 2;
-    attrib_type_written_mask_[loc / 16] |= (0x3 << shift_bits);
+    attrib_enabled_mask_[loc / 16] |= (0x3 << shift_bits);
     attrib_base_type_mask_[loc / 16] &= ~(0x3 << shift_bits);
     attrib_base_type_mask_[loc / 16] |= base_type << shift_bits;
   }
@@ -217,9 +217,9 @@ class GPU_EXPORT VertexAttribManager :
 
   // Return 16 attributes' type written masks, in which the
   // attribute specified by argument 'loc' located.
-  uint32_t attrib_type_written_mask(GLuint loc) const {
+  uint32_t attrib_enabled_mask(GLuint loc) const {
     DCHECK(loc < max_vertex_attribs_);
-    return attrib_type_written_mask_[loc / 16];
+    return attrib_enabled_mask_[loc / 16];
   }
 
   void SetAttribInfo(
@@ -311,9 +311,10 @@ class GPU_EXPORT VertexAttribManager :
   // Each base type is encoded into 2 bits, the lowest 2 bits for location 0,
   // the highest 2 bits for location (max_vertex_attribs_ - 1).
   std::vector<uint32_t> attrib_base_type_mask_;
-  // Same layout as above, 2 bits per location, 0x03 if a location is set
-  // by vertexAttrib API, 0x00 if not.
-  std::vector<uint32_t> attrib_type_written_mask_;
+  // Same layout as above, 2 bits per location, 0x03 if a location for an
+  // vertex attrib is enabled by enabbleVertexAttribArray, 0x00 if it is
+  // disabled by disableVertexAttribArray. Every location is 0x00 by default.
+  std::vector<uint32_t> attrib_enabled_mask_;
 
   // The currently bound element array buffer. If this is 0 it is illegal
   // to call glDrawElements.

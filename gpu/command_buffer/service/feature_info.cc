@@ -1433,10 +1433,10 @@ bool FeatureInfo::IsWebGL2OrES3Context() const {
     case CONTEXT_TYPE_WEBGL1:
     case CONTEXT_TYPE_OPENGLES2:
       return false;
-    default:
-      NOTREACHED();
-      return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 void FeatureInfo::AddExtensionString(const char* s) {

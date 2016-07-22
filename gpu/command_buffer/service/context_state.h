@@ -250,7 +250,8 @@ struct GPU_EXPORT ContextState {
       packed_size += (max_vertex_attribs_ % 16 == 0) ? 0 : 1;
       generic_attrib_base_type_mask_.resize(packed_size);
       for (uint32_t i = 0; i < packed_size; ++i) {
-        generic_attrib_base_type_mask_[i] = 0xFFFFFFFF;
+        // All generic attribs are float type by default.
+        generic_attrib_base_type_mask_[i] = 0x55555555u * SHADER_VARIABLE_FLOAT;
       }
   }
 
