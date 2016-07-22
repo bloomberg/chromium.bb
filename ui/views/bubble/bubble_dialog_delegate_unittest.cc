@@ -11,7 +11,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -321,7 +321,7 @@ TEST_F(BubbleDialogDelegateTest, CloseMethods) {
         BubbleDialogDelegateView::CreateBubble(bubble_delegate);
     bubble_widget->Show();
     BubbleFrameView* frame_view = bubble_delegate->GetBubbleFrameView();
-    ImageButton* close_button = frame_view->close_;
+    LabelButton* close_button = frame_view->close_;
     ASSERT_TRUE(close_button);
     frame_view->ButtonPressed(
         close_button,

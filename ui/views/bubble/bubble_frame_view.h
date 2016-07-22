@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace gfx {
@@ -36,7 +35,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   ~BubbleFrameView() override;
 
   // Creates a close button used in the corner of the dialog.
-  static ImageButton* CreateCloseButton(ButtonListener* listener);
+  static LabelButton* CreateCloseButton(ButtonListener* listener);
 
   // NonClientFrameView overrides:
   gfx::Rect GetBoundsForClientView() const override;
@@ -86,7 +85,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   bool close_button_clicked() const { return close_button_clicked_; }
 
-  ImageButton* GetCloseButtonForTest() { return close_; }
+  LabelButton* GetCloseButtonForTest() { return close_; }
 
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
@@ -126,7 +125,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // The optional title icon, title, and (x) close button.
   views::ImageView* title_icon_;
   Label* title_;
-  ImageButton* close_;
+  LabelButton* close_;
 
   // A view to contain the footnote view, if it exists.
   View* footnote_container_;

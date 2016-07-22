@@ -19,7 +19,7 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -168,7 +168,7 @@ class AppListDialogContainer : public BaseDialogContainer,
     }
   }
 
-  views::ImageButton* close_button_;
+  views::LabelButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListDialogContainer);
 };

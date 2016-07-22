@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -37,8 +36,7 @@ const int kPreferredClientHeight = 250;
 // These account for non-client areas like the title bar, footnote etc. However
 // these do not take the bubble border into consideration.
 const int kExpectedAdditionalWidth = 12;
-// 12 for the builtin margin, 14 for the close button margin
-const int kExpectedAdditionalHeight = 12 + 14;
+const int kExpectedAdditionalHeight = 12;
 
 class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
  public:
@@ -121,11 +119,9 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
 
   int margin_x = frame.content_margins().left();
   int margin_y = frame.content_margins().top();
-  int close_y = frame.GetCloseButtonForTest()->height();
   gfx::Insets insets = frame.bubble_border()->GetInsets();
   EXPECT_EQ(insets.left() + margin_x, frame.GetBoundsForClientView().x());
-  EXPECT_EQ(insets.top() + margin_y + close_y,
-            frame.GetBoundsForClientView().y());
+  EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.
@@ -441,9 +437,6 @@ TEST_F(BubbleFrameViewTest, GetMinimumSize) {
   // Expect that a border has been added to the minimum size.
   minimum_rect.Inset(frame.bubble_border()->GetInsets());
 
-  ImageButton* button = frame.GetCloseButtonForTest();
-  EXPECT_EQ(button->height(), 14);
-  EXPECT_EQ(nullptr, frame.GetCloseButtonForTest()->border());
   gfx::Size expected_size(kMinimumClientWidth + kExpectedAdditionalWidth,
                           kMinimumClientHeight + kExpectedAdditionalHeight);
   EXPECT_EQ(expected_size, minimum_rect.size());
