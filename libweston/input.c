@@ -380,31 +380,42 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 }
 
 static void
+weston_pointer_send_button(struct weston_pointer *pointer,
+			   uint32_t time, uint32_t button, uint32_t state_w)
+{
+	struct wl_display *display = pointer->seat->compositor->wl_display;
+	struct wl_list *resource_list;
+	struct wl_resource *resource;
+	uint32_t serial;
+
+	if (!pointer->focus_client)
+		return;
+
+	resource_list = &pointer->focus_client->pointer_resources;
+	if (resource_list && !wl_list_empty(resource_list)) {
+		resource_list = &pointer->focus_client->pointer_resources;
+		serial = wl_display_next_serial(display);
+		wl_resource_for_each(resource, resource_list) {
+			wl_pointer_send_button(resource,
+					       serial,
+					       time,
+					       button,
+					       state_w);
+		}
+	}
+}
+
+static void
 default_grab_pointer_button(struct weston_pointer_grab *grab,
 			    uint32_t time, uint32_t button, uint32_t state_w)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	struct weston_compositor *compositor = pointer->seat->compositor;
 	struct weston_view *view;
-	struct wl_resource *resource;
-	uint32_t serial;
 	enum wl_pointer_button_state state = state_w;
-	struct wl_display *display = compositor->wl_display;
 	wl_fixed_t sx, sy;
-	struct wl_list *resource_list = NULL;
 
-	if (pointer->focus_client)
-		resource_list = &pointer->focus_client->pointer_resources;
-	if (resource_list && !wl_list_empty(resource_list)) {
-		resource_list = &pointer->focus_client->pointer_resources;
-		serial = wl_display_next_serial(display);
-		wl_resource_for_each(resource, resource_list)
-			wl_pointer_send_button(resource,
-					       serial,
-					       time,
-					       button,
-					       state_w);
-	}
+	weston_pointer_send_button(pointer, time, button, state_w);
 
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
