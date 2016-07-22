@@ -26,7 +26,8 @@ namespace webm {
 // Spec reference for string/binary elements:
 // http://matroska.org/technical/specs/index.html#EBML_ex
 // https://github.com/Matroska-Org/ebml-specification/blob/master/specification.markdown#ebml-element-types
-template <typename T> class ByteParser : public ElementParser {
+template <typename T>
+class ByteParser : public ElementParser {
  public:
   static_assert(std::is_same<T, std::vector<std::uint8_t>>::value ||
                     std::is_same<T, std::string>::value,

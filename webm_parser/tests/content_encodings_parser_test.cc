@@ -35,7 +35,7 @@ TEST_F(ContentEncodingsParserTest, DefaultParse) {
 TEST_F(ContentEncodingsParserTest, DefaultValues) {
   SetReaderData({
       0x62, 0x40,  // ID = 0x6240 (ContentEncoding).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -50,18 +50,18 @@ TEST_F(ContentEncodingsParserTest, DefaultValues) {
 TEST_F(ContentEncodingsParserTest, CustomValues) {
   SetReaderData({
       0x62, 0x40,  // ID = 0x6240 (ContentEncoding).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x50, 0x31,  //   ID = 0x5031 (ContentEncodingOrder).
-      0x81,        //   Size = 1.
-      0x01,        //   Body (value = 1).
+      0x81,  //   Size = 1.
+      0x01,  //   Body (value = 1).
 
       0x62, 0x40,  // ID = 0x6240 (ContentEncoding).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x50, 0x31,  //   ID = 0x5031 (ContentEncodingOrder).
-      0x81,        //   Size = 1.
-      0x02,        //   Body (value = 2).
+      0x81,  //   Size = 1.
+      0x02,  //   Body (value = 2).
   });
 
   ParseAndVerify();

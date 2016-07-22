@@ -59,7 +59,7 @@ TEST_F(WebmParserTest, InvalidId) {
 TEST_F(WebmParserTest, InvalidSize) {
   BufferReader reader = {
       0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
-      0x00,                    // Size must have 1+ bits set in the first byte.
+      0x00,  // Size must have 1+ bits set in the first byte.
   };
 
   MockCallback callback;
@@ -80,10 +80,10 @@ TEST_F(WebmParserTest, InvalidSize) {
 TEST_F(WebmParserTest, DefaultParse) {
   BufferReader reader = {
       0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
-      0x80,                    // Size = 0.
+      0x80,  // Size = 0.
 
       0x18, 0x53, 0x80, 0x67,  // ID = 0x18538067 (Segment).
-      0x80,                    // Size = 0.
+      0x80,  // Size = 0.
   };
 
   MockCallback callback;
@@ -109,11 +109,11 @@ TEST_F(WebmParserTest, DefaultParse) {
 TEST_F(WebmParserTest, SeekEbml) {
   BufferReader reader = {
       0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
-      0x87,                    // Size = 7.
+      0x87,  // Size = 7.
 
-      0x42, 0x86,              //   ID = 0x4286 (EBMLVersion).
+      0x42, 0x86,  //   ID = 0x4286 (EBMLVersion).
       0x10, 0x00, 0x00, 0x01,  //   Size = 1.
-      0x02,                    //   Body (value = 2).
+      0x02,  //   Body (value = 2).
   };
   std::uint64_t num_to_skip = 5;  // Skip the starting EBML element metadata.
   std::uint64_t num_actually_skipped = 0;
@@ -144,10 +144,10 @@ TEST_F(WebmParserTest, SeekEbml) {
 TEST_F(WebmParserTest, SeekSegment) {
   BufferReader reader = {
       0x18, 0x53, 0x80, 0x67,  // ID = 0x18538067 (Segment).
-      0x85,                    // Size = 5.
+      0x85,  // Size = 5.
 
       0x15, 0x49, 0xA9, 0x66,  //   ID = 0x1549A966 (Info).
-      0x80,                    //   Size = 0.
+      0x80,  //   Size = 0.
   };
   std::uint64_t num_to_skip = 5;  // Skip the starting Segment element metadata.
   std::uint64_t num_actually_skipped = 0;
@@ -185,7 +185,7 @@ TEST_F(WebmParserTest, SeekVoid) {
       0x00,  // Body.
 
       0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
-      0x80,                    // Size = 0.
+      0x80,  // Size = 0.
   };
   std::uint64_t num_to_skip = 2;  // Skip the first Void element.
   std::uint64_t num_actually_skipped = 0;
@@ -261,7 +261,7 @@ TEST_F(WebmParserTest, Swap) {
       0x00,  // Body.
 
       0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
-      0x80,                    // Size = 0.
+      0x80,  // Size = 0.
   };
 
   MockCallback callback;

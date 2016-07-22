@@ -46,20 +46,20 @@ TEST_F(CueTrackPositionsParserTest, DefaultParse) {
 
 TEST_F(CueTrackPositionsParserTest, DefaultValues) {
   SetReaderData({
-      0xF7,        // ID = 0xF7 (CueTrack).
+      0xF7,  // ID = 0xF7 (CueTrack).
       0x40, 0x00,  // Size = 0.
 
-      0xF1,        // ID = 0xF1 (CueClusterPosition).
+      0xF1,  // ID = 0xF1 (CueClusterPosition).
       0x40, 0x00,  // Size = 0.
 
-      0xF0,        // ID = 0xF0 (CueRelativePosition).
+      0xF0,  // ID = 0xF0 (CueRelativePosition).
       0x40, 0x00,  // Size = 0.
 
-      0xB2,        // ID = 0xB2 (CueDuration).
+      0xB2,  // ID = 0xB2 (CueDuration).
       0x40, 0x00,  // Size = 0.
 
       0x53, 0x78,  // ID = 0x5378 (CueBlockNumber).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -84,25 +84,25 @@ TEST_F(CueTrackPositionsParserTest, DefaultValues) {
 
 TEST_F(CueTrackPositionsParserTest, CustomValues) {
   SetReaderData({
-      0xF7,        // ID = 0xF7 (CueTrack).
+      0xF7,  // ID = 0xF7 (CueTrack).
       0x40, 0x01,  // Size = 1.
-      0x01,        // Body (value = 1).
+      0x01,  // Body (value = 1).
 
-      0xF1,        // ID = 0xF1 (CueClusterPosition).
+      0xF1,  // ID = 0xF1 (CueClusterPosition).
       0x40, 0x01,  // Size = 1.
-      0x02,        // Body (value = 2).
+      0x02,  // Body (value = 2).
 
-      0xF0,        // ID = 0xF0 (CueRelativePosition).
+      0xF0,  // ID = 0xF0 (CueRelativePosition).
       0x40, 0x01,  // Size = 1.
-      0x03,        // Body (value = 3).
+      0x03,  // Body (value = 3).
 
-      0xB2,        // ID = 0xB2 (CueDuration).
+      0xB2,  // ID = 0xB2 (CueDuration).
       0x40, 0x01,  // Size = 1.
-      0x04,        // Body (value = 4).
+      0x04,  // Body (value = 4).
 
       0x53, 0x78,  // ID = 0x5378 (CueBlockNumber).
-      0x81,        // Size = 1.
-      0x05,        // Body (value = 5).
+      0x81,  // Size = 1.
+      0x05,  // Body (value = 5).
   });
 
   ParseAndVerify();

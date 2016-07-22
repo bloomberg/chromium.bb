@@ -48,21 +48,21 @@ TEST_F(ChapterAtomParserTest, DefaultParse) {
 TEST_F(ChapterAtomParserTest, DefaultValues) {
   SetReaderData({
       0x73, 0xC4,  // ID = 0x73C4 (ChapterUID).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x56, 0x54,  // ID = 0x73C4 (ChapterStringUID).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
-      0x91,        // ID = 0x91 (ChapterTimeStart).
+      0x91,  // ID = 0x91 (ChapterTimeStart).
       0x40, 0x00,  // Size = 0.
 
-      0x92,        // ID = 0x91 (ChapterTimeEnd).
+      0x92,  // ID = 0x91 (ChapterTimeEnd).
       0x40, 0x00,  // Size = 0.
 
-      0x80,        // ID = 0x80 (ChapterDisplay).
+      0x80,  // ID = 0x80 (ChapterDisplay).
       0x40, 0x00,  // Size = 0.
 
-      0xB6,        // ID = 0xB6 (ChapterAtom).
+      0xB6,  // ID = 0xB6 (ChapterAtom).
       0x40, 0x00,  // Size = 0.
   });
 
@@ -94,55 +94,55 @@ TEST_F(ChapterAtomParserTest, DefaultValues) {
 TEST_F(ChapterAtomParserTest, CustomValues) {
   SetReaderData({
       0x73, 0xC4,  // ID = 0x73C4 (ChapterUID).
-      0x81,        // Size = 1.
-      0x01,        // Body (value = 1).
+      0x81,  // Size = 1.
+      0x01,  // Body (value = 1).
 
       0x56, 0x54,  // ID = 0x73C4 (ChapterStringUID).
-      0x81,        // Size = 1.
-      0x41,        // Body (value = "A").
+      0x81,  // Size = 1.
+      0x41,  // Body (value = "A").
 
-      0x91,        // ID = 0x91 (ChapterTimeStart).
+      0x91,  // ID = 0x91 (ChapterTimeStart).
       0x40, 0x01,  // Size = 1.
-      0x02,        // Body (value = 2).
+      0x02,  // Body (value = 2).
 
-      0x92,        // ID = 0x91 (ChapterTimeEnd).
+      0x92,  // ID = 0x91 (ChapterTimeEnd).
       0x40, 0x01,  // Size = 1.
-      0x03,        // Body (value = 3).
+      0x03,  // Body (value = 3).
 
-      0x80,        // ID = 0x80 (ChapterDisplay).
+      0x80,  // ID = 0x80 (ChapterDisplay).
       0x40, 0x04,  // Size = 4.
 
-      0x85,        //   ID = 0x85 (ChapString).
+      0x85,  //   ID = 0x85 (ChapString).
       0x40, 0x01,  //   Size = 1.
-      0x42,        //   Body (value = "B").
+      0x42,  //   Body (value = "B").
 
-      0x80,        // ID = 0x80 (ChapterDisplay).
+      0x80,  // ID = 0x80 (ChapterDisplay).
       0x40, 0x04,  // Size = 4.
 
-      0x85,        //   ID = 0x85 (ChapString).
+      0x85,  //   ID = 0x85 (ChapString).
       0x40, 0x01,  //   Size = 1.
-      0x43,        //   Body (value = "C").
+      0x43,  //   Body (value = "C").
 
-      0xB6,        // ID = 0xB6 (ChapterAtom).
+      0xB6,  // ID = 0xB6 (ChapterAtom).
       0x40, 0x12,  // Size = 18.
 
       0x73, 0xC4,  //   ID = 0x73C4 (ChapterUID).
-      0x81,        //   Size = 1.
-      0x04,        //   Body (value = 4).
+      0x81,  //   Size = 1.
+      0x04,  //   Body (value = 4).
 
-      0xB6,        //   ID = 0xB6 (ChapterAtom).
+      0xB6,  //   ID = 0xB6 (ChapterAtom).
       0x40, 0x04,  //   Size = 4.
 
       0x73, 0xC4,  //     ID = 0x73C4 (ChapterUID).
-      0x81,        //     Size = 1.
-      0x05,        //     Body (value = 5).
+      0x81,  //     Size = 1.
+      0x05,  //     Body (value = 5).
 
-      0xB6,        //   ID = 0xB6 (ChapterAtom).
+      0xB6,  //   ID = 0xB6 (ChapterAtom).
       0x40, 0x04,  //   Size = 4.
 
       0x73, 0xC4,  //     ID = 0x73C4 (ChapterUID).
-      0x81,        //     Size = 1.
-      0x06,        //     Body (value = 6).
+      0x81,  //     Size = 1.
+      0x06,  //     Body (value = 6).
   });
 
   ParseAndVerify();

@@ -72,7 +72,8 @@ class FileReader : public Reader {
  private:
   struct FileCloseFunctor {
     void operator()(FILE* file) const {
-      if (file) std::fclose(file);
+      if (file)
+        std::fclose(file);
     }
   };
 

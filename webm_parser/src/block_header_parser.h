@@ -50,11 +50,13 @@ class BlockHeaderParser : public Parser {
   int timecode_bytes_remaining_ = 2;
 
   enum class State {
+    /* clang-format off */
     // State                 Transitions to state  When
     kReadingTrackNumber,  // kReadingTimecode      track parsed
     kReadingTimecode,     // kReadingFlags         timecode parsed
     kReadingFlags,        // kDone                 flags parsed
     kDone,                // No transitions from here (must call Init)
+    /* clang-format on */
   } state_ = State::kReadingTrackNumber;
 };
 

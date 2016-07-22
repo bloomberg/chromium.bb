@@ -50,22 +50,22 @@ TEST_F(SimpleTagParserTest, DefaultParse) {
 TEST_F(SimpleTagParserTest, DefaultValues) {
   SetReaderData({
       0x45, 0xA3,  // ID = 0x45A3 (TagName).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x44, 0x7A,  // ID = 0x447A (TagLanguage).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x44, 0x84,  // ID = 0x4484 (TagDefault).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x44, 0x87,  // ID = 0x4487 (TagString).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x44, 0x85,  // ID = 0x4485 (TagBinary).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -95,52 +95,52 @@ TEST_F(SimpleTagParserTest, DefaultValues) {
 TEST_F(SimpleTagParserTest, CustomValues) {
   SetReaderData({
       0x45, 0xA3,  // ID = 0x45A3 (TagName).
-      0x81,        // Size = 1.
-      0x61,        // Body (value = "a").
+      0x81,  // Size = 1.
+      0x61,  // Body (value = "a").
 
       0x44, 0x7A,  // ID = 0x447A (TagLanguage).
-      0x81,        // Size = 1.
-      0x62,        // Body (value = "b").
+      0x81,  // Size = 1.
+      0x62,  // Body (value = "b").
 
       0x44, 0x84,  // ID = 0x4484 (TagDefault).
-      0x81,        // Size = 1.
-      0x00,        // Body (value = 0).
+      0x81,  // Size = 1.
+      0x00,  // Body (value = 0).
 
       0x44, 0x87,  // ID = 0x4487 (TagString).
-      0x81,        // Size = 1.
-      0x63,        // Body (value = "c").
+      0x81,  // Size = 1.
+      0x63,  // Body (value = "c").
 
       0x44, 0x85,  // ID = 0x4485 (TagBinary).
-      0x81,        // Size = 1.
-      0x01,        // Body.
+      0x81,  // Size = 1.
+      0x01,  // Body.
 
       0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
-      0x99,        // Size = 25.
+      0x99,  // Size = 25.
 
       0x44, 0x87,  //   ID = 0x4487 (TagString).
-      0x81,        //   Size = 1.
-      0x64,        //   Body (value = "d").
+      0x81,  //   Size = 1.
+      0x64,  //   Body (value = "d").
 
       0x67, 0xC8,  //   ID = 0x67C8 (SimpleTag).
-      0x8B,        //   Size = 11.
+      0x8B,  //   Size = 11.
 
       0x44, 0x87,  //     ID = 0x4487 (TagString).
-      0x81,        //     Size = 1.
-      0x65,        //     Body (value = "e").
+      0x81,  //     Size = 1.
+      0x65,  //     Body (value = "e").
 
       0x67, 0xC8,  //     ID = 0x67C8 (SimpleTag).
-      0x84,        //     Size = 4.
+      0x84,  //     Size = 4.
 
       0x44, 0x87,  //       ID = 0x4487 (TagString).
-      0x81,        //       Size = 1.
-      0x66,        //       Body (value = "f").
+      0x81,  //       Size = 1.
+      0x66,  //       Body (value = "f").
 
       0x67, 0xC8,  //   ID = 0x67C8 (SimpleTag).
-      0x84,        //   Size = 4.
+      0x84,  //   Size = 4.
 
       0x44, 0x87,  //     ID = 0x4487 (TagString).
-      0x81,        //     Size = 1.
-      0x67,        //     Body (value = "g").
+      0x81,  //     Size = 1.
+      0x67,  //     Body (value = "g").
   });
 
   ParseAndVerify();

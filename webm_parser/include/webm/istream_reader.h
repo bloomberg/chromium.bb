@@ -45,7 +45,8 @@ class IstreamReader : public Reader {
    reference derived from `std::istream`.
    */
   template <typename T>
-  explicit IstreamReader(T&& istream) : istream_(new T(std::move(istream))) {}
+  explicit IstreamReader(T&& istream)
+      : istream_(new T(std::move(istream))) {}
 
   /**
    Constructs a new reader by moving the provided reader into the new reader.

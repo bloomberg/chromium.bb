@@ -55,10 +55,12 @@ class VirtualBlockParser : public ElementParser {
   BlockHeaderParser parser_;
 
   enum class State {
+    /* clang-format off */
     // State             Transitions to state  When
     kReadingHeader,   // kValidatingSize       header parsed
     kValidatingSize,  // kDone                 no errors
     kDone,            // No transitions from here (must call Init)
+    /* clang-format on */
   } state_ = State::kReadingHeader;
 };
 

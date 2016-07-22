@@ -34,7 +34,7 @@ TEST_F(VirtualBlockParserTest, InvalidBlock) {
   SetReaderData({
       0x40, 0x01,  // Track number = 1.
       0x00, 0x00,  // Timecode = 0.
-      0x00,        // Flags.
+      0x00,  // Flags.
   });
 
   // Initialize with 1 byte short.
@@ -43,9 +43,9 @@ TEST_F(VirtualBlockParserTest, InvalidBlock) {
 
 TEST_F(VirtualBlockParserTest, ValidBlock) {
   SetReaderData({
-      0x81,        // Track number = 1.
+      0x81,  // Track number = 1.
       0x12, 0x34,  // Timecode = 4660.
-      0x00,        // Flags.
+      0x00,  // Flags.
   });
 
   ParseAndVerify();
@@ -59,8 +59,8 @@ TEST_F(VirtualBlockParserTest, ValidBlock) {
 TEST_F(VirtualBlockParserTest, IncrementalParse) {
   SetReaderData({
       0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,  // Track number = 2.
-      0xFF, 0xFE,                                      // Timecode = -2.
-      0x00,                                            // Flags.
+      0xFF, 0xFE,  // Timecode = -2.
+      0x00,  // Flags.
   });
 
   IncrementalParseAndVerify();

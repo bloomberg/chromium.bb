@@ -46,16 +46,16 @@ TEST_F(ContentEncodingParserTest, DefaultParse) {
 TEST_F(ContentEncodingParserTest, DefaultValues) {
   SetReaderData({
       0x50, 0x31,  // ID = 0x5031 (ContentEncodingOrder).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x50, 0x32,  // ID = 0x5032 (ContentEncodingScope).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x50, 0x33,  // ID = 0x5033 (ContentEncodingType).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x50, 0x35,  // ID = 0x5035 (ContentEncryption).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -78,23 +78,23 @@ TEST_F(ContentEncodingParserTest, DefaultValues) {
 TEST_F(ContentEncodingParserTest, CustomValues) {
   SetReaderData({
       0x50, 0x31,  // ID = 0x5031 (ContentEncodingOrder).
-      0x81,        // Size = 1.
-      0x01,        // Body (value = 1).
+      0x81,  // Size = 1.
+      0x01,  // Body (value = 1).
 
       0x50, 0x32,  // ID = 0x5032 (ContentEncodingScope).
-      0x81,        // Size = 1.
-      0x02,        // Body (value = 2).
+      0x81,  // Size = 1.
+      0x02,  // Body (value = 2).
 
       0x50, 0x33,  // ID = 0x5033 (ContentEncodingType).
-      0x81,        // Size = 1.
-      0x01,        // Body (value = encryption).
+      0x81,  // Size = 1.
+      0x01,  // Body (value = encryption).
 
       0x50, 0x35,  // ID = 0x5035 (ContentEncryption).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x47, 0xE1,  //   ID = 0x47E1 (ContentEncAlgo).
-      0x81,        //   Size = 1.
-      0x05,        //   Body (value = AES).
+      0x81,  //   Size = 1.
+      0x05,  //   Body (value = AES).
   });
 
   ParseAndVerify();

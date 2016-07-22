@@ -79,8 +79,8 @@ TEST_F(MasterParserTest, ChildInitFails) {
 // Indefinite unknown children should result in an error.
 TEST_F(MasterParserTest, IndefiniteUnknownChild) {
   SetReaderData({
-      0x80,        // ID = 0x80 (unknown).
-      0xFF,        // Size = unknown.
+      0x80,  // ID = 0x80 (unknown).
+      0xFF,  // Size = unknown.
       0x00, 0x00,  // Body.
   });
 
@@ -92,8 +92,8 @@ TEST_F(MasterParserTest, IndefiniteUnknownChild) {
 // Child elements that overflow the master element's size should be detected.
 TEST_F(MasterParserTest, ChildOverflow) {
   SetReaderData({
-      0xEC,        // ID = 0xEC (Void).
-      0x82,        // Size = 2.
+      0xEC,  // ID = 0xEC (Void).
+      0x82,  // Size = 2.
       0x00, 0x00,  // Body.
   });
 
@@ -167,9 +167,9 @@ TEST_F(MasterParserTest, Empty) {
 TEST_F(MasterParserTest, UnknownChildren) {
   SetReaderData({
       0x40, 0x00,  // ID = 0x4000 (unknown).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
-      0x80,        // ID = 0x80 (unknown).
+      0x80,  // ID = 0x80 (unknown).
       0x40, 0x00,  // Size = 0.
   });
 
@@ -284,8 +284,8 @@ TEST_F(MasterParserTest, UnknownSizeToFileEnd) {
 // Parsing one byte at a time is okay.
 TEST_F(MasterParserTest, IncrementalParse) {
   SetReaderData({
-      0x1A, 0x45, 0xDF, 0xA3,              // ID = 0x1A45DFA3 (EBML).
-      0x08, 0x00, 0x00, 0x00, 0x06,        // Size = 6.
+      0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).
+      0x08, 0x00, 0x00, 0x00, 0x06,  // Size = 6.
       0x01, 0x02, 0x03, 0x04, 0x05, 0x06,  // Body.
   });
 

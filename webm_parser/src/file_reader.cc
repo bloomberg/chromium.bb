@@ -73,9 +73,9 @@ Status FileReader::Skip(std::uint64_t num_to_skip,
   }
 
   // Try seeking forward first.
-  long seek_offset = std::numeric_limits<long>::max();          // NOLINT
+  long seek_offset = std::numeric_limits<long>::max();  // NOLINT
   if (num_to_skip < static_cast<unsigned long>(seek_offset)) {  // NOLINT
-    seek_offset = static_cast<long>(num_to_skip);               // NOLINT
+    seek_offset = static_cast<long>(num_to_skip);  // NOLINT
   }
   // TODO(mjbshaw): Use fseeko64/_fseeki64 if available.
   if (!std::fseek(file_.get(), seek_offset, SEEK_CUR)) {

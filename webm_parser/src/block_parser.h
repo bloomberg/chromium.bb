@@ -33,7 +33,8 @@ namespace webm {
 // http://www.webmproject.org/docs/container/#Block
 // http://matroska.org/technical/specs/index.html#block_structure
 // http://matroska.org/technical/specs/index.html#simpleblock_structure
-template <typename T> class BasicBlockParser : public ElementParser {
+template <typename T>
+class BasicBlockParser : public ElementParser {
   static_assert(std::is_same<T, Block>::value ||
                     std::is_same<T, SimpleBlock>::value,
                 "T must be Block or SimpleBlock");
@@ -89,6 +90,7 @@ template <typename T> class BasicBlockParser : public ElementParser {
 
   // Parsing states for the finite-state machine.
   enum class State {
+    /* clang-format off */
     // State                        Transitions to state        When
     kReadingHeader,              // kGettingAction              no lacing
                                  // kReadingLaceCount           yes lacing
@@ -106,6 +108,7 @@ template <typename T> class BasicBlockParser : public ElementParser {
     kSkipping,                   // No transitions from here (must call Init)
     kReadingFrames,              // kDone                       all frames read
     kDone,                       // No transitions from here (must call Init)
+    /* clang-format on */
   };
 
   // The current state of the parser.

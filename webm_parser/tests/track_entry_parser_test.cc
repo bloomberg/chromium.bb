@@ -39,58 +39,58 @@ TEST_F(TrackEntryParserTest, DefaultParse) {
 
 TEST_F(TrackEntryParserTest, DefaultValues) {
   SetReaderData({
-      0xD7,              // ID = 0xD7 (TrackNumber).
+      0xD7,  // ID = 0xD7 (TrackNumber).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x73, 0xC5,        // ID = 0x73C5 (TrackUID).
+      0x73, 0xC5,  // ID = 0x73C5 (TrackUID).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x83,              // ID = 0x83 (TrackType).
+      0x83,  // ID = 0x83 (TrackType).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0xB9,              // ID = 0xB9 (FlagEnabled).
+      0xB9,  // ID = 0xB9 (FlagEnabled).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x88,              // ID = 0x88 (FlagDefault).
+      0x88,  // ID = 0x88 (FlagDefault).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x55, 0xAA,        // ID = 0x55AA (FlagForced).
+      0x55, 0xAA,  // ID = 0x55AA (FlagForced).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x9C,              // ID = 0x9C (FlagLacing).
+      0x9C,  // ID = 0x9C (FlagLacing).
       0x20, 0x00, 0x00,  // Size = 0.
 
       0x23, 0xE3, 0x83,  // ID = 0x23E383 (DefaultDuration).
-      0x80,              // Size = 0.
+      0x80,  // Size = 0.
 
-      0x53, 0x6E,        // ID = 0x536E (Name).
+      0x53, 0x6E,  // ID = 0x536E (Name).
       0x20, 0x00, 0x00,  // Size = 0.
 
       0x22, 0xB5, 0x9C,  // ID = 0x22B59C (Language).
-      0x80,              // Size = 0.
+      0x80,  // Size = 0.
 
-      0x86,              // ID = 0x86 (CodecID).
+      0x86,  // ID = 0x86 (CodecID).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x63, 0xA2,        // ID = 0x63A2 (CodecPrivate).
+      0x63, 0xA2,  // ID = 0x63A2 (CodecPrivate).
       0x20, 0x00, 0x00,  // Size = 0.
 
       0x25, 0x86, 0x88,  // ID = 0x258688 (CodecName).
-      0x80,              // Size = 0.
+      0x80,  // Size = 0.
 
-      0x56, 0xAA,        // ID = 0x56AA (CodecDelay).
+      0x56, 0xAA,  // ID = 0x56AA (CodecDelay).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x56, 0xBB,        // ID = 0x56BB (SeekPreRoll).
+      0x56, 0xBB,  // ID = 0x56BB (SeekPreRoll).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0xE0,              // ID = 0xE0 (Video).
+      0xE0,  // ID = 0xE0 (Video).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0xE1,              // ID = 0xE1 (Audio).
+      0xE1,  // ID = 0xE1 (Audio).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x6D, 0x80,        // ID = 0x6D80 (ContentEncodings).
+      0x6D, 0x80,  // ID = 0x6D80 (ContentEncodings).
       0x20, 0x00, 0x00,  // Size = 0.
   });
 
@@ -121,89 +121,89 @@ TEST_F(TrackEntryParserTest, DefaultValues) {
 
 TEST_F(TrackEntryParserTest, CustomValues) {
   SetReaderData({
-      0xD7,              // ID = 0xD7 (TrackNumber).
+      0xD7,  // ID = 0xD7 (TrackNumber).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x01,              // Body (value = 1).
+      0x01,  // Body (value = 1).
 
-      0x73, 0xC5,        // ID = 0x73C5 (TrackUID).
+      0x73, 0xC5,  // ID = 0x73C5 (TrackUID).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x02,              // Body (value = 2).
+      0x02,  // Body (value = 2).
 
-      0x83,              // ID = 0x83 (TrackType).
+      0x83,  // ID = 0x83 (TrackType).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x03,              // Body (value = complex).
+      0x03,  // Body (value = complex).
 
-      0xB9,              // ID = 0xB9 (FlagEnabled).
+      0xB9,  // ID = 0xB9 (FlagEnabled).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x00,              // Body (value = 0).
+      0x00,  // Body (value = 0).
 
-      0x88,              // ID = 0x88 (FlagDefault).
+      0x88,  // ID = 0x88 (FlagDefault).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x00,              // Body (value = 0).
+      0x00,  // Body (value = 0).
 
-      0x55, 0xAA,        // ID = 0x55AA (FlagForced).
+      0x55, 0xAA,  // ID = 0x55AA (FlagForced).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x01,              // Body (value = 1).
+      0x01,  // Body (value = 1).
 
-      0x9C,              // ID = 0x9C (FlagLacing).
+      0x9C,  // ID = 0x9C (FlagLacing).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x00,              // Body (value = 0).
+      0x00,  // Body (value = 0).
 
       0x23, 0xE3, 0x83,  // ID = 0x23E383 (DefaultDuration).
-      0x81,              // Size = 1.
-      0x04,              // Body (value = 4).
+      0x81,  // Size = 1.
+      0x04,  // Body (value = 4).
 
-      0x53, 0x6E,        // ID = 0x536E (Name).
+      0x53, 0x6E,  // ID = 0x536E (Name).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x41,              // Body (value = "A").
+      0x41,  // Body (value = "A").
 
       0x22, 0xB5, 0x9C,  // ID = 0x22B59C (Language).
-      0x81,              // Size = 1.
-      0x42,              // Body (value = "B").
+      0x81,  // Size = 1.
+      0x42,  // Body (value = "B").
 
-      0x86,              // ID = 0x86 (CodecID).
+      0x86,  // ID = 0x86 (CodecID).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x43,              // Body (value = "C").
+      0x43,  // Body (value = "C").
 
-      0x63, 0xA2,        // ID = 0x63A2 (CodecPrivate).
+      0x63, 0xA2,  // ID = 0x63A2 (CodecPrivate).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x00,              // Body.
+      0x00,  // Body.
 
       0x25, 0x86, 0x88,  // ID = 0x258688 (CodecName).
-      0x81,              // Size = 1.
-      0x44,              // Body (value = "D").
+      0x81,  // Size = 1.
+      0x44,  // Body (value = "D").
 
-      0x56, 0xAA,        // ID = 0x56AA (CodecDelay).
+      0x56, 0xAA,  // ID = 0x56AA (CodecDelay).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x05,              // Body (value = 5).
+      0x05,  // Body (value = 5).
 
-      0x56, 0xBB,        // ID = 0x56BB (SeekPreRoll).
+      0x56, 0xBB,  // ID = 0x56BB (SeekPreRoll).
       0x20, 0x00, 0x01,  // Size = 1.
-      0x06,              // Body (value = 6).
+      0x06,  // Body (value = 6).
 
-      0xE0,              // ID = 0xE0 (Video).
+      0xE0,  // ID = 0xE0 (Video).
       0x20, 0x00, 0x06,  // Size = 6.
 
-      0x54, 0xB2,        //   ID = 0x54B2 (DisplayUnit).
+      0x54, 0xB2,  //   ID = 0x54B2 (DisplayUnit).
       0x20, 0x00, 0x01,  //   Size = 1.
-      0x03,              //   Body (value = display aspect ratio).
+      0x03,  //   Body (value = display aspect ratio).
 
-      0xE1,              // ID = 0xE1 (Audio).
+      0xE1,  // ID = 0xE1 (Audio).
       0x20, 0x00, 0x05,  // Size = 5.
 
-      0x9F,              //   ID = 0x9F (Channels).
+      0x9F,  //   ID = 0x9F (Channels).
       0x20, 0x00, 0x01,  //   Size = 1.
-      0x08,              //   Body (value = 8).
+      0x08,  //   Body (value = 8).
 
-      0x6D, 0x80,        // ID = 0x6D80 (ContentEncodings).
+      0x6D, 0x80,  // ID = 0x6D80 (ContentEncodings).
       0x20, 0x00, 0x0B,  // Size = 11.
 
-      0x62, 0x40,        //   ID = 0x6240 (ContentEncoding).
+      0x62, 0x40,  //   ID = 0x6240 (ContentEncoding).
       0x20, 0x00, 0x06,  //   Size = 6.
 
-      0x50, 0x31,        //     ID = 0x5031 (ContentEncodingOrder).
+      0x50, 0x31,  //     ID = 0x5031 (ContentEncodingOrder).
       0x20, 0x00, 0x01,  //     Size = 1.
-      0x01,              //     Body (value = 1).
+      0x01,  //     Body (value = 1).
   });
 
   TrackEntry track_entry;

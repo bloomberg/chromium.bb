@@ -79,49 +79,49 @@ TEST_F(VideoParserTest, DefaultParse) {
 
 TEST_F(VideoParserTest, DefaultValues) {
   SetReaderData({
-      0x9A,              // ID = 0x9A (FlagInterlaced).
+      0x9A,  // ID = 0x9A (FlagInterlaced).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x53, 0xB8,        // ID = 0x53B8 (StereoMode).
+      0x53, 0xB8,  // ID = 0x53B8 (StereoMode).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x53, 0xC0,        // ID = 0x53C0 (AlphaMode).
+      0x53, 0xC0,  // ID = 0x53C0 (AlphaMode).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0xB0,              // ID = 0xB0 (PixelWidth).
+      0xB0,  // ID = 0xB0 (PixelWidth).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0xBA,              // ID = 0xBA (PixelHeight).
+      0xBA,  // ID = 0xBA (PixelHeight).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xAA,        // ID = 0x54AA (PixelCropBottom).
+      0x54, 0xAA,  // ID = 0x54AA (PixelCropBottom).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xBB,        // ID = 0x54BB (PixelCropTop).
+      0x54, 0xBB,  // ID = 0x54BB (PixelCropTop).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xCC,        // ID = 0x54CC (PixelCropLeft).
+      0x54, 0xCC,  // ID = 0x54CC (PixelCropLeft).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xDD,        // ID = 0x54DD (PixelCropRight).
+      0x54, 0xDD,  // ID = 0x54DD (PixelCropRight).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xB0,        // ID = 0x54B0 (DisplayWidth).
+      0x54, 0xB0,  // ID = 0x54B0 (DisplayWidth).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xBA,        // ID = 0x54BA (DisplayHeight).
+      0x54, 0xBA,  // ID = 0x54BA (DisplayHeight).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xB2,        // ID = 0x54B2 (DisplayUnit).
+      0x54, 0xB2,  // ID = 0x54B2 (DisplayUnit).
       0x20, 0x00, 0x00,  // Size = 0.
 
-      0x54, 0xB3,        // ID = 0x54B3 (AspectRatioType).
+      0x54, 0xB3,  // ID = 0x54B3 (AspectRatioType).
       0x20, 0x00, 0x00,  // Size = 0.
 
       0x23, 0x83, 0xE3,  // ID = 0x2383E3 (FrameRate).
-      0x80,              // Size = 0.
+      0x80,  // Size = 0.
 
-      0x55, 0xB0,        // ID = 0x55B0 (Colour).
+      0x55, 0xB0,  // ID = 0x55B0 (Colour).
       0x20, 0x00, 0x00,  // Size = 0.
   });
 
@@ -177,68 +177,68 @@ TEST_F(VideoParserTest, DefaultValues) {
 
 TEST_F(VideoParserTest, CustomValues) {
   SetReaderData({
-      0x9A,                    // ID = 0x9A (FlagInterlaced).
+      0x9A,  // ID = 0x9A (FlagInterlaced).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x02,                    // Body (value = progressive).
+      0x02,  // Body (value = progressive).
 
-      0x53, 0xB8,              // ID = 0x53B8 (StereoMode).
+      0x53, 0xB8,  // ID = 0x53B8 (StereoMode).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x02,                    // Body (value = top-bottom (right eye first)).
+      0x02,  // Body (value = top-bottom (right eye first)).
 
-      0x53, 0xC0,              // ID = 0x53C0 (AlphaMode).
+      0x53, 0xC0,  // ID = 0x53C0 (AlphaMode).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x03,                    // Body (value = 3).
+      0x03,  // Body (value = 3).
 
-      0xB0,                    // ID = 0xB0 (PixelWidth).
+      0xB0,  // ID = 0xB0 (PixelWidth).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x04,                    // Body (value = 4).
+      0x04,  // Body (value = 4).
 
-      0xBA,                    // ID = 0xBA (PixelHeight).
+      0xBA,  // ID = 0xBA (PixelHeight).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x05,                    // Body (value = 5).
+      0x05,  // Body (value = 5).
 
-      0x54, 0xAA,              // ID = 0x54AA (PixelCropBottom).
+      0x54, 0xAA,  // ID = 0x54AA (PixelCropBottom).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x06,                    // Body (value = 6).
+      0x06,  // Body (value = 6).
 
-      0x54, 0xBB,              // ID = 0x54BB (PixelCropTop).
+      0x54, 0xBB,  // ID = 0x54BB (PixelCropTop).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x07,                    // Body (value = 7).
+      0x07,  // Body (value = 7).
 
-      0x54, 0xCC,              // ID = 0x54CC (PixelCropLeft).
+      0x54, 0xCC,  // ID = 0x54CC (PixelCropLeft).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x08,                    // Body (value = 8).
+      0x08,  // Body (value = 8).
 
-      0x54, 0xDD,              // ID = 0x54DD (PixelCropRight).
+      0x54, 0xDD,  // ID = 0x54DD (PixelCropRight).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x09,                    // Body (value = 9).
+      0x09,  // Body (value = 9).
 
-      0x54, 0xB0,              // ID = 0x54B0 (DisplayWidth).
+      0x54, 0xB0,  // ID = 0x54B0 (DisplayWidth).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x0A,                    // Body (value = 10).
+      0x0A,  // Body (value = 10).
 
-      0x54, 0xBA,              // ID = 0x54BA (DisplayHeight).
+      0x54, 0xBA,  // ID = 0x54BA (DisplayHeight).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x0B,                    // Body (value = 11).
+      0x0B,  // Body (value = 11).
 
-      0x54, 0xB2,              // ID = 0x54B2 (DisplayUnit).
+      0x54, 0xB2,  // ID = 0x54B2 (DisplayUnit).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x02,                    // Body (value = inches).
+      0x02,  // Body (value = inches).
 
-      0x54, 0xB3,              // ID = 0x54B3 (AspectRatioType).
+      0x54, 0xB3,  // ID = 0x54B3 (AspectRatioType).
       0x10, 0x00, 0x00, 0x01,  // Size = 1.
-      0x01,                    // Body (value = keep aspect ratio).
+      0x01,  // Body (value = keep aspect ratio).
 
-      0x23, 0x83, 0xE3,        // ID = 0x2383E3 (FrameRate).
-      0x84,                    // Size = 4.
+      0x23, 0x83, 0xE3,  // ID = 0x2383E3 (FrameRate).
+      0x84,  // Size = 4.
       0x40, 0x0F, 0x1B, 0xBD,  // Body (value = 2.2360680103302001953125f).
 
-      0x55, 0xB0,              // ID = 0x55B0 (Colour).
+      0x55, 0xB0,  // ID = 0x55B0 (Colour).
       0x10, 0x00, 0x00, 0x07,  // Size = 7.
 
-      0x55, 0xB2,              //   ID = 0x55B2 (BitsPerChannel).
+      0x55, 0xB2,  //   ID = 0x55B2 (BitsPerChannel).
       0x10, 0x00, 0x00, 0x01,  //   Size = 1.
-      0x01,                    //   Body (value = 1).
+      0x01,  //   Body (value = 1).
   });
 
   ParseAndVerify();
@@ -355,13 +355,13 @@ TEST_F(VideoParserTest, AbsentDisplaySize) {
 
 TEST_F(VideoParserTest, DefaultDisplaySize) {
   SetReaderData({
-      0xB0,        // ID = 0xB0 (PixelWidth).
+      0xB0,  // ID = 0xB0 (PixelWidth).
       0x40, 0x01,  // Size = 1.
-      0x01,        // Body (value = 1).
+      0x01,  // Body (value = 1).
 
-      0xBA,        // ID = 0xBA (PixelHeight).
+      0xBA,  // ID = 0xBA (PixelHeight).
       0x40, 0x01,  // Size = 1.
-      0x02,        // Body (value = 2).
+      0x02,  // Body (value = 2).
 
       0x54, 0xB0,  // ID = 0x54B0 (DisplayWidth).
       0x40, 0x00,  // Size = 0.

@@ -46,13 +46,13 @@ TEST_F(ContentEncryptionParserTest, DefaultParse) {
 TEST_F(ContentEncryptionParserTest, DefaultValues) {
   SetReaderData({
       0x47, 0xE1,  // ID = 0x47E1 (ContentEncAlgo).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x47, 0xE2,  // ID = 0x47E2 (ContentEncKeyID).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x47, 0xE7,  // ID = 0x47E7 (ContentEncAESSettings).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -72,19 +72,19 @@ TEST_F(ContentEncryptionParserTest, DefaultValues) {
 TEST_F(ContentEncryptionParserTest, CustomValues) {
   SetReaderData({
       0x47, 0xE1,  // ID = 0x47E1 (ContentEncAlgo).
-      0x81,        // Size = 1.
-      0x05,        // Body (value = AES).
+      0x81,  // Size = 1.
+      0x05,  // Body (value = AES).
 
       0x47, 0xE2,  // ID = 0x47E2 (ContentEncKeyID).
-      0x81,        // Size = 1.
-      0x00,        // Body.
+      0x81,  // Size = 1.
+      0x00,  // Body.
 
       0x47, 0xE7,  // ID = 0x47E7 (ContentEncAESSettings).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x47, 0xE8,  //   ID = 0x47E8 (AESSettingsCipherMode).
-      0x81,        //   Size = 1.
-      0x00,        //   Body (value = 0).
+      0x81,  //   Size = 1.
+      0x00,  //   Body (value = 0).
   });
 
   ParseAndVerify();

@@ -58,7 +58,8 @@ namespace webm {
 //       : MasterValueParser(MakeChild<BoolParser>(Id::kBar, &Foo::bar),
 //                           MakeChild<BoolParser>(Id::kBaz, &Foo::baz)) {}
 // };
-template <typename T> class MasterValueParser : public ElementParser {
+template <typename T>
+class MasterValueParser : public ElementParser {
  public:
   Status Init(const ElementMetadata& metadata,
               std::uint64_t max_size) override {
@@ -179,7 +180,7 @@ template <typename T> class MasterValueParser : public ElementParser {
     // If called, OnParseStarted will be called on the parent element when this
     // particular element is encountered.
     constexpr SingleChildFactory<Parser, Value, TagUseAsStart, Tags...>
-    UseAsStartEvent() const {
+        UseAsStartEvent() const {
       return {id_, member_};
     }
 
@@ -187,7 +188,7 @@ template <typename T> class MasterValueParser : public ElementParser {
     // particular element is fully parsed.
     constexpr SingleChildFactory<Parser, Value, TagNotifyOnParseComplete,
                                  Tags...>
-    NotifyOnParseComplete() const {
+        NotifyOnParseComplete() const {
       return {id_, member_};
     }
 
@@ -226,7 +227,7 @@ template <typename T> class MasterValueParser : public ElementParser {
     // If called, OnParseStarted will be called on the parent element when this
     // particular element is encountered.
     constexpr RepeatedChildFactory<Parser, Value, TagUseAsStart, Tags...>
-    UseAsStartEvent() const {
+        UseAsStartEvent() const {
       return {id_, member_};
     }
 
@@ -234,7 +235,7 @@ template <typename T> class MasterValueParser : public ElementParser {
     // particular element is fully parsed.
     constexpr RepeatedChildFactory<Parser, Value, TagNotifyOnParseComplete,
                                    Tags...>
-    NotifyOnParseComplete() const {
+        NotifyOnParseComplete() const {
       return {id_, member_};
     }
 
@@ -340,10 +341,12 @@ template <typename T> class MasterValueParser : public ElementParser {
 
   // Helper struct that will be std::true_type if Tag is in Tags, or
   // std::false_type otherwise.
-  template <typename Tag, typename... Tags> struct HasTag;
+  template <typename Tag, typename... Tags>
+  struct HasTag;
 
   // Base condition: Tags is empty, so it trivially does not contain Tag.
-  template <typename Tag> struct HasTag<Tag> : std::false_type {};
+  template <typename Tag>
+  struct HasTag<Tag> : std::false_type {};
 
   // If the head of the Tags list is a different tag, skip it and check the
   // remaining tags.
@@ -409,7 +412,8 @@ template <typename T> class MasterValueParser : public ElementParser {
       return Status(Status::kOkCompleted);
     }
 
-    template <typename Tag> constexpr static bool has_tag() {
+    template <typename Tag>
+    constexpr static bool has_tag() {
       return HasTag<Tag, Tags...>::value;
     }
   };
@@ -419,7 +423,7 @@ template <typename T> class MasterValueParser : public ElementParser {
   template <typename Parser, typename Value, typename... Tags, typename F>
   static typename std::enable_if<!std::is_constructible<Parser, Value>::value,
                                  std::unique_ptr<ElementParser>>::type
-  MakeChildParser(MasterValueParser* parent, F consume_element_value, ...) {
+      MakeChildParser(MasterValueParser* parent, F consume_element_value, ...) {
     return std::unique_ptr<ElementParser>(new ChildParser<Parser, F, Tags...>(
         parent, std::move(consume_element_value)));
   }
@@ -429,8 +433,8 @@ template <typename T> class MasterValueParser : public ElementParser {
   template <typename Parser, typename Value, typename... Tags, typename F>
   static typename std::enable_if<std::is_constructible<Parser, Value>::value,
                                  std::unique_ptr<ElementParser>>::type
-  MakeChildParser(MasterValueParser* parent, F consume_element_value,
-                  const Element<Value>* default_value) {
+      MakeChildParser(MasterValueParser* parent, F consume_element_value,
+                      const Element<Value>* default_value) {
     return std::unique_ptr<ElementParser>(new ChildParser<Parser, F, Tags...>(
         parent, std::move(consume_element_value), default_value->value()));
   }
@@ -440,8 +444,8 @@ template <typename T> class MasterValueParser : public ElementParser {
   template <typename Parser, typename Value, typename... Tags, typename F>
   static typename std::enable_if<std::is_constructible<Parser, Value>::value,
                                  std::unique_ptr<ElementParser>>::type
-  MakeChildParser(MasterValueParser* parent, F consume_element_value,
-                  const std::vector<Element<Value>>* member) {
+      MakeChildParser(MasterValueParser* parent, F consume_element_value,
+                      const std::vector<Element<Value>>* member) {
     Value default_value{};
     if (!member->empty()) {
       default_value = member->front().value();

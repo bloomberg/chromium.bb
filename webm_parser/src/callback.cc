@@ -135,7 +135,8 @@ Status Callback::Skip(Reader* reader, std::uint64_t* bytes_remaining) {
   assert(reader != nullptr);
   assert(bytes_remaining != nullptr);
 
-  if (*bytes_remaining == 0) return Status(Status::kOkCompleted);
+  if (*bytes_remaining == 0)
+    return Status(Status::kOkCompleted);
 
   Status status;
   do {

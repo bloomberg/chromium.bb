@@ -60,7 +60,7 @@ class Ancestory {
   // Constructs an Ancestory using the first count elements of ancestory.
   // ancestory must have static storage duration.
   template <std::size_t N>
-  Ancestory(const Id (&ancestory)[N], std::size_t count)
+  Ancestory(const Id(&ancestory)[N], std::size_t count)
       : begin_(ancestory), end_(ancestory + count) {
     assert(count <= N);
   }

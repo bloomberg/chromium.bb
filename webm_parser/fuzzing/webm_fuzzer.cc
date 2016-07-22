@@ -63,8 +63,8 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data,
 
 #if __AFL_COMPILER
 int main(int argc, char* argv[]) {
-  FILE* file = (argc == 2) ? std::fopen(argv[1], "rb")
-                           : std::freopen(nullptr, "rb", stdin);
+  FILE* file = (argc == 2) ? std::fopen(argv[1], "rb") :
+                             std::freopen(nullptr, "rb", stdin);
   if (!file) {
     std::cerr << "File cannot be opened\n";
     return EXIT_FAILURE;

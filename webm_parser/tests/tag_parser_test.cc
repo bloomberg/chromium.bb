@@ -33,10 +33,10 @@ TEST_F(TagParserTest, DefaultParse) {
 TEST_F(TagParserTest, DefaultValues) {
   SetReaderData({
       0x63, 0xC0,  // ID = 0x63C0 (Targets).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   Tag tag;
@@ -52,25 +52,25 @@ TEST_F(TagParserTest, DefaultValues) {
 TEST_F(TagParserTest, CustomValues) {
   SetReaderData({
       0x63, 0xC0,  // ID = 0x63C0 (Targets).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x68, 0xCA,  //   ID = 0x68CA (TargetTypeValue).
-      0x81,        //   Size = 1.
-      0x00,        //   Body (value = 0).
+      0x81,  //   Size = 1.
+      0x00,  //   Body (value = 0).
 
       0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x45, 0xA3,  //   ID = 0x45A3 (TagName).
-      0x81,        //   Size = 1.
-      0x61,        //   Body (value = "a").
+      0x81,  //   Size = 1.
+      0x61,  //   Body (value = "a").
 
       0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
-      0x84,        // Size = 4.
+      0x84,  // Size = 4.
 
       0x44, 0x7A,  //   ID = 0x447A (TagLanguage).
-      0x81,        //   Size = 1.
-      0x62,        //   Body (value = "b").
+      0x81,  //   Size = 1.
+      0x62,  //   Body (value = "b").
   });
 
   Tag tag;

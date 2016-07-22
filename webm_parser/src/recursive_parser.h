@@ -24,7 +24,8 @@ namespace webm {
 // parsing operations. The parser is allocated when Init is called. This class
 // is intended to be used with recursive elements, where a parser needs to
 // recursively instantiate parsers of the same type.
-template <typename T> class RecursiveParser : public ElementParser {
+template <typename T>
+class RecursiveParser : public ElementParser {
  public:
   RecursiveParser() = default;
 

@@ -62,34 +62,34 @@ TEST_F(MasteringMetadataParserTest, DefaultParse) {
 TEST_F(MasteringMetadataParserTest, DefaultValues) {
   SetReaderData({
       0x55, 0xD1,  // ID = 0x55D1 (PrimaryRChromaticityX).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD2,  // ID = 0x55D2 (PrimaryRChromaticityY).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD3,  // ID = 0x55D3 (PrimaryGChromaticityX).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD4,  // ID = 0x55D4 (PrimaryGChromaticityY).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD5,  // ID = 0x55D5 (PrimaryBChromaticityX).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD6,  // ID = 0x55D6 (PrimaryBChromaticityY).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD7,  // ID = 0x55D7 (WhitePointChromaticityX).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD8,  // ID = 0x55D8 (WhitePointChromaticityY).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD9,  // ID = 0x55D9 (LuminanceMax).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xDA,  // ID = 0x55DA (LuminanceMin).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -129,44 +129,44 @@ TEST_F(MasteringMetadataParserTest, DefaultValues) {
 
 TEST_F(MasteringMetadataParserTest, CustomValues) {
   SetReaderData({
-      0x55, 0xD1,              // ID = 0x55D1 (PrimaryRChromaticityX).
-      0x84,                    // Size = 4.
+      0x55, 0xD1,  // ID = 0x55D1 (PrimaryRChromaticityX).
+      0x84,  // Size = 4.
       0x3E, 0x00, 0x00, 0x00,  // Body (value = 0.125).
 
-      0x55, 0xD2,              // ID = 0x55D2 (PrimaryRChromaticityY).
-      0x84,                    // Size = 4.
+      0x55, 0xD2,  // ID = 0x55D2 (PrimaryRChromaticityY).
+      0x84,  // Size = 4.
       0x3E, 0x80, 0x00, 0x00,  // Body (value = 0.25).
 
-      0x55, 0xD3,              // ID = 0x55D3 (PrimaryGChromaticityX).
-      0x84,                    // Size = 4.
+      0x55, 0xD3,  // ID = 0x55D3 (PrimaryGChromaticityX).
+      0x84,  // Size = 4.
       0x3E, 0xC0, 0x00, 0x00,  // Body (value = 0.375).
 
-      0x55, 0xD4,              // ID = 0x55D4 (PrimaryGChromaticityY).
-      0x84,                    // Size = 4.
+      0x55, 0xD4,  // ID = 0x55D4 (PrimaryGChromaticityY).
+      0x84,  // Size = 4.
       0x3F, 0x00, 0x00, 0x00,  // Body (value = 0.5).
 
-      0x55, 0xD5,              // ID = 0x55D5 (PrimaryBChromaticityX).
-      0x84,                    // Size = 4.
+      0x55, 0xD5,  // ID = 0x55D5 (PrimaryBChromaticityX).
+      0x84,  // Size = 4.
       0x3F, 0x20, 0x00, 0x00,  // Body (value = 0.625).
 
-      0x55, 0xD6,              // ID = 0x55D6 (PrimaryBChromaticityY).
-      0x84,                    // Size = 4.
+      0x55, 0xD6,  // ID = 0x55D6 (PrimaryBChromaticityY).
+      0x84,  // Size = 4.
       0x3F, 0x40, 0x00, 0x00,  // Body (value = 0.75).
 
-      0x55, 0xD7,              // ID = 0x55D7 (WhitePointChromaticityX).
-      0x84,                    // Size = 4.
+      0x55, 0xD7,  // ID = 0x55D7 (WhitePointChromaticityX).
+      0x84,  // Size = 4.
       0x3F, 0x60, 0x00, 0x00,  // Body (value = 0.875).
 
-      0x55, 0xD8,              // ID = 0x55D8 (WhitePointChromaticityY).
-      0x84,                    // Size = 4.
+      0x55, 0xD8,  // ID = 0x55D8 (WhitePointChromaticityY).
+      0x84,  // Size = 4.
       0x3F, 0x80, 0x00, 0x00,  // Body (value = 1).
 
-      0x55, 0xD9,              // ID = 0x55D9 (LuminanceMax).
-      0x84,                    // Size = 4.
+      0x55, 0xD9,  // ID = 0x55D9 (LuminanceMax).
+      0x84,  // Size = 4.
       0x40, 0x00, 0x00, 0x00,  // Body (value = 2).
 
-      0x55, 0xDA,              // ID = 0x55DA (LuminanceMin).
-      0x84,                    // Size = 4.
+      0x55, 0xDA,  // ID = 0x55DA (LuminanceMin).
+      0x84,  // Size = 4.
       0x40, 0x40, 0x00, 0x00,  // Body (value = 3).
   });
 

@@ -24,7 +24,8 @@ namespace webm {
 
 // Base class for unit tests that test an instance of the Parser inteface. The
 // template parameter T is the parser class being tested.
-template <typename T> class ParserTest : public testing::Test {
+template <typename T>
+class ParserTest : public testing::Test {
  public:
   // Sets the reader's internal buffer to the given buffer.
   virtual void SetReaderData(std::vector<std::uint8_t> data) {
@@ -34,7 +35,8 @@ template <typename T> class ParserTest : public testing::Test {
   // Destroys and recreates the parser, forwarding the arguments to the
   // constructor. This is primarily useful for tests that require the parser to
   // have different constructor parameters.
-  template <typename... Args> void ResetParser(Args&&... args) {
+  template <typename... Args>
+  void ResetParser(Args&&... args) {
     parser_.~T();
     new (&parser_) T(std::forward<Args>(args)...);
   }

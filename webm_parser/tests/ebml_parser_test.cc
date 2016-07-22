@@ -31,31 +31,31 @@ TEST_F(EbmlParserTest, DefaultParse) {
 TEST_F(EbmlParserTest, DefaultValues) {
   SetReaderData({
       0x42, 0x86,  // ID = 0x4286 (EBMLVersion).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x42, 0xF7,  // ID = 0x42F7 (EBMLReadVersion).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x42, 0xF2,  // ID = 0x42F2 (EBMLMaxIDLength).
       0x40, 0x00,  // Size = 0.
 
       0x42, 0xF3,  // ID = 0x42F3 (EBMLMaxSizeLength).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
-      0xEC,        // ID = 0xEC (Void).
+      0xEC,  // ID = 0xEC (Void).
       0x40, 0x00,  // Size = 0.
 
       0x42, 0x82,  // ID = 0x4282 (DocType).
       0x40, 0x00,  // Size = 0.
 
       0x42, 0x87,  // ID = 0x4287 (DocTypeVersion).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x42, 0x85,  // ID = 0x4285 (DocTypeReadVersion).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
-      0xEC,        // ID = 0xEC (Void).
-      0x82,        // Size = 2.
+      0xEC,  // ID = 0xEC (Void).
+      0x82,  // Size = 2.
       0x01, 0x02,  // Body.
   });
 
@@ -76,22 +76,22 @@ TEST_F(EbmlParserTest, DefaultValues) {
 TEST_F(EbmlParserTest, CustomValues) {
   SetReaderData({
       0x42, 0x86,  // ID = 0x4286 (EBMLVersion).
-      0x81,        // Size = 1.
-      0x02,        // Body (value = 2).
+      0x81,  // Size = 1.
+      0x02,  // Body (value = 2).
 
       0x42, 0xF7,  // ID = 0x42F7 (EBMLReadVersion).
-      0x81,        // Size = 1.
-      0x04,        // Body (value = 4).
+      0x81,  // Size = 1.
+      0x04,  // Body (value = 4).
 
       0x42, 0xF2,  // ID = 0x42F2 (EBMLMaxIDLength).
       0x40, 0x02,  // Size = 2.
       0x00, 0x02,  // Body (value = 2).
 
       0x42, 0xF3,  // ID = 0x42F3 (EBMLMaxSizeLength).
-      0x81,        // Size = 1.
-      0x04,        // Body (value = 4).
+      0x81,  // Size = 1.
+      0x04,  // Body (value = 4).
 
-      0xEC,        // ID = 0xEC (Void).
+      0xEC,  // ID = 0xEC (Void).
       0x40, 0x00,  // Size = 0.
 
       0x42, 0x82,  // ID = 0x4282 (DocType).
@@ -99,15 +99,15 @@ TEST_F(EbmlParserTest, CustomValues) {
       0x48, 0x69,  // Body (value = "Hi").
 
       0x42, 0x87,  // ID = 0x4287 (DocTypeVersion).
-      0x81,        // Size = 1.
-      0xFF,        // Body (value = 255).
+      0x81,  // Size = 1.
+      0xFF,  // Body (value = 255).
 
       0x42, 0x85,  // ID = 0x4285 (DocTypeReadVersion).
-      0x81,        // Size = 1.
-      0x02,        // Body (value = 2).
+      0x81,  // Size = 1.
+      0x02,  // Body (value = 2).
 
-      0xEC,        // ID = 0xEC (Void).
-      0x82,        // Size = 2.
+      0xEC,  // ID = 0xEC (Void).
+      0x82,  // Size = 2.
       0x01, 0x02,  // Body.
   });
 

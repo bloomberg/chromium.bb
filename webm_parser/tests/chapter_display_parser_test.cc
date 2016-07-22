@@ -39,14 +39,14 @@ TEST_F(ChapterDisplayParserTest, DefaultParse) {
 
 TEST_F(ChapterDisplayParserTest, DefaultValues) {
   SetReaderData({
-      0x85,        // ID = 0x85 (ChapString).
+      0x85,  // ID = 0x85 (ChapString).
       0x40, 0x00,  // Size = 0.
 
       0x43, 0x7C,  // ID = 0x437C (ChapLanguage).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x43, 0x7E,  // ID = 0x437E (ChapCountry).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -67,28 +67,28 @@ TEST_F(ChapterDisplayParserTest, DefaultValues) {
 
 TEST_F(ChapterDisplayParserTest, CustomValues) {
   SetReaderData({
-      0x85,                          // ID = 0x85 (ChapString).
-      0x40, 0x05,                    // Size = 5.
+      0x85,  // ID = 0x85 (ChapString).
+      0x40, 0x05,  // Size = 5.
       0x68, 0x65, 0x6C, 0x6C, 0x6F,  // Body (value = "hello").
 
-      0x43, 0x7C,                    // ID = 0x437C (ChapLanguage).
-      0x85,                          // Size = 5.
+      0x43, 0x7C,  // ID = 0x437C (ChapLanguage).
+      0x85,  // Size = 5.
       0x6C, 0x61, 0x6E, 0x67, 0x30,  // body (value = "lang0").
 
-      0x43, 0x7E,                    // ID = 0x437E (ChapCountry).
-      0x85,                          // Size = 5.
+      0x43, 0x7E,  // ID = 0x437E (ChapCountry).
+      0x85,  // Size = 5.
       0x61, 0x72, 0x65, 0x61, 0x30,  // Body (value = "area0").
 
-      0x43, 0x7C,                    // ID = 0x437C (ChapLanguage).
-      0x85,                          // Size = 5.
+      0x43, 0x7C,  // ID = 0x437C (ChapLanguage).
+      0x85,  // Size = 5.
       0x6C, 0x61, 0x6E, 0x67, 0x31,  // body (value = "lang1").
 
-      0x43, 0x7C,                    // ID = 0x437C (ChapLanguage).
-      0x85,                          // Size = 5.
+      0x43, 0x7C,  // ID = 0x437C (ChapLanguage).
+      0x85,  // Size = 5.
       0x6C, 0x61, 0x6E, 0x67, 0x32,  // body (value = "lang2").
 
-      0x43, 0x7E,                    // ID = 0x437E (ChapCountry).
-      0x85,                          // Size = 5.
+      0x43, 0x7E,  // ID = 0x437E (ChapCountry).
+      0x85,  // Size = 5.
       0x61, 0x72, 0x65, 0x61, 0x31,  // Body (value = "area1").
   });
 

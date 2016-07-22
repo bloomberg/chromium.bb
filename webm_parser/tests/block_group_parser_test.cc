@@ -72,32 +72,32 @@ TEST_F(BlockGroupParserTest, DefaultParse) {
 
 TEST_F(BlockGroupParserTest, DefaultValues) {
   SetReaderData({
-      0xA1,        // ID = 0xA1 (Block).
-      0x85,        // Size = 5.
-      0x81,        // Track number = 1.
+      0xA1,  // ID = 0xA1 (Block).
+      0x85,  // Size = 5.
+      0x81,  // Track number = 1.
       0x00, 0x00,  // Timecode = 0.
-      0x00,        // Flags = 0.
-      0x00,        // Frame 0.
+      0x00,  // Flags = 0.
+      0x00,  // Frame 0.
 
-      0xA2,        // ID = 0xA2 (BlockVirtual).
-      0x84,        // Size = 4.
-      0x81,        // Track number = 1.
+      0xA2,  // ID = 0xA2 (BlockVirtual).
+      0x84,  // Size = 4.
+      0x81,  // Track number = 1.
       0x00, 0x00,  // Timecode = 0.
-      0x00,        // Flags = 0.
+      0x00,  // Flags = 0.
 
       0x75, 0xA1,  // ID = 0x75A1 (BlockAdditions).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
-      0x9B,        // ID = 0x9B (BlockDuration).
+      0x9B,  // ID = 0x9B (BlockDuration).
       0x40, 0x00,  // Size = 0.
 
-      0xFB,        // ID = 0xFB (ReferenceBlock).
+      0xFB,  // ID = 0xFB (ReferenceBlock).
       0x40, 0x00,  // Size = 0.
 
       0x75, 0xA2,  // ID = 0x75A2 (DiscardPadding).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
-      0x8E,        // ID = 0x8E (Slices).
+      0x8E,  // ID = 0x8E (Slices).
       0x40, 0x00,  // Size = 0.
   });
 
@@ -137,45 +137,45 @@ TEST_F(BlockGroupParserTest, DefaultValues) {
 
 TEST_F(BlockGroupParserTest, CustomValues) {
   SetReaderData({
-      0xA1,        // ID = 0xA1 (Block).
-      0x85,        // Size = 5.
-      0x82,        // Track number = 2.
+      0xA1,  // ID = 0xA1 (Block).
+      0x85,  // Size = 5.
+      0x82,  // Track number = 2.
       0x00, 0x00,  // Timecode = 0.
-      0x00,        // Flags = 0.
-      0x00,        // Frame 0.
+      0x00,  // Flags = 0.
+      0x00,  // Frame 0.
 
-      0xA2,        // ID = 0xA2 (BlockVirtual).
-      0x84,        // Size = 4.
-      0x83,        // Track number = 3.
+      0xA2,  // ID = 0xA2 (BlockVirtual).
+      0x84,  // Size = 4.
+      0x83,  // Track number = 3.
       0x00, 0x00,  // Timecode = 0.
-      0x00,        // Flags = 0.
+      0x00,  // Flags = 0.
 
       0x75, 0xA1,  // ID = 0x75A1 (BlockAdditions).
-      0x83,        // Size = 3.
+      0x83,  // Size = 3.
 
-      0xA6,        //   ID = 0xA6 (BlockMore).
+      0xA6,  //   ID = 0xA6 (BlockMore).
       0x40, 0x00,  //   Size = 0.
 
-      0x9B,        // ID = 0x9B (BlockDuration).
+      0x9B,  // ID = 0x9B (BlockDuration).
       0x40, 0x01,  // Size = 1.
-      0x01,        // Body (value = 1).
+      0x01,  // Body (value = 1).
 
-      0xFB,        // ID = 0xFB (ReferenceBlock).
+      0xFB,  // ID = 0xFB (ReferenceBlock).
       0x40, 0x01,  // Size = 1.
-      0x01,        // Body (value = 1).
+      0x01,  // Body (value = 1).
 
-      0xFB,        // ID = 0xFB (ReferenceBlock).
+      0xFB,  // ID = 0xFB (ReferenceBlock).
       0x40, 0x01,  // Size = 1.
-      0x02,        // Body (value = 2).
+      0x02,  // Body (value = 2).
 
       0x75, 0xA2,  // ID = 0x75A2 (DiscardPadding).
-      0x81,        // Size = 1.
-      0xFF,        // Body (value = -1).
+      0x81,  // Size = 1.
+      0xFF,  // Body (value = -1).
 
-      0x8E,        // ID = 0x8E (Slices).
+      0x8E,  // ID = 0x8E (Slices).
       0x40, 0x03,  // Size = 3.
 
-      0xE8,        //   ID = 0xE8 (TimeSlice).
+      0xE8,  //   ID = 0xE8 (TimeSlice).
       0x40, 0x00,  //   Size = 0.
   });
 

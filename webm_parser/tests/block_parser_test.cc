@@ -68,10 +68,10 @@ struct TestData {
 const TestData ebml_lacing_one_frame = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x86,        // Flags = key_frame | ebml_lacing.
-        0x00,        // Lace count - 1 = 0 (1 frame).
+        0x86,  // Flags = key_frame | ebml_lacing.
+        0x00,  // Lace count - 1 = 0 (1 frame).
 
         // Lace data (1 frame).
         // Frame 0.
@@ -79,13 +79,13 @@ const TestData ebml_lacing_one_frame = {
     },
 
     // Expected results.
-    1,              // expected_track_number
-    0,              // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kEbml,  // expected_lacing
-    true,           // expected_is_visible
-    true,           // expected_is_key_frame
-    false,          // expected_is_discardable
-    1,              // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    1,  // expected_num_frames
 
     5,  // expected_frame_start_position
     // expected_frame_sizes
@@ -96,10 +96,10 @@ const TestData ebml_lacing_one_frame = {
 const TestData xiph_lacing_one_frame = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x82,        // Flags = key_frame | xiph_lacing.
-        0x00,        // Lace count - 1 = 0 (1 frame).
+        0x82,  // Flags = key_frame | xiph_lacing.
+        0x00,  // Lace count - 1 = 0 (1 frame).
 
         // Lace data (1 frame).
         // Frame 0.
@@ -107,13 +107,13 @@ const TestData xiph_lacing_one_frame = {
     },
 
     // Expected results.
-    1,              // expected_track_number
-    0,              // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kXiph,  // expected_lacing
-    true,           // expected_is_visible
-    true,           // expected_is_key_frame
-    false,          // expected_is_discardable
-    1,              // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    1,  // expected_num_frames
 
     5,  // expected_frame_start_position
     // expected_frame_sizes
@@ -124,23 +124,23 @@ const TestData xiph_lacing_one_frame = {
 const TestData fixed_lacing_one_frame = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x84,        // Flags = key_frame | fixed_lacing.
-        0x00,        // Lace count - 1 = 0 (1 frame).
+        0x84,  // Flags = key_frame | fixed_lacing.
+        0x00,  // Lace count - 1 = 0 (1 frame).
 
         // Lace data (1 frame).
         0x00,
     },
 
     // Expected results.
-    1,               // expected_track_number
-    0,               // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kFixed,  // expected_lacing
-    true,            // expected_is_visible
-    true,            // expected_is_key_frame
-    false,           // expected_is_discardable
-    1,               // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    1,  // expected_num_frames
 
     5,  // expected_frame_start_position
     // expected_frame_sizes
@@ -151,17 +151,17 @@ const TestData fixed_lacing_one_frame = {
 const TestData ebml_lacing = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x86,        // Flags = key_frame | ebml_lacing.
-        0x05,        // Lace count - 1 = 5 (6 frames).
+        0x86,  // Flags = key_frame | ebml_lacing.
+        0x05,  // Lace count - 1 = 5 (6 frames).
 
         // Lace data (6 frames).
-        0xFF,        // Lace 0 size = 127.
+        0xFF,  // Lace 0 size = 127.
         0x5F, 0x81,  // Lace 1 size = 1.
-        0xC0,        // Lace 2 size = 2.
-        0xFF,        // Lace 3 size = 66.
-        0x81,        // Lace 4 size = 4.
+        0xC0,  // Lace 2 size = 2.
+        0xFF,  // Lace 3 size = 66.
+        0x81,  // Lace 4 size = 4.
         // Lace 5 size inferred to be 5.
 
         // Lace data (6 frames).
@@ -200,13 +200,13 @@ const TestData ebml_lacing = {
     },
 
     // Expected results.
-    1,              // expected_track_number
-    0,              // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kEbml,  // expected_lacing
-    true,           // expected_is_visible
-    true,           // expected_is_key_frame
-    false,          // expected_is_discardable
-    6,              // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    6,  // expected_num_frames
 
     11,  // expected_frame_start_position
     // expected_frame_sizes
@@ -217,15 +217,15 @@ const TestData ebml_lacing = {
 const TestData xiph_lacing = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x82,        // Flags = key_frame | xiph_lacing.
-        0x03,        // Lace count - 1 = 3 (4 frames).
+        0x82,  // Flags = key_frame | xiph_lacing.
+        0x03,  // Lace count - 1 = 3 (4 frames).
 
         // Lace sizes.
         0xFF, 0xFF, 0x00,  // Lace 0 size = 510.
-        0xFF, 0x01,        // Lace 1 size = 256.
-        0x02,              // Lace 2 size = 2.
+        0xFF, 0x01,  // Lace 1 size = 256.
+        0x02,  // Lace 2 size = 2.
         // Lace 3 size inferred to be 3.
 
         // Lace data (4 frames).
@@ -306,13 +306,13 @@ const TestData xiph_lacing = {
     },
 
     // Expected results.
-    1,              // expected_track_number
-    0,              // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kXiph,  // expected_lacing
-    true,           // expected_is_visible
-    true,           // expected_is_key_frame
-    false,          // expected_is_discardable
-    4,              // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    4,  // expected_num_frames
 
     11,  // expected_frame_start_position
     // expected_frame_sizes
@@ -323,10 +323,10 @@ const TestData xiph_lacing = {
 const TestData fixed_lacing = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x84,        // Flags = key_frame | fixed_lacing.
-        0x03,        // Lace count - 1 = 3 (4 frames).
+        0x84,  // Flags = key_frame | fixed_lacing.
+        0x03,  // Lace count - 1 = 3 (4 frames).
 
         // Lace data (4 frames).
         0x00, 0x00,  // Frame 0.
@@ -336,13 +336,13 @@ const TestData fixed_lacing = {
     },
 
     // Expected results.
-    1,               // expected_track_number
-    0,               // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kFixed,  // expected_lacing
-    true,            // expected_is_visible
-    true,            // expected_is_key_frame
-    false,           // expected_is_discardable
-    4,               // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    4,  // expected_num_frames
 
     5,  // expected_frame_start_position
     // expected_frame_sizes
@@ -355,20 +355,20 @@ const TestData no_lacing = {
     {
         0x40, 0x01,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x80,        // Flags = key_frame.
+        0x80,  // Flags = key_frame.
 
         // Lace data (1 frame).
         0x00, 0x00, 0x00,  // Frame 0.
     },
 
     // Expected results.
-    1,              // expected_track_number
-    0,              // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kNone,  // expected_lacing
-    true,           // expected_is_visible
-    true,           // expected_is_key_frame
-    false,          // expected_is_discardable
-    1,              // expected_num_frames
+    true,  // expected_is_visible
+    true,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    1,  // expected_num_frames
 
     5,  // expected_frame_start_position
     // expected_frame_sizes
@@ -379,22 +379,22 @@ const TestData no_lacing = {
 const TestData no_flags = {
     // Data.
     {
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x00,        // Flags = 0.
+        0x00,  // Flags = 0.
 
         // Lace data (1 frame).
         0x00,
     },
 
     // Expected results.
-    1,              // expected_track_number
-    0,              // expected_timecode
+    1,  // expected_track_number
+    0,  // expected_timecode
     Lacing::kNone,  // expected_lacing
-    true,           // expected_is_visible
-    false,          // expected_is_key_frame
-    false,          // expected_is_discardable
-    1,              // expected_num_frames
+    true,  // expected_is_visible
+    false,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    1,  // expected_num_frames
 
     4,  // expected_frame_start_position
     // expected_frame_sizes
@@ -406,22 +406,22 @@ const TestData no_flags = {
 const TestData block_flags = {
     // Data.
     {
-        0x82,        // Track number = 2.
+        0x82,  // Track number = 2.
         0xFE, 0xDC,  // Timecode = -292.
-        0x08,        // Flags = invisible.
+        0x08,  // Flags = invisible.
 
         // Lace data (1 frame).
         0x00,
     },
 
     // Expected results.
-    2,              // expected_track_number
-    -292,           // expected_timecode
+    2,  // expected_track_number
+    -292,  // expected_timecode
     Lacing::kNone,  // expected_lacing
-    false,          // expected_is_visible
-    false,          // expected_is_key_frame
-    false,          // expected_is_discardable
-    1,              // expected_num_frames
+    false,  // expected_is_visible
+    false,  // expected_is_key_frame
+    false,  // expected_is_discardable
+    1,  // expected_num_frames
 
     4,  // expected_frame_start_position
     // expected_frame_sizes
@@ -435,20 +435,20 @@ const TestData simple_block_flags = {
     {
         0x41, 0x23,  // Track number = 291.
         0x12, 0x34,  // Timecode = 4660.
-        0x89,        // Flags = key_frame | invisible | discardable.
+        0x89,  // Flags = key_frame | invisible | discardable.
 
         // Lace data (1 frame).
         0x00,
     },
 
     // Expected results.
-    291,            // expected_track_number
-    4660,           // expected_timecode
+    291,  // expected_track_number
+    4660,  // expected_timecode
     Lacing::kNone,  // expected_lacing
-    false,          // expected_is_visible
-    true,           // expected_is_key_frame
-    true,           // expected_is_discardable
-    1,              // expected_num_frames
+    false,  // expected_is_visible
+    true,  // expected_is_key_frame
+    true,  // expected_is_discardable
+    1,  // expected_num_frames
 
     5,  // expected_frame_start_position
     // expected_frame_sizes
@@ -613,14 +613,14 @@ class BasicBlockParserTest : public ElementParserTest<T, id> {
   // Tests an invalid fixed-lace block that has inconsistent frame sizes.
   void TestInvalidFixedLaceSizes() {
     SetReaderData({
-        0x81,        // Track number = 1.
+        0x81,  // Track number = 1.
         0x00, 0x00,  // Timecode = 0.
-        0x84,        // Flags = key_frame | fixed_lacing.
-        0x01,        // Lace count - 1 = 1 (2 frames).
+        0x84,  // Flags = key_frame | fixed_lacing.
+        0x01,  // Lace count - 1 = 1 (2 frames).
 
         // Lace data (2 frames).
         0x00, 0x00,  // Frame 0.
-        0x01,        // Frame 1 (invalid: inconsistent frame size).
+        0x01,  // Frame 1 (invalid: inconsistent frame size).
     });
 
     EXPECT_CALL(callback_, OnFrame(_, _, _)).Times(0);

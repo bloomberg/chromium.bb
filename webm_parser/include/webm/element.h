@@ -36,7 +36,8 @@ namespace webm {
  Otherwise it will return false since the element was ommitted or skipped when
  parsing.
  */
-template <typename T> class Element {
+template <typename T>
+class Element {
  public:
   /**
    Value-initializes the element's value and makes `is_present()` false.

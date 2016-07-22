@@ -121,13 +121,13 @@ TEST_F(MasterValueParserTest, DefaultValues) {
 
 TEST_F(MasterValueParserTest, CustomValues) {
   SetReaderData({
-      0xE7,        // ID = 0xE7 (Timecode).
-      0x82,        // Size = 2.
+      0xE7,  // ID = 0xE7 (Timecode).
+      0x82,  // Size = 2.
       0x04, 0x00,  // Body (value = 1024).
 
-      0xAB,        // ID = 0xAB (PrevSize).
+      0xAB,  // ID = 0xAB (PrevSize).
       0x40, 0x01,  // Size = 1.
-      0x01,        // Body (value = 1).
+      0x01,  // Body (value = 1).
   });
 
   {
@@ -154,7 +154,7 @@ TEST_F(MasterValueParserTest, CustomValues) {
 
 TEST_F(MasterValueParserTest, IncrementalParse) {
   SetReaderData({
-      0xE7,        // ID = 0xE7 (Timecode).
+      0xE7,  // ID = 0xE7 (Timecode).
       0x40, 0x02,  // Size = 2.
       0x04, 0x00,  // Body (value = 1024).
 
@@ -162,7 +162,7 @@ TEST_F(MasterValueParserTest, IncrementalParse) {
       0x40, 0x02,  // Size = 2.
       0x00, 0x00,  // Body.
 
-      0xAB,        // ID = 0xAB (PrevSize).
+      0xAB,  // ID = 0xAB (PrevSize).
       0x40, 0x02,  // Size = 2.
       0x00, 0x01,  // Body (value = 1).
   });

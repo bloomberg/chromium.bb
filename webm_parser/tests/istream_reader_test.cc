@@ -23,7 +23,7 @@ namespace {
 // Creates a std::array from a string literal (and omits the trailing
 // NUL-character).
 template <std::size_t N>
-std::array<std::uint8_t, N - 1> ArrayFromString(const char (&string)[N]) {
+std::array<std::uint8_t, N - 1> ArrayFromString(const char(&string)[N]) {
   std::array<std::uint8_t, N - 1> array;
   std::copy_n(string, N - 1, array.begin());
   return array;

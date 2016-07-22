@@ -274,7 +274,8 @@ Status BasicBlockParser<T>::Feed(Callback* callback, Reader* reader,
   }
 }
 
-template <typename T> bool BasicBlockParser<T>::WasSkipped() const {
+template <typename T>
+bool BasicBlockParser<T>::WasSkipped() const {
   return state_ == State::kSkipping;
 }
 

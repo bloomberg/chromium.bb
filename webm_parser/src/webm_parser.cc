@@ -184,6 +184,7 @@ class WebmParser::DocumentParser {
  private:
   // Parsing states for the finite-state machine.
   enum class State {
+    /* clang-format off */
     // State                      Transitions to state      When
     kBegin,                    // kReadingChildId           done
     kReadingChildId,           // kReadingChildSize         done
@@ -195,6 +196,7 @@ class WebmParser::DocumentParser {
     kReadingChildBody,         // kValidatingChildSize      cached metadata
                                // kReadingChildId           otherwise
     kEndReached,               // No transitions from here
+    /* clang-format on */
   };
 
   // The parser for parsing child element Ids.

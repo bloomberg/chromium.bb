@@ -27,7 +27,8 @@ namespace webm {
 // http://matroska.org/technical/specs/index.html#EBML_ex
 // https://github.com/Matroska-Org/ebml-specification/blob/master/specification.markdown#element-data-size
 // https://github.com/Matroska-Org/ebml-specification/blob/master/specification.markdown#ebml-element-types
-template <typename T> class IntParser : public ElementParser {
+template <typename T>
+class IntParser : public ElementParser {
  public:
   static_assert(
       std::is_same<T, std::int64_t>::value ||

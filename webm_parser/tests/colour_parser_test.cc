@@ -79,46 +79,46 @@ TEST_F(ColourParserTest, DefaultParse) {
 TEST_F(ColourParserTest, DefaultValues) {
   SetReaderData({
       0x55, 0xB1,  // ID = 0x55B1 (MatrixCoefficients).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB2,  // ID = 0x55B2 (BitsPerChannel).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB3,  // ID = 0x55B3 (ChromaSubsamplingHorz).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB4,  // ID = 0x55B4 (ChromaSubsamplingVert).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB5,  // ID = 0x55B5 (CbSubsamplingHorz).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB6,  // ID = 0x55B6 (CbSubsamplingVert).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB7,  // ID = 0x55B7 (ChromaSitingHorz).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB8,  // ID = 0x55B8 (ChromaSitingVert).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xB9,  // ID = 0x55B9 (Range).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xBA,  // ID = 0x55BA (TransferCharacteristics).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xBB,  // ID = 0x55BB (Primaries).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xBC,  // ID = 0x55BC (MaxCLL).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xBD,  // ID = 0x55BD (MaxFALL).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
 
       0x55, 0xD0,  // ID = 0x55D0 (MasteringMetadata).
-      0x80,        // Size = 0.
+      0x80,  // Size = 0.
   });
 
   ParseAndVerify();
@@ -173,62 +173,62 @@ TEST_F(ColourParserTest, DefaultValues) {
 TEST_F(ColourParserTest, CustomValues) {
   SetReaderData({
       0x55, 0xB1,  // ID = 0x55B1 (MatrixCoefficients).
-      0x81,        // Size = 1.
-      0x01,        // Body (value = BT.709).
+      0x81,  // Size = 1.
+      0x01,  // Body (value = BT.709).
 
       0x55, 0xB2,  // ID = 0x55B2 (BitsPerChannel).
-      0x81,        // Size = 1.
-      0x02,        // Body (value = 2).
+      0x81,  // Size = 1.
+      0x02,  // Body (value = 2).
 
       0x55, 0xB3,  // ID = 0x55B3 (ChromaSubsamplingHorz).
-      0x81,        // Size = 1.
-      0x03,        // Body (value = 3).
+      0x81,  // Size = 1.
+      0x03,  // Body (value = 3).
 
       0x55, 0xB4,  // ID = 0x55B4 (ChromaSubsamplingVert).
-      0x81,        // Size = 1.
-      0x04,        // Body (value = 4).
+      0x81,  // Size = 1.
+      0x04,  // Body (value = 4).
 
       0x55, 0xB5,  // ID = 0x55B5 (CbSubsamplingHorz).
-      0x81,        // Size = 1.
-      0x05,        // Body (value = 5).
+      0x81,  // Size = 1.
+      0x05,  // Body (value = 5).
 
       0x55, 0xB6,  // ID = 0x55B6 (CbSubsamplingVert).
-      0x81,        // Size = 1.
-      0x06,        // Body (value = 6).
+      0x81,  // Size = 1.
+      0x06,  // Body (value = 6).
 
       0x55, 0xB7,  // ID = 0x55B7 (ChromaSitingHorz).
-      0x81,        // Size = 1.
-      0x01,        // Body (value = 1).
+      0x81,  // Size = 1.
+      0x01,  // Body (value = 1).
 
       0x55, 0xB8,  // ID = 0x55B8 (ChromaSitingVert).
-      0x81,        // Size = 1.
-      0x02,        // Body (value = 2).
+      0x81,  // Size = 1.
+      0x02,  // Body (value = 2).
 
       0x55, 0xB9,  // ID = 0x55B9 (Range).
-      0x81,        // Size = 1.
-      0x03,        // Body (value = 3 (derived)).
+      0x81,  // Size = 1.
+      0x03,  // Body (value = 3 (derived)).
 
       0x55, 0xBA,  // ID = 0x55BA (TransferCharacteristics).
-      0x81,        // Size = 1.
-      0x04,        // Body (value = BT.470‑6 System M with display gamma 2.2).
+      0x81,  // Size = 1.
+      0x04,  // Body (value = BT.470‑6 System M with display gamma 2.2).
 
       0x55, 0xBB,  // ID = 0x55BB (Primaries).
-      0x81,        // Size = 1.
-      0x05,        // Body (value =  BT.470‑6 System B, G).
+      0x81,  // Size = 1.
+      0x05,  // Body (value =  BT.470‑6 System B, G).
 
       0x55, 0xBC,  // ID = 0x55BC (MaxCLL).
-      0x81,        // Size = 1.
-      0x06,        // Body (value = 6).
+      0x81,  // Size = 1.
+      0x06,  // Body (value = 6).
 
       0x55, 0xBD,  // ID = 0x55BD (MaxFALL).
-      0x81,        // Size = 1.
-      0x07,        // Body (value = 7).
+      0x81,  // Size = 1.
+      0x07,  // Body (value = 7).
 
       0x55, 0xD0,  // ID = 0x55D0 (MasteringMetadata).
-      0x87,        // Size = 7.
+      0x87,  // Size = 7.
 
-      0x55, 0xD1,              //   ID = 0x55D1 (PrimaryRChromaticityX).
-      0x84,                    //   Size = 4.
+      0x55, 0xD1,  //   ID = 0x55D1 (PrimaryRChromaticityX).
+      0x84,  //   Size = 4.
       0x3F, 0x80, 0x00, 0x00,  //   Body (value = 1).
   });
 
