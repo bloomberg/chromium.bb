@@ -117,12 +117,12 @@
       'Chromium Mac 10.9 Goma Canary (dbg)': 'gn_debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gn_debug_bot',
       'Chromium Win PGO Builder': [
-        'gyp_official_chrome_pgo_phase_1_x86',
-        'gyp_official_chrome_pgo_phase_2_x86'
+        'gyp_official_optimize_chrome_pgo_phase_1_x86',
+        'gyp_official_optimize_chrome_pgo_phase_2_x86'
       ],
       'Chromium Win x64 PGO Builder': [
-        'gyp_official_chrome_pgo_phase_1_x64',
-        'gyp_official_chrome_pgo_phase_2_x64',
+        'gyp_official_optimize_chrome_pgo_phase_1_x64',
+        'gyp_official_optimize_chrome_pgo_phase_2_x64',
       ],
       'Chromium Windows Analyze': 'gn_windows_analyze',
       'CrWin7Goma': 'gn_release_bot_minimal_symbols_x86',
@@ -922,8 +922,8 @@
       'win_optional_gpu_tests_rel':
         'swarming_gpu_tests_deqp_gles_gn_release_trybot_x86',
       'win_pgo': [
-        'gyp_official_chrome_pgo_phase_1_x86',
-        'gyp_official_chrome_pgo_phase_2_x86',
+        'gyp_official_optimize_chrome_pgo_phase_1_x86',
+        'gyp_official_optimize_chrome_pgo_phase_2_x86',
       ],
       'win_upload_clang': 'gn_release_bot',
       'win_chrome_official': 'gn_official_goma_minimal_symbols_x86',
@@ -1377,7 +1377,23 @@
     ],
 
     'gyp_official_chrome_pgo_phase_2_x86': [
-      'gyp', 'official', 'chrome_pgo_phase_2', 'x86',
+      'gyp', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
+    ],
+
+    'gyp_official_optimize_chrome_pgo_phase_1_x64': [
+      'gyp', 'official_optimize', 'chrome_pgo_phase_1', 'x64',
+    ],
+
+    'gyp_official_optimize_chrome_pgo_phase_2_x64': [
+      'gyp', 'official_optimize', 'chrome_pgo_phase_2', 'x64',
+    ],
+
+    'gyp_official_optimize_chrome_pgo_phase_1_x86': [
+      'gyp', 'official_optimize', 'chrome_pgo_phase_1', 'x86',
+    ],
+
+    'gyp_official_optimize_chrome_pgo_phase_2_x86': [
+      'gyp', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
     ],
 
     'gyp_official_x64': [
@@ -2219,9 +2235,14 @@
     },
 
     'official': {
-      'gn_args': ('is_chrome_branded=true is_official_build=true '
-                  'is_debug=false'),
-      'gyp_defines': 'branding=Chrome buildtype=Official',
+      'mixins': ['official_optimize'],
+      'gn_args': 'is_chrome_branded=true',
+      'gyp_defines': 'branding=Chrome',
+    },
+
+    'official_optimize': {
+      'gn_args': 'is_official_build=true is_debug=false',
+      'gyp_defines': 'buildtype=Official',
     },
 
     'ozone': {
