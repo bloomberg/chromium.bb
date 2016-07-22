@@ -5,49 +5,49 @@
 </style>
 
 <script>
-function onLoad() {
-  var tabs_list_request = new XMLHttpRequest();
-  tabs_list_request.open("GET", "/json/list?t=" + new Date().getTime(), true);
-  tabs_list_request.onreadystatechange = onReady;
-  tabs_list_request.send();
+const fetchjson = (url) => fetch(url).then(r => r.json());
+
+function loadData() {
+  const getList = fetchjson("/json/list");
+  const getVersion = fetchjson('/json/version');
+  Promise.all([getList, getVersion]).then(parseResults);
 }
 
-function onReady() {
-  if(this.readyState == 4 && this.status == 200) {
-    if(this.response != null)
-      var responseJSON = JSON.parse(this.response);
-      for (var i = 0; i < responseJSON.length; ++i)
-        appendItem(responseJSON[i]);
-  }
+function parseResults([listData, versionData]){
+    const version = versionData['WebKit-Version'];
+    const hash = version.match(/\s\(@(\b[0-9a-f]{5,40}\b)/)[1];
+    listData.forEach(item => appendItem(item, hash));
 }
 
-function appendItem(item_object) {
-  var frontend_ref;
-  if (item_object.devtoolsFrontendUrl) {
-    frontend_ref = document.createElement("a");
-    frontend_ref.href = item_object.devtoolsFrontendUrl;
-    frontend_ref.title = item_object.title;
+function appendItem(item, hash) {
+  let link;
+  if (item.devtoolsFrontendUrl) {
+    link = document.createElement("a");
+    var devtoolsFrontendUrl = item.devtoolsFrontendUrl.replace(/^\/devtools\//,'');
+    link.href = `https://chrome-devtools-frontend.appspot.com/serve_file/@${hash}/${devtoolsFrontendUrl}&remoteFrontend=true`;
+    link.title = item.title;
   } else {
-    frontend_ref = document.createElement("div");
-    frontend_ref.title = "The tab already has active debugging session";
+    link = document.createElement("div");
+    link.title = "The tab already has active debugging session";
   }
 
   var text = document.createElement("div");
-  if (item_object.title)
-    text.innerText = item_object.title;
+  if (item.title)
+    text.textContent = item.title;
   else
-    text.innerText = "(untitled tab)";
-  text.style.cssText = "background-image:url(" + item_object.faviconUrl + ")";
-  frontend_ref.appendChild(text);
+    text.textContent = "(untitled tab)";
+  if (item.faviconUrl)
+    text.style.cssText = "background-image:url(" + item.faviconUrl + ")";
+  link.appendChild(text);
 
-  var item = document.createElement("p");
-  item.appendChild(frontend_ref);
+  var p = document.createElement("p");
+  p.appendChild(link);
 
-  document.getElementById("items").appendChild(item);
+  document.getElementById("items").appendChild(p);
 }
 </script>
 </head>
-<body onload='onLoad()'>
+<body onload='loadData()'>
   <div id='caption'>Inspectable WebContents</div>
   <div id='items'></div>
 </body>
