@@ -8600,6 +8600,66 @@ static void overloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TestObjectV8Internal::overloadedMethodLMethod(info);
 }
 
+static void overloadedMethodN1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    TestInterfaceImplementation* testInterfaceArg;
+    {
+        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodN", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+            return;
+        }
+    }
+    impl->overloadedMethodN(testInterfaceArg);
+}
+
+static void overloadedMethodN2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    TestCallbackInterface* testCallbackInterfaceArg;
+    {
+        if (info.Length() <= 0 || !info[0]->IsFunction()) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not a function."));
+            return;
+        }
+        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    }
+    impl->overloadedMethodN(testCallbackInterfaceArg);
+}
+
+static void overloadedMethodNMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodN", "TestObject", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 1:
+        if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodN1Method(info);
+            return;
+        }
+        if (info[0]->IsObject()) {
+            overloadedMethodN2Method(info);
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+    if (info.Length() < 1) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+    return;
+}
+
+static void overloadedMethodNMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectV8Internal::overloadedMethodNMethod(info);
+}
+
 static void promiseOverloadMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -11521,6 +11581,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedMethodK", TestObjectV8Internal::overloadedMethodKMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedMethodL", TestObjectV8Internal::overloadedMethodLMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"overloadedMethodN", TestObjectV8Internal::overloadedMethodNMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"promiseOverloadMethod", TestObjectV8Internal::promiseOverloadMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedStaticMethod", TestObjectV8Internal::overloadedStaticMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},

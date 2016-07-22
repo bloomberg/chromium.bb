@@ -475,6 +475,8 @@ interface TestObject {
     void overloadedMethodK(DOMString stringArg);
     void overloadedMethodL(long longArg, any... restArgs);
     void overloadedMethodL(DOMString stringArg, any... restArgs);
+    void overloadedMethodN(TestInterface testInterfaceArg);
+    void overloadedMethodN(TestCallbackInterface testCallbackInterfaceArg);
 
     Promise promiseOverloadMethod();
     Promise promiseOverloadMethod(Window arg1, double arg2);
