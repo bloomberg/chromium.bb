@@ -1094,8 +1094,6 @@ dialog {
     color: black
 }
 
-/* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the
-   properties shared with :fullscreen::backdrop (see fullscreen.css). */
 dialog::backdrop {
     position: fixed;
     top: 0;

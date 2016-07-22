@@ -887,10 +887,7 @@ PseudoElement* StyleResolver::createPseudoElementIfNeeded(Element& parent, Pseud
     if (pseudoId == PseudoIdFirstLetter && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextLayoutObject(parent)))
         return nullptr;
 
-    // The backdrop pseudo element generates a new stacking context and its
-    // layout object does not become a child of |parentLayoutObject|. The
-    // exemption is needed so that replaced content also gets a backdrop.
-    if (pseudoId != PseudoIdBackdrop && !canHaveGeneratedChildren(*parentLayoutObject))
+    if (!canHaveGeneratedChildren(*parentLayoutObject))
         return nullptr;
 
     ComputedStyle* parentStyle = parentLayoutObject->mutableStyle();

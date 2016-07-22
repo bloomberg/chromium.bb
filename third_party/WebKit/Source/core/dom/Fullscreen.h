@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class LayoutFullScreen;
 class ComputedStyle;
 
 class CORE_EXPORT Fullscreen final
@@ -80,7 +81,9 @@ public:
     void didEnterFullscreenForElement(Element*);
     void didExitFullscreen();
 
-    void didUpdateSize(Element&);
+    void setFullScreenLayoutObject(LayoutFullScreen*);
+    LayoutFullScreen* fullScreenLayoutObject() const { return m_fullScreenLayoutObject; }
+    void fullScreenLayoutObjectDestroyed();
 
     void elementRemoved(Element&);
 
@@ -96,9 +99,6 @@ public:
     void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
-
-    using ElementStack = HeapVector<std::pair<Member<Element>, RequestType>>;
-    const ElementStack& fullScreenElementStack() const { return m_fullScreenElementStack; }
 
 private:
     static Fullscreen* fromIfExistsSlow(Document&);
@@ -117,6 +117,7 @@ private:
 
     Member<Element> m_fullScreenElement;
     HeapVector<std::pair<Member<Element>, RequestType>> m_fullScreenElementStack;
+    LayoutFullScreen* m_fullScreenLayoutObject;
     Timer<Fullscreen> m_eventQueueTimer;
     HeapDeque<Member<Event>> m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;

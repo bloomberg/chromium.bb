@@ -99,6 +99,11 @@ public:
         return m_layoutObject->isImage();
     }
 
+    bool isLayoutFullScreen() const
+    {
+        return m_layoutObject->isLayoutFullScreen();
+    }
+
     bool isListItem() const
     {
         return m_layoutObject->isListItem();

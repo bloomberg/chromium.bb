@@ -1353,8 +1353,6 @@ private:
 
     bool m_hasFullscreenSupplement; // For early return in Fullscreen::fromIfExists()
 
-    // The last element in |m_topLayerElements| is topmost in the top layer
-    // stack and is thus the one that will be visually on top.
     HeapVector<Member<Element>> m_topLayerElements;
 
     int m_loadEventDelayCount;

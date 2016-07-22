@@ -28,6 +28,8 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/paint/VideoPainter.h"
 #include "public/platform/WebLayer.h"
 
@@ -193,6 +195,47 @@ LayoutUnit LayoutVideo::minimumReplacedHeight() const
 bool LayoutVideo::supportsAcceleratedRendering() const
 {
     return !!mediaElement()->platformLayer();
+}
+
+static const LayoutBlock* layoutObjectPlaceholder(const LayoutObject* layoutObject)
+{
+    LayoutObject* parent = layoutObject->parent();
+    if (!parent)
+        return nullptr;
+
+    LayoutFullScreen* fullScreen = parent->isLayoutFullScreen() ? toLayoutFullScreen(parent) : 0;
+    if (!fullScreen)
+        return nullptr;
+
+    return fullScreen->placeholder();
+}
+
+LayoutUnit LayoutVideo::offsetLeft(const Element* parent) const
+{
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
+        return block->offsetLeft(parent);
+    return LayoutMedia::offsetLeft(parent);
+}
+
+LayoutUnit LayoutVideo::offsetTop(const Element* parent) const
+{
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
+        return block->offsetTop(parent);
+    return LayoutMedia::offsetTop(parent);
+}
+
+LayoutUnit LayoutVideo::offsetWidth() const
+{
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
+        return block->offsetWidth();
+    return LayoutMedia::offsetWidth();
+}
+
+LayoutUnit LayoutVideo::offsetHeight() const
+{
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
+        return block->offsetHeight();
+    return LayoutMedia::offsetHeight();
 }
 
 CompositingReasons LayoutVideo::additionalCompositingReasons() const

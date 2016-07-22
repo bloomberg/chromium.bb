@@ -1,44 +1,61 @@
-:not(:root):-webkit-full-screen {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
+:-webkit-full-screen {
+    background-color: white;
+    z-index: 2147483647 !important;
+}
+
+:root:-webkit-full-screen-ancestor {
+    overflow: hidden !important;
+}
+
+:-webkit-full-screen-ancestor:not(iframe) {
+    z-index: auto !important;
+    position: static !important;
+    opacity: 1 !important;
+    transform: none !important;
+    -webkit-mask: none !important;
+    clip: none !important;
+    -webkit-filter: none !important;
+    transition: none !important;
+    -webkit-box-reflect: none !important;
+    -webkit-perspective: none !important;
+    -webkit-transform-style: flat !important;
+    will-change: auto !important;
+}
+
+video:-webkit-full-screen, audio:-webkit-full-screen {
+    background-color: transparent !important;
+    position: relative !important;
     left: 0 !important;
+    top: 0 ! important;
     margin: 0 !important;
-    box-sizing: border-box !important;
     min-width: 0 !important;
     max-width: none !important;
     min-height: 0 !important;
     max-height: none !important;
     width: 100% !important;
     height: 100% !important;
-    object-fit: contain !important;
+    flex: 1 !important;
+    display: block !important;
     transform: none !important;
 }
 
+img:-webkit-full-screen {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+}
+
 iframe:-webkit-full-screen {
-    border: none !important;
+    margin: 0 !important;
     padding: 0 !important;
-}
-
-/* TODO(foolip): In the spec, there's a ::backdrop block with the properties
-   shared with dialog::backdrop (see html.css). */
-:not(:root):-webkit-full-screen::backdrop {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: black;
-}
-
-/* Anything below are extensions over what the Fullscreen API (3 May 2016) mandates. */
-
-/* This prevents video from overflowing the viewport in
-   virtual/android/fullscreen/video-scrolled-iframe.html (crbug.com/441890) and
-   removes scrollbars caused by html { overflow: scroll } (crbug.com/543946).
-   TODO(foolip): This is done differently in Gecko, find a fix not involving the
-   ancestor selector in https://github.com/whatwg/fullscreen/issues/19. */
-:root:-webkit-full-screen-ancestor {
-    overflow: hidden !important;
+    border: 0 !important;
+    position: fixed !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    left: 0 !important;
+    top: 0 !important;
 }

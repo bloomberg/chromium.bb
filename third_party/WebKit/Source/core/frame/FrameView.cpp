@@ -1798,7 +1798,8 @@ void FrameView::clearLayoutSubtreeRootsAndMarkContainingBlocks()
 
 void FrameView::addOrthogonalWritingModeRoot(LayoutBox& root)
 {
-    DCHECK(!root.isLayoutScrollbarPart());
+    DCHECK(!root.isLayoutFullScreen() && !root.isLayoutFullScreenPlaceholder()
+        && !root.isLayoutScrollbarPart());
     m_orthogonalWritingModeRootList.add(root);
 }
 

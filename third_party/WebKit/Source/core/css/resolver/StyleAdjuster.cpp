@@ -33,19 +33,15 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/Fullscreen.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGSVGElement.h"
@@ -364,17 +360,6 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         // https://drafts.csswg.org/css-containment/#containment-paint
         if (style.containsPaint() && style.display() == INLINE)
             style.setDisplay(BLOCK);
-
-        if (element && Fullscreen::isActiveFullScreenElement(*element)) {
-            // We need to size the fullscreen element to the inner viewport and not to the
-            // outer viewport (what percentage would do). Unfortunately CSS can't handle
-            // that as we don't expose the inner viewport information.
-            //
-            // TODO(dsinclair): We should find a way to get this standardized. crbug.com/534924
-            IntSize viewportSize = element->document().page()->frameHost().visualViewport().size();
-            style.setWidth(Length(viewportSize.width(), Fixed));
-            style.setHeight(Length(viewportSize.height(), Fixed));
-        }
     } else {
         adjustStyleForFirstLetter(style);
     }

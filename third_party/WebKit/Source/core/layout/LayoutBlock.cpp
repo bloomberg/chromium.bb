@@ -258,7 +258,10 @@ void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild, LayoutObject*
 
     // If the requested insertion point is not one of our children, then this is because
     // there is an anonymous container within this object that contains the beforeDescendant.
-    if (beforeDescendantContainer->isAnonymousBlock()) {
+    if (beforeDescendantContainer->isAnonymousBlock()
+        // Full screen layoutObjects and full screen placeholders act as anonymous blocks, not tables:
+        || beforeDescendantContainer->isLayoutFullScreen()
+        || beforeDescendantContainer->isLayoutFullScreenPlaceholder()) {
         // Insert the child into the anonymous block box instead of here.
         if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeDescendant->parent()->slowFirstChild() != beforeDescendant)
             beforeDescendant->parent()->addChild(newChild, beforeDescendant);

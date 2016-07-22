@@ -34,7 +34,7 @@ function runTests() {
     testRoot.offsetTop; // force recalc
     testRoot.className = "t1";
     if (window.internals)
-        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
     shouldBe("getComputedStyle(full).backgroundColor", "green");
 
     shouldBe("getComputedStyle(ancestor).backgroundColor", "red");
