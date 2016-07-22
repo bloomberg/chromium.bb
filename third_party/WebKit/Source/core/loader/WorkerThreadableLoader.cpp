@@ -61,9 +61,8 @@ static std::unique_ptr<Vector<char>> createVectorFromMemoryRegion(const char* da
 
 WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions, BlockingBehavior blockingBehavior)
     : m_workerGlobalScope(&workerGlobalScope)
-    , m_workerClientWrapper(ThreadableLoaderClientWrapper::create(client))
+    , m_workerClientWrapper(new ThreadableLoaderClientWrapper(workerGlobalScope, client))
 {
-    m_workerClientWrapper->setResourceTimingClient(this);
     if (blockingBehavior == LoadAsynchronously) {
         m_bridge = new MainThreadAsyncBridge(workerGlobalScope, m_workerClientWrapper, options, resourceLoaderOptions);
     } else {
@@ -79,7 +78,6 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
 
 WorkerThreadableLoader::~WorkerThreadableLoader()
 {
-    m_workerClientWrapper->clearResourceTimingClient();
     m_bridge->destroy();
     m_bridge = nullptr;
 }
@@ -90,7 +88,6 @@ void WorkerThreadableLoader::start(const ResourceRequest& request)
     if (!requestToPass.didSetHTTPReferrer())
         requestToPass.setHTTPReferrer(SecurityPolicy::generateReferrer(m_workerGlobalScope->getReferrerPolicy(), request.url(), m_workerGlobalScope->outgoingReferrer()));
     m_bridge->start(requestToPass, *m_workerGlobalScope);
-    m_workerClientWrapper->setResourceTimingClient(this);
 }
 
 void WorkerThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
@@ -105,13 +102,8 @@ void WorkerThreadableLoader::cancel()
     m_bridge->cancel();
 }
 
-void WorkerThreadableLoader::didReceiveResourceTiming(const ResourceTimingInfo& info)
-{
-    WorkerGlobalScopePerformance::performance(*m_workerGlobalScope)->addResourceTiming(info);
-}
-
 WorkerThreadableLoader::MainThreadBridgeBase::MainThreadBridgeBase(
-    PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
+    ThreadableLoaderClientWrapper* workerClientWrapper,
     PassRefPtr<WorkerLoaderProxy> loaderProxy)
     : m_workerClientWrapper(workerClientWrapper)
     , m_loaderProxy(loaderProxy)
@@ -160,10 +152,15 @@ void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadDestroy(ExecutionCo
 
 void WorkerThreadableLoader::MainThreadBridgeBase::destroy()
 {
-    // Ensure that no more client callbacks are done in the worker context's thread.
+    // Ensure that no more client callbacks are done in the worker context's
+    // thread.
+    // ThreadableLoaderClientWrapper is an on-heap class and this function can
+    // be called in the finalization step but it is safe because
+    // m_workerClientWrapper is a CrossThreadPersistent.
     m_workerClientWrapper->clearClient();
 
-    // "delete this" and m_mainThreadLoader::deref() on the worker object's thread.
+    // "delete this" and m_mainThreadLoader::deref() on the worker object's
+    // thread.
     m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadDestroy, crossThreadUnretained(this)));
 }
 
@@ -196,10 +193,12 @@ void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadCancel(ExecutionCon
 void WorkerThreadableLoader::MainThreadBridgeBase::cancel()
 {
     m_loaderProxy->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadCancel, crossThreadUnretained(this)));
-    RefPtr<ThreadableLoaderClientWrapper> clientWrapper = m_workerClientWrapper;
+    ThreadableLoaderClientWrapper* clientWrapper = m_workerClientWrapper;
     if (!clientWrapper->done()) {
-        // If the client hasn't reached a termination state, then transition it by sending a cancellation error.
-        // Note: no more client callbacks will be done after this method -- the m_workerClientWrapper->clearClient() call ensures that.
+        // If the client hasn't reached a termination state, then transition it
+        // by sending a cancellation error.
+        // Note: no more client callbacks will be done after this method -- the
+        // m_workerClientWrapper->clearClient() call ensures that.
         ResourceError error(String(), 0, String(), String());
         error.setIsCancellation(true);
         clientWrapper->didFail(error);
@@ -264,7 +263,7 @@ void WorkerThreadableLoader::MainThreadBridgeBase::didReceiveResourceTiming(cons
 
 WorkerThreadableLoader::MainThreadAsyncBridge::MainThreadAsyncBridge(
     WorkerGlobalScope& workerGlobalScope,
-    PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
+    ThreadableLoaderClientWrapper* workerClientWrapper,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resourceLoaderOptions)
     : MainThreadBridgeBase(workerClientWrapper, workerGlobalScope.thread()->workerLoaderProxy())
@@ -293,7 +292,7 @@ void WorkerThreadableLoader::MainThreadAsyncBridge::forwardTaskToWorkerOnLoaderD
 
 WorkerThreadableLoader::MainThreadSyncBridge::MainThreadSyncBridge(
     WorkerGlobalScope& workerGlobalScope,
-    PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper,
+    ThreadableLoaderClientWrapper* workerClientWrapper,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resourceLoaderOptions)
     : MainThreadBridgeBase(workerClientWrapper, workerGlobalScope.thread()->workerLoaderProxy())

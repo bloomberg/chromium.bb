@@ -57,7 +57,7 @@ class WorkerGlobalScope;
 class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
 
-class WorkerThreadableLoader final : public ThreadableLoader, private ThreadableLoaderClientWrapper::ResourceTimingClient {
+class WorkerThreadableLoader final : public ThreadableLoader {
     USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
@@ -102,7 +102,7 @@ private:
     class MainThreadBridgeBase : public ThreadableLoaderClient {
     public:
         // All executed on the worker context's thread.
-        MainThreadBridgeBase(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);
+        MainThreadBridgeBase(ThreadableLoaderClientWrapper*, PassRefPtr<WorkerLoaderProxy>);
         virtual void start(const ResourceRequest&, const WorkerGlobalScope&) = 0;
         void overrideTimeout(unsigned long timeoutMilliseconds);
         void cancel();
@@ -150,12 +150,9 @@ private:
         // Only to be used on the main thread.
         std::unique_ptr<ThreadableLoader> m_mainThreadLoader;
 
-        // ThreadableLoaderClientWrapper is to be used on the worker context thread.
-        // The ref counting is done on either thread:
-        // - worker context's thread: held by the tasks
-        // - main thread: held by MainThreadBridgeBase
-        // Therefore, this must be a ThreadSafeRefCounted.
-        RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
+        // |m_workerClientWrapper| holds an pointer created on the worker
+        // thread, and |this| instance is created on the main thread.
+        CrossThreadPersistent<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
         // Used on the worker context thread.
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
@@ -163,7 +160,7 @@ private:
 
     class MainThreadAsyncBridge final : public MainThreadBridgeBase {
     public:
-        MainThreadAsyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        MainThreadAsyncBridge(WorkerGlobalScope&, ThreadableLoaderClientWrapper*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         void start(const ResourceRequest&, const WorkerGlobalScope&) override;
 
     private:
@@ -175,7 +172,7 @@ private:
 
     class MainThreadSyncBridge final : public MainThreadBridgeBase {
     public:
-        MainThreadSyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        MainThreadSyncBridge(WorkerGlobalScope&, ThreadableLoaderClientWrapper*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         void start(const ResourceRequest&, const WorkerGlobalScope&) override;
 
     private:
@@ -195,10 +192,8 @@ private:
 
     WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
 
-    void didReceiveResourceTiming(const ResourceTimingInfo&) override;
-
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
-    RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
+    const Persistent<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
     MainThreadBridgeBase* m_bridge;
 };

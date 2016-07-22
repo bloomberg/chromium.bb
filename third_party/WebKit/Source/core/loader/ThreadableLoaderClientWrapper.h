@@ -32,50 +32,32 @@
 #define ThreadableLoaderClientWrapper_h
 
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/timing/WorkerGlobalScopePerformance.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/network/ResourceTimingInfo.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include <memory>
 
 namespace blink {
 
-class ThreadableLoaderClientWrapper : public ThreadSafeRefCounted<ThreadableLoaderClientWrapper> {
+class ThreadableLoaderClientWrapper final : public GarbageCollected<ThreadableLoaderClientWrapper> {
 public:
-    class ResourceTimingClient {
-    public:
-        virtual void didReceiveResourceTiming(const ResourceTimingInfo&) = 0;
-    };
-
-    static PassRefPtr<ThreadableLoaderClientWrapper> create(ThreadableLoaderClient* client)
+    ThreadableLoaderClientWrapper(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client)
+        : m_workerGlobalScope(workerGlobalScope)
+        , m_client(client)
     {
-        return adoptRef(new ThreadableLoaderClientWrapper(client));
     }
 
     void clearClient()
     {
         m_done = true;
-        m_client = 0;
-        clearResourceTimingClient();
+        m_client = nullptr;
     }
 
-    bool done() const
-    {
-        return m_done;
-    }
-
-    void setResourceTimingClient(ResourceTimingClient* client)
-    {
-        m_resourceTimingClient = client;
-    }
-
-    void clearResourceTimingClient()
-    {
-        m_resourceTimingClient = nullptr;
-    }
+    bool done() const { return m_done; }
 
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
     {
@@ -142,22 +124,21 @@ public:
     void didReceiveResourceTiming(std::unique_ptr<CrossThreadResourceTimingInfoData> timingData)
     {
         std::unique_ptr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(std::move(timingData)));
-
-        if (m_resourceTimingClient)
-            m_resourceTimingClient->didReceiveResourceTiming(*info);
+        if (m_client) {
+            WorkerGlobalScopePerformance::performance(*m_workerGlobalScope)->addResourceTiming(*info);
+            m_client->didReceiveResourceTiming(*info);
+        }
     }
 
-protected:
-    explicit ThreadableLoaderClientWrapper(ThreadableLoaderClient* client)
-        : m_client(client)
-        , m_resourceTimingClient(nullptr)
-        , m_done(false)
+    DEFINE_INLINE_TRACE()
     {
+        visitor->trace(m_workerGlobalScope);
     }
 
-    ThreadableLoaderClient* m_client;
-    ResourceTimingClient* m_resourceTimingClient;
-    bool m_done;
+private:
+    Member<WorkerGlobalScope> m_workerGlobalScope;
+    ThreadableLoaderClient* m_client = nullptr;
+    bool m_done = false;
 };
 
 } // namespace blink

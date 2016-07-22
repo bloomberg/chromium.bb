@@ -545,11 +545,7 @@ TEST_P(ThreadableLoaderTest, DidFinishLoading)
     EXPECT_CALL(checkpoint(), Call(2));
     EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
     EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-    // We expect didReceiveResourceTiming() calls in DocumentThreadableLoader;
-    // it's used to connect DocumentThreadableLoader to WorkerThreadableLoader,
-    // not to ThreadableLoaderClient.
-    if (GetParam() == DocumentThreadableLoaderTest)
-        EXPECT_CALL(*client(), didReceiveResourceTiming(_));
+    EXPECT_CALL(*client(), didReceiveResourceTiming(_));
     EXPECT_CALL(*client(), didFinishLoading(_, _));
 
     startLoader(successURL());
@@ -567,8 +563,7 @@ TEST_P(ThreadableLoaderTest, CancelInDidFinishLoading)
     EXPECT_CALL(checkpoint(), Call(2));
     EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
     EXPECT_CALL(*client(), didReceiveData(_, _));
-    if (GetParam() == DocumentThreadableLoaderTest)
-        EXPECT_CALL(*client(), didReceiveResourceTiming(_));
+    EXPECT_CALL(*client(), didReceiveResourceTiming(_));
     EXPECT_CALL(*client(), didFinishLoading(_, _)).WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
 
     startLoader(successURL());
@@ -586,8 +581,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFinishLoading)
     EXPECT_CALL(checkpoint(), Call(2));
     EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
     EXPECT_CALL(*client(), didReceiveData(_, _));
-    if (GetParam() == DocumentThreadableLoaderTest)
-        EXPECT_CALL(*client(), didReceiveResourceTiming(_));
+    EXPECT_CALL(*client(), didReceiveResourceTiming(_));
     EXPECT_CALL(*client(), didFinishLoading(_, _)).WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
 
     startLoader(successURL());
@@ -743,8 +737,7 @@ TEST_P(ThreadableLoaderTest, RedirectDidFinishLoading)
     EXPECT_CALL(checkpoint(), Call(2));
     EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
     EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-    if (GetParam() == DocumentThreadableLoaderTest)
-        EXPECT_CALL(*client(), didReceiveResourceTiming(_));
+    EXPECT_CALL(*client(), didReceiveResourceTiming(_));
     EXPECT_CALL(*client(), didFinishLoading(_, _));
 
     startLoader(redirectURL());
@@ -762,8 +755,7 @@ TEST_P(ThreadableLoaderTest, CancelInRedirectDidFinishLoading)
     EXPECT_CALL(checkpoint(), Call(2));
     EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
     EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-    if (GetParam() == DocumentThreadableLoaderTest)
-        EXPECT_CALL(*client(), didReceiveResourceTiming(_));
+    EXPECT_CALL(*client(), didReceiveResourceTiming(_));
     EXPECT_CALL(*client(), didFinishLoading(_, _)).WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
 
     startLoader(redirectURL());
@@ -781,8 +773,7 @@ TEST_P(ThreadableLoaderTest, ClearInRedirectDidFinishLoading)
     EXPECT_CALL(checkpoint(), Call(2));
     EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
     EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-    if (GetParam() == DocumentThreadableLoaderTest)
-        EXPECT_CALL(*client(), didReceiveResourceTiming(_));
+    EXPECT_CALL(*client(), didReceiveResourceTiming(_));
     EXPECT_CALL(*client(), didFinishLoading(_, _)).WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
 
     startLoader(redirectURL());
