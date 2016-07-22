@@ -273,7 +273,7 @@ class PreProcessLog:
       match = _TRACE_LINE.match(line)
       if match:
         lib, symbol_present = match.group('lib', 'symbol_present')
-        if os.path.splitext(lib)[1] == '.apk':
+        if os.path.splitext(lib)[1] == '.apk' and symbol_present:
           soname = self._DetectSharedLibrary(lib, symbol_present)
           if soname:
             line = line.replace('/' + os.path.basename(lib), '/' + soname)
