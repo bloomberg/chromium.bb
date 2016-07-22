@@ -63,8 +63,11 @@ void BroadcastChannel::postMessage(const ScriptValue& message, ExceptionState& e
     if (exceptionState.hadException())
         return;
 
-    String data = value->toWireString();
-    m_remoteClient->OnMessage(data);
+    Vector<char> data;
+    value->toWireBytes(data);
+    Vector<uint8_t> mojoData;
+    mojoData.appendVector(data);
+    m_remoteClient->OnMessage(std::move(mojoData));
 }
 
 void BroadcastChannel::close()
@@ -95,10 +98,10 @@ DEFINE_TRACE(BroadcastChannel)
     EventTargetWithInlineData::trace(visitor);
 }
 
-void BroadcastChannel::OnMessage(const String& message)
+void BroadcastChannel::OnMessage(mojo::WTFArray<uint8_t> message)
 {
     // Queue a task to dispatch the event.
-    RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(message);
+    RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(reinterpret_cast<const char*>(&message.front()), message.size());
     MessageEvent* event = MessageEvent::create(nullptr, value.release(), getExecutionContext()->getSecurityOrigin()->toString());
     event->setTarget(this);
     bool success = getExecutionContext()->getEventQueue()->enqueueEvent(event);

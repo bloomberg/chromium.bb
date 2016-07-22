@@ -12,7 +12,7 @@ import "url/mojo/origin.mojom";
 // in the renderer for messages from the browser to the renderer.
 interface BroadcastChannelClient {
   // Messages are passed as SerializedScriptValue.
-  OnMessage(string message);
+  OnMessage(array<uint8> message);
 };
 
 // This interface is used to set up connections to broadcast channels. All

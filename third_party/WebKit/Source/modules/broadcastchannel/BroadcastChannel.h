@@ -50,7 +50,7 @@ private:
     BroadcastChannel(ExecutionContext*, const String& name);
 
     // mojom::blink::BroadcastChannelClient:
-    void OnMessage(const String& message) override;
+    void OnMessage(mojo::WTFArray<uint8_t> message) override;
 
     // Called when the mojo binding disconnects.
     void onError();
