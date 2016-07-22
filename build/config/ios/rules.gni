@@ -207,7 +207,7 @@ template("ios_app_bundle") {
       ]
     }
 
-    _link_executable = _target_name + "_link_executable"
+    _link_executable = _target_name + "_executable"
     _executable_path = "$target_out_dir/$_output_name"
 
     if (ios_enable_code_signing) {
@@ -222,11 +222,12 @@ template("ios_app_bundle") {
     # the same role as the "executable" target in a thin build, copy the
     # visibility and redefine some variables.
     if (_is_fat_build) {
-      _lipo_executable = _target_name + "_lipo_executable"
+      _lipo_executable = _link_executable
       _lipo_executable_visibility = _link_executable_visibility
 
       _link_executable_visibility = []
       _link_executable_visibility = [ ":$_lipo_executable" ]
+      _link_executable = _target_name + "_arch_executable"
 
       _arch_executable_path = "$target_out_dir/$current_cpu/$_output_name"
     }
