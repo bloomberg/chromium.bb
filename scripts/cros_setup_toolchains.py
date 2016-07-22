@@ -10,6 +10,7 @@ import copy
 import glob
 import json
 import os
+import re
 
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
@@ -700,6 +701,48 @@ exec "${basedir}/%(relroot)s%(path)s" "$@"
   os.chmod(root_wrapper, 0o755)
 
 
+def FixClangXXWrapper(root, path):
+  """Fix wrapper shell scripts and symlinks for invoking clang++
+
+  In a typical installation, clang++ symlinks to clang, which symlinks to the
+  elf executable. The executable distinguishes between clang and clang++ based
+  on argv[0].
+
+  When invoked through the LdsoWrapper, argv[0] always contains the path to the
+  executable elf file, making clang/clang++ invocations indistinguishable.
+
+  This function detects if the elf executable being wrapped is clang-X.Y, and
+  fixes wrappers/symlinks as necessary so that clang++ will work correctly.
+
+  The calling sequence now becomes:
+  -) clang++ invocation turns into clang++-3.9 (which is a copy of clang-3.9,
+     the Ldsowrapper).
+  -) clang++-3.9 uses the Ldso to invoke clang++-3.9.elf, which is a symlink
+     to the original clang-3.9 elf.
+  -) The difference this time is that inside the elf file execution, $0 is
+     set as .../usr/bin/clang++-3.9.elf, which contains 'clang++' in the name.
+
+  Args:
+    root: The root tree to generate scripts / symlinks inside of
+    path: The target elf for which LdsoWrapper was created
+  """
+  if re.match(r'/usr/bin/clang-\d+\.\d+$', path):
+    logging.info('fixing clang++ invocation for %s', path)
+    clangdir = os.path.dirname(root + path)
+    clang = os.path.basename(path)
+    clangxx = clang.replace('clang', 'clang++')
+
+    # Create a symlink clang++-X.Y.elf to point to clang-X.Y.elf
+    os.symlink(clang + '.elf', os.path.join(clangdir, clangxx + '.elf'))
+
+    # Create a hardlink clang++-X.Y pointing to clang-X.Y
+    os.link(os.path.join(clangdir, clang), os.path.join(clangdir, clangxx))
+
+    # Adjust the clang++ symlink to point to clang++-X.Y
+    os.unlink(os.path.join(clangdir, 'clang++'))
+    os.symlink(clangxx, os.path.join(clangdir, 'clang++'))
+
+
 def FileIsCrosSdkElf(elf):
   """Determine if |elf| is an ELF that we execute in the cros_sdk
 
@@ -877,6 +920,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
       interp = os.path.join('/lib', os.path.basename(interp))
       lddtree.GenerateLdsoWrapper(output_dir, path_rewrite_func(elf), interp,
                                   libpaths=e['rpath'] + e['runpath'])
+      FixClangXXWrapper(output_dir, path_rewrite_func(elf))
 
     for lib, lib_data in e['libs'].iteritems():
       if lib in donelibs:
