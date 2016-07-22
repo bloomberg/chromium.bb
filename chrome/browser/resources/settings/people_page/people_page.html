@@ -296,7 +296,9 @@
   </if>
       </div>
       <div class="button-container">
-        <paper-button on-tap="onDisconnectCancel_">$i18n{cancel}</paper-button>
+        <paper-button on-tap="onDisconnectCancel_" class="cancel-button">
+          $i18n{cancel}
+        </paper-button>
         <paper-button id="disconnectConfirm" class="action-button"
             hidden=[[syncStatus.domain]] on-tap="onDisconnectConfirm_">
           $i18n{syncDisconnect}
