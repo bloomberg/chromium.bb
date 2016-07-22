@@ -16,6 +16,7 @@ import gpu_project_config
 from gpu_tests import gpu_integration_test
 from gpu_tests import gpu_test_expectations
 
+_GLOBAL_TEST_COUNT = 0
 
 class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
   # Must be class-scoped since instances aren't reused across runs.
@@ -26,6 +27,16 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def Name(cls):
     return 'simple_integration_unittest'
+
+  def setUp(self):
+    global _GLOBAL_TEST_COUNT
+    _GLOBAL_TEST_COUNT += 1
+    # If this is the first test, fail on setup to ensure that the
+    # gpu_integration_test handles failures in setup and remaining tests
+    # can be executed
+    if _GLOBAL_TEST_COUNT == 1:
+      self.tab.Navigate('chrome://crash')
+    super(SimpleIntegrationUnittest, self).setUp()
 
   @classmethod
   def setUpClass(cls):
@@ -44,6 +55,7 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
+    yield ('setup', 'failure.html', ())
     yield ('expected_failure', 'failure.html', ())
     yield ('expected_flaky', 'flaky.html', ())
     yield ('expected_skip', 'failure.html', ())
@@ -92,14 +104,15 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       with open(temp_file_name) as f:
         test_result = json.load(f)
       self.assertEquals(test_result['failures'], [
+          'expected_failure',
+          'setup',
           'unexpected_error',
           'unexpected_failure'])
       self.assertEquals(test_result['successes'], [
-          'expected_failure',
           'expected_flaky'])
       self.assertEquals(test_result['valid'], True)
       # It might be nice to be more precise about the order of operations
       # with these browser restarts, but this is at least a start.
-      self.assertEquals(SimpleIntegrationUnittest._num_browser_starts, 5)
+      self.assertEquals(SimpleIntegrationUnittest._num_browser_starts, 6)
     finally:
       os.remove(temp_file_name)

@@ -126,4 +126,11 @@ class GpuIntegrationTest(
     raise NotImplementedError
 
   def setUp(self):
-    self.tab = self.browser.tabs[0]
+    try:
+      self.tab = self.browser.tabs[0]
+    except Exception:
+      # restart the browser to make sure a failure in a test doesn't
+      # propagate to the next test iteration.
+      logging.exception("Failure during browser startup")
+      self._RestartBrowser('failure in setup')
+      raise
