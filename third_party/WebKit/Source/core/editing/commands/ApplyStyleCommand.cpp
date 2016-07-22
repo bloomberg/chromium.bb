@@ -275,6 +275,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
     VisiblePosition nextParagraphStart(nextPositionOf(endOfParagraph(paragraphStart)));
     VisiblePosition beyondEnd(nextPositionOf(endOfParagraph(visibleEnd)));
     while (paragraphStart.isNotNull() && paragraphStart.deepEquivalent() != beyondEnd.deepEquivalent()) {
+        DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
         StyleChange styleChange(style, paragraphStart.deepEquivalent());
         if (styleChange.cssStyle().length() || m_removeOnly) {
             Element* block = enclosingBlock(paragraphStart.deepEquivalent().anchorNode());
@@ -283,21 +284,30 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
                 HTMLElement* newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStartToMove, editingState);
                 if (editingState->isAborted())
                     return;
-                if (newBlock)
+                if (newBlock) {
                     block = newBlock;
+                    if (paragraphStart.isOrphan())
+                        paragraphStart = createVisiblePosition(Position::firstPositionInNode(newBlock));
+                }
+                DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
             }
             if (block && block->isHTMLElement()) {
                 removeCSSStyle(style, toHTMLElement(block), editingState);
                 if (editingState->isAborted())
                     return;
-                if (!m_removeOnly)
+                DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
+                if (!m_removeOnly) {
                     addBlockStyle(styleChange, toHTMLElement(block));
+                    DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
+                }
             }
 
+            DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
             if (nextParagraphStart.isOrphan())
                 nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
         }
 
+        DCHECK(!nextParagraphStart.isOrphan()) << nextParagraphStart;
         paragraphStart = nextParagraphStart;
         nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
     }
