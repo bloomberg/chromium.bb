@@ -152,7 +152,7 @@
 <translation id="2674170444375937751">Voulez-vous vraiment supprimer ces pages de votre historique ?</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
-<translation id="2704951214193499422">Impossible de vérifier votre carte dans Chromium pour le moment. Veuillez réessayer plus tard.</translation>
+<translation id="2704951214193499422">Impossible de valider votre carte dans Chromium pour le moment. Veuillez réessayer plus tard.</translation>
 <translation id="2705137772291741111">La copie enregistrée (en cache) de ce site est illisible.</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2712173769900027643">Demander l'autorisation</translation>
@@ -182,13 +182,13 @@
 <translation id="2985306909656435243">Si cette option est activée, Chromium enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="2991174974383378012">Partage avec les sites Web</translation>
 <translation id="3005723025932146533">Afficher la copie enregistrée</translation>
-<translation id="3008447029300691911">Saisissez le code CVC de la carte <ph name="CREDIT_CARD" />. Une fois la vérification terminée, les informations relatives à la carte seront partagées avec ce site.</translation>
+<translation id="3008447029300691911">Saisissez le code CVC de la carte <ph name="CREDIT_CARD" />. Une fois la validation terminée, les informations relatives à la carte seront partagées avec ce site.</translation>
 <translation id="3010559122411665027">Entrée de la liste "<ph name="ENTRY_INDEX" />" : <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
 <translation id="3032412215588512954">Voulez-vous actualiser ce site ?</translation>
 <translation id="3037605927509011580">Aie aie aie</translation>
 <translation id="3041612393474885105">Informations relatives au certificat</translation>
-<translation id="3063697135517575841">Impossible de vérifier votre carte dans Chrome pour le moment. Veuillez réessayer plus tard.</translation>
+<translation id="3063697135517575841">Impossible de valider votre carte dans Chrome pour le moment. Veuillez réessayer plus tard.</translation>
 <translation id="3093245981617870298">Vous êtes actuellement hors connexion</translation>
 <translation id="3105172416063519923">ID d'élément :</translation>
 <translation id="3109728660330352905">Vous n'êtes pas autorisé à consulter cette page.</translation>
@@ -410,7 +410,7 @@
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
-<translation id="5784606427469807560">Un problème est survenu lors de la vérification de votre carte. Vérifiez votre connexion Internet, puis réessayez.</translation>
+<translation id="5784606427469807560">Un problème est survenu lors de la validation de votre carte. Vérifiez votre connexion Internet, puis réessayez.</translation>
 <translation id="5785756445106461925">De plus, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer l'aspect de cette page.</translation>
 <translation id="5810442152076338065">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement obsolète.</translation>
 <translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
@@ -484,7 +484,7 @@
 <translation id="6839929833149231406">Région</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
-<translation id="6895330447102777224">Carte vérifiée</translation>
+<translation id="6895330447102777224">Carte validée</translation>
 <translation id="6897140037006041989">Agent utilisateur</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
@@ -513,7 +513,7 @@
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Petit problème… Tu dois demander à ton papa/ta maman l'autorisation de consulter cette page.</translation>
 <translation id="7246609911581847514">Ce message s'affiche, car votre responsable doit approuver les nouveaux sites lorsque vous les consultez pour la première fois.</translation>
-<translation id="724975217298816891">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la vérification terminée, les informations seront partagées avec ce site.</translation>
+<translation id="724975217298816891">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la validation effectuée, les informations seront partagées avec ce site.</translation>
 <translation id="725866823122871198">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre ordinateur (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
 <translation id="7265986070661382626">Vous ne pouvez pas consulter le site <ph name="SITE" /> pour le moment, car l'<ph name="BEGIN_LINK" />épinglage des certificats<ph name="END_LINK" /> y est utilisé. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement.</translation>
 <translation id="7269802741830436641">Cette page Web présente une boucle de redirection.</translation>
@@ -527,7 +527,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Non</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7390545607259442187">Vérifier la carte</translation>
+<translation id="7390545607259442187">Valider la carte</translation>
 <translation id="7394102162464064926">Voulez-vous vraiment supprimer ces pages de votre historique ?
 
 Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous être utile la prochaine fois.</translation>
@@ -537,7 +537,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7441627299479586546">Objet de la règle incorrect.</translation>
 <translation id="7445762425076701745">Impossible de valider entièrement l'identité du serveur auquel vous êtes connecté. Le nom utilisé pour cette connexion n'est valide que sur votre réseau et aucune autorité de certification externe ne peut en vérifier la propriété. Certaines autorités de certification délivrent tout de même des certificats pour ces types de nom, par conséquent nous ne sommes pas en mesure de vérifier que vous êtes connecté au site voulu et non à un site malveillant.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur ce problème.</translation>
-<translation id="7469372306589899959">Vérification de la carte…</translation>
+<translation id="7469372306589899959">Validation de la carte…</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -652,7 +652,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8866959479196209191">Cette page indique :</translation>
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
-<translation id="8877192140621905067">Une fois la vérification terminée, les informations relatives à votre carte seront partagées avec ce site.</translation>
+<translation id="8877192140621905067">Une fois la validation terminée, les informations relatives à votre carte seront partagées avec ce site.</translation>
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="889901481107108152">Désolé, cette fonctionnalité expérimentale n'est pas disponible pour votre plate-forme.</translation>
 <translation id="8903921497873541725">Zoom avant</translation>

@@ -1950,7 +1950,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle n'est pas définie, le nettoyage automatique utilise la stratégie intégrée par défaut. Actuellement, il s'agit de la stratégie "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
-<translation id="7381326101471547614">Désactiver l'utilisation du protocole SPDY dans <ph name="PRODUCT_NAME" />. Si cette règle est activée, le protocole SPDY ne sera pas disponible dans <ph name="PRODUCT_NAME" />. La désactivation de cette règle permet l'utilisation du protocole SPDY. En outre, si cette règle n'est pas définie, le protocole SPDY sera disponible.</translation>
 <translation id="7384999953864505698">Permet d'utiliser le protocole QUIC</translation>
 <translation id="7406651467768226499">Autoriser ou non l'application kiosque lancée automatiquement sans délai à contrôler la version de l'application <ph name="PRODUCT_OS_NAME" />.
 

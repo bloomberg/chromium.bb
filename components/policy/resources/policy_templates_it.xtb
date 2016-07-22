@@ -1748,7 +1748,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
-<translation id="7381326101471547614">Consente di disattivare l'utilizzo del protocollo SPDY in <ph name="PRODUCT_NAME" />. Se questa norma viene attivata, il protocollo SPDY non sarà disponibile in <ph name="PRODUCT_NAME" />. Se la norma viene disattivata sarà possibile utilizzare il protocollo. Se la norma non viene impostata, il protocollo SPDY sarà disponibile.</translation>
 <translation id="7384999953864505698">Consente il protocollo QUIC</translation>
 <translation id="7406651467768226499">Consenti o meno all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" />.
 

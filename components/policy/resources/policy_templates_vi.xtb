@@ -1920,13 +1920,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được đặt, tính năng dọn sạch tự động sẽ sử dụng chiến lược tích hợp sẵn mặc định. Hiện tại đó là chiến lược 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
 <translation id="7340034977315324840">Báo cáo thời gian hoạt động của thiết bị</translation>
-<translation id="7381326101471547614">Không cho phép sử dụng giao thức SPDY trong <ph name="PRODUCT_NAME" />.
-
-      Nếu bật chính sách này, giao thức SPDY sẽ không sẵn có trong <ph name="PRODUCT_NAME" />.
-
-      Tắt chính sách này sẽ cho phép sử dụng SPDY.
-
-      Nếu không thiết lập chính sách này, SPDY sẽ sẵn có.</translation>
 <translation id="7384999953864505698">Cho phép giao thức QUIC</translation>
 <translation id="7406651467768226499">Dù có cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> hay không.
 

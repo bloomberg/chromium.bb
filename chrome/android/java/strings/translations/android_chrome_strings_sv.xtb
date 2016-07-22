@@ -49,7 +49,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1513352483775369820">Bokmärken och webbhistorik</translation>
 <translation id="1549000191223877751">Flytta till annat fönster</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
-<translation id="1557201757634521564">Identifiera teckenkodning automatiskt</translation>
 <translation id="1612196535745283361">Chrome behöver åtkomst till platsinformation för att kunna söka efter enheter. Platsåtkomst är <ph name="BEGIN_LINK" />inaktiverat för enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
@@ -184,7 +183,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Spara video</translation>
-<translation id="307329814453917357">Erbjud att översätta sidor med Google Översätt</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
 <translation id="3117051980354074377">Logga in i Chrome om du vill ha samma bokmärken tillgängliga på alla enheter.</translation>
@@ -339,6 +337,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4988526792673242964">Sidor</translation>
 <translation id="4996978546172906250">Dela via</translation>
 <translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
+<translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
@@ -367,9 +366,9 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="5284584623296338184">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
 <translation id="5301954838959518834">OK, jag fattar</translation>
-<translation id="5302048478445481009">Språk</translation>
 <translation id="5304593522240415983">Fältet får inte vara tomt</translation>
 <translation id="5308380583665731573">Ansluta</translation>
+<translation id="5308603654685598744">När den här funktionen är aktiverad blir du tillfrågad om Chrome ska översätta sidor på andra språk med hjälp av Google Översätt.</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
@@ -382,7 +381,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Verifierar ...</translation>
 <translation id="5423934151118863508">Dina mest besökta sidor visas här</translation>
-<translation id="5424715742813396254">Redigera sparat namn/lösenord eller undantag</translation>
 <translation id="5437003064129843501">Förslag på anpassat innehåll är inte aktiverat eftersom din synkroniserade data skyddas med en anpassad lösenfras.</translation>
 <translation id="544291274896356069">Om den här länken öppnas i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
 <translation id="5447201525962359567">All webbplatslagring, inklusive cookies och annan lokalt sparad data</translation>
@@ -462,7 +460,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="6320088164292336938">Vibration</translation>
 <translation id="6324034347079777476">Synkronisering av Android-system har inaktiverats</translation>
-<translation id="6324360525379265737">Identifiera automatiskt vilken teckenkodning som används</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="6364438453358674297">Vill du ta bort förslaget från historiken?</translation>
@@ -495,6 +492,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6647073004883890710">Vill du att <ph name="PASSWORD_MANAGER_BRAND" /> ska uppdatera lösenordet för <ph name="USERNAME" /> på den här webbplatsen?</translation>
 <translation id="6656545060687952787">Chrome behöver platsåtkomst för att söka efter enheter. <ph name="BEGIN_LINK" />Uppdatera behörigheter<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Lösenord</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="666268767214822976">Använd en tjänst som ger förslag på relaterade sökfrågor och populära webbplatser när du skriver i adressfältet</translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
@@ -656,6 +654,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
+<translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="8518901949365209398">Den här webbplatsen använder en svag säkerhetskonfiguration (signaturer med SHA-1), så anslutningen kanske inte är privat.</translation>
 <translation id="8525306231823319788">Helskärm</translation>

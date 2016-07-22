@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Prikaže števce količine podatkov v pogovornem oknu za brisanje podatkov brskanja.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Prijavite se<ph name="END_SIGN_IN_LINK" />, če želite nadzirati in si ogledati spletna mesta, ki jih obiskuje ta oseba.</translation>
 <translation id="1097658378307015415">Pred prijavo vstopite kot gost, da aktivirate omrežje <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">dolga</translation>
 <translation id="1104652314727136854">Omogoči integracijo povezav z vrstami datotek za aplikacije za Chrome v operacijski sistem</translation>
 <translation id="1105162038795579389">»<ph name="BUNDLE_NAME" />« doda te aplikacija in razširitve za uporabnika <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Ustavi</translation>
@@ -1874,7 +1873,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Strani, ki jih ni mogoče naložiti, medtem ko je brskalnik brez povezave, se samodejno naložijo le, če so njihovi zavihki vidni.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Preklic prenosa}one{Preklic prenosov}two{Preklic prenosov}few{Preklic prenosov}other{Preklic prenosov}}</translation>
 <translation id="3512810056947640266">URL (izbirno):</translation>
-<translation id="351486934407749662">zelo dolga</translation>
 <translation id="3517839692979918726">Aplikacija <ph name="APP_NAME" /> želi deliti vsebine vašega zaslona z drugimi. Izberite, kaj želite deliti.</translation>
 <translation id="3518086201899641494">Obvestila o portalih za preverjanje pristnosti</translation>
 <translation id="3519867315646775981">Prečrkovanje (shalom ← שלום)</translation>
@@ -3410,7 +3408,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="569109051430110155">Samodejno zaznavanje</translation>
 <translation id="5691596662111998220">Ups, <ph name="FILE_NAME" /> ne obstaja več.</translation>
 <translation id="5694501201003948907">Stiskanje toliko elementov: $1 ...</translation>
-<translation id="5695323626817702678">kratka</translation>
 <translation id="5697118958262594262">Privzeto zaznaj pomembno vsebino</translation>
 <translation id="5699533844376998780">Razširitev »<ph name="EXTENSION_NAME" />« je dodana.</translation>
 <translation id="5701101281789450335">Nastavitve jezika in vnosa ...</translation>
@@ -3835,7 +3832,6 @@ Nekatere funkcije morda ne bodo na voljo. Preverite, ali profil obstaja in ali i
 <translation id="630065524203833229">I&amp;zhod</translation>
 <translation id="6304217058163308077">Nov sistem za aplikacije za ustvarjanje zaznamkov</translation>
 <translation id="6305012486838822927">Tipkovnica za laoščino</translation>
-<translation id="6305328361606238230">Prejemanje potisnih sporočil</translation>
 <translation id="6307722552931206656">Googlovi imenski strežniki – <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistem je zaseden</translation>
 <translation id="6308937455967653460">Shrani povezav&amp;o kot ...</translation>
@@ -4528,7 +4524,6 @@ Nekatere funkcije morda ne bodo na voljo. Preverite, ali profil obstaja in ali i
 <translation id="7339785458027436441">Preverjanje črkovanja med tipkanjem</translation>
 <translation id="7339898014177206373">Novo okno</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> je zdaj prikazano na celotnem zaslonu.</translation>
-<translation id="7341982465543599097">izjemno kratka</translation>
 <translation id="734303607351427494">Upravljanje iskalnikov ...</translation>
 <translation id="7343116142376328522">Spletnim mestom ne dovoli uporabe ustvarjanja ključev v obrazcih (priporočeno)</translation>
 <translation id="7345706641791090287">Potrdite geslo</translation>
@@ -4913,7 +4908,6 @@ Nekatere funkcije morda ne bodo na voljo. Preverite, ali profil obstaja in ali i
 <translation id="7881969471599061635">Onemogočanje podnapisov</translation>
 <translation id="7884988936047469945">Poskusne funkcije za ljudi s posebnimi potrebami</translation>
 <translation id="7885253890047913815">Nedavni cilji</translation>
-<translation id="7885283703487484916">zelo kratka</translation>
 <translation id="7887192723714330082">Odziv na »Ok Google«, ko je zaslon vklopljen in odklenjen</translation>
 <translation id="7887334752153342268">Podvoji</translation>
 <translation id="7887864092952184874">Miška Bluetooth je seznanjena</translation>

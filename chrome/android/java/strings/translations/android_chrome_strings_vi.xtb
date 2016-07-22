@@ -49,7 +49,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
-<translation id="1557201757634521564">Tự động phát hiện mã hóa</translation>
 <translation id="1612196535745283361">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. Tính năng truy cập vị trí bị <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
@@ -184,7 +183,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Lưu video</translation>
-<translation id="307329814453917357">Đề xuất dịch các trang bằng Google Dịch</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="3090193911106258841">Đang truy cập thiết bị đầu vào video và âm thanh</translation>
 <translation id="3117051980354074377">Để nhận dấu trang trên các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
@@ -339,6 +337,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4988526792673242964">Trang</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
+<translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
@@ -367,9 +366,9 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="5284584623296338184">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và cài đặt khác sẽ không còn được đồng bộ hóa với Tài khoản Google của bạn. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
 <translation id="5301954838959518834">OK</translation>
-<translation id="5302048478445481009">Ngôn ngữ</translation>
 <translation id="5304593522240415983">Không được để trống trường này</translation>
 <translation id="5308380583665731573">Kết nối</translation>
+<translation id="5308603654685598744">Khi tính năng này được bật, Chrome sẽ đề xuất sử dụng Google Dịch để dịch các trang viết bằng ngôn ngữ khác.</translation>
 <translation id="5313967007315987356">Thêm trang web</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5324858694974489420">Cài đặt của phụ huynh</translation>
@@ -382,7 +381,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5400569084694353794">Bằng cách sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="5414836363063783498">Đang xác minh...</translation>
 <translation id="5423934151118863508">Trang bạn truy cập nhiều nhất sẽ xuất hiện ở đây</translation>
-<translation id="5424715742813396254">Chỉnh sửa tên/mật khẩu hoặc ngoại lệ đã lưu</translation>
 <translation id="5437003064129843501">Tính năng đề xuất nội dung được cá nhân hóa hiện bị tắt vì dữ liệu đã đồng bộ hóa của bạn được bảo vệ bằng cụm mật khẩu tùy chỉnh.</translation>
 <translation id="544291274896356069">Rời khỏi chế độ ẩn danh nếu liên kết này đã được mở trong một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="5447201525962359567">Tất cả bộ nhớ trang web, bao gồm cookie và các dữ liệu được lưu trữ cục bộ khác</translation>
@@ -462,7 +460,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="6320088164292336938">Rung</translation>
 <translation id="6324034347079777476">Đồng bộ hóa hệ thống Android đã bị tắt</translation>
-<translation id="6324360525379265737">Tự động xác định mã hóa ký tự</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
@@ -495,6 +492,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6647073004883890710">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu cho <ph name="USERNAME" /> cho trang web này không?</translation>
 <translation id="6656545060687952787">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK" />Cập nhật quyền<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Sử dụng dịch vụ dự đoán để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
 <translation id="666981079809192359">Thông báo bảo mật của Chrome</translation>
@@ -656,6 +654,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8481940801237642152">Kết nối của bạn tới trang web này ở chế độ riêng tư nhưng ai đó trên mạng có thể thay đổi giao diện của trang.</translation>
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
+<translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>

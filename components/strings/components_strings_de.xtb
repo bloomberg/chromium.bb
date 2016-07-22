@@ -153,7 +153,7 @@
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
-<translation id="2704951214193499422">Chromium kann Ihre Karte momentan nicht bestätigen. Bitte versuchen Sie es später noch einmal.</translation>
+<translation id="2704951214193499422">Ihre Karte kann von Chromium zurzeit nicht bestätigt werden. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="2705137772291741111">Die (im Cache) gespeicherte Kopie dieser Website war nicht lesbar.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2712173769900027643">Berechtigung anfordern</translation>
@@ -183,13 +183,13 @@
 <translation id="2985306909656435243">Wenn Sie diese Option auswählen, speichert Chromium eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="2991174974383378012">Datenfreigabe an Websites</translation>
 <translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
-<translation id="3008447029300691911">Geben Sie den CVC für <ph name="CREDIT_CARD" /> ein. Nach der Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
+<translation id="3008447029300691911">Geben Sie den CVC für <ph name="CREDIT_CARD" /> ein. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="3010559122411665027">Listeneintrag "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="3032412215588512954">Möchten Sie diese Website neu laden?</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3041612393474885105">Zertifikatinformationen</translation>
-<translation id="3063697135517575841">Chrome kann Ihre Karte momentan nicht bestätigen. Bitte versuchen Sie es später noch einmal.</translation>
+<translation id="3063697135517575841">Ihre Karte kann von Chrome zurzeit nicht bestätigt werden. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="3093245981617870298">Sie sind offline.</translation>
 <translation id="3105172416063519923">Geräte-ID:</translation>
 <translation id="3109728660330352905">Sie sind nicht zum Aufrufen dieser Seite autorisiert.</translation>
@@ -513,7 +513,7 @@
 <translation id="7219179957768738017">Die Verbindung verwendet <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Hoppla. Du musst einen Elternteil fragen, ob du diese Seite besuchen darfst.</translation>
 <translation id="7246609911581847514">Diese Nachricht wird Ihnen angezeigt, weil Ihr Administrator neue Websites zuerst genehmigen muss, bevor Sie diese öffnen können.</translation>
-<translation id="724975217298816891">Geben Sie das Ablaufdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach der Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
+<translation id="724975217298816891">Geben Sie das Gültigkeitsdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7265986070661382626"><ph name="SITE" /> kann zurzeit nicht aufgerufen werden, weil die Website das <ph name="BEGIN_LINK" />Zertifikats-Pinning<ph name="END_LINK" /> nutzt. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite später wahrscheinlich wieder funktioniert.</translation>
 <translation id="7269802741830436641">Diese Webseite weist eine Weiterleitung auf.</translation>
@@ -652,7 +652,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8866959479196209191">Auf dieser Seite wird Folgendes angezeigt:</translation>
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
-<translation id="8877192140621905067">Nach der Bestätigung werden die Kartendetails an diese Website weitergegeben</translation>
+<translation id="8877192140621905067">Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="889901481107108152">Leider steht dieses Experiment auf Ihrer Plattform nicht zur Verfügung.</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
@@ -686,7 +686,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="935608979562296692">Formular leeren</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="943029900877297437">Melden Sie sich in Chrome an, um in Ihrem Google-Konto gespeicherte Karten zu verwenden.</translation>
-<translation id="962701380617707048">Geben Sie das Ablaufdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren</translation>
+<translation id="962701380617707048">Gültigkeitsdatum und CVC für <ph name="CREDIT_CARD" /> zur Aktualisierung Ihrer Kartendetails eingeben</translation>
 <translation id="969892804517981540">Offizieller Build</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
 </translationbundle>

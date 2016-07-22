@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Permite mostrar los contadores de volumen de datos en el cuadro de diálogo Borrar datos de navegación.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Accede<ph name="END_SIGN_IN_LINK" /> para controlar y ver los sitios web que visita esta persona.</translation>
 <translation id="1097658378307015415">Antes de acceder, ingresa como Invitado para activar la red <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">larga</translation>
 <translation id="1104652314727136854">Permite habilitar la integración del sistema operativo de asociaciones de archivos para aplicaciones de Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" agrega estas aplicaciones y extensiones para <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Interrumpir</translation>
@@ -1869,7 +1868,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Las páginas que no se cargan cuando el navegador está sin conexión se volverán cargarán automáticamente solo si la pestaña está visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar descarga}other{Cancelar descargas}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="351486934407749662">muy larga</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> desea compartir el contenido de tu pantalla. Elige lo que quieras compartir.</translation>
 <translation id="3518086201899641494">Notificaciones sobre portales cautivos</translation>
 <translation id="3519867315646775981">Transliteración (shalom ← שלום)</translation>
@@ -3117,7 +3115,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5304039790201806037">Eventos de puntero</translation>
 <translation id="5305688511332277257">No hay certificados instalados</translation>
-<translation id="5306802244647481941">Vista rápida de la app Archivos</translation>
+<translation id="5306802244647481941">Vista rápida de la app de Archivos</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5311260548612583999">Archivo de clave privada (opcional):</translation>
 <translation id="5316588172263354223">Búsqueda por voz en cualquier momento</translation>
@@ -3403,7 +3401,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="569109051430110155">Detección automática</translation>
 <translation id="5691596662111998220">El archivo <ph name="FILE_NAME" /> ya no existe.</translation>
 <translation id="5694501201003948907">Comprimiendo $1 elementos…</translation>
-<translation id="5695323626817702678">breve</translation>
 <translation id="5697118958262594262">Detectar contenido importante de manera predeterminada</translation>
 <translation id="5699533844376998780">Se agregó la extensión "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">Configuración de idioma y de entrada de texto...</translation>
@@ -3826,7 +3823,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="630065524203833229">&amp;Salir</translation>
 <translation id="6304217058163308077">El nuevo sistema de apps de marcadores</translation>
 <translation id="6305012486838822927">Teclado lao</translation>
-<translation id="6305328361606238230">Recibir mensajes de inserción</translation>
 <translation id="6307722552931206656">Servidores de nombres de Google: <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
 <translation id="6308937455967653460">Guardar &amp;enlace como...</translation>
@@ -4520,7 +4516,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7339785458027436441">Controlar ortografía al escribir</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7340431621085453413">Visualización de <ph name="FULLSCREEN_ORIGIN" /> en pantalla completa.</translation>
-<translation id="7341982465543599097">demasiado breve</translation>
 <translation id="734303607351427494">Administrar motores de búsqueda...</translation>
 <translation id="7343116142376328522">No permitir que ningún sitio utilice la generación de claves en formularios (recomendado)</translation>
 <translation id="7345706641791090287">Confirma tu contraseña</translation>
@@ -4905,7 +4900,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7881969471599061635">Inhabilitar subtítulos</translation>
 <translation id="7884988936047469945">Funciones de accesibilidad experimentales</translation>
 <translation id="7885253890047913815">Destinos recientes</translation>
-<translation id="7885283703487484916">muy breve</translation>
 <translation id="7887192723714330082">Responder a "OK Google" cuando la pantalla se encuentre encendida y desbloqueada</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Mouse Bluetooth sincronizado</translation>
@@ -5857,7 +5851,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9207194316435230304">ATOK</translation>
 <translation id="9208886416788010685">Adobe Reader está desactualizado.</translation>
 <translation id="9210991923655648139">Accesible para secuencia de comandos:</translation>
-<translation id="9211453256673911535">Opciones para la vista rápida de la app Archivos, que muestra una vista previa rápida de un archivo.</translation>
+<translation id="9211453256673911535">Opciones para la vista rápida de la app de Archivos, que muestra una vista previa rápida de un archivo.</translation>
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Comunícate con el representante de asistencia.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" agregada</translation>

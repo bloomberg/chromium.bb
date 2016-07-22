@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Hiermee worden teller voor het gegevensvolume weergegeven in het dialoogvenster 'Browsegegevens wissen'.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Log in<ph name="END_SIGN_IN_LINK" /> om de websites die deze persoon bezoekt te beheren en te bekijken.</translation>
 <translation id="1097658378307015415">Voordat je inlogt, log je eerst in als gast om het netwerk <ph name="NETWORK_ID" /> te activeren.</translation>
-<translation id="1104054824888299003">lang</translation>
 <translation id="1104652314727136854">Integratie van bestandskoppelingen met besturingssysteem inschakelen voor Chrome-apps.</translation>
 <translation id="1105162038795579389">Met '<ph name="BUNDLE_NAME" />' worden deze apps en extensies voor <ph name="USER_NAME" /> toegevoegd:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1873,7 +1872,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Pagina's die niet kunnen worden geladen wanneer de browser offline is, worden alleen automatisch opnieuw geladen wanneer het betreffende tabblad zichtbaar is.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Download annuleren}other{Downloads annuleren}}</translation>
 <translation id="3512810056947640266">URL (optioneel):</translation>
-<translation id="351486934407749662">zeer lang</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> wil de inhoud op je scherm delen. Kies wat je wilt delen.</translation>
 <translation id="3518086201899641494">Meldingen over captive portals</translation>
 <translation id="3519867315646775981">Transliteratie (shalom ← שלום)</translation>
@@ -3406,7 +3404,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="569109051430110155">Automatisch detecteren</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> bestaat niet meer.</translation>
 <translation id="5694501201003948907">$1 items inpakken...</translation>
-<translation id="5695323626817702678">kort</translation>
 <translation id="5697118958262594262">Belangrijke inhoud standaard detecteren</translation>
 <translation id="5699533844376998780">De extensie '<ph name="EXTENSION_NAME" />' is toegevoegd.</translation>
 <translation id="5701101281789450335">Taal- en invoerinstellingen...</translation>
@@ -3831,7 +3828,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="630065524203833229">&amp;Sluiten</translation>
 <translation id="6304217058163308077">Het nieuwe systeem voor bladwijzer-apps</translation>
 <translation id="6305012486838822927">Laotiaans toetsenbord</translation>
-<translation id="6305328361606238230">Pushberichten ontvangen</translation>
 <translation id="6307722552931206656">Google-naamservers - <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Systeem is bezet</translation>
 <translation id="6308937455967653460">Lin&amp;k opslaan als...</translation>
@@ -4528,7 +4524,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="7339785458027436441">Controleer spelling tijdens typen</translation>
 <translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> wordt nu op volledig scherm weergegeven.</translation>
-<translation id="7341982465543599097">extreem kort</translation>
 <translation id="734303607351427494">Zoekmachines beheren...</translation>
 <translation id="7343116142376328522">Sites niet toestaan de functie voor het genereren van sleutels te gebruiken in formulieren (aanbevolen)</translation>
 <translation id="7345706641791090287">Je wachtwoord bevestigen</translation>
@@ -4913,7 +4908,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="7881969471599061635">Ondertiteling uitschakelen</translation>
 <translation id="7884988936047469945">Experimentele toegankelijkheidsfuncties</translation>
 <translation id="7885253890047913815">Recente bestemmingen</translation>
-<translation id="7885283703487484916">zeer kort</translation>
 <translation id="7887192723714330082">Reageren op "Ok Google" wanneer het scherm is ingeschakeld en ontgrendeld</translation>
 <translation id="7887334752153342268">Dupliceren</translation>
 <translation id="7887864092952184874">Bluetooth-muis gekoppeld</translation>

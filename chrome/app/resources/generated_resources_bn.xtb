@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">ব্রাউজিং ডেটা সাফ করার ডায়ালগে ডাটা ভলিউম কাউন্টার দেখায়।</translation>
 <translation id="1097507499312291972">এই ব্যক্তির পরিদর্শন করা ওয়েবসাইটগুলি নিয়ন্ত্রণ করতে এবং দেখতে <ph name="BEGIN_SIGN_IN_LINK" />প্রবেশ করুন<ph name="END_SIGN_IN_LINK" /> করুন৷</translation>
 <translation id="1097658378307015415">প্রবেশ করুন করার আগে, <ph name="NETWORK_ID" /> নেটওয়ার্ক সক্রিয় করতে দয়া করে অতিথি রূপে প্রবেশ করুন</translation>
-<translation id="1104054824888299003">দীর্ঘ সময়</translation>
 <translation id="1104652314727136854">Chrome অ্যাপ্লিকেশানগুলির জন্য ফাইল অ্যাসোসিয়েশনের OS একত্রিকরণ সক্ষম করে।</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" <ph name="USER_NAME" /> এর জন্য এই অ্যাপ্লিকেশান এবং এক্সটেনশানগুলি যোগ করে:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1866,7 +1865,6 @@
 <translation id="3512284449647229026">ব্রাউজার অফলাইন থাকাকালীন লোড হতে ব্যর্থ হওয়া পৃষ্ঠাগুলি শুধুমাত্র তখনই স্বয়ংক্রিয়ভাবে পুনরায় লোড হবে যখন তাদের ট্যাব দৃশ্যমান হবে।</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ডাউনলোড বাতিল করুন}one{ডাউনলোডগুলি বাতিল করুন}other{ডাউনলোডগুলি বাতিল করুন}}</translation>
 <translation id="3512810056947640266">URL (ঐচ্ছিক):</translation>
-<translation id="351486934407749662">খুবই দীর্ঘ সময়</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> আপনার স্ক্রীনের সামগ্রী শেয়ার করতে চায়৷ আপনি কি শেয়ার করতে চান তা বেছে নিন।</translation>
 <translation id="3518086201899641494">ক্যাপটিভ পোর্টালগুলির সম্বন্ধে বিজ্ঞপ্তিগুলি</translation>
 <translation id="3519867315646775981">লিপ্যন্তরকরণ (shalom ← שלום)</translation>
@@ -3396,7 +3394,6 @@
 <translation id="569109051430110155">স্বয়ং সনাক্ত</translation>
 <translation id="5691596662111998220">ওহো, <ph name="FILE_NAME" /> আর বিদ্যমান নেই৷</translation>
 <translation id="5694501201003948907">$1 এর আইটেমগুলি জিপ করা হচ্ছে...</translation>
-<translation id="5695323626817702678">স্বল্প সময়</translation>
 <translation id="5697118958262594262">ডিফল্ট-এর মাধ্যমে গুরুত্বপূর্ণ সামগ্রী সনাক্ত করুন</translation>
 <translation id="5699533844376998780">এক্সটেনশন "<ph name="EXTENSION_NAME" />" জোড়া হয়েছে৷</translation>
 <translation id="5701101281789450335">ভাষা এবং ইনপুট সেটিংস...</translation>
@@ -3820,7 +3817,6 @@
 <translation id="630065524203833229">ব&amp;ন্ধ</translation>
 <translation id="6304217058163308077">নতুন বুকমার্ক অ্যাপ্লিকেশান সিস্টেম</translation>
 <translation id="6305012486838822927">লাও কীবোর্ড</translation>
-<translation id="6305328361606238230">জোর করে পাঠানো বার্তা গ্রহণ করুন</translation>
 <translation id="6307722552931206656">Google নাম সার্ভারগুলি - <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">সিস্টেম ব্যস্ত আছে</translation>
 <translation id="6308937455967653460">লি&amp;ঙ্ক এই রূপে সংরক্ষণ করুন...</translation>
@@ -4515,7 +4511,6 @@
 <translation id="7339785458027436441">টাইপ করার সময় বানান পরীক্ষা করুন</translation>
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> এখন পূর্ণ পর্দায় রয়েছে৷</translation>
-<translation id="7341982465543599097">খুবই স্বল্প সময়</translation>
 <translation id="734303607351427494">অনুসন্ধান ইঞ্জিনগুলি পরিচালনা করুন...</translation>
 <translation id="7343116142376328522">ফর্মের মধ্যে কী তৈরিকরণ ব্যবহার করতে কোনো সাইটকে অনুমতি দিবেন না (প্রস্তাবিত)</translation>
 <translation id="7345706641791090287">আপনার পাসওয়ার্ড নিশ্চিত করুন</translation>
@@ -4899,7 +4894,6 @@
 <translation id="7881969471599061635">সাবটাইটেল অক্ষম করুন</translation>
 <translation id="7884988936047469945">পরীক্ষামূলক অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি</translation>
 <translation id="7885253890047913815">সাম্প্রতিক গন্তব্যস্থল</translation>
-<translation id="7885283703487484916">খুবই স্বল্প সময়</translation>
 <translation id="7887192723714330082">স্ক্রিনটি চালু এবং আনলক থাকাকালীন "Ok Google" এ প্রতিক্রিয়া দিন</translation>
 <translation id="7887334752153342268">সদৃশ</translation>
 <translation id="7887864092952184874">ব্লুটুথ মাউস যুক্ত হয়েছে</translation>

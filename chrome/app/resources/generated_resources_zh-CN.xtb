@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">在“清除浏览数据”对话框中显示数据量计数器。</translation>
 <translation id="1097507499312291972">需<ph name="BEGIN_SIGN_IN_LINK" />登录<ph name="END_SIGN_IN_LINK" />才能控制和查看此用户访问的网站。</translation>
 <translation id="1097658378307015415">登录前，请先以访客身份进入，以便激活“<ph name="NETWORK_ID" />”网络。</translation>
-<translation id="1104054824888299003">长</translation>
 <translation id="1104652314727136854">启用在操作系统中集成Chrome应用文件关联。</translation>
 <translation id="1105162038795579389">“<ph name="BUNDLE_NAME" />”将为<ph name="USER_NAME" />添加以下应用和扩展程序：</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
@@ -1865,7 +1864,6 @@
 <translation id="3512284449647229026">如有网页在浏览器处于离线状态时未能成功加载，则只自动重新加载其标签页处于可见状态的网页。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{取消下载}other{取消下载}}</translation>
 <translation id="3512810056947640266">网址（可选)：</translation>
-<translation id="351486934407749662">很长</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" />想要共享您屏幕上的内容。请选择您要共享的内容。</translation>
 <translation id="3518086201899641494">关于强制门户的通知</translation>
 <translation id="3519867315646775981">音译(shalom ← שלום)</translation>
@@ -3387,7 +3385,6 @@
 <translation id="569109051430110155">自动检测</translation>
 <translation id="5691596662111998220">糟糕，<ph name="FILE_NAME" />已经不存在了。</translation>
 <translation id="5694501201003948907">正在压缩$1项内容…</translation>
-<translation id="5695323626817702678">短</translation>
 <translation id="5697118958262594262">默认情况下检测重要内容</translation>
 <translation id="5699533844376998780">扩展程序“<ph name="EXTENSION_NAME" />”已添加完毕。</translation>
 <translation id="5701101281789450335">语言和输入设置...</translation>
@@ -3810,7 +3807,6 @@
 <translation id="630065524203833229">退出(&amp;X)</translation>
 <translation id="6304217058163308077">新的书签应用系统</translation>
 <translation id="6305012486838822927">老挝语键盘</translation>
-<translation id="6305328361606238230">接收推送消息</translation>
 <translation id="6307722552931206656">Google 域名服务器 - <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">系统繁忙</translation>
 <translation id="6308937455967653460">链接另存为(&amp;K)...</translation>
@@ -4503,7 +4499,6 @@
 <translation id="7339785458027436441">键入内容时检查拼写</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> 现处于全屏模式。</translation>
-<translation id="7341982465543599097">极短</translation>
 <translation id="734303607351427494">管理搜索引擎...</translation>
 <translation id="7343116142376328522">不允许任何网站在表单中使用密钥生成功能（推荐）</translation>
 <translation id="7345706641791090287">确认您的密码</translation>
@@ -4879,7 +4874,6 @@
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7884988936047469945">实验性无障碍功能</translation>
 <translation id="7885253890047913815">近期使用过的目标打印机</translation>
-<translation id="7885283703487484916">很短</translation>
 <translation id="7887192723714330082">当屏幕处于开启状态并且未锁定时，对“Ok Google”做出回应</translation>
 <translation id="7887334752153342268">复制</translation>
 <translation id="7887864092952184874">蓝牙鼠标已配对</translation>

@@ -49,7 +49,6 @@
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
-<translation id="1557201757634521564">自动检测编码</translation>
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
@@ -184,7 +183,6 @@
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">保存视频</translation>
-<translation id="307329814453917357">询问是否要使用“Google 翻译”来翻译网页内容</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3117051980354074377">要在您的其他设备上访问您的书签，请登录 Chrome。</translation>
@@ -339,6 +337,7 @@
 <translation id="4988526792673242964">页码</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
+<translation id="5005498671520578047">复制密码</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
@@ -367,9 +366,9 @@
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5284584623296338184">对您的书签、历史记录、密码和其他设置所做的更改将不再同步到您的 Google 帐户。但是，您的现有数据将继续存储在您的 Google 帐户中。</translation>
 <translation id="5301954838959518834">知道了</translation>
-<translation id="5302048478445481009">语言</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
 <translation id="5308380583665731573">连接</translation>
+<translation id="5308603654685598744">该功能处于开启状态时，Chrome 将使用 Google 翻译对其他语言的网页进行翻译。</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">家长设置</translation>
@@ -382,7 +381,6 @@
 <translation id="5400569084694353794">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="5414836363063783498">正在验证…</translation>
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
-<translation id="5424715742813396254">修改已保存的名称/密码或例外情况</translation>
 <translation id="5437003064129843501">您的已同步数据受自定义密码保护，因此个性化内容推荐功能当前已停用。</translation>
 <translation id="544291274896356069">如果在外部应用中打开此链接，您将退出隐身模式。是否继续？</translation>
 <translation id="5447201525962359567">所有网站存储数据，包括 Cookie 及其他本地存储的数据</translation>
@@ -462,7 +460,6 @@
 <translation id="6295158916970320988">所有网站</translation>
 <translation id="6320088164292336938">振动</translation>
 <translation id="6324034347079777476">Android 系统同步功能已停用</translation>
-<translation id="6324360525379265737">自动判断字符编码</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION" />分享</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
@@ -495,6 +492,7 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="6647073004883890710">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 更新 <ph name="USERNAME" /> 用于登录此网站的密码吗？</translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
@@ -656,6 +654,7 @@
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="8493948351860045254">释放空间</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
+<translation id="8503813439785031346">用户名</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
 <translation id="8525306231823319788">全屏</translation>

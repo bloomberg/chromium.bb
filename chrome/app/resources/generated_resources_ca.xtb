@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Mostra els comptadors del volum de dades al quadre de diàleg Esborra les dades de navegació.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Inicieu la sessió<ph name="END_SIGN_IN_LINK" /> per controlar i consultar els llocs web que aquesta persona visita.</translation>
 <translation id="1097658378307015415">Abans d'iniciar la sessió amb el vostre usuari, entreu com a convidat per activar la xarxa <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">llarg</translation>
 <translation id="1104652314727136854">Activa la integració del sistema operatiu de les associacions de fitxers d'Aplicacions de Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" afegeix aquestes aplicacions i extensions per a <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Atura</translation>
@@ -1435,7 +1434,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2951247061394563839">Finestra central</translation>
 <translation id="2951721188322348056">Informació del vídeo</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> galetes</translation>
-<translation id="295947108480905647">"<ph name="CHROME_EXTENSION_NAME" />" es vol connectar amb:</translation>
+<translation id="295947108480905647"><ph name="CHROME_EXTENSION_NAME" /> es vol connectar amb:</translation>
 <translation id="2959614062380389916">L'administrador ho ha desactivat</translation>
 <translation id="2960393411257968125">Manera en què el gestor de contrasenyes administra l'Emplenament automàtic per a les credencials de sincronització.</translation>
 <translation id="29611076221683977">Els atacants que actualment són a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poden provar d'instal·lar programes perillosos al dispositiu Mac amb els quals es pot robar o suprimir la vostra informació (per exemple, les fotos, les contrasenyes, els missatges i les targetes de crèdit).</translation>
@@ -1870,7 +1869,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Les pàgines que no es puguin carregar quan el navegador estigui fora de línia només es tornaran a carregar automàticament si la seva pestanya és visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancel·la la baixada}other{Cancel·la les baixades}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="351486934407749662">molt llarg</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> vol compartir el contingut de la vostra pantalla. Trieu el que vulgueu compartir.</translation>
 <translation id="3518086201899641494">Notificacions sobre portals captius</translation>
 <translation id="3519867315646775981">Transliteració (shalom ← שלום)</translation>
@@ -3401,7 +3399,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="569109051430110155">Detecció automàtica</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> ja no existeix.</translation>
 <translation id="5694501201003948907">S'estan comprimint $1 elements...</translation>
-<translation id="5695323626817702678">curt</translation>
 <translation id="5697118958262594262">Detecta el contingut important de manera predeterminada</translation>
 <translation id="5699533844376998780">S'ha afegit l'extensió "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">Configuració d'idioma i d'introducció de text...</translation>
@@ -3825,7 +3822,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="630065524203833229">S&amp;urt</translation>
 <translation id="6304217058163308077">Sistema nou d'aplicacions d'adreces d'interès</translation>
 <translation id="6305012486838822927">Teclat de lao</translation>
-<translation id="6305328361606238230">Rebre missatges de tramesa automàtica</translation>
 <translation id="6307722552931206656">Servidors de noms de Google - <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">El sistema està ocupat</translation>
 <translation id="6308937455967653460">Desa l'en&amp;llaç com a...</translation>
@@ -4519,7 +4515,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7339785458027436441">Comprova l'ortografia mentre escric</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
 <translation id="7340431621085453413">Ara <ph name="FULLSCREEN_ORIGIN" /> a pantalla completa.</translation>
-<translation id="7341982465543599097">molt curt</translation>
 <translation id="734303607351427494">Gestiona els motors de cerca...</translation>
 <translation id="7343116142376328522">No permetis que cap lloc utilitzi la generació de claus en formularis (opció recomanada)</translation>
 <translation id="7345706641791090287">Confirmeu la contrasenya</translation>
@@ -4609,7 +4604,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7464490149090366184">S'ha produït un error en la compressió; l'element existeix: "$1"</translation>
 <translation id="7465778193084373987">URL de revocació de certificats de Netscape</translation>
 <translation id="7466861475611330213">Estil de puntuació</translation>
-<translation id="7469206789121791392">"<ph name="CHROME_EXTENSION_NAME" />" es vol vincular amb:</translation>
+<translation id="7469206789121791392"><ph name="CHROME_EXTENSION_NAME" /> es vol vincular amb:</translation>
 <translation id="7469894403370665791">Connecta automàticament a aquesta xarxa</translation>
 <translation id="747114903913869239">Error: no s'ha pogut descodificar l'extensió</translation>
 <translation id="7472639616520044048">Tipus MIME:</translation>
@@ -4896,7 +4891,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7881969471599061635">Desactiva els subtítols</translation>
 <translation id="7884988936047469945">Funcions experimentals d'accessibilitat</translation>
 <translation id="7885253890047913815">Destinacions recents</translation>
-<translation id="7885283703487484916">molt curt</translation>
 <translation id="7887192723714330082">Responeu a "Ok Google" quan la pantalla estigui encesa i desbloquejada</translation>
 <translation id="7887334752153342268">Duplica</translation>
 <translation id="7887864092952184874">Ratolí Bluetooth emparellat</translation>

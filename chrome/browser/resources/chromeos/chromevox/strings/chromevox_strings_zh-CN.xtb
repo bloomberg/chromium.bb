@@ -297,7 +297,7 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">自动填充列表</translation>
 <translation id="3810838688059735925">视频</translation>
-<translation id="3812237531158591503">粘贴“$1”。</translation>
+<translation id="3812237531158591503">粘贴 $1。</translation>
 <translation id="3816633764618089385">下一个媒体内容</translation>
 <translation id="3819376190738087562">无跳转内容。</translation>
 <translation id="385383972552776628">打开选项页面</translation>
@@ -554,7 +554,7 @@
 <translation id="6355910664415701303">不存在上一个列表项。</translation>
 <translation id="6364795331201459219">6级标题标记</translation>
 <translation id="6368143427468974988">上一个标题</translation>
-<translation id="6378565991815958969">复制“$1”。</translation>
+<translation id="6378565991815958969">复制 $1。</translation>
 <translation id="6387719785439924554">边栏内容标记</translation>
 <translation id="6411426777058107714">不存在上一个单选按钮。</translation>
 <translation id="6414968628640960377">上一个不同元素。</translation>
@@ -781,7 +781,7 @@
 <translation id="9077213568694924680">已从所选文字中移除</translation>
 <translation id="9082874451376019682">不存在上一个滑块。</translation>
 <translation id="9089864840575085222">循环输入回显</translation>
-<translation id="9105227991373418255">剪切“$1”。</translation>
+<translation id="9105227991373418255">剪切 $1。</translation>
 <translation id="9107530006868467849">不存在上一个媒体小部件。</translation>
 <translation id="9108370397979208512">数学</translation>
 <translation id="9108589040018540527">scbr</translation>

@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ ತೆರವುಗೊಳಿಸು ಸಂವಾದದಲ್ಲಿ ಡೇಟಾ ವಾಲ್ಯೂಮ್ ಕೌಂಟರ್‌ಗಳನ್ನು ತೋರಿಸುತ್ತದೆ.</translation>
 <translation id="1097507499312291972">ಈ ವ್ಯಕ್ತಿಯ ಭೇಟಿಗಳ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ನಿಯಂತ್ರಿಸಲು ಮತ್ತು ವೀಕ್ಷಿಸಲು <ph name="BEGIN_SIGN_IN_LINK" />ಸೈನ್‌ ಇನ್‌<ph name="END_SIGN_IN_LINK" /> ಮಾಡಿ.</translation>
 <translation id="1097658378307015415">ಸೈನ್ ಇನ್ ಮಾಡುವ ಮುನ್ನ, <ph name="NETWORK_ID" /> ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಅತಿಥಿಯಾಗಿ ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="1104054824888299003">ದೀರ್ಘ</translation>
 <translation id="1104652314727136854">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗಾಗಿ ಫೈಲ್ ಸಹಯೋಗಗಳ OS ಸಂಯೋಜನೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" ಈ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಹಾಗೂ ವಿಸ್ತರಣೆಗಳನ್ನು <ph name="USER_NAME" /> ಗೆ ಸೇರಿಸುತ್ತದೆ:</translation>
 <translation id="1108600514891325577">&amp;ನಿಲ್ಲಿಸು</translation>
@@ -1870,7 +1869,6 @@
 <translation id="3512284449647229026">ಬ್ರೌಸರ್ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಾಗ ಲೋಡ್ ಆಗುವಲ್ಲಿ ವಿಫಲವಾಗುವ ಪುಟಗಳ ಟ್ಯಾಬ್ ಗೋಚರಿಸಿದರೆ ಮಾತ್ರ ಅವುಗಳು ಸ್ವಯಂ-ಮರುಲೋಡ್ ಆಗುತ್ತವೆ.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ಡೌನ್‌ಲೋಡ್ ರದ್ದುಮಾಡಿ}one{ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಿ}other{ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಿ}}</translation>
 <translation id="3512810056947640266">URL (ಐಚ್ಛಿಕ):</translation>
-<translation id="351486934407749662">ಬಹಳ ದೀರ್ಘ</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ನಿಮ್ಮ ಪರದೆಯಲ್ಲಿರುವ ವಿಷಯವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುತ್ತದೆ. ನೀವು ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುವ ಸಂಗತಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="3518086201899641494">ವಶದಲ್ಲಿರುವ ಪೋರ್ಟಲ್‌ಗಳ ಕುರಿತು ಅಧಿಸೂಚನೆಗಳು</translation>
 <translation id="3519867315646775981">ಲಿಪ್ಯಂತರಣ (shalom ← שלום)</translation>
@@ -3411,7 +3409,6 @@
 <translation id="569109051430110155">ಸ್ವಯಂ ಪತ್ತೆಮಾಡು</translation>
 <translation id="5691596662111998220">ಓಹ್, <ph name="FILE_NAME" /> ಇನ್ನು ಮುಂದೆ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವುದಿಲ್ಲ.</translation>
 <translation id="5694501201003948907">$1 ಐಟಂಗಳನ್ನು ಜಿಪ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="5695323626817702678">ಚಿಕ್ಕ</translation>
 <translation id="5697118958262594262">ಡಿಫಾಲ್ಟ್ ಮೂಲಕ ಪ್ರಮುಖ ವಿಷಯವನ್ನು ಪತ್ತೆ ಮಾಡಿ</translation>
 <translation id="5699533844376998780">"<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="5701101281789450335">ಭಾಷೆ ಹಾಗೂ ಇನ್‌ಪುಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
@@ -3834,7 +3831,6 @@
 <translation id="630065524203833229">ನಿರ್ಗ&amp;ಮನ</translation>
 <translation id="6304217058163308077">ಹೊಸ ಬುಕ್‌ಮಾರ್ಕ್ ಅಪ್ಲಿಕೇಶನ್ ಸಿಸ್ಟಂ</translation>
 <translation id="6305012486838822927">ಲಾವೊ ಕೀಬೋರ್ಡ್</translation>
-<translation id="6305328361606238230">ಪುಶ್ ಸಂದೇಶಗಳನ್ನು ಸ್ವೀಕರಿಸಿ</translation>
 <translation id="6307722552931206656">Google ಹೆಸರಿನ ಸರ್ವರ್‌ಗಳು - <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">ಸಿಸ್ಟಂ ಕಾರ್ಯನಿರತವಾಗಿದೆ</translation>
 <translation id="6308937455967653460">ಇದರಂತೆ ಲಿಂ&amp;ಕ್ ಅನ್ನು ಉಳಿಸಿ...</translation>
@@ -4529,7 +4525,6 @@
 <translation id="7339785458027436441">ಬೆರಳಚ್ಚಿಸುವ ಸಮಯದಲ್ಲಿ ಕಾಗುಣಿತ ಪರೀಕ್ಷಿಸು</translation>
 <translation id="7339898014177206373">ಹೊಸ ವಿಂಡೊ</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> ಇದೀಗ ಪೂರ್ಣ ಪರದೆಯಾಗಿದೆ.</translation>
-<translation id="7341982465543599097">ಅತ್ಯಂತ ಚಿಕ್ಕದು</translation>
 <translation id="734303607351427494">ಹುಡುಕಾಟದ ಎಂಜಿನ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸು...</translation>
 <translation id="7343116142376328522">ಫಾರ್ಮ್‌ಗಳಲ್ಲಿ ಕೀ ರಚನೆಯನ್ನು ಬಳಸಲು ಯಾವುದೇ ಸೈಟ್‌ಗೆ ಅನುಮತಿಸಬೇಡ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="7345706641791090287">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಖಚಿತಪಡಿಸಿ</translation>
@@ -4914,7 +4909,6 @@
 <translation id="7881969471599061635">ಉಪಶೀರ್ಷಿಕೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="7884988936047469945">ಪ್ರಾಯೋಗಿಕ ಪ್ರವೇಶಿಸುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳು</translation>
 <translation id="7885253890047913815">ಇತ್ತೀಚಿನ ಗಮ್ಯಸ್ಥಾನಗಳು</translation>
-<translation id="7885283703487484916">ತುಂಬಾ ಚಿಕ್ಕದು</translation>
 <translation id="7887192723714330082">ಪರದೆಯು ಆನ್ ಆಗಿರುವಾಗ ಮತ್ತು ಅನ್‌ಲಾಕ್ ಮಾಡಿರುವಾಗ "Ok Google" ಗೆ ಪ್ರತಿಕ್ರಿಯಿಸಿ</translation>
 <translation id="7887334752153342268">ನಕಲು</translation>
 <translation id="7887864092952184874">Bluetooth ಮೌಸ್ ಜೋಡಿಯಾಗಿದೆ</translation>

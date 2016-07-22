@@ -152,7 +152,7 @@
 <translation id="2674170444375937751">¿Estás seguro de que deseas eliminar estas páginas del historial?</translation>
 <translation id="2677748264148917807">Abandonar</translation>
 <translation id="2704283930420550640">El valor no coincide con el formato.</translation>
-<translation id="2704951214193499422">Chromium no pudo verificar tu tarjeta. Vuelve a intentarlo más tarde.</translation>
+<translation id="2704951214193499422">Chrome no pudo confirmar tu tarjeta. Vuelve a intentarlo más tarde.</translation>
 <translation id="2705137772291741111">La copia guardada (en caché) de este sitio es ilegible.</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2712173769900027643">Solicitar permiso</translation>
@@ -188,7 +188,7 @@
 <translation id="3032412215588512954">¿Deseas volver a cargar este sitio?</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3041612393474885105">Información sobre el certificado</translation>
-<translation id="3063697135517575841">Chrome no pudo confirmar tu tarjeta. Vuelve a intentarlo más tarde.</translation>
+<translation id="3063697135517575841">Chrome no pudo confirmar tu tarjeta en este momento. Vuelve a intentarlo más tarde.</translation>
 <translation id="3093245981617870298">No estás conectado.</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>

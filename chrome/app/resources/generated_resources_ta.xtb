@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">உலாவல் தரவை அழி உரையாடலில் தரவு அளவுக் கவுன்ட்டர்களைக் காட்டும்.</translation>
 <translation id="1097507499312291972">இவர் பார்வையிடுகின்ற, இணையதளங்களைக் கட்டுப்படுத்த மற்றும் பார்க்க, <ph name="BEGIN_SIGN_IN_LINK" />உள்நுழையவும்<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">உள்நுழைவதற்கு முன்பாக, நெட்வொர்க் <ph name="NETWORK_ID" /> ஐச் செயல்படுத்த விருந்தினராக உள்ளிடுக</translation>
-<translation id="1104054824888299003">நீண்ட நேரம்</translation>
 <translation id="1104652314727136854">Chrome பயன்பாடுகளுக்கான கோப்புடன் தொடர்புடையவற்றின் OS ஒருங்கிணைப்பை இயக்கு.</translation>
 <translation id="1105162038795579389">பின்வரும் பயன்பாடுகளையும் நீட்டிப்புகளையும் <ph name="USER_NAME" />க்கு "<ph name="BUNDLE_NAME" />" சேர்க்கும்:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3512284449647229026">உலாவி ஆஃப்லைனில் இருக்கும்போது ஏற்ற முடியாமல் இருந்த பக்கங்கள், அவற்றின் தாவல் தெரிவுநிலையில் இருந்தால் மட்டுமே தானாக மீண்டும் ஏற்றப்படும்.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{பதிவிறக்கத்தை ரத்துசெய்}other{பதிவிறக்கங்களை ரத்துசெய்}}</translation>
 <translation id="3512810056947640266">URL (விரும்பினால்):</translation>
-<translation id="351486934407749662">மிக நீண்ட நேரம்</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> உங்கள் திரையின் உள்ளடக்கங்களைப் பகிர விரும்புகிறது. என்ன பகிர விரும்புகிறீர்கள் என்பதைத் தேர்வுசெய்யவும்.</translation>
 <translation id="3518086201899641494">கேப்டிவ் போர்ட்டல்கள் குறித்த அறிவிப்புகள்</translation>
 <translation id="3519867315646775981">ஒலிபெயர்ப்பு (shalom ← שלום)</translation>
@@ -3403,7 +3401,6 @@
 <translation id="569109051430110155">தானியங்கு கண்டறிதல்</translation>
 <translation id="5691596662111998220">அடடா, <ph name="FILE_NAME" /> இல்லை.</translation>
 <translation id="5694501201003948907">$1 உருப்படிகளை ஜிப் செய்கிறது...</translation>
-<translation id="5695323626817702678">குறைவான நேரம்</translation>
 <translation id="5697118958262594262">இயல்பாகவே முக்கியமான உள்ளடக்கத்தைக் கண்டுபிடி</translation>
 <translation id="5699533844376998780">"<ph name="EXTENSION_NAME" />" என்ற நீட்டிப்பு சேர்க்கப்பட்டது.</translation>
 <translation id="5701101281789450335">மொழி மற்றும் உள்ளீட்டு அமைப்புகள்...</translation>
@@ -3826,7 +3823,6 @@
 <translation id="630065524203833229">வெளி&amp;யேறு</translation>
 <translation id="6304217058163308077">புதிய புத்தகக்குறிப் பயன்பாட்டு அமைப்பு</translation>
 <translation id="6305012486838822927">லாவோ விசைப்பலகை</translation>
-<translation id="6305328361606238230">அறிவிப்புச் செய்திகளைப் பெறு</translation>
 <translation id="6307722552931206656">Google பெயர் சேவையகங்கள் - <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">கணினி பணிமிகுதியில் உள்ளது</translation>
 <translation id="6308937455967653460">இணை&amp;ப்பை இவ்வாறு சேமி…</translation>
@@ -4520,7 +4516,6 @@
 <translation id="7339785458027436441">தட்டச்சு செய்யும்போதே எழுத்துப்பிழை சரிபார்</translation>
 <translation id="7339898014177206373">புதிய சாளரம்</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" />, இப்போது முழுத் திரையில் உள்ளது.</translation>
-<translation id="7341982465543599097">மிகவும் குறுகிய</translation>
 <translation id="734303607351427494">தேடு பொறிகளை நிர்வகி...</translation>
 <translation id="7343116142376328522">படிவங்களில் விசை உருவாக்கத்தைப் பயன்படுத்த எந்தத் தளத்தையும் அனுமதிக்க வேண்டாம் (பரிந்துரைக்கப்பட்டது)</translation>
 <translation id="7345706641791090287">கடவுச்சொல்லை உறுதிப்படுத்தவும்</translation>
@@ -4897,7 +4892,6 @@
 <translation id="7881969471599061635">வசனங்களை முடக்கு</translation>
 <translation id="7884988936047469945">பரிசோதனைக்குரிய அணுகல்தன்மை அம்சங்கள்</translation>
 <translation id="7885253890047913815">சமீபத்திய இலக்குகள்</translation>
-<translation id="7885283703487484916">மிகவும் குறைவான நேரம்</translation>
 <translation id="7887192723714330082">திரை இயக்கப்பட்டிருக்கும் போதும், திறக்கப்பட்டிருக்கும் போதும், "Ok Google"க்குப் பதிலளிக்கும்</translation>
 <translation id="7887334752153342268">பிரதி எடு</translation>
 <translation id="7887864092952184874">புளூடூத் மவுஸ் இணைக்கப்பட்டது</translation>
@@ -5893,7 +5887,7 @@
 <translation id="981121421437150478">ஆஃப்லைன்</translation>
 <translation id="984870422930397199">புதிய தாவல் பக்கத்தில் ஆஃப்லைன் பக்கங்களின் பேட்ஜிங்கை இயக்கும். ஆஃப்லைன் பக்கங்கள் இயக்கப்பட்டிருந்தால் மட்டுமே இது பொருந்தும்.</translation>
 <translation id="98515147261107953">கிடைமட்டம்</translation>
-<translation id="986646739000587506">டெஸ்க்டாப் பகிர்வுக்கான தாவலை முடக்கு</translation>
+<translation id="986646739000587506">தாவலின் டெஸ்க்டாப் பகிர்வை முடக்கு</translation>
 <translation id="987267091708560486">{NUM_ITEMS,plural, =1{இது, இந்தச் சாதனத்திலிருந்து $1 உருப்படியை நிரந்தரமாக நீக்கும்.}other{இது, இந்தச் சாதனத்திலிருந்து $1 உருப்படிகளை நிரந்தரமாக நீக்கும்.}}</translation>
 <translation id="990878533354103361">பரிசோதனைக்கான உள்ளீட்டு காட்சி அம்சங்கள்</translation>
 <translation id="991969738502325513">நீங்கள் என்ன செய்ய வேண்டும்?</translation>

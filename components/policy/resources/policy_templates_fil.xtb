@@ -1931,7 +1931,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
-<translation id="7381326101471547614">Hindi pinapagana ang paggamit ng SPDY protocol sa <ph name="PRODUCT_NAME" />. Kung pinagana ang patakarang ito, ang SPDY protocol ay hindi magiging available sa <ph name="PRODUCT_NAME" />. Ang pagtatakda ng patakarang ito sa hindi pinagana ay papayagan ang paggamit ng SPDY. Kung iwanang hindi nakatakda ang SPDY na ito, magiging available ang Spf.</translation>
 <translation id="7384999953864505698">Pinapayagan ang QUIC protocol</translation>
 <translation id="7406651467768226499">Kung papayagan ba ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" />.
 

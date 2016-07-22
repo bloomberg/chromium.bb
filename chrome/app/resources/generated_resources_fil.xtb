@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Ipinapakita ang mga counter ng dami ng data sa dialog na I-clear ang data mula sa pagba-browse.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Mag-sign in<ph name="END_SIGN_IN_LINK" /> upang makontrol at matingnan ang mga website na binibisita ng taong ito.</translation>
 <translation id="1097658378307015415">Bago mag-sign in, mangyaring pumasok bilang Bisita upang i-activate ang network <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">matagal</translation>
 <translation id="1104652314727136854">I-enable ang pagsama sa OS ng mga kaugnayan ng file para sa Chrome Apps.</translation>
 <translation id="1105162038795579389">Idinaragdag ng "<ph name="BUNDLE_NAME" />" ang mga app at extension na ito para kay <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Huminto</translation>
@@ -1875,7 +1874,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Ang mga page na hindi maglo-load habang offline ang browser ay awtomatiko lang na ire-reload kung nakikita ang tab ng mga ito.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Kanselahin ang Pag-download}one{Kanselahin ang Mga Pag-download}other{Kanselahin ang Mga Pag-download}}</translation>
 <translation id="3512810056947640266">URL (opsyonal):</translation>
-<translation id="351486934407749662">napakatagal</translation>
 <translation id="3517839692979918726">Gustong ibahagi ng <ph name="APP_NAME" /> ang mga content ng iyong screen. Piliin ang gusto mong ibahagi.</translation>
 <translation id="3518086201899641494">Mga notification tungkol sa mga captive portal</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
@@ -3411,7 +3409,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="569109051430110155">Awtomatikong nakita</translation>
 <translation id="5691596662111998220">Whoops, hindi na umiiral ang <ph name="FILE_NAME" />.</translation>
 <translation id="5694501201003948907">Nagsi-zip ng $1 (na) item...</translation>
-<translation id="5695323626817702678">maikli</translation>
 <translation id="5697118958262594262">Tukuyin ang mahalagang content bilang default</translation>
 <translation id="5699533844376998780">Naidagdag na ang extension na "<ph name="EXTENSION_NAME" />."</translation>
 <translation id="5701101281789450335">Mga setting ng wika at input...</translation>
@@ -3836,7 +3833,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="630065524203833229">L&amp;umabas</translation>
 <translation id="6304217058163308077">Ang bagong system ng bookmark app</translation>
 <translation id="6305012486838822927">Lao keyboard</translation>
-<translation id="6305328361606238230">Tumanggap ng mga push message</translation>
 <translation id="6307722552931206656">Mga server ng pangalan ng Google - <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Abala ang system</translation>
 <translation id="6308937455967653460">I-save ang lin&amp;k bilang...</translation>
@@ -4534,7 +4530,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7339785458027436441">Check Spelling While Typing</translation>
 <translation id="7339898014177206373">Bagong window</translation>
 <translation id="7340431621085453413">Full screen na ngayon ang <ph name="FULLSCREEN_ORIGIN" />.</translation>
-<translation id="7341982465543599097">sobrang maikli</translation>
 <translation id="734303607351427494">Pamahalaan ang mga search engine...</translation>
 <translation id="7343116142376328522">Huwag payagan ang anumang site na gumamit ng pagbuo ng key sa mga form (inirerekomenda)</translation>
 <translation id="7345706641791090287">Kumpirmahin ang iyong password</translation>
@@ -4919,7 +4914,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7881969471599061635">I-disable ang mga subtitle</translation>
 <translation id="7884988936047469945">Mga pang-eksperimentong feature ng accessibility</translation>
 <translation id="7885253890047913815">Mga Kamakailang Patutunguhan</translation>
-<translation id="7885283703487484916">napaka-ikli</translation>
 <translation id="7887192723714330082">Tumugon sa "Ok Google" kapag naka-on at naka-unlock ang screen</translation>
 <translation id="7887334752153342268">Doblehin</translation>
 <translation id="7887864092952184874">Naipares ang bluetooth mouse</translation>

@@ -49,7 +49,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1513352483775369820">Kirjanmerkit ja verkkohistoria</translation>
 <translation id="1549000191223877751">Siirrä toiseen ikkunaan</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
-<translation id="1557201757634521564">Havaitse merkistökoodaus automaattisesti</translation>
 <translation id="1612196535745283361">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. Sijaintitiedot on <ph name="BEGIN_LINK" />poistettu käytöstä tällä laitteella<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">kameraasi</translation>
 <translation id="1623104350909869708">Estä tätä sivua luomasta muita viestejä</translation>
@@ -184,7 +183,6 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="3029704984691124060">Tunnuslauseet eivät vastaa toisiaan.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Tallenna video</translation>
-<translation id="307329814453917357">Tarjoa sivujen kääntämistä Google Kääntäjällä.</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="3090193911106258841">Ääni- ja videotuloa käytetään</translation>
 <translation id="3117051980354074377">Käytä kirjanmerkkejä muilta laitteiltasi kirjautumalla Chromeen.</translation>
@@ -339,6 +337,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4988526792673242964">Sivut</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
 <translation id="5000922062037820727">Estetty (suositus)</translation>
+<translation id="5005498671520578047">Kopioi salasana</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
@@ -367,9 +366,9 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="528192093759286357">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
 <translation id="5284584623296338184">Kirjanmerkkeihin, historiaan, salasanoihin ja muihin asetuksiin tehtäviä muutoksia ei enää synkronoida Google-tilillesi. Olemassa olevia tietojasi säilytetään kuitenkin Google-tililläsi.</translation>
 <translation id="5301954838959518834">Selvä</translation>
-<translation id="5302048478445481009">Kieli</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
+<translation id="5308603654685598744">Kun tämä ominaisuus on käytössä, Chrome tarjoaa vieraskielisten sivujen käännöksiä Google Kääntäjän avulla.</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5324858694974489420">Vanhempien asetukset</translation>
@@ -382,7 +381,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="5400569084694353794">Käyttämällä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Vahvistetaan…</translation>
 <translation id="5423934151118863508">Käydyimmät sivusi näkyvät täällä</translation>
-<translation id="5424715742813396254">Muokkaa tallennettua nimeä/salasanaa tai poikkeusta</translation>
 <translation id="5437003064129843501">Yksilölliset sisältöehdotukset eivät ole tällä hetkellä käytössä, koska synkronoidut tietosi on suojattu omalla tunnuslauseella.</translation>
 <translation id="544291274896356069">Incognito-tilasta poistutaan, jos avaat tämän linkin ulkoisessa sovelluksessa. Haluatko jatkaa?</translation>
 <translation id="5447201525962359567">Kaikki tallennetut sivustotiedot, mukaan lukien evästeet ja muut paikallisesti tallennetut tiedot</translation>
@@ -462,7 +460,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="6320088164292336938">Värinä</translation>
 <translation id="6324034347079777476">Android-järjestelmän synkronointi poistettu käytöstä</translation>
-<translation id="6324360525379265737">Tunnista merkistökoodaus automaattisesti.</translation>
 <translation id="6333140779060797560">Jaa sovelluksella <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Salaus</translation>
 <translation id="6364438453358674297">Poistetaanko ehdotus historiasta?</translation>
@@ -495,6 +492,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6647073004883890710">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tilin <ph name="USERNAME" /> salasanan tällä sivustolla?</translation>
 <translation id="6656545060687952787">Chrome tarvitsee sijaintitietojen käyttöoikeuden hakeakseen laitteita. <ph name="BEGIN_LINK" />Päivitä käyttöoikeudet<ph name="END_LINK" />.</translation>
+<translation id="6657585470893396449">Salasana</translation>
 <translation id="6659594942844771486">Välilehti</translation>
 <translation id="666268767214822976">Käytä ennakointipalvelua, joka näyttää sinulle aiheeseen liittyviä kyselyitä sekä suosittuja verkkosivustoja kirjoittaessasi osoitepalkkiin.</translation>
 <translation id="666981079809192359">Chromen tietosuojailmoitus</translation>
@@ -656,6 +654,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8481940801237642152">Sivustoon on muodostettu salattu yhteys, mutta verkon käyttäjät voivat päästä muokkaamaan sivun ulkoasua.</translation>
 <translation id="8493948351860045254">Vapauta tilaa</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
+<translation id="8503813439785031346">Käyttäjätunnus</translation>
 <translation id="8514577642972634246">Siirry incognito-tilaan</translation>
 <translation id="8518901949365209398">Sivusto käyttää heikkoa suojausta (SHA-1-allekirjoitukset), joten yhteytesi ei välttämättä ole täysin turvallinen.</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>

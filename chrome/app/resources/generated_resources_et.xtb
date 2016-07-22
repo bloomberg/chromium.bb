@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Dialoogis Sirvimisandmete kustutamine kuvatakse andmemahu loendurid.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Logige sisse<ph name="END_SIGN_IN_LINK" />, et hallata ja vaadata veebisaite, mida see isik külastab.</translation>
 <translation id="1097658378307015415">Enne sisselogimist sisenege võrgu <ph name="NETWORK_ID" /> aktiveerimiseks külastajana</translation>
-<translation id="1104054824888299003">pikk</translation>
 <translation id="1104652314727136854">Luba Chrome'i rakenduse failiseoste OS-i integratsioon.</translation>
 <translation id="1105162038795579389">Kogumiga „<ph name="BUNDLE_NAME" />” lisatakse kasutaja <ph name="USER_NAME" /> jaoks need rakendused ja laiendused:</translation>
 <translation id="1108600514891325577">&amp;Peata</translation>
@@ -1873,7 +1872,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Lehed, mida ei õnnestu laadida siis, kui brauseril puudub võrguühendus, laaditakse automaatselt uuesti ainult siis, kui vaheleht on nähtav.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Tühista allalaadimine}other{Tühista allalaadimised}}</translation>
 <translation id="3512810056947640266">URL (valikuline):</translation>
-<translation id="351486934407749662">väga pikk</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> soovib jagada teie ekraani sisu. Valige, mida soovite jagada.</translation>
 <translation id="3518086201899641494">Märguanded kontrollportaali kohta</translation>
 <translation id="3519867315646775981">Transliteratsioon (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="569109051430110155">Automaatne tuvastamine</translation>
 <translation id="5691596662111998220">Faili <ph name="FILE_NAME" /> ei ole enam olemas.</translation>
 <translation id="5694501201003948907">$1 üksuse pakkimine ...</translation>
-<translation id="5695323626817702678">lühike</translation>
 <translation id="5697118958262594262">Olulise sisu tuvastamine vaikimisi</translation>
 <translation id="5699533844376998780">Lisati laiendus „<ph name="EXTENSION_NAME" />”.</translation>
 <translation id="5701101281789450335">Keele- ja sisendiseaded ...</translation>
@@ -3832,7 +3829,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="630065524203833229">V&amp;älju</translation>
 <translation id="6304217058163308077">Uus järjehoidjate rakenduse süsteem</translation>
 <translation id="6305012486838822927">Lao klaviatuur</translation>
-<translation id="6305328361606238230">Tõukesõnumite vastuvõtmine</translation>
 <translation id="6307722552931206656">Google'i nimeserverid – <ph name="BEGIN_LINK" />lisateave<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Süsteem on hõivatud</translation>
 <translation id="6308937455967653460">Salvesta lin&amp;k nimega...</translation>
@@ -4528,7 +4524,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7339785458027436441">Kontrolli õigekirja tippimise ajal</translation>
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kuvati nüüd täisekraanil.</translation>
-<translation id="7341982465543599097">väga lühike</translation>
 <translation id="734303607351427494">Halda otsingumootoreid ...</translation>
 <translation id="7343116142376328522">Ära luba ühelgi saidil vormidel võtme loomist kasutada (soovitatav)</translation>
 <translation id="7345706641791090287">Kinnitage oma parool</translation>
@@ -4913,7 +4908,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7881969471599061635">Keela subtiitrid</translation>
 <translation id="7884988936047469945">Katselised juurdepääsetavuse funktsioonid</translation>
 <translation id="7885253890047913815">Hiljutised sihtkohad</translation>
-<translation id="7885283703487484916">väga lühike</translation>
 <translation id="7887192723714330082">Reageerimine otsetee sõnale „Ok Google”, kui ekraan on sisse lülitatud ja avatud</translation>
 <translation id="7887334752153342268">Tee koopia</translation>
 <translation id="7887864092952184874">Bluetoothi hiir on seotud</translation>

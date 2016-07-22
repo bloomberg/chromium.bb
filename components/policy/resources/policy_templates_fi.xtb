@@ -1791,7 +1791,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
-<translation id="7381326101471547614">Poistaa käytöstä SPDY-protokollan tuotteessa <ph name="PRODUCT_NAME" />. Jos tämä käytäntö on käytössä, SPDY-protokolla ei ole käytettävissä tuotteessa <ph name="PRODUCT_NAME" />. Jos tätä käytäntöä ei oteta käyttöön, SDPY-protokollaa voi käyttää. Jos käytäntöä ei ole määritetty, SDPY on käytettävissä.</translation>
 <translation id="7384999953864505698">Sallii QUIC-protokollan käytön</translation>
 <translation id="7406651467768226499">Tämä määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota.
 

@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Mostra contadores de volume de dados na caixa de diálogo Limpar dados de navegação.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Inicie sessão<ph name="END_SIGN_IN_LINK" /> para controlar e visualizar os Websites que esta pessoa visita.</translation>
 <translation id="1097658378307015415">Antes de iniciar sessão, entre como Convidado para ativar a rede <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">longo</translation>
 <translation id="1104652314727136854">Permitir integração de SO de associações de ficheiros para Aplicações Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" adiciona estas aplicações e extensões para <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Parar</translation>
@@ -1873,7 +1872,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">As páginas que não são carregadas enquanto o navegador está offline apenas serão atualizadas automaticamente se o respetivo separador estiver visível.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar transferência}other{Cancelar transferências}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="351486934407749662">muito longo</translation>
 <translation id="3517839692979918726">O <ph name="APP_NAME" /> pretende partilhar o conteúdo do seu ecrã. Escolha o que pretende partilhar.</translation>
 <translation id="3518086201899641494">Notificações acerca de portais cativos</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
@@ -3408,7 +3406,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="569109051430110155">Detectar automaticamente</translation>
 <translation id="5691596662111998220">Ups, <ph name="FILE_NAME" /> já não existe.</translation>
 <translation id="5694501201003948907">A criar zip de $1 itens...</translation>
-<translation id="5695323626817702678">curto</translation>
 <translation id="5697118958262594262">Detetar conteúdo importante por predefinição</translation>
 <translation id="5699533844376998780">A extensão "<ph name="EXTENSION_NAME" />" foi adicionada.</translation>
 <translation id="5701101281789450335">Definições de idioma e de introdução...</translation>
@@ -3831,7 +3828,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="630065524203833229">&amp;Sair</translation>
 <translation id="6304217058163308077">O novo sistema de aplicação de marcador</translation>
 <translation id="6305012486838822927">Teclado laosiano</translation>
-<translation id="6305328361606238230">Receber mensagens push</translation>
 <translation id="6307722552931206656">Servidores de nome Google – <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
 <translation id="6308937455967653460">Guardar lin&amp;k como...</translation>
@@ -4525,7 +4521,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7339785458027436441">Verificar a ortografia durante a escrita</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> está agora em ecrã inteiro.</translation>
-<translation id="7341982465543599097">extremamente curto</translation>
 <translation id="734303607351427494">Gerir motores de pesquisa...</translation>
 <translation id="7343116142376328522">Não permitir que nenhum site utilize a geração de chaves em formulários (recomendado)</translation>
 <translation id="7345706641791090287">Confirmar a palavra-passe</translation>
@@ -4910,7 +4905,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7881969471599061635">Desativar legendas</translation>
 <translation id="7884988936047469945">Funcionalidades de acessibilidade experimentais</translation>
 <translation id="7885253890047913815">Destinos recentes</translation>
-<translation id="7885283703487484916">muito curto</translation>
 <translation id="7887192723714330082">Responder a "Ok Google" quando o ecrã está ligado e desbloqueado</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Rato Bluetooth sincronizado</translation>

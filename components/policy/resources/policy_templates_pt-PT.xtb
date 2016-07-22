@@ -1796,7 +1796,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
-<translation id="7381326101471547614">Desativa a utilização do protocolo SPDY em <ph name="PRODUCT_NAME" />. Se esta política estiver ativada, o protocolo SPDY não estará disponível em <ph name="PRODUCT_NAME" />. A desativação desta política permitirá a utilização do protocolo SPDY. Se esta política não for definida, o protocolo SPDY estará disponível.</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
 <translation id="7406651467768226499">Permitir ou não que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" />.
 

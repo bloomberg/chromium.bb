@@ -1789,13 +1789,6 @@ Active Directory ドメインに参加していない Windows インスタンス
       このポリシーが設定されていない場合、自動クリーンアップは組み込みのデフォルト設定を使用します。現在、この設定は「RemoveLRUIfDormant」です。</translation>
 <translation id="7336878834592315572">セッションの継続中は Cookie を保存する</translation>
 <translation id="7340034977315324840">デバイス操作時間を報告する</translation>
-<translation id="7381326101471547614"><ph name="PRODUCT_NAME" /> での SPDY プロトコルの使用を無効にします。
-
-      このポリシーが有効になっている場合、<ph name="PRODUCT_NAME" /> で SPDY プロトコルを使用できません。
-
-      このポリシーが無効になっている場合、SPDY プロトコルを使用できます。
-
-      このポリシーが未設定の場合、SPDY プロトコルを使用できます。</translation>
 <translation id="7384999953864505698">QUIC プロトコルを許可する</translation>
 <translation id="7406651467768226499">遅延なしで自動開始されるキオスクアプリから <ph name="PRODUCT_OS_NAME" /> のバージョンを制御できるようにするかどうかを設定します。
 

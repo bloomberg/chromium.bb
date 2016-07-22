@@ -513,7 +513,7 @@
 <translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7231308970288859235">注意：您必須徵求家長同意，才能瀏覽這個網頁。</translation>
 <translation id="7246609911581847514">Chrome 顯示這則訊息是因為您首次瀏覽的新網站需要獲得管理員核准。</translation>
-<translation id="724975217298816891">請輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，更新您的信用卡詳細資訊。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
+<translation id="724975217298816891">請輸入 <ph name="CREDIT_CARD" /> 的有效日期和信用卡安全碼，更新您的信用卡詳細資訊。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
 <translation id="725866823122871198">您電腦的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="7265986070661382626">您目前無法造訪 <ph name="SITE" />，因為這個網站<ph name="BEGIN_LINK" />使用憑證固定功能<ph name="END_LINK" />。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
 <translation id="7269802741830436641">這個網頁含有重新導向迴圈</translation>
@@ -686,7 +686,7 @@
 <translation id="935608979562296692">清除表單</translation>
 <translation id="939736085109172342">新增資料夾</translation>
 <translation id="943029900877297437">如要使用您已儲存在 Google 帳戶中的信用卡，請登入 Chrome。</translation>
-<translation id="962701380617707048">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，更新您的信用卡詳細資訊</translation>
+<translation id="962701380617707048">輸入 <ph name="CREDIT_CARD" /> 的有效日期和信用卡安全碼，更新您的信用卡詳細資訊</translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">開發人員版本</translation>
 </translationbundle>

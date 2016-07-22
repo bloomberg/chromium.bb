@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Shows data volume counters in the Clear browsing data dialogue.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Sign in<ph name="END_SIGN_IN_LINK" /> to control and view the websites that this person visits.</translation>
 <translation id="1097658378307015415">Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">long</translation>
 <translation id="1104652314727136854">Enable OS integration of file associations for Chrome Apps.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" adds these apps and extensions for <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1873,7 +1872,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Pages that fail to load while the browser is offline will only be auto-reloaded if their tab is visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancel Download}other{Cancel Downloads}}</translation>
 <translation id="3512810056947640266">URL (optional):</translation>
-<translation id="351486934407749662">very long</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> would like to share the contents of your screen. Choose what you'd like to share.</translation>
 <translation id="3518086201899641494">Notifications about captive portals</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
@@ -3408,7 +3406,6 @@ Press any key to continue exploring.</translation>
 <translation id="569109051430110155">Auto detect</translation>
 <translation id="5691596662111998220">Whoops, <ph name="FILE_NAME" /> no longer exists.</translation>
 <translation id="5694501201003948907">Zipping $1 items...</translation>
-<translation id="5695323626817702678">short</translation>
 <translation id="5697118958262594262">Detect important content by default</translation>
 <translation id="5699533844376998780">The extension "<ph name="EXTENSION_NAME" />" has been installed.</translation>
 <translation id="5701101281789450335">Language and input settings...</translation>
@@ -3833,7 +3830,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="630065524203833229">E&amp;xit</translation>
 <translation id="6304217058163308077">The new bookmark app system</translation>
 <translation id="6305012486838822927">Lao keyboard</translation>
-<translation id="6305328361606238230">Receive push messages</translation>
 <translation id="6307722552931206656">Google name servers - <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">System busy</translation>
 <translation id="6308937455967653460">Save lin&amp;k as...</translation>
@@ -4530,7 +4526,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7339785458027436441">Check Spelling While Typing</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> is now full screen.</translation>
-<translation id="7341982465543599097">extremely short</translation>
 <translation id="734303607351427494">Manage search engines...</translation>
 <translation id="7343116142376328522">Do not allow any site to use key generation in forms (recommended)</translation>
 <translation id="7345706641791090287">Confirm your password</translation>
@@ -4915,7 +4910,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7881969471599061635">Disable subtitles</translation>
 <translation id="7884988936047469945">Experimental acecssibility features</translation>
 <translation id="7885253890047913815">Recent destinations</translation>
-<translation id="7885283703487484916">very short</translation>
 <translation id="7887192723714330082">Respond to "OK Google" when the screen is on and unlocked</translation>
 <translation id="7887334752153342268">Duplicate</translation>
 <translation id="7887864092952184874">Bluetooth mouse paired</translation>

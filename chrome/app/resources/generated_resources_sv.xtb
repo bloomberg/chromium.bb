@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Visar datavolymräknare i dialogrutan Rensa webbinformation.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Logga in<ph name="END_SIGN_IN_LINK" /> om du vill styra och visa vilka webbplatser den här personen besöker.</translation>
 <translation id="1097658378307015415">Aktivera nätverket <ph name="NETWORK_ID" /> genom att logga in som gäst innan du loggar in</translation>
-<translation id="1104054824888299003">lång</translation>
 <translation id="1104652314727136854">Aktivera filassociation för Chrome-appar i operativsystem.</translation>
 <translation id="1105162038795579389"><ph name="BUNDLE_NAME" /> lägger till dessa appar och tillägg för <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stopp</translation>
@@ -1872,7 +1871,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sidor som inte kan läsas in när webbläsaren är offline läses bara in automatiskt om deras flikar är synliga.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Avbryt nedladdningen}other{Avbryt nedladdningarna}}</translation>
 <translation id="3512810056947640266">Webbadress (valfritt):</translation>
-<translation id="351486934407749662">mycket lång</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> vill dela innehållet på din skärm. Välj det du vill dela.</translation>
 <translation id="3518086201899641494">Meddelanden om infångstportaler</translation>
 <translation id="3519867315646775981">Translitterera (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="569109051430110155">Upptäck automatiskt</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> finns tyvärr inte längre.</translation>
 <translation id="5694501201003948907">$1 objekt komprimeras ...</translation>
-<translation id="5695323626817702678">kort</translation>
 <translation id="5697118958262594262">Upptäck viktigt innehåll som standard</translation>
 <translation id="5699533844376998780">Tillägget <ph name="EXTENSION_NAME" /> har lagts till.</translation>
 <translation id="5701101281789450335">Språk- och inmatningsinställningar ...</translation>
@@ -3832,7 +3829,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="630065524203833229">&amp;Avsluta</translation>
 <translation id="6304217058163308077">Det nya systemet för bokmärkesappar</translation>
 <translation id="6305012486838822927">Laotiskt tangentbord</translation>
-<translation id="6305328361606238230">Ta emot push-meddelanden</translation>
 <translation id="6307722552931206656">Googles namnservrar – <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Systemet är upptaget</translation>
 <translation id="6308937455967653460">Spara l&amp;änk som...</translation>
@@ -4526,7 +4522,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7339785458027436441">Kontrollera stavning medan jag skriver</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> visas nu i helskärm.</translation>
-<translation id="7341982465543599097">extremt kort</translation>
 <translation id="734303607351427494">Hantera sökmotorer...</translation>
 <translation id="7343116142376328522">Tillåt inga webbplatser att använda nyckelgenerering i formulär (rekommenderas)</translation>
 <translation id="7345706641791090287">Bekräfta lösenordet</translation>
@@ -4910,7 +4905,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7881969471599061635">Inaktivera undertexter</translation>
 <translation id="7884988936047469945">Experimentella tillgänglighetsfunktioner</translation>
 <translation id="7885253890047913815">Senaste platserna</translation>
-<translation id="7885283703487484916">mycket kort</translation>
 <translation id="7887192723714330082">Svara på ”Ok Google” när skärmen är på och olåst</translation>
 <translation id="7887334752153342268">Duplicera</translation>
 <translation id="7887864092952184874">Bluetooth-musen har kopplats</translation>

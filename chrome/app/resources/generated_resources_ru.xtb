@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Показывает счетчики объема данных в диалоговом окне "Удалить данные браузера".</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Войдите в аккаунт<ph name="END_SIGN_IN_LINK" />, чтобы просматривать сайты, открытые этим пользователем, и контролировать его действия.</translation>
 <translation id="1097658378307015415">Сначала войдите как гость, чтобы активировать работу сети <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">долгая</translation>
 <translation id="1104652314727136854">Включить в операционной системе связь типов файлов с приложениями Chrome</translation>
 <translation id="1105162038795579389">В набор "<ph name="BUNDLE_NAME" />" для пользователя <ph name="USER_NAME" /> входят следующие приложения и расширения:</translation>
 <translation id="1108600514891325577">&amp;Остановить</translation>
@@ -1873,7 +1872,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3512284449647229026">Страницы, не загруженные из-за отсутствия интернет-подключения, будут автоматически перезагружены, только если вкладка активна.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Отменить скачивание}one{Отменить скачивание}few{Отменить скачивание}many{Отменить скачивание}other{Отменить скачивание}}</translation>
 <translation id="3512810056947640266">URL (необязательно):</translation>
-<translation id="351486934407749662">очень долгая</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> хочет предоставить доступ к вашему экрану. Выберите окно, которое вы хотите показать.</translation>
 <translation id="3518086201899641494">Уведомления об адаптивных порталах</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
@@ -3408,7 +3406,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="569109051430110155">Автоматически</translation>
 <translation id="5691596662111998220">Элемент "<ph name="FILE_NAME" />" удален</translation>
 <translation id="5694501201003948907">Архивирование элементов ($1)…</translation>
-<translation id="5695323626817702678">короткая</translation>
 <translation id="5697118958262594262">Находить важный контент по умолчанию</translation>
 <translation id="5699533844376998780">Расширение <ph name="EXTENSION_NAME" /> успешно добавлено.</translation>
 <translation id="5701101281789450335">Изменить языковые настройки…</translation>
@@ -3831,7 +3828,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="630065524203833229">В&amp;ыход</translation>
 <translation id="6304217058163308077">Новая система приложений-закладок</translation>
 <translation id="6305012486838822927">Лаосская раскладка</translation>
-<translation id="6305328361606238230">Получать push-сообщения</translation>
 <translation id="6307722552931206656">DNS-серверы Google – <ph name="BEGIN_LINK" />Подробнее...<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Система перегружена</translation>
 <translation id="6308937455967653460">Сохранить ссыл&amp;ку как...</translation>
@@ -4526,7 +4522,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7339785458027436441">Проверять правописание при наборе текста</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> отображается в полноэкранном режиме.</translation>
-<translation id="7341982465543599097">очень короткая</translation>
 <translation id="734303607351427494">Настроить поисковые системы…</translation>
 <translation id="7343116142376328522">Запретить всем сайтам создавать ключи в формах (рекомендуется)</translation>
 <translation id="7345706641791090287">Подтвердите пароль</translation>
@@ -4911,7 +4906,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7881969471599061635">Отключить субтитры</translation>
 <translation id="7884988936047469945">Экспериментальные специальные возможности</translation>
 <translation id="7885253890047913815">Недавние места назначения</translation>
-<translation id="7885283703487484916">очень короткая</translation>
 <translation id="7887192723714330082">Выполняет команду "О'кей, Google", когда экран включен и разблокирован.</translation>
 <translation id="7887334752153342268">Дублировать</translation>
 <translation id="7887864092952184874">Bluetooth-мышь подключена</translation>

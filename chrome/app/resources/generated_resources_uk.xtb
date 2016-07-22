@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Показує лічильники обсягу даних у вікні "Очистити дані веб-перегляду".</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Увійдіть<ph name="END_SIGN_IN_LINK" />, щоб контролювати й переглядати веб-сайти, які відвідує цей користувач.</translation>
 <translation id="1097658378307015415">Перш ніж увійти, розпочніть сеанс у режимі гостя, щоб активувати мережу <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">довго</translation>
 <translation id="1104652314727136854">Увімкнути інтеграцію ОС в асоціації файлів для додатків Chrome.</translation>
 <translation id="1105162038795579389">Пакет "<ph name="BUNDLE_NAME" />" додає для користувача <ph name="USER_NAME" /> такі додатки та розширення:</translation>
 <translation id="1108600514891325577">&amp;Зупинити</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3512284449647229026">Сторінки, які не вдалося завантажити, коли веб-переглядач був у режимі офлайн, автоматично перезавантажаться, коли вкладка стане видимою.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Скасувати завантаження}one{Скасувати завантаження}few{Скасувати завантаження}many{Скасувати завантаження}other{Скасувати завантаження}}</translation>
 <translation id="3512810056947640266">URL-адреса (необов’язково):</translation>
-<translation id="351486934407749662">дуже довго</translation>
 <translation id="3517839692979918726">Додаток <ph name="APP_NAME" /> хоче показувати вміст вашого екрана. Виберіть вміст, який хочете показувати.</translation>
 <translation id="3518086201899641494">Сповіщення про приєднані портали</translation>
 <translation id="3519867315646775981">Транслітерація (shalom ← שלום)</translation>
@@ -3406,7 +3404,6 @@
 <translation id="569109051430110155">Автом. визначення</translation>
 <translation id="5691596662111998220">На жаль, файл "<ph name="FILE_NAME" />" більше не існує.</translation>
 <translation id="5694501201003948907">Архівування елементів ($1)…</translation>
-<translation id="5695323626817702678">коротко</translation>
 <translation id="5697118958262594262">Виявляти важливий вміст за умовчанням</translation>
 <translation id="5699533844376998780">Розширення "<ph name="EXTENSION_NAME" />" додано.</translation>
 <translation id="5701101281789450335">Налаштування мови та способів введення...</translation>
@@ -3829,7 +3826,6 @@
 <translation id="630065524203833229">В&amp;ийти</translation>
 <translation id="6304217058163308077">Нова система додатків для закладок</translation>
 <translation id="6305012486838822927">Лаоська клавіатура</translation>
-<translation id="6305328361606238230">Отримувати push-повідомлення</translation>
 <translation id="6307722552931206656">Сервер імен Google – <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Система зайнята</translation>
 <translation id="6308937455967653460">Зберегти посиланн&amp;я як...</translation>
@@ -4524,7 +4520,6 @@
 <translation id="7339785458027436441">Перевіряти правопис під час вводу</translation>
 <translation id="7339898014177206373">Нове вікно</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> зараз у повноекранному режимі.</translation>
-<translation id="7341982465543599097">дуже коротко</translation>
 <translation id="734303607351427494">Керувати пошуковими системами...</translation>
 <translation id="7343116142376328522">Заборонити всім сайтам генерувати ключі у формах (рекомендується)</translation>
 <translation id="7345706641791090287">Підтвердьте пароль</translation>
@@ -4909,7 +4904,6 @@
 <translation id="7881969471599061635">Вимкнути субтитри</translation>
 <translation id="7884988936047469945">Експериментальні спеціальні можливості</translation>
 <translation id="7885253890047913815">Останні місця призначення</translation>
-<translation id="7885283703487484916">дуже коротко</translation>
 <translation id="7887192723714330082">Реагувати на команду "Ok Google", коли екран увімкнено та розблоковано</translation>
 <translation id="7887334752153342268">Створити копію</translation>
 <translation id="7887864092952184874">Підключено мишу Bluetooth</translation>

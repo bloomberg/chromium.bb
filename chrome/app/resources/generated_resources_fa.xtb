@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">شمارنده‌های حجم داده را در کادر گفتگوی «پاک کردن داده‌های محصول مرور»، نشان می‌دهد.</translation>
 <translation id="1097507499312291972">برای کنترل و مشاهده وب‌سایت‌هایی که این شخص بازدید می‌کند، <ph name="BEGIN_SIGN_IN_LINK" />وارد سیستم شوید<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">قبل از ورود به سیستم، لطفاً جهت فعال کردن شبکه <ph name="NETWORK_ID" />، به‌عنوان مهمان وارد شوید</translation>
-<translation id="1104054824888299003">طولانی</translation>
 <translation id="1104652314727136854">‏یکپارچگی مرتبط‌سازی‌های فایل OS را برای برنامه‌های Chrome فعال کنید.</translation>
 <translation id="1105162038795579389">«<ph name="BUNDLE_NAME" />» این برنامه‌ها و افزونه‌ها را برای <ph name="USER_NAME" /> اضافه می‌کند.</translation>
 <translation id="1108600514891325577">&amp;توقف</translation>
@@ -1868,7 +1867,6 @@
 <translation id="3512284449647229026">صفحاتی که وقتی مرورگر آفلاین است، بارگیری نمی‌شوند، فقط زمانی به صورت خودکار بارگیری مجدد می‌شوند که برگه آنها قابل مشاهده باشد.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{لغو دانلود}one{لغو دانلود}other{لغو دانلود}}</translation>
 <translation id="3512810056947640266">نشانی وب (اختیاری):</translation>
-<translation id="351486934407749662">بسیار طولانی</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> می‌خواهد محتوای صفحه شما را اشتراک‌گذاری کند. آنچه را که می‌خواهید به اشتراک بگذارید، انتخاب کنید.</translation>
 <translation id="3518086201899641494">اعلان‌های مربوط به پورتال‌های محدود</translation>
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
@@ -3402,7 +3400,6 @@
 <translation id="569109051430110155">شناسایی خودکار</translation>
 <translation id="5691596662111998220">اوه، <ph name="FILE_NAME" /> دیگر وجود ندارد.</translation>
 <translation id="5694501201003948907">در حال فشرده‌سازی $1 مورد...</translation>
-<translation id="5695323626817702678">کوتاه</translation>
 <translation id="5697118958262594262">شناسایی محتوای مهم به صورت پیش‌فرض</translation>
 <translation id="5699533844376998780">برنامهٔ افزودنی "<ph name="EXTENSION_NAME" />" اضافه شده است.</translation>
 <translation id="5701101281789450335">تنظیمات ورودی و زبان...</translation>
@@ -3825,7 +3822,6 @@
 <translation id="630065524203833229">&amp;خروج</translation>
 <translation id="6304217058163308077">سیستم برنامه نشانک جدید</translation>
 <translation id="6305012486838822927">صفحه‌کلید لائوسی</translation>
-<translation id="6305328361606238230">دریافت پیام‌های فشاری</translation>
 <translation id="6307722552931206656">‏‫سرورهای نام Google‏ - <ph name="BEGIN_LINK" />کسب اطلاعات بیشتر<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">سیستم مشغول است</translation>
 <translation id="6308937455967653460">ذخیره پی&amp;وند به‌عنوان...</translation>
@@ -4519,7 +4515,6 @@
 <translation id="7339785458027436441">بررسی املا هنگام تایپ</translation>
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> اکنون در حالت تمام صفحه است.</translation>
-<translation id="7341982465543599097">بسیار کوتاه</translation>
 <translation id="734303607351427494">مدیریت موتورهای جستجو...</translation>
 <translation id="7343116142376328522">به هیچ سایتی اجازه داده نشود از تولید کلید در فرم‌ها استفاده کند (توصیه می‌شود)</translation>
 <translation id="7345706641791090287">گذرواژه‌تان را تأیید کنید</translation>
@@ -4905,7 +4900,6 @@
 <translation id="7881969471599061635">غیرفعال کردن زیرنویس</translation>
 <translation id="7884988936047469945">قابلیت‌های دسترس‌پذیری آزمایشی</translation>
 <translation id="7885253890047913815">مقصدهای اخیر</translation>
-<translation id="7885283703487484916">بسیار کوتاه</translation>
 <translation id="7887192723714330082">‏پاسخ دادن به «Ok Google» وقتی صفحه روشن است و قفل نیست</translation>
 <translation id="7887334752153342268">کپی‌برداری</translation>
 <translation id="7887864092952184874">موشواره بلوتوث مرتبط شد</translation>

@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Megjeleníti az adatmennyiség számlálóit a Böngészési adatok törlése párbeszédablakban.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Jelentkezzen be<ph name="END_SIGN_IN_LINK" />, hogy vezérelhesse és megtekinthesse az e személy által felkeresett webhelyeket.</translation>
 <translation id="1097658378307015415">Kérjük, bejelentkezés előtt a(z) <ph name="NETWORK_ID" /> hálózat aktiválásához lépjen be vendégként.</translation>
-<translation id="1104054824888299003">hosszú</translation>
 <translation id="1104652314727136854">Engedélyezi az operációs rendszer fájltársításainak integrációját Chrome-alkalmazásokhoz.</translation>
 <translation id="1105162038795579389">A(z) „<ph name="BUNDLE_NAME" />” hozzáadja ezeket az alkalmazásokat és bővítményeket <ph name="USER_NAME" /> számára:</translation>
 <translation id="1108600514891325577">&amp;Leállítás</translation>
@@ -1873,7 +1872,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Azok az oldalak, amelyek nem tudnak betöltődni a böngésző offline állapotában, csak akkor töltődnek újra automatikusan, ha lapjuk látható.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Letöltés megszakítása}other{Letöltések megszakítása}}</translation>
 <translation id="3512810056947640266">URL (nem kötelező):</translation>
-<translation id="351486934407749662">nagyon hosszú</translation>
 <translation id="3517839692979918726">A(z) <ph name="APP_NAME" /> alkalmazás szeretné megosztani képernyőjének tartalmát. Válassza ki, hogy mit kíván megosztani.</translation>
 <translation id="3518086201899641494">Captive (előzetes hitelesítést igénylő) portálokkal kapcsolatos értesítések</translation>
 <translation id="3519867315646775981">Átírás (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="569109051430110155">Automatikus felismerés</translation>
 <translation id="5691596662111998220">Hoppá! A(z) <ph name="FILE_NAME" /> már nem létezik.</translation>
 <translation id="5694501201003948907">$1 elem tömörítése...</translation>
-<translation id="5695323626817702678">rövid</translation>
 <translation id="5697118958262594262">Fontos tartalmak észlelése alapértelmezés szerint</translation>
 <translation id="5699533844376998780">A(z) "<ph name="EXTENSION_NAME" />" bővítmény hozzáadása megtörtént.</translation>
 <translation id="5701101281789450335">Nyelvi és beviteli beállítások...</translation>
@@ -3830,7 +3827,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="630065524203833229">K&amp;ilépés</translation>
 <translation id="6304217058163308077">Az új könyvjelzőalkalmazás-rendszer</translation>
 <translation id="6305012486838822927">Lao billentyűzet</translation>
-<translation id="6305328361606238230">Push üzenetek fogadása</translation>
 <translation id="6307722552931206656">Google névszerverek – <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">A rendszer foglalt</translation>
 <translation id="6308937455967653460">Link mentése &amp;másként...</translation>
@@ -4524,7 +4520,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7339785458027436441">Helyesírás-ellenőrzés gépeléskor</translation>
 <translation id="7339898014177206373">Új ablak</translation>
 <translation id="7340431621085453413">A <ph name="FULLSCREEN_ORIGIN" /> most teljes képernyős nézetben van.</translation>
-<translation id="7341982465543599097">rendkívül rövid</translation>
 <translation id="734303607351427494">Keresőmotorok kezelése...</translation>
 <translation id="7343116142376328522">A kulcsgenerálás űrlapokban való használatának letiltása minden webhely számára (javasolt)</translation>
 <translation id="7345706641791090287">Erősítse meg a jelszót</translation>
@@ -4909,7 +4904,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7881969471599061635">Feliratok letiltása</translation>
 <translation id="7884988936047469945">Kísérleti kisegítő funkciók</translation>
 <translation id="7885253890047913815">Legutóbbi célhelyek</translation>
-<translation id="7885283703487484916">nagyon rövid</translation>
 <translation id="7887192723714330082">Válasz az „Ok Google” kimondására, amikor a képernyő be van kapcsolva, és nincs zárolva</translation>
 <translation id="7887334752153342268">Másodpéldány</translation>
 <translation id="7887864092952184874">Bluetooth-egér párosítva</translation>

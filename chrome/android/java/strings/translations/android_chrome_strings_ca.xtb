@@ -49,7 +49,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1513352483775369820">Adreces interès i historial web</translation>
 <translation id="1549000191223877751">Mou a l'altra finestra</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
-<translation id="1557201757634521564">Detecta automàticament la codificació</translation>
 <translation id="1612196535745283361">Chrome necessita tenir accés a la ubicació per poder cercar dispositius, però aquesta funció està <ph name="BEGIN_LINK" />desactivada en aquest dispositiu<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals.</translation>
@@ -184,7 +183,6 @@ Podeu controlar el Web físic a la configuració de Chrome.
 <translation id="3029704984691124060">Les frases de contrasenya no coincideixen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obteniu ajuda<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Desa el vídeo</translation>
-<translation id="307329814453917357">Proposa'm de traduir les pàgines amb el Traductor de Google</translation>
 <translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
 <translation id="3090193911106258841">S'està accedint a l'entrada d'àudio i de vídeo</translation>
 <translation id="3117051980354074377">Inicieu la sessió a Chrome per accedir a les adreces d'interès des dels altres dispositius que tingueu.</translation>
@@ -339,6 +337,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4988526792673242964">Pàgines</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
 <translation id="5000922062037820727">Bloquejat (recomanat)</translation>
+<translation id="5005498671520578047">Copia la contrasenya</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
@@ -367,9 +366,9 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="528192093759286357">Arrossegueu la pantalla des de la part superior i toqueu el botó Enrere per sortir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Els canvis fets a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració es deixaran de sincronitzar amb el vostre compte de Google. No obstant això, les dades actuals hi continuaran emmagatzemades.</translation>
 <translation id="5301954838959518834">D'acord, entesos</translation>
-<translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Aquest camp no pot estar en blanc</translation>
 <translation id="5308380583665731573">Connecta</translation>
+<translation id="5308603654685598744">Quan aquesta funció està activada, Chrome ofereix la possibilitat de traduir pàgines escrites en altres idiomes mitjançant el Traductor de Google.</translation>
 <translation id="5313967007315987356">Afegeix un lloc</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5324858694974489420">Configuració parental</translation>
@@ -382,7 +381,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5400569084694353794">En fer servir aquesta aplicació, accepteu les <ph name="BEGIN_LINK1" />Condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />Avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5414836363063783498">S'està verificant...</translation>
 <translation id="5423934151118863508">Les pàgines més visitades es mostraran aquí</translation>
-<translation id="5424715742813396254">Editar el nom, la contrasenya o l'excepció desats</translation>
 <translation id="5437003064129843501">Actualment, els suggeriments de contingut personalitzats estan desactivats perquè les teves dades sincronitzades estan protegides per una frase de contrasenya personalitzada.</translation>
 <translation id="544291274896356069">Si obriu aquest enllaç en una aplicació externa abandonareu el mode d'incògnit. Voleu continuar?</translation>
 <translation id="5447201525962359567">Tot l'emmagatzematge del lloc, com ara les galetes i altres dades emmagatzemades localment</translation>
@@ -462,7 +460,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6295158916970320988">Tots els llocs</translation>
 <translation id="6320088164292336938">Vibració</translation>
 <translation id="6324034347079777476">La sincronització del sistema Android està desactivada</translation>
-<translation id="6324360525379265737">Detecta automàticament la codificació de caràcters</translation>
 <translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION" />.</translation>
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="6364438453358674297">Voleu suprimir el suggeriment de l'historial?</translation>
@@ -495,6 +492,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6647073004883890710">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la contrasenya de l'usuari <ph name="USERNAME" /> per a aquest lloc?</translation>
 <translation id="6656545060687952787">Chrome necessita tenir accés a la ubicació per poder cercar dispositius. <ph name="BEGIN_LINK" />Actualitza els permisos<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6659594942844771486">Pestanya</translation>
 <translation id="666268767214822976">Utilitza un servei de predicció per mostrar consultes relacionades i llocs web populars mentre escriviu a la barra d'adreces</translation>
 <translation id="666981079809192359">Avís de privadesa de Chrome</translation>
@@ -656,6 +654,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8481940801237642152">La vostra connexió amb aquest lloc és privada, però és possible que algun usuari de la xarxa pugui canviar l'aspecte de la pàgina.</translation>
 <translation id="8493948351860045254">Allibera espai</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
+<translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8514577642972634246">Entra al mode d'incògnit</translation>
 <translation id="8518901949365209398">Aquest lloc fa servir una configuració de seguretat dèbil (signatures SHA-1), de manera que és possible que la vostra connexió no sigui privada.</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>

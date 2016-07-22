@@ -1785,7 +1785,6 @@
       如果未設定這項政策，自動清理作業將會採用目前的預設內建策略：「RemoveLRUIfDormant」。</translation>
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
 <translation id="7340034977315324840">回報裝置活動時間</translation>
-<translation id="7381326101471547614">停用 <ph name="PRODUCT_NAME" /> 中的 SPDY 通訊協定。如果啟用這項政策，SPDY 通訊協定就不會支援 <ph name="PRODUCT_NAME" />。停用這項政策即可使用 SPDY。如果未設定這項政策，即可使用 SPDY。</translation>
 <translation id="7384999953864505698">允許 QUIC 通訊協定</translation>
 <translation id="7406651467768226499">是否允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本。
 

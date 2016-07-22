@@ -208,7 +208,7 @@
 <translation id="3225919329040284222">O servidor apresentou um certificado que não coincide com as expectativas incorporadas. Estas expectativas são incluídas para determinados websites de alta segurança com a finalidade de oferecer proteção a você.</translation>
 <translation id="3226128629678568754">Pressione o botão "Atualizar" para reenviar os dados necessários para carregar a página.</translation>
 <translation id="3228969707346345236">A tradução falhou porque a página já está em <ph name="LANGUAGE" />.</translation>
-<translation id="323107829343500871">Digitar o CVC do <ph name="CREDIT_CARD" /></translation>
+<translation id="323107829343500871">Digite o CVC do <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Adicionar esta página aos favoritos</translation>
 <translation id="3270847123878663523">&amp;Desfazer reordenar</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
@@ -410,7 +410,7 @@
 <translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5710435578057952990">A identidade deste site não foi confirmada.</translation>
 <translation id="5720705177508910913">Usuário atual</translation>
-<translation id="5784606427469807560">Ocorreu um problema na confirmação do seu cartão. Verifique a conexão com a Internet e tente novamente.</translation>
+<translation id="5784606427469807560">Ocorreu um problema ao confirmar seu cartão. Verifique a conexão com a Internet e tente novamente.</translation>
 <translation id="5785756445106461925">Além disso, esta página inclui outros recursos que não são seguros. Esses recursos podem ser visualizados por outros usuários enquanto eles navegam e podem ser modificados por um invasor para alterar o comportamento da página.</translation>
 <translation id="5810442152076338065">Sua conexão com <ph name="DOMAIN" /> está criptografada com um pacote de criptografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adicionar</translation>
@@ -513,7 +513,7 @@
 <translation id="7219179957768738017">A conexão usa a <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Ops! É preciso permissão dos seus pais para visitar esta página.</translation>
 <translation id="7246609911581847514">Esta mensagem está sendo exibida porque é preciso aprovação do seu gerente para novos sites na sua primeira visita.</translation>
-<translation id="724975217298816891">Digite a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do seu cartão. Depois da confirmação, os detalhes do cartão serão compartilhados com esse site.</translation>
+<translation id="724975217298816891">Digite a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois da confirmação, os detalhes do cartão serão compartilhados com esse site.</translation>
 <translation id="725866823122871198">Não é possível estabelecer uma conexão privada com <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu computador (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="7265986070661382626">Não é possível acessar <ph name="SITE" /> no momento porque o website <ph name="BEGIN_LINK" />usa a fixação de certificados<ph name="END_LINK" />. Ataques e erros de rede, muitas vezes, são temporários. Portanto, essa página provavelmente funcionará mais tarde.</translation>
 <translation id="7269802741830436641">Esta página da web tem um loop de redirecionamento</translation>
@@ -652,7 +652,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8866959479196209191">Essa página diz:</translation>
 <translation id="8870413625673593573">Recentemente fechadas</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
-<translation id="8877192140621905067">Depois da confirmação, os detalhes do seu cartão serão compartilhados com esse site</translation>
+<translation id="8877192140621905067">Depois da confirmação, os detalhes do cartão serão compartilhados com esse site</translation>
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="889901481107108152">Esta experiência não está disponível na sua plataforma.</translation>
 <translation id="8903921497873541725">Aumentar zoom</translation>
@@ -687,7 +687,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="935608979562296692">LIMPAR FORMULÁRIO</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="943029900877297437">Para usar os cartões salvos na sua Conta do Google, faça login no Chrome.</translation>
-<translation id="962701380617707048">Digitar a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do seu cartão</translation>
+<translation id="962701380617707048">Digite a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão</translation>
 <translation id="969892804517981540">Versão oficial</translation>
 <translation id="988159990683914416">Versão do desenvolvedor</translation>
 </translationbundle>

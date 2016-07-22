@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Menunjukkan pembilang jumlah data dalam dialog Kosongkan data semakan imbas.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Log masuk<ph name="END_SIGN_IN_LINK" /> untuk mengawal dan melihat laman web yang dilawati oleh orang ini.</translation>
 <translation id="1097658378307015415">Sebelum log masuk, sila masuk sebagai Tetamu untuk mengaktifkan rangkaian <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">lama</translation>
 <translation id="1104652314727136854">Dayakan integrasi OS untuk penyatuan fail bagi Apl Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" menambahkan apl dan sambungan ini untuk <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Berhenti</translation>
@@ -1871,7 +1870,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Halaman yang gagal dimuatkan semasa penyemak imbas di luar talian akan dimuatkan semula secara automatik jika tabnya boleh dilihat.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Batalkan Muat Turun}other{Batalkan Muat Turun}}</translation>
 <translation id="3512810056947640266">URL (pilihan):</translation>
-<translation id="351486934407749662">sangat lama</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ingin berkongsi kandungan skrin anda. Pilih apa yang anda ingin kongsi.</translation>
 <translation id="3518086201899641494">Pemberitahuan mengenai portal tawanan</translation>
 <translation id="3519867315646775981">Pengalihan huruf (shalom ← שלום)</translation>
@@ -3405,7 +3403,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="569109051430110155">Auto kesan</translation>
 <translation id="5691596662111998220">Op, <ph name="FILE_NAME" /> tidak lagi wujud.</translation>
 <translation id="5694501201003948907">Mengezip $1 item...</translation>
-<translation id="5695323626817702678">pendek</translation>
 <translation id="5697118958262594262">Kesan kandungan penting secara lalai</translation>
 <translation id="5699533844376998780">Sambungan "<ph name="EXTENSION_NAME" />" telah ditambah.</translation>
 <translation id="5701101281789450335">Tetapan bahasa dan input...</translation>
@@ -3828,7 +3825,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="630065524203833229">K&amp;eluar</translation>
 <translation id="6304217058163308077">Sistem apl penanda halaman baharu</translation>
 <translation id="6305012486838822927">Papan kekunci bahasa Lao</translation>
-<translation id="6305328361606238230">Terima mesej tolak</translation>
 <translation id="6307722552931206656">Nama pelayan Google - <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistem sibuk</translation>
 <translation id="6308937455967653460">Simpan pau&amp;tan sebagai...</translation>
@@ -4522,7 +4518,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7339785458027436441">Semak Ejaan Semasa Menaip</translation>
 <translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kini dalam skrin penuh.</translation>
-<translation id="7341982465543599097">sangat pendek</translation>
 <translation id="734303607351427494">Uruskan enjin carian...</translation>
 <translation id="7343116142376328522">Jangan benarkan mana-mana tapak menggunakan penghasilan kunci dalam borang (disyorkan)</translation>
 <translation id="7345706641791090287">Sahkan kata laluan anda</translation>
@@ -4906,7 +4901,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7881969471599061635">Lumpuhkan sari kata</translation>
 <translation id="7884988936047469945">Ciri kebolehaksesan percubaan</translation>
 <translation id="7885253890047913815">Destinasi Baru-baru Ini</translation>
-<translation id="7885283703487484916">sangat pendek</translation>
 <translation id="7887192723714330082">Beri respon kepada "Ok Google" apabila skrin dihidupkan dan dikunci</translation>
 <translation id="7887334752153342268">Pendua</translation>
 <translation id="7887864092952184874">Tetikus Bluetooth digandingkan</translation>

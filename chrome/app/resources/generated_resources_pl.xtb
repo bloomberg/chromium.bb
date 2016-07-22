@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Pokazuje liczniki ilości danych w oknie dialogowym Wyczyść dane przeglądarki.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Zaloguj się<ph name="END_SIGN_IN_LINK" />, by kontrolować i wyświetlać strony, na które wchodzi ta osoba.</translation>
 <translation id="1097658378307015415">Zanim się zalogujesz, wybierz tryb gościa, aby aktywować sieć <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">długie</translation>
 <translation id="1104652314727136854">Integruje powiązania plików aplikacji Chrome z systemem operacyjnym.</translation>
 <translation id="1105162038795579389">„<ph name="BUNDLE_NAME" />” doda te aplikacje i rozszerzenia do konta użytkownika <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Zatrzymaj</translation>
@@ -1872,7 +1871,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3512284449647229026">Strony, których nie uda się załadować, gdy przeglądarka jest offline, zostaną odświeżone automatycznie tylko po wyświetleniu ich kart.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Anuluj pobieranie}few{Anuluj pobieranie}many{Anuluj pobieranie}other{Anuluj pobieranie}}</translation>
 <translation id="3512810056947640266">Adres URL (opcjonalnie):</translation>
-<translation id="351486934407749662">bardzo długie</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> chce udostępnić zawartość Twojego ekranu. Wybierz elementy, które chcesz udostępnić.</translation>
 <translation id="3518086201899641494">Powiadomienia o portalach przechwytujących</translation>
 <translation id="3519867315646775981">Transliteracja (shalom ← שלום)</translation>
@@ -3405,7 +3403,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="569109051430110155">Wykrywaj automatycznie</translation>
 <translation id="5691596662111998220">Ups, pliku <ph name="FILE_NAME" /> już nie ma.</translation>
 <translation id="5694501201003948907">Pakuję $1 elementy(ów)...</translation>
-<translation id="5695323626817702678">krótkie</translation>
 <translation id="5697118958262594262">Domyślnie wykrywaj ważną treść</translation>
 <translation id="5699533844376998780">Rozszerzenie „<ph name="EXTENSION_NAME" />” zostało dodane.</translation>
 <translation id="5701101281789450335">Ustawienia języka i wprowadzania treści...</translation>
@@ -3828,7 +3825,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="630065524203833229">Z&amp;akończ</translation>
 <translation id="6304217058163308077">Nowy system aplikacji do obsługi zakładek</translation>
 <translation id="6305012486838822927">Klawiatura laotańska</translation>
-<translation id="6305328361606238230">Otrzymywanie komunikatów push</translation>
 <translation id="6307722552931206656">Serwery nazw Google – <ph name="BEGIN_LINK" />więcej informacji<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">System zajęty</translation>
 <translation id="6308937455967653460">Zapisz link ja&amp;ko...</translation>
@@ -4148,7 +4144,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6787839852456839824">Skróty klawiaturowe</translation>
 <translation id="6788210894632713004">Rozszerzenie bez pakietu</translation>
 <translation id="6790428901817661496">Odtwórz</translation>
-<translation id="6790497603648687708"><ph name="EXTENSION_NAME" /> dodano zdalnie</translation>
+<translation id="6790497603648687708">Dodano zdalnie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6790820461102226165">Dodaj osobę...</translation>
 <translation id="6791443592650989371">Stan aktywacji:</translation>
 <translation id="6793604637258913070">Podświetlaj kursor tekstu, gdy się wyświetla lub porusza.</translation>
@@ -4521,7 +4517,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7339785458027436441">Sprawdzaj pisownię w trakcie pisania</translation>
 <translation id="7339898014177206373">Nowe okno</translation>
 <translation id="7340431621085453413">Strona <ph name="FULLSCREEN_ORIGIN" /> jest teraz wyświetlana w trybie pełnoekranowym.</translation>
-<translation id="7341982465543599097">bardzo krótkie</translation>
 <translation id="734303607351427494">Zarządzaj wyszukiwarkami...</translation>
 <translation id="7343116142376328522">Nie zezwalaj żadnej stronie na generowanie kluczy w formularzach (zalecane)</translation>
 <translation id="7345706641791090287">Potwierdź hasło</translation>
@@ -4899,7 +4894,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7881969471599061635">Wyłącz napisy</translation>
 <translation id="7884988936047469945">Eksperymentalne ułatwienia dostępu</translation>
 <translation id="7885253890047913815">Ostatnie urządzenia docelowe</translation>
-<translation id="7885283703487484916">bardzo krótkie</translation>
 <translation id="7887192723714330082">Reaguje na „Ok Google”, gdy ekran jest włączony i odblokowany</translation>
 <translation id="7887334752153342268">Duplikuj</translation>
 <translation id="7887864092952184874">Sparowano mysz Bluetooth</translation>

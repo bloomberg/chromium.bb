@@ -49,7 +49,6 @@
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
-<translation id="1557201757634521564">الاكتشاف التلقائي للتشفير</translation>
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
@@ -184,7 +183,6 @@
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
-<translation id="307329814453917357">‏عرض ترجمة الصفحات باستخدام ترجمة Google.</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="3090193911106258841">جارٍ الوصول إلى إدخال الصوت والفيديو</translation>
 <translation id="3117051980354074377">‏للحصول على الإشارات من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
@@ -338,6 +336,7 @@
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5000922062037820727">محظور (موصى به)</translation>
+<translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
@@ -366,9 +365,9 @@
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم مزامنة التغييرات الطارئة على الإشارات المرجعية والسجل وكلمات المرور وغيرها من الإعدادات بحسابك في Google. ومع ذلك، ستظل بياناتك الحالية مخزنة في حسابك في Google.</translation>
 <translation id="5301954838959518834">موافق وأعي ذلك</translation>
-<translation id="5302048478445481009">اللغة</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
 <translation id="5308380583665731573">اتصال</translation>
+<translation id="5308603654685598744">‏عند تشغيل هذه الميزة، سيعرض Chrome ترجمة الصفحات المكتوبة بلغات أخرى باستخدام الترجمة من Google.</translation>
 <translation id="5313967007315987356">إضافة موقع ويب</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5324858694974489420">الإعدادات الأبوية</translation>
@@ -381,7 +380,6 @@
 <translation id="5400569084694353794">باستخدام هذا التطبيق، فإنك توافق على <ph name="BEGIN_LINK1" />شروط الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">جارٍ التحقق...</translation>
 <translation id="5423934151118863508">ستظهر صفحاتك الأكثر زيارة هنا</translation>
-<translation id="5424715742813396254">تعديل الاسم/كلمة المرور المحفوظة أو الاستثناء</translation>
 <translation id="5437003064129843501">اقتراحات المحتوى المخصص معطلة حاليًا، لأن بياناتك المتزامنة محمية بعبارة مرور مخصصة.</translation>
 <translation id="544291274896356069">ستتم مغادرة وضع التصفح المتخفي إذا تم فتح هذا الرابط في تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="5447201525962359567">سعة التخزين في الموقع كاملة، بما في ذلك ملفات تعريف الارتباط وغيرها من البيانات المُخزَّنَة محليًا</translation>
@@ -461,7 +459,6 @@
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="6320088164292336938">اهتزاز</translation>
 <translation id="6324034347079777476">‏تمّ تعطيل مزامنة نظام Android</translation>
-<translation id="6324360525379265737">يحدد تلقائيا ترميز الأحرف</translation>
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">تشفير</translation>
 <translation id="6364438453358674297">هل تريد إزالة اقتراح من السجل؟</translation>
@@ -494,6 +491,7 @@
 <translation id="6643016212128521049">محو</translation>
 <translation id="6647073004883890710">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة المرور لـ <ph name="USERNAME" /> لهذا الموقع؟</translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
+<translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين</translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
@@ -655,6 +653,7 @@
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
+<translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="8518901949365209398">‏يستخدم هذا الموقع تهيئة أمان ضعيفة (توقيعات SHA-1)، لذا قد لا يتم اتصالك بشكل خاص.</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>

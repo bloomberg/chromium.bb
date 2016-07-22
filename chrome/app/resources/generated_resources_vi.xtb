@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Hiển thị bộ đếm lượng dữ liệu trong hộp thoại Xóa dữ liệu duyệt web.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Đăng nhập<ph name="END_SIGN_IN_LINK" /> để kiểm soát và xem các trang web mà người này truy cập.</translation>
 <translation id="1097658378307015415">Trước khi đăng nhập, vui lòng đăng nhập với tư cách khách để kích hoạt mạng <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">lâu</translation>
 <translation id="1104652314727136854">Cho phép tích hợp hệ điều hành của các liên kết tệp cho Ứng dụng Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" thêm các ứng dụng và tiện ích này cho <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Dừng</translation>
@@ -1874,7 +1873,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Những trang không tải được khi trình duyệt ngoại tuyến sẽ chỉ tự động được tải lại nếu tab hiển thị.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Hủy tải xuống}other{Hủy tải xuống}}</translation>
 <translation id="3512810056947640266">URL (tùy chọn):</translation>
-<translation id="351486934407749662">rất lâu</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> muốn chia sẻ nội dung trên màn hình của bạn. Chọn nội dung bạn muốn chia sẻ.</translation>
 <translation id="3518086201899641494">Thông báo về cổng phát hiện</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
@@ -3409,7 +3407,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="569109051430110155">Tự động phát hiện</translation>
 <translation id="5691596662111998220">Rất tiếc, <ph name="FILE_NAME" /> không tồn tại nữa.</translation>
 <translation id="5694501201003948907">Đang nén $1 mục...</translation>
-<translation id="5695323626817702678">ngắn</translation>
 <translation id="5697118958262594262">Phát hiện nội dung quan trọng theo mặc định</translation>
 <translation id="5699533844376998780">Đã thêm tiện ích "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">Cài đặt ngôn ngữ và nhập liệu...</translation>
@@ -3834,7 +3831,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="630065524203833229">T&amp;hoát</translation>
 <translation id="6304217058163308077">Hệ thống ứng dụng dấu trang mới</translation>
 <translation id="6305012486838822927">Bàn phím tiếng Lào</translation>
-<translation id="6305328361606238230">Nhận thông báo đẩy</translation>
 <translation id="6307722552931206656">Máy chủ định danh của Google - <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Hệ thống đang bận</translation>
 <translation id="6308937455967653460">Lưu liên &amp;kết thành...</translation>
@@ -4530,7 +4526,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="7339785458027436441">Kiểm tra Chính tả Trong khi Nhập</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> hiện ở chế độ toàn màn hình.</translation>
-<translation id="7341982465543599097">rất ngắn</translation>
 <translation id="734303607351427494">Quản lý công cụ tìm kiếm...</translation>
 <translation id="7343116142376328522">Không cho phép bất kỳ trang web nào sử dụng tính năng tạo khóa trong biểu mẫu (được khuyến nghị)</translation>
 <translation id="7345706641791090287">Xác nhận mật khẩu của bạn</translation>
@@ -4915,7 +4910,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="7881969471599061635">Tắt phụ đề</translation>
 <translation id="7884988936047469945">Tính năng trợ năng thử nghiệm</translation>
 <translation id="7885253890047913815">Máy in đích gần đây</translation>
-<translation id="7885283703487484916">rất ngắn</translation>
 <translation id="7887192723714330082">Phải hồi "Ok Google" khi màn hình được bật và mở khóa</translation>
 <translation id="7887334752153342268">Nhân đôi</translation>
 <translation id="7887864092952184874">Đã ghép nối chuột Bluetooth</translation>

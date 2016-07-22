@@ -1772,7 +1772,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
-<translation id="7381326101471547614">Desativa o uso do protocolo SPDY no <ph name="PRODUCT_NAME" />. Se essa política estiver ativada, o protocolo SPDY não estará disponível no <ph name="PRODUCT_NAME" />. A configuração dessa política para desativada permitirá o uso do SPDY. Se essa política for deixada sem configuração, o SPDY estará disponível.</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
 <translation id="7406651467768226499">Permitir que o app em Kiosk aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" />.
 

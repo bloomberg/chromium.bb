@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Viser datavolumentallet i dialogboksen Ryd browserdata.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Log på<ph name="END_SIGN_IN_LINK" /> for at kontrollere og se, hvilke websites denne person besøger.</translation>
 <translation id="1097658378307015415">Før du logger ind, skal du logge ind som gæst for at aktivere netværket <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">lang</translation>
 <translation id="1104652314727136854">Aktivér OS-integration af filtilknytninger for Chrome Apps.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" tilføjer disse apps og udvidelser for <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1872,7 +1871,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sider, der ikke kan indlæses, mens browseren er offline, vil kun blive genindlæst automatisk, hvis deres fane er synlig.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annuller download}one{Annuller downloads}other{Annuller downloads}}</translation>
 <translation id="3512810056947640266">Webadresse (valgfrit):</translation>
-<translation id="351486934407749662">meget lang</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> vil gerne dele indholdet af din skærm. Vælg det, du gerne vil dele.</translation>
 <translation id="3518086201899641494">Underretninger om captive portals</translation>
 <translation id="3519867315646775981">Translitteration (shalom ← שלום)</translation>
@@ -3404,7 +3402,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="569109051430110155">Find automatisk</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> eksisterer ikke længere.</translation>
 <translation id="5694501201003948907">Komprimerer $1 elementer...</translation>
-<translation id="5695323626817702678">kort</translation>
 <translation id="5697118958262594262">Registrer vigtigt indhold som standard</translation>
 <translation id="5699533844376998780">Udvidelsen "<ph name="EXTENSION_NAME" />" er tilføjet.</translation>
 <translation id="5701101281789450335">Indstillinger for sprog og indtastning...</translation>
@@ -3828,7 +3825,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="630065524203833229">Af&amp;slut</translation>
 <translation id="6304217058163308077">Det nye system for bogmærkeapps</translation>
 <translation id="6305012486838822927">Laotisk tastatur</translation>
-<translation id="6305328361606238230">Modtag push-meddelelser</translation>
 <translation id="6307722552931206656">Googles navneservere – <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Systemet er optaget</translation>
 <translation id="6308937455967653460">Gem lin&amp;k som...</translation>
@@ -4522,7 +4518,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7339785458027436441">Kontrollér stavning under indtastning</translation>
 <translation id="7339898014177206373">Nyt vindue</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> er nu i fuld skærm.</translation>
-<translation id="7341982465543599097">ekstremt kort</translation>
 <translation id="734303607351427494">Administrer søgemaskiner...</translation>
 <translation id="7343116142376328522">Giv ikke nogen websites tilladelse til at bruge nøglegenerering i formularer (anbefales)</translation>
 <translation id="7345706641791090287">Bekræft din adgangskode</translation>
@@ -4907,7 +4902,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7881969471599061635">Deaktiver undertekster</translation>
 <translation id="7884988936047469945">Eksperimentelle hjælpefunktioner</translation>
 <translation id="7885253890047913815">Seneste destinationer</translation>
-<translation id="7885283703487484916">meget kort</translation>
 <translation id="7887192723714330082">Reager på "Ok Google", når skærmen er tændt og låst op</translation>
 <translation id="7887334752153342268">Dupliker</translation>
 <translation id="7887864092952184874">Bluetooth-mus er parret</translation>

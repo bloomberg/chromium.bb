@@ -49,7 +49,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1513352483775369820">Bookmarks and web history</translation>
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
-<translation id="1557201757634521564">Auto-detect encoding</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
@@ -184,7 +183,6 @@ You can control the Physical Web in Chrome Settings.
 <translation id="3029704984691124060">Passphrases do not match</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Save video</translation>
-<translation id="307329814453917357">Offer to translate pages using Google Translate</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="3090193911106258841">Accessing audio and video input</translation>
 <translation id="3117051980354074377">To get your bookmarks your other devices, sign in to Chrome.</translation>
@@ -339,6 +337,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4996978546172906250">Share via</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
+<translation id="5005498671520578047">Copy password</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -367,9 +366,9 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="528192093759286357">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="5284584623296338184">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google account.</translation>
 <translation id="5301954838959518834">OK, got it</translation>
-<translation id="5302048478445481009">Language</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
 <translation id="5308380583665731573">Connect</translation>
+<translation id="5308603654685598744">When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate.</translation>
 <translation id="5313967007315987356">Add site</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5324858694974489420">Parental Settings</translation>
@@ -382,7 +381,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5400569084694353794">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Verifying…</translation>
 <translation id="5423934151118863508">Your most visited pages will appear here</translation>
-<translation id="5424715742813396254">Edit saved name/password or exception</translation>
 <translation id="5437003064129843501">Personalised content suggestions are currently disabled, because your synced data is protected with a customised passphrase.</translation>
 <translation id="544291274896356069">Leaving incognito mode if this link is opened in an external application. Continue?</translation>
 <translation id="5447201525962359567">All site storage, including cookies and other locally stored data</translation>
@@ -462,7 +460,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6295158916970320988">All sites</translation>
 <translation id="6320088164292336938">Vibrate</translation>
 <translation id="6324034347079777476">Android system sync disabled</translation>
-<translation id="6324360525379265737">Automatically determine character encoding</translation>
 <translation id="6333140779060797560">Share via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encryption</translation>
 <translation id="6364438453358674297">Remove suggestion from history?</translation>
@@ -495,6 +492,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6647073004883890710">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update the password for <ph name="USERNAME" /> for this site?</translation>
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
@@ -656,6 +654,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
+<translation id="8503813439785031346">Username</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8518901949365209398">This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.</translation>
 <translation id="8525306231823319788">Full screen</translation>

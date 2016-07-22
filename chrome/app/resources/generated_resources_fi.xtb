@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Näyttää tietomäärälaskurit Poista selailutiedot -valintaikkunassa.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Kirjaudu sisään<ph name="END_SIGN_IN_LINK" />, jos haluat hallinnoida ja tarkastella tämän henkilön käyttämiä verkkosivustoja.</translation>
 <translation id="1097658378307015415">Aloita vierailijakäyttö ennen sisäänkirjautumista aktivoidaksesi verkon <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">pitkä</translation>
 <translation id="1104652314727136854">Määritä Chrome-sovellukset tiedostojen oletusohjelmiksi käyttöjärjestelmässä.</translation>
 <translation id="1105162038795579389"><ph name="BUNDLE_NAME" /> lisää seuraavat sovellukset ja laajennukset henkilölle <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">Py&amp;säytä</translation>
@@ -1872,7 +1871,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sivut, joiden lataus epäonnistui selaimen ollessa offline-tilassa, ladataan automaattisesti uudelleen vain, jos niiden välilehdet ovat näkyvissä.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Peruuta lataus}other{Peruuta lataukset}}</translation>
 <translation id="3512810056947640266">URL-osoite (valinnainen):</translation>
-<translation id="351486934407749662">erittäin pitkä</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> haluaa jakaa ruutusi sisällön. Valitse, mitä haluat jakaa.</translation>
 <translation id="3518086201899641494">Captive portalien ilmoitukset</translation>
 <translation id="3519867315646775981">Translitterointi (shalom ← שלום)</translation>
@@ -3396,7 +3394,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="569109051430110155">Automaattinen</translation>
 <translation id="5691596662111998220">Hups, kohdetta <ph name="FILE_NAME" /> ei ole enää olemassa.</translation>
 <translation id="5694501201003948907">Pakataan $1 kohdetta…</translation>
-<translation id="5695323626817702678">lyhyt</translation>
 <translation id="5697118958262594262">Tunnista tärkeä sisältö oletuksena</translation>
 <translation id="5699533844376998780">Laajennus <ph name="EXTENSION_NAME" /> on lisätty.</translation>
 <translation id="5701101281789450335">Kieli- ja syöttöasetukset...</translation>
@@ -3821,7 +3818,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="630065524203833229">Poist&amp;u</translation>
 <translation id="6304217058163308077">Uusi kirjanmerkkisovellusjärjestelmä</translation>
 <translation id="6305012486838822927">Laonkielinen näppäimistö</translation>
-<translation id="6305328361606238230">Haluatko vastaanottaa push-viestejä?</translation>
 <translation id="6307722552931206656">Googlen nimipalvelimet – <ph name="BEGIN_LINK" />lisätietoja<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Järjestelmä on varattu</translation>
 <translation id="6308937455967653460">Tallenna lin&amp;kki nimellä...</translation>
@@ -4514,7 +4510,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7339785458027436441">Tarkista oikeinkirjoitus kirjoittaessa</translation>
 <translation id="7339898014177206373">Uusi ikkuna</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> on nyt koko näytöllä.</translation>
-<translation id="7341982465543599097">erittäin lyhyt</translation>
 <translation id="734303607351427494">Hallinnoi hakukoneita...</translation>
 <translation id="7343116142376328522">Älä salli sivustojen käyttää avainten luontitoimintoa lomakkeissa (suositus)</translation>
 <translation id="7345706641791090287">Vahvista salasanasi</translation>
@@ -4898,7 +4893,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7881969471599061635">Poista tekstitykset käytöstä</translation>
 <translation id="7884988936047469945">Kokeelliset esteettömyysominaisuudet</translation>
 <translation id="7885253890047913815">Uusimmat kohteet</translation>
-<translation id="7885283703487484916">hyvin lyhyt</translation>
 <translation id="7887192723714330082">Vastaa Ok Googleen, kun näyttö on päällä ja lukitsematta.</translation>
 <translation id="7887334752153342268">Monista</translation>
 <translation id="7887864092952184874">Laitepari muodostettu Bluetooth-hiiren kanssa</translation>

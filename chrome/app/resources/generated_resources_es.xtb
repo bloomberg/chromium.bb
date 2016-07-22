@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Muestra medidores del volumen de datos en el cuadro de diálogo Borrar datos de navegación.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Inicia sesión<ph name="END_SIGN_IN_LINK" /> para ver y controlar los sitios web que visite esta persona.</translation>
 <translation id="1097658378307015415">Antes de iniciar sesión, entra como invitado para activar la red <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">largo</translation>
 <translation id="1104652314727136854">Habilita la integración del sistema operativo de asociaciones de archivos para aplicaciones de Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" añade estas aplicaciones y extensiones para <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Detener</translation>
@@ -1872,7 +1871,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3512284449647229026">Las páginas que no se carguen cuando el navegador no esté conectado a Internet solo se volverán a cargar automáticamente si su pestaña está visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Cancelar descarga}other{Cancelar descargas}}</translation>
 <translation id="3512810056947640266">URL (opcional):</translation>
-<translation id="351486934407749662">muy largo</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> quiere compartir el contenido de tu pantalla. Selecciona el contenido que quieres compartir.</translation>
 <translation id="3518086201899641494">Notificaciones sobre portales cautivos</translation>
 <translation id="3519867315646775981">Transliteración (shalom ← שלום)</translation>
@@ -3402,7 +3400,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="569109051430110155">Detección automática</translation>
 <translation id="5691596662111998220">¡Vaya! <ph name="FILE_NAME" /> ya no existe.</translation>
 <translation id="5694501201003948907">Comprimiendo $1 elementos...</translation>
-<translation id="5695323626817702678">breve</translation>
 <translation id="5697118958262594262">Detectar contenido importante de forma predeterminada</translation>
 <translation id="5699533844376998780">Se ha añadido la extensión "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">Configuración de idioma y de introducción de texto...</translation>
@@ -3827,7 +3824,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="630065524203833229">&amp;Salir</translation>
 <translation id="6304217058163308077">El nuevo sistema de aplicaciones de marcadores</translation>
 <translation id="6305012486838822927">Teclado lao</translation>
-<translation id="6305328361606238230">Recibir mensajes push</translation>
 <translation id="6307722552931206656">Servidores de nombres de Google - <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
 <translation id="6308937455967653460">Guardar &amp;enlace como...</translation>
@@ -4521,7 +4517,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="7339785458027436441">Comprobar ortografía al escribir</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> se muestra ahora en pantalla completa.</translation>
-<translation id="7341982465543599097">extremadamente breve</translation>
 <translation id="734303607351427494">Administrar motores de búsqueda...</translation>
 <translation id="7343116142376328522">No permitir que los sitios web utilicen la generación de claves en formularios (opción recomendada)</translation>
 <translation id="7345706641791090287">Confirma tu contraseña</translation>
@@ -4905,7 +4900,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="7881969471599061635">Inhabilitar subtítulos</translation>
 <translation id="7884988936047469945">Funciones de accesibilidad experimentales</translation>
 <translation id="7885253890047913815">Destinos recientes</translation>
-<translation id="7885283703487484916">muy breve</translation>
 <translation id="7887192723714330082">Responder a "Ok Google" cuando la pantalla esté encendida y desbloqueada</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Ratón Bluetooth vinculado</translation>

@@ -1794,7 +1794,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend nincs beállítva, akkor az automatikus tisztítás az alapértelmezett stratégiát használja. Ez jelenleg a „RemoveLRUIfDormant” stratégia.</translation>
 <translation id="7336878834592315572">Cookie-k megtartása a munkamenet idejére</translation>
 <translation id="7340034977315324840">Az eszköz aktív idejének jelentése</translation>
-<translation id="7381326101471547614">Letiltja az SPDY protokoll használatát a(z) <ph name="PRODUCT_NAME" /> termékben. Ha ez a házirend engedélyezve van, akkor az SPDY protokoll nem lesz elérhető a(z) <ph name="PRODUCT_NAME" /> termékben. E házirend kikapcsolása lehetővé teszi az SPDY használatát. Ha ez a házirend beállítatlanul marad, az SPDY elérhető lesz.</translation>
 <translation id="7384999953864505698">Engedélyezi a QUIC-protokollt</translation>
 <translation id="7406651467768226499">Annak meghatározása, hogy a késés nélkül, automatikusan elindított kioszkalkalmazás irányítsa-e a <ph name="PRODUCT_OS_NAME" /> verzióját.
 

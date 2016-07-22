@@ -1926,7 +1926,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
-<translation id="7381326101471547614">Hiermee wordt het gebruik van het SPDY-protocol in <ph name="PRODUCT_NAME" /> uitgeschakeld. Als dit beleid is ingeschakeld, is het SPDY-protocol niet beschikbaar in <ph name="PRODUCT_NAME" />. Als je dit beleid instelt op uitgeschakeld, kan het SPDY-protocol worden gebruikt. Als dit beleid niet wordt ingesteld, is het SPDY-protocol beschikbaar.</translation>
 <translation id="7384999953864505698">QUIC-protocol toestaan</translation>
 <translation id="7406651467768226499">Of de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie mag beheren.
 

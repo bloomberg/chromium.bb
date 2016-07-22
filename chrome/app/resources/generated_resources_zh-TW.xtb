@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">在「清除瀏覽資料」對話方塊中顯示資料量計數器。</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />登入<ph name="END_SIGN_IN_LINK" />即可控制及檢視這個使用者所造訪的網站。</translation>
 <translation id="1097658378307015415">請在登入前以訪客身分進入，啟用網路 <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">長</translation>
 <translation id="1104652314727136854">針對 Chrome 應用程式檔案關聯，啟用作業系統整合。</translation>
 <translation id="1105162038795579389">「<ph name="BUNDLE_NAME" />」會為<ph name="USER_NAME" />新增下列應用程式和擴充功能：</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3512284449647229026">如果網頁在瀏覽器離線時載入失敗，系統只會在分頁顯示情況下自動重新載入網頁。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{取消一項下載作業}other{取消多項下載作業}}</translation>
 <translation id="3512810056947640266">網址 (選填)：</translation>
-<translation id="351486934407749662">很長</translation>
 <translation id="3517839692979918726">「<ph name="APP_NAME" />」要求分享您的螢幕內容，請選擇您要分享的內容類型。</translation>
 <translation id="3518086201899641494">認證網頁通知</translation>
 <translation id="3519867315646775981">音譯 (shalom ← שלום)</translation>
@@ -3400,7 +3398,6 @@
 <translation id="569109051430110155">自動偵測</translation>
 <translation id="5691596662111998220">糟糕！「<ph name="FILE_NAME" />」已不存在。</translation>
 <translation id="5694501201003948907">正在壓縮 $1 個項目...</translation>
-<translation id="5695323626817702678">短</translation>
 <translation id="5697118958262594262">預設偵測重要內容</translation>
 <translation id="5699533844376998780">已安裝「<ph name="EXTENSION_NAME" />」擴充功能。</translation>
 <translation id="5701101281789450335">語言和輸入設定...</translation>
@@ -3823,7 +3820,6 @@
 <translation id="630065524203833229">結束(&amp;X)</translation>
 <translation id="6304217058163308077">新版書籤應用程式系統</translation>
 <translation id="6305012486838822927">寮文鍵盤</translation>
-<translation id="6305328361606238230">接收推送訊息</translation>
 <translation id="6307722552931206656">Google 名稱伺服器 - <ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">系統忙碌中</translation>
 <translation id="6308937455967653460">另存連結為(&amp;K)...</translation>
@@ -4516,7 +4512,6 @@
 <translation id="7339785458027436441">輸入時檢查拼字</translation>
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> 已顯示為全螢幕。</translation>
-<translation id="7341982465543599097">極短</translation>
 <translation id="734303607351427494">管理搜尋引擎...</translation>
 <translation id="7343116142376328522">不允許任何網站在表單中使用金鑰產生功能 (建議)</translation>
 <translation id="7345706641791090287">確認您的密碼</translation>
@@ -4898,7 +4893,6 @@
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7884988936047469945">實驗性協助工具功能</translation>
 <translation id="7885253890047913815">最近用過的印表機</translation>
-<translation id="7885283703487484916">很短</translation>
 <translation id="7887192723714330082">螢幕開啟且已解鎖時回應「Ok Google」</translation>
 <translation id="7887334752153342268">複製</translation>
 <translation id="7887864092952184874">已配對藍牙滑鼠</translation>

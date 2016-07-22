@@ -1881,13 +1881,6 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
       Pokud tato zásada nastavena není, bude při automatickém čištění použita výchozí integrovaná strategie. Aktuálně je to strategie RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání relace</translation>
 <translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
-<translation id="7381326101471547614">Zakáže v aplikaci <ph name="PRODUCT_NAME" /> použití protokolu SPDY.
-
-      Pokud je zásada aktivní, nebude protokol SPDY v aplikaci <ph name="PRODUCT_NAME" /> k dispozici.
-
-      Pokud zásadu deaktivujete, umožníte využívání protokolu SPDY. 
-
-      Pokud zásadu nenastavíte, bude protokol SPDY k dispozici.</translation>
 <translation id="7384999953864505698">Povoluje protokol QUIC</translation>
 <translation id="7406651467768226499">Udává, zda má mít automaticky spouštěná terminálová aplikace s nulovým zpožděním povoleno ovládat verzi systému <ph name="PRODUCT_OS_NAME" />.
 

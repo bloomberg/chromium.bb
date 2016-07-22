@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">బ్రౌజింగ్ డేటాను తీసివేయి డైలాగ్‌లో డేటా పరిమాణం కౌంటర్‌లను చూపుతుంది.</translation>
 <translation id="1097507499312291972">ఈ వ్యక్తి సందర్శించిన వెబ్‌సైట్‌లను నియంత్రించడానికి మరియు వీక్షించడానికి <ph name="BEGIN_SIGN_IN_LINK" />సైన్ ఇన్ చేయండి<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">సైన్ ఇన్ చేయడానికి ముందుగా, దయచేసి <ph name="NETWORK_ID" /> నెట్‌వర్క్‌ను సక్రియం చేయడానికి అతిథి వలె ప్రవేశించండి</translation>
-<translation id="1104054824888299003">ఎక్కువ</translation>
 <translation id="1104652314727136854">Chrome అనువర్తనాల కోసం ఫైల్ అనుబంధాల OS ఇంటిగ్రేషన్‌ను ప్రారంభించండి.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" ఈ అనువర్తనాలు మరియు పొడిగింపులను <ph name="USER_NAME" />కు జోడిస్తుంది:</translation>
 <translation id="1108600514891325577">&amp;ఆపు</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3512284449647229026">బ్రౌజర్ ఆఫ్‌లైన్‌లో ఉన్నప్పుడు లోడ్ కావడంలో విఫలమయ్యే పేజీలు వాటి ట్యాబ్ దృశ్యమానంగా ఉన్నప్పుడు మాత్రమే స్వయంచాలకంగా మళ్లీ లోడ్ చేయబడతాయి.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{డౌన్‌లోడ్‌ను రద్దు చేయి}other{డౌన్‌లోడ్‌లను రద్దు చేయి}}</translation>
 <translation id="3512810056947640266">URL (ఐచ్ఛికం):</translation>
-<translation id="351486934407749662">చాలా ఎక్కువ సేపు</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> మీ స్క్రీన్ యొక్క కంటెంట్‌లను భాగస్వామ్యం చేయడానికి అనుమతి కోరుతోంది. మీరు ఏమేమి భాగస్వామ్యం చేయాలనుకుంటున్నారో ఎంచుకోండి.</translation>
 <translation id="3518086201899641494">క్యాప్టివ్ పోర్టల్‌ల గురించి నోటిఫికేషన్‌లు</translation>
 <translation id="3519867315646775981">లిప్యంతరీకరణ (shalom ← שלום)</translation>
@@ -3406,7 +3404,6 @@
 <translation id="569109051430110155">స్వయంగా కనుగొనడం</translation>
 <translation id="5691596662111998220">అయ్యో, <ph name="FILE_NAME" /> ఉనికిలో లేదు.</translation>
 <translation id="5694501201003948907">$1 అంశాలను జిప్ చేస్తోంది...</translation>
-<translation id="5695323626817702678">తక్కువ</translation>
 <translation id="5697118958262594262">డిఫాల్ట్‌గా ముఖ్యమైన కంటెంట్‌ను గుర్తించు</translation>
 <translation id="5699533844376998780">పొడిగింపు "<ph name="EXTENSION_NAME" />" జోడించబడింది.</translation>
 <translation id="5701101281789450335">భాష మరియు ఇన్‌పుట్ సెట్టింగ్‌లు...</translation>
@@ -3829,7 +3826,6 @@
 <translation id="630065524203833229">ని&amp;ష్క్రమించు</translation>
 <translation id="6304217058163308077">కొత్త బుక్‌మార్క్ అనువర్తన సిస్టమ్</translation>
 <translation id="6305012486838822927">లావో కీబోర్డ్</translation>
-<translation id="6305328361606238230">పుష్ సందేశాలను స్వీకరించాలా</translation>
 <translation id="6307722552931206656">Google పేరు సర్వర్‌లు - <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">సిస్టమ్ బిజీగా ఉంది</translation>
 <translation id="6308937455967653460">లిం&amp;క్‌ను ఇలా సేవ్ చెయ్యి...</translation>
@@ -4524,7 +4520,6 @@
 <translation id="7339785458027436441">టైప్ చేసేటప్పుడు అక్షరక్రమాన్ని తనిఖీ చేయి</translation>
 <translation id="7339898014177206373">క్రొత్త విండో</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> ఇప్పుడు పూర్తి స్క్రీన్‌లో కనిపిస్తుంది.</translation>
-<translation id="7341982465543599097">అత్యంత తక్కువ</translation>
 <translation id="734303607351427494">శోధన ఇంజన్‌లను నిర్వహించండి...</translation>
 <translation id="7343116142376328522">ఫారమ్‌ల్లో కీ ఉత్పాదనను ఉపయోగించడానికి ఏ సైట్‌ను అనుమతించవద్దు (సిఫార్సు చేయబడింది)</translation>
 <translation id="7345706641791090287">మీ పాస్‌వర్డ్‌ను నిర్ధారించండి</translation>
@@ -4909,7 +4904,6 @@
 <translation id="7881969471599061635">ఉపశీర్షికలను నిలిపివేయి</translation>
 <translation id="7884988936047469945">ప్రయోగాత్మక ప్రాప్యత లక్షణాలు</translation>
 <translation id="7885253890047913815">ఇటీవలి గమ్యస్థానాలు</translation>
-<translation id="7885283703487484916">చాలా తక్కువ</translation>
 <translation id="7887192723714330082">స్క్రీన్ ఆన్‌లో ఉండి, ఆన్‌లాక్ చేయబడినప్పుడు "Ok Google"కి ప్రతిస్పందించండి</translation>
 <translation id="7887334752153342268">నకిలీ</translation>
 <translation id="7887864092952184874">బ్లూటూత్ మౌస్ జత చేయబడింది</translation>

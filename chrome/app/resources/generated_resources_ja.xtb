@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">[閲覧履歴の消去] ダイアログにデータ量のカウンタを表示します。</translation>
 <translation id="1097507499312291972">このユーザーがアクセスするウェブサイトを管理、表示するには、<ph name="BEGIN_SIGN_IN_LINK" />ログイン<ph name="END_SIGN_IN_LINK" />します。</translation>
 <translation id="1097658378307015415">ログインする前に、ゲスト セッションを開始して <ph name="NETWORK_ID" /> ネットワークを有効にしてください</translation>
-<translation id="1104054824888299003">長い</translation>
 <translation id="1104652314727136854">Chrome アプリのファイルの関連付けに関して、OS の統合を有効にします。</translation>
 <translation id="1105162038795579389">「<ph name="BUNDLE_NAME" />」をインストールすると、次のアプリと拡張機能が <ph name="USER_NAME" /> さんのアイテムとして追加されます。</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
@@ -1873,7 +1872,6 @@
 <translation id="3512284449647229026">ブラウザがオフラインのときに読み込めなかったページは、タブが表示されている場合のみ自動再読み込みします。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ダウンロードをキャンセル}other{ダウンロードをキャンセル}}</translation>
 <translation id="3512810056947640266">URL（省略可）:</translation>
-<translation id="351486934407749662">非常に長い</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> が画面コンテンツの共有をリクエストしています。共有する部分を選択してください。</translation>
 <translation id="3518086201899641494">キャプティブ ポータルに関する通知</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
@@ -3408,7 +3406,6 @@
 <translation id="569109051430110155">自動検出</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> が存在しません。</translation>
 <translation id="5694501201003948907">$1 件のアイテムを圧縮しています...</translation>
-<translation id="5695323626817702678">短い</translation>
 <translation id="5697118958262594262">重要なコンテンツを既定で検出</translation>
 <translation id="5699533844376998780">拡張機能「<ph name="EXTENSION_NAME" />」を追加しました。</translation>
 <translation id="5701101281789450335">言語と入力の設定...</translation>
@@ -3831,7 +3828,6 @@
 <translation id="630065524203833229">終了(&amp;X)</translation>
 <translation id="6304217058163308077">新しいブックマーク アプリ システム</translation>
 <translation id="6305012486838822927">ラオス語キーボード</translation>
-<translation id="6305328361606238230">プッシュ メッセージの受信</translation>
 <translation id="6307722552931206656">Google ネーム サーバー - <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">システムがビジー状態です</translation>
 <translation id="6308937455967653460">名前を付けてリンク先を保存(&amp;K)...</translation>
@@ -4526,7 +4522,6 @@
 <translation id="7339785458027436441">入力中にスペルチェック</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7340431621085453413">現在 <ph name="FULLSCREEN_ORIGIN" /> は全画面表示です。</translation>
-<translation id="7341982465543599097">極めて短い</translation>
 <translation id="734303607351427494">検索エンジンの管理...</translation>
 <translation id="7343116142376328522">すべてのサイトに対してフォームでのキー生成の使用を許可しない（推奨）</translation>
 <translation id="7345706641791090287">パスワードを再入力</translation>
@@ -4913,7 +4908,6 @@
 <translation id="7881969471599061635">字幕を無効にする</translation>
 <translation id="7884988936047469945">試験運用版のユーザー補助機能</translation>
 <translation id="7885253890047913815">最近使用した送信先</translation>
-<translation id="7885283703487484916">非常に短い</translation>
 <translation id="7887192723714330082">画面がオンでロック解除された状態のときに「OK Google」に反応するようになりました</translation>
 <translation id="7887334752153342268">タブを複製</translation>
 <translation id="7887864092952184874">Bluetooth マウスがペア設定されました</translation>

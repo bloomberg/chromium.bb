@@ -152,7 +152,7 @@
 <translation id="2674170444375937751">Yakin ingin menghapus laman ini dari riwayat?</translation>
 <translation id="2677748264148917807">Keluar</translation>
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
-<translation id="2704951214193499422">Saat ini, Chromium tidak dapat mengonfirmasi kartu Anda. Coba lagi nanti.</translation>
+<translation id="2704951214193499422">Saat ini Chromium tidak dapat mengonfirmasi kartu. Coba lagi nanti.</translation>
 <translation id="2705137772291741111">Salinan tersimpan (dalam cache) situs ini tidak dapat dibaca.</translation>
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="2712173769900027643">Minta izin</translation>
@@ -188,7 +188,7 @@
 <translation id="3032412215588512954">Ingin memuat ulang situs ini?</translation>
 <translation id="3037605927509011580">Yah!</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
-<translation id="3063697135517575841">Saat ini, Chrome tidak dapat mengonfirmasi kartu Anda. Coba lagi nanti.</translation>
+<translation id="3063697135517575841">Saat ini Chrome tidak dapat mengonfirmasi kartu. Coba lagi nanti.</translation>
 <translation id="3093245981617870298">Anda sedang offline.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak memiliki otorisasi untuk melihat laman ini.</translation>
@@ -208,7 +208,7 @@
 <translation id="3225919329040284222">Server menunjukkan sertifikat yang tidak sesuai dengan harapan terpasang. Harapan ini disertakan untuk situs web tertentu dengan keamanan tinggi guna melindungi Anda.</translation>
 <translation id="3226128629678568754">Tekan tombol muat ulang untuk mengirimkan lagi data yang dibutuhkan untuk memuat laman ini.</translation>
 <translation id="3228969707346345236">Terjemahan gagal karena laman sudah dalam bahasa <ph name="LANGUAGE" />.</translation>
-<translation id="323107829343500871">Memasukkan CVC untuk <ph name="CREDIT_CARD" /></translation>
+<translation id="323107829343500871">Masukkan CVC untuk <ph name="CREDIT_CARD" /></translation>
 <translation id="3254409185687681395">Bookmark laman ini</translation>
 <translation id="3270847123878663523">&amp;Urungkan Pengaturan Ulang</translation>
 <translation id="3286538390144397061">Mulai Ulang Sekarang</translation>
@@ -484,7 +484,7 @@
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
-<translation id="6895330447102777224">Kartu Anda dikonfirmasi</translation>
+<translation id="6895330447102777224">Kartu telah dikonfirmasi</translation>
 <translation id="6897140037006041989">Agen Pengguna</translation>
 <translation id="6903907808598579934">Aktifkan sinkronisasi</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
@@ -513,7 +513,7 @@
 <translation id="7219179957768738017">Koneksi menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">Ups! Anda perlu izin orang tua untuk mengunjungi laman ini.</translation>
 <translation id="7246609911581847514">Anda melihat pesan ini karena Anda baru pertama kali mengunjungi situs ini dan pengelola harus menyetujuinya terlebih dahulu.</translation>
-<translation id="724975217298816891">Masukkan tanggal masa berlaku kartu dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu. Setelah mengonfirmasi, detail kartu Anda akan dibagikan dengan situs ini.</translation>
+<translation id="724975217298816891">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu. Setelah mengonfirmasi, detail kartu Anda akan dibagikan dengan situs ini.</translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
 <translation id="7265986070661382626">Anda tidak dapat mengunjungi <ph name="SITE" /> saat ini karena situs web <ph name="BEGIN_LINK" />menggunakan penyematan sertifikat<ph name="END_LINK" />. Kesalahan jaringan dan serangan biasanya bersifat sementara, jadi laman ini mungkin akan bekerja nanti.</translation>
 <translation id="7269802741830436641">Laman web ini memiliki simpul pengalihan</translation>
@@ -686,7 +686,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="935608979562296692">HAPUS FORMULIR</translation>
 <translation id="939736085109172342">Folder baru</translation>
 <translation id="943029900877297437">Untuk menggunakan kartu yang disimpan ke Akun Google, masuk ke Chrome.</translation>
-<translation id="962701380617707048">Masukkan tanggal masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu Anda</translation>
+<translation id="962701380617707048">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu Anda</translation>
 <translation id="969892804517981540">Pembuatan Resmi</translation>
 <translation id="988159990683914416">Buatan Pengembang</translation>
 </translationbundle>

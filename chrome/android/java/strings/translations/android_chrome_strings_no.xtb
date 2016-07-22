@@ -49,7 +49,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1513352483775369820">Bokmerker og nettlogg</translation>
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
-<translation id="1557201757634521564">Gjenkjenn omgjøring til kode automatisk</translation>
 <translation id="1612196535745283361">Chrome trenger posisjonstilgang for å søke etter enheter. Posisjonstilgang er <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
@@ -184,7 +183,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
-<translation id="307329814453917357">Tilby oversettelse av nettsider ved hjelp av Google Oversetter</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="3090193911106258841">Åpner lyd- og videoinngang</translation>
 <translation id="3117051980354074377">For å få bokmerkene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
@@ -339,6 +337,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4988526792673242964">Sider</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
+<translation id="5005498671520578047">Kopiér passordet</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
@@ -367,9 +366,9 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="5284584623296338184">Endringer i bokmerker, loggoppføringer, passord og andre innstillinger blir ikke synkronisert med Google-kontoen din lenger. Data som allerede er lagret i Google-kontoen din, blir imidlertid ikke fjernet.</translation>
 <translation id="5301954838959518834">OK, skjønner</translation>
-<translation id="5302048478445481009">Språk</translation>
 <translation id="5304593522240415983">Dette feltet må fylles ut</translation>
 <translation id="5308380583665731573">Koble til</translation>
+<translation id="5308603654685598744">Når denne funksjonen er slått på, blir du spurt om du vil at Chrome skal bruke Google Oversetter til å oversette sider som er skrevet på andre språk.</translation>
 <translation id="5313967007315987356">Legg til et nettsted</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
@@ -382,7 +381,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5400569084694353794">Ved å bruke dette programmet samtykker du i Chromes <ph name="BEGIN_LINK1" />vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />merknad om personvern<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Bekrefter …</translation>
 <translation id="5423934151118863508">Sidene du besøker mest, vises her</translation>
-<translation id="5424715742813396254">Rediger lagret navn/passord eller unntak</translation>
 <translation id="5437003064129843501">Forslag om personlig tilpasset innhold er for øyeblikket slått av, fordi de synkroniserte dataene dine er beskyttet med en egendefinert passordfrase.</translation>
 <translation id="544291274896356069">Inkognitomodus forlates hvis denne linken åpnes i et eksternt program. Vil du fortsette?</translation>
 <translation id="5447201525962359567">All nettstedslagring, inkludert informasjonskapsler og andre lokalt lagrede data</translation>
@@ -462,7 +460,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="6320088164292336938">Vibrering</translation>
 <translation id="6324034347079777476">Synkronisering for Android-systemet er slått av</translation>
-<translation id="6324360525379265737">Fastslå tegnkoding automatisk</translation>
 <translation id="6333140779060797560">Del via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="6364438453358674297">Vil du fjerne forslaget fra loggen?</translation>
@@ -495,6 +492,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6647073004883890710">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for <ph name="USERNAME" /> for dette nettstedet?</translation>
 <translation id="6656545060687952787">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK" />Oppdater tillatelsene<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Passord</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Bruk en forslagstjeneste for å vise relaterte søkeord og populære nettsteder mens du skriver i adressefeltet</translation>
 <translation id="666981079809192359">Merknad om personvern for Chrome</translation>
@@ -656,6 +654,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
 <translation id="8493948351860045254">Frigjør plass</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
+<translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
 <translation id="8518901949365209398">Dette nettstedet bruker en svak sikkerhetskonfigurasjon (SHA-1-signaturer). Det kan derfor hende at tilkoblingen mellom deg og nettstedet ikke er privat.</translation>
 <translation id="8525306231823319788">Full skjerm</translation>

@@ -1924,7 +1924,6 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Ak sa toto pravidlo nenastaví, automatické čistenie použije predvolenú vstavanú stratégiu, ktorá v súčasnosti predstavuje stratégiu RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Uchovať súbory cookie počas trvania relácie</translation>
 <translation id="7340034977315324840">Hlásiť časy aktivity zariadenia</translation>
-<translation id="7381326101471547614">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> použitie protokolu SPDY. Ak je toto pravidlo povolené, protokol SPDY nebude v prehliadači <ph name="PRODUCT_NAME" /> k dispozícii. Zakázaním tohto pravidla použitie protokolu SPDY umožníte. Ak toto pravidlo ponecháte nenastavené, protokol SPDY bude k dispozícii.</translation>
 <translation id="7384999953864505698">Povolenie protokolu QUIC</translation>
 <translation id="7406651467768226499">Ovláda, či má byť povolené verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" />.
 

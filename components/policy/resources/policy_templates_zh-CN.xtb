@@ -1748,13 +1748,6 @@
       如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
-<translation id="7381326101471547614">禁止在 <ph name="PRODUCT_NAME" />中使用 SPDY 协议。
-
-      如果启用了此政策，就无法在 <ph name="PRODUCT_NAME" />中使用 SPDY 协议。
-
-      如果停用了此政策，就可以使用 SPDY 协议。
-
-      如果未设置此政策，就可以使用 SPDY 协议。</translation>
 <translation id="7384999953864505698">允许使用 QUIC 协议</translation>
 <translation id="7406651467768226499">是否允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本。
 

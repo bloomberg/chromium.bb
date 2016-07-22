@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Rodomi duomenų kiekio skaitikliai naršymo duomenų išvalymo dialogo lange.</translation>
 <translation id="1097507499312291972">Jei norite valdyti ir peržiūrėti svetaines, kuriose lankosi šis asmuo, <ph name="BEGIN_SIGN_IN_LINK" />prisijunkite<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">Prieš prisijungdami įeikite kaip svečias, kad suaktyvintumėte tinklą <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">ilga</translation>
 <translation id="1104652314727136854">Įgalinti „Chrome“ programoms skirtą failų susiejimo OS integraciją.</translation>
 <translation id="1105162038795579389">Įdiegus „<ph name="BUNDLE_NAME" />“ naudotojui <ph name="USER_NAME" /> bus pridėti šie plėtiniai ir programos:</translation>
 <translation id="1108600514891325577">&amp;Sustabdyti</translation>
@@ -1872,7 +1871,6 @@ Iš <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Puslapiai, kurių nepavyksta įkelti, kai naršyklė naudojama neprisijungus, bus automatiškai įkelti iš naujo, tik kai jų skirtukai bus matomi.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Atšaukti atsisiuntimą}one{Atšaukti atsisiuntimus}few{Atšaukti atsisiuntimus}many{Atšaukti atsisiuntimus}other{Atšaukti atsisiuntimus}}</translation>
 <translation id="3512810056947640266">URL (pasirenkama):</translation>
-<translation id="351486934407749662">labai ilga</translation>
 <translation id="3517839692979918726">„<ph name="APP_NAME" />“ norėtų bendrinti ekrano turinį. Pasirinkite, ką norite bendrinti.</translation>
 <translation id="3518086201899641494">Pranešimai apie užvaldytus portalus</translation>
 <translation id="3519867315646775981">Transliteracija (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="569109051430110155">Automatinis atpažinimas</translation>
 <translation id="5691596662111998220">Oi, „<ph name="FILE_NAME" />“ nebėra.</translation>
 <translation id="5694501201003948907">Archyvuojama elementų: 1 dol...</translation>
-<translation id="5695323626817702678">trumpa</translation>
 <translation id="5697118958262594262">Nustatyti svarbų turinį pagal numatytuosius nustatymus</translation>
 <translation id="5699533844376998780">Plėtinys „<ph name="EXTENSION_NAME" />“ pridėtas.</translation>
 <translation id="5701101281789450335">Kalbos ir įvesties nustatymai...</translation>
@@ -3832,7 +3829,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="630065524203833229">I&amp;šeiti</translation>
 <translation id="6304217058163308077">Nauja žymių programos sistema</translation>
 <translation id="6305012486838822927">Laosiečių klaviatūra</translation>
-<translation id="6305328361606238230">Gauti „Push“ pranešimus</translation>
 <translation id="6307722552931206656">„Google“ pavadinimo serveriai – <ph name="BEGIN_LINK" />sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistema užimta</translation>
 <translation id="6308937455967653460">Išsaugoti nuorod&amp;ą kaip...</translation>
@@ -4530,7 +4526,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="7339785458027436441">Rašant tikrinti rašybos klaidas</translation>
 <translation id="7339898014177206373">Naujas langas</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> dabar veikia viso ekrano režimu.</translation>
-<translation id="7341982465543599097">nepaprastai trumpa</translation>
 <translation id="734303607351427494">Valdyti paieškos variklius...</translation>
 <translation id="7343116142376328522">Neleisti jokiai svetainei naudoti rakto generavimo formose (rekomenduojama)</translation>
 <translation id="7345706641791090287">Patvirtinkite slaptažodį</translation>
@@ -4915,7 +4910,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="7881969471599061635">Išjungti subtitrus</translation>
 <translation id="7884988936047469945">Eksperimentinės pritaikymo neįgaliesiems funkcijos</translation>
 <translation id="7885253890047913815">Naujausios paskirties vietos</translation>
-<translation id="7885283703487484916">labai trumpa</translation>
 <translation id="7887192723714330082">Įrenginys reaguos į komandą „Ok Google“, kai ekranas bus įjungtas ir atrakintas</translation>
 <translation id="7887334752153342268">Dubliuoti</translation>
 <translation id="7887864092952184874">„Bluetooth“ pelė susieta</translation>

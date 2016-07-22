@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Mostra i contatori del volume di dati nella finestra di dialogo Cancella dati di navigazione.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Accedi<ph name="END_SIGN_IN_LINK" /> per controllare e visualizzare i siti web visitati da questa persona.</translation>
 <translation id="1097658378307015415">Prima di accedere, entra come Ospite per attivare la rete <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">lungo</translation>
 <translation id="1104652314727136854">Consente di attivare l'integrazione nel sistema operativo delle associazioni di file per le app di Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" aggiunge le seguenti app ed estensioni per <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Interrompi</translation>
@@ -1869,7 +1868,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3512284449647229026">Le pagine che non vengono caricate quando il browser è offline vengono ricaricate automaticamente soltanto se la relativa scheda è visibile.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annulla download}other{Annulla download}}</translation>
 <translation id="3512810056947640266">URL (facoltativo):</translation>
-<translation id="351486934407749662">molto lungo</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> vorrebbe condividere i contenuti del tuo schermo. Scegli i contenuti che desideri condividere.</translation>
 <translation id="3518086201899641494">Notifiche relative a captive portal</translation>
 <translation id="3519867315646775981">Traslitterazione (shalom ← שלום)</translation>
@@ -3400,7 +3398,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="569109051430110155">Rileva automaticamente</translation>
 <translation id="5691596662111998220">Spiacenti. <ph name="FILE_NAME" /> non esiste più.</translation>
 <translation id="5694501201003948907">Compressione di $1 elementi...</translation>
-<translation id="5695323626817702678">breve</translation>
 <translation id="5697118958262594262">Rileva contenuti importanti per impostazione predefinita</translation>
 <translation id="5699533844376998780">L'estensione "<ph name="EXTENSION_NAME" />" è stata aggiunta.</translation>
 <translation id="5701101281789450335">Impostazioni della lingua e di immissione...</translation>
@@ -3823,7 +3820,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="630065524203833229">E&amp;sci</translation>
 <translation id="6304217058163308077">Il nuovo sistema di app di preferiti</translation>
 <translation id="6305012486838822927">Tastiera Lao</translation>
-<translation id="6305328361606238230">Vuoi ricevere messaggi push?</translation>
 <translation id="6307722552931206656">Assegnazione nomi ai server da Google - <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistema occupato</translation>
 <translation id="6308937455967653460">Salva lin&amp;k con nome...</translation>
@@ -4518,7 +4514,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7339785458027436441">Controllo ortografico durante la digitazione</translation>
 <translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> ora è a schermo intero.</translation>
-<translation id="7341982465543599097">molto breve</translation>
 <translation id="734303607351427494">Gestisci motori di ricerca...</translation>
 <translation id="7343116142376328522">Non consentire ai siti di utilizzare la generazione di chiavi nei moduli (opzione consigliata)</translation>
 <translation id="7345706641791090287">Conferma la password</translation>
@@ -4894,7 +4889,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7881969471599061635">Disattiva i sottotitoli</translation>
 <translation id="7884988936047469945">Funzioni di accessibilità sperimentali</translation>
 <translation id="7885253890047913815">Destinazioni recenti</translation>
-<translation id="7885283703487484916">molto breve</translation>
 <translation id="7887192723714330082">Rispondere al comando "Ok Google" quando lo schermo è attivo e sbloccato</translation>
 <translation id="7887334752153342268">Duplica</translation>
 <translation id="7887864092952184874">Mouse Bluetooth accoppiato</translation>

@@ -49,7 +49,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1513352483775369820">Marcaje și istoric web</translation>
 <translation id="1549000191223877751">Mută în altă fereastră</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
-<translation id="1557201757634521564">Detectează automat codificarea</translation>
 <translation id="1612196535745283361">Chrome necesită accesul la locație pentru a căuta dispozitive. Accesul la locație este <ph name="BEGIN_LINK" />dezactivat pentru acest dispozitiv<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
@@ -184,7 +183,6 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Salvați videoclipul</translation>
-<translation id="307329814453917357">Oferă traducerea paginilor folosind Google Traducere</translation>
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
 <translation id="3090193911106258841">Se accesează intrările audio și video</translation>
 <translation id="3117051980354074377">Pentru a accesa marcajele de pe alte dispozitive, conectează-te la Chrome.</translation>
@@ -339,6 +337,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4988526792673242964">Pagini</translation>
 <translation id="4996978546172906250">Trimiteți prin</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
+<translation id="5005498671520578047">Copiază parola</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5040262127954254034">Confidențialitate</translation>
@@ -367,9 +366,9 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="528192093759286357">Trage din partea de sus și atinge butonul Înapoi pentru a ieși din ecranul complet.</translation>
 <translation id="5284584623296338184">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
 <translation id="5301954838959518834">OK, am înțeles</translation>
-<translation id="5302048478445481009">Limbă</translation>
 <translation id="5304593522240415983">Acest câmp trebuie completat</translation>
 <translation id="5308380583665731573">Conectează-te</translation>
+<translation id="5308603654685598744">Când această funcție este activată, Chrome se va oferi să traducă paginile scrise în alte limbi folosind Google Traducere.</translation>
 <translation id="5313967007315987356">Adaugă un site</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5324858694974489420">Setări parentale</translation>
@@ -382,7 +381,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5400569084694353794">Folosind această aplicație, accepți <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5414836363063783498">Se verifică...</translation>
 <translation id="5423934151118863508">Cele mai accesate pagini vor apărea aici</translation>
-<translation id="5424715742813396254">Editează numele/parola sau excepția salvată</translation>
 <translation id="5437003064129843501">Momentan, sugestiile de conținut personalizat sunt dezactivate, deoarece datele sincronizate sunt protejate cu o expresie de acces personalizată.</translation>
 <translation id="544291274896356069">Vei părăsi modul incognito dacă acest link este deschis într-o aplicație externă. Continui?</translation>
 <translation id="5447201525962359567">Toată stocarea site-urilor, inclusiv cookie-urile și alte date stocate local</translation>
@@ -462,7 +460,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6295158916970320988">Toate site-urile</translation>
 <translation id="6320088164292336938">Vibrații</translation>
 <translation id="6324034347079777476">Sincronizarea de sistem Android este dezactivată</translation>
-<translation id="6324360525379265737">Stabilește automat codificarea caracterelor</translation>
 <translation id="6333140779060797560">Trimiteți prin <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Criptare</translation>
 <translation id="6364438453358674297">Elimini sugestia din istoric?</translation>
@@ -495,6 +492,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6643016212128521049">Ștergeți</translation>
 <translation id="6647073004883890710">Dorești ca <ph name="PASSWORD_MANAGER_BRAND" /> să actualizeze parola pentru <ph name="USERNAME" /> de pe acest site?</translation>
 <translation id="6656545060687952787">Chrome necesită accesul la locație pentru a căuta dispozitive. <ph name="BEGIN_LINK" />Actualizează permisiunile<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Parolă</translation>
 <translation id="6659594942844771486">Filă</translation>
 <translation id="666268767214822976">Folosește un serviciu de predicții pentru a afișa interogări similare și site-uri populare în timp ce introduci text în bara de adrese.</translation>
 <translation id="666981079809192359">Notificare privind confidențialitatea Chrome</translation>
@@ -656,6 +654,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8481940801237642152">Conexiunea la acest site este privată, dar cineva din rețea ar putea să schimbe aspectul paginii.</translation>
 <translation id="8493948351860045254">Eliberează spațiu</translation>
 <translation id="8497726226069778601">Nu este nimic de văzut aici... deocamdată</translation>
+<translation id="8503813439785031346">Nume utilizator</translation>
 <translation id="8514577642972634246">Intră în modul incognito</translation>
 <translation id="8518901949365209398">Acest site folosește o configurație de securitate slabă (semnături SHA-1), prin urmare, conexiunea poate să nu fie privată.</translation>
 <translation id="8525306231823319788">Ecran complet</translation>

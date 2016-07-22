@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Εμφανίζει μετρητές όγκου δεδομένων στο παράθυρο διαλόγου "Διαγραφή δεδομένων περιήγησης".</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Συνδεθείτε<ph name="END_SIGN_IN_LINK" /> για να ελέγξετε και να δείτε τους ιστότοπους που επισκέπτεται αυτό το άτομο.</translation>
 <translation id="1097658378307015415">Προτού συνδεθείτε, πραγματοποιήστε είσοδο ως επισκέπτης για να ενεργοποιηθεί το δίκτυο <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">μεγάλη</translation>
 <translation id="1104652314727136854">Να επιτρέπεται η ενσωμάτωση συσχετισμών αρχείων στο λειτουργικό σύστημα για το Chrome Apps.</translation>
 <translation id="1105162038795579389">Η δέσμη εφαρμογών "<ph name="BUNDLE_NAME" />" προσθέτει αυτές τις εφαρμογές και τις επεκτάσεις για τον/την χρήστη <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Διακοπή</translation>
@@ -1880,7 +1879,6 @@
 <translation id="3512284449647229026">Οι σελίδες που δεν φορτώνονται με επιτυχία όταν το πρόγραμμα περιήγησης βρίσκεται εκτός σύνδεσης θα φορτώνονται αυτόματα μόνο εάν η καρτέλα τους είναι ορατή.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Ακύρωση λήψης}other{Ακύρωση λήψεων}}</translation>
 <translation id="3512810056947640266">URL (προαιρετικά):</translation>
-<translation id="351486934407749662">πολύ μεγάλη</translation>
 <translation id="3517839692979918726">Η εφαρμογή <ph name="APP_NAME" /> θα ήθελε να μοιραστεί το περιεχόμενο της οθόνες σας με τον ιστότοπο. Επιλέξτε το περιεχόμενο που θα θέλατε να τεθεί σε κοινή χρήση.</translation>
 <translation id="3518086201899641494">Ειδοποιήσεις σχετικά με πύλες υποδοχής</translation>
 <translation id="3519867315646775981">Μεταγραφή (shalom ← שלום)</translation>
@@ -3423,7 +3421,6 @@
 <translation id="569109051430110155">Αυτόματος εντοπισμός</translation>
 <translation id="5691596662111998220">Ωχ! Το αρχείο <ph name="FILE_NAME" /> δεν υπάρχει πια.</translation>
 <translation id="5694501201003948907">Συμπίεση $1 στοιχείων…</translation>
-<translation id="5695323626817702678">σύντομη</translation>
 <translation id="5697118958262594262">Εντοπισμός σημαντικού περιεχομένου από προεπιλογή</translation>
 <translation id="5699533844376998780">Έχει γίνει προσθήκη της επέκτασης "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">Ρυθμίσεις γλώσσας και στοιχείων εισόδου…</translation>
@@ -3846,7 +3843,6 @@
 <translation id="630065524203833229">Έ&amp;ξοδος</translation>
 <translation id="6304217058163308077">Το νέο σύστημα εφαρμογής σελιδοδείκτη</translation>
 <translation id="6305012486838822927">Πληκτρολόγιο Λάο</translation>
-<translation id="6305328361606238230">Λήψη μηνυμάτων push</translation>
 <translation id="6307722552931206656">Διακομιστές ονομάτων της Google - <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Το σύστημα είναι απασχολημένο</translation>
 <translation id="6308937455967653460">Αποθήκευση συν&amp;δέσμου ως...</translation>
@@ -4544,7 +4540,6 @@
 <translation id="7339785458027436441">Ορθογραφικός Έλεγχος Κατά την Πληκτρολόγηση</translation>
 <translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="7340431621085453413">Το <ph name="FULLSCREEN_ORIGIN" /> εμφανίζεται σε πλήρη οθόνη.</translation>
-<translation id="7341982465543599097">εξαιρετικά σύντομη</translation>
 <translation id="734303607351427494">Διαχείριση μηχανών αναζήτησης...</translation>
 <translation id="7343116142376328522">Να μην επιτρέπεται σε κανέναν ιστότοπο να χρησιμοποιεί τη δημιουργία κλειδιού σε φόρμες (συνιστάται)</translation>
 <translation id="7345706641791090287">Επιβεβαιώστε τον κωδικό πρόσβασής σας</translation>
@@ -4932,7 +4927,6 @@
 <translation id="7881969471599061635">Απενεργοποίηση υπότιτλων</translation>
 <translation id="7884988936047469945">Πειραματικές λειτουργίες προσβασιμότητας</translation>
 <translation id="7885253890047913815">Πρόσφατοι προορισμοί</translation>
-<translation id="7885283703487484916">πολύ σύντομη</translation>
 <translation id="7887192723714330082">Απάντηση στο "Ok Google" όταν η οθόνη είναι αναμμένη και ξεκλειδωμένη</translation>
 <translation id="7887334752153342268">Αντιγραφή</translation>
 <translation id="7887864092952184874">Έγινε σύζευξη του ποντικιού Bluetooth</translation>

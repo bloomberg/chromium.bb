@@ -181,7 +181,7 @@
 <translation id="2985306909656435243">启用后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="2991174974383378012">与网站分享</translation>
 <translation id="3005723025932146533">显示已保存的版本</translation>
-<translation id="3008447029300691911">输入“<ph name="CREDIT_CARD" />”的银行卡验证码 (CVC)。在您确认后，系统会将您的信用卡详情提供给此网站。</translation>
+<translation id="3008447029300691911">输入“<ph name="CREDIT_CARD" />”的银行卡验证码 (CVC)。在您确认后，您的信用卡详情将与此网站共享。</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX" />”：<ph name="ERROR" /></translation>
 <translation id="3024663005179499861">策略类型有误</translation>
 <translation id="3032412215588512954">要重新加载该网站吗？</translation>
@@ -508,7 +508,7 @@
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7231308970288859235">糟糕！您必须先征得家长同意，然后才能访问此网页。</translation>
 <translation id="7246609911581847514">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得管理员的批准。</translation>
-<translation id="724975217298816891">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC)，以更新您的信用卡详情。在您确认后，系统会将您的信用卡详情提供给此网站。</translation>
+<translation id="724975217298816891">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC) 以更新您的信用卡详情。在您确认后，您的信用卡详情将与此网站共享。</translation>
 <translation id="725866823122871198">您计算机的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="7265986070661382626">您目前无法访问<ph name="SITE" />，因为此网站<ph name="BEGIN_LINK" />使用了证书锁定<ph name="END_LINK" />。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="7269802741830436641">此网页包含重定向循环</translation>
@@ -532,7 +532,7 @@
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7445762425076701745">无法完全验证您所连接到的服务器的身份。您在连接服务器时使用的服务器名称仅在您的网络中有效，而外部证书授权中心无法验证该名称的所有权。由于一些证书授权中心仍然会为这些名称颁发证书，因此无法确保您连接到想要访问的网站而不是攻击网站。</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
-<translation id="7469372306589899959">正在确认信用卡</translation>
+<translation id="7469372306589899959">确认信用卡</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7514365320538308">下载</translation>
@@ -647,7 +647,7 @@
 <translation id="8866959479196209191">此网页显示：</translation>
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>
-<translation id="8877192140621905067">在您确认后，系统会将您的信用卡详情提供给此网站</translation>
+<translation id="8877192140621905067">在您确认后，您的信用卡详情将与此网站共享</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="889901481107108152">抱歉，此项实验性功能不能用于您的平台。</translation>
 <translation id="8903921497873541725">放大</translation>
@@ -681,7 +681,7 @@
 <translation id="935608979562296692">清除表单内容</translation>
 <translation id="939736085109172342">新建文件夹</translation>
 <translation id="943029900877297437">要使用您保存到自己 Google 帐户中的信用卡，请登录 Chrome。</translation>
-<translation id="962701380617707048">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC)，以更新您的信用卡详情</translation>
+<translation id="962701380617707048">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC) 以更新您的信用卡详情</translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
 </translationbundle>

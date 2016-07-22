@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">'ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കുക' ഡയലോഗിൽ ഡാറ്റ വോളിയം കൗണ്ടറുകൾ കാണിക്കുന്നു.</translation>
 <translation id="1097507499312291972">ഈ വ്യക്തി സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകൾ നിയന്ത്രിക്കാനും കാണാനും <ph name="BEGIN_SIGN_IN_LINK" />സൈൻ ഇൻ ചെയ്യുക<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">സൈൻ ഇൻ ചെയ്യുന്നതിന് മുമ്പ്, <ph name="NETWORK_ID" /> സജീവമാക്കാൻ അതിഥിയായി പ്രവേശിക്കുക</translation>
-<translation id="1104054824888299003">ദൈർഘ്യമേറിയത്</translation>
 <translation id="1104652314727136854">Chrome അപ്ലിക്കേഷനുകൾക്കായുള്ള ഫയൽ അസോസിയേഷനുകളുടെ OS സംയോജനം പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />", <ph name="USER_NAME" /> എന്ന ഉപയോക്താവിനായി ഈ ആപ്‌സും വിപുലീകരണങ്ങളും ചേർക്കുന്നു:</translation>
 <translation id="1108600514891325577">&amp;നിറുത്തുക</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3512284449647229026">ബ്രൗസർ ഓഫ്ലൈനിലായിരിക്കുമ്പോൾ ലോഡുചെയ്യാൻ പരാജയപ്പെടുന്ന പേജുകൾ അതിന്റെ ടാബ് ദൃശ്യമാകുമ്പോൾ മാത്രം സ്വയമേവ വീണ്ടും ലോഡുചെയ്യപ്പെടും.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ഡൗൺലോഡ് റദ്ദാക്കുക}other{ഡൗൺലോഡുകൾ റദ്ദാക്കുക}}</translation>
 <translation id="3512810056947640266">URL (ഓപ്‌ഷണൽ):</translation>
-<translation id="351486934407749662">വളരെ ദൈർഘ്യമുള്ളത്</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> നിങ്ങളുടെ സ്ക്രീനിലെ ഉള്ളടക്കം പങ്കിടാൻ താൽപ്പര്യപ്പെടുന്നു. പങ്കിടാൻ താൽപ്പര്യപ്പെടുന്നത് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="3518086201899641494">ക്യാപ്‌റ്റീവ് പോർട്ടലുകളെക്കുറിച്ചുള്ള അറിയിപ്പുകൾ</translation>
 <translation id="3519867315646775981">ലിപ്യന്തരണം (shalom ← שלום)</translation>
@@ -3405,7 +3403,6 @@
 <translation id="569109051430110155">സ്വപ്രേരിത കണ്ടുപിടിക്കല്‍</translation>
 <translation id="5691596662111998220">ക്ഷമിക്കണം, <ph name="FILE_NAME" /> നിലവിലില്ല.</translation>
 <translation id="5694501201003948907">$1 ഇനങ്ങൾ zip ചെയ്യുന്നു...</translation>
-<translation id="5695323626817702678">ഹ്രസ്വം</translation>
 <translation id="5697118958262594262">സ്ഥിരമായുള്ള പ്രധാനപ്പെട്ട ഉള്ളടക്കം കണ്ടെത്തുക</translation>
 <translation id="5699533844376998780">വിപുലീകരണം "<ph name="EXTENSION_NAME" />" ചേർത്തു.</translation>
 <translation id="5701101281789450335">ഭാഷ, ഇൻപുട്ട് ക്രമീകരണങ്ങൾ...</translation>
@@ -3830,7 +3827,6 @@
 <translation id="630065524203833229">&amp;പുറത്തുപോകുക</translation>
 <translation id="6304217058163308077">പുതിയ ബുക്ക്‌മാർക്ക് ആപ്പ് സിസ്‌റ്റം</translation>
 <translation id="6305012486838822927">ലാവോ കീബോർഡ്</translation>
-<translation id="6305328361606238230">പുഷ് സന്ദേശങ്ങൾ സ്വീകരിക്കുക</translation>
 <translation id="6307722552931206656">Google നെയിം സെർവറുകൾ - <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">സിസ്റ്റം തിരക്കിലാണ്</translation>
 <translation id="6308937455967653460">ലിങ്ക് ഇതുപോലെ&amp; സംരക്ഷിക്കുക...</translation>
@@ -4527,7 +4523,6 @@
 <translation id="7339785458027436441">ടൈപ്പ് ചെയ്യുന്ന സമയത്ത് സ്‌പെല്ലിംഗ് പരിശോധിക്കുക</translation>
 <translation id="7339898014177206373">പുതിയ വിന്‍ഡോ</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> ഇപ്പോൾ പൂർണ്ണ സ്‌ക്രീനിലാണ്.</translation>
-<translation id="7341982465543599097">തീരെ ചെറുത്</translation>
 <translation id="734303607351427494">തിരയൽ എഞ്ചിനുകള്‍ കൈകാര്യം ചെയ്യുക...</translation>
 <translation id="7343116142376328522">ഫോമുകളിൽ കീ സൃഷ്‌ടിക്കൽ ഉപയോഗിക്കാൻ ഒരു സൈറ്റിനെയും അനുവദിക്കരുത് (ശുപാർശചെയ്യുന്നത്)</translation>
 <translation id="7345706641791090287">പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക</translation>
@@ -4912,7 +4907,6 @@
 <translation id="7881969471599061635">സബ്‌ടൈറ്റിലുകൾ പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="7884988936047469945">പരീക്ഷണാത്മക ആക്‌സസിബിലിറ്റി ഫീച്ചറുകൾ</translation>
 <translation id="7885253890047913815">സമീപകാല ലക്ഷ്യസ്ഥാനങ്ങൾ</translation>
-<translation id="7885283703487484916">വളരെ ഹ്രസ്വമായത്</translation>
 <translation id="7887192723714330082">സ്‌ക്രീൻ ഓണായിരിക്കുമ്പോഴും അൺലോക്കായിരിക്കുമ്പോഴും "Ok Google" നോട് പ്രതികരിക്കുക</translation>
 <translation id="7887334752153342268">തനിപ്പകര്‍പ്പ്</translation>
 <translation id="7887864092952184874">Bluetooth മൗസ് ജോടിയാക്കി</translation>

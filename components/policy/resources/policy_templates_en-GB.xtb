@@ -1940,13 +1940,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
-<translation id="7381326101471547614">Disables use of the SPDY protocol in <ph name="PRODUCT_NAME" />.
-
-      If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME" />.
-
-      Setting this policy to disabled will allow the usage of SPDY.
-
-      If this policy is left not set, SPDY will be available.</translation>
 <translation id="7384999953864505698">Allows QUIC protocol</translation>
 <translation id="7406651467768226499">Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version.
 

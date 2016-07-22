@@ -49,7 +49,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1513352483775369820">Záložky a webová historie</translation>
 <translation id="1549000191223877751">Přejít do jiného okna</translation>
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
-<translation id="1557201757634521564">Automaticky rozpoznávat kódování</translation>
 <translation id="1612196535745283361">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. Přístup k poloze je v tomto zařízení <ph name="BEGIN_LINK" />vypnut<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
@@ -184,7 +183,6 @@ Fyzický web můžete ovládat v nastavení Chromu.
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Uložit video</translation>
-<translation id="307329814453917357">Nabízet překlad stránek pomocí Překladače Google</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="3090193911106258841">Přístup ke vstupu zvuku a videa</translation>
 <translation id="3117051980354074377">Chcete-li získat přístup k záložkám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
@@ -339,6 +337,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="4996978546172906250">Sdílet prostřednictvím</translation>
 <translation id="5000922062037820727">Blokováno (doporučeno)</translation>
+<translation id="5005498671520578047">Kopírování hesla</translation>
 <translation id="5016205925109358554">Patková</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5040262127954254034">Ochrana soukromí</translation>
@@ -367,9 +366,9 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="528192093759286357">Režim celé obrazovky ukončíte přetažením z horního okraje obrazovky a klepnutím na tlačítko Zpět.</translation>
 <translation id="5284584623296338184">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
 <translation id="5301954838959518834">Ano, chápu</translation>
-<translation id="5302048478445481009">Jazyk</translation>
 <translation id="5304593522240415983">Toto pole nesmí být prázdné</translation>
 <translation id="5308380583665731573">Připojení</translation>
+<translation id="5308603654685598744">Pokud je tato funkce zapnutá, bude Chrome nabízet překlad stránek v jiných jazycích pomocí Překladače Google.</translation>
 <translation id="5313967007315987356">Přidat web</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5324858694974489420">Rodičovská nastavení</translation>
@@ -382,7 +381,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="5400569084694353794">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />zásadami ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome.</translation>
 <translation id="5414836363063783498">Ověřování…</translation>
 <translation id="5423934151118863508">Zde se zobrazí vaše nejnavštěvovanější stránky.</translation>
-<translation id="5424715742813396254">Úprava uloženého jména a hesla nebo výjimky</translation>
 <translation id="5437003064129843501">Personalizované návrhy obsahu jsou aktuálně vypnuty, protože jsou vaše synchronizovaná data chráněna vlastní heslovou frází.</translation>
 <translation id="544291274896356069">Pokud tento odkaz otevřete v externí aplikaci, opustíte anonymní režim. Chcete pokračovat?</translation>
 <translation id="5447201525962359567">Veškerá data webů, včetně souborů cookie a dalších místně uložených dat</translation>
@@ -462,7 +460,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6295158916970320988">Všechny weby</translation>
 <translation id="6320088164292336938">Vibrovat</translation>
 <translation id="6324034347079777476">Synchronizace systému Android je vypnuta.</translation>
-<translation id="6324360525379265737">Automaticky určovat kódování znaků</translation>
 <translation id="6333140779060797560">Sdílet prostřednictvím aplikace <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Šifrování</translation>
 <translation id="6364438453358674297">Odstranit návrh z historie?</translation>
@@ -495,6 +492,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="6647073004883890710">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo uživatele <ph name="USERNAME" /> pro tento web?</translation>
 <translation id="6656545060687952787">K vyhledání zařízení Chrome potřebuje přístup k informacím o poloze. <ph name="BEGIN_LINK" />Aktualizovat oprávnění<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Heslo</translation>
 <translation id="6659594942844771486">Karta</translation>
 <translation id="666268767214822976">Používat službu předpovídání k zobrazení souvisejících dotazů a oblíbených webových stránek.</translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
@@ -656,6 +654,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="8481940801237642152">Spojení s tímto webem je soukromé, avšak některý uživatel v síti může být schopen změnit vzhled stránky.</translation>
 <translation id="8493948351860045254">Uvolnit místo</translation>
 <translation id="8497726226069778601">Zatím tu nic není...</translation>
+<translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
 <translation id="8518901949365209398">Tento web používá slabou konfiguraci zabezpečení (podpisy SHA-1). Připojení proto nemusí být soukromé.</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>

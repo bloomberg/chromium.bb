@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">બ્રાઉઝિંગ ડેટા સાફ કરો સંવાદમાં ડેટા વૉલ્યૂમ કાઉન્ટર્સ દર્શાવે છે.</translation>
 <translation id="1097507499312291972">આ વ્યક્તિ મુલાકાત લે છે તે વેબસાઇટ્સ જોવા અને નિયંત્રિત કરવા માટે <ph name="BEGIN_SIGN_IN_LINK" />સાઇન ઇન<ph name="END_SIGN_IN_LINK" /> કરો.</translation>
 <translation id="1097658378307015415">સાઇન ઇન કરતા પહેલા, કૃપા કરીને નેટવર્ક <ph name="NETWORK_ID" /> ને સક્રિય કરવા માટે એક અતિથિ તરીકે દાખલ થાઓ</translation>
-<translation id="1104054824888299003">લાંબો</translation>
 <translation id="1104652314727136854">Chrome Apps માટે ફાઇલ જોડાણના OS એકીકરણને સક્ષમ કરો.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />", <ph name="USER_NAME" /> માટે આ ઍપ્લિકેશનો અને એક્સટેન્શન્સ ઉમેરે છે:</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1868,7 +1867,6 @@
 <translation id="3512284449647229026">બ્રાઉઝર ઑફલાઇન હોય તે વખતે લોડ થવામાં નિષ્ફળ થયેલાં પૃષ્ઠો જ્યારે બ્રાઉઝર ફરીથી ઓનલાઇન થશે ત્યારે સ્વતઃ ફરીથી લોડ કરવામાં આવશે.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ડાઉનલોડ રદ કરો}one{ડાઉનલોડ્સ રદ કરો}other{ડાઉનલોડ્સ રદ કરો}}</translation>
 <translation id="3512810056947640266">URL (વૈકલ્પિક):</translation>
-<translation id="351486934407749662">ખૂબ લાંબો</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> તમારી સ્ક્રીનની સામગ્રીને શેર કરવા માગે છે. તમે શું શેર કરવા માગો છો તે પસંદ કરો.</translation>
 <translation id="3518086201899641494">કેપ્ટિવ પોર્ટલ્સ વિશે સૂચનાઓ</translation>
 <translation id="3519867315646775981">લિવ્યંતરણ (shalom ← שלום)</translation>
@@ -3401,7 +3399,6 @@
 <translation id="569109051430110155">સ્વતઃ શોધો</translation>
 <translation id="5691596662111998220">ઊફ્ફ, <ph name="FILE_NAME" /> હવે અસ્તિત્વમાં નથી.</translation>
 <translation id="5694501201003948907">$1 આઇટમ્સ ઝિપ કરી રહ્યું છે...</translation>
-<translation id="5695323626817702678">ટૂંકો</translation>
 <translation id="5697118958262594262">મૂળભૂત રીતે મહત્વપૂર્ણ સામગ્રી શોધો</translation>
 <translation id="5699533844376998780">એક્સ્ટેંશન "<ph name="EXTENSION_NAME" />" ઉમેરવામાં આવ્યું.</translation>
 <translation id="5701101281789450335">ભાષા અને ઇનપુટ સેટિંગ્સ...</translation>
@@ -3824,7 +3821,6 @@
 <translation id="630065524203833229">&amp;બહાર નીકળો</translation>
 <translation id="6304217058163308077">નવી બુકમાર્ક ઍપ્લિકેશન સિસ્ટમ</translation>
 <translation id="6305012486838822927">લાઓ કીબોર્ડ</translation>
-<translation id="6305328361606238230">પુશ સંદેશાઓ મેળવો</translation>
 <translation id="6307722552931206656">Google નામ સર્વર્સ - <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">સિસ્ટમ વ્યસ્ત છે</translation>
 <translation id="6308937455967653460">લિં&amp;કને આ રીતે સાચવો...</translation>
@@ -4520,7 +4516,6 @@
 <translation id="7339785458027436441">લખતી વખતે જોડણી તપાસો</translation>
 <translation id="7339898014177206373">નવી વિંડો</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> હવે પૂર્ણ સ્ક્રીન છે.</translation>
-<translation id="7341982465543599097">અત્યંત ટૂંકી</translation>
 <translation id="734303607351427494">શોધ એંજીન્સ મેનેજ કરો...</translation>
 <translation id="7343116142376328522">કોઈપણ સાઇટને ફોર્મ્સમાં કી જનરેશનનો ઉપયોગ કરવાની મંજૂરી આપશો નહીં (ભલામણ કરેલ)</translation>
 <translation id="7345706641791090287">તમારા પાસવર્ડની પુષ્ટિ કરો</translation>
@@ -4905,7 +4900,6 @@
 <translation id="7881969471599061635">ઉપશીર્ષકો અક્ષમ કરો</translation>
 <translation id="7884988936047469945">પ્રાયોગિક અ‍ૅક્સેસિબિલિટી સુવિધાઓ</translation>
 <translation id="7885253890047913815">તાજેતરનાં ગંતવ્યો</translation>
-<translation id="7885283703487484916">ખૂબ જ ટૂંકો</translation>
 <translation id="7887192723714330082">જ્યારે સ્ક્રીન ચાલુ અને અનલૉક કરેલી હોય ત્યારે "Ok Google" સાથે જવાબ આપો</translation>
 <translation id="7887334752153342268">ડુપ્લિકેટ</translation>
 <translation id="7887864092952184874">Bluetooth માઉસની જોડી બનાવી</translation>

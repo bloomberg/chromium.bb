@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Huonyesha kaunta za idadi ya data katika kidirisha cha Futa data ya kuvinjari.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Ingia katika akaunti<ph name="END_SIGN_IN_LINK" /> ili udhibiti na uangalie tovuti ambazo mtu huyu hutembelea.</translation>
 <translation id="1097658378307015415">Kabla ya kuingia, tafadhali ingia kama Mgeni ili kuamilisha mtandao <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">mrefu</translation>
 <translation id="1104652314727136854">Washa muingiliano wa OS wa uhusiano wa faili kwa Programu za Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" huongeza programu na viendelezi hivi kwa <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Acha</translation>
@@ -1863,7 +1862,6 @@ Kutoka <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Kurasa zinazoshindwa kupakia kivinjari kinapokuwa nje ya mtandao zitapakiwa tena tu ikiwa vichupo vyao vinaonekana.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Ghairi Kipakuliwa}other{Ghairi Vipakuliwa}}</translation>
 <translation id="3512810056947640266">URL (hiari):</translation>
-<translation id="351486934407749662">mrefu sana</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ingependa kushiriki maudhui ya skrini yako. Chagua kile ungependa kushiriki.</translation>
 <translation id="3518086201899641494">Arifa kuhusu tovuti za uthibitishaji</translation>
 <translation id="3519867315646775981">Unukuzi wa mfumo wa kuandika (shalom ← שלום)</translation>
@@ -3392,7 +3390,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="569109051430110155">Gundua kiotomatiki</translation>
 <translation id="5691596662111998220">Lo, <ph name="FILE_NAME" /> haipo tena.</translation>
 <translation id="5694501201003948907">Vipengee $1 vinabanwa...</translation>
-<translation id="5695323626817702678">fupi</translation>
 <translation id="5697118958262594262">Gundua maudhui muhimu kwa chaguo-msingi</translation>
 <translation id="5699533844376998780">Kiendelezi "<ph name="EXTENSION_NAME" />" kimeongezwa.</translation>
 <translation id="5701101281789450335">Mipangilio ya lugha, kibodi na sauti...</translation>
@@ -3817,7 +3814,6 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="630065524203833229">Ondoka</translation>
 <translation id="6304217058163308077">Mfumo mpya wa programu ya alamisho</translation>
 <translation id="6305012486838822927">Kibodi ya Kilao</translation>
-<translation id="6305328361606238230">Pokea ujumbe unaotumwa na programu hata wakati huitumii</translation>
 <translation id="6307722552931206656">Seva za majina za Google - <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Mfumo unashughulika</translation>
 <translation id="6308937455967653460">Hifadhi &amp;kiungo kama...</translation>
@@ -4513,7 +4509,6 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="7339785458027436441">Kagua Tahajia Unapochapa</translation>
 <translation id="7339898014177206373">Dirisha jipya</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> sasa ni skrini nzima.</translation>
-<translation id="7341982465543599097">fupi mno</translation>
 <translation id="734303607351427494">Dhibiti mitambo ya kutafuta...</translation>
 <translation id="7343116142376328522">Usiruhusu tovuti yoyote kutumia uundaji funguo katika fomu (inapendekezwa)</translation>
 <translation id="7345706641791090287">Thibitisha nenosiri lako</translation>
@@ -4897,7 +4892,6 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="7881969471599061635">Zima manukuu</translation>
 <translation id="7884988936047469945">Vipengele vya ufikiaji wa majaribio</translation>
 <translation id="7885253890047913815">Printa ulizotumia hivi karibuni</translation>
-<translation id="7885283703487484916">fupi mno</translation>
 <translation id="7887192723714330082">Jibu "Ok Google" skrini ikiwa imewashwa na kufunguliwa</translation>
 <translation id="7887334752153342268">Maradufu</translation>
 <translation id="7887864092952184874">Kipanya cha Bluetooth kimeoanishwa</translation>

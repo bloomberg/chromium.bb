@@ -49,7 +49,6 @@
 <translation id="1513352483775369820">סימניות והיסטוריית אתרים</translation>
 <translation id="1549000191223877751">העבר לחלון האחר</translation>
 <translation id="1553358976309200471">‏עדכן את Chrome</translation>
-<translation id="1557201757634521564">זיהוי אוטומטי של קידוד</translation>
 <translation id="1612196535745283361">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. הגישה למיקום <ph name="BEGIN_LINK" />כבויה במכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
@@ -184,7 +183,6 @@
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">שמור סרטון</translation>
-<translation id="307329814453917357">‏הצע לתרגם דפים באמצעות Google Translate</translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
 <translation id="3117051980354074377">‏כדי לקבל את הסימניות מהמכשירים האחרים שלך, היכנס ל-Chrome.</translation>
@@ -339,6 +337,7 @@
 <translation id="4988526792673242964">דפים</translation>
 <translation id="4996978546172906250">שתף באמצעות</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
+<translation id="5005498671520578047">העתק סיסמה</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
@@ -367,9 +366,9 @@
 <translation id="528192093759286357">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
 <translation id="5284584623296338184">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
 <translation id="5301954838959518834">בסדר גמור, הבנתי</translation>
-<translation id="5302048478445481009">שפה</translation>
 <translation id="5304593522240415983">שדה זה לא יכול להיות ריק</translation>
 <translation id="5308380583665731573">התחברות</translation>
+<translation id="5308603654685598744">‏כשהתכונה הזו פועלת, Chrome יציע לתרגם באמצעות Google Translate דפים הכתובים בשפות אחרות.</translation>
 <translation id="5313967007315987356">הוסף אתר</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
@@ -382,7 +381,6 @@
 <translation id="5400569084694353794">‏בעצם השימוש באפליקציה זו, אתה מסכים ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="5414836363063783498">מאמת…</translation>
 <translation id="5423934151118863508">הדפים שבהם אתה מבקר בתדירות הגבוהה ביותר יופיעו כאן</translation>
-<translation id="5424715742813396254">ערוך שם/סיסמה או חריג שנשמרו</translation>
 <translation id="5437003064129843501">המלצות לתוכן בהתאמה אישית מושבתות כרגע, מפני שהנתונים המסונכרנים שלך מוגנים באמצעות ביטוי סיסמה מותאם אישית.</translation>
 <translation id="544291274896356069">פתיחת הקישור הזה ביישום חיצוני תוציא אותך ממצב גלישה בסתר. האם להמשיך?</translation>
 <translation id="5447201525962359567">‏כל נתוני האתר המאוחסנים, כולל קובצי Cookie ונתונים אחרים המאוחסנים באופן מקומי</translation>
@@ -462,7 +460,6 @@
 <translation id="6295158916970320988">כל האתרים</translation>
 <translation id="6320088164292336938">רטט</translation>
 <translation id="6324034347079777476">‏סנכרון מערכת Android מושבת</translation>
-<translation id="6324360525379265737">קביעה אוטומטית של קידוד תווים</translation>
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">הצפנה</translation>
 <translation id="6364438453358674297">האם להסיר את ההצעה מההיסטוריה?</translation>
@@ -495,6 +492,7 @@
 <translation id="6643016212128521049">נקה</translation>
 <translation id="6647073004883890710">האם אתה רוצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה של <ph name="USERNAME" /> באתר הזה?</translation>
 <translation id="6656545060687952787">‏כדי לבצע סריקה לאיתור מכשירים ב-Chrome, יש צורך בגישה לנתוני מיקום. <ph name="BEGIN_LINK" />עדכן הרשאות<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">סיסמה</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">השתמש בשירות חיזוי כדי להציג שאילתות קשורות ואתרים פופולריים תוך כדי ההקלדה בסרגל הכתובות</translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
@@ -656,6 +654,7 @@
 <translation id="8481940801237642152">החיבור שלך לאתר הזה הוא פרטי, אך ייתכן שמישהו ברשת יכול לשנות את המראה של הדף.</translation>
 <translation id="8493948351860045254">פנה שטח אחסון</translation>
 <translation id="8497726226069778601">אין מה לראות כאן… בינתיים</translation>
+<translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
 <translation id="8518901949365209398">‏באתר הזה נעשה שימוש בתצורת אבטחה חלשה (חתימות SHA-1), כך שייתכן שהחיבור שלך לא יהיה פרטי.</translation>
 <translation id="8525306231823319788">מסך מלא</translation>

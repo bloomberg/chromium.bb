@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">ब्राउझ केलेला डेटा साफ करा संवादामधील डेटा व्हॉल्यूम काउंटर दर्शविते.</translation>
 <translation id="1097507499312291972">ही व्यक्ती भेट देते त्या वेबसाइट नियंत्रित करण्यासाठी आणि पाहण्यासाठी <ph name="BEGIN_SIGN_IN_LINK" />साइन इन करा<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">साइन इन करण्‍यापूर्वी, <ph name="NETWORK_ID" /> नेटवर्क सक्रिय करण्‍यासाठी कृपया अतिथी म्हणून प्रवेश करा.</translation>
-<translation id="1104054824888299003">दीर्घ</translation>
 <translation id="1104652314727136854">Chrome Apps साठी फाईल संबद्धतांचे OS संकलन सक्षम करा.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" हे अ‍ॅप्‍स आणि विस्तार या <ph name="USER_NAME" /> साठी जोडते:</translation>
 <translation id="1108600514891325577">&amp;थांबा</translation>
@@ -1866,7 +1865,6 @@
 <translation id="3512284449647229026">ब्राउझर ऑफलाइन असताना लोड होण्यात अयशस्वी होणारी पृष्ठे त्यांचा टॅब दृश्यमान असतो तेव्हाच स्वयं-रीलोड केली जातील.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{डाउनलोड रद्द करा}one{डाउनलोड रद्द करा}other{डाउनलोड रद्द करा}}</translation>
 <translation id="3512810056947640266">URL (पर्यायी):</translation>
-<translation id="351486934407749662">खूप लांब</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> आपल्या स्क्रीनची सामग्री सामायिक करू इच्छित आहे. आपण काय सामायिक करू इच्छिता हे निवडा.</translation>
 <translation id="3518086201899641494">कॅप्टिव्ह पोर्टलविषयी सूचना</translation>
 <translation id="3519867315646775981">लिप्यंतरण (shalom ← שלום)</translation>
@@ -3400,7 +3398,6 @@
 <translation id="569109051430110155">स्वयं तपासणी</translation>
 <translation id="5691596662111998220">अरेरे, <ph name="FILE_NAME" /> यापुढे अस्तित्वात नाही.</translation>
 <translation id="5694501201003948907">$1 आयटम झिप करत आहे...</translation>
-<translation id="5695323626817702678">लहान</translation>
 <translation id="5697118958262594262">डीफॉल्‍टनुसार महत्त्वाची सामग्री शोधा</translation>
 <translation id="5699533844376998780">विस्तार "<ph name="EXTENSION_NAME" />" जोडला गेला आहे.</translation>
 <translation id="5701101281789450335">भाषा आणि इनपुट सेटिंग्ज...</translation>
@@ -3823,7 +3820,6 @@
 <translation id="630065524203833229">नि&amp;र्गमन</translation>
 <translation id="6304217058163308077">नवीन बुकमार्क अॅप सिस्टीम</translation>
 <translation id="6305012486838822927">लाओ कीबोर्ड</translation>
-<translation id="6305328361606238230">पुश संदेश प्राप्त करा</translation>
 <translation id="6307722552931206656">Google नाव सर्व्हर - <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">सिस्‍टीम व्यस्त</translation>
 <translation id="6308937455967653460">म्हणून दु&amp;वा जतन करा...</translation>
@@ -4518,7 +4514,6 @@
 <translation id="7339785458027436441">टाइप करताना शब्दलेखन तपासा</translation>
 <translation id="7339898014177206373">नवीन विंडो</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> आता फुल स्क्रीन आहे.</translation>
-<translation id="7341982465543599097">अत्यंत लहान</translation>
 <translation id="734303607351427494">शोध इंजिन व्यवस्थापित करा...</translation>
 <translation id="7343116142376328522">कोणत्याही साइटला फॉर्ममध्ये की निर्मिती वापरण्याची अनुमती देऊ नका (शिफारस केलेले)</translation>
 <translation id="7345706641791090287">आपल्या संकेतशब्दाची पुष्टी करा</translation>
@@ -4902,7 +4897,6 @@
 <translation id="7881969471599061635">उपशीर्षके अक्षम करा</translation>
 <translation id="7884988936047469945">प्रायोगिक प्रवेशक्षमता वैशिष्ट्ये</translation>
 <translation id="7885253890047913815">अलीकडील गंतव्ये</translation>
-<translation id="7885283703487484916">अल्प</translation>
 <translation id="7887192723714330082">स्क्रीन चालू आणि अनलॉक असते तेव्हा "Ok Google" ला प्रतिसाद द्या</translation>
 <translation id="7887334752153342268">डुप्लिकेट</translation>
 <translation id="7887864092952184874">Bluetooth माउस जोडला</translation>
@@ -5072,7 +5066,7 @@
 <translation id="81238879832906896">पिवळे आणि पांढरे फूल</translation>
 <translation id="8124313775439841391">व्यवस्‍थापित ONC</translation>
 <translation id="8126844665673008223">वेब Bluetooth</translation>
-<translation id="8127181497803323361">दस्तऐवज पातळी लक्ष्यांवरील (अन्यथा ज्यांनी विनंती केली नसते) स्पर्शप्रारंभ आणि स्पर्शहलविणे इव्हेंट ऐकणार्‍यांना निष्क्रिय म्हणून हाताळण्यासाठी सक्ती करते.</translation>
+<translation id="8127181497803323361">दस्तऐवज पातळी लक्ष्यांवरील (अन्यथा ज्यांनी विनंती केली नसते) स्पर्श करून प्रारंभ करणारे आणि स्पर्श करून हलवणारे इव्हेंट ऐकणार्‍यांना निष्क्रिय म्हणून हाताळण्यासाठी सक्ती करते.</translation>
 <translation id="8127322077195964840">स्थानिकहोस्टवरून लोड केलेल्या संसाधनांसाठी अवैध प्रमाणपत्रांना अनुमती द्या.</translation>
 <translation id="8129262335948759431">अज्ञात प्रमाण</translation>
 <translation id="8130269545914251658">टॅब ऑडिओ नि:शब्द करणे UI नियंत्रण</translation>

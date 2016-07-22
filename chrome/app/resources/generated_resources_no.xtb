@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Viser tellere for datavolum i dialogboksen Slett nettleserdata.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Logg på<ph name="END_SIGN_IN_LINK" /> for å kontrollere og se nettstedene denne personen besøker.</translation>
 <translation id="1097658378307015415">Gå inn som gjest for å aktivere nettverket <ph name="NETWORK_ID" /> før du logger deg på.</translation>
-<translation id="1104054824888299003">lang</translation>
 <translation id="1104652314727136854">Aktiver OS-integrering av filtilknytninger for Chrome-apper.</translation>
 <translation id="1105162038795579389">«<ph name="BUNDLE_NAME" />» legger til disse appene og utvidelsene for <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stopp</translation>
@@ -1866,7 +1865,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Sider som ikke lastes inn mens nettleseren er koblet fra nettet, blir bare lastet inn på nytt automatisk hvis fanene for sidene er synlige.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Avbryt nedlastingen}other{Avbryt nedlastingene}}</translation>
 <translation id="3512810056947640266">Nettadresse (valgfritt):</translation>
-<translation id="351486934407749662">veldig lang</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ønsker å dele innholdet på skjermen din. Velg hva du ønsker å dele.</translation>
 <translation id="3518086201899641494">Varsler om autentiseringsportal</translation>
 <translation id="3519867315646775981">Translitterasjon (shalom ← שלום)</translation>
@@ -3395,7 +3393,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="569109051430110155">Oppdag automatisk</translation>
 <translation id="5691596662111998220">Beklager, <ph name="FILE_NAME" /> eksisterer ikke lenger.</translation>
 <translation id="5694501201003948907">Zipper $1 elementer ...</translation>
-<translation id="5695323626817702678">kort</translation>
 <translation id="5697118958262594262">Oppdag viktig innhold som standard</translation>
 <translation id="5699533844376998780">Utvidelsen «<ph name="EXTENSION_NAME" />» har blitt lagt til.</translation>
 <translation id="5701101281789450335">Språk- og inndatainnstillinger</translation>
@@ -3818,7 +3815,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="630065524203833229">&amp;Avslutt</translation>
 <translation id="6304217058163308077">Det nye systemet for bokmerkeapper</translation>
 <translation id="6305012486838822927">Lao-tastatur</translation>
-<translation id="6305328361606238230">Motta pushmeldinger</translation>
 <translation id="6307722552931206656">Google-navnetjenere – <ph name="BEGIN_LINK" />Les mer<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Systemet er opptatt</translation>
 <translation id="6308937455967653460">Lagre lin&amp;ken som…</translation>
@@ -4512,7 +4508,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7339785458027436441">Kontroller staving mens du skriver</translation>
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kjører nå i full skjerm.</translation>
-<translation id="7341982465543599097">ekstremt kort</translation>
 <translation id="734303607351427494">Administrer søkemotorer</translation>
 <translation id="7343116142376328522">Ikke gi noen nettsteder tillatelse til å bruke nøkkelgenerering i skjemaer (anbefales)</translation>
 <translation id="7345706641791090287">Bekreft passordet</translation>
@@ -4889,7 +4884,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7881969471599061635">Slå av undertekstene</translation>
 <translation id="7884988936047469945">Eksperimentelle tilgjengelighetsfunksjoner</translation>
 <translation id="7885253890047913815">Nylige destinasjoner</translation>
-<translation id="7885283703487484916">meget kort</translation>
 <translation id="7887192723714330082">Svar «Ok Google» når skjermen er på og ulåst</translation>
 <translation id="7887334752153342268">Dupliser</translation>
 <translation id="7887864092952184874">En Bluetooth-mus er tilkoblet</translation>

@@ -182,7 +182,7 @@
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="2991174974383378012">Compartir con otros sitios web</translation>
 <translation id="3005723025932146533">Mostrar copia guardada</translation>
-<translation id="3008447029300691911">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" />. Cuando lo confirmes, la información de la tarjeta se compartirá con este sitio web.</translation>
+<translation id="3008447029300691911">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" />. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="3032412215588512954">¿Quieres volver a cargar este sitio web?</translation>
@@ -513,7 +513,7 @@
 <translation id="7219179957768738017">La conexión utiliza <ph name="SSL_VERSION" />.</translation>
 <translation id="7231308970288859235">¡Vaya! Debes pedir permiso a uno de tus padres para poder acceder a esta página.</translation>
 <translation id="7246609911581847514">Este mensaje aparece porque el administrador debe aprobar los sitios web nuevos cuando accedas a ellos por primera vez.</translation>
-<translation id="724975217298816891">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus detalles. Cuando confirmes los datos, la información de la tarjeta se compartirá con este sitio web.</translation>
+<translation id="724975217298816891">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus detalles. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu ordenador (<ph name="DATE_AND_TIME" />) no son correctas.</translation>
 <translation id="7265986070661382626">No puedes acceder a <ph name="SITE" /> en este momento porque el sitio web <ph name="BEGIN_LINK" />utiliza la fijación de certificados<ph name="END_LINK" />. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
 <translation id="7269802741830436641">Esta página web tiene un bucle de redireccionamiento</translation>
@@ -652,7 +652,7 @@
 <translation id="8866959479196209191">Esta página dice:</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8876793034577346603">No se ha podido analizar la configuración de red.</translation>
-<translation id="8877192140621905067">Cuando confirmes los datos, la información de la tarjeta se compartirá con este sitio web</translation>
+<translation id="8877192140621905067">Cuando confirmes la tarjeta, su información se compartirá con este sitio web</translation>
 <translation id="8891727572606052622">El modo de proxy no es válido.</translation>
 <translation id="889901481107108152">Esta función experimental no está disponible en tu plataforma.</translation>
 <translation id="8903921497873541725">Acercar</translation>

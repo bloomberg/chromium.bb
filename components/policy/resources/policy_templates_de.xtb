@@ -1789,7 +1789,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die "RemoveLRUIfDormant"-Strategie.</translation>
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
-<translation id="7381326101471547614">Hiermit wird die Verwendung des SPDY-Protokolls in <ph name="PRODUCT_NAME" /> verhindert. Wenn diese Richtlinie aktiviert ist, steht das SPDY-Protokoll in <ph name="PRODUCT_NAME" /> nicht zur Verfügung. Sollte sie deaktiviert werden, kann SPDY genutzt werden. Ist die Richtlinie nicht konfiguriert, steht SPDY zur Verfügung.</translation>
 <translation id="7384999953864505698">Lässt das QUIC-Protokoll zu</translation>
 <translation id="7406651467768226499">Gibt an, ob der automatisch ohne Verzögerung gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet werden soll.
 

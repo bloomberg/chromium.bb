@@ -1786,7 +1786,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli nie ustawisz tej zasady, funkcja automatycznego czyszczenia korzysta z domyślnej wbudowanej strategii. Obecnie to „RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
-<translation id="7381326101471547614">Wyłącza protokół SPDY w <ph name="PRODUCT_NAME" />. Po włączeniu tej zasady protokół SPDY jest niedostępny w <ph name="PRODUCT_NAME" />. W przeciwnym razie protokołu można używać. Jeśli zasada nie zostanie ustawiona, protokół SPDY będzie dostępny.</translation>
 <translation id="7384999953864505698">Zezwala na protokół QUIC</translation>
 <translation id="7406651467768226499">Czy zezwolić aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" />.
 

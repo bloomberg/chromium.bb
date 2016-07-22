@@ -49,7 +49,6 @@
 <translation id="1513352483775369820">نشانک‌ها و سابقه وب</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
-<translation id="1557201757634521564">شناسایی خودکار کدبندی</translation>
 <translation id="1612196535745283361">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. دسترسی به مکان <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
@@ -184,7 +183,6 @@
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
-<translation id="307329814453917357">‏پیشنهاد ترجمه صفحه‌ها با استفاده از ‏‫مترجم Google‬</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدیویی</translation>
 <translation id="3117051980354074377">‏برای دسترسی به نشانک‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
@@ -339,6 +337,7 @@
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5000922062037820727">مسدود (توصیه می‌شود)</translation>
+<translation id="5005498671520578047">کپی گذرواژه</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
@@ -367,9 +366,9 @@
 <translation id="528192093759286357">برای خروج از حالت تمام صفحه، از بالا صفحه را بکشید و دکمه برگشت را لمس کنید.</translation>
 <translation id="5284584623296338184">‏تغییرات در نشانک‌ها، سابقه، گذرواژه و سایر تنظیمات دیگر با حساب Google شما همگام‌سازی نخواهد شد. با این حال، داده‌های موجودتان در حساب Google شما باقی خواهند ماند.</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
-<translation id="5302048478445481009">زبان</translation>
 <translation id="5304593522240415983">این قسمت باید پر شود</translation>
 <translation id="5308380583665731573">اتصال</translation>
+<translation id="5308603654685598744">‏‫اگر این قابلیت روشن باشد، Chrome ترجمه صفحات نوشته شده به زبان‌های دیگر را با استفاده از ‏‫مترجم Google‬ پیشنهاد می‌دهد.</translation>
 <translation id="5313967007315987356">افزودن سایت</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5324858694974489420">تنظیمات والدین</translation>
@@ -382,7 +381,6 @@
 <translation id="5400569084694353794">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
 <translation id="5414836363063783498">در حال تأیید...</translation>
 <translation id="5423934151118863508">صفحاتی که بیشترین بازدید را از آنها داشته‌اید در اینجا نمایان می‌شوند</translation>
-<translation id="5424715742813396254">ویرایش نام/گذرواژه ذخیره شده یا مورد استثنا</translation>
 <translation id="5437003064129843501">پیشنهاد محتوای شخصی‌سازی‌شده درحال حاضر غیرفعال است، چون داده‌های همگام‌سازی‌شده‌تان با عبارت عبور سفارشی محافظت می‌شود.</translation>
 <translation id="544291274896356069">اگر این پیوند در یک برنامه خارجی باز شود از حالت ناشناس خارج می‌شوید. ادامه می‌دهید؟</translation>
 <translation id="5447201525962359567">همه فضای ذخیره سایت‌ها، ازجمله کوکی‌ها و سایر داده‌های ذخیره‌شده در دستگاه</translation>
@@ -461,7 +459,6 @@
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="6320088164292336938">لرزش</translation>
 <translation id="6324034347079777476">‏همگام‌سازی سیستم Android غیرفعال شد</translation>
-<translation id="6324360525379265737">تعیین کدبندی نویسه به‌صورت خودکار</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
 <translation id="6364438453358674297">پیشنهاد از سابقه حذف شود؟</translation>
@@ -494,6 +491,7 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6647073004883890710">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه <ph name="USERNAME" /> را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
@@ -655,6 +653,7 @@
 <translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
 <translation id="8493948351860045254">آزاد کردن فضا</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
+<translation id="8503813439785031346">نام کاربری</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="8518901949365209398">‏این سایت از یک پیکربندی امنیتی ضعیف (امضاهای SHA-1) استفاده می‌کند، بنابراین ممکن است اتصال شما خصوصی نباشد.</translation>
 <translation id="8525306231823319788">تمام صفحه</translation>

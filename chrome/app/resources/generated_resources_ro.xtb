@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Afișează contoarele pentru volumul de date în caseta de dialog Șterge datele de navigare.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Conectează-te<ph name="END_SIGN_IN_LINK" /> pentru a controla și a vedea site-urile accesate de această persoană.</translation>
 <translation id="1097658378307015415">Înainte de a vă conecta, începeți o sesiune pentru invitați pentru activarea rețelei <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">lungă</translation>
 <translation id="1104652314727136854">Activați integrarea cu sistemul de operare pentru asocierile de fișiere pentru aplicațiile Chrome.</translation>
 <translation id="1105162038795579389">„<ph name="BUNDLE_NAME" />” adaugă aceste aplicații și extensii pentru <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Oprește</translation>
@@ -1871,7 +1870,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Paginile care nu se încarcă când browserul este offline se vor reîncărca automat numai dacă fila acestora este vizibilă.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Anulează descărcarea}few{Anulează descărcările}other{Anulează descărcările}}</translation>
 <translation id="3512810056947640266">Adresă URL (opțională):</translation>
-<translation id="351486934407749662">foarte lungă</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> dorește să trimită conținut de pe ecran. Alegeți ce doriți să trimiteți.</translation>
 <translation id="3518086201899641494">Notificări despre portaluri captive</translation>
 <translation id="3519867315646775981">Transliterație (shalom ← שלום)</translation>
@@ -3405,7 +3403,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="569109051430110155">Detectare automată</translation>
 <translation id="5691596662111998220">Hopa, <ph name="FILE_NAME" /> nu mai există.</translation>
 <translation id="5694501201003948907">Se arhivează $1 elemente...</translation>
-<translation id="5695323626817702678">scurtă</translation>
 <translation id="5697118958262594262">Detectează conținutul important în mod prestabilit</translation>
 <translation id="5699533844376998780">Extensia „<ph name="EXTENSION_NAME" />” a fost adăugată.</translation>
 <translation id="5701101281789450335">Setări pentru limbă și introducerea textului...</translation>
@@ -3828,7 +3825,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="630065524203833229">&amp;Ieși</translation>
 <translation id="6304217058163308077">Noul sistem pentru aplicațiile marcaj</translation>
 <translation id="6305012486838822927">Tastatură laoțiană</translation>
-<translation id="6305328361606238230">Primești mesaje push?</translation>
 <translation id="6307722552931206656">Servere de nume Google – <ph name="BEGIN_LINK" />Aflați mai multe<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistem ocupat</translation>
 <translation id="6308937455967653460">Salvează lin&amp;kul ca...</translation>
@@ -4522,7 +4518,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7339785458027436441">Verifică ortografia pe măsură ce se introduce text</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> este acum pe ecran complet.</translation>
-<translation id="7341982465543599097">extrem de scurtă</translation>
 <translation id="734303607351427494">Gestionează motoarele de căutare...</translation>
 <translation id="7343116142376328522">Nu permite niciunui site să folosească generarea cheilor în formulare (recomandat)</translation>
 <translation id="7345706641791090287">Confirmă parola</translation>
@@ -4907,7 +4902,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7881969471599061635">Dezactivează subtitrările</translation>
 <translation id="7884988936047469945">Funcții experimentale de accesibilitate</translation>
 <translation id="7885253890047913815">Destinații recente</translation>
-<translation id="7885283703487484916">foarte scurtă</translation>
 <translation id="7887192723714330082">Răspunde la „Ok Google” dacă ecranul este pornit și deblocat</translation>
 <translation id="7887334752153342268">Dublură</translation>
 <translation id="7887864092952184874">Mouse Bluetooth conectat</translation>

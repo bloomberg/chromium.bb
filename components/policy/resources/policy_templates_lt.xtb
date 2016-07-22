@@ -1942,13 +1942,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, automatinis išvalymas naudos numatytąją įdiegtą strategiją. Šiuo metu tai strategija „RemoveLRUIfDormant“.</translation>
 <translation id="7336878834592315572">Išsaugoti slapukus vykstant sesijai</translation>
 <translation id="7340034977315324840">Pranešti įrenginio veiklos laiką</translation>
-<translation id="7381326101471547614">SPDY protokolas bus neleidžiamas naudoti „<ph name="PRODUCT_NAME" />“.
-
-      Jei ši politika įgalinta, SPDY protokolas nebus galimas „<ph name="PRODUCT_NAME" />“.
-
-      Nustačius, kad ši politika neleidžiama, bus galima naudoti SPDY.
-
-      Jei politika palikta nenustatyta, SPDY bus galima naudoti.</translation>
 <translation id="7384999953864505698">Leidžiamas protokolas QUIC</translation>
 <translation id="7406651467768226499">Ar automatiškai be delsos paleistai viešojo terminalo programai bus leidžiama valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją.
 

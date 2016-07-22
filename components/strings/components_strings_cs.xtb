@@ -404,7 +404,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
-<translation id="5784606427469807560">Při ověřování karty došlo k problému. Zkontrolujte připojení k internetu a zkuste to znovu.</translation>
+<translation id="5784606427469807560">Při ověřování vaší karty došlo k problému. Zkontrolujte připojení k internetu a zkuste to znovu.</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>
 <translation id="5810442152076338065">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití zastaralé šifrovací sady.</translation>
 <translation id="5813119285467412249">&amp;Opakovat přidání</translation>
@@ -477,7 +477,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6839929833149231406">Region</translation>
 <translation id="6874604403660855544">&amp;Opakovat přidání</translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
-<translation id="6895330447102777224">Karta je ověřena</translation>
+<translation id="6895330447102777224">Vaše karta je ověřena</translation>
 <translation id="6897140037006041989">User agent</translation>
 <translation id="6903907808598579934">Zapnout synchronizaci</translation>
 <translation id="6915804003454593391">Uživatel:</translation>

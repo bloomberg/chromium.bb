@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Броячите за обема на данните се показват в диалоговия прозорец „Изчистване на данните за сърфирането“.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Влезте в профила си<ph name="END_SIGN_IN_LINK" />, за да контролирате и преглеждате посещаваните от този човек уебсайтове.</translation>
 <translation id="1097658378307015415">Преди да влезете в профила си, моля, влезте като гост, за да активирате мрежата <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">дълго</translation>
 <translation id="1104652314727136854">Активиране на интегрирането с ОС за асоцииранията на файлове за приложенията в Chrome.</translation>
 <translation id="1105162038795579389">„<ph name="BUNDLE_NAME" />“ добавя следните приложения и разширения за <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Стоп</translation>
@@ -1868,7 +1867,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3512284449647229026">Страниците, които не се заредят успешно, докато браузърът е офлайн, ще се презареждат автоматично само ако разделите им са видими.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Анулиране на изтеглянето}other{Анулиране на изтеглянията}}</translation>
 <translation id="3512810056947640266">URL адрес (по избор):</translation>
-<translation id="351486934407749662">много дълго</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> иска да сподели съдържанието на екрана ви. Изберете какво да се сподели.</translation>
 <translation id="3518086201899641494">Известия за портали за удостоверяване</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
@@ -3403,7 +3401,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="569109051430110155">Автоматично откриване</translation>
 <translation id="5691596662111998220">Ами сега! Файлът „<ph name="FILE_NAME" />“ вече не съществува.</translation>
 <translation id="5694501201003948907">$1 елемента се компресират...</translation>
-<translation id="5695323626817702678">кратко</translation>
 <translation id="5697118958262594262">Откриване на важното съдържание, по подразбиране</translation>
 <translation id="5699533844376998780">Разширението „<ph name="EXTENSION_NAME" />“ е добавено.</translation>
 <translation id="5701101281789450335">Настройки за език и въвеждане...</translation>
@@ -3826,7 +3823,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="630065524203833229">Из&amp;ход</translation>
 <translation id="6304217058163308077">Новата система за отметки като приложения</translation>
 <translation id="6305012486838822927">Лаоска клавиатура</translation>
-<translation id="6305328361606238230">Получаване на насочени съобщения</translation>
 <translation id="6307722552931206656">Сървъри на Google за имена – <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Системата е заета</translation>
 <translation id="6308937455967653460">З&amp;апазване на връзката като...</translation>
@@ -4520,7 +4516,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7339785458027436441">Проверка на правописа при въвеждане</translation>
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> сега е на цял екран.</translation>
-<translation id="7341982465543599097">изключително кратко</translation>
 <translation id="734303607351427494">Управление на търсещите машини...</translation>
 <translation id="7343116142376328522">Забраняване на сайтовете да използват функцията за генериране на ключове във формуляри (препоръчително)</translation>
 <translation id="7345706641791090287">Потвърждаване на паролата</translation>
@@ -4905,7 +4900,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7881969471599061635">Деактивиране на субтитрите</translation>
 <translation id="7884988936047469945">Експериментални функции за достъпност</translation>
 <translation id="7885253890047913815">Скорошни местоназначения</translation>
-<translation id="7885283703487484916">много кратко</translation>
 <translation id="7887192723714330082">Реакция на „Ok Google“, когато екранът работи и е отключен</translation>
 <translation id="7887334752153342268">Дублиране</translation>
 <translation id="7887864092952184874">Мишката с Bluetooth е сдвоена</translation>

@@ -49,7 +49,6 @@
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
-<translation id="1557201757634521564">Detectar codificação automaticamente</translation>
 <translation id="1612196535745283361">O Chrome precisa ter acesso ao local para verificar dispositivos. O acesso ao local está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Câmera</translation>
 <translation id="1623104350909869708">Impedir que esta página crie caixas de diálogo adicionais</translation>
@@ -184,7 +183,6 @@
 <translation id="3029704984691124060">As senhas não correspondem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Salvar vídeo</translation>
-<translation id="307329814453917357">Oferecer para traduzir páginas usando o Google Tradutor</translation>
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
 <translation id="3090193911106258841">Acessando entrada de áudio e vídeo</translation>
 <translation id="3117051980354074377">Para ver os favoritos dos seus outros dispositivos, faça login no Chrome.</translation>
@@ -339,6 +337,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
 <translation id="5000922062037820727">Bloqueada (recomendado)</translation>
+<translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
@@ -367,9 +366,9 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão "Voltar" para sair da tela cheia.</translation>
 <translation id="5284584623296338184">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
 <translation id="5301954838959518834">Entendi</translation>
-<translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Este campo não pode ficar em branco</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
+<translation id="5308603654685598744">Quando este recurso está ativado, o Google Chrome oferece a tradução de páginas escritas em outros idiomas usando o Google Tradutor.</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5324858694974489420">Configurações parentais</translation>
@@ -382,7 +381,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Verificando...</translation>
 <translation id="5423934151118863508">Suas páginas mais visitadas aparecerão aqui</translation>
-<translation id="5424715742813396254">Editar nome/senha salvos ou exceção</translation>
 <translation id="5437003064129843501">As sugestões personalizadas de conteúdo estão desativadas no momento, pois seus dados sincronizados estão protegidos com uma senha personalizada.</translation>
 <translation id="544291274896356069">Se este link for aberto em um aplicativo externo, você sairá do modo de navegação anônima. Continuar?</translation>
 <translation id="5447201525962359567">Todos os dados de armazenamento de sites, incluindo cookies e outros dados armazenados localmente</translation>
@@ -461,7 +459,6 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6324034347079777476">Sincronização do sistema Android desativada</translation>
-<translation id="6324360525379265737">Determinar automaticamente a codificação de caracteres</translation>
 <translation id="6333140779060797560">Compartilhar via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Criptografia</translation>
 <translation id="6364438453358674297">Remover sugestão do histórico?</translation>
@@ -494,6 +491,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6647073004883890710">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize a senha de <ph name="USERNAME" /> para este site?</translation>
 <translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Senha</translation>
 <translation id="6659594942844771486">Guia</translation>
 <translation id="666268767214822976">Usar um serviço de previsão para mostrar consultas relacionadas e sites populares quando você digitar na barra de endereços</translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
@@ -655,6 +653,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8481940801237642152">Sua conexão a este site é particular, mas alguém na rede pode conseguir alterar a aparência da página.</translation>
 <translation id="8493948351860045254">Liberar espaço</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
+<translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
 <translation id="8518901949365209398">Este site usa uma configuração de segurança fraca (assinaturas SHA-1). Portanto sua conexão pode não ser particular.</translation>
 <translation id="8525306231823319788">Tela cheia</translation>

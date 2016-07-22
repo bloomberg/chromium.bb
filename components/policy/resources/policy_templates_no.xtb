@@ -1889,13 +1889,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
-<translation id="7381326101471547614">Deaktiverer bruk av SPDY-protokollen i <ph name="PRODUCT_NAME" />.
-
-      Hvis disse retningslinjene er aktivert, blir ikke SPDY-protokollen tilgjengelig i <ph name="PRODUCT_NAME" />.
-
-      Deaktivering av disse retningslinjene tillater bruk av SPDY.
-
-      Hvis disse retningslinjene ikke angis, blir SPDY tilgjengelig.</translation>
 <translation id="7384999953864505698">Tillater QUIC-protokollen</translation>
 <translation id="7406651467768226499">Spesifiserer om den automatisk startede kioskappen uten forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen.
 

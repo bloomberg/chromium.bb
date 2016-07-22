@@ -1946,13 +1946,6 @@
       Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
-<translation id="7381326101471547614">Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME" />.
-
-      Om den här policyn är aktiverad är SPDY-protokollet inte tillgängligt i <ph name="PRODUCT_NAME" />.
-
-      Om den här policyn inaktiveras kan SPDY användas.
-
-      Om den här policyn inte anges kommer SPDY att bli tillgängligt.</translation>
 <translation id="7384999953864505698">Tillåter QUIC-protokoll</translation>
 <translation id="7406651467768226499">Tillåta eller inte tillåta att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen.
 

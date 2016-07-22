@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">ब्राउज़िंग डेटा साफ़ करें संवाद में डेटा की मात्रा के काउंटर दिखाता है.</translation>
 <translation id="1097507499312291972">इस व्यक्ति द्वारा देखी जाने वाली वेबसाइटें नियंत्रित करने और देखने के लिए <ph name="BEGIN_SIGN_IN_LINK" />प्रवेश करें<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">प्रवेश करने से पहले, कृपया <ph name="NETWORK_ID" /> नेटवर्क सक्रिय करने के लिए अतिथि के रूप में प्रविष्ट हों</translation>
-<translation id="1104054824888299003">लंबा</translation>
 <translation id="1104652314727136854">Chrome Apps के लिए फ़ाइलों के समूह का OS एकीकरण सक्षम करें.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />", <ph name="USER_NAME" /> के लिए इन ऐप्स और एक्सटेंशन को जोड़ता है:</translation>
 <translation id="1108600514891325577">&amp;रोकें</translation>
@@ -306,7 +305,7 @@
 <translation id="143027896309062157">अपने कंप्यूटर पर और देखी जाने वाली वेबसाइटों पर मौजूद अपना सभी डेटा पढ़ें और बदलें</translation>
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1432581352905426595">खोज इंजन प्रबंधित करें</translation>
-<translation id="1434696352799406980">यह आपके स्टार्टअप पृष्ठ, नया टैब पृष्ठ, खोज इंजन और पिन किए गए टैब को रीसेट करेगा. यह सभी एक्सटेंशन को भी अक्षम करेगा और कुकी जैसे अस्थायी डेटा को साफ़ करेगा. आपके बुकमार्क, इतिहास और सहेजे गए पासवर्ड साफ़ नहीं किए जाएंगे.</translation>
+<translation id="1434696352799406980">यह आपके शुरुआती पन्ने, नया टैब पृष्ठ, खोज इंजन और पिन किए गए टैब को रीसेट करेगा. यह सभी एक्सटेंशन को भी अक्षम करेगा और कुकी जैसे अस्थायी डेटा को साफ़ करेगा. आपके बुकमार्क, इतिहास और सहेजे गए पासवर्ड साफ़ नहीं किए जाएंगे.</translation>
 <translation id="1434886155212424586">मुख्यपृष्ठ, नया टैब पृष्ठ है</translation>
 <translation id="1435550882135542937">एक्सटेंशन टूलबार रीडिज़ाइन</translation>
 <translation id="1436402875660227532">ध्यान दें: इन सेटिंग का उपयोग अब इस सिस्टम पर नहीं किया जाता, लेकिन आप अब भी उन्हें देख और संपादित कर सकते हैं.</translation>
@@ -703,7 +702,7 @@
 <translation id="1976323404609382849">एकाधिक साइटों से कुकी को अवरोधित किया गया.</translation>
 <translation id="1979280758666859181">आप <ph name="PRODUCT_NAME" /> के पुराने वर्शन वाले चैनल में बदल रहे हैं. चैनल बदलाव तब लागू किया जाएगा जब चैनल का वर्शन आपके डिवाइस पर वर्तमान में इंस्टॉल किए गए वर्शन से मिलान करेगा.</translation>
 <translation id="1979444449436715782">टैब कैप्चर आकार घटाने की गुणवत्ता.</translation>
-<translation id="1979718561647571293">क्या यह वही स्टार्टअप पृष्ठ है जिसकी आप अपेक्षा कर रहे थे?</translation>
+<translation id="1979718561647571293">क्या यह वही शुरुआती पन्ना है जिसकी आप अपेक्षा कर रहे थे?</translation>
 <translation id="1983959805486816857">आपके द्वारा नया निगरानी में रखा गया उपयोगकर्ता बनाए जाने के बाद, आप <ph name="MANAGEMENT_URL" /> पर कभी भी किसी भी डिवाइस से सेटिंग प्रबंधित कर सकते हैं.</translation>
 <translation id="1984603991036629094">आर्मेनियाई फ़ोनेटिक कीबोर्ड</translation>
 <translation id="1984642098429648350">विंडो को दाईं ओर डॉक करें</translation>
@@ -1872,7 +1871,6 @@
 <translation id="3512284449647229026">ब्राउज़र के ऑफ़लाइन होने पर विफल होने वाले पृष्ठ केवल तभी स्वत:-रीलोड किए जाएंगे यदि टैब दृश्यमान हो.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{डाउनलोड रोकें}one{डाउनलोड रोकें}other{डाउनलोड रोकें}}</translation>
 <translation id="3512810056947640266">URL (वैकल्पिक):</translation>
-<translation id="351486934407749662">अधिक समय तक</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> आपकी स्क्रीन पर मौजूद सामग्रियों को साझा करना चाहता है. चुनें कि आप क्या साझा करना चाहते हैं.</translation>
 <translation id="3518086201899641494">कैप्टिव पोर्टल के बारे में सूचनाएं</translation>
 <translation id="3519867315646775981">लिप्यंतरण (shalom ← שלום)</translation>
@@ -3406,7 +3404,6 @@
 <translation id="569109051430110155">स्वतः पता लगाएं</translation>
 <translation id="5691596662111998220">ओह, <ph name="FILE_NAME" /> अब मौजूद नहीं है.</translation>
 <translation id="5694501201003948907">$1 आइटम ज़िप कर रहा है.</translation>
-<translation id="5695323626817702678">संक्षिप्त</translation>
 <translation id="5697118958262594262">महत्‍वपूर्ण सामग्री डिफ़ॉल्‍ट रूप से पता करें</translation>
 <translation id="5699533844376998780">एक्‍सटेंशन "<ph name="EXTENSION_NAME" />" जोड़ा गया.</translation>
 <translation id="5701101281789450335">भाषा और अक्षर सेटिंग...</translation>
@@ -3831,7 +3828,6 @@
 <translation id="630065524203833229">&amp;बाहर निकलें</translation>
 <translation id="6304217058163308077">नया बुकमार्क ऐप सिस्‍टम</translation>
 <translation id="6305012486838822927">लाओ कीबोर्ड</translation>
-<translation id="6305328361606238230">पुश संदेश प्राप्‍त करें</translation>
 <translation id="6307722552931206656">Google नाम सर्वर - <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">सिस्‍टम व्‍यस्‍त है</translation>
 <translation id="6308937455967653460">इस रूप में लिं&amp;क सहेजें...</translation>
@@ -4528,7 +4524,6 @@
 <translation id="7339785458027436441">लिखते समय वर्तनी की जांच करें</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> अब पूर्ण स्‍क्रीन है.</translation>
-<translation id="7341982465543599097">बहुत कम</translation>
 <translation id="734303607351427494">खोज इंजन प्रबंधित करें...</translation>
 <translation id="7343116142376328522">किसी भी साइट को फ़ॉर्म में कुंजी जेनरेशन का उपयोग करने की अनुमति ना दें (अनुशंसित)</translation>
 <translation id="7345706641791090287">अपने पासवर्ड की पुष्टि करें</translation>
@@ -4818,7 +4813,7 @@
 <translation id="775622227562445982">त्वरित रूप से टैब/विंडो बंद करें</translation>
 <translation id="7756363132985736290">प्रमाणपत्र पहले से मौजूद है.</translation>
 <translation id="7757425985031934767">स्पर्श द्वारा प्रारंभ किया जाने वाला खींचें और छोड़ें</translation>
-<translation id="7760004034676677601">क्या यह वही स्टार्टअप पृष्ठ है जिसकी आप अपेक्षा कर रहे थे?</translation>
+<translation id="7760004034676677601">क्या यह वही शुरुआती पन्ना है जिसकी आप अपेक्षा कर रहे थे?</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> से <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">ले जाएं</translation>
@@ -4913,7 +4908,6 @@
 <translation id="7881969471599061635">उपशीर्षक अक्षम करें</translation>
 <translation id="7884988936047469945">प्रयोगात्मक सरल-योग्यता सुविधाएं</translation>
 <translation id="7885253890047913815">हाल ही के गंतव्य</translation>
-<translation id="7885283703487484916">बहुत कम</translation>
 <translation id="7887192723714330082">स्‍क्रीन के चालू होने तथा अनलॉक होने पर "Ok Google" को प्रतिसाद दें</translation>
 <translation id="7887334752153342268">डुप्लिकेट</translation>
 <translation id="7887864092952184874">ब्लूटूथ माउस युग्मित किया गया</translation>

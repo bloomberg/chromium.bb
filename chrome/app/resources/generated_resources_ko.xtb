@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">인터넷 사용 기록 삭제 대화 상자에 데이터 볼륨 카운터를 표시합니다.</translation>
 <translation id="1097507499312291972">이 사용자가 방문하는 웹사이트를 제어하고 조회하려면 <ph name="BEGIN_SIGN_IN_LINK" />로그인<ph name="END_SIGN_IN_LINK" />합니다.</translation>
 <translation id="1097658378307015415">로그인하기 전에 손님으로 로그인하여 <ph name="NETWORK_ID" /> 네트워크를 활성화하세요.</translation>
-<translation id="1104054824888299003">길게</translation>
 <translation id="1104652314727136854">Chrome 앱의 파일 연결에 OS 통합을 사용 설정합니다.</translation>
 <translation id="1105162038795579389">'<ph name="BUNDLE_NAME" />' 설치 시 <ph name="USER_NAME" />에게 추가되는 앱과 확장 프로그램은 다음과 같습니다.</translation>
 <translation id="1108600514891325577">중지(&amp;S)</translation>
@@ -1874,7 +1873,6 @@
 <translation id="3512284449647229026">브라우저가 오프라인 상태일 때 로드하지 못한 페이지는 탭이 표시되면 자동으로 새로고침됩니다.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{다운로드 취소}other{다운로드 취소}}</translation>
 <translation id="3512810056947640266">URL(선택사항):</translation>
-<translation id="351486934407749662">매우 길게</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" />에서 내 화면의 콘텐츠를 공유하려고 합니다. 공유할 항목을 선택하세요.</translation>
 <translation id="3518086201899641494">웹포털 인증 알림</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
@@ -3408,7 +3406,6 @@
 <translation id="569109051430110155">자동 선택</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" />이(가) 더 이상 존재하지 않습니다.</translation>
 <translation id="5694501201003948907">$1개 항목 압축 중...</translation>
-<translation id="5695323626817702678">짧게</translation>
 <translation id="5697118958262594262">기본적으로 중요한 콘텐츠 감지</translation>
 <translation id="5699533844376998780">확장 프로그램 '<ph name="EXTENSION_NAME" />'이(가) 추가되었습니다.</translation>
 <translation id="5701101281789450335">언어 및 입력 설정...</translation>
@@ -3833,7 +3830,6 @@
 <translation id="630065524203833229">종료(&amp;X)</translation>
 <translation id="6304217058163308077">새 북마크 앱 시스템</translation>
 <translation id="6305012486838822927">라오어 키보드</translation>
-<translation id="6305328361606238230">푸시 메시지 받기</translation>
 <translation id="6307722552931206656">Google 이름 서버 - <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">시스템을 사용 중</translation>
 <translation id="6308937455967653460">다른 이름으로 링크 저장(&amp;K)...</translation>
@@ -4529,7 +4525,6 @@
 <translation id="7339785458027436441">입력 시 맞춤법 검사</translation>
 <translation id="7339898014177206373">새 창</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" />이(가) 이제 전체화면으로 표시됩니다.</translation>
-<translation id="7341982465543599097">매우 짧게</translation>
 <translation id="734303607351427494">검색엔진 관리...</translation>
 <translation id="7343116142376328522">모든 사이트에서 양식 내에 키 생성 사용 허용 안함(권장)</translation>
 <translation id="7345706641791090287">비밀번호 확인</translation>
@@ -4914,7 +4909,6 @@
 <translation id="7881969471599061635">자막 사용 중지</translation>
 <translation id="7884988936047469945">실험용 접근성 기능</translation>
 <translation id="7885253890047913815">최근 대상</translation>
-<translation id="7885283703487484916">매우 짧게</translation>
 <translation id="7887192723714330082">화면이 켜지고 잠금 해제된 경우 'Ok Google'에 응답합니다.</translation>
 <translation id="7887334752153342268">새 탭에서 보기</translation>
 <translation id="7887864092952184874">블루투스 마우스 페어링됨</translation>

@@ -1779,7 +1779,6 @@ desactivarlo).</translation>
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada, que actualmente es "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la sesión</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
-<translation id="7381326101471547614">Permite inhabilitar el protocolo SPDY en <ph name="PRODUCT_NAME" />. Si se habilita esta política, el protocolo SPDY no estará disponible en <ph name="PRODUCT_NAME" />. Si se inhabilita esta política, se podrá utilizar el protocolo SPDY. Si no se establece esta política, el protocolo SPDY estará disponible.</translation>
 <translation id="7384999953864505698">Permite el protocolo QUIC</translation>
 <translation id="7406651467768226499">Determina si se permite que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" />.
 

@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Zobrazuje počítadlá objemu dát v dialógovom okne Vymazanie údajov prehliadania.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Prihláste sa<ph name="END_SIGN_IN_LINK" />, aby ste mohli ovládať a zobrazovať webové stránky, ktoré táto osoba navštevuje.</translation>
 <translation id="1097658378307015415">Ak chcete aktivovať sieť <ph name="NETWORK_ID" />, vstúpte pred prihlásením ako hosť</translation>
-<translation id="1104054824888299003">dlhé</translation>
 <translation id="1104652314727136854">Povolí integráciu priradení súborov pre aplikácie Chrome do operačného systému.</translation>
 <translation id="1105162038795579389">Balík <ph name="BUNDLE_NAME" /> pridá pre používateľa <ph name="USER_NAME" /> tieto aplikácie a rozšírenia:</translation>
 <translation id="1108600514891325577">&amp;Zastaviť</translation>
@@ -1873,7 +1872,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Stránky, ktoré sa nedajú načítať, keď je prehliadač offline, budú automaticky znova načítané iba vtedy, keď bude ich karta viditeľná.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Zrušiť sťahovanie}few{Zrušiť sťahovania}many{Zrušiť sťahovania}other{Zrušiť sťahovania}}</translation>
 <translation id="3512810056947640266">Webová adresa (voliteľné):</translation>
-<translation id="351486934407749662">veľmi dlhé</translation>
 <translation id="3517839692979918726">Aplikácia <ph name="APP_NAME" /> chce zdieľať obsah vašej obrazovky. Vyberte, čo chcete zdieľať.</translation>
 <translation id="3518086201899641494">Upozornenia na prihlasovacie portály</translation>
 <translation id="3519867315646775981">Prepis (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="569109051430110155">Zistiť automaticky</translation>
 <translation id="5691596662111998220">Hops, súbor <ph name="FILE_NAME" /> už neexistuje.</translation>
 <translation id="5694501201003948907">Prebieha komprimovanie $1 položiek...</translation>
-<translation id="5695323626817702678">krátke</translation>
 <translation id="5697118958262594262">Zisťovať predvolene dôležitý obsah</translation>
 <translation id="5699533844376998780">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané.</translation>
 <translation id="5701101281789450335">Jazyk a nastavenia vstupu...</translation>
@@ -3832,7 +3829,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="630065524203833229">U&amp;končiť</translation>
 <translation id="6304217058163308077">Nový systém záložkových aplikácií</translation>
 <translation id="6305012486838822927">Klávesnica pre laoštinu</translation>
-<translation id="6305328361606238230">Prijímať správy push</translation>
 <translation id="6307722552931206656">Menné servery Google – <ph name="BEGIN_LINK" />Viac informácií<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Systém je zaneprázdnený</translation>
 <translation id="6308937455967653460">Uložiť &amp;odkaz ako...</translation>
@@ -4528,7 +4524,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="7339785458027436441">Kontrolovať pravopis počas písania</translation>
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="7340431621085453413">Stránka <ph name="FULLSCREEN_ORIGIN" /> sa teraz zobrazuje na celú obrazovku.</translation>
-<translation id="7341982465543599097">veľmi krátke</translation>
 <translation id="734303607351427494">Spravovať vyhľadávače...</translation>
 <translation id="7343116142376328522">Nepovoliť žiadnym webom používať generovanie kľúčov vo formulároch (odporúčané)</translation>
 <translation id="7345706641791090287">Potvrdenie hesla</translation>
@@ -4913,7 +4908,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="7881969471599061635">Zakázať titulky</translation>
 <translation id="7884988936047469945">Experimentálne funkcie dostupnosti</translation>
 <translation id="7885253890047913815">Nedávne ciele</translation>
-<translation id="7885283703487484916">veľmi krátke</translation>
 <translation id="7887192723714330082">Reagovať na „Ok Google“, keď je obrazovka zapnutá a odomknutá</translation>
 <translation id="7887334752153342268">Duplikovať</translation>
 <translation id="7887864092952184874">Myš Bluetooth bola spárovaná</translation>

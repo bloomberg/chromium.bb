@@ -1246,7 +1246,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 menit.
       Frekuensi minimum adalah 30 detik dan maksimum 24 jam - nilai
-      di luar rentang ini akan dimasukkan dalam rentang ini.</translation>
+      di luar rentang ini akan dimasukkan ke rentang ini.</translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
 <translation id="5560039246134246593">Menambahkan parameter ke pengambilan bibit Variasi di <ph name="PRODUCT_NAME" />.
 
@@ -1796,7 +1796,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini tidak disetel, pembersihan otomatis menggunakan strategi yang tertanam secara default. Saat ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Menyimpan cookie selama durasi sesi</translation>
 <translation id="7340034977315324840">Laporkan waktu aktivitas perangkat</translation>
-<translation id="7381326101471547614">Menonaktifkan penggunaan protokol SPDY di <ph name="PRODUCT_NAME" />. Jika kebijakan ini diaktifkan, protokol SPDY tidak akan tersedia di <ph name="PRODUCT_NAME" />. Menyetel kebijakan ini sebagai dinonaktifkan akan mengizinkan penggunaan SPDY. Jika kebijakan ini tidak disetel, SPDY akan tersedia.</translation>
 <translation id="7384999953864505698">Memungkinkan protokol QUIC</translation>
 <translation id="7406651467768226499">Mengizinkan peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /> atau tidak.
 

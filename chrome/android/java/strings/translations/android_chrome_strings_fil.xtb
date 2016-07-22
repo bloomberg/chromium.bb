@@ -49,7 +49,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1513352483775369820">Bookmark at history ng web</translation>
 <translation id="1549000191223877751">Lumipat sa ibang window</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
-<translation id="1557201757634521564">Awtomatikong i-detect ang pag-e-encode</translation>
 <translation id="1612196535745283361">Kailangan ng Chrome ng access sa lokasyon upang magkapag-scan ng mga device. Ang access sa lokasyon ay <ph name="BEGIN_LINK" />naka-off para sa device na ito<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Pigilan ang pahinang ito sa paggawa ng mga karagdagang dialog</translation>
@@ -184,7 +183,6 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="3029704984691124060">Hindi nagtutugma ang mga passphrase</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">I-save ang video</translation>
-<translation id="307329814453917357">Mag-alok na magsalin ng mga page sa pamamagitan ng Google Translate</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="3090193911106258841">Ina-access ang input ng audio at video</translation>
 <translation id="3117051980354074377">Upang mailagay ang iyong mga bookmark sa iba mo pang mga device, mag-sign in sa Chrome.</translation>
@@ -339,6 +337,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4988526792673242964">Mga Page</translation>
 <translation id="4996978546172906250">Ibahagi gamit ang</translation>
 <translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
+<translation id="5005498671520578047">Kopyahin password</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -367,9 +366,9 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="528192093759286357">I-drag mula sa itaas at pindutin ang button na bumalik upang lumabas sa full screen.</translation>
 <translation id="5284584623296338184">Hindi na masi-sync sa iyong Google Account ang mga pagbabago sa iyong mga bookmark, history, password at iba pang mga setting. Gayunpaman, mananatiling nakaimbak sa iyong Google account ang iyong kasalukuyang data.</translation>
 <translation id="5301954838959518834">OK, nakuha ko na</translation>
-<translation id="5302048478445481009">Wika</translation>
 <translation id="5304593522240415983">Hindi maaaring maging blangko ang field na ito</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
+<translation id="5308603654685598744">Kapag naka-on ang feature na ito, mag-aalok ang Chrome na magsalin ng mga page na nakasulat sa iba pang mga wika gamit ang Google Translate.</translation>
 <translation id="5313967007315987356">Magdagdag ng site</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5324858694974489420">Mga Setting para sa Magulang</translation>
@@ -382,7 +381,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="5400569084694353794">Kapag ginamit mo ang application na ito, ang ibig sabihin, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Patakaran sa Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="5414836363063783498">Vine-verify…</translation>
 <translation id="5423934151118863508">Lalabas dito ang mga page na madalas mong bisitahin</translation>
-<translation id="5424715742813396254">I-edit ang naka-save na pangalan/password o pagbubukod</translation>
 <translation id="5437003064129843501">Kasalukuyang naka-disable ang mga naka-personalize na suhestyon sa content, dahil pinoprotektahan ng custom na passphrase ang iyong naka-sync na data.</translation>
 <translation id="544291274896356069">Aalis ka sa incognito mode kung bubuksan mo ang link na ito sa isang panlabas na application. Gusto mo bang magpatuloy?</translation>
 <translation id="5447201525962359567">Lahat ng storage ng site, kabilang ang cookies at iba pang lokal na nakaimbak na data</translation>
@@ -462,7 +460,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="6320088164292336938">Mag-vibrate</translation>
 <translation id="6324034347079777476">Naka-disable ang pag-sync ng Android system</translation>
-<translation id="6324360525379265737">Awtomatikong tukuyin ang pag-e-encode ng character</translation>
 <translation id="6333140779060797560">Ibahagi sa pamamagitan ng <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Pag-encrypt</translation>
 <translation id="6364438453358674297">Alisin ang suhestyon mula sa history?</translation>
@@ -495,6 +492,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6647073004883890710">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang password para kay <ph name="USERNAME" /> para sa site na ito?</translation>
 <translation id="6656545060687952787">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan at makakita ng mga device. <ph name="BEGIN_LINK" />I-update ang mga pahintulot<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Gumamit ng serbisyo sa paghula upang magpakita ng mga nauugnay na query at sikat na website habang nagta-type ka sa address bar</translation>
 <translation id="666981079809192359">Notification ng Privacy ng Chrome</translation>
@@ -656,6 +654,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8481940801237642152">Pribado ang iyong koneksyon sa site na ito, ngunit maaaring mabago ng isang tao sa network ang hitsura ng page.</translation>
 <translation id="8493948351860045254">Magbakante ng espasyo</translation>
 <translation id="8497726226069778601">Walang makikita dito... sa ngayon</translation>
+<translation id="8503813439785031346">Username</translation>
 <translation id="8514577642972634246">Pumasok sa mode na incognito</translation>
 <translation id="8518901949365209398">Gumagamit ng mahinang configuration sa seguridad (mga SHA-1 signature) ang site na ito, kaya maaaring hindi pribado ang iyong koneksyon.</translation>
 <translation id="8525306231823319788">Buong screen</translation>

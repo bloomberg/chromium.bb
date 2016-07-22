@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Zeigt Datenvolumenzähler im Dialog "Browserdaten löschen".</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Melden Sie sich an<ph name="END_SIGN_IN_LINK" />, um die von dieser Person besuchten Websites einzusehen.</translation>
 <translation id="1097658378307015415">Melden Sie vor der Anmeldung als Gast an, um das Netzwerk <ph name="NETWORK_ID" /> zu aktivieren.</translation>
-<translation id="1104054824888299003">lang</translation>
 <translation id="1104652314727136854">Betriebssystemintegration von Dateiverknüpfungen für Chrome-Apps aktivieren</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" fügt diese Apps und Erweiterungen für <ph name="USER_NAME" /> hinzu:</translation>
 <translation id="1108600514891325577">&amp;Anhalten</translation>
@@ -1868,7 +1867,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Seiten, die nicht geladen werden können, solange der Browser offline ist, werden nur dann automatisch neu geladen, wenn der Tab sichtbar ist.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Download abbrechen}other{Downloads abbrechen}}</translation>
 <translation id="3512810056947640266">URL (optional):</translation>
-<translation id="351486934407749662">sehr lang</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> möchte den Inhalt Ihres Bildschirms teilen. Wählen Sie aus, was geteilt werden soll.</translation>
 <translation id="3518086201899641494">Benachrichtigungen zu Erfassungsportalen</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
@@ -3398,7 +3396,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="569109051430110155">Automatisch erkennen</translation>
 <translation id="5691596662111998220">Hoppla, <ph name="FILE_NAME" /> existiert nicht mehr.</translation>
 <translation id="5694501201003948907">$1-Elemente werden gezippt...</translation>
-<translation id="5695323626817702678">kurz</translation>
 <translation id="5697118958262594262">Wichtige Inhalte standardmäßig erkennen</translation>
 <translation id="5699533844376998780">Die Erweiterung "<ph name="EXTENSION_NAME" />" wurde hinzugefügt.</translation>
 <translation id="5701101281789450335">Sprach- und Eingabeeinstellungen...</translation>
@@ -3821,7 +3818,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="630065524203833229">&amp;Beenden</translation>
 <translation id="6304217058163308077">Neues System für Lesezeichen-Apps</translation>
 <translation id="6305012486838822927">Lao-Tastatur</translation>
-<translation id="6305328361606238230">Push-Nachrichten erhalten</translation>
 <translation id="6307722552931206656">Google-Nameserver <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">System ausgelastet</translation>
 <translation id="6308937455967653460">&amp;Link speichern unter...</translation>
@@ -4514,7 +4510,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7339785458027436441">Rechtschreibung während der Eingabe prüfen</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> wird jetzt im Vollbildmodus angezeigt.</translation>
-<translation id="7341982465543599097">äußerst kurz</translation>
 <translation id="734303607351427494">Suchmaschinen verwalten...</translation>
 <translation id="7343116142376328522">Schlüsselgenerierung in Formularen auf keiner Website zulassen (empfohlen)</translation>
 <translation id="7345706641791090287">Passwort bestätigen</translation>
@@ -4902,7 +4897,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7881969471599061635">Untertitel deaktivieren</translation>
 <translation id="7884988936047469945">Experimentelle Bedienungshilfen</translation>
 <translation id="7885253890047913815">Letzte Ziele</translation>
-<translation id="7885283703487484916">sehr kurz</translation>
 <translation id="7887192723714330082">Auf "Ok Google" reagieren, wenn das Display eingeschaltet und entsperrt ist</translation>
 <translation id="7887334752153342268">Duplizieren</translation>
 <translation id="7887864092952184874">Pairing mit Bluetooth-Maus durchgeführt</translation>

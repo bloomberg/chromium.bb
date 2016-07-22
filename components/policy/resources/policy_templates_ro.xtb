@@ -1814,7 +1814,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
-<translation id="7381326101471547614">Dezactivează utilizarea protocolul SPDY în <ph name="PRODUCT_NAME" />. Dacă această politică este activată, protocolul SPDY nu va fi disponibil în <ph name="PRODUCT_NAME" />. Dezactivarea acestei politici va permite utilizarea protocolului SPDY. Dacă această politică rămâne nesetată, SPDY va fi disponibil.</translation>
 <translation id="7384999953864505698">Permite protocolul QUIC</translation>
 <translation id="7406651467768226499">Dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" />.
 

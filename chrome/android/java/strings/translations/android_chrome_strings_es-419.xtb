@@ -49,7 +49,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1513352483775369820">Marcadores e historial web</translation>
 <translation id="1549000191223877751">Mover a otra ventana</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
-<translation id="1557201757634521564">Autodetectar codificación</translation>
 <translation id="1612196535745283361">Chrome debe acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
@@ -184,7 +183,6 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="3029704984691124060">Las frases de contraseña no coinciden.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Guardar video</translation>
-<translation id="307329814453917357">Ofrecer la traducción de páginas con Google Traductor</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
 <translation id="3090193911106258841">Accediendo a la entrada de video y de audio</translation>
 <translation id="3117051980354074377">Accede a Chrome para obtener los marcadores de tus otros dispositivos.</translation>
@@ -339,6 +337,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartir mediante</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
@@ -367,9 +366,9 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón Atrás para salir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Los cambios que hagas en tus marcadores, historial, contraseñas y otras opciones de configuración se seguirán sincronizando con tu cuenta de Google. Sin embargo, tus datos existentes seguirán almacenados en tu cuenta de Google.</translation>
 <translation id="5301954838959518834">Entendido</translation>
-<translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Este campo no puede quedar en blanco.</translation>
 <translation id="5308380583665731573">Conectar</translation>
+<translation id="5308603654685598744">Cuando esta función esté activada, Chrome te ofrecerá traducir páginas escritas en otros idiomas con Google Traductor.</translation>
 <translation id="5313967007315987356">Agregar sitio</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5324858694974489420">Configuración parental</translation>
@@ -382,8 +381,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5414836363063783498">Verificando…</translation>
 <translation id="5423934151118863508">Aquí aparecerán las páginas que visites con más frecuencia</translation>
-<translation id="5424715742813396254">Editar nombre, contraseña o excepción guardados
-</translation>
 <translation id="5437003064129843501">Las sugerencias de contenido personalizado están inhabilitadas, porque tus datos sincronizados están protegidos con una frase de contraseña personalizada.</translation>
 <translation id="544291274896356069">Saldrás del modo de navegación de incógnito si este vínculo se abre en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="5447201525962359567">Todo el almacenamiento de sitios, lo que incluye cookies y otros datos almacenados de forma local</translation>
@@ -463,7 +460,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
-<translation id="6324360525379265737">Determinar automáticamente la codificación de caracteres</translation>
 <translation id="6333140779060797560">Compartir mediante <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encriptación</translation>
 <translation id="6364438453358674297">¿Borrar la sugerencia del historial?</translation>
@@ -496,6 +492,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6647073004883890710">¿Deseas que <ph name="PASSWORD_MANAGER_BRAND" /> actualice la contraseña para <ph name="USERNAME" /> en este sitio?</translation>
 <translation id="6656545060687952787">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK" />Actualizar permisos<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Contraseña</translation>
 <translation id="6659594942844771486">Pestaña</translation>
 <translation id="666268767214822976">Usar un servicio de predicción para ver consultas relacionadas y sitios web populares a medida que escribes en la barra de direcciones.</translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
@@ -657,6 +654,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8481940801237642152">Tu conexión con este sitio es privada, pero alguien en la red podría cambiar el aspecto de la página.</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
 <translation id="8497726226069778601">Aún no hay elementos para ver</translation>
+<translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8514577642972634246">Acceder al modo de navegación de incógnito</translation>
 <translation id="8518901949365209398">Este sitio usa una configuración de seguridad vulnerable (firmas SHA-1). Por lo tanto, es posible que la conexión no sea privada.</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>

@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Menampilkan penghitung volume data dalam dialog Hapus data penjelajahan.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Masuk<ph name="END_SIGN_IN_LINK" /> untuk mengontrol dan melihat situs web yang dikunjungi orang ini.</translation>
 <translation id="1097658378307015415">Sebelum masuk, masuklah sebagai Tamu untuk mengaktifkan jaringan <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">lama</translation>
 <translation id="1104652314727136854">Mengaktifkan integrasi OS dari kaitan file untuk Aplikasi Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" menambahkan aplikasi dan ekstensi ini untuk <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Berhenti</translation>
@@ -1436,7 +1435,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2951247061394563839">Memusatkan jendela</translation>
 <translation id="2951721188322348056">Info Video</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookie</translation>
-<translation id="295947108480905647">"<ph name="CHROME_EXTENSION_NAME" />" ingin menyambungkan ke:</translation>
+<translation id="295947108480905647">"<ph name="CHROME_EXTENSION_NAME" />" ingin terhubung ke:</translation>
 <translation id="2959614062380389916">Dinonaktifkan oleh administrator</translation>
 <translation id="2960393411257968125">Cara pengelola sandi menangani IsiOtomatis untuk kredensial sinkronisasi.</translation>
 <translation id="29611076221683977">Saat ini penyerang yang berada pada <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha memasang program berbahaya di Mac yang dapat mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit).</translation>
@@ -1872,7 +1871,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Laman yang gagal dimuat saat browser offline hanya akan dimuat ulang secara otomatis apabila tabnya terlihat.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Batalkan Unduhan}other{Batalkan Unduhan}}</translation>
 <translation id="3512810056947640266">URL (opsional):</translation>
-<translation id="351486934407749662">sangat lama</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ingin membagikan konten layar Anda. Pilih yang ingin Anda bagikan.</translation>
 <translation id="3518086201899641494">Notifikasi tentang portal yang tertahan</translation>
 <translation id="3519867315646775981">Transliterasi (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="569109051430110155">Deteksi otomatis</translation>
 <translation id="5691596662111998220">Ups, <ph name="FILE_NAME" /> sudah tidak ada.</translation>
 <translation id="5694501201003948907">Membuat file zip $1 item...</translation>
-<translation id="5695323626817702678">sebentar</translation>
 <translation id="5697118958262594262">Deteksi konten penting secara default</translation>
 <translation id="5699533844376998780">Ekstensi "<ph name="EXTENSION_NAME" />" telah ditambahkan.</translation>
 <translation id="5701101281789450335">Setelan bahasa dan masukan...</translation>
@@ -3715,7 +3712,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6136285399872347291">backspace</translation>
 <translation id="613656389911605597">Status unduhan ditampilkan sebagai notifikasi, bukan item pada bilah unduhan.</translation>
 <translation id="6139064580472999710">Kotak Pasir Ruang Nama</translation>
-<translation id="6139601088809813095">Nonaktifkan UI versi Baru untuk Jendela Alat Pilih Tangkapan Desktop.</translation>
+<translation id="6139601088809813095">Nonaktifkan Antarmuka versi Baru untuk Jendela Alat Pilih Tangkapan Desktop.</translation>
 <translation id="614161640521680948">Bahasa:</translation>
 <translation id="6143186082490678276">Dapatkan Bantuan</translation>
 <translation id="6144697279259829572">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen.}other{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen.}}</translation>
@@ -3830,7 +3827,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="630065524203833229">K&amp;eluar</translation>
 <translation id="6304217058163308077">Sistem aplikasi bookmark baru</translation>
 <translation id="6305012486838822927">Keyboard Lao</translation>
-<translation id="6305328361606238230">Menerima pesan push</translation>
 <translation id="6307722552931206656">Server nama Google - <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistem sibuk</translation>
 <translation id="6308937455967653460">Simpan tau&amp;tan sebagai...</translation>
@@ -4524,7 +4520,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7339785458027436441">Periksa Ejaan Saat Mengetik</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kini menjadi layar penuh.</translation>
-<translation id="7341982465543599097">sangat pendek</translation>
 <translation id="734303607351427494">Kelola mesin telusur...</translation>
 <translation id="7343116142376328522">Jangan izinkan situs apa pun menggunakan pembuatan kunci dalam formulir (disarankan)</translation>
 <translation id="7345706641791090287">Konfirmasi sandi Anda</translation>
@@ -4909,7 +4904,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7881969471599061635">Nonaktifkan subtitel</translation>
 <translation id="7884988936047469945">Fitur aksesibilitas eksperimental</translation>
 <translation id="7885253890047913815">Tujuan Saat Ini</translation>
-<translation id="7885283703487484916">terlalu singkat</translation>
 <translation id="7887192723714330082">Merespons perintah "Ok Google" saat layar aktif dan terbuka</translation>
 <translation id="7887334752153342268">Gandakan</translation>
 <translation id="7887864092952184874">Mouse Bluetooth disandingkan</translation>

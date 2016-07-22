@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">แสดงตัวนับปริมาณอินเทอร์เน็ตในกล่องล้างข้อมูลการท่องเว็บ</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />ลงชื่อเข้าใช้<ph name="END_SIGN_IN_LINK" />เพื่อควบคุมและดูเว็บไซต์ที่บุคคลนี้เข้าชม</translation>
 <translation id="1097658378307015415">ก่อนที่จะลงชื่อเข้าใช้ โปรดเข้าใช้ในฐานะผู้มาเยือนเพื่อเปิดใช้งานเครือข่าย <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">ยาว</translation>
 <translation id="1104652314727136854">เปิดใช้การรวมระบบปฏิบัติการของการเชื่อมโยงไฟล์สำหรับแอป Chrome</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" เพิ่มแอปและส่วนขยายเหล่านี้สำหรับ <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;หยุด</translation>
@@ -1436,7 +1435,7 @@
 <translation id="2951247061394563839">กลางหน้าต่าง</translation>
 <translation id="2951721188322348056">ข้อมูลวิดีโอ</translation>
 <translation id="2956763290572484660">คุกกี้ <ph name="COOKIES" /> รายการ</translation>
-<translation id="295947108480905647">"<ph name="CHROME_EXTENSION_NAME" />" ต้องการที่จะเชื่อมต่อกับ</translation>
+<translation id="295947108480905647">"<ph name="CHROME_EXTENSION_NAME" />" ต้องการที่จะเชื่อมต่อกับ:</translation>
 <translation id="2959614062380389916">ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="2960393411257968125">วิธีที่ตัวจัดการรหัสผ่านจัดการการป้อนข้อความอัตโนมัติสำหรับข้อมูลรับรองการซิงค์</translation>
 <translation id="29611076221683977">ผู้บุกรุกที่กำลังอยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามติดตั้งโปรแกรมอันตรายซึ่งขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) ลงในเครื่อง Mac ของคุณ</translation>
@@ -1871,7 +1870,6 @@
 <translation id="3512284449647229026">จะมีการโหลดซ้ำหน้าที่ไม่สามารถโหลดขณะเบราว์เซอร์ออฟไลน์โดยอัตโนมัติ หากมองเห็นแท็บของหน้าเท่านั้น</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ยกเลิกการดาวน์โหลด}other{ยกเลิกการดาวน์โหลด}}</translation>
 <translation id="3512810056947640266">URL (ไม่บังคับ):</translation>
-<translation id="351486934407749662">ยาวมาก</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> ต้องการแชร์เนื้อหาบนหน้าจอของคุณ เลือกส่วนที่คุณต้องการแชร์</translation>
 <translation id="3518086201899641494">การแจ้งเตือนเกี่ยวกับ Captive Portal</translation>
 <translation id="3519867315646775981">การทับศัพท์ (shalom ← שלום)</translation>
@@ -2464,7 +2462,7 @@
 <translation id="4358697938732213860">เพิ่มที่อยู่</translation>
 <translation id="4359408040881008151">ติดตั้งแล้วเนื่องจากมีส่วนขยายที่ต้องพึ่งพา</translation>
 <translation id="4361190688154226069">การกำหนดเป้าหมายแบบรูปสี่เหลี่ยมผืนผ้าในมุมมองต่างๆ</translation>
-<translation id="4361765875689149937"><ph name="ORIGIN" /> ต้องการจับคู่กับ</translation>
+<translation id="4361765875689149937"><ph name="ORIGIN" /> ต้องการจับคู่กับ:</translation>
 <translation id="4364444725319685468">ดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> กำลังแชร์หน้าต่าง</translation>
 <translation id="4364830672918311045">แสดงการแจ้งเตือน</translation>
@@ -3264,7 +3262,7 @@
 <translation id="5486561344817861625">จำลองการรีสตาร์ทเบราว์เซอร์</translation>
 <translation id="54870580363317966">เลือกอวาตาร์สำหรับผู้ใช้ภายใต้การดูแลนี้</translation>
 <translation id="5488468185303821006">อนุญาตให้ใช้โหมดไม่ระบุตัวตน</translation>
-<translation id="5489390182170331803">ค่าเริ่มต้นแบบแพสซีฟของ Listener เหตุการณ์ระดับเอกสาร</translation>
+<translation id="5489390182170331803">ค่าเริ่มต้นของ Listener เหตุการณ์แบบแพสซีฟระดับเอกสาร</translation>
 <translation id="5489789060051091748">เลือกเพื่อพูด: กดแป้น Search ค้างไว้ แล้วคลิกหรือลากเพื่อพูดอะไรก็ได้</translation>
 <translation id="549294555051714732">สตริงย่อยที่ตรงกับคำแนะนำในการป้อนข้อความอัตโนมัติ</translation>
 <translation id="5493996328530898436">วิธีมิกซ์เมื่อเรนเดอร์เสียงแบบใหม่</translation>
@@ -3405,7 +3403,6 @@
 <translation id="569109051430110155">ตรวจหาอัตโนมัติ</translation>
 <translation id="5691596662111998220">อ๊ะ ไม่มี <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="5694501201003948907">กำลังซิป $1 รายการ...</translation>
-<translation id="5695323626817702678">สั้น</translation>
 <translation id="5697118958262594262">ตรวจหาเนื้อหาที่สำคัญโดยค่าเริ่มต้น</translation>
 <translation id="5699533844376998780">เพิ่มส่วนขยาย "<ph name="EXTENSION_NAME" />" แล้ว</translation>
 <translation id="5701101281789450335">การตั้งค่าภาษาและการป้อนข้อมูล...</translation>
@@ -3828,7 +3825,6 @@
 <translation id="630065524203833229">&amp;ออก</translation>
 <translation id="6304217058163308077">ระบบแอปบุ๊กมาร์กใหม่</translation>
 <translation id="6305012486838822927">แป้นพิมพ์ภาษาลาว</translation>
-<translation id="6305328361606238230">รับข้อความแบบ Push</translation>
 <translation id="6307722552931206656">เซิร์ฟเวอร์ชื่อของ Google <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">ระบบกำลังทำงานอื่นอยู่</translation>
 <translation id="6308937455967653460">บันทึก&amp;ลิงก์เป็น...</translation>
@@ -4522,7 +4518,6 @@
 <translation id="7339785458027436441">ตรวจสอบตัวสะกดขณะพิมพ์</translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> แสดงแบบเต็มหน้าจออยู่</translation>
-<translation id="7341982465543599097">สั้นมาก</translation>
 <translation id="734303607351427494">จัดการเครื่องมือค้นหา...</translation>
 <translation id="7343116142376328522">ไม่อนุญาตให้เว็บไซต์ใดๆ ใช้การสร้างคีย์ในแบบฟอร์ม (แนะนำ)</translation>
 <translation id="7345706641791090287">ยืนยันรหัสผ่าน</translation>
@@ -4907,7 +4902,6 @@
 <translation id="7881969471599061635">ปิดคำบรรยาย</translation>
 <translation id="7884988936047469945">คุณลักษณะการเข้าถึงรุ่นทดลอง</translation>
 <translation id="7885253890047913815">ปลายทางล่าสุด</translation>
-<translation id="7885283703487484916">สั้นมาก</translation>
 <translation id="7887192723714330082">ตอบสนองต่อ "Ok Google" เมื่อหน้าจอเปิดอยู่และไม่ได้ล็อก</translation>
 <translation id="7887334752153342268">ทำซ้ำ</translation>
 <translation id="7887864092952184874">จับคู่เมาส์บลูทูธแล้ว</translation>

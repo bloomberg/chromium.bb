@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Приказује бројаче количине података у оквиру дијалога „Обриши податке прегледања“</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Пријавите се<ph name="END_SIGN_IN_LINK" /> да бисте контролисали и прегледали веб-сајтове које ова особа посећује.</translation>
 <translation id="1097658378307015415">Пре пријављивања приступите као гост да бисте активирали мрежу <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">дуго</translation>
 <translation id="1104652314727136854">Омогућите интеграцију повезаних датотека са ОС-ом за Chrome апликације.</translation>
 <translation id="1105162038795579389">„<ph name="BUNDLE_NAME" />“ додаје следеће апликације и додатке за <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Stop (Заустави)</translation>
@@ -1869,7 +1868,6 @@
 <translation id="3512284449647229026">Странице које не успеју да се учитају док је прегледач офлајн ће се аутоматски поново учитати само ако је картица видљива.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Откажи преузимање}one{Откажи преузимања}few{Откажи преузимања}other{Откажи преузимања}}</translation>
 <translation id="3512810056947640266">URL (опционално):</translation>
-<translation id="351486934407749662">веома дуго</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> жели да дели садржај екрана. Изаберите шта желите да делите.</translation>
 <translation id="3518086201899641494">Обавештења о порталима за проверу</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
@@ -3405,7 +3403,6 @@
 <translation id="569109051430110155">Аутоматски откриј</translation>
 <translation id="5691596662111998220">Упс, <ph name="FILE_NAME" /> више не постоји.</translation>
 <translation id="5694501201003948907">Додавање ставки ($1) у zip датотеку...</translation>
-<translation id="5695323626817702678">кратко</translation>
 <translation id="5697118958262594262">Подразумевано откривај важан садржај</translation>
 <translation id="5699533844376998780">Додатак „<ph name="EXTENSION_NAME" />“ је додат.
 </translation>
@@ -3831,7 +3828,6 @@
 <translation id="630065524203833229">И&amp;зађи</translation>
 <translation id="6304217058163308077">Нови систем апликација обележивача</translation>
 <translation id="6305012486838822927">Лаоска тастатура</translation>
-<translation id="6305328361606238230">Пријем порука</translation>
 <translation id="6307722552931206656">Google сервери назива – <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Систем је заузет</translation>
 <translation id="6308937455967653460">Сачувај ве&amp;зу као...</translation>
@@ -4526,7 +4522,6 @@
 <translation id="7339785458027436441">Проверавај правопис током куцања</translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> је сада у режиму целог екрана.</translation>
-<translation id="7341982465543599097">изузетно кратко</translation>
 <translation id="734303607351427494">Управљај претраживачима...</translation>
 <translation id="7343116142376328522">Не дозволи ниједном сајту да користи генерисање шифара у обрасцима (препоручено)</translation>
 <translation id="7345706641791090287">Потврдите лозинку</translation>
@@ -4905,7 +4900,6 @@
 <translation id="7881969471599061635">Онемогући титлове</translation>
 <translation id="7884988936047469945">Експериментални функције приступачности</translation>
 <translation id="7885253890047913815">Недавна одредишта</translation>
-<translation id="7885283703487484916">веома кратко</translation>
 <translation id="7887192723714330082">Реагуј на „ОК Google“ када је екран укључен и откључан</translation>
 <translation id="7887334752153342268">Направи дупликат</translation>
 <translation id="7887864092952184874">Bluetooth миш је упарен</translation>

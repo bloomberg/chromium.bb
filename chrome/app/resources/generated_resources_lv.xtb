@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Dialoglodziņā “Pārlūkošanas datu notīrīšana” tiek rādīti datu apjoma skaitītāji.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Pierakstieties<ph name="END_SIGN_IN_LINK" />, lai pārvaldītu un skatītu vietnes, ko apmeklē šis lietotājs.</translation>
 <translation id="1097658378307015415">Pirms pierakstāties, uzsāciet viesa sesiju, lai aktivizētu tīklu <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">ilgi</translation>
 <translation id="1104652314727136854">Chrome lietotņu failu piesaiste tiek integrēta operētājsistēmā.</translation>
 <translation id="1105162038795579389">“<ph name="BUNDLE_NAME" />” pievienos šādas lietotnes un paplašinājumus lietotājam <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">&amp;Apturēt</translation>
@@ -1874,7 +1873,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Lapas, kuras neizdosies ielādēt, kamēr pārlūks lietots bezsaistē, tiks automātiski atkārtoti ielādētas tikai tad, ja to cilne ir redzama.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Atcelt lejupielādi}zero{Atcelt lejupielādes}one{Atcelt lejupielādes}other{Atcelt lejupielādes}}</translation>
 <translation id="3512810056947640266">URL (neobligāti):</translation>
-<translation id="351486934407749662">ļoti ilgi</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> vēlas kopīgot jūsu ekrāna saturu. Izvēlieties kopīgojamo saturu.</translation>
 <translation id="3518086201899641494">Paziņojumi par caurlaides lapām</translation>
 <translation id="3519867315646775981">Transliterācija (shalom ← שלום)</translation>
@@ -3409,7 +3407,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="569109051430110155">Automātiska noteikšana</translation>
 <translation id="5691596662111998220">Diemžēl fails <ph name="FILE_NAME" /> vairs nepastāv.</translation>
 <translation id="5694501201003948907">Notiek $1 vienumu tilpsaspiešana...</translation>
-<translation id="5695323626817702678">īss</translation>
 <translation id="5697118958262594262">Noteikt nozīmīgu saturu pēc noklusējuma</translation>
 <translation id="5699533844376998780">Paplašinājums <ph name="EXTENSION_NAME" /> ir pievienots.</translation>
 <translation id="5701101281789450335">Valodas un ievades iestatījumi...</translation>
@@ -3834,7 +3831,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="630065524203833229">I&amp;ziet</translation>
 <translation id="6304217058163308077">Jaunā grāmatzīmju lietotņu sistēma</translation>
 <translation id="6305012486838822927">Laosiešu valodas tastatūra</translation>
-<translation id="6305328361606238230">Saņemt pašpiegādes ziņojumus</translation>
 <translation id="6307722552931206656">Google nosaukumu serveri: <ph name="BEGIN_LINK" />uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="6307990684951724544">Sistēma ir aizņemta.</translation>
 <translation id="6308937455967653460">Saglabāt saiti kā...</translation>
@@ -4531,7 +4527,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="7339785458027436441">Pārbaudīt pareizrakstību rakstīšanas laikā</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> tagad ir redzams pilnekrāna režīmā.</translation>
-<translation id="7341982465543599097">ārkārtīgi īss</translation>
 <translation id="734303607351427494">Pārvaldīt meklētājprogrammas...</translation>
 <translation id="7343116142376328522">Neatļaut izmantot atslēgu ģenerēšanu nevienas vietnes veidlapā (ieteicams)</translation>
 <translation id="7345706641791090287">Apstipriniet savu paroli</translation>
@@ -4916,7 +4911,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="7881969471599061635">Atspējot subtitrus</translation>
 <translation id="7884988936047469945">Eksperimentālas pieejamības funkcijas</translation>
 <translation id="7885253890047913815">Nesenie printeri</translation>
-<translation id="7885283703487484916">ļoti īss</translation>
 <translation id="7887192723714330082">Reaģēt uz frāzi “Ok Google”, kad ekrāns ir ieslēgts un atbloķēts.</translation>
 <translation id="7887334752153342268">Izveidot dublikātu</translation>
 <translation id="7887864092952184874">Bluetooth pele ir savienota pārī.</translation>

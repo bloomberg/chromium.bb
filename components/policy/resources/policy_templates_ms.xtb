@@ -1944,7 +1944,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan, pembersihan autimatik menggunakan strategi terbina dalam lalai. Pada masa ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Simpan kuki sepanjang tempoh sesi</translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
-<translation id="7381326101471547614">Melumpuhkan penggunaan protokol SPDY dalam <ph name="PRODUCT_NAME" />. Jika dasar ini didayakan, protokol SPDY tidak akan tersedia dalam <ph name="PRODUCT_NAME" />. Menetapkan dasar ini kepada dilumpuhkan akan membolehkan penggunaan SPDY. Jika dasar ini dibiarkan tanpa ditetapkan, SPDY akan tersedia.</translation>
 <translation id="7384999953864505698">Membenarkan protokol QUIC</translation>
 <translation id="7406651467768226499">Sama ada hendak membenarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" />.
 

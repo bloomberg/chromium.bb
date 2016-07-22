@@ -1792,13 +1792,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
-<translation id="7381326101471547614">Desactiva l'ús del protocol SPDY a <ph name="PRODUCT_NAME" />.
-
-      Si aquesta política està activada, el protocol SPDY no estarà disponible a <ph name="PRODUCT_NAME" />.
-
-      Si establiu aquesta política com a desactivada, es permetrà l'ús de SPDY.
-
-      Si no definiu aquesta política, SPDY estarà disponible.</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
 <translation id="7406651467768226499">Aquesta política defineix si es permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" />.
 

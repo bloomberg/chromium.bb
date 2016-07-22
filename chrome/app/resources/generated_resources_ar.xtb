@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">تعرض عدادات حجم البيانات في مربع حوار محو بيانات التصفح.</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />سجّل الدخول<ph name="END_SIGN_IN_LINK" /> للتحكم في مواقع الويب التي يزورها هذا الشخص وعرضها.</translation>
 <translation id="1097658378307015415">قبل تسجيل الدخول، الرجاء الدخول كضيف لتنشيط الشبكة <ph name="NETWORK_ID" /></translation>
-<translation id="1104054824888299003">طويل</translation>
 <translation id="1104652314727136854">‏تمكين تكامل نظام التشغيل لارتباطات الملف لتطبيقات Chrome.</translation>
 <translation id="1105162038795579389">حزمة "<ph name="BUNDLE_NAME" />" تضيف هذه التطبيقات والإضافات لـ <ph name="USER_NAME" />:</translation>
 <translation id="1108600514891325577">إي&amp;قاف</translation>
@@ -1869,7 +1868,6 @@
 <translation id="3512284449647229026">لن تتم إعادة التحميل التلقائي للصفحات التي يخفق تحميلها أثناء عدم اتصال المتصفح بالإنترنت، إلا إذا كانت علامة تبويبها مرئية.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{إلغاء التنزيل}zero{إلغاء التنزيلات}two{إلغاء تنزيلين}few{إلغاء التنزيلات}many{إلغاء التنزيلات}other{إلغاء التنزيلات}}</translation>
 <translation id="3512810056947640266">‏عنوان URL (اختياري):</translation>
-<translation id="351486934407749662">طويل جدًا</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> يود أن يشارك محتويات شاشتك. اختر ما ترغب في مشاركته.</translation>
 <translation id="3518086201899641494">إشعارات حول بوابات التقييد</translation>
 <translation id="3519867315646775981">التحويل الصوتي (שלום ← شالوم)</translation>
@@ -3399,7 +3397,6 @@
 <translation id="569109051430110155">الكشف التلقائيّ</translation>
 <translation id="5691596662111998220">عذرًا، لم يعد <ph name="FILE_NAME" /> متوفرًا.</translation>
 <translation id="5694501201003948907">جارٍ ضغط $1 من العناصر...</translation>
-<translation id="5695323626817702678">قصير</translation>
 <translation id="5697118958262594262">كشف محتوى مهم افتراضيًا</translation>
 <translation id="5699533844376998780">تم إضافة الإضافة "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5701101281789450335">إعدادات اللغة والإدخال...</translation>
@@ -3823,7 +3820,6 @@
 <translation id="630065524203833229">إن&amp;هاء</translation>
 <translation id="6304217058163308077">نظام تطبيق الإشارات المرجعية الجديد</translation>
 <translation id="6305012486838822927">لوحة مفاتيح لغة لاو</translation>
-<translation id="6305328361606238230">استقبال رسائل الدفع</translation>
 <translation id="6307722552931206656">‏خوادم أسماء Google‏ - <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">النظام مشغول</translation>
 <translation id="6308937455967653460">حف&amp;ظ الرابط باسم...</translation>
@@ -4520,7 +4516,6 @@
 <translation id="7339785458027436441">تحقق من التدقيق الإملائي أثناء الكتابة</translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> في وضع ملء الشاشة الآن.</translation>
-<translation id="7341982465543599097">قصيرة للغاية</translation>
 <translation id="734303607351427494">إدارة محركات البحث...</translation>
 <translation id="7343116142376328522">عدم السماح لأي موقع ويب باستخدام إنشاء مفتاح في النماذج (موصى به)</translation>
 <translation id="7345706641791090287">تأكيد كلمة المرور</translation>
@@ -4905,7 +4900,6 @@
 <translation id="7881969471599061635">تعطيل الترجمات المصاحبة</translation>
 <translation id="7884988936047469945">ميزات إمكانية الوصول التجريبية</translation>
 <translation id="7885253890047913815">أحدث الوجهات</translation>
-<translation id="7885283703487484916">قصير جدًا</translation>
 <translation id="7887192723714330082">‏الرد على "Ok Google" عندما تكون الشاشة مُشغلة وملغاة القفل</translation>
 <translation id="7887334752153342268">تكرار</translation>
 <translation id="7887864092952184874">ماوس بلوتوث مقترن</translation>

@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Affiche les compteurs de volume de données dans la boîte de dialogue "Effacer les données de navigation".</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />Se connecter<ph name="END_SIGN_IN_LINK" /> pour contrôler et afficher les sites Web consultés par cette personne</translation>
 <translation id="1097658378307015415">Avant de vous connecter, veuillez vous connecter en tant qu'invité afin d'activer le réseau <ph name="NETWORK_ID" />.</translation>
-<translation id="1104054824888299003">long</translation>
 <translation id="1104652314727136854">Activer l'intégration OS des associations de fichiers pour les applications Chrome.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />" permet d'ajouter les applications et les extensions suivantes pour <ph name="USER_NAME" /> :</translation>
 <translation id="1108600514891325577">&amp;Arrêter</translation>
@@ -1872,7 +1871,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Les pages dont le chargement a échoué pendant que le navigateur était en mode hors connexion ne seront automatiquement rechargées que si l'onglet correspondant est visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annuler le téléchargement}one{Annuler le téléchargement}other{Annuler les téléchargements}}</translation>
 <translation id="3512810056947640266">URL (facultatif) :</translation>
-<translation id="351486934407749662">très long</translation>
 <translation id="3517839692979918726">Une demande de partage du contenu de votre écran a été envoyée depuis <ph name="APP_NAME" />. Veuillez sélectionner ce que vous acceptez de partager.</translation>
 <translation id="3518086201899641494">Notifications au sujet des portails captifs</translation>
 <translation id="3519867315646775981">Translittération (shalom ← שלום)</translation>
@@ -3407,7 +3405,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="569109051430110155">Détection automatique</translation>
 <translation id="5691596662111998220">Désolé, le fichier <ph name="FILE_NAME" /> n'existe plus.</translation>
 <translation id="5694501201003948907">Compression de $1 éléments en cours…</translation>
-<translation id="5695323626817702678">court</translation>
 <translation id="5697118958262594262">Détecter le contenu important par défaut</translation>
 <translation id="5699533844376998780">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée.</translation>
 <translation id="5701101281789450335">Paramètres de langue et de saisie</translation>
@@ -3832,7 +3829,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="630065524203833229">&amp;Quitter</translation>
 <translation id="6304217058163308077">Nouveau système de création de favoris pour les applications</translation>
 <translation id="6305012486838822927">Clavier lao</translation>
-<translation id="6305328361606238230">Recevoir les messages Push</translation>
 <translation id="6307722552931206656">Serveurs de nom Google – <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Système occupé.</translation>
 <translation id="6308937455967653460">Enregistrer le lie&amp;n sous...</translation>
@@ -4526,7 +4522,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7339785458027436441">Vérifier l'orthographe lors de la frappe</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> est maintenant en mode plein écran</translation>
-<translation id="7341982465543599097">extrêmement court</translation>
 <translation id="734303607351427494">Gérer les moteurs de recherche...</translation>
 <translation id="7343116142376328522">Interdire à tous les sites d'utiliser la génération de clé dans les formulaires (recommandé)</translation>
 <translation id="7345706641791090287">Confirmez votre mot de passe.</translation>
@@ -4911,7 +4906,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7881969471599061635">Désactiver les sous-titres</translation>
 <translation id="7884988936047469945">Fonctionnalités d'accessibilité expérimentales</translation>
 <translation id="7885253890047913815">Emplacements de destination récents</translation>
-<translation id="7885283703487484916">très court</translation>
 <translation id="7887192723714330082">Répondez à "Ok Google" lorsque l'écran est actif et déverrouillé.</translation>
 <translation id="7887334752153342268">Dupliquer</translation>
 <translation id="7887864092952184874">Souris Bluetooth associée.</translation>

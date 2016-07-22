@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">Tarama verilerini temizleme iletişim kutusunda veri hacmi sayaçlarını gösterir.</translation>
 <translation id="1097507499312291972">Bu kişinin ziyaret ettiği web sitelerini kontrol etmek ve görüntülemek için <ph name="BEGIN_SIGN_IN_LINK" />oturum açın<ph name="END_SIGN_IN_LINK" />.</translation>
 <translation id="1097658378307015415">Oturum açmadan önce <ph name="NETWORK_ID" /> ağını etkinleştirmek için lütfen Misafir olarak giriş yapın</translation>
-<translation id="1104054824888299003">uzun</translation>
 <translation id="1104652314727136854">Chrome Uygulamaları için dosya ilişkilendirmelerinin OS ile entegrasyonunu etkinleştirin.</translation>
 <translation id="1105162038795579389">"<ph name="BUNDLE_NAME" />", <ph name="USER_NAME" /> için şu uygulamaları ve uzantıları ekler:</translation>
 <translation id="1108600514891325577">D&amp;urdur</translation>
@@ -1873,7 +1872,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3512284449647229026">Tarayıcı çevrimdışıyken yüklenemeyen sayfalar yalnızca sekmelerinin görünür olması durumunda otomatik olarak yeniden yüklenir.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{İndirme işlemini iptal et}other{İndirme işlemlerini iptal et}}</translation>
 <translation id="3512810056947640266">URL (isteğe bağlı):</translation>
-<translation id="351486934407749662">çok uzun</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" />, ekranınızın içeriğini paylaşmak istiyor. Neleri paylaşmak istediğinizi seçin.</translation>
 <translation id="3518086201899641494">Doğrulama amacıyla yönlendirme yapan portallar ile ilgili bildirimler</translation>
 <translation id="3519867315646775981">Harf çevirisi (shalom ← שלום)</translation>
@@ -3409,7 +3407,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="569109051430110155">Otomatik algıla</translation>
 <translation id="5691596662111998220">Hata! <ph name="FILE_NAME" /> artık mevcut değil.</translation>
 <translation id="5694501201003948907">$1 öğe sıkıştırılıyor...</translation>
-<translation id="5695323626817702678">kısa</translation>
 <translation id="5697118958262594262">Önemli içeriği varsayılan olarak algıla</translation>
 <translation id="5699533844376998780">"<ph name="EXTENSION_NAME" />" uzantısı eklendi.</translation>
 <translation id="5701101281789450335">Dil ve giriş ayarları...</translation>
@@ -3832,7 +3829,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="630065524203833229">Çı&amp;kış</translation>
 <translation id="6304217058163308077">Yeni yer işareti uygulaması sistemi</translation>
 <translation id="6305012486838822927">Lao klavye</translation>
-<translation id="6305328361606238230">Push mesajlarını al</translation>
 <translation id="6307722552931206656">Google ad sunucuları - <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">Sistem meşgul</translation>
 <translation id="6308937455967653460">Bağlantıyı far&amp;klı kaydet...</translation>
@@ -4526,7 +4522,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7339785458027436441">Yazarken Yazımı Denetle</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> şimdi tam ekran görüntüleniyor.</translation>
-<translation id="7341982465543599097">aşırı kısa</translation>
 <translation id="734303607351427494">Arama motorlarını yönet...</translation>
 <translation id="7343116142376328522">Sitelerin formlarda anahtar oluşturmasına izin verme (önerilen)</translation>
 <translation id="7345706641791090287">Şifrenizi onaylayın</translation>
@@ -4911,7 +4906,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7881969471599061635">Altyazıları devre dışı bırak</translation>
 <translation id="7884988936047469945">Deneysel erişilebilirlik özellikleri</translation>
 <translation id="7885253890047913815">En Son Hedefler</translation>
-<translation id="7885283703487484916">çok kısa</translation>
 <translation id="7887192723714330082">Ekran ve kilidi açıkken "Ok Google"a yanıt verme</translation>
 <translation id="7887334752153342268">Yinele</translation>
 <translation id="7887864092952184874">Bluetooth fare eşlendi</translation>

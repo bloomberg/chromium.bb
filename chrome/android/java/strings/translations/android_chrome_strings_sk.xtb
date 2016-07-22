@@ -49,7 +49,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1513352483775369820">Záložky a webová história</translation>
 <translation id="1549000191223877751">Prejsť do druhého okna</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
-<translation id="1557201757634521564">Automaticky rozpoznávať kódovanie</translation>
 <translation id="1612196535745283361">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. Prístup k polohe je v tomto zariadení <ph name="BEGIN_LINK" />vypnutý<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
@@ -184,7 +183,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="3029704984691124060">Prístupové frázy sa nezhodujú</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Uložiť video</translation>
-<translation id="307329814453917357">Ponúkať preklady stránok pomocou Prekladača Google</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="3090193911106258841">Pristupovanie k zvukovému vstupu a vstupu videa</translation>
 <translation id="3117051980354074377">Ak chcete získať svoje záložky z ostatných zariadení, prihláste sa do Chromu.</translation>
@@ -339,6 +337,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="4996978546172906250">Zdieľať prostredníctvom</translation>
 <translation id="5000922062037820727">Blokované (odporúčané)</translation>
+<translation id="5005498671520578047">Kopírovanie hesla</translation>
 <translation id="5016205925109358554">Pätkové</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
@@ -367,9 +366,9 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="5284584623296338184">Záložky, história, heslá a ďalšie nastavenia sa už nebudú ďalej synchronizovať do vášho účtu Google. Vaše súčasné údaje však zostanú v účte Google zachované.</translation>
 <translation id="5301954838959518834">Áno, rozumiem</translation>
-<translation id="5302048478445481009">Jazyk</translation>
 <translation id="5304593522240415983">Toto pole nesmie byť prázdne</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
+<translation id="5308603654685598744">Keď je táto funkcia zapnutá, prehliadač Chrome vám ponúkne preklad stránok napísaných v iných jazykoch pomocou služby Prekladač Google.</translation>
 <translation id="5313967007315987356">Pridať stránky</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5324858694974489420">Rodičovské nastavenia</translation>
@@ -382,7 +381,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5400569084694353794">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane osobných údajov<ph name="END_LINK2" /> prehliadača Chrome.</translation>
 <translation id="5414836363063783498">Overuje sa...</translation>
 <translation id="5423934151118863508">Tu sa zobrazia vaše najnavštevovanejšie stránky.</translation>
-<translation id="5424715742813396254">Úprava uloženého mena/hesla alebo výnimky</translation>
 <translation id="5437003064129843501">Prispôsobené návrhy obsahu sú momentálne zakázané, pretože vaše synchronizované údaje sú chránené vlastnou prístupovou frázou.</translation>
 <translation id="544291274896356069">Ak tento odkaz otvoríte v externej aplikácii, opustíte režim inkognito. Chcete pokračovať?</translation>
 <translation id="5447201525962359567">Celé úložisko webu vrátane súborov cookie a ďalších lokálne uložených dát</translation>
@@ -462,7 +460,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6295158916970320988">Všetky stránky</translation>
 <translation id="6320088164292336938">Vibrovanie</translation>
 <translation id="6324034347079777476">Synchronizácia systému Android je zakázaná</translation>
-<translation id="6324360525379265737">Automaticky zisťovať kódovanie znakov</translation>
 <translation id="6333140779060797560">Zdieľať prostredníctvom aplikácie <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Šifrovanie</translation>
 <translation id="6364438453358674297">Odstrániť návrh z histórie?</translation>
@@ -495,6 +492,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6647073004883890710">Chcete, aby aplikácia <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo používateľa <ph name="USERNAME" /> pre tento web?</translation>
 <translation id="6656545060687952787">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK" />Aktualizovať povolenia<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Heslo</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Použite službu predpovedí na zobrazovanie súvisiacich dopytov a populárnych webových stránok počas zadávania textu do panela s adresou</translation>
 <translation id="666981079809192359">Upozornenie o ochrane osobných údajov prehliadača Chrome</translation>
@@ -656,6 +654,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8481940801237642152">Vaše pripojenie k týmto stránkam je súkromné, ale niekto v sieti možno dokáže zmeniť vzhľad danej stránky.</translation>
 <translation id="8493948351860045254">Uvoľniť miesto</translation>
 <translation id="8497726226069778601">Zatiaľ tu nič nie je…</translation>
+<translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
 <translation id="8518901949365209398">Tento web používa slabú konfiguráciu zabezpečenia (podpisy SHA-1). Pripojenie preto nemusí byť súkromné.</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>

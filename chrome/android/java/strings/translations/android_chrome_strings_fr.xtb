@@ -49,7 +49,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1513352483775369820">Favoris et historique Web</translation>
 <translation id="1549000191223877751">Déplacer vers autre fenêtre</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
-<translation id="1557201757634521564">Détecter automatiquement l'encodage</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
@@ -184,7 +183,6 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
-<translation id="307329814453917357">Proposer de traduire des pages avec Google Traduction</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
 <translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
 <translation id="3117051980354074377">Connectez-vous à Chrome pour accéder à vos favoris sur vos autres appareils.</translation>
@@ -339,6 +337,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4996978546172906250">Partager via</translation>
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
+<translation id="5005498671520578047">Copier mot de passe</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
@@ -367,9 +366,9 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
 <translation id="5284584623296338184">Les modifications apportées à vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisées avec votre compte Google. Vos données resteront cependant conservées dans votre compte Google.</translation>
 <translation id="5301954838959518834">OK</translation>
-<translation id="5302048478445481009">Langue</translation>
 <translation id="5304593522240415983">Champ obligatoire.</translation>
 <translation id="5308380583665731573">Connexion</translation>
+<translation id="5308603654685598744">Si cette fonctionnalité est activée, une proposition de traduction des pages rédigées dans d'autres langues à l'aide de Google Traduction vous est envoyée dans Chrome.</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
@@ -382,8 +381,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5414836363063783498">Validation en cours…</translation>
 <translation id="5423934151118863508">Les pages les plus consultées s'affichent ici.</translation>
-<translation id="5424715742813396254">Modifier nom et mot passe ou exception enregistrés
-</translation>
 <translation id="5437003064129843501">Les recommandations de contenu personnalisé sont actuellement désactivées, car vos informations synchronisées sont protégées par une phrase secrète personnalisée.</translation>
 <translation id="544291274896356069">En ouvrant ce lien dans une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
 <translation id="5447201525962359567">Toutes les données de site stockées, y compris les cookies et d'autres données stockées en local</translation>
@@ -463,7 +460,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6320088164292336938">Vibreur</translation>
 <translation id="6324034347079777476">La synchronisation du système Android est désactivée.</translation>
-<translation id="6324360525379265737">Déterminer automatiquement l'encodage des caractères</translation>
 <translation id="6333140779060797560">Partager via <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Chiffrement</translation>
 <translation id="6364438453358674297">Supprimer la suggestion de l'historique ?</translation>
@@ -496,6 +492,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6647073004883890710">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> mette à jour le mot de passe de "<ph name="USERNAME" />" pour ce site ?</translation>
 <translation id="6656545060687952787">Chrome doit accéder aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK" />Mettre à jour les autorisations<ph name="END_LINK" /></translation>
+<translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="666268767214822976">Utiliser un service de prédiction pour suggérer des requêtes associées et des sites populaires lorsque vous saisissez des termes dans la barre d'adresse</translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>
@@ -657,6 +654,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>
 <translation id="8493948351860045254">Libérer de l'espace</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
+<translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8514577642972634246">Activer le mode navigation privée</translation>
 <translation id="8518901949365209398">Ce site utilise une configuration de sécurité faible (signatures SHA-1). Il est donc possible que votre connexion ne soit pas privée.</translation>
 <translation id="8525306231823319788">Plein écran</translation>

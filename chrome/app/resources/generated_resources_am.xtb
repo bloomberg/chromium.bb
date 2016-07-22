@@ -72,7 +72,6 @@
 <translation id="1097091804514346906">የአሰሳ ውሂብ አፅዳ የንግግር ሳጥን ውስጥ የውሂብ መጠን መቁጠሪያዎችን ያሳያል።</translation>
 <translation id="1097507499312291972">ይህ ሰው የሚጎበኛቸውን ድር ጣቢያዎች ለመቆጣጠር እና ለመመልከት <ph name="BEGIN_SIGN_IN_LINK" />በመለያ ይግቡ<ph name="END_SIGN_IN_LINK" />።</translation>
 <translation id="1097658378307015415">ከመግባትዎ በፊት አውታረ መረብ <ph name="NETWORK_ID" />ን ለማንቃት እባክዎ እንደ እንግዳ ይግቡ</translation>
-<translation id="1104054824888299003">ረጅም</translation>
 <translation id="1104652314727136854">ለChrome መተግበሪያዎች የፋይል ዝምድናዎች OS ማካተትን አንቃ።</translation>
 <translation id="1105162038795579389">«<ph name="BUNDLE_NAME" />» እነዚህን መተግበሪያዎች እና ቅጥያዎች ለ«<ph name="USER_NAME" />» ያክላል፦</translation>
 <translation id="1108600514891325577">&amp;አቁም</translation>
@@ -1870,7 +1869,6 @@
 <translation id="3512284449647229026">አሳሹ ከመስመር ውጭ በሚሆንበት ጊዜ ለመጫን ያልቻሉ ገጾች በራስ-ሰር ዳግም የሚጫኑት ትራቸው የሚታይ ብቻ ከሆነ ነው።</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{ማውረድን ተወው}one{ማውረዶችን ተዋቸው}other{ማውረዶችን ተዋቸው}}</translation>
 <translation id="3512810056947640266">ዩአርኤል (ከተፈለገ)፦</translation>
-<translation id="351486934407749662">በጣም ረጅም</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME" /> የማያ ገጽዎን ይዘቶች ማጋራት ይፈልጋል። ምን ማጋራት እንደሚፈልጉ ይምረጡ።</translation>
 <translation id="3518086201899641494">የተያዥ መግቢያ በሮች ማሳውቂያዎች</translation>
 <translation id="3519867315646775981">በቋንቋ ፊደል መጻፍ (shalom ← שלום)</translation>
@@ -3402,7 +3400,6 @@
 <translation id="569109051430110155">ራስ ፈልግ</translation>
 <translation id="5691596662111998220">ውይ፣ <ph name="FILE_NAME" /> ከአሁን በኋላ የለም።</translation>
 <translation id="5694501201003948907">$1 ንጥሎችን በማጨቅ ላይ...</translation>
-<translation id="5695323626817702678">አጭር</translation>
 <translation id="5697118958262594262">አስፈላጊ ይዘትን በነባሪነት አግኝ</translation>
 <translation id="5699533844376998780">የ«<ph name="EXTENSION_NAME" />» ቅጥያው ታክሏል።</translation>
 <translation id="5701101281789450335">የቋንቋ እና የግቤት ቅንብሮች...</translation>
@@ -3826,7 +3823,6 @@
 <translation id="630065524203833229">ው&amp;ጣ</translation>
 <translation id="6304217058163308077">አዲሱ የዕልባት መተግበሪያ ስርዓት</translation>
 <translation id="6305012486838822927">የላኦ ቁልፍ ሰሌዳ</translation>
-<translation id="6305328361606238230">የግፋ መልዕክቶችን ይቀበሉ</translation>
 <translation id="6307722552931206656">Google የስም አገልጋዮች - <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="6307990684951724544">ስርዓቱ ስራ ላይ ነው</translation>
 <translation id="6308937455967653460">አገ&amp;ናኝ አስቀምጥ እንደ…</translation>
@@ -4523,7 +4519,6 @@
 <translation id="7339785458027436441">በሚጽፉበት ጊዜ ሆሄ ያረጋግጡ</translation>
 <translation id="7339898014177206373">አዲሰ መስኮት</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> አሁን በሙሉ ማያ ገጽ ላይ ነው።</translation>
-<translation id="7341982465543599097">እጅግ በጣም አጭር</translation>
 <translation id="734303607351427494">የፍለጋ ፕሮግራሞችን ያቀናብሩ...</translation>
 <translation id="7343116142376328522">ማንኛውም ጣቢያ በቅጾች ውስጥ የቁልፍ ማመንጫትን እንዲጠቀም አትፍቀድ (የሚመከር)</translation>
 <translation id="7345706641791090287">የይለፍ ቃልዎን ያረጋግጡ</translation>
@@ -4907,7 +4902,6 @@
 <translation id="7881969471599061635">የግርጌ ጽሑፎችን አሰናክል</translation>
 <translation id="7884988936047469945">የሙከራ የተዳራሽነት ባህሪያት</translation>
 <translation id="7885253890047913815">የቅርብ ጊዜ መድረሻዎች</translation>
-<translation id="7885283703487484916">በጣም አጭር</translation>
 <translation id="7887192723714330082">ማያ ገጹ በርቶ እና ተከፍቶ ሳለ ለ«Ok Google» ምላሽ መስጠት</translation>
 <translation id="7887334752153342268">አባዛ</translation>
 <translation id="7887864092952184874">የብሉቱዝ መዳፊት ተጣምሯል</translation>
