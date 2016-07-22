@@ -20,7 +20,7 @@ def GenTests(api):
   yield api.test('basic')
 
   for platform in ('linux', 'mac', 'win'):
-    for path_config in ('buildbot', 'kitchen'):
+    for path_config in ('buildbot', 'kitchen', 'swarmbucket'):
       yield (
           api.test('paths_%s_%s' % (path_config, platform)) +
           api.platform.name(platform) +

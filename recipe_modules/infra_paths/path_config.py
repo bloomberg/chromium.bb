@@ -51,3 +51,8 @@ def infra_kitchen(c):
     c.base_paths['git_cache'] = c.base_paths['root'] + ('cache_dir',)
     for path in ('goma_cache', 'goma_deps_cache'):
       c.base_paths[path] = c.base_paths['cache'] + (path,)
+
+
+@CONFIG_CTX(includes=['infra_buildbot'])
+def infra_swarmbucket(c):
+  c.base_paths['git_cache'] = c.base_paths['root'] + ('git_cache',)

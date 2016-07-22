@@ -1,0 +1,14 @@
+[
+  {
+    "cmd": [],
+    "name": "show cache path",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@[CACHE]@@@"
+    ]
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]
