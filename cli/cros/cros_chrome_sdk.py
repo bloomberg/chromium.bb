@@ -737,6 +737,10 @@ class ChromeSDKCommand(command.CliCommand):
     # Need to reset these after the env vars have been fixed by
     # _SetupTCEnvironment.
     gn_args['cros_host_is_clang'] = True
+    # v8 snapshot is built on the host, so we need to set this.
+    # See crosbug/618346.
+    gn_args['cros_v8_snapshot_is_clang'] = True
+    #
     gn_args['cros_target_cc'] = env['CC']
     gn_args['cros_target_cxx'] = env['CXX']
     gn_args['cros_target_ld'] = env['LD']
