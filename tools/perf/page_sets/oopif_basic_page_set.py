@@ -1,6 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import cache_temperature as cache_temperature_module
 from telemetry.page import page
 from telemetry import story
 
@@ -9,10 +10,12 @@ class OopifBasicPageSet(story.StorySet):
   iframes.
   """
 
-  def __init__(self):
+  def __init__(self, cache_temperatures=None):
     super(OopifBasicPageSet, self).__init__(
         archive_data_file='data/oopif_basic.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
+    if cache_temperatures is None:
+      cache_temperatures = [cache_temperature_module.ANY]
 
     urls = [
         'http://www.cnn.com',
@@ -32,4 +35,5 @@ class OopifBasicPageSet(story.StorySet):
     ]
 
     for url in urls:
-      self.AddStory(page.Page(url, self))
+      for temp in cache_temperatures:
+        self.AddStory(page.Page(url, self, cache_temperature=temp))

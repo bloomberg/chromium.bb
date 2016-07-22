@@ -171,3 +171,34 @@ class PageCyclerV2ToughLayoutCases(_PageCyclerV2):
   def CreateStorySet(self, options):
     return page_sets.ToughLayoutCasesPageSet(cache_temperatures=[
           cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
+
+
+@benchmark.Disabled('reference', 'android')
+class PageCyclerV2BasicOopifIsolated(_PageCyclerV2):
+  """ A benchmark measuring performance of out-of-process iframes. """
+  page_set = page_sets.OopifBasicPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_v2_site_isolation.basic_oopif'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--site-per-process'])
+
+  def CreateStorySet(self, options):
+    return page_sets.OopifBasicPageSet(cache_temperatures=[
+          cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
+
+
+class PageCyclerV2BasicOopif(_PageCyclerV2):
+  """ A benchmark measuring performance of the out-of-process iframes page
+  set, without running in out-of-process iframes mode.. """
+  page_set = page_sets.OopifBasicPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler_v2.basic_oopif'
+
+  def CreateStorySet(self, options):
+    return page_sets.OopifBasicPageSet(cache_temperatures=[
+          cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
