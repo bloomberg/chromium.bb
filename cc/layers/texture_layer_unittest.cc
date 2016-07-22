@@ -33,6 +33,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
@@ -75,7 +76,7 @@ class MockLayerTreeHost : public LayerTreeHost {
         AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     LayerTreeSettings settings;
     params.settings = &settings;
-    return base::WrapUnique(new MockLayerTreeHost(client, &params));
+    return base::WrapUnique(new MockLayerTreeHost(&params));
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
@@ -84,12 +85,13 @@ class MockLayerTreeHost : public LayerTreeHost {
   MOCK_METHOD0(StopRateLimiter, void());
 
  private:
-  MockLayerTreeHost(FakeLayerTreeHostClient* client,
-                    LayerTreeHost::InitParams* params)
+  explicit MockLayerTreeHost(LayerTreeHost::InitParams* params)
       : LayerTreeHost(params, CompositorMode::SINGLE_THREADED) {
-    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
-                             nullptr);
+    InitializeSingleThreaded(&single_thread_client_,
+                             base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
+
+  StubLayerTreeHostSingleThreadClient single_thread_client_;
 };
 
 class FakeTextureLayerClient : public TextureLayerClient {

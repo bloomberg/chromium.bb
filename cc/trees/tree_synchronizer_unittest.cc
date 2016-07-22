@@ -19,6 +19,7 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
@@ -165,6 +166,7 @@ class TreeSynchronizerTest : public testing::Test {
   }
 
   FakeLayerTreeHostClient client_;
+  StubLayerTreeHostSingleThreadClient single_thread_client_;
   TestTaskGraphRunner task_graph_runner_;
   std::unique_ptr<FakeLayerTreeHost> host_;
 };
@@ -561,8 +563,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
-  host_->InitializeSingleThreaded(&client_, base::ThreadTaskRunnerHandle::Get(),
-                                  nullptr);
+  host_->InitializeSingleThreaded(&single_thread_client_,
+                                  base::ThreadTaskRunnerHandle::Get(), nullptr);
   LayerTreeSettings settings;
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -657,8 +659,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
 }
 
 TEST_F(TreeSynchronizerTest, RefreshPropertyTreesCachedData) {
-  host_->InitializeSingleThreaded(&client_, base::ThreadTaskRunnerHandle::Get(),
-                                  nullptr);
+  host_->InitializeSingleThreaded(&single_thread_client_,
+                                  base::ThreadTaskRunnerHandle::Get(), nullptr);
   LayerTreeSettings settings;
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;

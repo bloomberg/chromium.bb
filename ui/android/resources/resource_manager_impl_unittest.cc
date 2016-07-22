@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "cc/animation/animation_host.h"
 #include "cc/resources/ui_resource_bitmap.h"
-#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/stub_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -93,7 +93,7 @@ class ResourceManagerTest : public testing::Test {
         resource_manager_(window_android_) {
     cc::LayerTreeHost::InitParams params;
     cc::LayerTreeSettings settings;
-    params.client = &fake_client_;
+    params.client = &stub_client_;
     params.settings = &settings;
     params.task_graph_runner = &task_graph_runner_;
     params.animation_host =
@@ -126,7 +126,7 @@ class ResourceManagerTest : public testing::Test {
   std::unique_ptr<MockLayerTreeHost> host_;
   TestResourceManagerImpl resource_manager_;
   cc::TestTaskGraphRunner task_graph_runner_;
-  cc::FakeLayerTreeHostClient fake_client_;
+  cc::StubLayerTreeHostClient stub_client_;
 };
 
 TEST_F(ResourceManagerTest, GetResource) {

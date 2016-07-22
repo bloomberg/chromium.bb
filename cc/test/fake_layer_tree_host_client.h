@@ -5,18 +5,12 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
-#include <memory>
-
-#include "cc/input/input_handler.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/trees/layer_tree_host_client.h"
-#include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "cc/test/stub_layer_tree_host_client.h"
 
 namespace cc {
-class OutputSurface;
+class LayerTreeHost;
 
-class FakeLayerTreeHostClient : public LayerTreeHostClient,
-                                public LayerTreeHostSingleThreadClient {
+class FakeLayerTreeHostClient : public StubLayerTreeHostClient {
  public:
   FakeLayerTreeHostClient();
   ~FakeLayerTreeHostClient() override;
@@ -24,29 +18,9 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   // Caller responsible for unsetting this and maintaining the host's lifetime.
   void SetLayerTreeHost(LayerTreeHost* host) { host_ = host; }
 
-  // LayerTreeHostClient implementation.
-  void WillBeginMainFrame() override {}
-  void DidBeginMainFrame() override {}
-  void BeginMainFrame(const BeginFrameArgs& args) override {}
-  void BeginMainFrameNotExpectedSoon() override {}
-  void UpdateLayerTreeHost() override {}
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
+  // StubLayerTreeHostClient overrides.
   void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override {}
   void DidFailToInitializeOutputSurface() override;
-  void WillCommit() override {}
-  void DidCommit() override {}
-  void DidCommitAndDrawFrame() override {}
-  void DidCompleteSwapBuffers() override {}
-  void DidCompletePageScaleAnimation() override {}
-
-  // LayerTreeHostSingleThreadClient implementation.
-  void DidPostSwapBuffers() override {}
-  void DidAbortSwapBuffers() override {}
 
  private:
   LayerTreeHost* host_ = nullptr;

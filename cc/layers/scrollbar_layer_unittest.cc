@@ -25,6 +25,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_occlusion_tracker.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -48,8 +49,8 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {
-    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
-                             nullptr);
+    InitializeSingleThreaded(&single_thread_client_,
+                             base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   UIResourceId CreateUIResource(UIResourceClient* content) override {
@@ -92,6 +93,7 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
       std::unordered_map<UIResourceId, UIResourceBitmap>;
   UIResourceBitmapMap ui_resource_bitmap_map_;
 
+  StubLayerTreeHostSingleThreadClient single_thread_client_;
   int next_id_;
   int total_ui_resource_created_;
   int total_ui_resource_deleted_;

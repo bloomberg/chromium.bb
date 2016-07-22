@@ -14,6 +14,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -27,7 +28,7 @@ class AnimationHostPerfTest : public testing::Test {
     layer_tree_host_ =
         FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_, settings);
     layer_tree_host_->InitializeSingleThreaded(
-        &fake_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
+        &single_thread_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
 
     root_layer_ = Layer::Create();
     layer_tree_host_->SetRootLayer(root_layer_);
@@ -112,13 +113,14 @@ class AnimationHostPerfTest : public testing::Test {
   }
 
  protected:
+  StubLayerTreeHostSingleThreadClient single_thread_client_;
+  FakeLayerTreeHostClient fake_client_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_refptr<Layer> root_layer_;
   LayerImpl* root_layer_impl_;
 
   LapTimer timer_;
   TestTaskGraphRunner task_graph_runner_;
-  FakeLayerTreeHostClient fake_client_;
 };
 
 TEST_F(AnimationHostPerfTest, Push1000PlayersPropertiesTo) {

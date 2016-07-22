@@ -22,6 +22,8 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
+#include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"

@@ -10,6 +10,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -36,7 +37,7 @@ class LayerPerfTest : public testing::Test {
     layer_tree_host_ =
         FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
     layer_tree_host_->InitializeSingleThreaded(
-        &fake_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
+        &single_thread_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   void TearDown() override {
@@ -49,6 +50,7 @@ class LayerPerfTest : public testing::Test {
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 
+  StubLayerTreeHostSingleThreadClient single_thread_client_;
   FakeLayerTreeHostClient fake_client_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   LapTimer timer_;

@@ -13,6 +13,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 

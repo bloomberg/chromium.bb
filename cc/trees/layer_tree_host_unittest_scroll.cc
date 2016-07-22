@@ -1351,20 +1351,17 @@ void BindInputHandlerOnCompositorThread(
 TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   base::Thread impl_thread("cc");
   ASSERT_TRUE(impl_thread.Start());
+  ASSERT_TRUE(impl_thread.task_runner());
 
   bool received_stop_flinging = false;
   LayerTreeSettings settings;
 
-  ThreadCheckingInputHandlerClient input_handler_client(
-      impl_thread.task_runner().get(), &received_stop_flinging);
-  FakeLayerTreeHostClient client;
-
-  ASSERT_TRUE(impl_thread.task_runner());
+  StubLayerTreeHostClient layer_tree_host_client;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
 
   LayerTreeHost::InitParams params;
-  params.client = &client;
+  params.client = &layer_tree_host_client;
   params.shared_bitmap_manager = &shared_bitmap_manager;
   params.task_graph_runner = &task_graph_runner;
   params.settings = &settings;
@@ -1373,6 +1370,8 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   std::unique_ptr<LayerTreeHost> layer_tree_host =
       LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
 
+  ThreadCheckingInputHandlerClient input_handler_client(
+      impl_thread.task_runner().get(), &received_stop_flinging);
   impl_thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&BindInputHandlerOnCompositorThread,
                             layer_tree_host->GetInputHandler(),

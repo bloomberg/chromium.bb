@@ -26,6 +26,7 @@
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -467,6 +468,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   settings.verify_clip_tree_calculations = true;
   settings.verify_transform_tree_calculations = true;
 
+  StubLayerTreeHostSingleThreadClient single_thread_client;
   FakeLayerTreeHostClient host_client1;
   FakeLayerTreeHostClient host_client2;
   TestSharedBitmapManager shared_bitmap_manager;
@@ -483,7 +485,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<LayerTreeHost> host1 =
-      LayerTreeHost::CreateSingleThreaded(&host_client1, &params);
+      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
   host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
@@ -498,7 +500,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params2.animation_host =
       AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<LayerTreeHost> host2 =
-      LayerTreeHost::CreateSingleThreaded(&host_client2, &params2);
+      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params2);
   host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 

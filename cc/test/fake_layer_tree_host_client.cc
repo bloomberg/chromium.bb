@@ -4,10 +4,7 @@
 
 #include "cc/test/fake_layer_tree_host_client.h"
 
-#include "base/memory/ptr_util.h"
-#include "cc/output/context_provider.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
