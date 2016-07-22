@@ -208,6 +208,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+    self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['mac'], bug=630800)
+    # self.Fail('deqp/functional/gles3/fbocompleteness.html',
+    #     ['mac', ('nvidia', 0xfe9)], bug=616562)
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=601821)
 
@@ -297,8 +301,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/fbocompleteness.html',
-        ['mac', ('nvidia', 0xfe9)], bug=616562)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
