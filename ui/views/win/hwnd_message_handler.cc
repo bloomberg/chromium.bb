@@ -222,14 +222,6 @@ bool IsTopLevelWindow(HWND window) {
   return !parent || (parent == ::GetDesktopWindow());
 }
 
-void AddScrollStylesToWindow(HWND window) {
-  if (::IsWindow(window)) {
-    long current_style = ::GetWindowLong(window, GWL_STYLE);
-    ::SetWindowLong(window, GWL_STYLE,
-                    current_style | WS_VSCROLL | WS_HSCROLL);
-  }
-}
-
 const int kTouchDownContextResetTimeout = 500;
 
 // Windows does not flag synthesized mouse messages from touch in all cases.
@@ -332,7 +324,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       is_first_nccalc_(true),
       menu_depth_(0),
       id_generator_(0),
-      needs_scroll_styles_(false),
       in_size_loop_(false),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
@@ -357,28 +348,6 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
 
   // Create the window.
   WindowImpl::Init(parent, bounds);
-  // TODO(ananta)
-  // Remove the scrolling hack code once we have scrolling working well.
-#if defined(ENABLE_SCROLL_HACK)
-  // Certain trackpad drivers on Windows have bugs where in they don't generate
-  // WM_MOUSEWHEEL messages for the trackpoint and trackpad scrolling gestures
-  // unless there is an entry for Chrome with the class name of the Window.
-  // These drivers check if the window under the trackpoint has the WS_VSCROLL/
-  // WS_HSCROLL style and if yes they generate the legacy WM_VSCROLL/WM_HSCROLL
-  // messages. We add these styles to ensure that trackpad/trackpoint scrolling
-  // work.
-  // TODO(ananta)
-  // Look into moving the WS_VSCROLL and WS_HSCROLL style setting logic to the
-  // CalculateWindowStylesFromInitParams function. Doing it there seems to
-  // cause some interactive tests to fail. Investigation needed.
-  if (IsTopLevelWindow(hwnd())) {
-    long current_style = ::GetWindowLong(hwnd(), GWL_STYLE);
-    if (!(current_style & WS_POPUP)) {
-      AddScrollStylesToWindow(hwnd());
-      needs_scroll_styles_ = true;
-    }
-  }
-#endif
 
   prop_window_target_.reset(new ui::ViewProp(hwnd(),
                             ui::WindowEventTarget::kWin32InputEventTarget,
@@ -1438,13 +1407,6 @@ void HWNDMessageHandler::OnEnterMenuLoop(BOOL from_track_popup_menu) {
 }
 
 void HWNDMessageHandler::OnEnterSizeMove() {
-  // Please refer to the comments in the OnSize function about the scrollbar
-  // hack.
-  // Hide the Windows scrollbar if the scroll styles are present to ensure
-  // that a paint flicker does not occur while sizing.
-  if (in_size_loop_ && needs_scroll_styles_)
-    ShowScrollBar(hwnd(), SB_BOTH, FALSE);
-
   delegate_->HandleBeginWMSizeMove();
   SetMsgHandled(FALSE);
 }
@@ -1463,13 +1425,6 @@ void HWNDMessageHandler::OnExitMenuLoop(BOOL is_shortcut_menu) {
 void HWNDMessageHandler::OnExitSizeMove() {
   delegate_->HandleEndWMSizeMove();
   SetMsgHandled(FALSE);
-  // Please refer to the notes in the OnSize function for information about
-  // the scrolling hack.
-  // We hide the Windows scrollbar in the OnEnterSizeMove function. We need
-  // to add the scroll styles back to ensure that scrolling works in legacy
-  // trackpoint drivers.
-  if (in_size_loop_ && needs_scroll_styles_)
-    AddScrollStylesToWindow(hwnd());
   // If the window was moved to a monitor which has a fullscreen window active,
   // we need to reduce the size of the fullscreen window by 1px.
   CheckAndHandleBackgroundFullscreenOnMonitor(hwnd());
@@ -1853,49 +1808,6 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
   // us.
   LRESULT hit_test_code = DefWindowProc(hwnd(), WM_NCHITTEST, 0,
                                         MAKELPARAM(point.x(), point.y()));
-  if (needs_scroll_styles_) {
-    switch (hit_test_code) {
-      // If we faked the WS_VSCROLL and WS_HSCROLL styles for this window, then
-      // Windows returns the HTVSCROLL or HTHSCROLL hit test codes if we hover
-      // or click on the non client portions of the window where the OS
-      // scrollbars would be drawn. These hittest codes are returned even when
-      // the scrollbars are hidden, which is the case in Aura. We fake the
-      // hittest code as HTCLIENT in this case to ensure that we receive client
-      // mouse messages as opposed to non client mouse messages.
-      case HTVSCROLL:
-      case HTHSCROLL:
-        hit_test_code = HTCLIENT;
-        break;
-
-      case HTBOTTOMRIGHT: {
-        // Normally the HTBOTTOMRIGHT hittest code is received when we hover
-        // near the bottom right of the window. However due to our fake scroll
-        // styles, we get this code even when we hover around the area where
-        // the vertical scrollar down arrow would be drawn.
-        // We check if the hittest coordinates lie in this region and if yes
-        // we return HTCLIENT.
-        int border_width = ::GetSystemMetrics(SM_CXSIZEFRAME);
-        int border_height = ::GetSystemMetrics(SM_CYSIZEFRAME);
-        int scroll_width = ::GetSystemMetrics(SM_CXVSCROLL);
-        int scroll_height = ::GetSystemMetrics(SM_CYVSCROLL);
-        RECT window_rect;
-        ::GetWindowRect(hwnd(), &window_rect);
-        window_rect.bottom -= border_height;
-        window_rect.right -= border_width;
-        window_rect.left = window_rect.right - scroll_width;
-        window_rect.top = window_rect.bottom - scroll_height;
-        POINT pt;
-        pt.x = point.x();
-        pt.y = point.y();
-        if (::PtInRect(&window_rect, pt))
-          hit_test_code = HTCLIENT;
-        break;
-      }
-
-      default:
-        break;
-    }
-  }
   return hit_test_code;
 }
 
@@ -2143,19 +2055,6 @@ void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
   // invoked OnSize we ensure the RootView has been laid out.
   ResetWindowRegion(false, true);
-
-  // We add the WS_VSCROLL and WS_HSCROLL styles to top level windows to ensure
-  // that legacy trackpad/trackpoint drivers generate the WM_VSCROLL and
-  // WM_HSCROLL messages and scrolling works.
-  // We want the scroll styles to be present on the window. However we don't
-  // want Windows to draw the scrollbars. To achieve this we hide the scroll
-  // bars and readd them to the window style in a posted task to ensure that we
-  // don't get nested WM_SIZE messages.
-  if (needs_scroll_styles_ && !in_size_loop_) {
-    ShowScrollBar(hwnd(), SB_BOTH, FALSE);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AddScrollStylesToWindow, hwnd()));
-  }
 }
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
@@ -2444,15 +2343,15 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   // TODO(ananta)
   // Windows does not reliably set the touch flag on mouse messages. Look into
   // a better way of identifying mouse messages originating from touch.
-  if (ui::IsMouseEventFromTouch(message)) {
+  if ((message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) &&
+      (ui::IsMouseEventFromTouch(message))) {
     LPARAM l_param_ht = l_param;
     // For mouse events (except wheel events), location is in window coordinates
     // and should be converted to screen coordinates for WM_NCHITTEST.
-    if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
-      POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param_ht);
-      MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
-      l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
-    }
+    POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param_ht);
+    MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
+    l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
+
     LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
     if (hittest == HTCLIENT || hittest == HTNOWHERE)
       return 0;
