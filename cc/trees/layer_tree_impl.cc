@@ -1001,9 +1001,9 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
           // We are calculating transform between two render surfaces. So, we
           // need to apply the surface contents scale at target and remove the
           // surface contents scale at source.
-          property_trees()->transform_tree.ComputeTransform(
+          property_trees()->ComputeTransformToTarget(
               it->render_surface()->TransformTreeIndex(),
-              occlusion_surface->TransformTreeIndex(), &draw_transform);
+              occlusion_surface->EffectTreeIndex(), &draw_transform);
           // We don't have to apply surface contents scale when target is root.
           if (occlusion_surface->TransformTreeIndex() != 0) {
             const EffectNode* occlusion_effect_node =

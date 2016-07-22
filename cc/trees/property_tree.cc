@@ -773,9 +773,8 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
             parent_transform_node->sorting_context_id ==
                 transform_node->sorting_context_id) {
           gfx::Transform surface_draw_transform;
-          transform_tree.ComputeTransform(
-              transform_node->id, transform_tree.TargetId(transform_node->id),
-              &surface_draw_transform);
+          property_trees()->ComputeTransformToTarget(
+              transform_node->id, node->target_id, &surface_draw_transform);
           node->hidden_by_backface_visibility =
               surface_draw_transform.IsBackFaceVisible();
         } else {
@@ -1874,6 +1873,35 @@ gfx::Transform PropertyTrees::ToScreenSpaceTransformWithoutSurfaceContentsScale(
     screen_space_transform.Scale(1.0 / effect_node->surface_contents_scale.x(),
                                  1.0 / effect_node->surface_contents_scale.y());
   return screen_space_transform;
+}
+
+bool PropertyTrees::ComputeTransformToTarget(int transform_id,
+                                             int effect_id,
+                                             gfx::Transform* transform) const {
+  transform->MakeIdentity();
+
+  int destination_transform_id;
+  if (effect_id == -1) {
+    // This can happen when PaintArtifactCompositor builds property trees as
+    // it doesn't set effect ids on clip nodes. We want to compute transform
+    // to the root in this case.
+    destination_transform_id = 0;
+  } else {
+    const EffectNode* effect_node = effect_tree.Node(effect_id);
+    DCHECK(effect_node->has_render_surface || effect_node->id == 0);
+    destination_transform_id = effect_node->transform_id;
+  }
+
+  if (transform_id == destination_transform_id)
+    return true;
+
+  if (transform_id > destination_transform_id) {
+    return transform_tree.CombineTransformsBetween(
+        transform_id, destination_transform_id, transform);
+  }
+
+  return transform_tree.CombineInversesBetween(
+      transform_id, destination_transform_id, transform);
 }
 
 }  // namespace cc

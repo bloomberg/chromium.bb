@@ -237,11 +237,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void FromProtobuf(const proto::PropertyTree& proto,
                     std::unordered_map<int, int>* node_id_to_index_map);
 
- private:
-  // Returns true iff the node at |desc_id| is a descendant of the node at
-  // |anc_id|.
-  bool IsDescendant(int desc_id, int anc_id) const;
-
   // Computes the combined transform between |source_id| and |dest_id| and
   // returns false if the inverse of a singular transform was used. These two
   // nodes must be on the same ancestor chain.
@@ -255,6 +250,11 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool CombineInversesBetween(int source_id,
                               int dest_id,
                               gfx::Transform* transform) const;
+
+ private:
+  // Returns true iff the node at |desc_id| is a descendant of the node at
+  // |anc_id|.
+  bool IsDescendant(int desc_id, int anc_id) const;
 
   void UpdateLocalTransform(TransformNode* node);
   void UpdateScreenSpaceTransform(TransformNode* node,
@@ -544,6 +544,9 @@ class CC_EXPORT PropertyTrees final {
   gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
       int transform_id,
       int effect_id) const;
+  bool ComputeTransformToTarget(int transform_id,
+                                int effect_id,
+                                gfx::Transform* transform) const;
 
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
