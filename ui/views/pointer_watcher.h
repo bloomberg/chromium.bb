@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_POINTER_DOWN_WATCHER_H_
-#define UI_VIEWS_POINTER_DOWN_WATCHER_H_
+#ifndef UI_VIEWS_POINTER_WATCHER_H_
+#define UI_VIEWS_POINTER_WATCHER_H_
 
 #include "base/macros.h"
 #include "ui/views/views_export.h"
@@ -26,9 +26,9 @@ class Widget;
 // NOTE: On mus this allows observation of events outside of windows owned
 // by the current process, in which case the |target| will be null. On mus
 // event.target() is always null.
-class VIEWS_EXPORT PointerDownWatcher {
+class VIEWS_EXPORT PointerWatcher {
  public:
-  PointerDownWatcher() {}
+  PointerWatcher() {}
   virtual void OnMousePressed(const ui::MouseEvent& event,
                               const gfx::Point& location_in_screen,
                               Widget* target) = 0;
@@ -37,12 +37,12 @@ class VIEWS_EXPORT PointerDownWatcher {
                               Widget* target) = 0;
 
  protected:
-  virtual ~PointerDownWatcher() {}
+  virtual ~PointerWatcher() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PointerDownWatcher);
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcher);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_POINTER_DOWN_WATCHER_H_
+#endif  // UI_VIEWS_POINTER_WATCHER_H_

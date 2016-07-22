@@ -6,7 +6,7 @@
 #define ASH_COMMON_SHELF_OVERFLOW_BUBBLE_H_
 
 #include "base/macros.h"
-#include "ui/views/pointer_down_watcher.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ui {
@@ -24,7 +24,7 @@ class WmShelf;
 
 // OverflowBubble shows shelf items that won't fit on the main shelf in a
 // separate bubble.
-class OverflowBubble : public views::PointerDownWatcher,
+class OverflowBubble : public views::PointerWatcher,
                        public views::WidgetObserver {
  public:
   // |wm_shelf| is the shelf that spawns the bubble.
@@ -48,7 +48,7 @@ class OverflowBubble : public views::PointerDownWatcher,
  private:
   void ProcessPressedEvent(const gfx::Point& event_location_in_screen);
 
-  // views::PointerDownWatcher:
+  // views::PointerWatcher:
   void OnMousePressed(const ui::MouseEvent& event,
                       const gfx::Point& location_in_screen,
                       views::Widget* target) override;

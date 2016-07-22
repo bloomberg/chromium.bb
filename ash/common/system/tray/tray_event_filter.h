@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "ui/views/pointer_down_watcher.h"
+#include "ui/views/pointer_watcher.h"
 
 namespace gfx {
 class Point;
@@ -23,7 +23,7 @@ class TrayBubbleWrapper;
 
 // Handles events for a tray bubble, e.g. to close the system tray bubble when
 // the user clicks outside it.
-class TrayEventFilter : public views::PointerDownWatcher {
+class TrayEventFilter : public views::PointerWatcher {
  public:
   TrayEventFilter();
   ~TrayEventFilter() override;
@@ -31,7 +31,7 @@ class TrayEventFilter : public views::PointerDownWatcher {
   void AddWrapper(TrayBubbleWrapper* wrapper);
   void RemoveWrapper(TrayBubbleWrapper* wrapper);
 
-  // views::PointerDownWatcher:
+  // views::PointerWatcher:
   void OnMousePressed(const ui::MouseEvent& event,
                       const gfx::Point& location_in_screen,
                       views::Widget* target) override;

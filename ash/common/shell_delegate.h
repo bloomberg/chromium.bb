@@ -41,7 +41,7 @@ class AccessibilityDelegate;
 class GPUSupport;
 class MediaDelegate;
 class NewWindowDelegate;
-class PointerDownWatcherDelegate;
+class PointerWatcherDelegate;
 class SessionStateDelegate;
 class ShelfDelegate;
 class ShelfModel;
@@ -123,8 +123,8 @@ class ASH_EXPORT ShellDelegate {
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;
 
-  virtual std::unique_ptr<PointerDownWatcherDelegate>
-  CreatePointerDownWatcherDelegate() = 0;
+  virtual std::unique_ptr<PointerWatcherDelegate>
+  CreatePointerWatcherDelegate() = 0;
 
   // Creates a menu model for the |wm_shelf| and optional shelf |item|.
   // If |item| is null, this creates a context menu for the desktop or shelf.

@@ -25,13 +25,13 @@ void TrayEventFilter::AddWrapper(TrayBubbleWrapper* wrapper) {
   bool was_empty = wrappers_.empty();
   wrappers_.insert(wrapper);
   if (was_empty && !wrappers_.empty())
-    WmShell::Get()->AddPointerDownWatcher(this);
+    WmShell::Get()->AddPointerWatcher(this);
 }
 
 void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
   wrappers_.erase(wrapper);
   if (wrappers_.empty())
-    WmShell::Get()->RemovePointerDownWatcher(this);
+    WmShell::Get()->RemovePointerWatcher(this);
 }
 
 void TrayEventFilter::OnMousePressed(const ui::MouseEvent& event,

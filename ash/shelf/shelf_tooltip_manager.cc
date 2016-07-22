@@ -103,7 +103,7 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
 ShelfTooltipManager::~ShelfTooltipManager() {
   WillDeleteShelfLayoutManager();
 
-  Shell::GetInstance()->RemovePointerDownWatcher(this);
+  Shell::GetInstance()->RemovePointerWatcher(this);
 
   if (root_window_) {
     root_window_->RemoveObserver(this);
@@ -120,7 +120,7 @@ void ShelfTooltipManager::Init() {
   root_window_->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
 
-  Shell::GetInstance()->AddPointerDownWatcher(this);
+  Shell::GetInstance()->AddPointerWatcher(this);
 }
 
 void ShelfTooltipManager::Close() {
@@ -188,7 +188,7 @@ void ShelfTooltipManager::OnTouchPressed(const ui::TouchEvent& event,
 }
 
 void ShelfTooltipManager::OnEvent(ui::Event* event) {
-  // Mouse and touch press events are handled via views::PointerDownWatcher.
+  // Mouse and touch press events are handled via views::PointerWatcher.
   if (event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_TOUCH_PRESSED) {
     return;

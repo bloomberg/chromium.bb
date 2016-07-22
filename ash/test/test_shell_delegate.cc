@@ -16,7 +16,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/new_window_delegate.h"
-#include "ash/pointer_down_watcher_delegate_aura.h"
+#include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"
@@ -186,9 +186,9 @@ MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
   return new MediaDelegateImpl;
 }
 
-std::unique_ptr<PointerDownWatcherDelegate>
-TestShellDelegate::CreatePointerDownWatcherDelegate() {
-  return base::WrapUnique(new PointerDownWatcherDelegateAura);
+std::unique_ptr<PointerWatcherDelegate>
+TestShellDelegate::CreatePointerWatcherDelegate() {
+  return base::WrapUnique(new PointerWatcherDelegateAura);
 }
 
 ui::MenuModel* TestShellDelegate::CreateContextMenu(WmShelf* wm_shelf,

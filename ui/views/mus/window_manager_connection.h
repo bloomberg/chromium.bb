@@ -27,7 +27,7 @@ class Connector;
 namespace views {
 class ClipboardMus;
 class NativeWidget;
-class PointerDownWatcher;
+class PointerWatcher;
 class TouchEventWatcher;
 class ScreenMus;
 namespace internal {
@@ -65,8 +65,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
-  void AddPointerDownWatcher(PointerDownWatcher* watcher);
-  void RemovePointerDownWatcher(PointerDownWatcher* watcher);
+  void AddPointerWatcher(PointerWatcher* watcher);
+  void RemovePointerWatcher(PointerWatcher* watcher);
 
   void AddTouchEventWatcher(TouchEventWatcher* watcher);
   void RemoveTouchEventWatcher(TouchEventWatcher* watcher);
@@ -80,7 +80,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
                           const shell::Identity& identity);
 
   // Returns true if there is one or more watchers for this client.
-  bool HasPointerDownWatcher();
+  bool HasPointerWatcher();
   bool HasTouchEventWatcher();
 
   // ui::WindowTreeClientDelegate:
@@ -97,7 +97,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<ui::WindowTreeClient> client_;
   // Must be empty on destruction.
-  base::ObserverList<PointerDownWatcher, true> pointer_down_watchers_;
+  base::ObserverList<PointerWatcher, true> pointer_watchers_;
   base::ObserverList<TouchEventWatcher, true> touch_event_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);

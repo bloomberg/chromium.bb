@@ -8,7 +8,7 @@
 
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
-#include "ash/common/pointer_down_watcher_delegate.h"
+#include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/mus/accessibility_delegate_mus.h"
@@ -196,8 +196,8 @@ MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
   return new MediaDelegateStub;
 }
 
-std::unique_ptr<PointerDownWatcherDelegate>
-ShellDelegateMus::CreatePointerDownWatcherDelegate() {
+std::unique_ptr<PointerWatcherDelegate>
+ShellDelegateMus::CreatePointerWatcherDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
 }

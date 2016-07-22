@@ -7,5 +7,5 @@
 // that linker will know to include the symbols, defined by these headers, in
 // the resulting dynamic library.
 
-#include "ui/views/pointer_down_watcher.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/touch_event_watcher.h"

@@ -282,7 +282,7 @@
       'native_theme_delegate.h',
       'painter.cc',
       'painter.h',
-      'pointer_down_watcher.h',
+      'pointer_watcher.h',
       'rect_based_targeting_utils.cc',
       'rect_based_targeting_utils.h',
       'repeat_controller.cc',

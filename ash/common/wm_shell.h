@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 
 namespace views {
-class PointerDownWatcher;
+class PointerWatcher;
 }
 
 namespace ash {
@@ -250,8 +250,8 @@ class ASH_EXPORT WmShell {
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-  virtual void AddPointerDownWatcher(views::PointerDownWatcher* watcher) = 0;
-  virtual void RemovePointerDownWatcher(views::PointerDownWatcher* watcher) = 0;
+  virtual void AddPointerWatcher(views::PointerWatcher* watcher) = 0;
+  virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
   // TODO: Move these back to LockStateController when that has been moved.
   void OnLockStateEvent(LockStateObserver::EventType event);

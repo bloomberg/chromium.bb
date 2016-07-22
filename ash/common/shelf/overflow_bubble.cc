@@ -19,12 +19,12 @@ OverflowBubble::OverflowBubble(WmShelf* wm_shelf)
       bubble_(nullptr),
       anchor_(nullptr),
       shelf_view_(nullptr) {
-  WmShell::Get()->AddPointerDownWatcher(this);
+  WmShell::Get()->AddPointerWatcher(this);
 }
 
 OverflowBubble::~OverflowBubble() {
   Hide();
-  WmShell::Get()->RemovePointerDownWatcher(this);
+  WmShell::Get()->RemovePointerWatcher(this);
 }
 
 void OverflowBubble::Show(views::View* anchor, ShelfView* shelf_view) {

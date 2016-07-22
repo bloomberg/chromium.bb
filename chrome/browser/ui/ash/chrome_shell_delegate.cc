@@ -16,7 +16,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/content/gpu_support_impl.h"
-#include "ash/pointer_down_watcher_delegate_aura.h"
+#include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -428,9 +428,9 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
   return shelf_delegate_;
 }
 
-std::unique_ptr<ash::PointerDownWatcherDelegate>
-ChromeShellDelegate::CreatePointerDownWatcherDelegate() {
-  return base::WrapUnique(new ash::PointerDownWatcherDelegateAura);
+std::unique_ptr<ash::PointerWatcherDelegate>
+ChromeShellDelegate::CreatePointerWatcherDelegate() {
+  return base::WrapUnique(new ash::PointerWatcherDelegateAura);
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(

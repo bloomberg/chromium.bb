@@ -205,12 +205,12 @@ void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
   display_observers_.RemoveObserver(observer);
 }
 
-void WmShellAura::AddPointerDownWatcher(views::PointerDownWatcher* watcher) {
-  Shell::GetInstance()->AddPointerDownWatcher(watcher);
+void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher) {
+  Shell::GetInstance()->AddPointerWatcher(watcher);
 }
 
-void WmShellAura::RemovePointerDownWatcher(views::PointerDownWatcher* watcher) {
-  Shell::GetInstance()->RemovePointerDownWatcher(watcher);
+void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {
+  Shell::GetInstance()->RemovePointerWatcher(watcher);
 }
 
 #if defined(OS_CHROMEOS)
