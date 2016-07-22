@@ -150,6 +150,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
 
+  InputEventAckState FilterInputEvent(
+      const blink::WebInputEvent& input_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
 

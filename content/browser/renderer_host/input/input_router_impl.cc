@@ -429,6 +429,12 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info,
                                       InputEventDispatchType dispatch_type) {
+  DCHECK(input_event.type != blink::WebInputEvent::GestureFlingStart ||
+         static_cast<const blink::WebGestureEvent&>(input_event)
+                 .data.flingStart.velocityX != 0.0 ||
+         static_cast<const blink::WebGestureEvent&>(input_event)
+                 .data.flingStart.velocityY != 0.0);
+
   // This conversion is temporary. WebInputEvent should be generated
   // directly from ui::Event with the viewport coordinates. See
   // crbug.com/563730.

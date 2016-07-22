@@ -1254,12 +1254,16 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
   if (WebTouchEvent::isTouchEventType(input_event.type))
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
-  // Reporting consumed for a fling suggests that there's now an *active* fling
-  // that requires both animation and a fling-end notification. However, the
-  // OverscrollController consumes a fling to stop its propagation; it doesn't
-  // actually tick a fling animation. Report no consumer to convey this.
-  if (consumed && input_event.type == blink::WebInputEvent::GestureFlingStart)
+  if (consumed && input_event.type == blink::WebInputEvent::GestureFlingStart) {
+    // Here we indicate that there was no consumer for this event, as
+    // otherwise the fling animation system will try to run an animation
+    // and will also expect a notification when the fling ends. Since
+    // CrOS just uses the GestureFlingStart with zero-velocity as a means
+    // of indicating that touchpad scroll has ended, we don't actually want
+    // a fling animation. Note: Similar code exists in
+    // RenderWidgetHostViewChildFrame::FilterInputEvent()
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  }
 
   return consumed ? INPUT_EVENT_ACK_STATE_CONSUMED
                   : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;

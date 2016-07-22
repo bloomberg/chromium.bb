@@ -173,10 +173,6 @@ void RenderWidgetHostInputEventRouter::RouteGestureEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
-  DCHECK(event->type != blink::WebInputEvent::GestureFlingStart ||
-         event->data.flingStart.velocityX != 0.0 ||
-         event->data.flingStart.velocityY != 0.0);
-
   switch (event->sourceDevice) {
     case blink::WebGestureDeviceUninitialized:
       NOTREACHED() << "Uninitialized device type is not allowed";
