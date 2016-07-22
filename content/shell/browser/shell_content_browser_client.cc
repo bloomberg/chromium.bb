@@ -122,16 +122,14 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 // A provider of services for Geolocation.
 class ShellGeolocationDelegate : public content::GeolocationDelegate {
  public:
-  explicit ShellGeolocationDelegate(ShellBrowserContext* context)
-      : context_(context) {}
+  ShellGeolocationDelegate() {}
 
   scoped_refptr<AccessTokenStore> CreateAccessTokenStore() final {
-    return new ShellAccessTokenStore(context_);
+    return new ShellAccessTokenStore(
+        ShellContentBrowserClient::Get()->browser_context());
   }
 
  private:
-  ShellBrowserContext* context_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellGeolocationDelegate);
 };
 
@@ -367,7 +365,7 @@ ShellBrowserContext*
 }
 
 GeolocationDelegate* ShellContentBrowserClient::CreateGeolocationDelegate() {
-  return new ShellGeolocationDelegate(browser_context());
+  return new ShellGeolocationDelegate();
 }
 
 }  // namespace content

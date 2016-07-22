@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -19,8 +20,21 @@
 
 namespace content {
 
+namespace {
+base::LazyInstance<std::unique_ptr<GeolocationDelegate>>::Leaky g_delegate =
+    LAZY_INSTANCE_INITIALIZER;
+}  // anonymous namespace
+
+// static
 GeolocationProvider* GeolocationProvider::GetInstance() {
   return GeolocationProviderImpl::GetInstance();
+}
+
+// static
+void GeolocationProvider::SetGeolocationDelegate(
+    GeolocationDelegate* delegate) {
+  DCHECK(!g_delegate.Get());
+  g_delegate.Get().reset(delegate);
 }
 
 std::unique_ptr<GeolocationProvider::Subscription>
@@ -70,6 +84,7 @@ void GeolocationProviderImpl::OnLocationUpdate(const Geoposition& position) {
                                      base::Unretained(this), position));
 }
 
+// static
 GeolocationProviderImpl* GeolocationProviderImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return base::Singleton<GeolocationProviderImpl>::get();
@@ -176,14 +191,12 @@ std::unique_ptr<LocationArbitrator>
 GeolocationProviderImpl::CreateArbitrator() {
   LocationArbitratorImpl::LocationUpdateCallback callback = base::Bind(
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-
-  // Use the embedder's Delegate or fall back to the default one.
-  delegate_.reset(GetContentClient()->browser()->CreateGeolocationDelegate());
-  if (!delegate_)
-    delegate_.reset(new GeolocationDelegate);
+  // Use the embedder's |g_delegate| or fall back to the default one.
+  if (!g_delegate.Get())
+    g_delegate.Get().reset(new GeolocationDelegate);
 
   return base::WrapUnique(
-      new LocationArbitratorImpl(callback, delegate_.get()));
+      new LocationArbitratorImpl(callback, g_delegate.Get().get()));
 }
 
 }  // namespace content

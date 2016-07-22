@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 
 namespace content {
+class GeolocationDelegate;
 struct Geoposition;
 
 // This is the main API to the geolocation subsystem. The application will hold
@@ -27,6 +28,10 @@ struct Geoposition;
 class GeolocationProvider {
  public:
   CONTENT_EXPORT static GeolocationProvider* GetInstance();
+
+  // Optional: provide a Delegate to override typical services.
+  CONTENT_EXPORT static void SetGeolocationDelegate(
+      GeolocationDelegate* delegate);
 
   typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
   typedef base::CallbackList<void(const Geoposition&)>::Subscription
