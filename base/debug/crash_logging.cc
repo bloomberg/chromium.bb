@@ -13,6 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
+// Undef the macro so the preprocessor doesn't garble the constructor.
+#undef ScopedCrashKey
+
 namespace base {
 namespace debug {
 

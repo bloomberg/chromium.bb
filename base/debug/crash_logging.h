@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "base/base_export.h"
@@ -49,11 +50,46 @@ class BASE_EXPORT ScopedCrashKey {
   ScopedCrashKey(const base::StringPiece& key, const base::StringPiece& value);
   ~ScopedCrashKey();
 
+  // Helper to force a static_assert when instantiating a ScopedCrashKey
+  // temporary without a name. The usual idiom is to just #define a macro that
+  // static_asserts with the message; however, that doesn't work well when the
+  // type is in a namespace.
+  //
+  // Instead, we use a templated helper to trigger the static_assert, observing
+  //   two rules:
+  // - The static_assert needs to be in a normally uninstantiated template;
+  //   otherwise, it will fail to compile =)
+  // - Similarly, the static_assert must be dependent on the template argument,
+  //   to prevent it from being evaluated until the template is instantiated.
+  //
+  // To prevent this constructor from being accidentally invoked, it takes a
+  // special enum as an argument.
+
+  // Finally, note that this can't just be a template function that takes only
+  // one parameter, because this ends up triggering the vexing parse issue.
+  enum ScopedCrashKeyNeedsNameTag {
+    KEY_NEEDS_NAME,
+  };
+
+  template <typename... Args>
+  explicit ScopedCrashKey(ScopedCrashKeyNeedsNameTag, const Args&...) {
+    constexpr bool always_false = sizeof...(Args) == 0 && sizeof...(Args) != 0;
+    static_assert(
+        always_false,
+        "scoped crash key objects should not be unnamed temporaries.");
+  }
+
  private:
   std::string key_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCrashKey);
 };
+
+// Disallow an instantation of ScopedCrashKey without a name, since this results
+// in a temporary that is immediately destroyed. Doing so will trigger the
+// static_assert in the templated constructor helper in ScopedCrashKey.
+#define ScopedCrashKey(...) \
+  ScopedCrashKey(base::debug::ScopedCrashKey::KEY_NEEDS_NAME, __VA_ARGS__)
 
 // Before setting values for a key, all the keys must be registered.
 struct BASE_EXPORT CrashKey {
