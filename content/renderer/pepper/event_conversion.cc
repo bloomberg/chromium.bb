@@ -290,7 +290,7 @@ bool HasTouchPointWithId(const WebTouchPoint* web_touches,
                          uint32_t web_touches_length,
                          uint32_t id) {
   // Note: A brute force search to find the (potentially) existing touch point
-  // is cheap given the small bound on |WebTouchEvent::touchesLengthCap|.
+  // is cheap given the small bound on |WebTouchEvent::kTouchesLengthCap|.
   for (uint32_t i = 0; i < web_touches_length; ++i) {
     if (web_touches[i].id == static_cast<int>(id))
       return true;
@@ -305,10 +305,10 @@ void SetWebTouchPointsIfNotYetSet(const std::vector<PP_TouchPoint>& pp_touches,
   const uint32_t initial_web_touches_length = *web_touches_length;
   const uint32_t touches_length =
       std::min(static_cast<uint32_t>(pp_touches.size()),
-               static_cast<uint32_t>(WebTouchEvent::touchesLengthCap));
+               static_cast<uint32_t>(WebTouchEvent::kTouchesLengthCap));
   for (uint32_t i = 0; i < touches_length; ++i) {
     const uint32_t touch_index = *web_touches_length;
-    if (touch_index >= static_cast<uint32_t>(WebTouchEvent::touchesLengthCap))
+    if (touch_index >= static_cast<uint32_t>(WebTouchEvent::kTouchesLengthCap))
       return;
 
     const PP_TouchPoint& pp_pt = pp_touches[i];

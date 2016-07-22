@@ -27,7 +27,7 @@
                     'target_name': 'web_input_event_java',
                     'type': 'none',
                     'variables': {
-                        'source_file': 'web/WebInputEvent.h',
+                        'source_file': 'platform/WebInputEvent.h',
                     },
                     'includes': [ '../../../build/android/java_cpp_enum.gypi' ],
                 },

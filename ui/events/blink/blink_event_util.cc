@@ -164,7 +164,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
     bool moved_beyond_slop_region) {
   static_assert(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) ==
-                    static_cast<int>(blink::WebTouchEvent::touchesLengthCap),
+                    static_cast<int>(blink::WebTouchEvent::kTouchesLengthCap),
                 "inconsistent maximum number of active touch points");
 
   blink::WebTouchEvent result;
@@ -180,7 +180,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
   result.uniqueTouchEventId = event.GetUniqueEventId();
   result.touchesLength =
       std::min(static_cast<unsigned>(event.GetPointerCount()),
-               static_cast<unsigned>(WebTouchEvent::touchesLengthCap));
+               static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap));
   DCHECK_GT(result.touchesLength, 0U);
 
   for (size_t i = 0; i < result.touchesLength; ++i)

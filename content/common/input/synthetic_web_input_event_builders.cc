@@ -189,7 +189,7 @@ void SyntheticWebTouchEvent::ResetPoints() {
 }
 
 int SyntheticWebTouchEvent::PressPoint(float x, float y) {
-  if (touchesLength == touchesLengthCap)
+  if (touchesLength == kTouchesLengthCap)
     return -1;
   WebTouchPoint& point = touches[touchesLength];
   point.id = touchesLength;
@@ -208,7 +208,7 @@ int SyntheticWebTouchEvent::PressPoint(float x, float y) {
 
 void SyntheticWebTouchEvent::MovePoint(int index, float x, float y) {
   CHECK_GE(index, 0);
-  CHECK_LT(index, touchesLengthCap);
+  CHECK_LT(index, kTouchesLengthCap);
   // Always set this bit to avoid otherwise unexpected touchmove suppression.
   // The caller can opt-out explicitly, if necessary.
   movedBeyondSlopRegion = true;
@@ -222,7 +222,7 @@ void SyntheticWebTouchEvent::MovePoint(int index, float x, float y) {
 
 void SyntheticWebTouchEvent::ReleasePoint(int index) {
   CHECK_GE(index, 0);
-  CHECK_LT(index, touchesLengthCap);
+  CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::StateReleased;
   WebTouchEventTraits::ResetType(
       WebInputEvent::TouchEnd, timeStampSeconds, this);
@@ -230,7 +230,7 @@ void SyntheticWebTouchEvent::ReleasePoint(int index) {
 
 void SyntheticWebTouchEvent::CancelPoint(int index) {
   CHECK_GE(index, 0);
-  CHECK_LT(index, touchesLengthCap);
+  CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::StateCancelled;
   WebTouchEventTraits::ResetType(
       WebInputEvent::TouchCancel, timeStampSeconds, this);

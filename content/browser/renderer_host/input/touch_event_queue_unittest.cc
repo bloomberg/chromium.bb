@@ -189,7 +189,7 @@ class TouchEventQueueTest : public testing::Test,
 
   void ChangeTouchPointRadius(int index, float radius_x, float radius_y) {
     CHECK_GE(index, 0);
-    CHECK_LT(index, touch_event_.touchesLengthCap);
+    CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.radiusX = radius_x;
     point.radiusY = radius_y;
@@ -203,7 +203,7 @@ class TouchEventQueueTest : public testing::Test,
 
   void ChangeTouchPointRotationAngle(int index, float rotation_angle) {
     CHECK_GE(index, 0);
-    CHECK_LT(index, touch_event_.touchesLengthCap);
+    CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.rotationAngle = rotation_angle;
     touch_event_.touches[index].state = WebTouchPoint::StateMoved;
@@ -216,7 +216,7 @@ class TouchEventQueueTest : public testing::Test,
 
   void ChangeTouchPointForce(int index, float force) {
     CHECK_GE(index, 0);
-    CHECK_LT(index, touch_event_.touchesLengthCap);
+    CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.force = force;
     touch_event_.touches[index].state = WebTouchPoint::StateMoved;

@@ -718,7 +718,7 @@ static void addTouchPointsUpdateStateIfNecessary(WebTouchPoint::State state, Tou
     unsigned initialTouchPointsLength = *touchPointsLength;
     for (unsigned i = 0; i < touches->length(); ++i) {
         const unsigned pointIndex = *touchPointsLength;
-        if (pointIndex >= static_cast<unsigned>(WebTouchEvent::touchesLengthCap))
+        if (pointIndex >= static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap))
             return;
 
         const Touch* touch = touches->item(i);
@@ -754,7 +754,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutItem layoutItem, const To
     movedBeyondSlopRegion = event.causesScrollingIfUncanceled();
 
     // Currently touches[] is empty, add stationary points as-is.
-    for (unsigned i = 0; i < event.touches()->length() && i < static_cast<unsigned>(WebTouchEvent::touchesLengthCap); ++i) {
+    for (unsigned i = 0; i < event.touches()->length() && i < static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap); ++i) {
         touches[i] = toWebTouchPoint(event.touches()->item(i), layoutItem, WebTouchPoint::StateStationary);
         ++touchesLength;
     }

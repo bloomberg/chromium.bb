@@ -79,10 +79,10 @@ class MockSyntheticPointerTouchActionTarget
   unsigned touch_length() const { return touch_length_; }
 
  private:
-  gfx::PointF positions_[WebTouchEvent::touchesLengthCap];
+  gfx::PointF positions_[WebTouchEvent::kTouchesLengthCap];
   unsigned touch_length_;
-  int indexes_[WebTouchEvent::touchesLengthCap];
-  WebTouchPoint::State states_[WebTouchEvent::touchesLengthCap];
+  int indexes_[WebTouchEvent::kTouchesLengthCap];
+  WebTouchPoint::State states_[WebTouchEvent::kTouchesLengthCap];
 };
 
 class SyntheticPointerActionTest : public testing::Test {

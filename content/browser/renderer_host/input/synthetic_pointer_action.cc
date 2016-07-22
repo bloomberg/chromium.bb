@@ -65,7 +65,7 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
 
 bool SyntheticPointerAction::UserInputCheck(
     const SyntheticPointerActionParams& params) {
-  if (params.index() < 0 || params.index() >= WebTouchEvent::touchesLengthCap)
+  if (params.index() < 0 || params.index() >= WebTouchEvent::kTouchesLengthCap)
     return false;
 
   if (synthetic_pointer_->SourceType() != params.gesture_source_type)

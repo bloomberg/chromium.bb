@@ -2241,7 +2241,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   uint32_t unique_touch_event_id;
   GetOptionalTouchArgs(args, moved_beyond_slop_region, unique_touch_event_id);
 
-  DCHECK_GT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap),
+  DCHECK_GT(static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap),
             touch_points_.size());
   if (force_layout_on_events_)
     view()->updateAllLifecyclePhases();

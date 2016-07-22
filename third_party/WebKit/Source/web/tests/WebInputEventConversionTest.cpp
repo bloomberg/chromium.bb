@@ -231,7 +231,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     {
         TouchList* touchList = TouchList::create();
         TouchList* changedTouchList = TouchList::create();
-        for (int i = 0; i <= static_cast<int>(WebTouchEvent::touchesLengthCap) * 2; ++i) {
+        for (int i = 0; i <= static_cast<int>(WebTouchEvent::kTouchesLengthCap) * 2; ++i) {
             Touch* touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document, i, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force, String());
             touchList->append(touch);
             changedTouchList->append(touch);
@@ -239,7 +239,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         TouchEvent* touchEvent = TouchEvent::create(touchList, touchList, touchList, EventTypeNames::touchstart, domWindow, PlatformEvent::NoModifiers, false, false, true, 0);
 
         WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
-        ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::touchesLengthCap), webTouchBuilder.touchesLength);
+        ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap), webTouchBuilder.touchesLength);
     }
 }
 

@@ -59,7 +59,7 @@ struct SameSizeAsWebGestureEvent : public SameSizeAsWebInputEvent {
 };
 
 struct SameSizeAsWebTouchEvent : public SameSizeAsWebInputEvent {
-    WebTouchPoint touchPoints[WebTouchEvent::touchesLengthCap];
+    WebTouchPoint touchPoints[WebTouchEvent::kTouchesLengthCap];
     int touchData[4];
 };
 

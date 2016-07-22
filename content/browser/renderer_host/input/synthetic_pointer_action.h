@@ -19,7 +19,7 @@ namespace content {
 
 class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
  public:
-  using IndexMap = std::array<int, WebTouchEvent::touchesLengthCap>;
+  using IndexMap = std::array<int, WebTouchEvent::kTouchesLengthCap>;
 
   SyntheticPointerAction(
       std::unique_ptr<std::vector<SyntheticPointerActionParams>> param_list,
