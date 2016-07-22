@@ -418,7 +418,6 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     m_destRect.intersect(paintRect);
 
     // Snap as-yet unsnapped values.
-    DCHECK(m_phase == LayoutPoint(roundedIntPoint(m_phase)));
     setDestRect(LayoutRect(pixelSnappedIntRect(m_destRect)));
 }
 
