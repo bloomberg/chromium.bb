@@ -423,7 +423,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
     private void addBillingAddressDropdown(EditorModel editor, final CreditCard card) {
         final List<DropdownKeyValue> billingAddresses = new ArrayList<>();
         billingAddresses.add(new DropdownKeyValue(BILLING_ADDRESS_NONE,
-                mContext.getString(R.string.autofill_billing_address_select_prompt)));
+                mContext.getString(R.string.select)));
 
         // Re-read profiles every time, in case any of them have changed. This does not cause a disk
         // read, because personal_data_manager.h holds a cache.

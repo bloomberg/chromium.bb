@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
@@ -251,13 +250,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         helper.waitForCallback(callCount);
     }
 
-    /** Returns the left summary label of the "Shipping summary" section. */
-    protected String getAddressSectionLabel() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+    /** Gets the button state for the shipping summary section. */
+    protected int getSummarySectionButtonState() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
-            public String call() {
-                return ((TextView) mUI.getShippingSummarySectionForTest().findViewById(
-                        R.id.payments_left_summary_label)).getText().toString();
+            public Integer call() {
+                return mUI.getShippingSummarySectionForTest().getEditButtonState();
             }
         });
     }

@@ -195,6 +195,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_YESTERDAY" desc="Generic Label saying the date is yesterday.">
         Yesterday
       </message>
+      <message name="IDS_SELECT" desc="Prompt for user to select something. [CHAR-LIMIT=20]">
+        Select
+      </message>
+      <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
+        Add
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -289,9 +295,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_BILLING_ADDRESS" desc="Label for a spinner input field containing a list of billing addresses for a credit card. [CHAR-LIMIT=32]">
         Billing address
-      </message>
-      <message name="IDS_AUTOFILL_BILLING_ADDRESS_SELECT_PROMPT" desc="Prompt for user to select a billing address in autofill settings for a credit card. [CHAR-LIMIT=24]">
-        Select
       </message>
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance.">
          Copied to Chrome
@@ -1583,9 +1586,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- Add to Home screen strings -->
-      <message name="IDS_ADD" desc="Title for Add button [CHAR-LIMIT=20]">
-        Add
-      </message>
       <message name="IDS_ADD_TO_HOMESCREEN_TITLE" desc="Edit text title for Add to Home screen dialog [CHAR-LIMIT=30]">
         Title
       </message>
@@ -2634,14 +2634,8 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL" desc="The title for the section that lets the user select the method of payment.">
         Payment
       </message>
-      <message name="IDS_PAYMENTS_SELECT_METHOD_OF_PAYMENT_PROMPT" desc="The label for the button that presents the user with the list of possible methods of payments, for example a list of their credit cards..">
-        Select payment method
-      </message>
       <message name="IDS_PAYMENTS_CONTACT_DETAILS_LABEL" desc="The title for the section that lets the user select how they can be contacted.">
         Contact info
-      </message>
-      <message name="IDS_PAYMENTS_SELECT_CONTACT_DETAILS_PROMPT" desc="The label for the button that presents the user with the list of possible phone numbers and email addresses where the user can be reached.">
-        Select contact details
       </message>
       <message name="IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to add new contact information, such as email address or phone number.">
         Add contact info
@@ -2657,15 +2651,6 @@ You can control the Physical Web in Chrome Settings.
       </message>
       <message name="IDS_PAYMENTS_SHIPPING_OPTION_LABEL" desc="The title for the section that lets the user select how the product should be shipped.">
         Shipping option
-      </message>
-      <message name="IDS_PAYMENTS_SELECT_SHIPPING_PROMPT" desc="The label for the button that presents the user with the list of possible shipping addresses and options.">
-        Select shipping
-      </message>
-      <message name="IDS_PAYMENTS_SELECT_SHIPPING_OPTION_PROMPT" desc="The label for the button that presents the user with the list of possible shipping options.">
-        Select shipping option
-      </message>
-      <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_PROMPT" desc="The label for the button that presents the user with the list of possible shipping addresses.">
-        Select shipping address
       </message>
       <message name="IDS_PAYMENTS_ORDER_SUMMARY_LABEL" desc="The title of the section that shows the summary of the order, including names and prices of individual line items, i.e. the bill.">
         Order summary
@@ -2707,7 +2692,7 @@ You can control the Physical Web in Chrome Settings.
         Add contact info
       </message>
       <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS" desc="Text implying that a user needs to pick a shipping address to see the shipping methods.">
-        Select a shipping address to check shipping methods.
+        Select a shipping address to check shipping methods and requirements.
       </message>
       <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified.">
         Checking

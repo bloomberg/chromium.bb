@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -47,7 +48,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
     public void testAddressNotSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
-        assertEquals("Select shipping", getAddressSectionLabel());
+        assertEquals(PaymentRequestSection.EDIT_BUTTON_SELECT, getSummarySectionButtonState());
     }
 
     /** Expand the shipping address section, select an address, and click "Pay." */

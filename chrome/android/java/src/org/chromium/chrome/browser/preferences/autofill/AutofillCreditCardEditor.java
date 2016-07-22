@@ -38,8 +38,7 @@ abstract class AutofillCreditCardEditor extends AutofillEditorBase {
         profilesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         AutofillProfile noSelection = new AutofillProfile();
-        noSelection.setLabel(
-                getActivity().getString(R.string.autofill_billing_address_select_prompt));
+        noSelection.setLabel(getActivity().getString(R.string.select));
         profilesAdapter.add(noSelection);
 
         List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesForSettings();

@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.util.ArrayList;
@@ -39,11 +41,11 @@ import javax.annotation.Nullable;
  *
  * The row is broken up into three major, vertically-centered sections:
  * .............................................................................................
- * . TITLE                                                          |                |         .
- * .................................................................|                |         .
- * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |           LOGO | CHEVRON .
- * .................................................................|                |         .
- * . MAIN SECTION CONTENT                                           |                |         .
+ * . TITLE                                                          |                | CHEVRON .
+ * .................................................................|                |    or   .
+ * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |           LOGO |   ADD   .
+ * .................................................................|                |    or   .
+ * . MAIN SECTION CONTENT                                           |                |  SELECT .
  * .............................................................................................
  *
  * 1) MAIN CONTENT
@@ -55,19 +57,14 @@ import javax.annotation.Nullable;
  *    Displays an optional logo (e.g. a credit card image) that floats to the right of the main
  *    content.
  *
- * 3) CHEVRON
+ * 3) CHEVRON or ADD or SELECT
  *    Drawn to indicate that the current section may be expanded.  Displayed only when the view is
- *    in the {@link #DISPLAY_MODE_EXPANDABLE} state.
+ *    in the {@link #DISPLAY_MODE_EXPANDABLE} state and only if an ADD or SELECT button isn't shown.
  *
  * There are three states that the UI may flip between; see {@link #DISPLAY_MODE_NORMAL},
  * {@link #DISPLAY_MODE_EXPANDABLE}, and {@link #DISPLAY_MODE_FOCUSED} for details.
- *
- * TODO(dfalcantara): Figure out what kind of Layout we should really be using here now that mocks
- *                    have stabilized, somewhat.  A RelativeLayout is gross because it doesn't
- *                    automatically account for Views being removed, meaning we'd have to twiddle
- *                    with each View's LayoutParams as their visibility was toggled.
  */
-public abstract class PaymentRequestSection extends LinearLayout {
+public abstract class PaymentRequestSection extends LinearLayout implements View.OnClickListener {
     public static final String TAG = "PaymentRequestUI";
 
     /** Handles clicks on the widgets and providing data to the PaymentsRequestSection. */
@@ -78,38 +75,54 @@ public abstract class PaymentRequestSection extends LinearLayout {
          * @param section Section that was changed.
          * @param option  {@link PaymentOption} that was selected.
          */
-        void onPaymentOptionChanged(OptionSection section, PaymentOption option);
+        void onPaymentOptionChanged(PaymentRequestSection section, PaymentOption option);
 
         /** Called when the user requests adding a new PaymentOption to a given section. */
-        void onAddPaymentOption(OptionSection section);
+        void onAddPaymentOption(PaymentRequestSection section);
 
         /** Checks whether or not the text should be formatted with a bold label. */
-        boolean isBoldLabelNeeded(OptionSection section);
+        boolean isBoldLabelNeeded(PaymentRequestSection section);
 
         /** Checks whether or not the user should be allowed to click on controls. */
         boolean isAcceptingUserInput();
 
         /** Returns any additional text that needs to be displayed. */
-        @Nullable String getAdditionalText(OptionSection section);
+        @Nullable String getAdditionalText(PaymentRequestSection section);
 
         /** Returns true if the additional text should be stylized as a warning instead of info. */
-        boolean isAdditionalTextDisplayingWarning(OptionSection section);
+        boolean isAdditionalTextDisplayingWarning(PaymentRequestSection section);
+
+        /** Called when a section has been clicked. */
+        void onSectionClicked(PaymentRequestSection section);
     }
 
+    /** Edit button mode: Hide the button. */
+    public static final int EDIT_BUTTON_GONE = 0;
+
+    /** Edit button mode: Indicate that the section requires a selection. */
+    public static final int EDIT_BUTTON_SELECT = 1;
+
+    /** Edit button mode: Indicate that the section requires adding an option. */
+    public static final int EDIT_BUTTON_ADD = 2;
+
     /** Normal mode: White background, displays the item assuming the user accepts it as is. */
-    static final int DISPLAY_MODE_NORMAL = 0;
+    static final int DISPLAY_MODE_NORMAL = 3;
 
     /** Editable mode: White background, displays the item with an edit chevron. */
-    static final int DISPLAY_MODE_EXPANDABLE = 1;
+    static final int DISPLAY_MODE_EXPANDABLE = 4;
 
     /** Focused mode: Gray background, more padding, no edit chevron. */
-    static final int DISPLAY_MODE_FOCUSED = 2;
+    static final int DISPLAY_MODE_FOCUSED = 5;
 
     /** Checking mode: Gray background, spinner overlay hides everything except the title. */
-    static final int DISPLAY_MODE_CHECKING = 3;
+    static final int DISPLAY_MODE_CHECKING = 6;
 
     protected final SectionDelegate mDelegate;
     protected final int mLargeSpacing;
+    protected final Button mEditButtonView;
+    protected final boolean mIsLayoutInitialized;
+
+    protected int mDisplayMode = DISPLAY_MODE_NORMAL;
 
     private final int mVerticalSpacing;
     private final int mFocusedBackgroundColor;
@@ -123,7 +136,6 @@ public abstract class PaymentRequestSection extends LinearLayout {
     private TextView mSummaryRightTextView;
 
     private int mLogoResourceId;
-    private int mDisplayMode;
     private boolean mIsSummaryAllowed = true;
 
     /**
@@ -136,7 +148,6 @@ public abstract class PaymentRequestSection extends LinearLayout {
     private PaymentRequestSection(Context context, String sectionName, SectionDelegate delegate) {
         super(context);
         mDelegate = delegate;
-        setId(R.id.payments_section);
         setOnClickListener(delegate);
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
@@ -153,7 +164,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
         // Create the main content.
         mMainSection = prepareMainSection(sectionName);
         mLogoView = isLogoNecessary() ? createAndAddLogoView(this, 0, mLargeSpacing) : null;
+        mEditButtonView = createAndAddEditButton(this);
         mChevronView = createAndAddChevron(this);
+        mIsLayoutInitialized = true;
         setDisplayMode(DISPLAY_MODE_NORMAL);
     }
 
@@ -166,7 +179,40 @@ public abstract class PaymentRequestSection extends LinearLayout {
         assert isLogoNecessary();
         mLogoResourceId = resourceId;
         mLogoView.setImageResource(resourceId);
-        updateLogoVisibility();
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        // Allow touches to propagate to children only if the layout can be interacted with.
+        return !mDelegate.isAcceptingUserInput();
+    }
+
+    @Override
+    public final void onClick(View v) {
+        if (!mDelegate.isAcceptingUserInput()) return;
+
+        // Handle clicking on "ADD" or "SELECT".
+        if (v == mEditButtonView) {
+            if (getEditButtonState() == EDIT_BUTTON_ADD) {
+                mDelegate.onAddPaymentOption(this);
+            } else {
+                mDelegate.onSectionClicked(this);
+            }
+            return;
+        }
+
+        handleClick(v);
+        updateControlLayout();
+    }
+
+    /** Handles clicks on the PaymentRequestSection. */
+    protected void handleClick(View v) { }
+
+    /**
+     * Called when the UI is telling the section that it has either gained or lost focus.
+     */
+    public void focusSection(boolean shouldFocus) {
+        setDisplayMode(shouldFocus ? DISPLAY_MODE_FOCUSED : DISPLAY_MODE_EXPANDABLE);
     }
 
     /**
@@ -176,20 +222,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
      */
     public void setDisplayMode(int displayMode) {
         mDisplayMode = displayMode;
-        boolean isExpanded =
-                displayMode == DISPLAY_MODE_FOCUSED || displayMode == DISPLAY_MODE_CHECKING;
-        setBackgroundColor(isExpanded ? mFocusedBackgroundColor : Color.WHITE);
-        updateLogoVisibility();
-        mChevronView.setVisibility(displayMode == DISPLAY_MODE_EXPANDABLE ? VISIBLE : GONE);
-
-        // The title gains extra spacing when there is another visible view in the main section.
-        int numVisibleMainViews = 0;
-        for (int i = 0; i < mMainSection.getChildCount(); i++) {
-            if (mMainSection.getChildAt(i).getVisibility() == VISIBLE) numVisibleMainViews += 1;
-        }
-        boolean isTitleMarginNecessary = numVisibleMainViews > 1 && isExpanded;
-        ((ViewGroup.MarginLayoutParams) mTitleView.getLayoutParams()).bottomMargin =
-                isTitleMarginNecessary ? mVerticalSpacing : 0;
+        updateControlLayout();
     }
 
     /**
@@ -203,7 +236,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         mSummaryLeftTextView.setText(leftText);
         mSummaryRightTextView.setText(rightText);
         mSummaryRightTextView.setVisibility(TextUtils.isEmpty(rightText) ? GONE : VISIBLE);
-        updateSummaryVisibility();
+        updateControlLayout();
     }
 
     /**
@@ -229,18 +262,35 @@ public abstract class PaymentRequestSection extends LinearLayout {
     protected abstract void createMainSectionContent(LinearLayout mainSectionLayout);
 
     /**
+     * Sets whether the edit button may be interacted with.
+     *
+     * @param isEnabled Whether the button may be interacted with.
+     */
+    public void setIsEditButtonEnabled(boolean isEnabled) {
+        mEditButtonView.setEnabled(isEnabled);
+    }
+
+    /**
      * Sets whether the summary text can be displayed.
      *
-     * @param isAllowed Whether to display the summary text.
+     * @param isAllowed Whether to display the summary text when needed.
      */
     protected void setIsSummaryAllowed(boolean isAllowed) {
         mIsSummaryAllowed = isAllowed;
-        updateSummaryVisibility();
     }
 
     /** @return Whether or not the logo should be displayed. */
     protected boolean isLogoNecessary() {
         return false;
+    }
+
+    /**
+     * Returns the state of the edit button, which is hidden by default.
+     *
+     * @return State of the edit button.
+     */
+    public int getEditButtonState() {
+        return EDIT_BUTTON_GONE;
     }
 
     /**
@@ -315,6 +365,19 @@ public abstract class PaymentRequestSection extends LinearLayout {
         return view;
     }
 
+    private Button createAndAddEditButton(ViewGroup parent) {
+        Resources resources = parent.getResources();
+        Button view = DualControlLayout.createButtonForLayout(
+                parent.getContext(), true, resources.getString(R.string.select), this);
+        view.setId(R.id.payments_section);
+
+        LayoutParams params =
+                new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        ApiCompatibilityUtils.setMarginStart(params, mLargeSpacing);
+        parent.addView(view, params);
+        return view;
+    }
+
     private ImageView createAndAddChevron(ViewGroup parent) {
         Resources resources = parent.getResources();
         TintedDrawable chevron = TintedDrawable.constructTintedDrawable(
@@ -331,30 +394,81 @@ public abstract class PaymentRequestSection extends LinearLayout {
         return view;
     }
 
-    private void updateSummaryVisibility() {
-        boolean show = mIsSummaryAllowed && !TextUtils.isEmpty(mSummaryLeftTextView.getText());
-        mSummaryLayout.setVisibility(show ? VISIBLE : GONE);
-    }
+    /**
+     * Called when the section's controls need to be updated after configuration changes.
+     *
+     * Because of the complicated special casing of what controls hide other controls, all calls to
+     * update just one of the controls causes the visibility logic to trigger for all of them.
+     *
+     * Subclasses should call the super method after they update their own controls.
+     */
+    protected void updateControlLayout() {
+        if (!mIsLayoutInitialized) return;
 
-    private void updateLogoVisibility() {
-        if (mLogoView == null) return;
-        boolean show = mLogoResourceId != 0 && mDisplayMode != DISPLAY_MODE_FOCUSED;
-        mLogoView.setVisibility(show ? VISIBLE : GONE);
+        boolean isExpanded =
+                mDisplayMode == DISPLAY_MODE_FOCUSED || mDisplayMode == DISPLAY_MODE_CHECKING;
+        setBackgroundColor(isExpanded ? mFocusedBackgroundColor : Color.WHITE);
+
+        // Update whether the logo is displayed.
+        if (mLogoView != null) {
+            boolean show = mLogoResourceId != 0 && mDisplayMode != DISPLAY_MODE_FOCUSED;
+            mLogoView.setVisibility(show ? VISIBLE : GONE);
+        }
+
+        // The button takes precedence over the summary text and the chevron.
+        int editButtonState = getEditButtonState();
+        if (editButtonState == EDIT_BUTTON_GONE) {
+            mEditButtonView.setVisibility(GONE);
+            mChevronView.setVisibility(
+                    mDisplayMode == DISPLAY_MODE_EXPANDABLE ? VISIBLE : GONE);
+
+            // Update whether the summary is displayed.
+            boolean showSummary =
+                    mIsSummaryAllowed && !TextUtils.isEmpty(mSummaryLeftTextView.getText());
+            mSummaryLayout.setVisibility(showSummary ? VISIBLE : GONE);
+        } else {
+            // Show the edit button and hide the chevron and the summary.
+            boolean isButtonAllowed = mDisplayMode == DISPLAY_MODE_EXPANDABLE
+                    || mDisplayMode == DISPLAY_MODE_NORMAL;
+            mSummaryLayout.setVisibility(GONE);
+            mChevronView.setVisibility(GONE);
+            mEditButtonView.setVisibility(isButtonAllowed ? VISIBLE : GONE);
+            mEditButtonView.setText(
+                    editButtonState == EDIT_BUTTON_SELECT ? R.string.select : R.string.add);
+        }
+
+        // The title gains extra spacing when there is another visible view in the main section.
+        int numVisibleMainViews = 0;
+        for (int i = 0; i < mMainSection.getChildCount(); i++) {
+            if (mMainSection.getChildAt(i).getVisibility() == VISIBLE) numVisibleMainViews += 1;
+        }
+
+        boolean isTitleMarginNecessary = numVisibleMainViews > 1 && isExpanded;
+        int oldMargin =
+                ((ViewGroup.MarginLayoutParams) mTitleView.getLayoutParams()).bottomMargin;
+        int newMargin = isTitleMarginNecessary ? mVerticalSpacing : 0;
+
+        if (oldMargin != newMargin) {
+            ((ViewGroup.MarginLayoutParams) mTitleView.getLayoutParams()).bottomMargin =
+                    newMargin;
+            requestLayout();
+        }
     }
 
     /**
      * Section with a secondary TextView beneath the summary to show additional details.
      *
      * ............................................................................
-     * . TITLE                                                          |         .
-     * .................................................................|         .
-     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT | CHEVRON .
-     * .................................................................|         .
-     * . EXTRA TEXT                                                     |         .
+     * . TITLE                                                          | CHEVRON .
+     * .................................................................|    or   .
+     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |   ADD   .
+     * .................................................................|    or   .
+     * . EXTRA TEXT                                                     |  SELECT .
      * ............................................................................
      */
     public static class ExtraTextSection extends PaymentRequestSection {
         private TextView mExtraTextView;
+        private int mEditButtonState = EDIT_BUTTON_GONE;
 
         public ExtraTextSection(Context context, String sectionName, SectionDelegate delegate) {
             super(context, sectionName, delegate);
@@ -381,6 +495,17 @@ public abstract class PaymentRequestSection extends LinearLayout {
             mExtraTextView.setText(text);
             mExtraTextView.setVisibility(TextUtils.isEmpty(text) ? GONE : VISIBLE);
         }
+
+        /** Sets the state of the edit button. */
+        public void setEditButtonState(int state) {
+            mEditButtonState = state;
+            updateControlLayout();
+        }
+
+        @Override
+        public int getEditButtonState() {
+            return mEditButtonState;
+        }
     }
 
     /**
@@ -393,11 +518,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
      *
      * ............................................................................
      * . TITLE                                                          |         .
-     * .................................................................|         .
-     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |         .
-     * .................................................................| CHEVRON .
-     * .                                      | Line item 1 |    $13.99 |         .
-     * .                                      | Line item 2 |      $.99 |         .
+     * .................................................................| CHERVON .
+     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |    or   .
+     * .................................................................|   ADD   .
+     * .                                      | Line item 1 |    $13.99 |    or   .
+     * .                                      | Line item 2 |      $.99 |  SELECT .
      * .                                      | Line item 3 |     $2.99 |         .
      * ............................................................................
      */
@@ -495,9 +620,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
         }
 
         @Override
-        public void setDisplayMode(int displayMode) {
-            super.setDisplayMode(displayMode);
-            mBreakdownLayout.setVisibility(displayMode == DISPLAY_MODE_FOCUSED ? VISIBLE : GONE);
+        protected void updateControlLayout() {
+            if (!mIsLayoutInitialized) return;
+
+            mBreakdownLayout.setVisibility(mDisplayMode == DISPLAY_MODE_FOCUSED ? VISIBLE : GONE);
+            super.updateControlLayout();
         }
     }
 
@@ -516,16 +643,16 @@ public abstract class PaymentRequestSection extends LinearLayout {
      * . TITLE                                                          |                |         .
      * .................................................................|                |         .
      * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |                |         .
-     * .................................................................|                |         .
-     * . Descriptive text that spans all three columns because it can.  |                |         .
-     * . ! Warning text that displays a big scary warning and icon.     |           LOGO | CHEVRON .
-     * . O Option 1                                              ICON 1 |                |         .
-     * . O Option 2                                              ICON 2 |                |         .
+     * .................................................................|                | CHEVRON .
+     * . Descriptive text that spans all three columns because it can.  |                |    or   .
+     * . ! Warning text that displays a big scary warning and icon.     |           LOGO |   ADD   .
+     * . O Option 1                                              ICON 1 |                |    or   .
+     * . O Option 2                                              ICON 2 |                |  SELECT .
      * . O Option 3                                              ICON 3 |                |         .
      * . + ADD THING                                                    |                |         .
      * .............................................................................................
      */
-    public static class OptionSection extends PaymentRequestSection implements OnClickListener {
+    public static class OptionSection extends PaymentRequestSection {
 
         private static final int INVALID_OPTION_INDEX = -1;
 
@@ -722,9 +849,6 @@ public abstract class PaymentRequestSection extends LinearLayout {
             }
         }
 
-        /** Text to display in the summary when there is no selected option. */
-        private final CharSequence mEmptyLabel;
-
         /** Top and bottom margins for each item. */
         private final int mVerticalMargin;
 
@@ -740,29 +864,27 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** A spinner to show when the user selection is being checked. */
         private View mCheckingProgress;
 
+        /** SectionInformation that is used to populate the views in this section. */
+        private SectionInformation mSectionInformation;
+
         /**
          * Constructs an OptionSection.
          *
          * @param context     Context to pull resources from.
          * @param sectionName Title of the section to display.
-         * @param emptyLabel  An optional string to display when no item is selected.
          * @param delegate    Delegate to alert when something changes in the dialog.
          */
-        public OptionSection(Context context, String sectionName, @Nullable CharSequence emptyLabel,
-                SectionDelegate delegate) {
+        public OptionSection(Context context, String sectionName, SectionDelegate delegate) {
             super(context, sectionName, delegate);
             mVerticalMargin = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_small_spacing);
-            mEmptyLabel = emptyLabel;
             mIconMaxWidth = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_logo_width);
-            setSummaryText(emptyLabel, null);
+            setSummaryText(null, null);
         }
 
         @Override
-        public void onClick(View v) {
-            if (!mDelegate.isAcceptingUserInput()) return;
-
+        public void handleClick(View v) {
             // Handle click on the "ADD THING" button.
             for (int i = 0; i < mOptionRows.size(); i++) {
                 OptionRow row = mOptionRows.get(i);
@@ -782,9 +904,15 @@ public abstract class PaymentRequestSection extends LinearLayout {
         }
 
         @Override
-        public boolean onInterceptTouchEvent(MotionEvent event) {
-            // Allow touches to propagate to children only if the layout can be interacted with.
-            return !mDelegate.isAcceptingUserInput();
+        public void focusSection(boolean shouldFocus) {
+            // Override expansion of the section if there's no options to show.
+            boolean mayFocus = mSectionInformation != null && mSectionInformation.getSize() > 0;
+            if (!mayFocus && shouldFocus) {
+                setDisplayMode(PaymentRequestSection.DISPLAY_MODE_NORMAL);
+                return;
+            }
+
+            super.focusSection(shouldFocus);
         }
 
         @Override
@@ -810,9 +938,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         /** Updates the View to account for the new {@link SectionInformation} being passed in. */
         public void update(SectionInformation information) {
+            mSectionInformation = information;
             PaymentOption selectedItem = information.getSelectedItem();
             updateSelectedItem(selectedItem);
             updateOptionList(information, selectedItem);
+            updateControlLayout();
         }
 
         private View createLoadingSpinner() {
@@ -849,14 +979,14 @@ public abstract class PaymentRequestSection extends LinearLayout {
         }
 
         @Override
-        public void setDisplayMode(int displayMode) {
-            super.setDisplayMode(displayMode);
+        protected void updateControlLayout() {
+            if (!mIsLayoutInitialized) return;
 
-            if (displayMode == DISPLAY_MODE_FOCUSED) {
+            if (mDisplayMode == DISPLAY_MODE_FOCUSED) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(VISIBLE);
                 setSpinnerVisibility(false);
-            } else if (displayMode == DISPLAY_MODE_CHECKING) {
+            } else if (mDisplayMode == DISPLAY_MODE_CHECKING) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(GONE);
                 setSpinnerVisibility(true);
@@ -865,20 +995,36 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 mOptionLayout.setVisibility(GONE);
                 setSpinnerVisibility(false);
             }
+
+            super.updateControlLayout();
+        }
+
+        @Override
+        public int getEditButtonState() {
+            if (mSectionInformation == null) return EDIT_BUTTON_GONE;
+
+            if (mSectionInformation.getSize() == 0 && mCanAddItems) {
+                // There aren't any PaymentOptions.  Ask the user to add a new one.
+                return EDIT_BUTTON_ADD;
+            } else if (mSectionInformation.getSelectedItem() == null) {
+                // The user hasn't selected any available PaymentOptions.  Ask the user to pick one.
+                return EDIT_BUTTON_SELECT;
+            } else {
+                return EDIT_BUTTON_GONE;
+            }
         }
 
         private void updateSelectedItem(PaymentOption selectedItem) {
             if (selectedItem == null) {
                 setLogoResource(0);
-                if (TextUtils.isEmpty(mEmptyLabel)) {
-                    setIsSummaryAllowed(false);
-                } else {
-                    setSummaryText(mEmptyLabel, null);
-                }
+                setIsSummaryAllowed(false);
+                setSummaryText(null, null);
             } else {
                 setLogoResource(selectedItem.getDrawableIconId());
                 setSummaryText(convertOptionToString(selectedItem, false), null);
             }
+
+            updateControlLayout();
         }
 
         private void updateOptionList(SectionInformation information, PaymentOption selectedItem) {
