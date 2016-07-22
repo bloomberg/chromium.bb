@@ -41,3 +41,18 @@ config("runtime_library") {
 config("ios_dynamic_flags") {
   ldflags = [ "-Wl,-ObjC" ]  # Always load Objective-C categories and class.
 }
+
+config("xctest_config") {
+  common_flags = [
+    "-F",
+    "$ios_sdk_platform_path/Developer/Library/Frameworks",
+  ]
+
+  cflags = common_flags
+  ldflags = common_flags
+
+  libs = [
+    "Foundation.framework",
+    "XCTest.framework",
+  ]
+}

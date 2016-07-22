@@ -160,6 +160,7 @@ template("ios_app_bundle") {
                              [
                                "bundle_deps",
                                "bundle_extension",
+                               "extra_system_frameworks",
                                "entitlements_path",
                                "extra_substitutions",
                                "info_plist",
@@ -239,6 +240,7 @@ template("ios_app_bundle") {
                              [
                                "bundle_deps",
                                "bundle_extension",
+                               "extra_system_frameworks",
                                "data_deps",
                                "entitlements_path",
                                "extra_substitutions",
@@ -358,6 +360,16 @@ template("ios_app_bundle") {
       }
     }
 
+    if (!ios_enable_code_signing && defined(invoker.extra_system_frameworks)) {
+      bundle_data(_target_name + "_extra_system_frameworks") {
+        visibility = [ ":$_target_name" ]
+        sources = invoker.extra_system_frameworks
+        outputs = [
+          "{{bundle_resources_dir}}/Frameworks/{{source_file_part}}",
+        ]
+      }
+    }
+
     create_bundle(target_name) {
       forward_variables_from(invoker,
                              [
@@ -380,6 +392,9 @@ template("ios_app_bundle") {
         }
       } else {
         deps += [ ":$_bundle_data_executable" ]
+        if (defined(invoker.extra_system_frameworks)) {
+          deps += [ ":${_target_name}_extra_system_frameworks" ]
+        }
       }
       if (defined(invoker.bundle_deps)) {
         deps += invoker.bundle_deps
@@ -425,12 +440,26 @@ template("ios_app_bundle") {
           "$bundle_root_dir/_CodeSignature/CodeResources",
           "$bundle_root_dir/embedded.mobileprovision",
         ]
+        if (defined(invoker.extra_system_frameworks)) {
+          foreach(_framework, invoker.extra_system_frameworks) {
+            code_signing_outputs += [ "$bundle_root_dir/Frameworks/" +
+                                      get_path_info(_framework, "name") ]
+          }
+        }
         code_signing_args = [
           "-i=" + ios_code_signing_identity,
           "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
           "-e=" + rebase_path(_entitlements_path, root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),
         ]
+        if (defined(invoker.extra_system_frameworks)) {
+          # All framework in extra_system_frameworks are expected to be
+          # system framework and the path to be already system absolute
+          # so do not use rebase_path here.
+          foreach(_framework, invoker.extra_system_frameworks) {
+            code_signing_args += [ "-F=" + _framework ]
+          }
+        }
       }
     }
   }
@@ -776,12 +805,11 @@ template("ios_framework_bundle") {
       }
 
       config(_framework_public_config) {
-        visibility = [ ":$_framework_public_config" ]
-        common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_build_dir) ]
-        cflags_objc = common_flags
-        cflags_objcc = common_flags
-
         # The link settings are inherited from the framework_bundle config.
+        cflags = [
+          "-F",
+          rebase_path("$root_out_dir/.", root_build_dir),
+        ]
       }
     }
   }
@@ -909,4 +937,282 @@ template("ios_framework_bundle") {
 
 set_defaults("ios_framework_bundle") {
   configs = default_shared_library_configs
+}
+
+# For Chrome on iOS we want to run XCTests for all our build configurations
+# (Debug, Release, ...). In addition, the symbols visibility is configured to
+# private by default. To simplify testing with those constraints, our tests are
+# compiled in the TEST_HOST target instead of the .xctest bundle.
+template("ios_xctest_test") {
+  _target_name = target_name
+  _output_name = target_name
+  if (defined(invoker.output_name)) {
+    _output_name = invoker.output_name
+  }
+
+  _is_fat_build = additional_toolchains != []
+  if (_is_fat_build) {
+    _is_fat_build_main_target = current_toolchain == default_toolchain
+  }
+
+  _xctest_target = _target_name
+  _xctest_output = _output_name
+
+  _host_target = _target_name + "_host"
+  _host_output = _output_name + "_host"
+
+  if (_is_fat_build && !_is_fat_build_main_target) {
+    loadable_module(_xctest_target) {
+      visibility = [ ":${_xctest_target}_loadable_module($default_toolchain)" ]
+      sources = [
+        "//build/config/ios/xctest_shell.mm",
+      ]
+      configs += [ "//build/config/ios:xctest_config" ]
+
+      output_name = _xctest_output
+      output_extension = ""
+    }
+  } else {
+    _xctest_info_plist_target = _xctest_target + "_info_plist"
+    _xctest_info_plist_bundle = _xctest_target + "_info_plist_bundle"
+    ios_info_plist(_xctest_info_plist_target) {
+      visibility = [ ":$_xctest_info_plist_bundle" ]
+      info_plist = "//build/config/ios/Module-Info.plist"
+      executable_name = _output_name
+    }
+
+    bundle_data(_xctest_info_plist_bundle) {
+      visibility = [ ":$_xctest_target" ]
+      public_deps = [
+        ":$_xctest_info_plist_target",
+      ]
+      sources = get_target_outputs(":$_xctest_info_plist_target")
+      outputs = [
+        "{{bundle_root_dir}}/Info.plist",
+      ]
+    }
+
+    _xctest_loadable_module_target = _xctest_target + "_loadable_module"
+    _xctest_loadable_module_path = "$target_out_dir/$_xctest_output"
+
+    if (!ios_enable_code_signing) {
+      _xctest_loadable_module_bundle =
+          _xctest_target + "_loadable_module_bundle"
+      _xctest_loadable_module_visibility =
+          [ ":$_xctest_loadable_module_bundle" ]
+    } else {
+      _xctest_loadable_module_visibility = [ ":$_xctest_target" ]
+    }
+
+    if (_is_fat_build) {
+      _xctest_lipo_loadable_module_target = _xctest_loadable_module_target
+      _xctest_lipo_loadable_module_visibility =
+          _xctest_loadable_module_visibility
+      _arch_xctest_loadable_module_path =
+          "$target_out_dir/$current_cpu/$_xctest_output"
+
+      _xctest_loadable_module_visibility = []
+      _xctest_loadable_module_visibility =
+          [ ":$_xctest_lipo_loadable_module_target" ]
+      _xctest_loadable_module_target = _xctest_target + "_arch_loadable_module"
+    }
+
+    loadable_module(_xctest_loadable_module_target) {
+      visibility = _xctest_loadable_module_visibility
+      sources = [
+        "//build/config/ios/xctest_shell.mm",
+      ]
+      configs += [ "//build/config/ios:xctest_config" ]
+
+      if (_is_fat_build) {
+        output_name =
+            rebase_path(_arch_xctest_loadable_module_path, root_out_dir)
+      } else {
+        output_name = rebase_path(_xctest_loadable_module_path, root_out_dir)
+      }
+
+      output_prefix_override = true
+      output_extension = ""
+    }
+
+    if (_is_fat_build) {
+      action(_xctest_lipo_loadable_module_target) {
+        visibility = _xctest_lipo_loadable_module_visibility
+        script = "//build/toolchain/mac/linker_driver.py"
+        outputs = [
+          _xctest_loadable_module_path,
+        ]
+        inputs = [
+          _arch_xctest_loadable_module_path,
+        ]
+        deps = [
+          ":$_xctest_loadable_module_target",
+        ]
+        foreach(_additional_toolchain, additional_toolchains) {
+          _additional_toolchain_target = "$_target_name($_additional_toolchain)"
+          deps += [ ":$_additional_toolchain_target" ]
+          inputs += [ get_label_info(_additional_toolchain_target,
+                                     "root_out_dir") + "/$_xctest_output" ]
+        }
+        args = [
+                 "xcrun",
+                 "lipo",
+                 "-create",
+                 "-output",
+                 rebase_path(outputs[0], root_build_dir),
+               ] + rebase_path(inputs, root_build_dir)
+
+        if (enable_dsyms) {
+          outputs += [ "$root_out_dir/$_xctest_output.dSYM/" ]
+          args +=
+              [ "-Wcrl,dsym," + rebase_path("$root_out_dir/.", root_build_dir) ]
+        }
+
+        if (enable_stripping) {
+          # Check whether //build/config/mac:strip_all has been removed from
+          # the configs variable (as this is how stripping is disabled for a
+          # single target).
+          _strip_all_in_config = false
+          if (defined(invoker.configs)) {
+            foreach(_config, invoker.configs) {
+              if (_config == "//build/config/mac:strip_all") {
+                _strip_all_in_config = true
+              }
+            }
+          }
+
+          if (_strip_all_in_config) {
+            args += [ "-Wcrl,strip,-x,-S" ]
+
+            if (save_unstripped_output) {
+              outputs += [ outputs[0] + ".unstripped" ]
+              args += [ "-Wcrl,unstripped," +
+                        rebase_path(get_path_info(outputs[0], "dir"),
+                                    root_build_dir) ]
+            }
+          }
+        }
+      }
+    }
+
+    if (!ios_enable_code_signing) {
+      bundle_data(_xctest_loadable_module_bundle) {
+        visibility = [ ":$_xctest_target" ]
+        if (_is_fat_build) {
+          public_deps = [
+            ":$_xctest_lipo_loadable_module_target",
+          ]
+        } else {
+          public_deps = [
+            ":$_xctest_loadable_module_target",
+          ]
+        }
+        sources = [
+          "$target_out_dir/$_xctest_output",
+        ]
+        outputs = [
+          "{{bundle_root_dir}}/$_xctest_output",
+        ]
+      }
+    }
+
+    _xctest_bundle = _xctest_target + "_bundle"
+
+    create_bundle(_xctest_target) {
+      visibility = [ ":$_xctest_bundle" ]
+      product_type = "com.apple.product-type.bundle.unit-test"
+      deps = [
+        ":$_xctest_info_plist_bundle",
+      ]
+      bundle_root_dir = "$root_out_dir/$_xctest_output.xctest"
+
+      if (!ios_enable_code_signing) {
+        deps += [ ":$_xctest_loadable_module_bundle" ]
+      } else {
+        if (_is_fat_build) {
+          deps += [ ":$_xctest_lipo_loadable_module_target" ]
+        } else {
+          deps += [ ":$_xctest_loadable_module_target" ]
+        }
+
+        _entitlements_path = "$ios_sdk_path/Entitlements.plist"
+        if (defined(invoker.entitlements_path)) {
+          _entitlements_path = invoker.entitlements_path
+        }
+
+        code_signing_script = "//build/config/ios/codesign.py"
+        code_signing_sources = [
+          _entitlements_path,
+          "$target_out_dir/$_xctest_output",
+        ]
+        code_signing_outputs = [
+          "$bundle_root_dir/$_xctest_output",
+          "$bundle_root_dir/_CodeSignature/CodeResources",
+          "$bundle_root_dir/embedded.mobileprovision",
+        ]
+        code_signing_args = [
+          "-i=" + ios_code_signing_identity,
+          "-b=" +
+              rebase_path("$target_out_dir/$_xctest_output", root_build_dir),
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          rebase_path(bundle_root_dir, root_build_dir),
+        ]
+      }
+    }
+
+    bundle_data(_xctest_bundle) {
+      visibility = [ ":$_host_target" ]
+      public_deps = [
+        ":$_xctest_target",
+      ]
+      sources = [
+        "$root_out_dir/$_xctest_output.xctest",
+      ]
+      outputs = [
+        "{{bundle_plugins_dir}}/$_xctest_output.xctest",
+      ]
+    }
+  }
+
+  ios_app_bundle(_host_target) {
+    forward_variables_from(invoker, "*", [ "testonly" ])
+
+    testonly = true
+    output_name = _host_output
+    info_plist = "//build/config/ios/Host-Info.plist"
+    configs += [ "//build/config/ios:xctest_config" ]
+
+    # Xcode needs those two framework installed in the application (and signed)
+    # for the XCTest to run, so install them using extra_system_frameworks.
+    _ios_platform_library = "$ios_sdk_platform_path/Developer/Library"
+    extra_system_frameworks = [
+      "$_ios_platform_library/Frameworks/XCTest.framework",
+      "$_ios_platform_library/PrivateFrameworks/IDEBundleInjection.framework",
+    ]
+
+    if (!_is_fat_build || _is_fat_build_main_target) {
+      if (!defined(bundle_deps)) {
+        bundle_deps = []
+      }
+      bundle_deps += [ ":$_xctest_bundle" ]
+    }
+
+    if (!defined(ldflags)) {
+      ldflags = []
+    }
+    ldflags += [
+      "-Xlinker",
+      "-rpath",
+      "-Xlinker",
+      "@executable_path/Frameworks",
+      "-Xlinker",
+      "-rpath",
+      "-Xlinker",
+      "@loader_path/Frameworks",
+    ]
+  }
+}
+
+set_defaults("ios_xctest_test") {
+  configs = default_executable_configs
 }

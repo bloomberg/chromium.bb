@@ -7,13 +7,6 @@ import("//build/config/ios/rules.gni")
 
 config("config") {
   include_dirs = [ "src/EarlGrey" ]
-
-  # EarlGrey and its dependencies need to link to XCTest.framework
-  # that is not under $ios_sdk_path.
-  common_flags = [ "-F$ios_sdk_path/../../Library/Frameworks" ]
-  cflags_objc = common_flags
-  cflags_objcc = common_flags
-  ldflags = common_flags
 }
 
 ios_framework_bundle("earl_grey") {
@@ -258,7 +251,11 @@ ios_framework_bundle("earl_grey") {
     "XCTest.framework",
   ]
 
-  public_configs = [ ":config" ]
+  public_configs = [
+    ":config",
+    "//build/config/ios:xctest_config",
+  ]
+
   configs += [ "//build/config/compiler:enable_arc" ]
   configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
   configs += [ "//build/config/gcc:symbol_visibility_default" ]

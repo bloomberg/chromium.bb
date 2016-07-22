@@ -206,7 +206,21 @@ def FindProvisioningProfile(bundle, provisioning_profile_short_name):
       key=lambda p: len(p.application_identifier_pattern))
 
 
-def CodeSignBundle(binary, bundle, args):
+def InstallFramework(framework_path, bundle, args):
+  """Install framework from |framework_path| to |bundle| and code-re-sign it."""
+  installed_framework_path = os.path.join(
+      bundle.path, 'Frameworks', os.path.basename(framework_path))
+
+  if os.path.exists(installed_framework_path):
+    shutil.rmtree(installed_framework_path)
+
+  shutil.copytree(framework_path, installed_framework_path)
+
+  framework_bundle = Bundle(installed_framework_path)
+  CodeSignBundle(framework_bundle.binary_path, framework_bundle, args, True)
+
+
+def CodeSignBundle(binary, bundle, args, preserve=False):
   """Cryptographically signs bundle.
 
   Args:
@@ -219,18 +233,29 @@ def CodeSignBundle(binary, bundle, args):
       bundle, args.provisioning_profile_short_name)
   provisioning_profile.Install(bundle)
 
-  signature_file = os.path.join(bundle.path, '_CodeSignature', 'CodeResources')
-  if os.path.isfile(signature_file):
-    os.unlink(signature_file)
-
-  shutil.copy(binary, bundle.binary_path)
-
-  if args.preserve:
-    subprocess.check_call([
+  if preserve:
+    process = subprocess.Popen([
         'xcrun', 'codesign', '--force', '--sign', args.identity,
         '--deep', '--preserve-metadata=identifier,entitlements',
-        '--timestamp=none', bundle.path])
+        '--timestamp=none', bundle.path], stderr=subprocess.PIPE)
+    _, stderr = process.communicate()
+    if process.returncode:
+      sys.stderr.write(stderr)
+      sys.exit(process.returncode)
+    for line in stderr.splitlines():
+      # Ignore expected warning as we are replacing the signature on purpose.
+      if not line.endswith(': replacing existing signature'):
+        sys.stderr.write(line + '\n')
   else:
+    signature_file = os.path.join(
+        bundle.path, '_CodeSignature', 'CodeResources')
+    if os.path.isfile(signature_file):
+      os.unlink(signature_file)
+
+    if os.path.isfile(bundle.binary_path):
+      os.unlink(bundle.binary_path)
+    shutil.copy(binary, bundle.binary_path)
+
     entitlements = Entitlements(args.entitlements_path)
     entitlements.LoadDefaults(provisioning_profile.entitlements)
     entitlements.ExpandVariables({
@@ -261,16 +286,19 @@ def Main():
   parser.add_argument(
       '--identity', '-i', required=True,
       help='identity to use to codesign')
-  group = parser.add_mutually_exclusive_group(required=True)
-  group.add_argument(
+  parser.add_argument(
       '--entitlements', '-e', dest='entitlements_path',
       help='path to the entitlements file to use')
-  group.add_argument(
-      '--deep', '-d', action='store_true', default=False, dest='preserve',
-      help='deep signature (default: %(default)s)')
+  parser.add_argument(
+      '--framework', '-F', action='append', default=[], dest="frameworks",
+      help='install and resign system framework')
   args = parser.parse_args()
 
-  CodeSignBundle(args.binary, Bundle(args.path), args)
+  bundle = Bundle(args.path)
+  for framework in args.frameworks:
+    InstallFramework(framework, bundle, args)
+
+  CodeSignBundle(args.binary, bundle, args)
 
 
 if __name__ == '__main__':

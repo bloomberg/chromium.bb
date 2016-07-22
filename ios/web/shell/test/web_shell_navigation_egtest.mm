@@ -16,6 +16,10 @@
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Navigation test cases for the web shell. These are Earl Grey integration
 // tests, which are based on XCTest.
 @interface CRWWebShellNavigationTest : ShellBaseTestCase

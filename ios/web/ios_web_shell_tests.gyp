@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/web/shell/test:ios_web_shell_test
       'target_name': 'ios_web_shell_test',
       'type': 'loadable_module',
       'mac_xctest_bundle': 1,
@@ -40,6 +41,7 @@
     {
       # Create a test host for earl grey tests, so Xcode 7.3 and above
       # doesn't contaminate the app structure.
+      # GN version: //ios/web/shell/test:ios_web_shell_test_host
       'target_name': 'ios_web_shell_test_host',
       'includes': [
         'ios_web_shell_exe.gypi',
@@ -102,6 +104,7 @@
     {
       # TODO(crbug.com/606815): Refactor out code that is common across Chrome
       # and the web shell.
+      # GN version: //ios/web/shell/test:earl_grey_test_support
       'target_name': 'ios_web_shell_earl_grey_test_support',
       'type': 'static_library',
       'dependencies': [

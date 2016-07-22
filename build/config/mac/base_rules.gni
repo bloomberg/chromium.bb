@@ -245,6 +245,7 @@ template("framework_bundle") {
                              [
                                "assert_no_deps",
                                "bundle_deps",
+                               "code_signing_enabled",
                                "data_deps",
                                "info_plist",
                                "info_plist_target",
@@ -274,6 +275,12 @@ template("framework_bundle") {
       assert(invoker.bundle_deps != [], "mark bundle_deps as used")
     }
   } else {
+    _code_signing_enabled = is_ios && ios_enable_code_signing
+    if (defined(invoker.code_signing_enabled)) {
+      _code_signing_enabled =
+          invoker.code_signing_enabled && _code_signing_enabled
+    }
+
     # If the framework is unversioned, the final _target_name will be the
     # create_bundle(_framework_target), otherwise an action with the name
     # _target_name will depends on the the create_bundle() in order to prepare
@@ -288,8 +295,14 @@ template("framework_bundle") {
     }
 
     _link_shared_library_target = target_name + "_shared_library"
-    _shared_library_bundle_data = target_name + "_shared_library_bundle_data"
-    _link_shared_library_visibility = [ ":$_shared_library_bundle_data" ]
+    _shared_library_dir = "$target_out_dir/$_link_shared_library_target"
+
+    if (_code_signing_enabled) {
+      _link_shared_library_visibility = [ ":$_framework_target" ]
+    } else {
+      _shared_library_bundle_data = target_name + "_shared_library_bundle_data"
+      _link_shared_library_visibility = [ ":$_shared_library_bundle_data" ]
+    }
 
     if (_is_fat_build) {
       _lipo_shared_library_target = _link_shared_library_target
@@ -298,6 +311,9 @@ template("framework_bundle") {
       _link_shared_library_visibility = []
       _link_shared_library_visibility = [ ":$_lipo_shared_library_target" ]
       _link_shared_library_target = target_name + "_arch_shared_library"
+
+      _arch_shared_library_dir = "$target_out_dir/$_link_shared_library_target"
+      _shared_library_dir = "$target_out_dir/$_lipo_shared_library_target"
     }
 
     shared_library(_link_shared_library_target) {
@@ -306,6 +322,7 @@ template("framework_bundle") {
                              [
                                "assert_no_deps",
                                "bundle_deps",
+                               "code_signing_enabled",
                                "data_deps",
                                "info_plist",
                                "output_name",
@@ -315,7 +332,12 @@ template("framework_bundle") {
       output_name = _output_name
       output_prefix_override = true
       output_extension = ""
-      output_dir = "$target_out_dir/$_link_shared_library_target"
+
+      if (!_is_fat_build) {
+        output_dir = _shared_library_dir
+      } else {
+        output_dir = _arch_shared_library_dir
+      }
     }
 
     if (_is_fat_build) {
@@ -324,10 +346,10 @@ template("framework_bundle") {
         visibility = _lipo_shared_library_visibility
         script = "//build/toolchain/mac/linker_driver.py"
         outputs = [
-          "$target_out_dir/$_lipo_shared_library_target/$_output_name",
+          "$_shared_library_dir/$_output_name",
         ]
         inputs = [
-          "$target_out_dir/$_link_shared_library_target/$_output_name",
+          "$_arch_shared_library_dir/$_output_name",
         ]
         deps = [
           ":$_link_shared_library_target",
@@ -379,26 +401,25 @@ template("framework_bundle") {
       }
     }
 
-    bundle_data(_shared_library_bundle_data) {
-      visibility = [ ":$_framework_target" ]
-      forward_variables_from(invoker, [ "testonly" ])
-      outputs = [
-        "{{bundle_executable_dir}}/$_output_name",
-      ]
-      if (_is_fat_build) {
+    if (!_code_signing_enabled) {
+      bundle_data(_shared_library_bundle_data) {
+        visibility = [ ":$_framework_target" ]
+        forward_variables_from(invoker, [ "testonly" ])
         sources = [
-          "$target_out_dir/$_lipo_shared_library_target/$_output_name",
+          "$_shared_library_dir/$_output_name",
         ]
-        public_deps = [
-          ":$_lipo_shared_library_target",
+        outputs = [
+          "{{bundle_executable_dir}}/$_output_name",
         ]
-      } else {
-        sources = [
-          "$target_out_dir/$_link_shared_library_target/$_output_name",
-        ]
-        public_deps = [
-          ":$_link_shared_library_target",
-        ]
+        if (_is_fat_build) {
+          public_deps = [
+            ":$_lipo_shared_library_target",
+          ]
+        } else {
+          public_deps = [
+            ":$_link_shared_library_target",
+          ]
+        }
       }
     }
 
@@ -407,7 +428,10 @@ template("framework_bundle") {
       # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
       # and include_dirs to avoid duplicate values on the command-line.
       visibility = [ ":$_framework_target" ]
-      ldflags = [ "-F" + rebase_path("$root_out_dir/.", root_build_dir) ]
+      ldflags = [
+        "-F",
+        rebase_path("$root_out_dir/.", root_build_dir),
+      ]
       lib_dirs = [ root_out_dir ]
       libs = [ _framework_name ]
     }
@@ -430,18 +454,58 @@ template("framework_bundle") {
         }
       }
 
-      if (!defined(public_deps)) {
-        public_deps = []
-      }
-      public_deps += [ ":$_shared_library_bundle_data" ]
+      if (!_code_signing_enabled) {
+        if (!defined(public_deps)) {
+          public_deps = []
+        }
+        public_deps += [ ":$_shared_library_bundle_data" ]
 
-      if (defined(invoker.bundle_deps)) {
-        public_deps += invoker.bundle_deps
+        if (defined(invoker.bundle_deps)) {
+          if (!defined(deps)) {
+            deps = []
+          }
+          deps += invoker.bundle_deps
+        }
       }
 
       bundle_root_dir = _framework_root_dir
       bundle_resources_dir = "$bundle_root_dir/Resources"
       bundle_executable_dir = "$bundle_root_dir"
+
+      if (_code_signing_enabled) {
+        if (!defined(deps)) {
+          deps = []
+        }
+
+        if (_is_fat_build) {
+          deps += [ ":$_lipo_shared_library_target" ]
+        } else {
+          deps += [ ":$_link_shared_library_target" ]
+        }
+
+        _entitlements_path = "$ios_sdk_path/Entitlements.plist"
+        if (defined(invoker.entitlements_path)) {
+          _entitlements_path = invoker.entitlements_path
+        }
+
+        code_signing_script = "//build/config/ios/codesign.py"
+        code_signing_sources = [
+          _entitlements_path,
+          "$_shared_library_dir/$_output_name",
+        ]
+        code_signing_outputs = [
+          "$bundle_root_dir/$_output_name",
+          "$bundle_root_dir/_CodeSignature/CodeResources",
+          "$bundle_root_dir/embedded.mobileprovision",
+        ]
+        code_signing_args = [
+          "-i=" + ios_code_signing_identity,
+          "-b=" +
+              rebase_path("$_shared_library_dir/$_output_name", root_build_dir),
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          rebase_path(bundle_root_dir, root_build_dir),
+        ]
+      }
     }
 
     if (defined(_framework_version)) {
@@ -470,13 +534,17 @@ template("framework_bundle") {
     group(_target_name + "+link") {
       forward_variables_from(invoker,
                              [
-                               "visibility",
+                               "public_configs",
                                "testonly",
+                               "visibility",
                              ])
       public_deps = [
         ":$_target_name",
       ]
-      public_configs = [ ":$_framework_public_config" ]
+      if (!defined(public_configs)) {
+        public_configs = []
+      }
+      public_configs += [ ":$_framework_public_config" ]
     }
   }
 }

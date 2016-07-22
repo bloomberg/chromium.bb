@@ -8,10 +8,6 @@ import("//ios/build/config.gni")
 ios_app_bundle("ios_web_shell") {
   info_plist = "Info.plist"
 
-  sources = [
-    "web_exe_main.mm",
-  ]
-
   deps = [
     ":shell",
 
@@ -56,6 +52,7 @@ source_set("shell") {
     "shell_web_main_parts.mm",
     "view_controller.h",
     "view_controller.mm",
+    "web_exe_main.mm",
   ]
 
   deps = [
