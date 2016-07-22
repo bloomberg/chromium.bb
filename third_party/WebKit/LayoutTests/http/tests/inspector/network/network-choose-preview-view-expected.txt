@@ -24,7 +24,7 @@ Its previewer type: SearchableView > widget vbox json-view
 Running: testXMLWithUnknownMime
 Creating a NetworkRequest with mimeType: text/foobar
 Content: <bar><foo/></bar>
-Its previewer type: SearchableView > widget vbox
+Its previewer type: SearchableView > widget vbox view
 
 Running: testXMLWithError500
 Creating a NetworkRequest with mimeType: text/xml
@@ -34,12 +34,12 @@ Its previewer type: SearchableView > widget shadow-xml-view source-code
 Running: testUnknownMimeTextWithError500
 Creating a NetworkRequest with mimeType: text/foobar
 Content: Foo Bar
-Its previewer type: SearchableView > widget vbox
+Its previewer type: SearchableView > widget vbox view
 
 Running: testBinaryImageFile
 Creating a NetworkRequest with mimeType: image/png
 Content: Bin**NULL**ary File**NULL****NULL**
-Its previewer type: SearchableView > widget vbox
+Its previewer type: SearchableView > widget vbox view
 
 Running: testBinaryBlankImageFile
 Creating a NetworkRequest with mimeType: image/png
