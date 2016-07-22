@@ -184,16 +184,21 @@ void SVGUseElement::collectStyleForPresentationAttribute(const QualifiedName& na
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
+bool SVGUseElement::isStructurallyExternal() const
+{
+    return !m_elementIdentifierIsLocal;
+}
+
 void SVGUseElement::updateTargetReference()
 {
-    KURL resolvedUrl = document().completeURL(hrefString());
-    m_elementIdentifier = AtomicString(resolvedUrl.fragmentIdentifier());
-    m_elementIdentifierIsLocal = resolvedUrl.isNull()
-        || equalIgnoringFragmentIdentifier(resolvedUrl, document().url());
+    SVGURLReferenceResolver resolver(hrefString(), document());
+    m_elementIdentifier = resolver.fragmentIdentifier();
+    m_elementIdentifierIsLocal = resolver.isLocal();
     if (m_elementIdentifierIsLocal) {
         setDocumentResource(nullptr);
         return;
     }
+    KURL resolvedUrl = resolver.absoluteUrl();
     if (m_elementIdentifier.isEmpty()
         || (m_resource && equalIgnoringFragmentIdentifier(resolvedUrl, m_resource->url())))
         return;

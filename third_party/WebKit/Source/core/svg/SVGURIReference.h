@@ -48,18 +48,6 @@ public:
     static AtomicString fragmentIdentifierFromIRIString(const String&, const TreeScope&);
     static Element* targetElementFromIRIString(const String&, const TreeScope&, AtomicString* = nullptr);
 
-    static inline bool isExternalURIReference(const String& uri, const Document& document)
-    {
-        // Fragment-only URIs are always internal if the baseURL is same as the document URL.
-        // This is common case, so check that first to avoid resolving URL (which is relatively expensive). See crbug.com/557979
-        if (document.baseURL() == document.url() && uri.startsWith('#'))
-            return false;
-
-        // If the URI matches our documents URL, we're dealing with a local reference.
-        KURL url = document.completeURL(uri);
-        return !equalIgnoringFragmentIdentifier(url, document.url());
-    }
-
     const String& hrefString() const { return m_href->currentValue()->value(); }
 
     // JS API
@@ -72,6 +60,24 @@ protected:
 
 private:
     Member<SVGAnimatedHref> m_href;
+};
+
+// Helper class used to resolve fragment references. Handles the 'local url
+// flag' per https://drafts.csswg.org/css-values/#local-urls .
+class SVGURLReferenceResolver {
+    STACK_ALLOCATED();
+public:
+    SVGURLReferenceResolver(const String& urlString, const Document&);
+
+    bool isLocal() const;
+    KURL absoluteUrl() const;
+    AtomicString fragmentIdentifier() const;
+
+private:
+    const String& m_relativeUrl;
+    Member<const Document> m_document;
+    mutable KURL m_absoluteUrl;
+    bool m_isLocal;
 };
 
 } // namespace blink

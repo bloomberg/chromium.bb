@@ -123,10 +123,9 @@ PassRefPtr<ClipPathOperation> StyleBuilderConverter::convertClipPath(StyleResolv
     if (value.isBasicShapeValue())
         return ShapeClipPathOperation::create(basicShapeForValue(state, value));
     if (value.isURIValue()) {
-        String cssURLValue = toCSSURIValue(value).value();
-        KURL url = state.document().completeURL(cssURLValue);
+        SVGURLReferenceResolver resolver(toCSSURIValue(value).value(), state.document());
         // TODO(fs): Doesn't work with forward or external SVG references (crbug.com/391604, crbug.com/109212, ...)
-        return ReferenceClipPathOperation::create(cssURLValue, AtomicString(url.fragmentIdentifier()));
+        return ReferenceClipPathOperation::create(toCSSURIValue(value).value(), resolver.fragmentIdentifier());
     }
     DCHECK(value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
     return nullptr;

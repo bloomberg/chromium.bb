@@ -56,24 +56,47 @@ KURL SVGURIReference::legacyHrefURL(const Document& document) const
     return document.completeURL(stripLeadingAndTrailingHTMLSpaces(hrefString()));
 }
 
+SVGURLReferenceResolver::SVGURLReferenceResolver(const String& urlString, const Document& document)
+    : m_relativeUrl(urlString)
+    , m_document(&document)
+    , m_isLocal(urlString.startsWith('#'))
+{
+}
+
+KURL SVGURLReferenceResolver::absoluteUrl() const
+{
+    if (m_absoluteUrl.isNull())
+        m_absoluteUrl = m_document->completeURL(m_relativeUrl);
+    return m_absoluteUrl;
+}
+
+bool SVGURLReferenceResolver::isLocal() const
+{
+    return m_isLocal || equalIgnoringFragmentIdentifier(absoluteUrl(), m_document->url());
+}
+
+AtomicString SVGURLReferenceResolver::fragmentIdentifier() const
+{
+    // If this is a "fragment-only" URL, then the reference is always local, so
+    // just return what's after the '#' as the fragment.
+    if (m_isLocal)
+        return AtomicString(m_relativeUrl.substring(1));
+    return AtomicString(absoluteUrl().fragmentIdentifier());
+}
+
 AtomicString SVGURIReference::fragmentIdentifierFromIRIString(const String& urlString, const TreeScope& treeScope)
 {
-    const Document& document = treeScope.document();
-
-    KURL url = document.completeURL(urlString);
-    if (!url.hasFragmentIdentifier() || !equalIgnoringFragmentIdentifier(url, document.url()))
+    SVGURLReferenceResolver resolver(urlString, treeScope.document());
+    if (!resolver.isLocal())
         return emptyAtom;
-    return AtomicString(url.fragmentIdentifier());
+    return resolver.fragmentIdentifier();
 }
 
 Element* SVGURIReference::targetElementFromIRIString(const String& urlString, const TreeScope& treeScope, AtomicString* fragmentIdentifier)
 {
-    const Document& document = treeScope.document();
-
-    KURL url = document.completeURL(urlString);
-    if (!url.hasFragmentIdentifier() || !equalIgnoringFragmentIdentifier(url, document.url()))
+    AtomicString id = fragmentIdentifierFromIRIString(urlString, treeScope);
+    if (id.isEmpty())
         return nullptr;
-    AtomicString id(url.fragmentIdentifier());
     if (fragmentIdentifier)
         *fragmentIdentifier = id;
     return treeScope.getElementById(id);

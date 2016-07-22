@@ -73,7 +73,7 @@ private:
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
 
-    bool isStructurallyExternal() const override { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
+    bool isStructurallyExternal() const override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;
