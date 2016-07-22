@@ -66,28 +66,16 @@ AtomicString SVGURIReference::fragmentIdentifierFromIRIString(const String& urlS
     return AtomicString(url.fragmentIdentifier());
 }
 
-Element* SVGURIReference::targetElementFromIRIString(const String& urlString, const TreeScope& treeScope, AtomicString* fragmentIdentifier, Document* externalDocument)
+Element* SVGURIReference::targetElementFromIRIString(const String& urlString, const TreeScope& treeScope, AtomicString* fragmentIdentifier)
 {
     const Document& document = treeScope.document();
 
     KURL url = document.completeURL(urlString);
-    if (!url.hasFragmentIdentifier())
+    if (!url.hasFragmentIdentifier() || !equalIgnoringFragmentIdentifier(url, document.url()))
         return nullptr;
-
     AtomicString id(url.fragmentIdentifier());
     if (fragmentIdentifier)
         *fragmentIdentifier = id;
-
-    if (externalDocument) {
-        // Enforce that the referenced url matches the url of the document that we've loaded for it!
-        ASSERT(equalIgnoringFragmentIdentifier(url, externalDocument->url()));
-        return externalDocument->getElementById(id);
-    }
-
-    // Exit early if the referenced url is external, and we have no externalDocument given.
-    if (!equalIgnoringFragmentIdentifier(url, document.url()))
-        return nullptr;
-
     return treeScope.getElementById(id);
 }
 

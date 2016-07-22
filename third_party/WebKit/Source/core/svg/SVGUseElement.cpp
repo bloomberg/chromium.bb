@@ -59,6 +59,7 @@ inline SVGUseElement::SVGUseElement(Document& document)
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(SVGLengthMode::Width)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(SVGLengthMode::Height)))
+    , m_elementIdentifierIsLocal(true)
     , m_haveFiredLoadEvent(false)
     , m_needsShadowTreeRecreation(false)
 {
@@ -131,15 +132,6 @@ void SVGUseElement::removedFrom(ContainerNode* rootParent)
     }
 }
 
-Document* SVGUseElement::externalDocument() const
-{
-    // Gracefully handle error condition.
-    if (!resourceIsValid())
-        return nullptr;
-    ASSERT(m_resource->document());
-    return m_resource->document();
-}
-
 static void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement& shadowElement, const SVGElement& originalElement)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, hundredPercentString, ("100%"));
@@ -192,6 +184,23 @@ void SVGUseElement::collectStyleForPresentationAttribute(const QualifiedName& na
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
+void SVGUseElement::updateTargetReference()
+{
+    KURL resolvedUrl = document().completeURL(hrefString());
+    m_elementIdentifier = AtomicString(resolvedUrl.fragmentIdentifier());
+    m_elementIdentifierIsLocal = resolvedUrl.isNull()
+        || equalIgnoringFragmentIdentifier(resolvedUrl, document().url());
+    if (m_elementIdentifierIsLocal) {
+        setDocumentResource(nullptr);
+        return;
+    }
+    if (m_elementIdentifier.isEmpty()
+        || (m_resource && equalIgnoringFragmentIdentifier(resolvedUrl, m_resource->url())))
+        return;
+    FetchRequest request(ResourceRequest(resolvedUrl), localName());
+    setDocumentResource(DocumentResource::fetchSVGDocument(request, document().fetcher()));
+}
+
 void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::xAttr
@@ -221,19 +230,8 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
         SVGElement::InvalidationGuard invalidationGuard(this);
-        if (isStructurallyExternal()) {
-            KURL url = document().completeURL(hrefString());
-            const KURL& existingURL = m_resource ? m_resource->url() : KURL();
-            if (url.hasFragmentIdentifier() && !equalIgnoringFragmentIdentifier(url, existingURL)) {
-                FetchRequest request(ResourceRequest(url), localName());
-                setDocumentResource(DocumentResource::fetchSVGDocument(request, document().fetcher()));
-            }
-        } else {
-            setDocumentResource(nullptr);
-        }
-
+        updateTargetReference();
         invalidateShadowTree();
-
         return;
     }
 
@@ -305,6 +303,29 @@ void SVGUseElement::clearShadowTree()
     removeAllOutgoingReferences();
 }
 
+Element* SVGUseElement::resolveTargetElement()
+{
+    if (m_elementIdentifier.isEmpty())
+        return nullptr;
+    const TreeScope* lookupScope = nullptr;
+    if (m_elementIdentifierIsLocal)
+        lookupScope = &treeScope();
+    else if (resourceIsValid())
+        lookupScope = m_resource->document();
+    else
+        return nullptr;
+    Element* target = lookupScope->getElementById(m_elementIdentifier);
+    // TODO(fs): Why would the Element not be "connected" at this point?
+    if (target && target->isConnected())
+        return target;
+    // Don't record any pending references for external resources.
+    if (!m_resource) {
+        document().accessSVGExtensions().addPendingResource(m_elementIdentifier, this);
+        DCHECK(hasPendingResources());
+    }
+    return nullptr;
+}
+
 void SVGUseElement::buildPendingResource()
 {
     if (inUseShadowTree())
@@ -313,26 +334,8 @@ void SVGUseElement::buildPendingResource()
     cancelShadowTreeRecreation();
     if (!isConnected())
         return;
-    Document* externalDocument = this->externalDocument();
-    if (isStructurallyExternal() && !externalDocument)
-        return;
-
-    AtomicString id;
-    Element* target = targetElementFromIRIString(hrefString(), treeScope(), &id, externalDocument);
-    if (!target || !target->isConnected()) {
-        // If we can't find the target of an external element, just give up.
-        // We can't observe if the target somewhen enters the external document, nor should we do it.
-        if (externalDocument)
-            return;
-        if (id.isEmpty())
-            return;
-
-        document().accessSVGExtensions().addPendingResource(id, this);
-        ASSERT(hasPendingResources());
-        return;
-    }
-
-    if (target->isSVGElement()) {
+    Element* target = resolveTargetElement();
+    if (target && target->isSVGElement()) {
         buildShadowAndInstanceTree(toSVGElement(*target));
         invalidateDependentShadowTrees();
     }

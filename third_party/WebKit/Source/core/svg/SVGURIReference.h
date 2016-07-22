@@ -46,7 +46,7 @@ public:
     KURL legacyHrefURL(const Document&) const;
 
     static AtomicString fragmentIdentifierFromIRIString(const String&, const TreeScope&);
-    static Element* targetElementFromIRIString(const String&, const TreeScope&, AtomicString* = 0, Document* = 0);
+    static Element* targetElementFromIRIString(const String&, const TreeScope&, AtomicString* = nullptr);
 
     static inline bool isExternalURIReference(const String& uri, const Document& document)
     {
