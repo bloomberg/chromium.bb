@@ -71,8 +71,6 @@
 
 namespace blink {
 
-static bool s_drawDebugRedFill = true;
-
 struct PaintInvalidationInfo {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     // This is for comparison only. Don't dereference because the client may have died.
@@ -190,11 +188,6 @@ LayoutRect GraphicsLayer::visualRect() const
 void GraphicsLayer::setHasWillChangeTransformHint(bool hasWillChangeTransform)
 {
     m_layer->layer()->setHasWillChangeTransformHint(hasWillChangeTransform);
-}
-
-void GraphicsLayer::setDrawDebugRedFillForTesting(bool enabled)
-{
-    s_drawDebugRedFill = enabled;
 }
 
 void GraphicsLayer::setParent(GraphicsLayer* layer)
@@ -381,16 +374,6 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
 
     GraphicsContext context(getPaintController(), disabledMode);
 
-#ifndef NDEBUG
-    if (contentsOpaque() && s_drawDebugRedFill) {
-        FloatRect rect(FloatPoint(), size());
-        if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
-            DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
-            context.fillRect(rect, SK_ColorRED);
-        }
-    }
-#endif
-
     m_previousInterestRect = *interestRect;
     m_client->paintContents(this, context, m_paintingPhase, *interestRect);
     notifyFirstPaintToClient();
@@ -403,7 +386,7 @@ void GraphicsLayer::notifyFirstPaintToClient()
         DisplayItemList& itemList = m_paintController->newDisplayItemList();
         for (DisplayItem& item : itemList) {
             DisplayItem::Type type = item.getType();
-            if (DisplayItem::isDrawingType(type) && type != DisplayItem::DocumentBackground && type != DisplayItem::DebugRedFill && static_cast<const DrawingDisplayItem&>(item).picture()) {
+            if (DisplayItem::isDrawingType(type) && type != DisplayItem::DocumentBackground && static_cast<const DrawingDisplayItem&>(item).picture()) {
                 m_painted = true;
                 m_client->notifyFirstPaint();
                 break;
@@ -946,11 +929,6 @@ void GraphicsLayer::setSize(const FloatSize& size)
 
     m_layer->layer()->setBounds(flooredIntSize(m_size));
     // Note that we don't resize m_contentsLayer. It's up the caller to do that.
-
-#ifndef NDEBUG
-    // The red debug fill and needs to be invalidated if the layer resizes.
-    setDisplayItemsUncached();
-#endif
 }
 
 void GraphicsLayer::setTransform(const TransformationMatrix& transform)

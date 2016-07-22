@@ -98,25 +98,6 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     if (frameView().shouldThrottleRendering() || !document->isActive())
         return;
 
-#ifndef NDEBUG
-    bool fillWithRed;
-    if (document->printing())
-        fillWithRed = false; // Printing, don't fill with red (can't remember why).
-    else if (frameView().frame().owner())
-        fillWithRed = false; // Subframe, don't fill with red.
-    else if (frameView().isTransparent())
-        fillWithRed = false; // Transparent, don't fill with red.
-    else if (globalPaintFlags & GlobalPaintSelectionOnly)
-        fillWithRed = false; // Selections are transparent, don't fill with red.
-    else
-        fillWithRed = true;
-
-    if (fillWithRed && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *frameView().layoutView(), DisplayItem::DebugRedFill)) {
-        IntRect contentRect(IntPoint(), frameView().contentsSize());
-        LayoutObjectDrawingRecorder drawingRecorder(context, *frameView().layoutView(), DisplayItem::DebugRedFill, contentRect);
-    }
-#endif
-
     LayoutView* layoutView = frameView().layoutView();
     if (!layoutView) {
         DLOG(ERROR) << "called FramePainter::paint with nil layoutObject";

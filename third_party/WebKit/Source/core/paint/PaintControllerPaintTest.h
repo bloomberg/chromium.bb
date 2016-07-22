@@ -31,14 +31,12 @@ protected:
     {
         RenderingTest::SetUp();
         enableCompositing();
-        GraphicsLayer::setDrawDebugRedFillForTesting(false);
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_enableSlimmingPaintV2);
     }
     void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled(m_originalSlimmingPaintInvalidationEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
-        GraphicsLayer::setDrawDebugRedFillForTesting(true);
     }
 
     bool paintWithoutCommit(const IntRect* interestRect = nullptr)

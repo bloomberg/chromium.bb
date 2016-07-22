@@ -50,15 +50,11 @@ SimCompositor::SimCompositor()
     , m_lastFrameTimeMonotonic(0)
 {
     FrameView::setInitialTracksPaintInvalidationsForTesting(true);
-    // Disable the debug red fill so the output display list doesn't differ in
-    // size in Release vs Debug builds.
-    GraphicsLayer::setDrawDebugRedFillForTesting(false);
 }
 
 SimCompositor::~SimCompositor()
 {
     FrameView::setInitialTracksPaintInvalidationsForTesting(false);
-    GraphicsLayer::setDrawDebugRedFillForTesting(true);
 }
 
 void SimCompositor::setWebViewImpl(WebViewImpl& webViewImpl)

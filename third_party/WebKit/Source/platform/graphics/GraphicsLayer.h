@@ -250,7 +250,6 @@ public:
     void setElementId(const CompositorElementId&);
     void setCompositorMutableProperties(uint32_t);
 
-    static void setDrawDebugRedFillForTesting(bool);
     ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
 
     // DisplayItemClient methods

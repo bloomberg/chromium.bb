@@ -50,12 +50,10 @@ private:
     {
         RenderingTest::SetUp();
         enableCompositing();
-        GraphicsLayer::setDrawDebugRedFillForTesting(false);
     }
 
     void TearDown() override
     {
-        GraphicsLayer::setDrawDebugRedFillForTesting(true);
         RenderingTest::TearDown();
     }
 };
