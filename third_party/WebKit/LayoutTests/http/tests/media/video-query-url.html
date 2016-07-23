@@ -1,36 +1,24 @@
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../media-resources/video-test.js></script>
-        <script src=../../media-resources/media-file.js></script>
-        <script>
-            function loadMediaFrame()
-            {
-                findMediaElement();
+<!DOCTYPE html>
+<title>Tests that a media file specified with a query url is opened successfully.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<body>
+<video></video>
+<script>
+async_test(function(t) {
+    var iframe = document.createElement('iframe');
 
-                var movie = findMediaFile('video', 'test');
-                var type = mimeTypeForExtension(movie.split('.').pop());
-                var frame = document.createElement('iframe');
+    iframe.onload = t.step_func(function() {
+        var movie = findMediaFile('video', 'test');
+        var type = mimeTypeForExtension(movie.split('.').pop());
+        var video = document.querySelector('video');
+        video.onerror = t.unreached_func();
+        video.oncanplay = t.step_func_done();
+        video.src = 'http://127.0.0.1:8000/media/resources/load-video.php?name=' + movie + '&type=' + type;
+    });
 
-                frame.width = 0;
-                frame.height = 0;
-                frame.addEventListener('load', function () {
-                    video.src = 'http://127.0.0.1:8000/media/resources/load-video.php?name=' + movie + '&type=' + type;
-
-                    waitForEventAndFail('error');
-                    waitForEventAndEnd('canplay');
-                });
-
-                frame.src = "data:text/html,<b>test</b>";
-                document.body.appendChild(frame);
-            }
-        </script>
-    </head>
-
-    <body onload="loadMediaFrame()">
-        <video controls></video>
-        <br>
-        Tests that WebKit is able to open a media file specified with a query url.
-    </body>
-</html>
+    iframe.src = 'data:text/html,<b>test</b>';
+    document.body.appendChild(iframe);
+});
+</script>

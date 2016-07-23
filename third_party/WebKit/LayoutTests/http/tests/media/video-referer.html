@@ -1,35 +1,30 @@
-<html>
-<head>
-</head>
-<body onload="loadCookieAndReferer()">
-<video id="video">
-    <source id="source">
+<!DOCTYPE html>
+<title>Tests that the media player will send the relevant referer when requesting the media file.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<body>
+<video>
+    <source></source>
 </video>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../../media-resources/video-test.js></script>
-<script src=../../media-resources/media-file.js></script>
 <script>
-    function loadCookieAndReferer () {
-        var movie = findMediaFile('video', 'test');
-        var type = mimeTypeForExtension(movie.split('.').pop());
-        var frame = document.createElement('iframe');
-        frame.width = 0;
-        frame.height = 0;
-        frame.addEventListener('load', function () {
-                source = document.getElementById('source');
-                source.src = 'http://127.0.0.1:8000/media/resources/video-referer-check-referer.php?name=' + movie + '&type=' + type;
-                source.type = type;
+async_test(function(t) {
+    var movie = findMediaFile('video', 'test');
+    var type = mimeTypeForExtension(movie.split('.').pop());
+    var iframe = document.createElement('iframe');
 
-                waitForEventAndFail('error');
-                waitForEventAndEnd('canplay');
-                video.load();
-        });
+    iframe.onload = t.step_func(function() {
+        var video = document.querySelector('video');
+        video.onerror = t.unreached_func();
+        video.oncanplay = t.step_func_done();
 
-        frame.src = "data:text/html,<b>test</b>";
-        document.body.appendChild(frame);
-    }
+        var source = document.querySelector('source');
+        source.src = 'http://127.0.0.1:8000/media/resources/video-referer-check-referer.php?name=' + movie + '&type=' + type;
+        source.type = type;
+        video.load();
+    });
+
+    iframe.src = 'data:text/html,<b>test</b>';
+    document.body.appendChild(iframe);
+});
 </script>
-Tests that the media player will send the relevant referer when requesting the media file.<br/>
-</body>
-</html>
