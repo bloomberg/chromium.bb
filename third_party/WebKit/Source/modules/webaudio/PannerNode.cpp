@@ -67,10 +67,6 @@ PannerHandler::PannerHandler(
     , m_orientationY(orientationY)
     , m_orientationZ(orientationZ)
 {
-    // Load the HRTF database asynchronously so we don't block the Javascript thread while creating the HRTF database.
-    // The HRTF panner will return zeroes until the database is loaded.
-    listener()->createAndLoadHRTFDatabaseLoader(node.context()->sampleRate());
-
     addInput();
     addOutput(2);
 
@@ -276,33 +272,37 @@ String PannerHandler::panningModel() const
 
 void PannerHandler::setPanningModel(const String& model)
 {
+    // WebIDL should guarantee that we are never called with an invalid string
+    // for the model.
     if (model == "equalpower")
         setPanningModel(Panner::PanningModelEqualPower);
     else if (model == "HRTF")
         setPanningModel(Panner::PanningModelHRTF);
+    else
+        NOTREACHED();
 }
 
+// This method should only be called from setPanningModel(const String&)!
 bool PannerHandler::setPanningModel(unsigned model)
 {
     DEFINE_STATIC_LOCAL(EnumerationHistogram, panningModelHistogram,
         ("WebAudio.PannerNode.PanningModel", 2));
     panningModelHistogram.count(model);
 
-    switch (model) {
-    case Panner::PanningModelEqualPower:
-    case Panner::PanningModelHRTF:
-        if (!m_panner.get() || model != m_panningModel) {
-            // This synchronizes with process().
-            MutexLocker processLocker(m_processLock);
-            m_panner = Panner::create(model, sampleRate(), listener()->hrtfDatabaseLoader());
-            m_panningModel = model;
-        }
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        return false;
+    if (model == Panner::PanningModelHRTF) {
+        // Load the HRTF database asynchronously so we don't block the
+        // Javascript thread while creating the HRTF database. It's ok to call
+        // this multiple times; we won't be constantly loading the database over
+        // and over.
+        listener()->createAndLoadHRTFDatabaseLoader(context()->sampleRate());
     }
 
+    if (!m_panner.get() || model != m_panningModel) {
+        // This synchronizes with process().
+        MutexLocker processLocker(m_processLock);
+        m_panner = Panner::create(model, sampleRate(), listener()->hrtfDatabaseLoader());
+        m_panningModel = model;
+    }
     return true;
 }
 

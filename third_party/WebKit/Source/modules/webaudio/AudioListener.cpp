@@ -231,13 +231,15 @@ void AudioListener::updateState()
 
 void AudioListener::createAndLoadHRTFDatabaseLoader(float sampleRate)
 {
+    DCHECK(isMainThread());
+
     if (!m_hrtfDatabaseLoader)
         m_hrtfDatabaseLoader = HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(sampleRate);
 }
 
 bool AudioListener::isHRTFDatabaseLoaded()
 {
-    return m_hrtfDatabaseLoader->isLoaded();
+    return m_hrtfDatabaseLoader && m_hrtfDatabaseLoader->isLoaded();
 }
 
 void AudioListener::waitForHRTFDatabaseLoaderThreadCompletion()
