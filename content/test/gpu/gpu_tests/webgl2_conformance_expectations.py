@@ -56,15 +56,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win'], bug=483282)
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win'], bug=483282)
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['win'], bug=483282)
     self.Fail('conformance/textures/webgl_canvas/' +
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['win'], bug=483282)
@@ -86,9 +77,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
-
-    self.Fail('conformance2/glsl3/array-in-complex-expression.html',
-        ['win'], bug=483282)
 
     # ANGLE bug id
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
