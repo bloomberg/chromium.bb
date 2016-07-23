@@ -91,8 +91,6 @@
          init_gl_position_in_vertex_shader)                  \
   GPU_OP(INIT_TEXTURE_MAX_ANISOTROPY,                        \
          init_texture_max_anisotropy)                        \
-  GPU_OP(INIT_VARYINGS_WITHOUT_STATIC_USE,                   \
-         init_varyings_without_static_use)                   \
   GPU_OP(INIT_VERTEX_ATTRIBUTES,                             \
          init_vertex_attributes)                             \
   GPU_OP(MAX_COPY_TEXTURE_CHROMIUM_SIZE_1048576,             \

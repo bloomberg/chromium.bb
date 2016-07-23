@@ -126,8 +126,7 @@ class GPU_EXPORT ShaderTranslator
   int GetCompileOptions() const;
 
   ShHandle compiler_;
-  ShCompileOptions driver_bug_workarounds_;
-  bool gl_shader_interm_output_;
+  int compile_options_;
   base::ObserverList<DestructionObserver> destruction_observers_;
 };
 

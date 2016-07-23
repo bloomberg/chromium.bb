@@ -30,7 +30,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # ========================
 
     # 2.0.1 OR LATER
-
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
@@ -39,11 +38,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
 
     # All platforms.
-
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
-
-    self.Fail('conformance2/transform_feedback/' +
-        'unwritten-output-defaults-to-zero.html', bug=1441) # ANGLE bug
 
     # Avoid a conflict with a Mac expectation by setting
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
@@ -54,7 +49,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['amd'], bug=617290)
 
     # Windows only.
-
     self.Fail('conformance/glsl/bugs/' +
         'pow-of-small-constant-in-user-defined-function.html',
         ['win'], bug=485641)
@@ -97,19 +91,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
 
     # ANGLE bug id
-    self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['win'], bug=1246)
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
         ['win'], bug=1246)
 
     # Windows 8 only.
-
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
 
     # Win / NVidia
     # La la la la la la la la la la ...
 
     # Win / AMD
+    self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
+        ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)

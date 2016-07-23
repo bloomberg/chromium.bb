@@ -496,17 +496,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 57,
-      "cr_bugs": [322760],
-      "description": "Mac drivers handle varyings without static use incorrectly",
-      "os": {
-        "type": "macosx"
-      },
-      "features": [
-        "init_varyings_without_static_use"
-      ]
-    },
-    {
       "id": 59,
       "description": "Multisampling is buggy in Intel IvyBridge",
       "cr_bugs": [116370],
