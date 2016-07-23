@@ -265,7 +265,8 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoErraticTestClient,
   Close();
 }
 
-TEST_F(IPCChannelMojoTest, SendFailWithPendingMessages) {
+// Disabled because flake. http://crbug.com/630831
+TEST_F(IPCChannelMojoTest, DISABLED_SendFailWithPendingMessages) {
   InitWithMojo("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
