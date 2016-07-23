@@ -40,10 +40,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
-    # Avoid a conflict with a Mac expectation by setting
-    self.Fail('conformance2/textures/misc/tex-input-validation.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
-
     # All platforms with AMD GPU.
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
@@ -52,31 +48,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/glsl/bugs/' +
         'pow-of-small-constant-in-user-defined-function.html',
         ['win'], bug=485641)
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['win'], bug=483282)
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
-    self.Fail('conformance/textures/webgl_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['win'], bug=483282)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win'], bug=628954)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win'], bug=628954)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['win'], bug=628954)
 
-    self.Fail('deqp/data/gles2/shaders/functions.html',
-        ['win'], bug=478572)
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['win'], bug=483282)
 
     # ANGLE bug id
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
@@ -89,8 +65,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # La la la la la la la la la la ...
 
     # Win / AMD
-    self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
-        ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)
@@ -114,6 +88,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/transformfeedback/*',
         ['win', ('amd', 0x6779)], bug=626068)
+
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['win', ('amd', 0x6779)], bug=483282)
 
     # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
@@ -374,6 +351,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
+    self.Flaky('deqp/functional/gles3/vertexarrays/' +
+        'multiple_attributes.output.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
