@@ -17,6 +17,7 @@ source_set("tests") {
     "constant_unittest.cc",
     "container_test_util.cc",
     "container_test_util.h",
+    "data_view_unittest.cc",
     "equals_unittest.cc",
     "handle_passing_unittest.cc",
     "interface_ptr_unittest.cc",

@@ -34,6 +34,7 @@
             'generators/cpp_templates/struct_macros.tmpl',
             'generators/cpp_templates/struct_serialization_declaration.tmpl',
             'generators/cpp_templates/struct_serialization_definition.tmpl',
+            'generators/cpp_templates/union_data_view_declaration.tmpl',
             'generators/cpp_templates/union_declaration.tmpl',
             'generators/cpp_templates/union_definition.tmpl',
             'generators/cpp_templates/union_serialization_declaration.tmpl',

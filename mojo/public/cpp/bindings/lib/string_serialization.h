@@ -60,7 +60,7 @@ struct Serializer<String, MaybeConstUserType> {
                           SerializationContext* context) {
     if (!input)
       return CallSetToNullIfExists<Traits>(output);
-    return Traits::Read(StringDataView(input), output);
+    return Traits::Read(StringDataView(input, context), output);
   }
 };
 

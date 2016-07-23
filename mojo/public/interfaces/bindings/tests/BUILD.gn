@@ -18,6 +18,7 @@ mojom("test_interfaces") {
     "scoping.mojom",
     "serialization_test_structs.mojom",
     "test_constants.mojom",
+    "test_data_view.mojom",
     "test_native_types.mojom",
     "test_structs.mojom",
     "test_sync_methods.mojom",

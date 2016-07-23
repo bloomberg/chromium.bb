@@ -1,0 +1,17 @@
+class {{union.name}}DataView {
+ public:
+  {{union.name}}DataView() {}
+  
+  {{union.name}}DataView(
+      internal::{{union.name}}_Data* data,
+      mojo::internal::SerializationContext* context)
+      : data_(data) {}
+
+  bool is_null() const { return !data_; }
+ 
+  // TODO(yzshen): Union data view is not yet supported.
+
+ private:
+  internal::{{union.name}}_Data* data_ = nullptr;
+};
+

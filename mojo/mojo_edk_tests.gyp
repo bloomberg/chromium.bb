@@ -56,6 +56,7 @@
         'public/cpp/bindings/tests/constant_unittest.cc',
         'public/cpp/bindings/tests/container_test_util.cc',
         'public/cpp/bindings/tests/container_test_util.h',
+        'public/cpp/bindings/tests/data_view_unittest.cc',
         'public/cpp/bindings/tests/equals_unittest.cc',
         'public/cpp/bindings/tests/handle_passing_unittest.cc',
         'public/cpp/bindings/tests/interface_ptr_unittest.cc',

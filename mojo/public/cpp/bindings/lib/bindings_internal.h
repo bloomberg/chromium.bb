@@ -20,6 +20,9 @@ template <typename T>
 class Array;
 
 template <typename T>
+class ArrayDataView;
+
+template <typename T>
 class AssociatedInterfacePtrInfo;
 
 template <typename T>
@@ -34,13 +37,24 @@ class InterfaceRequest;
 template <typename K, typename V>
 class Map;
 
+template <typename K, typename V>
+class MapDataView;
+
+class NativeStruct;
+
+class NativeStructDataView;
+
 class String;
+
+class StringDataView;
 
 template <typename T>
 class StructPtr;
 
 template <typename T>
 class InlinedStructPtr;
+
+using NativeStructPtr = StructPtr<NativeStruct>;
 
 namespace internal {
 
@@ -326,6 +340,32 @@ struct EnumHashImpl {
     using UnderlyingType = typename base::underlying_type<T>::type;
     return std::hash<UnderlyingType>()(static_cast<UnderlyingType>(input));
   }
+};
+
+template <typename T>
+struct DataViewTraits {
+  using MojomType = T;
+};
+
+template <typename T>
+struct DataViewTraits<ArrayDataView<T>> {
+  using MojomType = Array<typename DataViewTraits<T>::MojomType>;
+};
+
+template <typename K, typename V>
+struct DataViewTraits<MapDataView<K, V>> {
+  using MojomType = Map<typename DataViewTraits<K>::MojomType,
+                        typename DataViewTraits<V>::MojomType>;
+};
+
+template <>
+struct DataViewTraits<StringDataView> {
+  using MojomType = String;
+};
+
+template <>
+struct DataViewTraits<NativeStructDataView> {
+  using MojomType = NativeStructPtr;
 };
 
 }  // namespace internal

@@ -1,29 +1,40 @@
 class {{struct.name}}DataView {
  public:
+  {{struct.name}}DataView() {}
+
   {{struct.name}}DataView(
       internal::{{struct.name}}_Data* data,
       mojo::internal::SerializationContext* context);
 
+  bool is_null() const { return !data_; }
+
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
-{%-   set kind = pf.field.kind -%}
-{%-   set name = pf.field.name -%}
-{%-   if kind|is_struct_kind or kind|is_array_kind or kind|is_string_kind
-         or kind|is_map_kind %}
+{%-   set kind = pf.field.kind %}
+{%-   set name = pf.field.name %}
+{%-   if kind|is_object_kind %}
+  void Get{{name|under_to_camel}}DataView(
+      {{kind|cpp_data_view_type}}* output);
+
+{%-     if kind|is_union_kind %}
+  bool Read{{name|under_to_camel}}({{kind|cpp_wrapper_type}}* output);
+
+{%-     else %}
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* value) {
-{%-  if pf.min_version != 0 %}
+  bool Read{{name|under_to_camel}}(UserType* output) {
+{%-       if pf.min_version != 0 %}
     auto pointer = data_->header_.version >= {{pf.min_version}}
                    ? data_->{{name}}.Get() : nullptr;
-{%-  else %}
+{%-       else %}
     auto pointer = data_->{{name}}.Get();
-{%-  endif %}
+{%-       endif %}
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
-        pointer, value, context_);
+        pointer, output, context_);
   }
+{%-     endif %}
 
 {%-   elif kind|is_enum_kind %}
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* value) const {
+  bool Read{{name|under_to_camel}}(UserType* output) const {
 {%-     if pf.min_version != 0 %}
     auto data_value = data_->header_.version >= {{pf.min_version}}
                       ? data_->{{name}} : 0;
@@ -31,13 +42,10 @@ class {{struct.name}}DataView {
     auto data_value = data_->{{name}};
 {%-     endif %}
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
-        data_value, value);
+        data_value, output);
   }
 
   {{kind|get_qualified_name_for_kind}} {{name}}() const;
-
-{%-   elif kind|is_union_kind %}
-  bool Read{{name|under_to_camel}}({{kind|cpp_wrapper_type}}* value);
 
 {%-   elif kind|is_any_handle_or_interface_kind %}
   {{kind|cpp_wrapper_type}} Take{{name|under_to_camel}}();
@@ -47,7 +55,7 @@ class {{struct.name}}DataView {
 {%-   endif %}
 {%- endfor %}
  private:
-  internal::{{struct.name}}_Data* data_;
-  mojo::internal::SerializationContext* context_;
+  internal::{{struct.name}}_Data* data_ = nullptr;
+  mojo::internal::SerializationContext* context_ = nullptr;
 };
 

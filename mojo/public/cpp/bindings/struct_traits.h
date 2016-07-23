@@ -55,7 +55,8 @@ namespace mojo {
 //        static bool Read(|MojomType|DataView data, T* output);
 //
 //      The generated |MojomType|DataView type provides a convenient,
-//      inexpensive view of a serialized struct's field data.
+//      inexpensive view of a serialized struct's field data. The caller
+//      guarantees that |!data.is_null()|.
 //
 //      Returning false indicates invalid incoming data and causes the message
 //      pipe receiving it to be disconnected. Therefore, you can do custom

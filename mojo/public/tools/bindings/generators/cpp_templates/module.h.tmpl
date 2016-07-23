@@ -35,6 +35,17 @@ namespace {{variant}} {
 {%-   endfor %}
 {%- endmacro %}
 
+{%- macro data_view_traits(kind) %}
+namespace mojo {
+namespace internal {
+template <>
+struct DataViewTraits<{{kind|get_qualified_name_for_kind}}DataView> {
+  using MojomType = {{kind|get_qualified_name_for_kind}}Ptr;
+};
+}  // namespace internal
+}  // namespace mojo
+{%- endmacro %}
+
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
@@ -47,7 +58,7 @@ namespace {{variant}} {
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "base/strings/string_piece.h"
+#include "mojo/public/cpp/bindings/array_data_view.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -57,10 +68,13 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/map_data_view.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/native_enum.h"
 #include "mojo/public/cpp/bindings/native_struct.h"
+#include "mojo/public/cpp/bindings/native_struct_data_view.h"
 #include "mojo/public/cpp/bindings/no_interface.h"
+#include "mojo/public/cpp/bindings/string_data_view.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "{{variant_path}}-internal.h"
@@ -141,6 +155,7 @@ using {{interface.name}}AssociatedRequest =
 {%  for struct in structs %}
 {%-   if struct|is_native_only_kind %}
 using {{struct.name}} = mojo::NativeStruct;
+using {{struct.name}}DataView = mojo::NativeStructDataView;
 using {{struct.name}}Ptr = mojo::NativeStructPtr;
 {%-   else %}
 class {{struct.name}};
@@ -156,6 +171,7 @@ using {{struct.name}}Ptr = mojo::StructPtr<{{struct.name}}>;
 {#--- Union Forward Declarations -#}
 {%  for union in unions %}
 class {{union.name}};
+class {{union.name}}DataView;
 {%    if union|should_inline_union %}
 typedef mojo::InlinedStructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    else %}
@@ -217,6 +233,11 @@ namespace std {
 {%    if struct|should_inline and not struct|is_native_only_kind %}
 {%      include "wrapper_class_declaration.tmpl" %}
 {%      include "struct_data_view_declaration.tmpl" %}
+
+{{namespace_end()}}
+{{data_view_traits(struct)}}
+{{namespace_begin()}}
+
 {%    endif %}
 {%- endfor %}
 
@@ -225,6 +246,12 @@ namespace std {
 {#--- Unions #}
 {%  for union in unions %}
 {%    include "wrapper_union_class_declaration.tmpl" %}
+{%    include "union_data_view_declaration.tmpl" %}
+
+{{namespace_end()}}
+{{data_view_traits(union)}}
+{{namespace_begin()}}
+
 {%- endfor %}
 
 {#--- Non-inlined structs #}
@@ -232,6 +259,11 @@ namespace std {
 {%    if not struct|should_inline and not struct|is_native_only_kind %}
 {%      include "wrapper_class_declaration.tmpl" %}
 {%      include "struct_data_view_declaration.tmpl" %}
+
+{{namespace_end()}}
+{{data_view_traits(struct)}}
+{{namespace_begin()}}
+
 {%    endif %}
 {%- endfor %}
 

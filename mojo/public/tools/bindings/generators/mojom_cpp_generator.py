@@ -242,6 +242,20 @@ def GetCppWrapperParamType(kind):
   return (cpp_wrapper_type if ShouldPassParamByValue(kind)
                            else "const %s&" % cpp_wrapper_type)
 
+def GetCppDataViewType(kind):
+  if mojom.IsEnumKind(kind):
+    return GetNameForKind(kind)
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+    return "%sDataView" % GetNameForKind(kind)
+  if mojom.IsArrayKind(kind):
+    return "mojo::ArrayDataView<%s>" % GetCppDataViewType(kind.kind)
+  if mojom.IsMapKind(kind):
+    return ("mojo::MapDataView<%s, %s>" % (GetCppDataViewType(kind.key_kind),
+                                           GetCppDataViewType(kind.value_kind)))
+  if mojom.IsStringKind(kind):
+    return "mojo::StringDataView"
+  return GetCppWrapperType(kind)
+
 def GetCppFieldType(kind):
   if mojom.IsStructKind(kind):
     return ("mojo::internal::Pointer<%s>" %
@@ -412,6 +426,7 @@ class Generator(generator.Generator):
   cpp_filters = {
     "constant_value": ConstantValue,
     "cpp_wrapper_param_type": GetCppWrapperParamType,
+    "cpp_data_view_type": GetCppDataViewType,
     "cpp_field_type": GetCppFieldType,
     "cpp_union_field_type": GetCppUnionFieldType,
     "cpp_pod_type": GetCppPodType,

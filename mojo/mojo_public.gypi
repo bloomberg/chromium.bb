@@ -6,6 +6,7 @@
   'variables': {
     'mojo_cpp_bindings_sources': [
       'public/cpp/bindings/array.h',
+      'public/cpp/bindings/array_data_view.h',
       'public/cpp/bindings/array_traits.h',
       'public/cpp/bindings/array_traits_carray.h',
       'public/cpp/bindings/array_traits_standard.h',
@@ -93,6 +94,7 @@
       'public/cpp/bindings/lib/validation_errors.h',
       'public/cpp/bindings/lib/validation_util.cc',
       'public/cpp/bindings/lib/validation_util.h',
+      'public/cpp/bindings/map_data_view.h',
       'public/cpp/bindings/map_traits.h',
       'public/cpp/bindings/map_traits_standard.h',
       'public/cpp/bindings/map_traits_stl.h',
@@ -101,6 +103,7 @@
       'public/cpp/bindings/message_header_validator.h',
       'public/cpp/bindings/native_enum.h',
       'public/cpp/bindings/native_struct.h',
+      'public/cpp/bindings/native_struct_data_view.h',
       'public/cpp/bindings/no_interface.h',
       'public/cpp/bindings/pipe_control_message_handler.h',
       'public/cpp/bindings/pipe_control_message_handler_delegate.h',
@@ -108,6 +111,7 @@
       'public/cpp/bindings/scoped_interface_endpoint_handle.h',
       'public/cpp/bindings/stl_converters.h',
       'public/cpp/bindings/string.h',
+      'public/cpp/bindings/string_data_view.h',
       'public/cpp/bindings/string_traits.h',
       'public/cpp/bindings/string_traits_standard.h',
       'public/cpp/bindings/string_traits_stl.h',

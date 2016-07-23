@@ -5,6 +5,7 @@
 static_library("bindings") {
   sources = [
     "array.h",
+    "array_data_view.h",
     "array_traits.h",
     "array_traits_carray.h",
     "array_traits_standard.h",
@@ -94,6 +95,7 @@ static_library("bindings") {
     "lib/validation_util.cc",
     "lib/validation_util.h",
     "map.h",
+    "map_data_view.h",
     "map_traits.h",
     "map_traits_standard.h",
     "map_traits_stl.h",
@@ -102,6 +104,7 @@ static_library("bindings") {
     "message_header_validator.h",
     "native_enum.h",
     "native_struct.h",
+    "native_struct_data_view.h",
     "no_interface.h",
     "pipe_control_message_handler.h",
     "pipe_control_message_handler_delegate.h",
@@ -109,6 +112,7 @@ static_library("bindings") {
     "scoped_interface_endpoint_handle.h",
     "stl_converters.h",
     "string.h",
+    "string_data_view.h",
     "string_traits.h",
     "string_traits_standard.h",
     "string_traits_stl.h",
