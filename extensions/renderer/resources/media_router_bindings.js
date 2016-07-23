@@ -470,7 +470,7 @@ define('media_router_bindings', [
     /**
      * @type {function(string)}
      */
-    this.startlisteningForRouteMessages = null;
+    this.startListeningForRouteMessages = null;
 
     /**
      * @type {function(string)}
