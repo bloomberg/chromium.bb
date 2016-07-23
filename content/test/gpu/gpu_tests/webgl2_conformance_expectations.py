@@ -514,6 +514,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=618447)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd', 'intel'], bug=483282)
+    self.Fail('deqp/data/gles3/shaders/linkage.html',
+        ['linux', 'amd', 'intel'], bug=483282)
 
     # Linux with ANGLE only
     self.Fail('conformance/misc/uninitialized-test.html',
@@ -562,9 +564,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
         ['linux', 'intel'], bug=540543)  # GPU timeout
-
-    self.Fail('deqp/data/gles3/shaders/linkage.html',
-        ['linux', 'intel'], bug=483282)
 
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
