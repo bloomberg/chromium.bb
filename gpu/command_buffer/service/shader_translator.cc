@@ -196,10 +196,7 @@ bool ShaderTranslator::Init(GLenum shader_type,
   switch (shader_spec) {
     case SH_WEBGL_SPEC:
     case SH_WEBGL2_SPEC:
-#if !defined(OS_WIN)
-      // TODO(zmo): Enable it on Windows.
       compile_options_ |= SH_INIT_OUTPUT_VARIABLES;
-#endif
       break;
     default:
       break;
