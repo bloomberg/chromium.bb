@@ -296,7 +296,11 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
+    return (
+       # http://crbug.com/564008
+       cls.IsSvelte(possible_browser) or
+       # http://crbug.com/630701
+       possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 
 @benchmark.Enabled('mac')
