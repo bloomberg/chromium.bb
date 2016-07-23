@@ -169,13 +169,11 @@ extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
 extern const char kDnsPrefetchingStartupList[];
 extern const char kDnsPrefetchingHostReferralList[];
-extern const char kDisableSpdy[];
 extern const char kHttpServerProperties[];
 #if defined(OS_ANDROID)
 extern const char kLastPolicyCheckTime[];
 #endif
 extern const char kInstantUIZeroSuggestUrlPrefix[];
-extern const char kNetworkPredictionEnabled[];
 extern const char kNetworkPredictionOptions[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];

@@ -147,11 +147,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
                     }
                 }
             }
-            // But disable after all if kNetworkPredictionEnabled was disabled by the user.
-            if (prefService.obsoleteNetworkPredictionEnabledHasUserSetting()
-                    && !prefService.obsoleteGetNetworkPredictionEnabledUserPrefValue()) {
-                newValue = false;
-            }
             // Save new value in Chrome PrefService.
             prefService.setNetworkPredictionEnabled(newValue);
         }

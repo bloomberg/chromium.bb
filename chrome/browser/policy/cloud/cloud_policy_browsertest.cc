@@ -484,9 +484,11 @@ TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {
   list->add_entries("ftp");
   list->add_entries("mailto");
   // Try explicitly setting a policy mode too.
-  chrome_settings.mutable_disablespdy()->set_disablespdy(false);
-  chrome_settings.mutable_disablespdy()->mutable_policy_options()->set_mode(
-      em::PolicyOptions::MANDATORY);
+  chrome_settings.mutable_searchsuggestenabled()->set_searchsuggestenabled(
+      false);
+  chrome_settings.mutable_searchsuggestenabled()
+      ->mutable_policy_options()
+      ->set_mode(em::PolicyOptions::MANDATORY);
   chrome_settings.mutable_syncdisabled()->set_syncdisabled(true);
   chrome_settings.mutable_syncdisabled()->mutable_policy_options()->set_mode(
       em::PolicyOptions::RECOMMENDED);
@@ -499,9 +501,10 @@ TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {
   list = cloud_policy.mutable_disabledschemes()->mutable_value();
   list->add_entries("ftp");
   list->add_entries("mailto");
-  cloud_policy.mutable_disablespdy()->set_value(false);
-  cloud_policy.mutable_disablespdy()->mutable_policy_options()->set_mode(
-      em::PolicyOptions::MANDATORY);
+  cloud_policy.mutable_searchsuggestenabled()->set_value(false);
+  cloud_policy.mutable_searchsuggestenabled()
+      ->mutable_policy_options()
+      ->set_mode(em::PolicyOptions::MANDATORY);
   cloud_policy.mutable_syncdisabled()->set_value(true);
   cloud_policy.mutable_syncdisabled()->mutable_policy_options()->set_mode(
       em::PolicyOptions::RECOMMENDED);

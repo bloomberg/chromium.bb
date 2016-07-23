@@ -1005,29 +1005,11 @@ static void SetNetworkPredictionEnabled(JNIEnv* env,
               : chrome_browser_net::NETWORK_PREDICTION_NEVER);
 }
 
-static jboolean ObsoleteNetworkPredictionEnabledHasUserSetting(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetUserPrefValue(
-      prefs::kNetworkPredictionEnabled) != NULL;
-}
-
 static jboolean ObsoleteNetworkPredictionOptionsHasUserSetting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetUserPrefValue(
       prefs::kNetworkPredictionOptions) != NULL;
-}
-
-static jboolean ObsoleteGetNetworkPredictionEnabledUserPrefValue(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  const base::Value* network_prediction_enabled =
-      GetPrefService()->GetUserPrefValue(prefs::kNetworkPredictionEnabled);
-  DCHECK(network_prediction_enabled);
-  bool value = false;
-  DCHECK(network_prediction_enabled->GetAsBoolean(&value));
-  return value;
 }
 
 static void SetResolveNavigationErrorEnabled(JNIEnv* env,

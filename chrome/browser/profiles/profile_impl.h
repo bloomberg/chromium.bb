@@ -220,8 +220,8 @@ class ProfileImpl : public Profile {
       pref_validation_delegate_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
-  // |net_pref_observer_|, |io_data_| and others store pointers to |prefs_| and
-  // shall be destructed first.
+  // |io_data_| and others store pointers to |prefs_| and shall be destructed
+  // first.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
   std::unique_ptr<syncable_prefs::PrefServiceSyncable> otr_prefs_;
@@ -230,7 +230,6 @@ class ProfileImpl : public Profile {
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 #endif
-  std::unique_ptr<NetPrefObserver> net_pref_observer_;
   std::unique_ptr<ssl_config::SSLConfigServiceManager>
       ssl_config_service_manager_;
 

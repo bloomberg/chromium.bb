@@ -2195,8 +2195,6 @@
       'browser/net/net_error_diagnostics_dialog_win.cc',
       'browser/net/net_error_tab_helper.cc',
       'browser/net/net_error_tab_helper.h',
-      'browser/net/net_pref_observer.cc',
-      'browser/net/net_pref_observer.h',
       'browser/net/nqe/ui_network_quality_estimator_service.cc',
       'browser/net/nqe/ui_network_quality_estimator_service.h',
       'browser/net/nqe/ui_network_quality_estimator_service_factory.cc',

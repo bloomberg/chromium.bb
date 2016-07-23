@@ -594,27 +594,11 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether there is a user set value for kNetworkPredictionEnabled.  This should only be
-     * used for preference migration. See http://crbug.com/334602
-     */
-    public boolean obsoleteNetworkPredictionEnabledHasUserSetting() {
-        return nativeObsoleteNetworkPredictionEnabledHasUserSetting();
-    }
-
-    /**
      * @return whether there is a user set value for kNetworkPredictionOptions.  This should only be
      * used for preference migration. See http://crbug.com/334602
      */
     public boolean obsoleteNetworkPredictionOptionsHasUserSetting() {
         return nativeObsoleteNetworkPredictionOptionsHasUserSetting();
-    }
-
-    /**
-     * @return the user set value for kNetworkPredictionEnabled. This should only be used for
-     * preference migration. See http://crbug.com/334602
-     */
-    public boolean obsoleteGetNetworkPredictionEnabledUserPrefValue() {
-        return nativeObsoleteGetNetworkPredictionEnabledUserPrefValue();
     }
 
     /**
@@ -1187,9 +1171,7 @@ public final class PrefServiceBridge {
     private native void nativeSetSafeBrowsingEnabled(boolean enabled);
     private native boolean nativeGetSafeBrowsingManaged();
     private native boolean nativeGetNetworkPredictionManaged();
-    private native boolean nativeObsoleteNetworkPredictionEnabledHasUserSetting();
     private native boolean nativeObsoleteNetworkPredictionOptionsHasUserSetting();
-    private native boolean nativeObsoleteGetNetworkPredictionEnabledUserPrefValue();
     private native boolean nativeGetNetworkPredictionEnabled();
     private native void nativeSetNetworkPredictionEnabled(boolean enabled);
     private native void nativeSetResolveNavigationErrorEnabled(boolean enabled);

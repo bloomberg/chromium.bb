@@ -433,10 +433,6 @@ const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
 const char kDnsPrefetchingHostReferralList[] =
     "dns_prefetching.host_referral_list";
 
-// Disables the SPDY/3.1 protocol.
-// DEPRECATED: SPDY/3.1 is not supported any more.
-const char kDisableSpdy[] = "spdy.disabled";
-
 // Prefs for persisting HttpServerProperties.
 const char kHttpServerProperties[] = "net.http_server_properties";
 
@@ -450,15 +446,6 @@ const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
 // Prefix URL for the experimental Instant ZeroSuggest provider.
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";
-
-// A boolean pref set to true if prediction of network actions is allowed.
-// Actions include DNS prefetching, TCP and SSL preconnection, prerendering
-// of web pages, and resource prefetching.
-// NOTE: The "dns_prefetching.enabled" value is used so that historical user
-// preferences are not lost.
-// TODO(bnc): Remove kNetworkPredictionEnabled once kNetworkPredictionOptions
-// is functioning as per crbug.com/334602.
-const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 
 // A preference of enum chrome_browser_net::NetworkPredictionOptions shows
 // if prediction of network actions is allowed, depending on network type.

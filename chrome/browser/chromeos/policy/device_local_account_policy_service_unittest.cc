@@ -143,13 +143,14 @@ DeviceLocalAccountPolicyServiceTestBase::
 void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
   chromeos::DeviceSettingsTestBase::SetUp();
 
-  expected_policy_map_.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
+  expected_policy_map_.Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                            base::WrapUnique(new base::FundamentalValue(true)),
                            nullptr);
 
-  device_local_account_policy_.payload().mutable_disablespdy()->set_value(
-      true);
+  device_local_account_policy_.payload()
+      .mutable_searchsuggestenabled()
+      ->set_value(true);
   device_local_account_policy_.policy_data().set_policy_type(
       dm_protocol::kChromePublicAccountPolicyType);
 }
@@ -872,8 +873,9 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   // Policy change should be reported.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
       .Times(AtLeast(1));
-  device_local_account_policy_.payload().mutable_disablespdy()->set_value(
-      false);
+  device_local_account_policy_.payload()
+      .mutable_searchsuggestenabled()
+      ->set_value(false);
   InstallDeviceLocalAccountPolicy(kAccount1);
   DeviceLocalAccountPolicyBroker* broker =
       service_->GetBrokerForUser(account_1_user_id_);
@@ -884,8 +886,8 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
 
   expected_policy_bundle
       .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
+      .Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
            base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 

@@ -33,7 +33,6 @@
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
-#include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
@@ -298,6 +297,10 @@ const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 const char kDesktopSearchRedirectionInfobarShownPref[] =
     "desktop_search_redirection_infobar_shown";
 
+// Deprecated 7/2016.
+const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
+const char kDisableSpdy[] = "spdy.disabled";
+
 void DeleteWebRTCIdentityStoreDBOnFileThread(base::FilePath profile_path) {
   base::DeleteFile(profile_path.Append(
       FILE_PATH_LITERAL("WebRTCIdentityStore")), false);
@@ -460,7 +463,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaStreamDevicesController::RegisterProfilePrefs(registry);
-  NetPrefObserver::RegisterProfilePrefs(registry);
   ntp_snippets::NTPSnippetsService::RegisterProfilePrefs(registry);
   ntp_snippets::RequestThrottler::RegisterProfilePrefs(registry);
   password_bubble_experiment::RegisterPrefs(registry);
@@ -634,6 +636,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(kDesktopSearchRedirectionInfobarShownPref,
                                 false);
+
+  registry->RegisterBooleanPref(kNetworkPredictionEnabled, true);
+  registry->RegisterBooleanPref(kDisableSpdy, false);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -732,6 +737,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 7/2016.
   DeleteWebRTCIdentityStoreDB(profile);
+  profile_prefs->ClearPref(kNetworkPredictionEnabled);
+  profile_prefs->ClearPref(kDisableSpdy);
 }
 
 }  // namespace chrome

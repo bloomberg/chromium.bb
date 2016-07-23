@@ -386,17 +386,20 @@
       'name': 'DnsPrefetchingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': ['chrome.*:8-53', 'chrome_os:11-53', 'android:30-53'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 7,
       'caption': '''Enable network prediction''',
       'tags': [],
-      'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''This policy is deprecated in M48 in favor of NetworkPredictionOptions, and removed in M54.
+
+      Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
 
@@ -470,7 +473,7 @@
       'name': 'DisableSpdy',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': ['chrome.*:8-53', 'chrome_os:11-53', 'android:30-53'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -480,7 +483,7 @@
       'id': 8,
       'caption': '''Disable SPDY protocol''',
       'tags': [],
-      'desc': '''This policy is deprecated, because SPDY/3.1 support is removed.
+      'desc': '''This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
 
       Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
