@@ -51,7 +51,7 @@ BASE_EXPORT bool AdjustOOMScore(ProcessId process, int score);
 #if defined(OS_WIN)
 namespace win {
 
-// Custom exception code chosen to indicate an out of memory error.
+// Custom Windows exception code chosen to indicate an out of memory error.
 // See https://msdn.microsoft.com/en-us/library/het71c37.aspx.
 // "To make sure that you do not define a code that conflicts with an existing
 // exception code" ... "The resulting error code should therefore have the

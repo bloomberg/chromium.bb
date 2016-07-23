@@ -34,13 +34,8 @@ void sk_abort_no_print() {
 
 void sk_out_of_memory(void) {
     SkASSERT(!"sk_out_of_memory");
-#if defined(OS_WIN)
-    // Kill the process. This is important for security since most of code
-    // does not check the result of memory allocation.
-    // https://msdn.microsoft.com/en-us/library/het71c37.aspx
-    ::RaiseException(base::win::kOomExceptionCode, EXCEPTION_NONCONTINUABLE, 0,
-                     nullptr);
-#endif
+    base::TerminateBecauseOutOfMemory(0);
+    // Extra safety abort().
     abort();
 }
 

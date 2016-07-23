@@ -29,9 +29,9 @@ namespace base {
 namespace {
 
 #pragma warning(push)
-#pragma warning(disable: 4702)
+#pragma warning(disable: 4702)  // Unreachable code after the _exit.
 
-int OnNoMemory(size_t size) {
+NOINLINE int OnNoMemory(size_t size) {
   // Kill the process. This is important for security since most of code
   // does not check the result of memory allocation.
   // https://msdn.microsoft.com/en-us/library/het71c37.aspx
@@ -44,10 +44,11 @@ int OnNoMemory(size_t size) {
 
 #pragma warning(pop)
 
-// HeapSetInformation function pointer.
-typedef BOOL (WINAPI* HeapSetFn)(HANDLE, HEAP_INFORMATION_CLASS, PVOID, SIZE_T);
-
 }  // namespace
+
+void TerminateBecauseOutOfMemory(size_t size) {
+  OnNoMemory(size);
+}
 
 void EnableTerminationOnHeapCorruption() {
   // Ignore the result code. Supported on XP SP3 and Vista.
