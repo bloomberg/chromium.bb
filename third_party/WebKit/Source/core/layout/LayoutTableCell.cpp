@@ -66,6 +66,26 @@ void LayoutTableCell::willBeRemovedFromTree()
     LayoutBlockFlow::willBeRemovedFromTree();
 
     section()->setNeedsCellRecalc();
+
+    // When borders collapse, removing a cell can affect the the width of neighboring cells.
+    if (!parent())
+        return;
+    LayoutTable* enclosingTable = table();
+    DCHECK(enclosingTable);
+    if (!enclosingTable->collapseBorders())
+        return;
+    if (previousCell()) {
+        // TODO(dgrogan): Should this be setChildNeedsLayout or setNeedsLayout?
+        // remove-cell-with-border-box.html only passes with setNeedsLayout but other places
+        // use setChildNeedsLayout.
+        previousCell()->setNeedsLayout(LayoutInvalidationReason::TableChanged);
+        previousCell()->setPreferredLogicalWidthsDirty();
+    }
+    if (nextCell()) {
+        // TODO(dgrogan): Same as above re: setChildNeedsLayout vs setNeedsLayout.
+        nextCell()->setNeedsLayout(LayoutInvalidationReason::TableChanged);
+        nextCell()->setPreferredLogicalWidthsDirty();
+    }
 }
 
 unsigned LayoutTableCell::parseColSpanFromDOM() const

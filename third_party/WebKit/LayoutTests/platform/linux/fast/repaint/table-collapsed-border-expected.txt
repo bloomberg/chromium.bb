@@ -112,6 +112,26 @@
           "object": "LayoutTable TABLE",
           "rect": [78, 286, 25, 82],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 224, 14, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 132, 14, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [17, 225, 4, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [17, 133, 4, 19],
+          "reason": "forced by layout"
         }
       ]
     }
@@ -198,6 +218,22 @@
       "reason": "forced by layout"
     },
     {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
       "object": "InlineTextBox 'sit amet'",
       "reason": "forced by layout"
     },
@@ -207,6 +243,22 @@
     },
     {
       "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
       "reason": "forced by layout"
     },
     {
