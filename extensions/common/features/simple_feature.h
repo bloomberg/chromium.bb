@@ -99,29 +99,27 @@ class SimpleFeature : public Feature {
   };
 
   // Setters used by generated code to create the feature.
-  void set_blacklist(const std::vector<std::string>& blacklist) {
-    blacklist_ = blacklist;
-  }
+  // NOTE: These setters use rvalue references deliberately. These should only
+  // ever be used by generated code, and we ensure that in each call, the new
+  // value is constructed in-place. This allows us to avoid a copy when we
+  // assign it to the value in this class, and results in noticable improvements
+  // in both speed and binary size.
+  void set_blacklist(std::vector<std::string>&& blacklist);
   void set_channel(version_info::Channel channel) {
     channel_.reset(new version_info::Channel(channel));
   }
-  void set_command_line_switch(const std::string& command_line_switch) {
-    command_line_switch_ = command_line_switch;
-  }
+  void set_command_line_switch(std::string&& command_line_switch);
   void set_component_extensions_auto_granted(bool granted) {
     component_extensions_auto_granted_ = granted;
   }
-  void set_contexts(const std::vector<Context>& contexts) {
-    contexts_ = contexts;
-  }
-  void set_dependencies(const std::vector<std::string>& dependencies) {
-    dependencies_ = dependencies;
-  }
-  void set_extension_types(const std::vector<Manifest::Type> types) {
-    extension_types_ = types;
-  }
+  void set_contexts(std::vector<Context>&& contexts);
+  void set_dependencies(std::vector<std::string>&& dependencies);
+  void set_extension_types(std::vector<Manifest::Type>&& types);
   void set_internal(bool is_internal) { is_internal_ = is_internal; }
   void set_location(Location location) { location_ = location; }
+  // set_matches() is an exception to pass-by-value since we construct an
+  // URLPatternSet from the vector of strings.
+  // TODO(devlin): Pass in an URLPatternSet directly.
   void set_matches(const std::vector<std::string>& matches);
   void set_max_manifest_version(int max_manifest_version) {
     max_manifest_version_ = max_manifest_version;
@@ -129,12 +127,8 @@ class SimpleFeature : public Feature {
   void set_min_manifest_version(int min_manifest_version) {
     min_manifest_version_ = min_manifest_version;
   }
-  void set_platforms(const std::vector<Platform>& platforms) {
-    platforms_ = platforms;
-  }
-  void set_whitelist(const std::vector<std::string>& whitelist) {
-    whitelist_ = whitelist;
-  }
+  void set_platforms(std::vector<Platform>&& platforms);
+  void set_whitelist(std::vector<std::string>&& whitelist);
 
  protected:
   // Accessors used by subclasses in feature verification.

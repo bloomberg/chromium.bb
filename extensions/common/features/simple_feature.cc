@@ -667,10 +667,38 @@ bool SimpleFeature::IsValidExtensionId(const std::string& extension_id) {
   return (extension_id.length() == 32);
 }
 
+void SimpleFeature::set_blacklist(std::vector<std::string>&& blacklist) {
+  blacklist_ = blacklist;
+}
+
+void SimpleFeature::set_command_line_switch(std::string&& command_line_switch) {
+  command_line_switch_ = command_line_switch;
+}
+
+void SimpleFeature::set_contexts(std::vector<Context>&& contexts) {
+  contexts_ = contexts;
+}
+
+void SimpleFeature::set_dependencies(std::vector<std::string>&& dependencies) {
+  dependencies_ = dependencies;
+}
+
+void SimpleFeature::set_extension_types(std::vector<Manifest::Type>&& types) {
+  extension_types_ = types;
+}
+
 void SimpleFeature::set_matches(const std::vector<std::string>& matches) {
   matches_.ClearPatterns();
   for (const std::string& pattern : matches)
     matches_.AddPattern(URLPattern(URLPattern::SCHEME_ALL, pattern));
+}
+
+void SimpleFeature::set_platforms(std::vector<Platform>&& platforms) {
+  platforms_ = platforms;
+}
+
+void SimpleFeature::set_whitelist(std::vector<std::string>&& whitelist) {
+  whitelist_ = whitelist;
 }
 
 }  // namespace extensions
