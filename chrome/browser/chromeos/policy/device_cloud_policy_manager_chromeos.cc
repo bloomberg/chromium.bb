@@ -56,6 +56,7 @@ namespace {
 const char kNoRequisition[] = "none";
 const char kRemoraRequisition[] = "remora";
 const char kSharkRequisition[] = "shark";
+const char kRialtoRequisition[] = "rialto";
 
 // Zero-touch enrollment flag values.
 const char kZeroTouchEnrollmentForced[] = "forced";
@@ -323,7 +324,8 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
       local_state_->SetString(prefs::kDeviceEnrollmentRequisition,
                               requisition);
       if (requisition == kRemoraRequisition ||
-          requisition == kSharkRequisition) {
+          requisition == kSharkRequisition ||
+          requisition == kRialtoRequisition) {
         SetDeviceEnrollmentAutoStart();
       } else {
         local_state_->SetBoolean(
