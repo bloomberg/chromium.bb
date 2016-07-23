@@ -58,6 +58,12 @@ PASS window.getComputedStyle(gridWithAutoFlowAndRowsAndColumns, '').getPropertyV
 PASS window.getComputedStyle(gridWithAutoFlowAndRowsAndColumns, '').getPropertyValue('grid-auto-flow') is "column"
 PASS window.getComputedStyle(gridWithAutoFlowAndRowsAndColumns, '').getPropertyValue('grid-auto-columns') is "20px"
 PASS window.getComputedStyle(gridWithAutoFlowAndRowsAndColumns, '').getPropertyValue('grid-auto-rows') is "10px"
+PASS window.getComputedStyle(gridWithAutoFlowAndMultipleAutoTracks, '').getPropertyValue('grid-template-columns') is "none"
+PASS window.getComputedStyle(gridWithAutoFlowAndMultipleAutoTracks, '').getPropertyValue('grid-template-rows') is "none"
+PASS window.getComputedStyle(gridWithAutoFlowAndMultipleAutoTracks, '').getPropertyValue('grid-template-areas') is "none"
+PASS window.getComputedStyle(gridWithAutoFlowAndMultipleAutoTracks, '').getPropertyValue('grid-auto-flow') is "row"
+PASS window.getComputedStyle(gridWithAutoFlowAndMultipleAutoTracks, '').getPropertyValue('grid-auto-columns') is "100px 10%"
+PASS window.getComputedStyle(gridWithAutoFlowAndMultipleAutoTracks, '').getPropertyValue('grid-auto-rows') is "20px 10px"
 
 Test getting wrong values for 'grid' shorthand through CSS (they should resolve to the default: 'none')
 PASS window.getComputedStyle(gridWithExplicitAndImplicit, '').getPropertyValue('grid-template-columns') is "none"

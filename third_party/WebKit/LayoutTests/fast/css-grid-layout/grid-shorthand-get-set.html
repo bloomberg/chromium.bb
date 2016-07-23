@@ -27,6 +27,9 @@
 #gridWithAutoFlowAndRowsAndColumns {
     grid: column 10px / 20px;
 }
+#gridWithAutoFlowAndMultipleAutoTracks {
+    grid: row 20px 10px / 100px 10%;
+}
 
 /* Bad values. */
 
@@ -59,6 +62,7 @@
 <div class="grid" id="gridWithAutoFlowColumnDense"></div>
 <div class="grid" id="gridWithAutoFlowDenseRow"></div>
 <div class="grid" id="gridWithAutoFlowAndRowsAndColumns"></div>
+<div class="grid" id="gridWithAutoFlowAndMultipleAutoTracks"></div>
 <div class="grid" id="gridWithExplicitAndImplicit"></div>
 <div class="grid" id="gridWithMisplacedNone1"></div>
 <div class="grid" id="gridWithMisplacedNone2"></div>
@@ -77,6 +81,7 @@
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowColumnDense"), "none", "none", "none", "column dense", "10px", "10px");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowDenseRow"), "none", "none", "none", "row dense", "10px", "10px");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndRowsAndColumns"), "none", "none", "none", "column", "20px", "10px");
+    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndMultipleAutoTracks"), "none", "none", "none", "row", "100px 10%", "20px 10px");
 
     debug("");
     debug("Test getting wrong values for 'grid' shorthand through CSS (they should resolve to the default: 'none')");

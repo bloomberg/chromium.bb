@@ -207,9 +207,9 @@ flex-wrap
 float type_name=EFloat, name_for_methods=Floating
 flood-color interpolable, svg, converter=convertColor
 flood-opacity interpolable, svg, converter=convertNumberOrPercentage
-grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSize
+grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSizeList
 grid-auto-flow runtime_flag=CSSGridLayout, converter=convertGridAutoFlow, type_name=GridAutoFlow
-grid-auto-rows runtime_flag=CSSGridLayout, converter=convertGridTrackSize
+grid-auto-rows runtime_flag=CSSGridLayout, converter=convertGridTrackSizeList
 grid-column-end runtime_flag=CSSGridLayout, converter=convertGridPosition
 grid-column-gap runtime_flag=CSSGridLayout, converter=convertLength
 grid-column-start runtime_flag=CSSGridLayout, converter=convertGridPosition

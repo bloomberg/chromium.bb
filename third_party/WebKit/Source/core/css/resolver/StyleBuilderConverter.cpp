@@ -559,6 +559,18 @@ static void convertGridLineNamesList(const CSSValue& value, size_t currentNamedG
     }
 }
 
+Vector<GridTrackSize> StyleBuilderConverter::convertGridTrackSizeList(StyleResolverState& state, const CSSValue& value)
+{
+    DCHECK(value.isValueList());
+    Vector<GridTrackSize> trackSizes;
+    for (auto& currValue : toCSSValueList(value)) {
+        DCHECK(!currValue->isGridLineNamesValue());
+        DCHECK(!currValue->isGridAutoRepeatValue());
+        trackSizes.append(convertGridTrackSize(state, *currValue));
+    }
+    return trackSizes;
+}
+
 void StyleBuilderConverter::convertGridTrackList(const CSSValue& value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, Vector<GridTrackSize>& autoRepeatTrackSizes, NamedGridLinesMap& autoRepeatNamedGridLines, OrderedNamedGridLines& autoRepeatOrderedNamedGridLines, size_t& autoRepeatInsertionPoint, AutoRepeatType &autoRepeatType, StyleResolverState& state)
 {
     if (value.isPrimitiveValue()) {

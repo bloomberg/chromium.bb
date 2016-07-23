@@ -77,6 +77,7 @@ public:
     static GridAutoFlow convertGridAutoFlow(StyleResolverState&, const CSSValue&);
     static GridPosition convertGridPosition(StyleResolverState&, const CSSValue&);
     static GridTrackSize convertGridTrackSize(StyleResolverState&, const CSSValue&);
+    static Vector<GridTrackSize> convertGridTrackSizeList(StyleResolverState&, const CSSValue&);
     template <typename T> static T convertLineWidth(StyleResolverState&, const CSSValue&);
     static Length convertLength(const StyleResolverState&, const CSSValue&);
     static UnzoomedLength convertUnzoomedLength(const StyleResolverState&, const CSSValue&);

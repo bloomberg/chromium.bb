@@ -1925,6 +1925,23 @@ bool ComputedStyle::shadowListHasCurrentColor(const ShadowList* shadowList)
     return false;
 }
 
+static inline Vector<GridTrackSize> initialGridAutoTracks()
+{
+    Vector<GridTrackSize> trackSizeList;
+    trackSizeList.append(GridTrackSize(Length(Auto)));
+    return trackSizeList;
+}
+
+Vector<GridTrackSize> ComputedStyle::initialGridAutoColumns()
+{
+    return initialGridAutoTracks();
+}
+
+Vector<GridTrackSize> ComputedStyle::initialGridAutoRows()
+{
+    return initialGridAutoTracks();
+}
+
 int adjustForAbsoluteZoom(int value, float zoomFactor)
 {
     if (zoomFactor == 1)

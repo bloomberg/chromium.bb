@@ -848,7 +848,7 @@ const GridTrackSize& LayoutGrid::rawGridTrackSize(GridTrackSizingDirection direc
     bool isRowAxis = direction == ForColumns;
     const Vector<GridTrackSize>& trackStyles = isRowAxis ? styleRef().gridTemplateColumns() : styleRef().gridTemplateRows();
     const Vector<GridTrackSize>& autoRepeatTrackStyles = isRowAxis ? styleRef().gridAutoRepeatColumns() : styleRef().gridAutoRepeatRows();
-    const GridTrackSize& autoTrackSize = isRowAxis ? styleRef().gridAutoColumns() : styleRef().gridAutoRows();
+    const Vector<GridTrackSize>& autoTrackStyles = isRowAxis ? styleRef().gridAutoColumns() : styleRef().gridAutoRows();
     size_t insertionPoint = isRowAxis ? styleRef().gridAutoRepeatColumnsInsertionPoint() : styleRef().gridAutoRepeatRowsInsertionPoint();
     size_t autoRepeatTracksCount = autoRepeatCountForDirection(direction);
 
@@ -858,12 +858,17 @@ const GridTrackSize& LayoutGrid::rawGridTrackSize(GridTrackSizingDirection direc
     size_t explicitTracksCount = trackStyles.size() + autoRepeatTracksCount;
 
     int untranslatedIndexAsInt = translatedIndex + (isRowAxis ? m_smallestColumnStart : m_smallestRowStart);
-    if (untranslatedIndexAsInt < 0)
-        return autoTrackSize;
+    size_t autoTrackStylesSize = autoTrackStyles.size();
+    if (untranslatedIndexAsInt < 0) {
+        int index = untranslatedIndexAsInt % static_cast<int>(autoTrackStylesSize);
+        // We need to traspose the index because the first negative implicit line will get the last defined auto track and so on.
+        index += index ? autoTrackStylesSize : 0;
+        return autoTrackStyles[index];
+    }
 
     size_t untranslatedIndex = static_cast<size_t>(untranslatedIndexAsInt);
     if (untranslatedIndex >= explicitTracksCount)
-        return autoTrackSize;
+        return autoTrackStyles[(untranslatedIndex - explicitTracksCount) % autoTrackStylesSize];
 
     if (LIKELY(!autoRepeatTracksCount) || untranslatedIndex < insertionPoint)
         return trackStyles[untranslatedIndex];

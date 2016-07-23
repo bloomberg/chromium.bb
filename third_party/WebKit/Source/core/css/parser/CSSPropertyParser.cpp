@@ -3474,13 +3474,20 @@ static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParser
     return true;
 }
 
-static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool allowRepeat = true)
+enum TrackListType { GridTemplate, GridTemplateNoRepeat, GridAuto };
+
+static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackListType trackListType)
 {
+    bool allowGridLineNames = trackListType != GridAuto;
     CSSValueList* values = CSSValueList::createSpaceSeparated();
     CSSGridLineNamesValue* lineNames = consumeGridLineNames(range);
-    if (lineNames)
+    if (lineNames) {
+        if (!allowGridLineNames)
+            return nullptr;
         values->append(*lineNames);
+    }
 
+    bool allowRepeat = trackListType == GridTemplate;
     bool seenAutoRepeat = false;
     bool allTracksAreFixedSized = true;
     do {
@@ -3503,8 +3510,11 @@ static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode 
         if (seenAutoRepeat && !allTracksAreFixedSized)
             return nullptr;
         lineNames = consumeGridLineNames(range);
-        if (lineNames)
+        if (lineNames) {
+            if (!allowGridLineNames)
+                return nullptr;
             values->append(*lineNames);
+        }
     } while (!range.atEnd() && range.peek().type() != DelimiterToken);
     return values;
 }
@@ -3513,7 +3523,7 @@ static CSSValue* consumeGridTemplatesRowsOrColumns(CSSParserTokenRange& range, C
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
-    return consumeGridTrackList(range, cssParserMode);
+    return consumeGridTrackList(range, cssParserMode, GridTemplate);
 }
 
 static CSSValue* consumeGridTemplateAreas(CSSParserTokenRange& range)
@@ -3950,7 +3960,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return consumeGridTrackSize(m_range, m_context.mode());
+        return consumeGridTrackList(m_range, m_context.mode(), GridAuto);
     case CSSPropertyGridTemplateColumns:
     case CSSPropertyGridTemplateRows:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -4877,7 +4887,7 @@ bool CSSPropertyParser::consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID 
     if (!m_range.atEnd()) {
         if (!consumeSlashIncludingWhitespace(m_range))
             return false;
-        columnsValue = consumeGridTrackList(m_range, m_context.mode(), false);
+        columnsValue = consumeGridTrackList(m_range, m_context.mode(), GridTemplateNoRepeat);
         if (!columnsValue || !m_range.atEnd())
             return false;
     } else {
@@ -4907,7 +4917,7 @@ bool CSSPropertyParser::consumeGridTemplateShorthand(CSSPropertyID shorthandId, 
 
     // 2- <grid-template-rows> / <grid-template-columns>
     if (!rowsValue)
-        rowsValue = consumeGridTrackList(m_range, m_context.mode());
+        rowsValue = consumeGridTrackList(m_range, m_context.mode(), GridTemplate);
 
     if (rowsValue) {
         if (!consumeSlashIncludingWhitespace(m_range))
@@ -4957,11 +4967,11 @@ bool CSSPropertyParser::consumeGridShorthand(bool important)
     CSSValue* autoRowsValue = nullptr;
 
     if (!m_range.atEnd()) {
-        autoRowsValue = consumeGridTrackSize(m_range, m_context.mode());
+        autoRowsValue = consumeGridTrackList(m_range, m_context.mode(), GridAuto);
         if (!autoRowsValue)
             return false;
         if (consumeSlashIncludingWhitespace(m_range)) {
-            autoColumnsValue = consumeGridTrackSize(m_range, m_context.mode());
+            autoColumnsValue = consumeGridTrackList(m_range, m_context.mode(), GridAuto);
             if (!autoColumnsValue)
                 return false;
         }
