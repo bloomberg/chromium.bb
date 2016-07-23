@@ -516,7 +516,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   SetInt64(prefs::kHttpOriginalContentLength, kOriginalLength);
   SetInt64(prefs::kHttpReceivedContentLength, kReceivedLength);
 
-  stats_value.reset(compression_stats()->HistoricNetworkStatsInfoToValue());
+  stats_value = compression_stats()->HistoricNetworkStatsInfoToValue();
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
 }
@@ -535,7 +535,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   SetInt64(prefs::kHttpOriginalContentLength, kOriginalLength);
   SetInt64(prefs::kHttpReceivedContentLength, kReceivedLength);
 
-  stats_value.reset(compression_stats()->HistoricNetworkStatsInfoToValue());
+  stats_value = compression_stats()->HistoricNetworkStatsInfoToValue();
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
 }

@@ -271,8 +271,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
             context_.network_delegate());
 
     std::unique_ptr<base::DictionaryValue> session_network_stats_info =
-        base::DictionaryValue::From(base::WrapUnique(
-            drp_network_delegate->SessionNetworkStatsInfoToValue()));
+        base::DictionaryValue::From(
+            drp_network_delegate->SessionNetworkStatsInfoToValue());
     EXPECT_TRUE(session_network_stats_info);
 
     std::string string_value;
@@ -655,7 +655,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
     bool lofi_enabled_through_switch;
     bool auto_lofi_enabled;
     int expected_count;
-
   } tests[] = {
       {
           // Lo-Fi disabled.

@@ -534,19 +534,19 @@ void DataReductionProxyCompressionStats::WritePrefs() {
   }
 }
 
-base::Value*
+std::unique_ptr<base::Value>
 DataReductionProxyCompressionStats::HistoricNetworkStatsInfoToValue() {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64_t total_received = GetInt64(prefs::kHttpReceivedContentLength);
   int64_t total_original = GetInt64(prefs::kHttpOriginalContentLength);
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
   dict->SetString("historic_received_content_length",
                   base::Int64ToString(total_received));
   dict->SetString("historic_original_content_length",
                   base::Int64ToString(total_original));
-  return dict;
+  return std::move(dict);
 }
 
 int64_t DataReductionProxyCompressionStats::GetLastUpdateTime() {

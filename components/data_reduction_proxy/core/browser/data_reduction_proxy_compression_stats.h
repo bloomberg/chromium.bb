@@ -71,9 +71,8 @@ class DataReductionProxyCompressionStats
                             const std::string& mime_type);
 
   // Creates a |Value| summary of the persistent state of the network session.
-  // The caller is responsible for deleting the returned value.
   // Must be called on the UI thread.
-  base::Value* HistoricNetworkStatsInfoToValue();
+  std::unique_ptr<base::Value> HistoricNetworkStatsInfoToValue();
 
   // Returns the time in milliseconds since epoch that the last update was made
   // to the daily original and received content lengths.

@@ -280,8 +280,8 @@ class DataReductionProxyDelegateTest : public testing::Test {
             context_.network_delegate());
 
     std::unique_ptr<base::DictionaryValue> session_network_stats_info =
-        base::DictionaryValue::From(base::WrapUnique(
-            drp_network_delegate->SessionNetworkStatsInfoToValue()));
+        base::DictionaryValue::From(
+            drp_network_delegate->SessionNetworkStatsInfoToValue());
     EXPECT_TRUE(session_network_stats_info);
 
     std::string string_value;

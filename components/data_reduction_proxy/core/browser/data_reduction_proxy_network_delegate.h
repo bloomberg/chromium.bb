@@ -81,9 +81,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       DataReductionProxyIOData* io_data,
       DataReductionProxyBypassStats* bypass_stats);
 
-  // Creates a |Value| summary of the state of the network session. The caller
-  // is responsible for deleting the returned value.
-  base::Value* SessionNetworkStatsInfoToValue() const;
+  // Creates a base::Value summary of the state of the network session.
+  std::unique_ptr<base::Value> SessionNetworkStatsInfoToValue() const;
 
  private:
   // Resets if Lo-Fi has been used for the last main frame load to false.

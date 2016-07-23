@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -146,15 +147,15 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
   data_reduction_proxy_bypass_stats_ = bypass_stats;
 }
 
-base::Value*
+std::unique_ptr<base::Value>
 DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
   dict->SetString("session_received_content_length",
                   base::Int64ToString(total_received_bytes_));
   dict->SetString("session_original_content_length",
                   base::Int64ToString(total_original_received_bytes_));
-  return dict;
+  return std::move(dict);
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(

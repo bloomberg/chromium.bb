@@ -43,8 +43,8 @@ class ChromeNetLog : public net::NetLog {
   NetLogFileWriter* net_log_file_writer() { return net_log_file_writer_.get(); }
 
   // Returns a Value containing constants needed to load a log file.
-  // Safe to call on any thread.  Caller takes ownership of the returned Value.
-  static base::Value* GetConstants(
+  // Safe to call on any thread.
+  static std::unique_ptr<base::Value> GetConstants(
       const base::CommandLine::StringType& command_line_string,
       const std::string& channel_string);
 

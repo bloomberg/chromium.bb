@@ -41,8 +41,7 @@ class DataReductionProxyEventStore
   // - The proxy configuration
   // - The state of the last secure proxy check response
   // - A stream of the last Data Reduction Proxy related events.
-  // The caller is responsible for deleting the returned value.
-  base::Value* GetSummaryValue() const;
+  std::unique_ptr<base::DictionaryValue> GetSummaryValue() const;
 
   // Adds DATA_REDUCTION_PROXY event with no parameters to the event store.
   void AddEvent(std::unique_ptr<base::Value> event) override;
@@ -75,7 +74,7 @@ class DataReductionProxyEventStore
 
   // A deque of data reduction proxy related events. It is used as a circular
   // buffer to prevent unbounded memory utilization.
-  std::deque<base::Value*> stored_events_;
+  std::deque<std::unique_ptr<base::Value>> stored_events_;
   // Whether the data reduction proxy is enabled or not.
   bool enabled_;
   // The current data reduction proxy configuration.
