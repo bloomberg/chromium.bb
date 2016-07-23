@@ -777,6 +777,16 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
     }
   }
 
+  // Binding different images to depth and stencil attachment points should
+  // return FRAMEBUFFER_UNSUPPORTED.
+  const Attachment* depth_attachment = GetAttachment(GL_DEPTH_ATTACHMENT);
+  const Attachment* stencil_attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
+  if (depth_attachment && stencil_attachment) {
+    if (!depth_attachment->IsSameAttachment(stencil_attachment)) {
+      return GL_FRAMEBUFFER_UNSUPPORTED;
+    }
+  }
+
   // This does not mean the framebuffer is actually complete. It just means our
   // checks passed.
   return GL_FRAMEBUFFER_COMPLETE;

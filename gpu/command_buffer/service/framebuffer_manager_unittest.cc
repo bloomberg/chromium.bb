@@ -39,9 +39,9 @@ const bool kUseDefaultTextures = false;
 class FramebufferManagerTest : public GpuServiceTest {
  public:
   FramebufferManagerTest()
-      : manager_(1, 1, CONTEXT_TYPE_OPENGLES2, NULL),
+      : manager_(1, 1, CONTEXT_TYPE_OPENGLES2, nullptr),
         feature_info_(new FeatureInfo()) {
-    texture_manager_.reset(new TextureManager(NULL,
+    texture_manager_.reset(new TextureManager(nullptr,
                                               feature_info_.get(),
                                               kMaxTextureSize,
                                               kMaxCubemapSize,
@@ -49,7 +49,7 @@ class FramebufferManagerTest : public GpuServiceTest {
                                               kMax3DTextureSize,
                                               kMaxArrayTextureLayers,
                                               kUseDefaultTextures));
-    renderbuffer_manager_.reset(new RenderbufferManager(NULL,
+    renderbuffer_manager_.reset(new RenderbufferManager(nullptr,
                                                         kMaxRenderbufferSize,
                                                         kMaxSamples,
                                                         feature_info_.get()));
@@ -75,14 +75,14 @@ TEST_F(FramebufferManagerTest, Basic) {
   manager_.CreateFramebuffer(kClient1Id, kService1Id);
   // Check framebuffer got created.
   Framebuffer* framebuffer1 = manager_.GetFramebuffer(kClient1Id);
-  ASSERT_TRUE(framebuffer1 != NULL);
+  ASSERT_TRUE(framebuffer1 != nullptr);
   EXPECT_FALSE(framebuffer1->IsDeleted());
   EXPECT_EQ(kService1Id, framebuffer1->service_id());
   GLuint client_id = 0;
   EXPECT_TRUE(manager_.GetClientId(framebuffer1->service_id(), &client_id));
   EXPECT_EQ(kClient1Id, client_id);
   // Check we get nothing for a non-existent framebuffer.
-  EXPECT_TRUE(manager_.GetFramebuffer(kClient2Id) == NULL);
+  EXPECT_TRUE(manager_.GetFramebuffer(kClient2Id) == nullptr);
   // Check trying to a remove non-existent framebuffers does not crash.
   manager_.RemoveFramebuffer(kClient2Id);
   // Check framebuffer gets deleted when last reference is released.
@@ -91,7 +91,7 @@ TEST_F(FramebufferManagerTest, Basic) {
       .RetiresOnSaturation();
   // Check we can't get the framebuffer after we remove it.
   manager_.RemoveFramebuffer(kClient1Id);
-  EXPECT_TRUE(manager_.GetFramebuffer(kClient1Id) == NULL);
+  EXPECT_TRUE(manager_.GetFramebuffer(kClient1Id) == nullptr);
 }
 
 TEST_F(FramebufferManagerTest, Destroy) {
@@ -101,14 +101,14 @@ TEST_F(FramebufferManagerTest, Destroy) {
   manager_.CreateFramebuffer(kClient1Id, kService1Id);
   // Check framebuffer got created.
   Framebuffer* framebuffer1 = manager_.GetFramebuffer(kClient1Id);
-  ASSERT_TRUE(framebuffer1 != NULL);
+  ASSERT_TRUE(framebuffer1 != nullptr);
   EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   manager_.Destroy(true);
   // Check the resources were released.
   framebuffer1 = manager_.GetFramebuffer(kClient1Id);
-  ASSERT_TRUE(framebuffer1 == NULL);
+  ASSERT_TRUE(framebuffer1 == nullptr);
 }
 
 class FramebufferInfoTestBase : public GpuServiceTest {
@@ -122,7 +122,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
                  context_type,
                  new FramebufferCompletenessCache),
         feature_info_(new FeatureInfo()) {
-    texture_manager_.reset(new TextureManager(NULL,
+    texture_manager_.reset(new TextureManager(nullptr,
                                               feature_info_.get(),
                                               kMaxTextureSize,
                                               kMaxCubemapSize,
@@ -130,7 +130,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
                                               kMax3DTextureSize,
                                               kMaxArrayTextureLayers,
                                               kUseDefaultTextures));
-    renderbuffer_manager_.reset(new RenderbufferManager(NULL,
+    renderbuffer_manager_.reset(new RenderbufferManager(nullptr,
                                                         kMaxRenderbufferSize,
                                                         kMaxSamples,
                                                         feature_info_.get()));
@@ -155,7 +155,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     framebuffer_ = manager_.GetFramebuffer(kClient1Id);
-    ASSERT_TRUE(framebuffer_ != NULL);
+    ASSERT_TRUE(framebuffer_ != nullptr);
   }
 
   FramebufferManager manager_;
@@ -181,11 +181,11 @@ const GLuint FramebufferInfoTestBase::kService1Id;
 TEST_F(FramebufferInfoTest, Basic) {
   EXPECT_EQ(kService1Id, framebuffer_->service_id());
   EXPECT_FALSE(framebuffer_->IsDeleted());
-  EXPECT_TRUE(NULL == framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0));
-  EXPECT_TRUE(NULL == framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT));
-  EXPECT_TRUE(NULL == framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_TRUE(nullptr == framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(nullptr == framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(nullptr == framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_TRUE(
-      NULL == framebuffer_->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+      nullptr == framebuffer_->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
@@ -205,6 +205,8 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   const GLuint kRenderbufferService3Id = 335;
   const GLuint kRenderbufferClient4Id = 36;
   const GLuint kRenderbufferService4Id = 336;
+  const GLuint kRenderbufferClient5Id = 37;
+  const GLuint kRenderbufferService5Id = 337;
   const GLsizei kWidth1 = 16;
   const GLsizei kHeight1 = 32;
   const GLenum kFormat1 = GL_RGBA4;
@@ -220,9 +222,13 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   const GLsizei kSamples3 = 0;
   const GLsizei kWidth4 = 16;
   const GLsizei kHeight4 = 32;
-  const GLenum kFormat4 = GL_STENCIL_INDEX8;
+  const GLenum kFormat4 = GL_DEPTH24_STENCIL8;
   const GLsizei kSamples4 = 0;
-  const GLsizei kDifferentSamples4 = 1;
+  const GLsizei kWidth5 = 16;
+  const GLsizei kHeight5 = 32;
+  const GLenum kFormat5 = GL_DEPTH24_STENCIL8;
+  const GLsizei kSamples5 = 0;
+  const GLsizei kDifferentSamples5 = 1;
 
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
@@ -234,9 +240,9 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
 
-  // check adding one attachment
+  // Check adding one attachment.
   framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, renderbuffer1);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
@@ -265,12 +271,12 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_FALSE(framebuffer_->IsCleared());
 
-  // check adding another
+  // Check adding another.
   renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient2Id, kRenderbufferService2Id);
   Renderbuffer* renderbuffer2 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient2Id);
-  ASSERT_TRUE(renderbuffer2 != NULL);
+  ASSERT_TRUE(renderbuffer2 != nullptr);
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer2);
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
@@ -295,7 +301,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->IsCleared());
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
 
-  // check marking them as cleared.
+  // Check marking them as cleared.
   manager_.MarkAttachmentsAsCleared(
       framebuffer_, renderbuffer_manager_.get(), texture_manager_.get());
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
@@ -304,12 +310,12 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
-  // Check adding one that is already cleared.
+  // Add another one to stencil attachment point.
   renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient3Id, kRenderbufferService3Id);
   Renderbuffer* renderbuffer3 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient3Id);
-  ASSERT_TRUE(renderbuffer3 != NULL);
+  ASSERT_TRUE(renderbuffer3 != nullptr);
   renderbuffer_manager_->SetInfo(
       renderbuffer3, kSamples3, kFormat3, kWidth3, kHeight3);
   renderbuffer_manager_->SetCleared(renderbuffer3, true);
@@ -320,11 +326,35 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
             framebuffer_->GetReadBufferInternalFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_TRUE(framebuffer_->HasStencilAttachment());
+  // Binding different images to depth and stencil attachment points should
+  // return FRAMEBUFFER_UNSUPPORTED.
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_UNSUPPORTED),
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
+
+  // Bind a renderbufer in format DEPTH_STENCIL to depth and stencil
+  // attachment points.
+  renderbuffer_manager_->CreateRenderbuffer(
+      kRenderbufferClient4Id, kRenderbufferService4Id);
+  Renderbuffer* renderbuffer4 =
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient4Id);
+  ASSERT_TRUE(renderbuffer4 != nullptr);
+  renderbuffer_manager_->SetInfo(
+      renderbuffer4, kSamples4, kFormat4, kWidth4, kHeight4);
+  renderbuffer_manager_->SetCleared(renderbuffer4, true);
+
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer4);
+  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer4);
+  EXPECT_EQ(static_cast<GLenum>(kFormat1),
+            framebuffer_->GetReadBufferInternalFormat());
+  EXPECT_TRUE(framebuffer_->HasDepthAttachment());
+  EXPECT_TRUE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
-  // Check marking the renderbuffer as unclared.
+  // Check marking the renderbuffer as uncleared.
   renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
@@ -337,7 +367,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
   EXPECT_EQ(kWidth1, attachment->width());
   EXPECT_EQ(kHeight1, attachment->height());
   EXPECT_EQ(kSamples1, attachment->samples());
@@ -352,25 +382,43 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(framebuffer_->IsCleared());
 
-  // Check replacing an attachment
+  // Check replacing one attachment when both depth and stencil attachments
+  // are present.
   renderbuffer_manager_->CreateRenderbuffer(
-      kRenderbufferClient4Id, kRenderbufferService4Id);
-  Renderbuffer* renderbuffer4 =
-      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient4Id);
-  ASSERT_TRUE(renderbuffer4 != NULL);
+      kRenderbufferClient5Id, kRenderbufferService5Id);
+  Renderbuffer* renderbuffer5 =
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient5Id);
+  ASSERT_TRUE(renderbuffer5 != nullptr);
   renderbuffer_manager_->SetInfo(
-      renderbuffer4, kSamples4, kFormat4, kWidth4, kHeight4);
+      renderbuffer5, kSamples5, kFormat5, kWidth5, kHeight5);
 
-  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer4);
+  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer5);
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   attachment = framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT);
-  ASSERT_TRUE(attachment != NULL);
-  EXPECT_EQ(kWidth4, attachment->width());
-  EXPECT_EQ(kHeight4, attachment->height());
-  EXPECT_EQ(kSamples4, attachment->samples());
-  EXPECT_EQ(kFormat4, attachment->internal_format());
+  ASSERT_TRUE(attachment != nullptr);
+  EXPECT_EQ(kWidth5, attachment->width());
+  EXPECT_EQ(kHeight5, attachment->height());
+  EXPECT_EQ(kSamples5, attachment->samples());
+  EXPECT_EQ(kFormat5, attachment->internal_format());
+  EXPECT_FALSE(attachment->cleared());
+  // Binding different images to depth and stencil attachment points should
+  // return FRAMEBUFFER_UNSUPPORTED.
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_UNSUPPORTED),
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
+
+  // Check replacing both depth and stencil attachments.
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer5);
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(framebuffer_->IsCleared());
+
+  attachment = framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT);
+  EXPECT_EQ(kWidth5, attachment->width());
+  EXPECT_EQ(kHeight5, attachment->height());
+  EXPECT_EQ(kSamples5, attachment->samples());
+  EXPECT_EQ(kFormat5, attachment->internal_format());
   EXPECT_FALSE(attachment->cleared());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
@@ -379,49 +427,52 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   ASSERT_FALSE(
       feature_info_->feature_flags().chromium_framebuffer_mixed_samples);
   renderbuffer_manager_->SetInfo(
-      renderbuffer4, kDifferentSamples4, kFormat4, kWidth4, kHeight4);
+      renderbuffer5, kDifferentSamples5, kFormat5, kWidth5, kHeight5);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
   renderbuffer_manager_->SetInfo(
-      renderbuffer4, kSamples4, kFormat4, kWidth4, kHeight4);
+      renderbuffer5, kSamples5, kFormat5, kWidth5, kHeight5);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Check changing an attachment.
   renderbuffer_manager_->SetInfo(
-      renderbuffer4, kSamples4, kFormat4, kWidth4 + 1, kHeight4);
+      renderbuffer5, kSamples5, kFormat5, kWidth5 + 1, kHeight5);
 
   attachment = framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT);
-  ASSERT_TRUE(attachment != NULL);
-  EXPECT_EQ(kWidth4 + 1, attachment->width());
-  EXPECT_EQ(kHeight4, attachment->height());
-  EXPECT_EQ(kSamples4, attachment->samples());
-  EXPECT_EQ(kFormat4, attachment->internal_format());
+  ASSERT_TRUE(attachment != nullptr);
+  EXPECT_EQ(kWidth5 + 1, attachment->width());
+  EXPECT_EQ(kHeight5, attachment->height());
+  EXPECT_EQ(kSamples5, attachment->samples());
+  EXPECT_EQ(kFormat5, attachment->internal_format());
   EXPECT_FALSE(attachment->cleared());
   EXPECT_FALSE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Check removing it.
-  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, NULL);
+  // Restore the width of renderbuffer5 to avoid INCOMPLETE_DIMENSIONS_EXT.
+  renderbuffer_manager_->SetInfo(
+      renderbuffer5, kSamples5, kFormat5, kWidth5, kHeight5);
+
+  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, nullptr);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetReadBufferInternalFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
-
-  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Remove depth, Set color to 0 size.
-  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, NULL);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, nullptr);
   renderbuffer_manager_->SetInfo(renderbuffer1, kSamples1, kFormat1, 0, 0);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Remove color.
-  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, NULL);
+  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 }
@@ -463,7 +514,7 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
   texture_manager_->CreateTexture(kTextureClient1Id, kTextureService1Id);
   scoped_refptr<TextureRef> texture1(
       texture_manager_->GetTexture(kTextureClient1Id));
-  ASSERT_TRUE(texture1.get() != NULL);
+  ASSERT_TRUE(texture1.get() != nullptr);
 
   // check adding one attachment
   framebuffer_->AttachTexture(
@@ -501,7 +552,7 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
 
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
   EXPECT_EQ(kWidth1, attachment->width());
   EXPECT_EQ(kHeight1, attachment->height());
   EXPECT_EQ(kSamples1, attachment->samples());
@@ -512,7 +563,7 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
   texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_->GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2.get() != NULL);
+  ASSERT_TRUE(texture2.get() != nullptr);
   texture_manager_->SetTarget(texture2.get(), GL_TEXTURE_2D);
   texture_manager_->SetLevelInfo(texture2.get(), GL_TEXTURE_2D, kLevel2,
                                  kFormat2, kWidth2, kHeight2, kDepth, kBorder,
@@ -527,7 +578,7 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
   EXPECT_TRUE(framebuffer_->IsCleared());
 
   attachment = framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
   EXPECT_EQ(kWidth2, attachment->width());
   EXPECT_EQ(kHeight2, attachment->height());
   EXPECT_EQ(kSamples2, attachment->samples());
@@ -539,7 +590,7 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
                                  kFormat3, kWidth3, kHeight3, kDepth, kBorder,
                                  kFormat3, kType, gfx::Rect());
   attachment = framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
   EXPECT_EQ(kWidth3, attachment->width());
   EXPECT_EQ(kHeight3, attachment->height());
   EXPECT_EQ(kSamples3, attachment->samples());
@@ -559,8 +610,8 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
   // Check removing it.
-  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0, 0);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, nullptr, 0, 0, 0);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == nullptr);
   EXPECT_EQ(static_cast<GLenum>(0),
             framebuffer_->GetReadBufferInternalFormat());
 
@@ -690,13 +741,13 @@ TEST_F(FramebufferInfoTest, ClearPartiallyClearedAttachments) {
   texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
   scoped_refptr<TextureRef> texture(
       texture_manager_->GetTexture(kTextureClientId));
-  ASSERT_TRUE(texture.get() != NULL);
+  ASSERT_TRUE(texture.get() != nullptr);
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_2D, 0, 0);
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
 
   // Not cleared at all.
   texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4,
@@ -774,13 +825,13 @@ TEST_F(FramebufferInfoTest, Clear3DTextureAttachments) {
   texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
   scoped_refptr<TextureRef> texture(
       texture_manager_->GetTexture(kTextureClientId));
-  ASSERT_TRUE(texture.get() != NULL);
+  ASSERT_TRUE(texture.get() != nullptr);
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_3D);
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_3D, 0, 0);
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
 
   const int kWidth = 4;
   const int kHeight = 8;
@@ -839,7 +890,7 @@ TEST_F(FramebufferInfoTest, Clear3DOutsideRenderableRange) {
   texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
   scoped_refptr<TextureRef> texture(
       texture_manager_->GetTexture(kTextureClientId));
-  ASSERT_TRUE(texture.get() != NULL);
+  ASSERT_TRUE(texture.get() != nullptr);
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_3D);
   // Set base level to 1 but attach level 0.
   TestHelper::SetTexParameteriWithExpectations(gl_.get(),
@@ -853,7 +904,7 @@ TEST_F(FramebufferInfoTest, Clear3DOutsideRenderableRange) {
       GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_3D, 0, 0);
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
 
   // Level 0 is not cleared at all.
   texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_3D, 0, GL_RGBA, 4,
@@ -888,13 +939,13 @@ TEST_F(FramebufferInfoTest, ClearIntegerTextureAttachments) {
   texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
   scoped_refptr<TextureRef> texture(
       texture_manager_->GetTexture(kTextureClientId));
-  ASSERT_TRUE(texture.get() != NULL);
+  ASSERT_TRUE(texture.get() != nullptr);
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_2D, 0, 0);
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
 
   const int kWidth = 4;
   const int kHeight = 8;
@@ -955,7 +1006,7 @@ TEST_F(FramebufferInfoTest, ClearIntegerOutsideRenderableRange) {
   texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
   scoped_refptr<TextureRef> texture(
       texture_manager_->GetTexture(kTextureClientId));
-  ASSERT_TRUE(texture.get() != NULL);
+  ASSERT_TRUE(texture.get() != nullptr);
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
   // Set base level to 1 but attach level 0.
   TestHelper::SetTexParameteriWithExpectations(gl_.get(),
@@ -969,7 +1020,7 @@ TEST_F(FramebufferInfoTest, ClearIntegerOutsideRenderableRange) {
       GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_2D, 0, 0);
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
-  ASSERT_TRUE(attachment != NULL);
+  ASSERT_TRUE(attachment != nullptr);
 
   // Level 0 is not cleared at all.
   texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA8UI, 4,
@@ -1264,7 +1315,7 @@ TEST_F(FramebufferInfoFloatTest, AttachFloatTexture) {
   texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
   scoped_refptr<TextureRef> texture(
       texture_manager_->GetTexture(kTextureClientId));
-  ASSERT_TRUE(texture.get() != NULL);
+  ASSERT_TRUE(texture.get() != nullptr);
 
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture.get(), kTarget, kLevel, kSamples);
@@ -1291,29 +1342,29 @@ TEST_F(FramebufferInfoTest, UnbindRenderbuffer) {
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
   renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient2Id, kRenderbufferService2Id);
   Renderbuffer* renderbuffer2 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient2Id);
-  ASSERT_TRUE(renderbuffer2 != NULL);
+  ASSERT_TRUE(renderbuffer2 != nullptr);
 
   // Attach to 2 attachment points.
   framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, renderbuffer1);
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer1);
   // Check they were attached.
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != nullptr);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != nullptr);
   // Unbind unattached renderbuffer.
   framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer2);
   // Should be no-op.
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != nullptr);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != nullptr);
   // Unbind renderbuffer.
   framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer1);
   // Check they were detached
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == nullptr);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == nullptr);
 }
 
 TEST_F(FramebufferInfoTest, UnbindTexture) {
@@ -1328,11 +1379,11 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   texture_manager_->CreateTexture(kTextureClient1Id, kTextureService1Id);
   scoped_refptr<TextureRef> texture1(
       texture_manager_->GetTexture(kTextureClient1Id));
-  ASSERT_TRUE(texture1.get() != NULL);
+  ASSERT_TRUE(texture1.get() != nullptr);
   texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_->GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2.get() != NULL);
+  ASSERT_TRUE(texture2.get() != nullptr);
 
   // Attach to 2 attachment points.
   framebuffer_->AttachTexture(
@@ -1340,18 +1391,18 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   framebuffer_->AttachTexture(
       GL_DEPTH_ATTACHMENT, texture1.get(), kTarget1, kLevel1, kSamples1);
   // Check they were attached.
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != nullptr);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != nullptr);
   // Unbind unattached texture.
   framebuffer_->UnbindTexture(kTarget1, texture2.get());
   // Should be no-op.
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != nullptr);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != nullptr);
   // Unbind texture.
   framebuffer_->UnbindTexture(kTarget1, texture1.get());
   // Check they were detached
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == nullptr);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == nullptr);
 }
 
 TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
@@ -1367,11 +1418,11 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
   texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_->GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2.get() != NULL);
+  ASSERT_TRUE(texture2.get() != nullptr);
 
   // Check MarkAsComlete marks as complete.
   manager_.MarkAsComplete(framebuffer_);
@@ -1413,11 +1464,11 @@ TEST_F(FramebufferInfoTest, GetStatus) {
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
   texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_->GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2.get() != NULL);
+  ASSERT_TRUE(texture2.get() != nullptr);
   texture_manager_->SetTarget(texture2.get(), GL_TEXTURE_2D);
 
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
@@ -1509,7 +1560,7 @@ class FramebufferInfoES3Test : public FramebufferInfoTestBase {
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     framebuffer_ = manager_.GetFramebuffer(kClient1Id);
-    ASSERT_TRUE(framebuffer_ != NULL);
+    ASSERT_TRUE(framebuffer_ != nullptr);
   }
 };
 
@@ -1537,7 +1588,7 @@ TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
       kRenderbufferClient1Id, kRenderbufferService1Id);
   Renderbuffer* renderbuffer1 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != nullptr);
   renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, renderbuffer1);
@@ -1546,7 +1597,7 @@ TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
       kRenderbufferClient2Id, kRenderbufferService2Id);
   Renderbuffer* renderbuffer2 =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient2Id);
-  ASSERT_TRUE(renderbuffer2 != NULL);
+  ASSERT_TRUE(renderbuffer2 != nullptr);
   renderbuffer_manager_->SetInfo(
       renderbuffer2, kSamples2, kFormat2, kWidth2, kHeight2);
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer2);
@@ -1604,7 +1655,7 @@ TEST_F(FramebufferInfoES3Test, ReadBuffer) {
       kRenderbufferClientId, kRenderbufferServiceId);
   Renderbuffer* renderbuffer =
       renderbuffer_manager_->GetRenderbuffer(kRenderbufferClientId);
-  ASSERT_TRUE(renderbuffer != NULL);
+  ASSERT_TRUE(renderbuffer != nullptr);
   framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT1, renderbuffer);
   EXPECT_TRUE(framebuffer_->GetReadBufferAttachment());
 }
