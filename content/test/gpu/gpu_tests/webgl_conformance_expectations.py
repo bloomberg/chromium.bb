@@ -726,6 +726,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'debug', ('intel', 0x412)], bug=604140)
 
     # Android failures
+    self.Fail('conformance/glsl/bugs/sequence-operator-evaluation-order.html',
+        ['android'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/constants.html',
         ['android'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/conversions.html',
