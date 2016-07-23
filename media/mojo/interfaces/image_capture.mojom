@@ -38,6 +38,12 @@ struct PhotoSettings {
   uint32 height;
 };
 
+// This is a mojo move-only equivalent of a Blob, i.e. MIME type and Data.
+struct Blob {
+  string mime_type;
+  array<uint8> data;
+};
+
 // |source_id| is the renderer-side UUID identifier of the image capture device.
 interface ImageCapture
 {
@@ -51,9 +57,9 @@ interface ImageCapture
     SetOptions(string source_id, PhotoSettings settings)
         => (bool success);
 
-    // Takes a Photo from the given |source_id|, returning it encoded in |data|
-    // with the format specified in |mime_type|.
+    // Takes a Photo from the given |source_id|, returning it encoded in |blob|
+    // with the format specified in its |mime_type|.
     // https://w3c.github.io/mediacapture-image/index.html#widl-ImageCapture-takePhoto-Promise-Blob
     TakePhoto(string source_id)
-        => (string mime_type, array<uint8> data);
+        => (Blob blob);
 };

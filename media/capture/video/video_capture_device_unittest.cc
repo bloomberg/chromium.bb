@@ -145,22 +145,20 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
 class MockImageCaptureClient : public base::RefCounted<MockImageCaptureClient> {
  public:
   // GMock doesn't support move-only arguments, so we use this forward method.
-  void DoOnPhotoTaken(const std::string& mime_type,
-                      const std::vector<uint8_t>& data) {
-    EXPECT_STREQ("image/jpeg", mime_type.c_str());
-    ASSERT_GT(data.size(), 4u);
+  void DoOnPhotoTaken(mojom::BlobPtr blob) {
+    EXPECT_STREQ("image/jpeg", blob->mime_type.c_str());
+    ASSERT_GT(blob->data.size(), 4u);
     // Check some bytes that univocally identify |data| as a JPEG File.
     // https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format#File_format_structure
-    EXPECT_EQ(0xFF, data[0]);  // First SOI byte
-    EXPECT_EQ(0xD8, data[1]);  // Second SOI byte
-    EXPECT_EQ(0xFF, data[2]);  // First JFIF-APP0 byte
-    EXPECT_EQ(0xE0, data[3]);  // Second JFIF-APP0 byte
+    EXPECT_EQ(0xFF, blob->data[0]);  // First SOI byte
+    EXPECT_EQ(0xD8, blob->data[1]);  // Second SOI byte
+    EXPECT_EQ(0xFF, blob->data[2]);  // First JFIF-APP0 byte
+    EXPECT_EQ(0xE0, blob->data[3]);  // Second JFIF-APP0 byte
     OnCorrectPhotoTaken();
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
   MOCK_METHOD1(OnTakePhotoFailure,
-               void(const base::Callback<void(const std::string&,
-                                              const std::vector<uint8_t>&)>&));
+               void(const base::Callback<void(mojom::BlobPtr)>&));
 
  private:
   friend class base::RefCounted<MockImageCaptureClient>;

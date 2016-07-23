@@ -61,7 +61,7 @@ private:
 
     void onCapabilities(ScriptPromiseResolver*, media::mojom::blink::PhotoCapabilitiesPtr);
     void onSetOptions(ScriptPromiseResolver*, bool);
-    void onTakePhoto(ScriptPromiseResolver*, const String& mimeType, const Vector<uint8_t>& data);
+    void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
     void onServiceConnectionError();
 
     Member<MediaStreamTrack> m_streamTrack;

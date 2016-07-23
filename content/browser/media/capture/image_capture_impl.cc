@@ -51,19 +51,15 @@ void RunFailedSetOptionsCallback(
 
 void RunTakePhotoCallbackOnUIThread(
     const ImageCaptureImpl::TakePhotoCallback& callback,
-    const std::string& mime_type,
-    const std::vector<uint8_t>& data) {
-  // TODO(mcasas): Use a mojo typemapping instead of const_cast to avoid copying
-  // |data|, https://crbug.com/630040.
+    media::mojom::BlobPtr blob) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, mime_type,
-                 base::Passed(const_cast<std::vector<uint8_t>*>(&data))));
+      base::Bind(callback, base::Passed(std::move(blob))));
 }
 
 void RunFailedTakePhotoCallback(const ImageCaptureImpl::TakePhotoCallback& cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cb.Run("", std::vector<uint8_t>());
+  cb.Run(media::mojom::Blob::New());
 }
 
 void GetCapabilitiesOnIOThread(

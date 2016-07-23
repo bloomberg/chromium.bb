@@ -101,14 +101,15 @@ void DoTakeFakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
   DrawPacman(true /* use_argb */, buffer.get(), elapsed_time, fake_capture_rate,
              capture_format.frame_size, zoom);
 
-  std::vector<uint8_t> encoded_data;
+  mojom::BlobPtr blob = mojom::Blob::New();
   const bool result = gfx::PNGCodec::Encode(
       buffer.get(), gfx::PNGCodec::FORMAT_RGBA, capture_format.frame_size,
       capture_format.frame_size.width() * 4, true /* discard_transparency */,
-      std::vector<gfx::PNGCodec::Comment>(), &encoded_data);
+      std::vector<gfx::PNGCodec::Comment>(), &blob->data);
   DCHECK(result);
 
-  callback.Run("image/png", encoded_data);
+  blob->mime_type = "image/png";
+  callback.Run(std::move(blob));
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,

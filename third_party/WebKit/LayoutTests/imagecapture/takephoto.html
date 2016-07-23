@@ -29,7 +29,9 @@ async_test(function(t) {
       return capturer.takePhoto();
     })
     .then(blob => {
-      assert_true(blob.size > 0);
+      // JS Blob is almost-opaque, can only check |type| and |size|.
+      assert_equals(blob.type, 'image/cat');
+      assert_equals(blob.size, 2);
       t.done();
     })
     .catch(error => {

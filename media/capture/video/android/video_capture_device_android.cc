@@ -339,10 +339,10 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
     return;
   }
 
-  std::vector<uint8_t> native_data;
-  base::android::JavaByteArrayToByteVector(env, data.obj(), &native_data);
-
-  cb->Run(std::string(native_data.empty() ? "" : "image/jpeg"), native_data);
+  mojom::BlobPtr blob = mojom::Blob::New();
+  base::android::JavaByteArrayToByteVector(env, data.obj(), &blob->data);
+  blob->mime_type = blob->data.empty() ? "" : "image/jpeg";
+  cb->Run(std::move(blob));
 
   photo_callbacks_.erase(reference_it);
 }

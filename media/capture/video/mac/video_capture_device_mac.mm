@@ -444,8 +444,10 @@ void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,
     return;
   }
 
-  photo_callback_->Run(
-      mime_type, std::vector<uint8_t>(image_data, image_data + image_length));
+  mojom::BlobPtr blob = mojom::Blob::New();
+  blob->data.assign(image_data, image_data + image_length);
+  blob->mime_type = mime_type;
+  photo_callback_->Run(std::move(blob));
   photo_callback_.reset();
 }
 

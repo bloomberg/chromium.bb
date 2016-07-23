@@ -151,22 +151,20 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
                void(const base::Callback<void(bool)>&));
 
   // GMock doesn't support move-only arguments, so we use this forward method.
-  void DoOnPhotoTaken(const std::string& mime_type,
-                      const std::vector<uint8_t>& data) {
+  void DoOnPhotoTaken(mojom::BlobPtr blob) {
     // Only PNG images are supported right now.
-    EXPECT_STREQ("image/png", mime_type.c_str());
+    EXPECT_STREQ("image/png", blob->mime_type.c_str());
     // Not worth decoding the incoming data. Just check that the header is PNG.
     // http://www.libpng.org/pub/png/spec/1.2/PNG-Rationale.html#R.PNG-file-signature
-    ASSERT_GT(data.size(), 4u);
-    EXPECT_EQ('P', data[1]);
-    EXPECT_EQ('N', data[2]);
-    EXPECT_EQ('G', data[3]);
+    ASSERT_GT(blob->data.size(), 4u);
+    EXPECT_EQ('P', blob->data[1]);
+    EXPECT_EQ('N', blob->data[2]);
+    EXPECT_EQ('G', blob->data[3]);
     OnCorrectPhotoTaken();
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
   MOCK_METHOD1(OnTakePhotoFailure,
-               void(const base::Callback<void(const std::string&,
-                                              const std::vector<uint8_t>&)>&));
+               void(const base::Callback<void(mojom::BlobPtr)>&));
 
  private:
   friend class base::RefCounted<ImageCaptureClient>;

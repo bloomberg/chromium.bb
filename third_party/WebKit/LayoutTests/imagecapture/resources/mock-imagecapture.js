@@ -40,8 +40,8 @@ let mockImageCaptureReady = define(
     }
 
     takePhoto(source_id) {
-      return Promise.resolve({ mime_type : 'image/cat',
-                               data : "(,,,)=(^.^)=(,,,)" });
+      return Promise.resolve({ blob : { mime_type : 'image/cat',
+                                        data : new Array(2) } });
     }
 
     capabilities() {

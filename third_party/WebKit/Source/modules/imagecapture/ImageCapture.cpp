@@ -230,15 +230,16 @@ void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result)
     m_serviceRequests.remove(resolver);
 }
 
-void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, const String& mimeType, const Vector<uint8_t>& data)
+void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, media::mojom::blink::BlobPtr blob)
 {
     if (!m_serviceRequests.contains(resolver))
         return;
 
-    if (data.isEmpty())
+    // TODO(mcasas): Should be using a mojo::StructTraits.
+    if (blob->data.isEmpty())
         resolver->reject(DOMException::create(UnknownError, "platform error"));
     else
-        resolver->resolve(Blob::create(data.data(), data.size(), mimeType));
+        resolver->resolve(Blob::create(blob->data.data(), blob->data.size(), blob->mime_type));
     m_serviceRequests.remove(resolver);
 }
 
