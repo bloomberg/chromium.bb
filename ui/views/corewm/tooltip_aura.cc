@@ -29,12 +29,18 @@ namespace {
 // be wrapped.
 const int kTooltipMaxWidthPixels = 400;
 
-// Corner radius of tooltip background used with Material Design.
-const float kTooltipCornerRadius = 2.f;
-
 // FIXME: get cursor offset from actual cursor size.
 const int kCursorOffsetX = 10;
 const int kCursorOffsetY = 15;
+
+// TODO(varkha): Update if native widget can be transparent on Linux.
+bool CanUseTranslucentTooltipWidget() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return false;
+#else
+  return ui::MaterialDesignController::IsModeMaterial();
+#endif
+}
 
 // Creates a widget of type TYPE_TOOLTIP
 views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
@@ -47,10 +53,10 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
   DCHECK(params.context);
   params.keep_on_top = true;
   params.accept_events = false;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
+  if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  if (ui::MaterialDesignController::IsModeMaterial())
     params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  }
   widget->Init(params);
   return widget;
 }
@@ -119,8 +125,10 @@ class TooltipAura::TooltipView : public views::View {
   }
 
   void SetBackgroundColor(SkColor background_color) {
+    // Corner radius of tooltip background used with Material Design.
+    const float kTooltipCornerRadius = 2.f;
     views::Background* background =
-        ui::MaterialDesignController::IsModeMaterial()
+        CanUseTranslucentTooltipWidget()
             ? views::Background::CreateBackgroundPainter(
                   true, views::Painter::CreateSolidRoundRectPainter(
                             background_color, kTooltipCornerRadius))
