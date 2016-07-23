@@ -105,6 +105,16 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         }
     }
 
+    private static void triggerApplicationStateChange(
+            final RegistrationPolicyApplicationStatus policy, final int applicationState) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                policy.onApplicationStateChange(applicationState);
+            }
+        });
+    }
+
     /**
      * Mocks out calls to the ConnectivityManager.
      */
@@ -462,13 +472,13 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     public void testNetworkChangeNotifierRegistersForIntents() throws InterruptedException {
         RegistrationPolicyApplicationStatus policy =
                 (RegistrationPolicyApplicationStatus) mReceiver.getRegistrationPolicy();
-        policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(mReceiver.isReceiverRegisteredForTesting());
 
-        policy.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_PAUSED_ACTIVITIES);
         assertFalse(mReceiver.isReceiverRegisteredForTesting());
 
-        policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(mReceiver.isReceiverRegisteredForTesting());
     }
 
@@ -606,14 +616,14 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // Pretend we got moved to the background.
         final RegistrationPolicyApplicationStatus policy =
                 (RegistrationPolicyApplicationStatus) mReceiver.getRegistrationPolicy();
-        policy.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_PAUSED_ACTIVITIES);
         // Change the state.
         mConnectivityDelegate.setActiveNetworkExists(true);
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
         // The NetworkChangeNotifierAutoDetect doesn't receive any notification while we are in the
         // background, but when we get back to the foreground the state changed should be detected
         // and a notification sent.
-        policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(observer.hasReceivedNotification());
     }
 
@@ -840,7 +850,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         RegistrationPolicyApplicationStatus policy =
                 (RegistrationPolicyApplicationStatus) ncn.getRegistrationPolicy();
-        policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(ncn.isReceiverRegisteredForTesting());
 
         // Find NetworkChangeNotifierAutoDetect's NetworkCallback, which should have been registered
@@ -865,9 +875,9 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         // Simulate app backgrounding then foregrounding.
         assertTrue(ncn.isReceiverRegisteredForTesting());
-        policy.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_PAUSED_ACTIVITIES);
         assertFalse(ncn.isReceiverRegisteredForTesting());
-        policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        triggerApplicationStateChange(policy, ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(ncn.isReceiverRegisteredForTesting());
         // Verify network list purged.
         observer.assertLastChange(ChangeType.PURGE_LIST, NetId.INVALID);

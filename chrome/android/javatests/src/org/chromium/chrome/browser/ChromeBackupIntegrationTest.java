@@ -13,6 +13,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -91,7 +92,13 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
         MockAccountManager accountManager =
                 new MockAccountManager(mTargetContext, getInstrumentation().getContext(), account);
         AccountManagerHelper.overrideAccountManagerHelperForTests(mTargetContext, accountManager);
-        AccountIdProvider.setInstanceForTest(new MockAccountIdProvider());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                AccountIdProvider.setInstanceForTest(new MockAccountIdProvider());
+            }
+        });
     }
 
     @SmallTest
