@@ -35,7 +35,8 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoNavigation) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       DISABLED_NewPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -51,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       SamePageNavigation) {
+                       DISABLED_SamePageNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -66,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       SameUrlNavigation) {
+                       DISABLED_SameUrlNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
