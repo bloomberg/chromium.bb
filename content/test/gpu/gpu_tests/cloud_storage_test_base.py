@@ -96,6 +96,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
     self.vendor_string = None
     self.device_string = None
     self.msaa = False
+    self.model_name = None
 
   ###
   ### Routines working with the local disk (only used for local
@@ -165,6 +166,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
           system_info.gpu.driver_bug_workarounds) or
         ('disable_multisample_render_to_texture' in
           system_info.gpu.driver_bug_workarounds))
+    self.model_name = system_info.model_name
 
   def _FormatGpuInfo(self, tab):
     self._ComputeGpuInfo(tab)
@@ -173,9 +175,14 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
       return '%s_%04x_%04x%s' % (
         self.options.os_type, self.vendor_id, self.device_id, msaa_string)
     else:
-      return '%s_%s_%s%s' % (
+      # This is the code path for Android devices. Include the model
+      # name (e.g. "Nexus 9") in the GPU string to disambiguate
+      # multiple devices on the waterfall which might have the same
+      # device string ("NVIDIA Tegra") but different screen
+      # resolutions and device pixel ratios.
+      return '%s_%s_%s_%s%s' % (
         self.options.os_type, self.vendor_string, self.device_string,
-        msaa_string)
+        self.model_name, msaa_string)
 
   def _FormatReferenceImageName(self, img_name, page, tab):
     return '%s_v%s_%s.png' % (
