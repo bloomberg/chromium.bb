@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//remoting/remoting_srcs.gni")
 import("//remoting/remoting_locales.gni")
+import("//remoting/remoting_version.gni")
 
 if (is_win) {
   import("//remoting/host/predefines_win.gni")
@@ -119,6 +120,12 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
     target(app_target_type, "remote_assistance_host") {
       if (is_mac) {
         info_plist = "remote_assistance_host-Info.plist"
+        extra_substitutions = [
+          "BUNDLE_ID=$remote_assistance_host_bundle_id",
+          "VERSION_FULL=$remoting_version_full",
+          "VERSION_SHORT=$remoting_version_short",
+          "MACOSX_DEPLOYMENT_TARGET=10.7",
+        ]
         extra_configs = [
           "//build/config/compiler:wexit_time_destructors",
           "//remoting:version",

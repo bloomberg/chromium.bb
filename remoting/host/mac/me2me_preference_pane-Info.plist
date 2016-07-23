@@ -9,17 +9,17 @@
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>BUNDLE_ID</string>
+	<string>${BUNDLE_ID}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>VERSION_SHORT</string>
+	<string>${VERSION_SHORT}</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>VERSION_FULL</string>
+	<string>${VERSION_FULL}</string>
 	<key>NSMainNibFile</key>
 	<string>me2me_preference_pane</string>
 	<key>NSPrefPaneIconFile</key>

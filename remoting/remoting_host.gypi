@@ -474,8 +474,9 @@
               },
               'xcode_settings': {
                 'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
-                'INFOPLIST_PREPROCESS': 'YES',
-                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+                'VERSION_FULL': '<(version_full)',
+                'VERSION_SHORT': '<(version_short)',
+                'BUNDLE_ID': '<(host_bundle_id)',
               },
               'mac_bundle_resources': [
                 '<(PRODUCT_DIR)/icudtl.dat',
@@ -559,8 +560,9 @@
               },
               'xcode_settings': {
                 'INFOPLIST_FILE': 'host/setup/native_messaging_host-Info.plist',
-                'INFOPLIST_PREPROCESS': 'YES',
-                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+                'VERSION_FULL': '<(version_full)',
+                'VERSION_SHORT': '<(version_short)',
+                'BUNDLE_ID': '<(host_bundle_id)',
               },
               'mac_bundle_resources': [
                 'host/setup/native_messaging_host-Info.plist',
@@ -672,8 +674,9 @@
                   },
                   'xcode_settings': {
                     'INFOPLIST_FILE': 'host/it2me/remote_assistance_host-Info.plist',
-                    'INFOPLIST_PREPROCESS': 'YES',
-                    'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+                    'VERSION_FULL': '<(version_full)',
+                    'VERSION_SHORT': '<(version_short)',
+                    'BUNDLE_ID': '<(host_bundle_id)',
                   },
                   'mac_bundle_resources': [
                     '<(PRODUCT_DIR)/icudtl.dat',

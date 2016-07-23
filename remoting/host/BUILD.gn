@@ -995,6 +995,12 @@ if (enable_me2me_host) {
       if (is_mac) {
         extra_configs = [ "//remoting:version" ]
         info_plist = "remoting_me2me_host-Info.plist"
+        extra_substitutions = [
+          "BUNDLE_ID=$host_bundle_id",
+          "VERSION_FULL=$remoting_version_full",
+          "VERSION_SHORT=$remoting_version_short",
+          "MACOSX_DEPLOYMENT_TARGET=10.7",
+        ]
       } else {
         configs += [ "//remoting:version" ]
       }
@@ -1081,6 +1087,12 @@ if (enable_me2me_host) {
       if (is_mac) {
         info_plist = "setup/native_messaging_host-Info.plist"
         extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+        extra_substitutions = [
+          "BUNDLE_ID=$native_messaging_host_bundle_id",
+          "VERSION_FULL=$remoting_version_full",
+          "VERSION_SHORT=$remoting_version_short",
+          "MACOSX_DEPLOYMENT_TARGET=10.7",
+        ]
       } else {
         configs += [ "//build/config/compiler:wexit_time_destructors" ]
       }
@@ -1416,6 +1428,12 @@ if (enable_me2me_host) {
 
     mac_app_bundle("remoting_host_uninstaller") {
       info_plist = _uninstaller_plist
+      extra_substitutions = [
+        "BUNDLE_ID=$uninstaller_bundle_id",
+        "VERSION_FULL=$remoting_version_full",
+        "VERSION_SHORT=$remoting_version_short",
+        "MACOSX_DEPLOYMENT_TARGET=10.7",
+      ]
 
       defines = [
         "HOST_BUNDLE_NAME=\"" + host_bundle_name + "\"",
@@ -1472,7 +1490,7 @@ if (enable_me2me_host) {
       deps = [
         ":remoting_host_prefpane",
         ":remoting_host_prefpane_bundle_data",
-        ":remoting_host_prefpane_plist",
+        ":remoting_host_prefpane_plist_bundle_data",
         ":remoting_host_prefpane_resources",
         ":remoting_host_prefpane_xibs",
         ":remoting_infoplist_strings",
@@ -1537,12 +1555,24 @@ if (enable_me2me_host) {
       }
     }
 
-    bundle_data("remoting_host_prefpane_plist") {
-      sources = [
-        "mac/me2me_preference_pane-Info.plist",
+    mac_info_plist("remoting_host_prefpane_plist") {
+      info_plist = "mac/me2me_preference_pane-Info.plist"
+      extra_substitutions = [
+        "BUNDLE_ID=$prefpane_bundle_id",
+        "VERSION_FULL=$remoting_version_full",
+        "VERSION_SHORT=$remoting_version_short",
+        "MACOSX_DEPLOYMENT_TARGET=10.7",
       ]
+      executable_name = "remoting_host_prefpane"
+    }
+
+    bundle_data("remoting_host_prefpane_plist_bundle_data") {
+      sources = get_target_outputs(":remoting_host_prefpane_plist")
       outputs = [
         "{{bundle_root_dir}}/Info.plist",
+      ]
+      public_deps = [
+        ":remoting_host_prefpane_plist",
       ]
     }
 

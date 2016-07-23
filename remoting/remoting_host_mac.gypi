@@ -52,8 +52,9 @@
       ],
       'xcode_settings': {
         'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
-        'INFOPLIST_PREPROCESS': 'YES',
-        'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(bundle_id)"',
+        'VERSION_FULL': '<(version_full)',
+        'VERSION_SHORT': '<(version_short)',
+        'BUNDLE_ID': '<(bundle_id)',
       },
       'mac_bundle_resources': [
         'host/installer/mac/uninstaller/remoting_uninstaller.icns',
@@ -212,8 +213,9 @@
       'xcode_settings': {
         'GCC_ENABLE_OBJC_GC': 'supported',
         'INFOPLIST_FILE': 'host/mac/me2me_preference_pane-Info.plist',
-        'INFOPLIST_PREPROCESS': 'YES',
-        'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(bundle_id)"',
+        'VERSION_FULL': '<(version_full)',
+        'VERSION_SHORT': '<(version_short)',
+        'BUNDLE_ID': '<(bundle_id)',
       },
       'mac_bundle_resources': [
         'host/mac/me2me_preference_pane.xib',
