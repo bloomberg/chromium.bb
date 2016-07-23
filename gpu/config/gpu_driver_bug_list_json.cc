@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.77",
+  "version": "8.78",
   "entries": [
     {
       "id": 1,
@@ -1872,6 +1872,40 @@ LONG_STRING_CONST(
       ],
       "features": [
         "disable_transparent_visuals"
+      ]
+    },
+    {
+      "id": 174,
+      "description": "Adreno 4xx support for EXT_multisampled_render_to_texture is buggy on Android 7.0",
+      "cr_bugs": [612474],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "between",
+          "value": "7.0.0",
+          "value2": "7.0.99"
+          // Only initial version of N.
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
+      ]
+    },
+    {
+      "id": 175,
+      "description": "Adreno 5xx support for EXT_multisampled_render_to_texture is buggy on Android < 7.0",
+      "cr_bugs": [612474],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "7.0"
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 5.*",
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
       ]
     }
   ]
