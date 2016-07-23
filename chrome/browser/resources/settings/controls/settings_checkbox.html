@@ -20,6 +20,13 @@
         @apply(--settings-secondary);
       }
 
+      #nonexistent {
+        /* HACK(michaelpg): Inform Polymer that this mixin can set "display". */
+        --settings-secondary-unchecked: {
+          display: block;
+        };
+      }
+
       paper-checkbox:not([checked]) .secondary {
         @apply(--settings-secondary-unchecked);
       }
