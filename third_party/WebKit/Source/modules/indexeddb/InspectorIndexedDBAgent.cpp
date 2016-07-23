@@ -470,9 +470,9 @@ public:
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Context> context = scriptState->context();
         std::unique_ptr<DataEntry> dataEntry = DataEntry::create()
-            .setKey(m_v8Session->wrapObject(context, idbCursor->key(scriptState).v8Value(), indexedDBObjectGroup, false))
-            .setPrimaryKey(m_v8Session->wrapObject(context, idbCursor->primaryKey(scriptState).v8Value(), indexedDBObjectGroup, false))
-            .setValue(m_v8Session->wrapObject(context, idbCursor->value(scriptState).v8Value(), indexedDBObjectGroup, false))
+            .setKey(m_v8Session->wrapObject(context, idbCursor->key(scriptState).v8Value(), indexedDBObjectGroup))
+            .setPrimaryKey(m_v8Session->wrapObject(context, idbCursor->primaryKey(scriptState).v8Value(), indexedDBObjectGroup))
+            .setValue(m_v8Session->wrapObject(context, idbCursor->value(scriptState).v8Value(), indexedDBObjectGroup))
             .build();
         m_result->addItem(std::move(dataEntry));
     }

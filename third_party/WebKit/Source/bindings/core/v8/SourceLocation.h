@@ -18,8 +18,6 @@ class ExecutionContext;
 class TracedValue;
 class V8StackTrace;
 
-namespace protocol { namespace Runtime { class StackTrace; }}
-
 class CORE_EXPORT SourceLocation {
 public:
     // Zero lineNumber and columnNumber mean unknown. Captures current stack trace.
@@ -55,7 +53,7 @@ public:
     String toString() const;
 
     // Could be null when stack trace is unknown.
-    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObject() const;
+    std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const;
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);

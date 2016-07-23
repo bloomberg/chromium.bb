@@ -357,7 +357,7 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     }
 }
 
-void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, std::unique_ptr<protocol::Runtime::RemoteObject>* result)
+void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, std::unique_ptr<protocol::Runtime::API::RemoteObject>* result)
 {
     blink::Animation* animation = assertAnimation(errorString, animationId);
     if (!animation)
@@ -375,7 +375,7 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
 
     ScriptState::Scope scope(scriptState);
     m_v8Session->releaseObjectGroup("animation");
-    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation", false);
+    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
     if (!*result)
         *errorString = "Element not associated with a document.";
 }

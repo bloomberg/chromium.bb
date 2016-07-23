@@ -227,7 +227,7 @@ String16 V8StackTraceImpl::topScriptId() const
     return m_frames[0].m_scriptId;
 }
 
-std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject() const
+std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectImpl() const
 {
     std::unique_ptr<protocol::Array<protocol::Runtime::CallFrame>> frames = protocol::Array<protocol::Runtime::CallFrame>::create();
     for (size_t i = 0; i < m_frames.size(); i++)
@@ -238,7 +238,7 @@ std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorO
     if (!m_description.isEmpty())
         stackTrace->setDescription(m_description);
     if (m_parent)
-        stackTrace->setParent(m_parent->buildInspectorObject());
+        stackTrace->setParent(m_parent->buildInspectorObjectImpl());
     return stackTrace;
 }
 
@@ -249,7 +249,12 @@ std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorO
     std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(debugger, m_contextGroupId, v8::Local<v8::StackTrace>(), V8StackTraceImpl::maxCallStackSizeToCapture);
     if (!fullChain || !fullChain->m_parent)
         return nullptr;
-    return fullChain->m_parent->buildInspectorObject();
+    return fullChain->m_parent->buildInspectorObjectImpl();
+}
+
+std::unique_ptr<protocol::Runtime::API::StackTrace> V8StackTraceImpl::buildInspectorObject() const
+{
+    return buildInspectorObjectImpl();
 }
 
 String16 V8StackTraceImpl::toString() const

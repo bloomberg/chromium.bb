@@ -108,7 +108,7 @@ public:
         if (!inspectedContext)
             return;
         V8DebuggerImpl* debugger = inspectedContext->debugger();
-        std::unique_ptr<V8ConsoleMessage> message = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, arguments, debugger->captureStackTrace(false), inspectedContext);
+        std::unique_ptr<V8ConsoleMessage> message = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, arguments, debugger->captureStackTraceImpl(false), inspectedContext);
         debugger->ensureConsoleMessageStorage(inspectedContext->contextGroupId())->addMessage(std::move(message));
     }
 

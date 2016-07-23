@@ -142,8 +142,8 @@ function test()
             var l = listenersArray[i];
             InspectorTest.log("  type:" + l.type);
             InspectorTest.log("  useCapture:" + l.useCapture);
-            InspectorTest.log("  lineNumber:" + l.location.lineNumber);
-            InspectorTest.log("  columnNumber:" + l.location.columnNumber);
+            InspectorTest.log("  lineNumber:" + l.lineNumber);
+            InspectorTest.log("  columnNumber:" + l.columnNumber);
             if (l.handler) {
                 InspectorTest.log("  handler.type:" + l.handler.type);
                 InspectorTest.log("  handler.className:" + l.handler.className);

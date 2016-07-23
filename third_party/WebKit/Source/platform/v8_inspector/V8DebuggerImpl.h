@@ -120,6 +120,8 @@ public:
     void enableStackCapturingIfNeeded();
     void disableStackCapturingIfNeeded();
     V8ConsoleMessageStorage* ensureConsoleMessageStorage(int contextGroupId);
+    std::unique_ptr<V8StackTraceImpl> createStackTraceImpl(v8::Local<v8::StackTrace>);
+    std::unique_ptr<V8StackTraceImpl> captureStackTraceImpl(bool fullStack);
 
     // V8Debugger implementation
     std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) override;

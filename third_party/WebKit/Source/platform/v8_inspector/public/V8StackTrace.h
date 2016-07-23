@@ -7,7 +7,7 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/protocol/Runtime.h"
+#include "platform/v8_inspector/public/protocol/Runtime.h"
 
 #include <v8.h>
 
@@ -24,7 +24,7 @@ public:
     virtual String16 topFunctionName() const = 0;
 
     virtual ~V8StackTrace() { }
-    virtual std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObject() const = 0;
+    virtual std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const = 0;
     virtual String16 toString() const = 0;
     virtual std::unique_ptr<V8StackTrace> clone() = 0;
     virtual std::unique_ptr<V8StackTrace> isolatedCopy() = 0; // Safe to pass between threads.

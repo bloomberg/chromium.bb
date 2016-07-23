@@ -859,6 +859,11 @@ V8ConsoleMessageStorage* V8DebuggerImpl::ensureConsoleMessageStorage(int context
 
 std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace)
 {
+    return createStackTraceImpl(stackTrace);
+}
+
+std::unique_ptr<V8StackTraceImpl> V8DebuggerImpl::createStackTraceImpl(v8::Local<v8::StackTrace> stackTrace)
+{
     int contextGroupId = m_isolate->InContext() ? getGroupId(m_isolate->GetCurrentContext()) : 0;
     return V8StackTraceImpl::create(this, contextGroupId, stackTrace, V8StackTraceImpl::maxCallStackSizeToCapture);
 }
@@ -1069,13 +1074,14 @@ void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, v8::Local<v8::
         arguments.push_back(arg1);
     if (!arg2.IsEmpty())
         arguments.push_back(arg2);
-    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), ConsoleAPIType::kLog, arguments, captureStackTrace(false), inspectedContext));
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), ConsoleAPIType::kLog, arguments, captureStackTraceImpl(false), inspectedContext));
 }
 
 void V8DebuggerImpl::exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
+    std::unique_ptr<V8StackTraceImpl> stackTraceImpl = wrapUnique(static_cast<V8StackTraceImpl*>(stackTrace.release()));
     unsigned exceptionId = ++m_lastExceptionId;
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, 0, v8::Local<v8::Value>(), exceptionId);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTraceImpl), scriptId, m_isolate, 0, v8::Local<v8::Value>(), exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
 }
 
@@ -1084,8 +1090,9 @@ unsigned V8DebuggerImpl::promiseRejected(v8::Local<v8::Context> context, const S
     int contextGroupId = getGroupId(context);
     if (!contextGroupId)
         return 0;
+    std::unique_ptr<V8StackTraceImpl> stackTraceImpl = wrapUnique(static_cast<V8StackTraceImpl*>(stackTrace.release()));
     unsigned exceptionId = ++m_lastExceptionId;
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, contextId(context), exception, exceptionId);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTraceImpl), scriptId, m_isolate, contextId(context), exception, exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
     return exceptionId;
 }
@@ -1101,6 +1108,11 @@ void V8DebuggerImpl::promiseRejectionRevoked(v8::Local<v8::Context> context, uns
 }
 
 std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(bool fullStack)
+{
+    return captureStackTraceImpl(fullStack);
+}
+
+std::unique_ptr<V8StackTraceImpl> V8DebuggerImpl::captureStackTraceImpl(bool fullStack)
 {
     if (!m_isolate->InContext())
         return nullptr;

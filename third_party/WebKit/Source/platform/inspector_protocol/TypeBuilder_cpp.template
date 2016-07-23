@@ -7,6 +7,7 @@
 #include "{{output_package}}/{{domain.domain}}.h"
 
 #include "platform/inspector_protocol/DispatcherBase.h"
+#include "platform/inspector_protocol/Parser.h"
 
 namespace blink {
 namespace protocol {
@@ -22,7 +23,17 @@ namespace {{type.id}}Enum {
       {% for literal in type.enum %}
 const char* {{ literal | dash_to_camelcase}} = "{{literal}}";
       {% endfor %}
-} // {{type.id}}Enum
+} // namespace {{type.id}}Enum
+      {% if type.exported %}
+
+namespace API {
+namespace {{type.id}}Enum {
+        {% for literal in type.enum %}
+const char* {{ literal | dash_to_camelcase}} = "{{literal}}";
+        {% endfor %}
+} // namespace {{type.id}}Enum
+} // namespace API
+      {% endif %}
     {% endif %}
     {% for property in type.properties %}
       {% if "enum" in property %}
@@ -81,6 +92,23 @@ std::unique_ptr<{{type.id}}> {{type.id}}::clone() const
     ErrorSupport errors;
     return parse(serialize().get(), &errors);
 }
+    {% if type.exported %}
+
+String16 {{type.id}}::toJSONString() const
+{
+    return serialize()->toJSONString();
+}
+
+// static
+std::unique_ptr<API::{{type.id}}> API::{{type.id}}::fromJSONString(const String16& json)
+{
+    ErrorSupport errors;
+    std::unique_ptr<Value> value = parseJSON(json);
+    if (!value)
+        return nullptr;
+    return protocol::{{domain.domain}}::{{type.id}}::parse(value.get(), &errors);
+}
+    {% endif %}
   {% endfor %}
 
 // ------------- Enum values from params.
@@ -94,8 +122,20 @@ namespace {{param.name | to_title_case}}Enum {
         {% for literal in param.enum %}
 const char* {{ literal | to_title_case}} = "{{literal}}";
         {% endfor %}
-} // {{param.name | to_title_case}}Enum
-} // {{command.name | to_title_case }}
+} // namespace {{param.name | to_title_case}}Enum
+} // namespace {{command.name | to_title_case }}
+        {% if param.exported %}
+
+namespace API {
+namespace {{command.name | to_title_case}} {
+namespace {{param.name | to_title_case}}Enum {
+        {% for literal in param.enum %}
+const char* {{ literal | to_title_case}} = "{{literal}}";
+        {% endfor %}
+} // namespace {{param.name | to_title_case}}Enum
+} // namespace {{command.name | to_title_case }}
+} // namespace API
+        {% endif %}
       {% endif %}
     {% endfor %}
   {% endfor %}

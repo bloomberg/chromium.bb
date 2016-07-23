@@ -6,7 +6,7 @@
 #define V8InspectorSession_h
 
 #include "platform/inspector_protocol/Platform.h"
-#include "platform/v8_inspector/protocol/Runtime.h"
+#include "platform/v8_inspector/public/protocol/Runtime.h"
 
 #include <v8.h>
 
@@ -40,7 +40,7 @@ public:
 
     // Remote objects.
     static const char backtraceObjectGroup[];
-    virtual std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview) = 0;
+    virtual std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName) = 0;
     virtual v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* objectGroup = nullptr) = 0;
     virtual void releaseObjectGroup(const String16&) = 0;
 };

@@ -516,10 +516,15 @@ void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String16& sc
 {
     v8::HandleScope handles(m_isolate);
     ScriptsMap::iterator it = m_scripts.find(scriptId);
-    if (it != m_scripts.end())
-        *results = V8ContentSearchUtil::searchInTextByLines(m_session, toProtocolString(it->second->source(m_isolate)), query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false));
-    else
+    if (it == m_scripts.end()) {
         *error = String16("No script for id: " + scriptId);
+        return;
+    }
+
+    std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> matches = searchInTextByLinesImpl(m_session, toProtocolString(it->second->source(m_isolate)), query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false));
+    *results = protocol::Array<protocol::Debugger::SearchMatch>::create();
+    for (size_t i = 0; i < matches.size(); ++i)
+        (*results)->addItem(std::move(matches[i]));
 }
 
 void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,

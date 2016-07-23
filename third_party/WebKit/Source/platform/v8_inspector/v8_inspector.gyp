@@ -79,6 +79,8 @@
             # Source code templates.
             '../inspector_protocol/TypeBuilder_h.template',
             '../inspector_protocol/TypeBuilder_cpp.template',
+            '../inspector_protocol/Exported_h.template',
+            '../inspector_protocol/Imported_h.template',
             # Protocol definitions
             'js_protocol.json',
           ],
@@ -93,6 +95,8 @@
             '<(blink_platform_output_dir)/v8_inspector/protocol/Profiler.h',
             '<(blink_platform_output_dir)/v8_inspector/protocol/Runtime.cpp',
             '<(blink_platform_output_dir)/v8_inspector/protocol/Runtime.h',
+            '<(blink_platform_output_dir)/v8_inspector/public/protocol/Runtime.h',
+            '<(blink_platform_output_dir)/v8_inspector/public/protocol/Debugger.h',
           ],
           'action': [
             'python',
@@ -102,6 +106,8 @@
             '--export_macro', 'PLATFORM_EXPORT',
             '--output_dir', '<(blink_platform_output_dir)/v8_inspector/protocol',
             '--output_package', 'platform/v8_inspector/protocol',
+            '--exported_dir', '<(blink_platform_output_dir)/v8_inspector/public/protocol',
+            '--exported_package', 'platform/v8_inspector/public/protocol',
           ],
           'message': 'Generating protocol backend sources from json definitions.',
         },

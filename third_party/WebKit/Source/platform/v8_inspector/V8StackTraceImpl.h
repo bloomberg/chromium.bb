@@ -5,7 +5,9 @@
 #ifndef V8StackTraceImpl_h
 #define V8StackTraceImpl_h
 
+#include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Platform.h"
+#include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 
 #include <vector>
@@ -57,6 +59,7 @@ public:
     std::unique_ptr<V8StackTrace> isolatedCopy() override;
     std::unique_ptr<V8StackTraceImpl> isolatedCopyImpl();
     std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerImpl*) const;
+    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectImpl() const;
     ~V8StackTraceImpl() override;
 
     // V8StackTrace implementation.
@@ -66,7 +69,7 @@ public:
     int topColumnNumber() const override;
     String16 topScriptId() const override;
     String16 topFunctionName() const override;
-    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObject() const override;
+    std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const override;
     String16 toString() const override;
 
 private:

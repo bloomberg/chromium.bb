@@ -3114,7 +3114,9 @@
                     { "name": "type", "type": "string", "description": "<code>EventListener</code>'s type." },
                     { "name": "useCapture", "type": "boolean", "description": "<code>EventListener</code>'s useCapture." },
                     { "name": "passive", "type": "boolean", "description": "<code>EventListener</code>'s passive flag." },
-                    { "name": "location", "$ref": "Debugger.Location", "description": "Handler code location." },
+                    { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Script id of the handler code." },
+                    { "name": "lineNumber", "type": "integer", "description": "Line number in the script (0-based)." },
+                    { "name": "columnNumber", "type": "integer", "description": "Column number in the script (0-based)." },
                     { "name": "handler", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event handler function value." },
                     { "name": "originalHandler", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event original handler function value." },
                     { "name": "removeFunction", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Event listener remove function." }

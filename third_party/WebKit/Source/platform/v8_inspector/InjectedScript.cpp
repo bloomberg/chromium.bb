@@ -315,7 +315,7 @@ std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExcep
 
     v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-        exceptionDetailsObject->setStackTrace(m_context->debugger()->createStackTrace(stackTrace)->buildInspectorObject());
+        exceptionDetailsObject->setStackTrace(m_context->debugger()->createStackTraceImpl(stackTrace)->buildInspectorObjectImpl());
     return exceptionDetailsObject;
 }
 

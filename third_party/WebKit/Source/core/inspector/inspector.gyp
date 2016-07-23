@@ -55,6 +55,8 @@
             # The python script in action below.
             '../../platform/inspector_protocol/CodeGenerator.py',
             # Source code templates.
+            '../../platform/inspector_protocol/Exported_h.template',
+            '../../platform/inspector_protocol/Imported_h.template',
             '../../platform/inspector_protocol/TypeBuilder_h.template',
             '../../platform/inspector_protocol/TypeBuilder_cpp.template',
             # Protocol definition
@@ -74,6 +76,7 @@
             '<(blink_core_output_dir)/inspector/protocol/CSS.h',
             '<(blink_core_output_dir)/inspector/protocol/Database.cpp',
             '<(blink_core_output_dir)/inspector/protocol/Database.h',
+            '<(blink_core_output_dir)/inspector/protocol/Debugger.h',
             '<(blink_core_output_dir)/inspector/protocol/DeviceOrientation.cpp',
             '<(blink_core_output_dir)/inspector/protocol/DeviceOrientation.h',
             '<(blink_core_output_dir)/inspector/protocol/DOM.cpp',
@@ -104,6 +107,7 @@
             '<(blink_core_output_dir)/inspector/protocol/Page.h',
             '<(blink_core_output_dir)/inspector/protocol/Rendering.cpp',
             '<(blink_core_output_dir)/inspector/protocol/Rendering.h',
+            '<(blink_core_output_dir)/inspector/protocol/Runtime.h',
             '<(blink_core_output_dir)/inspector/protocol/Security.cpp',
             '<(blink_core_output_dir)/inspector/protocol/Security.h',
             '<(blink_core_output_dir)/inspector/protocol/ServiceWorker.cpp',
@@ -120,6 +124,7 @@
             '../../platform/inspector_protocol/CodeGenerator.py',
             '--protocol', 'browser_protocol.json',
             '--include', '../../platform/v8_inspector/js_protocol.json',
+            '--include_package', 'platform/v8_inspector/public/protocol',
             '--string_type', 'String',
             '--export_macro', 'CORE_EXPORT',
             '--output_dir', '<(blink_core_output_dir)/inspector/protocol',

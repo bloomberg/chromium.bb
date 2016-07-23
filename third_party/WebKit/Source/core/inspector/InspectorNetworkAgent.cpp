@@ -830,7 +830,7 @@ void InspectorNetworkAgent::didScheduleStyleRecalculation(Document* document)
 
 std::unique_ptr<protocol::Network::Initiator> InspectorNetworkAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
-    std::unique_ptr<protocol::Runtime::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
+    std::unique_ptr<protocol::Runtime::API::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
     if (currentStackTrace) {
         std::unique_ptr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Script).build();
@@ -860,7 +860,7 @@ std::unique_ptr<protocol::Network::Initiator> InspectorNetworkAgent::buildInitia
 
 void InspectorNetworkAgent::didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const String&)
 {
-    std::unique_ptr<protocol::Runtime::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
+    std::unique_ptr<protocol::Runtime::API::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
     if (!currentStackTrace) {
         frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).getString());
         return;

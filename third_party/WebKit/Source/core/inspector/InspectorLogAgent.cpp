@@ -86,7 +86,7 @@ void InspectorLogAgent::consoleMessageAdded(ConsoleMessage* message)
         .build();
     if (!message->location()->url().isEmpty())
         entry->setUrl(message->location()->url());
-    std::unique_ptr<protocol::Runtime::StackTrace> stackTrace = message->location()->buildInspectorObject();
+    std::unique_ptr<protocol::Runtime::API::StackTrace> stackTrace = message->location()->buildInspectorObject();
     if (stackTrace)
         entry->setStackTrace(std::move(stackTrace));
     if (message->location()->lineNumber())

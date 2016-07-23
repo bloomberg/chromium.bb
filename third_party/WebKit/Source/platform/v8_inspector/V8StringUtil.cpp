@@ -182,6 +182,17 @@ String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value> value)
     return toProtocolString(value.As<v8::String>());
 }
 
+std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLinesImpl(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
+{
+    std::unique_ptr<V8Regex> regex = createSearchRegex(static_cast<V8InspectorSessionImpl*>(session)->debugger(), query, caseSensitive, isRegex);
+    std::vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
+
+    std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> result;
+    for (const auto& match : matches)
+        result.push_back(buildObjectForSearchMatch(match.first, match.second));
+    return result;
+}
+
 namespace V8ContentSearchUtil {
 
 String16 findSourceURL(const String16& content, bool multiline, bool* deprecated)
@@ -194,15 +205,12 @@ String16 findSourceMapURL(const String16& content, bool multiline, bool* depreca
     return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
 
-std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
+std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> searchInTextByLines(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
 {
-    std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>> result = protocol::Array<protocol::Debugger::SearchMatch>::create();
-    std::unique_ptr<V8Regex> regex = createSearchRegex(static_cast<V8InspectorSessionImpl*>(session)->debugger(), query, caseSensitive, isRegex);
-    std::vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
-
-    for (const auto& match : matches)
-        result->addItem(buildObjectForSearchMatch(match.first, match.second));
-
+    std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> matches = searchInTextByLinesImpl(session, text, query, caseSensitive, isRegex);
+    std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> result = protocol::Array<protocol::Debugger::API::SearchMatch>::create();
+    for (size_t i = 0; i < matches.size(); ++i)
+        result->addItem(std::move(matches[i]));
     return result;
 }
 

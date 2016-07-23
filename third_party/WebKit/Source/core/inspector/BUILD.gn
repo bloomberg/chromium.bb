@@ -36,6 +36,8 @@ action("protocol_sources") {
   ]
   sources = [
     "../../platform/inspector_protocol/CodeGenerator.py",
+    "../../platform/inspector_protocol/Exported_h.template",
+    "../../platform/inspector_protocol/Imported_h.template",
     "../../platform/inspector_protocol/TypeBuilder_cpp.template",
     "../../platform/inspector_protocol/TypeBuilder_h.template",
   ]
@@ -56,6 +58,7 @@ action("protocol_sources") {
     "$blink_core_output_dir/inspector/protocol/CSS.h",
     "$blink_core_output_dir/inspector/protocol/Database.cpp",
     "$blink_core_output_dir/inspector/protocol/Database.h",
+    "$blink_core_output_dir/inspector/protocol/Debugger.h",
     "$blink_core_output_dir/inspector/protocol/DeviceOrientation.cpp",
     "$blink_core_output_dir/inspector/protocol/DeviceOrientation.h",
     "$blink_core_output_dir/inspector/protocol/DOM.cpp",
@@ -86,6 +89,7 @@ action("protocol_sources") {
     "$blink_core_output_dir/inspector/protocol/Page.h",
     "$blink_core_output_dir/inspector/protocol/Rendering.cpp",
     "$blink_core_output_dir/inspector/protocol/Rendering.h",
+    "$blink_core_output_dir/inspector/protocol/Runtime.h",
     "$blink_core_output_dir/inspector/protocol/Security.cpp",
     "$blink_core_output_dir/inspector/protocol/Security.h",
     "$blink_core_output_dir/inspector/protocol/ServiceWorker.cpp",
@@ -103,6 +107,8 @@ action("protocol_sources") {
     rebase_path("browser_protocol.json", root_build_dir),
     "--include",
     rebase_path("../../platform/v8_inspector/js_protocol.json", root_build_dir),
+    "--include_package",
+    "platform/v8_inspector/public/protocol",
     "--string_type",
     "String",
     "--export_macro",

@@ -209,6 +209,11 @@ v8::Local<v8::Value> V8InspectorSessionImpl::findObject(ErrorString* errorString
     return objectValue;
 }
 
+std::unique_ptr<protocol::Runtime::API::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName)
+{
+    return wrapObject(context, value, groupName, false);
+}
+
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;

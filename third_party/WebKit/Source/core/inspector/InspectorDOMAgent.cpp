@@ -1364,7 +1364,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     *nodeId = pushNodePathToFrontend(node);
 }
 
-void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<protocol::Runtime::RemoteObject>* result)
+void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<protocol::Runtime::API::RemoteObject>* result)
 {
     String objectGroupName = objectGroup.fromMaybe("");
     Node* node = nodeForId(nodeId);
@@ -2041,7 +2041,7 @@ void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int 
     *result = highlight.asProtocolValue();
 }
 
-std::unique_ptr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
+std::unique_ptr<protocol::Runtime::API::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;
@@ -2053,7 +2053,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(
         return nullptr;
 
     ScriptState::Scope scope(scriptState);
-    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup, false);
+    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

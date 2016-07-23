@@ -516,9 +516,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>> results;
-    results = V8ContentSearchUtil::searchInTextByLines(m_v8Session, content, query, caseSensitive, isRegex);
-    callback->sendSuccess(std::move(results));
+    callback->sendSuccess(V8ContentSearchUtil::searchInTextByLines(m_v8Session, content, query, caseSensitive, isRegex));
 }
 
 void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)

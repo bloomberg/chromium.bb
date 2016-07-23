@@ -48,6 +48,8 @@ public:
     void discardInjectedScripts();
     void reportAllContexts(V8RuntimeAgentImpl*);
     void setCustomObjectFormatterEnabled(bool);
+    std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview);
+    std::unique_ptr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns);
 
     // V8InspectorSession implementation.
     void dispatchProtocolMessage(const String16& message) override;
@@ -61,8 +63,7 @@ public:
     void stepOver() override;
     void releaseObjectGroup(const String16& objectGroup) override;
     v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
-    std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview) override;
-    std::unique_ptr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns);
+    std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName) override;
 
     V8InspectorSession::Inspectable* inspectedObject(unsigned num);
     static const unsigned kInspectedObjectBufferSize = 5;

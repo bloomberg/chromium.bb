@@ -196,6 +196,8 @@ action("inspector_protocol_sources") {
   ]
   sources = [
     "inspector_protocol/CodeGenerator.py",
+    "inspector_protocol/Exported_h.template",
+    "inspector_protocol/Imported_h.template",
     "inspector_protocol/TypeBuilder_cpp.template",
     "inspector_protocol/TypeBuilder_h.template",
   ]
@@ -213,6 +215,8 @@ action("inspector_protocol_sources") {
     "$blink_platform_output_dir/v8_inspector/protocol/Profiler.h",
     "$blink_platform_output_dir/v8_inspector/protocol/Runtime.cpp",
     "$blink_platform_output_dir/v8_inspector/protocol/Runtime.h",
+    "$blink_platform_output_dir/v8_inspector/public/protocol/Runtime.h",
+    "$blink_platform_output_dir/v8_inspector/public/protocol/Debugger.h",
   ]
 
   args = [
@@ -227,6 +231,11 @@ action("inspector_protocol_sources") {
                 root_build_dir),
     "--output_package",
     "platform/v8_inspector/protocol",
+    "--exported_dir",
+    rebase_path(blink_platform_output_dir + "/v8_inspector/public/protocol",
+                root_build_dir),
+    "--exported_package",
+    "platform/v8_inspector/public/protocol",
   ]
 }
 

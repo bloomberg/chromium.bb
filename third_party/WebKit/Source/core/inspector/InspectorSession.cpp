@@ -12,7 +12,6 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/inspector_protocol/Parser.h"
-#include "platform/v8_inspector/protocol/Debugger.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 
