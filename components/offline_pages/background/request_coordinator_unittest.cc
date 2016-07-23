@@ -363,11 +363,22 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
           base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
+  // Set up device conditions for the test.
+  DeviceConditions device_conditions(
+      false, 75, net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
   EnableOfflinerCallback(true);
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_FAILED);
+  // There will be one request left in the queue after the prerender fails, stop
+  // processing now so that it will remain in the queue for us to check.  This
+  // won't affect the offliner done callback other than preventing
+  // TryNextRequest from doing anything.
+  coordinator()->StopProcessing();
+
   PumpLoop();
 
   // Verify the request is not removed from the queue, and wait for callbacks.
@@ -378,7 +389,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 
   // Still one request in the queue.
   EXPECT_EQ(1UL, last_requests().size());
-  // TODO(dougarnett): Verify retry count gets incremented.
+  // Verify retry count was incremented.
+  const SavePageRequest& found_request = last_requests().front();
+  EXPECT_EQ(1L, found_request.attempt_count());
 }
 
 // This tests a StopProcessing call before we have actually started the

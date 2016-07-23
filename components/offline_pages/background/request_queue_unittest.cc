@@ -24,6 +24,7 @@ namespace {
 const int64_t kRequestId = 42;
 const GURL kUrl("http://example.com");
 const ClientId kClientId("bookmark", "1234");
+const int64_t kRetryCount = 2;
 // Data for request 2.
 const int64_t kRequestId2 = 77;
 const GURL kUrl2("http://test.com");
@@ -50,6 +51,8 @@ class RequestQueueTest : public testing::Test {
   // Callback for removing request.
   void RemoveRequestDone(UpdateRequestResult result);
 
+  void UpdateRequestDone(UpdateRequestResult result);
+
   RequestQueue* queue() { return queue_.get(); }
 
   AddRequestResult last_add_result() const { return last_add_result_; }
@@ -58,6 +61,8 @@ class RequestQueueTest : public testing::Test {
   }
 
   UpdateRequestResult last_remove_result() const { return last_remove_result_; }
+
+  UpdateRequestResult last_update_result() const { return last_update_result_; }
 
   GetRequestsResult last_get_requests_result() const {
     return last_get_requests_result_;
@@ -71,6 +76,7 @@ class RequestQueueTest : public testing::Test {
   std::unique_ptr<SavePageRequest> last_added_request_;
 
   UpdateRequestResult last_remove_result_;
+  UpdateRequestResult last_update_result_;
 
   GetRequestsResult last_get_requests_result_;
   std::vector<SavePageRequest> last_requests_;
@@ -83,6 +89,7 @@ class RequestQueueTest : public testing::Test {
 RequestQueueTest::RequestQueueTest()
     : last_add_result_(AddRequestResult::STORE_FAILURE),
       last_remove_result_(UpdateRequestResult::STORE_FAILURE),
+      last_update_result_(UpdateRequestResult::STORE_FAILURE),
       last_get_requests_result_(GetRequestsResult::STORE_FAILURE),
       task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {}
@@ -114,6 +121,10 @@ void RequestQueueTest::GetRequestsDone(
 
 void RequestQueueTest::RemoveRequestDone(UpdateRequestResult result) {
   last_remove_result_ = result;
+}
+
+void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
+  last_update_result_ = result;
 }
 
 TEST_F(RequestQueueTest, GetRequestsEmpty) {
@@ -199,6 +210,51 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(1ul, last_requests().size());
   ASSERT_EQ(request2.request_id(), last_requests()[0].request_id());
+}
+
+TEST_F(RequestQueueTest, UpdateRequest) {
+  // First add a request.  Retry count will be set to 0.
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
+  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
+                                          base::Unretained(this)));
+  PumpLoop();
+
+  // Update the request, ensure it succeeded.
+  request.set_attempt_count(kRetryCount);
+  queue()->UpdateRequest(
+      request,
+      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_update_result());
+
+  // Get the request, and verify the update took effect.
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(1ul, last_requests().size());
+  ASSERT_EQ(kRetryCount, last_requests().front().attempt_count());
+}
+
+TEST_F(RequestQueueTest, UpdateRequestNotPresent) {
+  // First add a request.  Retry count will be set to 0.
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(
+      kRequestId, kUrl, kClientId, creation_time, kUserRequested);
+  SavePageRequest request2(
+      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
+  queue()->AddRequest(request2, base::Bind(&RequestQueueTest::AddRequestDone,
+                                           base::Unretained(this)));
+  PumpLoop();
+
+  // Try to update request1 when only request2 is in the queue.
+  queue()->UpdateRequest(
+      request1,
+      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(UpdateRequestResult::REQUEST_DOES_NOT_EXIST, last_update_result());
 }
 
 }  // namespace offline_pages

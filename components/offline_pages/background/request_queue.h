@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace offline_pages {
 
@@ -75,6 +76,12 @@ class RequestQueue {
   // |callback|.
   void RemoveRequest(int64_t request_id, const UpdateRequestCallback& callback);
 
+  void GetForUpdateDone(
+      const RequestQueue::UpdateRequestCallback& update_callback,
+      const SavePageRequest& update_request,
+      bool success,
+      const std::vector<SavePageRequest>& requests);
+
  private:
   // Callback used by |PurgeRequests|.
   typedef base::Callback<void(UpdateRequestResult,
@@ -87,6 +94,9 @@ class RequestQueue {
   void PurgeRequests(const PurgeRequestsCallback& callback);
 
   std::unique_ptr<RequestQueueStore> store_;
+
+  // Allows us to pass a weak pointer to callbacks.
+  base::WeakPtrFactory<RequestQueue> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestQueue);
 };

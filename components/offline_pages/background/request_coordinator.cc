@@ -96,7 +96,15 @@ void RequestCoordinator::AddRequestResultCallback(
 
 // Called in response to updating a request in the request queue.
 void RequestCoordinator::UpdateRequestCallback(
-    RequestQueue::UpdateRequestResult result) {}
+    RequestQueue::UpdateRequestResult result) {
+  // If the request succeeded, nothing to do.  If it failed, we can't really do
+  // much, so just log it.
+  if (result != RequestQueue::UpdateRequestResult::SUCCESS) {
+    // TODO(petewil): Consider adding UMA or showing on offline-internals page.
+    DLOG(WARNING) << "Failed to update a request retry count. "
+                  << static_cast<int>(result);
+  }
+}
 
 void RequestCoordinator::StopProcessing() {
   is_canceled_ = true;
@@ -197,18 +205,33 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
 
   is_busy_ = false;
 
-  // If the request succeeded, remove it from the Queue and maybe schedule
-  // another one.
-  if (status == Offliner::RequestStatus::SAVED) {
+  int64_t new_attempt_count = request.attempt_count() + 1;
+
+  // Remove the request from the queue if it either succeeded or exceeded the
+  // max number of retries.
+  if (status == Offliner::RequestStatus::SAVED
+       || new_attempt_count > policy_->GetMaxRetries()) {
     queue_->RemoveRequest(request.request_id(),
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr()));
-
-    // TODO(petewil): Check time budget. Return to the scheduler if we are out.
-
-    // Start another request if we have time.
-    TryNextRequest();
+  } else {
+    // If we failed, but are not over the limit, update the request in the
+    // queue.
+    SavePageRequest updated_request(request);
+    updated_request.set_attempt_count(new_attempt_count);
+    updated_request.set_last_attempt_time(base::Time::Now());
+    RequestQueue::UpdateRequestCallback update_callback =
+        base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                   weak_ptr_factory_.GetWeakPtr());
+    queue_->UpdateRequest(
+        updated_request,
+        base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
+
+  // TODO(petewil): Check time budget. Return to the scheduler if we are out.
+  // Start another request if we have time.
+  TryNextRequest();
 }
 
 const Scheduler::TriggerConditions&
