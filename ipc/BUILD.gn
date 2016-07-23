@@ -165,8 +165,6 @@ mojom("mojom") {
   sources = [
     "ipc.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("test_interfaces") {
@@ -174,8 +172,6 @@ mojom("test_interfaces") {
   sources = [
     "ipc_test.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 # This is provided as a separate target so other targets can provide param
