@@ -20,7 +20,12 @@ group("gpu") {
   }
 }
 
-source_set("gpu_sources") {
+if (is_component_build) {
+  link_target_type = "source_set"
+} else {
+  link_target_type = "static_library"
+}
+target(link_target_type, "gpu_sources") {
   # This is an internal content API. Code outside of the content "component"
   # (like content/test and content/shell) should depend on ":gpu" above.
   visibility = [ "//content/*" ]
