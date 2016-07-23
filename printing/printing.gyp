@@ -167,12 +167,19 @@
                 ],
               },
             }],
+          ],
+          'defines': [
+            # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
+            # of the print backend and enables a custom implementation instead.
+            'PRINT_BACKEND_AVAILABLE',
+          ],
+          'conditions': [
             ['chromeos==1', {
               'sources': [
                 'backend/cups_connection.cc',
                 'backend/cups_connection.h',
-                'backend/cups_deleter.cc',
-                'backend/cups_deleter.h',
+                'backend/cups_deleters.cc',
+                'backend/cups_deleters.h',
                 'backend/cups_ipp_util.cc',
                 'backend/cups_ipp_util.h',
                 'backend/cups_printer.cc',
@@ -187,11 +194,6 @@
                 'backend/print_backend_cups.cc',
               ],
             }],
-          ],
-          'defines': [
-            # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
-            # of the print backend and enables a custom implementation instead.
-            'PRINT_BACKEND_AVAILABLE',
           ],
         }],
         ['OS=="linux" and chromeos==1', {
