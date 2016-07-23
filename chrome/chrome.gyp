@@ -707,7 +707,7 @@
             '..',
           ],
           'conditions': [
-            ['use_cups==1 and chromeos==0', {
+            ['use_cups==1 and OS!="chromeos"', {
               'dependencies': [
                 '../printing/printing.gyp:cups',
               ],
@@ -715,15 +715,15 @@
                 'service/cloud_print/print_system_cups.cc',
               ],
             }],
+            ['OS!="win" and use_cups!=1', {
+              'sources': [
+                'service/cloud_print/print_system_dummy.cc',
+              ],
+            }],
             ['OS=="win"', {
               'sources': [
                 'service/service_utility_process_host.cc',
                 'service/service_utility_process_host.h',
-              ],
-            }],
-            ['use_cups!=1 or chromeos==1', {
-              'sources': [
-                'service/cloud_print/print_system_dummy.cc',
               ],
             }],
           ],
