@@ -66,8 +66,8 @@ void ReportUMACookieLoss(CookieLossType loss, CookieEvent event) {
 net::CanonicalCookie CanonicalCookieFromSystemCookie(
     NSHTTPCookie* cookie,
     const base::Time& ceation_time) {
-  return net::CanonicalCookie(
-      GURL(), base::SysNSStringToUTF8([cookie name]),
+  return *net::CanonicalCookie::Create(
+      base::SysNSStringToUTF8([cookie name]),
       base::SysNSStringToUTF8([cookie value]),
       base::SysNSStringToUTF8([cookie domain]),
       base::SysNSStringToUTF8([cookie path]), ceation_time,

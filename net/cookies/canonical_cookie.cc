@@ -125,34 +125,9 @@ CanonicalCookie::CanonicalCookie()
       httponly_(false) {
 }
 
-CanonicalCookie::CanonicalCookie(const GURL& url,
-                                 const std::string& name,
-                                 const std::string& value,
-                                 const std::string& domain,
-                                 const std::string& path,
-                                 const base::Time& creation,
-                                 const base::Time& expiration,
-                                 const base::Time& last_access,
-                                 bool secure,
-                                 bool httponly,
-                                 CookieSameSite same_site,
-                                 CookiePriority priority)
-    : name_(name),
-      value_(value),
-      domain_(domain),
-      path_(path),
-      creation_date_(creation),
-      expiry_date_(expiration),
-      last_access_date_(last_access),
-      secure_(secure),
-      httponly_(httponly),
-      same_site_(same_site),
-      priority_(priority) {}
-
 CanonicalCookie::CanonicalCookie(const CanonicalCookie& other) = default;
 
-CanonicalCookie::~CanonicalCookie() {
-}
+CanonicalCookie::~CanonicalCookie() {}
 
 // static
 std::string CanonicalCookie::CanonPath(const GURL& url,
@@ -479,6 +454,30 @@ bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
 
   return Priority() < other.Priority();
 }
+
+CanonicalCookie::CanonicalCookie(const GURL& url,
+                                 const std::string& name,
+                                 const std::string& value,
+                                 const std::string& domain,
+                                 const std::string& path,
+                                 const base::Time& creation,
+                                 const base::Time& expiration,
+                                 const base::Time& last_access,
+                                 bool secure,
+                                 bool httponly,
+                                 CookieSameSite same_site,
+                                 CookiePriority priority)
+    : name_(name),
+      value_(value),
+      domain_(domain),
+      path_(path),
+      creation_date_(creation),
+      expiry_date_(expiration),
+      last_access_date_(last_access),
+      secure_(secure),
+      httponly_(httponly),
+      same_site_(same_site),
+      priority_(priority) {}
 
 // static
 CanonicalCookie::CookiePrefix CanonicalCookie::GetCookiePrefix(

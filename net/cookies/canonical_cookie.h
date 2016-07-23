@@ -23,25 +23,7 @@ class ParsedCookie;
 
 class NET_EXPORT CanonicalCookie {
  public:
-  // These constructors do no validation or canonicalization of their inputs;
-  // the resulting CanonicalCookies should not be relied on to be canonical
-  // unless the caller has done appropriate validation and canonicalization
-  // themselves.
   CanonicalCookie();
-  // TODO(mmenke): Remove |url|, as it's not used.
-  CanonicalCookie(const GURL& url,
-                  const std::string& name,
-                  const std::string& value,
-                  const std::string& domain,
-                  const std::string& path,
-                  const base::Time& creation,
-                  const base::Time& expiration,
-                  const base::Time& last_access,
-                  bool secure,
-                  bool httponly,
-                  CookieSameSite same_site,
-                  CookiePriority priority);
-
   CanonicalCookie(const CanonicalCookie& other);
 
   ~CanonicalCookie();
@@ -181,6 +163,24 @@ class NET_EXPORT CanonicalCookie {
     COOKIE_PREFIX_HOST,
     COOKIE_PREFIX_LAST
   };
+
+  // This constructor does not validate or canonicalize their inputs;
+  // the resulting CanonicalCookies should not be relied on to be canonical
+  // unless the caller has done appropriate validation and canonicalization
+  // themselves.
+  // TODO(mmenke): Remove |url|, as it's not used.
+  CanonicalCookie(const GURL& url,
+                  const std::string& name,
+                  const std::string& value,
+                  const std::string& domain,
+                  const std::string& path,
+                  const base::Time& creation,
+                  const base::Time& expiration,
+                  const base::Time& last_access,
+                  bool secure,
+                  bool httponly,
+                  CookieSameSite same_site,
+                  CookiePriority priority);
 
   // Returns the CookiePrefix (or COOKIE_PREFIX_NONE if none) that
   // applies to the given cookie |name|.

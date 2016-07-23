@@ -18,28 +18,28 @@ TEST(CanonicalCookieTest, Constructor) {
   GURL url("http://www.example.com/test");
   base::Time current_time = base::Time::Now();
 
-  CanonicalCookie cookie(url, "A", "2", "www.example.com", "/test",
-                         current_time, base::Time(), current_time, false, false,
-                         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ("A", cookie.Name());
-  EXPECT_EQ("2", cookie.Value());
-  EXPECT_EQ("www.example.com", cookie.Domain());
-  EXPECT_EQ("/test", cookie.Path());
-  EXPECT_FALSE(cookie.IsSecure());
-  EXPECT_FALSE(cookie.IsHttpOnly());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie.SameSite());
+  std::unique_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
+      url, "A", "2", std::string(), "/test", current_time, base::Time(), false,
+      false, CookieSameSite::DEFAULT_MODE, false, COOKIE_PRIORITY_DEFAULT));
+  EXPECT_EQ("A", cookie->Name());
+  EXPECT_EQ("2", cookie->Value());
+  EXPECT_EQ("www.example.com", cookie->Domain());
+  EXPECT_EQ("/test", cookie->Path());
+  EXPECT_FALSE(cookie->IsSecure());
+  EXPECT_FALSE(cookie->IsHttpOnly());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
 
-  CanonicalCookie cookie2(url, "A", "2", std::string(), std::string(),
-                          current_time, base::Time(), current_time, false,
-                          false, CookieSameSite::DEFAULT_MODE,
-                          COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ("A", cookie2.Name());
-  EXPECT_EQ("2", cookie2.Value());
-  EXPECT_EQ("", cookie2.Domain());
-  EXPECT_EQ("", cookie2.Path());
-  EXPECT_FALSE(cookie2.IsSecure());
-  EXPECT_FALSE(cookie2.IsHttpOnly());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie2.SameSite());
+  std::unique_ptr<CanonicalCookie> cookie2(CanonicalCookie::Create(
+      url, "A", "2", ".www.example.com", std::string(), current_time,
+      base::Time(), false, false, CookieSameSite::DEFAULT_MODE, false,
+      COOKIE_PRIORITY_DEFAULT));
+  EXPECT_EQ("A", cookie2->Name());
+  EXPECT_EQ("2", cookie2->Value());
+  EXPECT_EQ(".www.example.com", cookie2->Domain());
+  EXPECT_EQ("/", cookie2->Path());
+  EXPECT_FALSE(cookie2->IsSecure());
+  EXPECT_FALSE(cookie2->IsHttpOnly());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie2->SameSite());
 }
 
 TEST(CanonicalCookieTest, Create) {

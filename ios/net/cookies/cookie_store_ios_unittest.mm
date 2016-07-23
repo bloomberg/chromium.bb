@@ -259,16 +259,17 @@ class TestPersistentCookieStore
 
     // Some canonical cookies cannot be converted into System cookies, for
     // example if value is not valid utf8. Such cookies are ignored.
-    net::CanonicalCookie* bad_canonical_cookie = new net::CanonicalCookie(
-        kTestCookieURL, "name", "\x81r\xe4\xbd\xa0\xe5\xa5\xbd", "domain",
-        "path/",
-        base::Time(),  // creation
-        base::Time(),  // expires
-        base::Time(),  // last_access
-        false,         // secure
-        false,         // httponly
-        net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
-    cookies.push_back(bad_canonical_cookie);
+    std::unique_ptr<net::CanonicalCookie> bad_canonical_cookie(
+        net::CanonicalCookie::Create(GURL("http://domain/"), "name",
+                                     "\x81r\xe4\xbd\xa0\xe5\xa5\xbd",
+                                     std::string(), "/path/",
+                                     base::Time(),  // creation
+                                     base::Time(),  // expires
+                                     false,         // secure
+                                     false,         // httponly
+                                     net::CookieSameSite::DEFAULT_MODE, false,
+                                     net::COOKIE_PRIORITY_DEFAULT));
+    cookies.push_back(bad_canonical_cookie.release());
     loaded_callback_.Run(cookies);
   }
 
