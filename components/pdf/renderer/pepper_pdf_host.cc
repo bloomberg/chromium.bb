@@ -4,6 +4,7 @@
 
 #include "components/pdf/renderer/pepper_pdf_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/pdf/common/pdf_messages.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
 #include "content/public/common/referrer.h"
@@ -30,6 +31,7 @@
 namespace pdf {
 
 namespace {
+
 // --single-process model may fail in CHECK(!g_print_client) if there exist
 // more than two RenderThreads, so here we use TLS for g_print_client.
 // See http://crbug.com/457580.
@@ -96,33 +98,33 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
 
 int32_t PepperPDFHost::OnHostMsgDidStartLoading(
     ppapi::host::HostMessageContext* context) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view)
     return PP_ERROR_FAILED;
-  instance->GetRenderView()->DidStartLoading();
+
+  render_view->DidStartLoading();
   return PP_OK;
 }
 
 int32_t PepperPDFHost::OnHostMsgDidStopLoading(
     ppapi::host::HostMessageContext* context) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view)
     return PP_ERROR_FAILED;
-  instance->GetRenderView()->DidStopLoading();
+
+  render_view->DidStopLoading();
   return PP_OK;
 }
 
 int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
     ppapi::host::HostMessageContext* context,
     int restrictions) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view)
     return PP_ERROR_FAILED;
-  instance->GetRenderView()->Send(new PDFHostMsg_PDFUpdateContentRestrictions(
-      instance->GetRenderView()->GetRoutingID(), restrictions));
+
+  render_view->Send(new PDFHostMsg_PDFUpdateContentRestrictions(
+      render_view->GetRoutingID(), restrictions));
   return PP_OK;
 }
 
@@ -137,19 +139,10 @@ int32_t PepperPDFHost::OnHostMsgUserMetricsRecordAction(
 
 int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
     ppapi::host::HostMessageContext* context) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view)
     return PP_ERROR_FAILED;
 
-  // TODO(thestig): Turn CHECKs into the proper if statement after figuring out
-  // what's wrong for https://crbug.com/627814
-  CHECK(instance->GetContainer());
-  CHECK(instance->GetContainer()->document().frame());
-  CHECK(instance->GetContainer()->document().frame()->view());
-  blink::WebView* view =
-      instance->GetContainer()->document().frame()->view();
-  content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(
       new PDFHostMsg_PDFHasUnsupportedFeature(render_view->GetRoutingID()));
   return PP_OK;
@@ -166,8 +159,12 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
       host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  GURL url = instance->GetPluginURL();
+
   content::RenderView* render_view = instance->GetRenderView();
+  if (!render_view)
+    return PP_ERROR_FAILED;
+
+  GURL url = instance->GetPluginURL();
   content::Referrer referrer;
   referrer.url = url;
   referrer.policy = blink::WebReferrerPolicyDefault;
@@ -234,9 +231,15 @@ int32_t PepperPDFHost::OnHostMsgSetAccessibilityPageInfo(
 
 void PepperPDFHost::CreatePdfAccessibilityTreeIfNeeded() {
   if (!pdf_accessibility_tree_) {
-    pdf_accessibility_tree_.reset(new PdfAccessibilityTree(
-        host_, pp_instance()));
+    pdf_accessibility_tree_ =
+        base::MakeUnique<PdfAccessibilityTree>(host_, pp_instance());
   }
+}
+
+content::RenderView* PepperPDFHost::GetRenderView() {
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
+  return instance ? instance->GetRenderView() : nullptr;
 }
 
 }  // namespace pdf

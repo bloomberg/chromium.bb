@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -24,18 +26,17 @@ class SkBitmap;
 
 namespace content {
 class PepperPluginInstance;
+class RenderView;
 class RendererPpapiHost;
 }
 
 namespace ppapi {
 class HostResource;
-}
 
-namespace ppapi {
 namespace host {
 struct HostMessageContext;
-}
-}
+}  // namespace host
+}  // namespace ppapi
 
 namespace pdf {
 
@@ -71,6 +72,7 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
   // PPB_PDF_Impl instance.
   static void SetPrintClient(PrintClient* print_client);
 
+  // ppapi::host::ResourceHost:
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
@@ -106,9 +108,11 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
 
   void CreatePdfAccessibilityTreeIfNeeded();
 
+  content::RenderView* GetRenderView();
+
   std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
 
-  content::RendererPpapiHost* host_;
+  content::RendererPpapiHost* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPDFHost);
 };
