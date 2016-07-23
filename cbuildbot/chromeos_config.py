@@ -1970,7 +1970,6 @@ def GetConfig():
       important=False,
   )
 
-
   def ShardHWTestsBetweenBuilders(*args):
     """Divide up the hardware tests between the given list of config names.
 
@@ -1984,18 +1983,22 @@ def GetConfig():
     names = args
     # Verify sanity before sharding the HWTests.
     for name in names:
-      assert len(site_config[name].hw_tests) == len(names), \
-        '%s should have %d tests, but found %d' % (
-            name, len(names), len(site_config[name].hw_tests))
-    for name in names[1:]:
-      for test1, test2 in zip(site_config[name].hw_tests,
-                              site_config[names[0]].hw_tests):
-        assert test1.__dict__ == test2.__dict__, \
-            '%s and %s have different hw_tests configured' % (names[0], name)
-
+      if name is not None:
+        assert len(site_config[name].hw_tests) == len(names), \
+          '%s should have %d tests, but found %d' % (
+              name, len(names), len(site_config[name].hw_tests))
+    active_names = [name for name in names if name is not None]
+    if len(active_names) > 1:
+      for name in active_names[1:]:
+        for test1, test2 in zip(site_config[name].hw_tests,
+                                site_config[active_names[0]].hw_tests):
+          assert test1.__dict__ == test2.__dict__, \
+            '%s and %s have different hw_tests configured' % (
+                active_names[0], name)
     # Assign each config the Nth HWTest.
     for i, name in enumerate(names):
-      site_config[name]['hw_tests'] = [site_config[name].hw_tests[i]]
+      if name is not None:
+        site_config[name]['hw_tests'] = [site_config[name].hw_tests[i]]
 
   # Shard the bvt-inline and bvt-cq hw tests between similar builders.
   # The first builder gets bvt-inline, and the second builder gets bvt-cq.
@@ -2005,6 +2008,7 @@ def GetConfig():
   ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
   ShardHWTestsBetweenBuilders('veyron_mighty-paladin', 'veyron_speedy-paladin')
   ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
+  ShardHWTestsBetweenBuilders('elm-paladin', None)
 
   # Add a pre-cq config for every board.
   _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
