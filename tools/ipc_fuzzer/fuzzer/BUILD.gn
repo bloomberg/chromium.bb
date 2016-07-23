@@ -23,6 +23,6 @@ executable("ipc_fuzzer") {
   if (is_asan && is_chromeos) {
     # Compiling fuzzer.cc with ASan takes too long, see
     # http://crbug.com/360158.
-    config -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+    configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
   }
 }
