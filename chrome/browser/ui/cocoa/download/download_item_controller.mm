@@ -362,13 +362,6 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   // WARNING: we are deleted at this point.  Don't access 'this'.
 }
 
-- (IBAction)dismissMaliciousDownload:(id)sender {
-  // ExperienceSampling: User dismissed the dangerous download.
-  [self updateExperienceSamplingEvent:ExperienceSamplingEvent::kDeny];
-  [self remove];
-  // WARNING: we are deleted at this point.
-}
-
 - (IBAction)showContextMenu:(id)sender {
   [progressView_ showContextMenu];
 }

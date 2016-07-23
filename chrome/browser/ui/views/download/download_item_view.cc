@@ -559,18 +559,8 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
 
   // WARNING: all end states after this point delete |this|.
   DCHECK_EQ(discard_button_, sender);
-  if (model_.IsMalicious()) {
-    UMA_HISTOGRAM_LONG_TIMES("clickjacking.dismiss_download", warning_duration);
-    // ExperienceSampling: User chose to dismiss the dangerous download.
-    if (sampling_event_.get()) {
-      sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
-      sampling_event_.reset(NULL);
-    }
-    shelf_->RemoveDownloadView(this);
-    return;
-  }
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
-  if (model_.ShouldAllowDownloadFeedback() &&
+  if (!model_.IsMalicious() && model_.ShouldAllowDownloadFeedback() &&
       !shelf_->browser()->profile()->IsOffTheRecord()) {
     if (!shelf_->browser()->profile()->GetPrefs()->HasPrefPath(
         prefs::kSafeBrowsingExtendedReportingEnabled)) {
@@ -1198,10 +1188,8 @@ void DownloadItemView::ShowWarningDialog() {
     save_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(save_button_);
   }
-  int discard_button_message = model_.IsMalicious() ?
-      IDS_DISMISS_DOWNLOAD : IDS_DISCARD_DOWNLOAD;
   discard_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(discard_button_message));
+      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
   discard_button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(discard_button_);
 

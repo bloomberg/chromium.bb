@@ -93,12 +93,12 @@
                                     <button verticalHuggingPriority="750" id="106">
                                         <rect key="frame" x="5" y="16" width="110" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="push" title="^IDS_DISMISS_DOWNLOAD" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="109">
+                                        <buttonCell key="cell" type="push" title="^IDS_DISCARD_DOWNLOAD" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="109">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
                                         <connections>
-                                            <action selector="dismissMaliciousDownload:" target="-2" id="114"/>
+                                            <action selector="discardDownload:" target="-2" id="114"/>
                                         </connections>
                                     </button>
                                     <button horizontalHuggingPriority="750" verticalHuggingPriority="750" id="107">

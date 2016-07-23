@@ -160,7 +160,6 @@ class MenuModel;
 - (BOOL)isDangerousMode;
 - (IBAction)saveDownload:(id)sender;
 - (IBAction)discardDownload:(id)sender;
-- (IBAction)dismissMaliciousDownload:(id)sender;
 - (IBAction)showContextMenu:(id)sender;
 
 @end

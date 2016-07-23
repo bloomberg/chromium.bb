@@ -5642,7 +5642,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The length of time between a dangerous download appearing on the downloads
-    shelf, and the &quot;Dismiss&quot; button being clicked.
+    shelf, and the &quot;Dismiss&quot; button being clicked. Deprecated since
+    M54.
   </summary>
 </histogram>
 
