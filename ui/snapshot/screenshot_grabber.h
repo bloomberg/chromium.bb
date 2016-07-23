@@ -76,6 +76,10 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
   bool HasObserver(const ScreenshotGrabberObserver* observer) const;
 
  private:
+#if defined(USE_AURA)
+  class ScopedCursorHider;
+#endif
+
   void GrabWindowSnapshotAsyncCallback(
       const std::string& window_identifier,
       base::FilePath screenshot_path,
@@ -90,6 +94,11 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
 
   // Task runner for blocking tasks.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
+#if defined(USE_AURA)
+  // The object to hide cursor when taking screenshot.
+  std::unique_ptr<ScopedCursorHider> cursor_hider_;
+#endif
 
   base::ObserverList<ScreenshotGrabberObserver> observers_;
   base::WeakPtrFactory<ScreenshotGrabber> factory_;
