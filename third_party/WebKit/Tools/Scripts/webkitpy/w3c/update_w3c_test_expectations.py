@@ -230,11 +230,12 @@ class W3CExpectationsLineAdder(object):
         to LayoutTest/TestExpectations. Checks the file for the string
         '# Tests added from W3C auto import bot' and writes expectation
         lines directly under it. If not found, it writes to the end of
-        the file.
+        the file. If the test name is already in LayoutTests/TestExpectations,
+        the line will be skipped.
 
         Args:
             host: A Host object.
-            path: The path to the file LayoutTest/TestExpectations.
+            path: The path to the file LayoutTests/TestExpectations.
             line_list: A list of w3c test expectations lines.
 
         Returns:
@@ -245,6 +246,10 @@ class W3CExpectationsLineAdder(object):
         w3c_comment_line_index = file_contents.find(comment_line)
         all_lines = ''
         for line in line_list:
+            end_bracket_index = line.split().index(']')
+            test_name = line.split()[end_bracket_index + 1]
+            if test_name in file_contents:
+                continue
             all_lines += str(line) + '\n'
         all_lines = all_lines[:-1]
         if w3c_comment_line_index == -1:

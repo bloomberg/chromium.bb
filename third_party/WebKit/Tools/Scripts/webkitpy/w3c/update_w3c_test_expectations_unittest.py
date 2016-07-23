@@ -90,18 +90,28 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
         host = MockHost()
         line_adder = W3CExpectationsLineAdder(host)
         line_adder._host.filesystem.files = {'TestExpectations': '# Tests added from W3C auto import bot\n'}
-        line_list = ['fake crbug [foo] fake/file/path.html [Pass]']
+        line_list = ['fake crbug [ foo ] fake/file/path.html [Pass]']
         path = 'TestExpectations'
         line_adder.write_to_test_expectations(line_adder, path, line_list)
         value = line_adder._host.filesystem.read_text_file(path)
-        self.assertEqual(value, '# Tests added from W3C auto import bot\nfake crbug [foo] fake/file/path.html [Pass]\n')
+        self.assertEqual(value, '# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]\n')
 
     def test_write_to_test_expectations_to_eof(self):
         host = MockHost()
         line_adder = W3CExpectationsLineAdder(host)
         line_adder._host.filesystem.files['TestExpectations'] = 'not empty\n'
-        line_list = ['fake crbug [foo] fake/file/path.html [Pass]']
+        line_list = ['fake crbug [ foo ] fake/file/path.html [Pass]']
         path = 'TestExpectations'
         line_adder.write_to_test_expectations(line_adder, path, line_list)
         value = line_adder.filesystem.read_text_file(path)
-        self.assertEqual(value, 'not empty\n\n# Tests added from W3C auto import bot\nfake crbug [foo] fake/file/path.html [Pass]')
+        self.assertEqual(value, 'not empty\n\n# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]')
+
+    def test_write_to_test_expectations_skip_lines(self):
+        host = MockHost()
+        line_adder = W3CExpectationsLineAdder(host)
+        line_adder._host.filesystem.files['TestExpectations'] = 'dont copy me\n'
+        line_list = ['[ ] dont copy me', '[ ] but copy me']
+        path = 'TestExpectations'
+        line_adder.write_to_test_expectations(line_adder, path, line_list)
+        value = line_adder.filesystem.read_text_file(path)
+        self.assertEqual(value, 'dont copy me\n\n# Tests added from W3C auto import bot\n[ ] but copy me')
