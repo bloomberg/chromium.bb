@@ -280,6 +280,16 @@
         min-height: 56px;
       }
 
+      /*
+       * A settings box with a single start-aligned column, generally but not
+       * necessarily used in combination with two-line.
+       */
+      .settings-box.single-column {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+      }
+
       /* The lower line of text in a .settings-box.two-line. */
       .settings-box .secondary {
         @apply(--settings-secondary);

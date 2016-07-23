@@ -10,20 +10,16 @@
 <dom-module id="settings-reset-page">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first two-line" id="resetProfile"
+    <div class="settings-box first two-line single-column" id="resetProfile"
         on-tap="onShowResetProfileDialog_" actionable>
-      <div>
-        <div>$i18n{resetPageTitle}</div>
-        <div class="secondary">$i18n{resetPageDescription}</div>
-      </div>
+      <div>$i18n{resetPageTitle}</div>
+      <div class="secondary">$i18n{resetPageDescription}</div>
     </div>
 <if expr="chromeos">
-    <div class="settings-box two-line" id="powerwash" actionable
+    <div class="settings-box two-line single-column" id="powerwash" actionable
         on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
-      <div>
-        <div>$i18n{powerwashTitle}</div>
-        <div class="secondary">$i18n{powerwashDescription}</div>
-      </div>
+      <div>$i18n{powerwashTitle}</div>
+      <div class="secondary">$i18n{powerwashDescription}</div>
     </div>
 </if>
   </template>

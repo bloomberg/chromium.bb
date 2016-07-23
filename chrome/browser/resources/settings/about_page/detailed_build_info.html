@@ -15,18 +15,14 @@
         -webkit-user-select: text;
       }
     </style>
-    <div class="settings-box two-line">
-      <div class="start">
-        <div>$i18n{aboutPlatformLabel}</div>
-        <div class="secondary" id="osVersion">[[versionInfo_.osVersion]]</div>
-      </div>
+    <div class="settings-box two-line single-column">
+      <div>$i18n{aboutPlatformLabel}</div>
+      <div class="secondary" id="osVersion">[[versionInfo_.osVersion]]</div>
     </div>
-    <div class="settings-box two-line"
+    <div class="settings-box two-line single-column"
         hidden$="[[!shouldShowVersion_(versionInfo_.osFirmware)]]">
-      <div class="start">
-        <div>$i18n{aboutFirmwareLabel}</div>
-        <div class="secondary" id="osFirmware">[[versionInfo_.osFirmware]]</div>
-      </div>
+      <div>$i18n{aboutFirmwareLabel}</div>
+      <div class="secondary" id="osFirmware">[[versionInfo_.osFirmware]]</div>
     </div>
     <div class="settings-box two-line">
       <div class="start">
@@ -44,42 +40,30 @@
         <settings-channel-switcher-dialog></settings-channel-switcher-dialog>
       </template>
     </div>
-    <div class="settings-box two-line"
+    <div class="settings-box two-line single-column"
         hidden$="[[!shouldShowVersion_(versionInfo_.arcVersion)]]">
-      <div class="start">
-        <div>$i18n{aboutArcVersionLabel}</div>
-        <div class="secondary" id="arcVersion">[[versionInfo_.arcVersion]]</div>
-      </div>
+      <div>$i18n{aboutArcVersionLabel}</div>
+      <div class="secondary" id="arcVersion">[[versionInfo_.arcVersion]]</div>
     </div>
-    <div class="settings-box two-line">
-      <div class="start">
-        <div>Blink</div><!-- No need to localize. -->
-        <div class="secondary">$i18n{aboutBlinkVersion}</div>
-      </div>
+    <div class="settings-box two-line single-column">
+      <div>Blink</div><!-- No need to localize. -->
+      <div class="secondary">$i18n{aboutBlinkVersion}</div>
     </div>
-    <div class="settings-box two-line">
-      <div class="start">
-        <div>V8</div>
-        <div class="secondary">$i18n{aboutJsEngineVersion}</div>
-      </div>
+    <div class="settings-box two-line single-column">
+      <div>V8</div>
+      <div class="secondary">$i18n{aboutJsEngineVersion}</div>
     </div>
-    <div class="settings-box two-line">
-      <div class="start">
-        <div>$i18n{aboutUserAgentLabel}</div>
-        <div class="secondary">$i18n{aboutUserAgent}</div>
-      </div>
+    <div class="settings-box two-line single-column">
+      <div>$i18n{aboutUserAgentLabel}</div>
+      <div class="secondary">$i18n{aboutUserAgent}</div>
     </div>
-    <div class="settings-box two-line">
-      <div class="start">
-        <div>$i18n{aboutCommandLineLabel}</div>
-        <div class="secondary">$i18n{aboutCommandLine}</div>
-      </div>
+    <div class="settings-box two-line single-column">
+      <div>$i18n{aboutCommandLineLabel}</div>
+      <div class="secondary">$i18n{aboutCommandLine}</div>
     </div>
-    <div class="settings-box two-line">
-      <div class="start">
-        <div>$i18n{aboutBuildDateLabel}</div>
-        <div class="secondary">$i18n{aboutBuildDate}</div>
-      </div>
+    <div class="settings-box two-line single-column">
+      <div>$i18n{aboutBuildDateLabel}</div>
+      <div class="secondary">$i18n{aboutBuildDate}</div>
     </div>
   </template>
   <script src="detailed_build_info.js"></script>
