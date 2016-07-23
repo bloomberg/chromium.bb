@@ -113,7 +113,7 @@ chromeMocks.runtime.connectNative = function(application) {
   return port;
 };
 
-/** @const {Object<!chromeMocks.runtime.Port>} */
+/** @type {Object<!chromeMocks.runtime.Port>} */
 var nativePorts = null;
 
 /** @type {string} */
