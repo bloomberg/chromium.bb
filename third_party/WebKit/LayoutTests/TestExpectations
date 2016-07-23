@@ -756,7 +756,6 @@ crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.htm
 crbug.com/613728 fast/table/border-collapsing/cached-cell-append.html [ Failure ]
 crbug.com/613728 fast/table/border-collapsing/cached-69296.html [ Failure ]
 crbug.com/613728 fast/table/border-collapsing/cached-change-table-border-width.html [ Failure ]
-crbug.com/613728 [ Mac Win ] fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
