@@ -1,21 +1,19 @@
+<!DOCTYPE html>
+<title>Test that stalling very early, while loading meta-data, stops delaying the load event.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <video></video>
-<p>Test that stalling very early, while loading meta-data, stops delaying the load event.</p>
-<script src=../../media-resources/media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../../media-resources/video-test.js></script>
 <script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-    // Expected events.
-    waitForEvent("loadstart");
-    waitForEvent("stalled");
-    waitForEvent("suspend");
-
-    // We want to make sure the onload event fires.
-    window.onload = function() {
-       consoleWrite("EVENT(window.onload)");
-       endTest();
-    };
+    var expectedEvents = ["loadstart", "stalled"];
+    var watcher = new EventWatcher(t, video, expectedEvents);
+    watcher.wait_for(expectedEvents).then(t.step_func(function() {
+        // We want to make sure the onload event fires.
+        window.onload = t.step_func_done();
+    }));
 
     // Find a supported media file.
     var mediaFile = findMediaFile("video", "content/test");
@@ -23,5 +21,5 @@
 
     // Load should stall very early in the loading process.
     video.src = "http://127.0.0.1:8000/resources/load-and-stall.cgi?name=../../../media/" + mediaFile + "&mimeType=" + mimeType + "&stallAt=1&stallFor=4";
-
+});
 </script>
