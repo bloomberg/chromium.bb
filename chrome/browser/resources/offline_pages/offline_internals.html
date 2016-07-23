@@ -17,7 +17,7 @@
   <body>
     <h1>Offline Internals</h1>
     <div>
-      <div id="current-status"></div>
+      <span id="current-status"></span>
       <button id="refresh">Refresh page</button>
       <button id="download">Dump</button>
     </div>
@@ -68,5 +68,8 @@
       </thead>
       <tbody id="request-queue"> </tbody>
     </table>
+    <input id="url" type="url">
+    <button id="add-to-queue">Load in background</button>
+    <div id="save-url-state"></div>
   </body>
 </html>

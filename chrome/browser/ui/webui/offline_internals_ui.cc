@@ -19,16 +19,19 @@
 #include "chrome/common/url_constants.h"
 #include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 
 // Class acting as a controller of the chrome://offline-internals WebUI.
+// TODO(chili): Should split this file and move to webui/offline_internals/
 class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
  public:
   OfflineInternalsUIMessageHandler();
@@ -61,6 +64,12 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Load whether logs are being recorded.
   void HandleGetLoggingState(const base::ListValue* args);
+
+  // Adds a url to the background loader queue.
+  void HandleAddToRequestQueue(const base::ListValue* args);
+
+  // Load whether device is currently offline.
+  void HandleGetNetworkStatus(const base::ListValue* args);
 
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
@@ -197,7 +206,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetString("namespace", page.client_id.name_space);
     offline_page->SetDouble("size", page.file_size);
     offline_page->SetString("id", std::to_string(page.offline_id));
-    offline_page->SetString("filePath", page.file_path.value());
+    offline_page->SetString("filePath", page.GetOfflineURL().spec());
     offline_page->SetDouble("creationTime", page.creation_time.ToJsTime());
     offline_page->SetDouble("lastAccessTime",
                               page.last_access_time.ToJsTime());
@@ -270,6 +279,17 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
   offline_page_model_->GetLogger()->SetIsLogging(should_record);
 }
 
+void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
+    const base::ListValue* args) {
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  ResolveJavascriptCallback(
+      *callback_id,
+      base::StringValue(
+          net::NetworkChangeNotifier::IsOffline() ? "Offline" : "Online"));
+}
+
 void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
     const base::ListValue* args) {
   bool should_record;
@@ -308,6 +328,27 @@ void OfflineInternalsUIMessageHandler::HandleGetEventLogs(
   ResolveJavascriptCallback(*callback_id, result);
 }
 
+void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
+    const base::ListValue* args) {
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  std::string url;
+  CHECK(args->GetString(1, &url));
+
+  std::ostringstream id_stream;
+  id_stream << std::rand();
+
+  ResolveJavascriptCallback(
+      *callback_id,
+      base::FundamentalValue(
+          request_coordinator_->SavePageLater(
+              GURL(url),
+              offline_pages::ClientId(offline_pages::kAsyncNamespace,
+                                      id_stream.str()),
+              true)));
+}
+
 void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "deleteAllPages",
@@ -340,6 +381,14 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getLoggingState",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleGetLoggingState,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "addToRequestQueue",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleAddToRequestQueue,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getNetworkStatus",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleGetNetworkStatus,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Get the offline page model associated with this web ui.

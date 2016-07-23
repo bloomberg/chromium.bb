@@ -37,7 +37,10 @@ cr.define('offlineInternals', function() {
       row.appendChild(checkboxCell);
 
       var cell = document.createElement('td');
-      cell.textContent = pages[i].onlineUrl;
+      var link = document.createElement('a');
+      link.setAttribute('href', pages[i].filePath);
+      link.textContent = pages[i].onlineUrl;
+      cell.appendChild(link);
       row.appendChild(cell);
 
       cell = document.createElement('td');
@@ -106,6 +109,9 @@ cr.define('offlineInternals', function() {
   function refreshAll() {
     browserProxy_.getStoredPages().then(fillStoredPages);
     browserProxy_.getRequestQueue().then(fillRequestQueue);
+    browserProxy_.getNetworkStatus().then(function(networkStatus) {
+      $('current-status').textContent = networkStatus;
+    });
     refreshLog();
   }
 
@@ -173,19 +179,47 @@ cr.define('offlineInternals', function() {
   }
 
   function initialize() {
+    /**
+     * @param {!boolean} enabled Whether to enable Logging.
+     */
+    function togglePageModelLog(enabled) {
+      browserProxy_.setRecordPageModel(enabled);
+      $('model-status').textContent = enabled ? 'On' : 'Off';
+    }
+
+    /**
+     * @param {!boolean} enabled Whether to enable Logging.
+     */
+    function toggleRequestQueueLog(enabled) {
+      browserProxy_.setRecordRequestQueue(enabled);
+      $('request-status').textContent = enabled ? 'On' : 'Off';
+    }
+
     $('clear-all').onclick = deleteAllPages;
     $('clear-selected').onclick = deleteSelectedPages;
     $('refresh').onclick = refreshAll;
     $('download').onclick = download;
-    $('log-model-on').onclick =
-        browserProxy_.setRecordPageModel.bind(browserProxy_, true);
-    $('log-model-off').onclick =
-        browserProxy_.setRecordPageModel.bind(browserProxy_, false);
-    $('log-request-on').onclick =
-        browserProxy_.setRecordRequestQueue.bind(browserProxy_, true);
-    $('log-request-off').onclick =
-        browserProxy_.setRecordRequestQueue.bind(browserProxy_, false);
+    $('log-model-on').onclick = togglePageModelLog.bind(this, true);
+    $('log-model-off').onclick = togglePageModelLog.bind(this, false);
+    $('log-request-on').onclick = toggleRequestQueueLog.bind(this, true);
+    $('log-request-off').onclick = toggleRequestQueueLog.bind(this, false);
     $('refresh-logs').onclick = refreshLog;
+    $('add-to-queue').onclick = function() {
+      var saveUrl = $('url').value;
+      browserProxy_.addToRequestQueue(saveUrl)
+        .then(function(state) {
+          if (state) {
+            $('save-url-state').textContent =
+              saveUrl + ' has been added to queue.';
+            $('url').value = '';
+            browserProxy_.getRequestQueue().then(fillRequestQueue);
+          } else {
+            $('save-url-state').textContent =
+              saveUrl + ' failed to be added to queue.';
+          }
+        });
+    };
+
     refreshAll();
   }
 

@@ -95,6 +95,21 @@ cr.define('offlineInternals', function() {
      *     is retrieved.
      */
     getLoggingState: function() {},
+
+    /**
+     * Adds the given url to the background loader queue.
+     * @param {string} url Url of the page to load later.
+     * @return {!Promise<boolean>} A promise firing after added to queue.
+     *     Promise will return true if url has been successfully added.
+     */
+    addToRequestQueue: function(url) {},
+
+    /**
+     * Gets the current network status in string form.
+     * @return {!Promise<string>} A promise firing when the network status
+     *     is retrieved.
+     */
+    getNetworkStatus: function() {},
   };
 
   /**
@@ -143,7 +158,17 @@ cr.define('offlineInternals', function() {
     /** @override */
     getLoggingState: function() {
       return cr.sendWithPromise('getLoggingState');
-    }
+    },
+
+    /** @override */
+    addToRequestQueue: function(url) {
+      return cr.sendWithPromise('addToRequestQueue', url);
+    },
+
+    /** @override */
+    getNetworkStatus: function() {
+      return cr.sendWithPromise('getNetworkStatus');
+    },
   };
 
   return {
