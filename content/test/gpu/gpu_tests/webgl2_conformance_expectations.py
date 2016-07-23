@@ -575,6 +575,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
         ['linux', 'intel'], bug=540543)  # GPU timeout
 
+    self.Fail('deqp/data/gles3/shaders/linkage.html',
+        ['linux', 'intel'], bug=483282)
+
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     # It has been fixed in Mesa 12.0
@@ -835,6 +838,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
+        ['linux', 'amd', 'no_angle'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['linux', 'amd', 'no_angle'], bug=483282)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
