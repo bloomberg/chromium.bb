@@ -223,9 +223,6 @@
       'defines': [
         'VERSION=<(version_full)',
       ],
-      'include_dirs': [
-        '../testing/gmock/include',
-      ],
       'sources': [
         # Note: sources list duplicated in GN build.
         'base/auto_thread_task_runner_unittest.cc',
@@ -574,9 +571,6 @@
           ],
           'defines': [
             'VERSION=<(version_full)',
-          ],
-          'include_dirs': [
-            '../testing/gmock/include',
           ],
           'sources': [
             'base/run_all_unittests.cc',

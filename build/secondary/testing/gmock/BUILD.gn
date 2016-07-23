@@ -4,7 +4,10 @@
 
 config("gmock_config") {
   # Gmock headers need to be able to find themselves.
-  include_dirs = [ "include" ]
+  include_dirs = [
+    "//testing/gmock_custom",
+    "include",
+  ]
 }
 
 static_library("gmock") {

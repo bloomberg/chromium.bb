@@ -36,11 +36,12 @@
         'gmock/src/gmock-all.cc',  # Not needed by our build.
       ],
       'include_dirs': [
-        'gmock',
+        'gmock_custom',
         'gmock/include',
       ],
       'all_dependent_settings': {
         'include_dirs': [
+          'gmock_custom',
           'gmock/include',  # So that gmock headers can find themselves.
         ],
       },

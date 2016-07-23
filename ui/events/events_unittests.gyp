@@ -65,9 +65,6 @@
         'win/event_utils_win_unittest.cc',
         'x/events_x_unittest.cc',
       ],
-      'include_dirs': [
-        '../../testing/gmock/include',
-      ],
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
