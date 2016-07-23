@@ -63,6 +63,7 @@
         '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
       ],
       'sources': [
+        'shell/test/meta_tags_egtest.mm',
         'shell/test/navigation_egtest.mm',
         'shell/test/page_state_egtest.mm',
       ],
