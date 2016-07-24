@@ -30,7 +30,3 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(erikchen) check / generate reference images.
     self.Fail('Pixel.CSSFilterEffects', ['mac'], bug=581526)
     self.Fail('Pixel.CSSFilterEffects.NoOverlays', ['mac'], bug=581526)
-
-    # TODO(kbr): remove once expectations for Android have been
-    # generated using the new naming convention.
-    self.Fail('*', ['android'], bug=624621)
