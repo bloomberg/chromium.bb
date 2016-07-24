@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
@@ -29,11 +30,6 @@ namespace {
 
 // Used to indicate that no line is currently selected by the user.
 const int kNoSelection = -1;
-
-#if !defined(OS_ANDROID)
-// Size difference between the normal font and the smaller font, in pixels.
-const int kSmallerFontSizeDelta = -1;
-#endif
 
 }  // namespace
 
@@ -81,17 +77,6 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
   controller_common_->SetKeyPressCallback(
       base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
-#if !defined(OS_ANDROID)
-  smaller_font_list_ =
-      normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
-  bold_font_list_ = normal_font_list_.DeriveWithWeight(gfx::Font::Weight::BOLD);
-#if defined(OS_MACOSX)
-  // There is no italic version of the system font.
-  warning_font_list_ = normal_font_list_;
-#else
-  warning_font_list_ = normal_font_list_.DeriveWithStyle(gfx::Font::ITALIC);
-#endif
-#endif
 }
 
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
@@ -334,11 +319,12 @@ AutofillPopupControllerImpl::GetSuggestions() {
 #if !defined(OS_ANDROID)
 int AutofillPopupControllerImpl::GetElidedValueWidthForRow(size_t row) {
   return gfx::GetStringWidth(GetElidedValueAt(row),
-                             GetValueFontListForRow(row));
+                             layout_model_.GetValueFontListForRow(row));
 }
 
 int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(size_t row) {
-  return gfx::GetStringWidth(GetElidedLabelAt(row), GetLabelFontList());
+  return gfx::GetStringWidth(GetElidedLabelAt(row),
+                             layout_model_.GetLabelFontList());
 }
 #endif
 
@@ -392,40 +378,6 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
 
   return true;
 }
-
-#if !defined(OS_ANDROID)
-const gfx::FontList& AutofillPopupControllerImpl::GetValueFontListForRow(
-    size_t index) const {
-  // Autofill values have positive |frontend_id|.
-  if (suggestions_[index].frontend_id > 0)
-    return bold_font_list_;
-
-  // All other message types are defined here.
-  PopupItemId id = static_cast<PopupItemId>(suggestions_[index].frontend_id);
-  switch (id) {
-    case POPUP_ITEM_ID_WARNING_MESSAGE:
-      return warning_font_list_;
-    case POPUP_ITEM_ID_CLEAR_FORM:
-    case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
-    case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
-    case POPUP_ITEM_ID_SEPARATOR:
-      return normal_font_list_;
-    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
-      return smaller_font_list_;
-    case POPUP_ITEM_ID_TITLE:
-    case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
-    case POPUP_ITEM_ID_DATALIST_ENTRY:
-    case POPUP_ITEM_ID_PASSWORD_ENTRY:
-      return bold_font_list_;
-  }
-  NOTREACHED();
-  return normal_font_list_;
-}
-
-const gfx::FontList& AutofillPopupControllerImpl::GetLabelFontList() const {
-  return smaller_font_list_;
-}
-#endif
 
 SkColor AutofillPopupControllerImpl::GetBackgroundColorForRow(int index) const {
   if (index == selected_line_)
@@ -556,10 +508,10 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
 void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
     size_t row,
     int available_width) {
-  int value_width =
-      gfx::GetStringWidth(suggestions_[row].value, GetValueFontListForRow(row));
-  int label_width =
-      gfx::GetStringWidth(suggestions_[row].label, GetLabelFontList());
+  int value_width = gfx::GetStringWidth(
+      suggestions_[row].value, layout_model_.GetValueFontListForRow(row));
+  int label_width = gfx::GetStringWidth(suggestions_[row].label,
+                                        layout_model_.GetLabelFontList());
   int total_text_length = value_width + label_width;
 
   // The line can have no strings if it represents a UI element, such as
@@ -569,13 +521,14 @@ void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
 
   // Each field receives space in proportion to its length.
   int value_size = available_width * value_width / total_text_length;
-  elided_values_[row] =
-      gfx::ElideText(suggestions_[row].value, GetValueFontListForRow(row),
-                     value_size, gfx::ELIDE_TAIL);
+  elided_values_[row] = gfx::ElideText(
+      suggestions_[row].value, layout_model_.GetValueFontListForRow(row),
+      value_size, gfx::ELIDE_TAIL);
 
   int label_size = available_width * label_width / total_text_length;
-  elided_labels_[row] = gfx::ElideText(
-      suggestions_[row].label, GetLabelFontList(), label_size, gfx::ELIDE_TAIL);
+  elided_labels_[row] =
+      gfx::ElideText(suggestions_[row].label, layout_model_.GetLabelFontList(),
+                     label_size, gfx::ELIDE_TAIL);
 }
 #endif
 

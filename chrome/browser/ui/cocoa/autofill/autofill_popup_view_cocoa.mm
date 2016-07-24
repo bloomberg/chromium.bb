@@ -197,12 +197,13 @@ using autofill::AutofillPopupLayoutModel;
         textYOffset:(CGFloat)textYOffset {
   NSColor* nameColor =
       controller_->IsWarning(index) ? [self warningColor] : [self nameColor];
-  NSDictionary* nameAttributes =
-      [NSDictionary dictionaryWithObjectsAndKeys:
-           controller_->GetValueFontListForRow(index).GetPrimaryFont().
-               GetNativeFont(),
-           NSFontAttributeName, nameColor, NSForegroundColorAttributeName,
-           nil];
+  NSDictionary* nameAttributes = [NSDictionary
+      dictionaryWithObjectsAndKeys:controller_->layout_model()
+                                       .GetValueFontListForRow(index)
+                                       .GetPrimaryFont()
+                                       .GetNativeFont(),
+                                   NSFontAttributeName, nameColor,
+                                   NSForegroundColorAttributeName, nil];
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
   x -= rightAlign ? nameSize.width : 0;
   CGFloat y = bounds.origin.y + (bounds.size.height - nameSize.height) / 2;
@@ -241,13 +242,13 @@ using autofill::AutofillPopupLayoutModel;
             rightAlign:(BOOL)rightAlign
                 bounds:(NSRect)bounds
            textYOffset:(CGFloat)textYOffset {
-  NSDictionary* subtextAttributes =
-      [NSDictionary dictionaryWithObjectsAndKeys:
-           controller_->GetLabelFontList().GetPrimaryFont().GetNativeFont(),
-           NSFontAttributeName,
-           [self subtextColor],
-           NSForegroundColorAttributeName,
-           nil];
+  NSDictionary* subtextAttributes = [NSDictionary
+      dictionaryWithObjectsAndKeys:controller_->layout_model()
+                                       .GetLabelFontList()
+                                       .GetPrimaryFont()
+                                       .GetNativeFont(),
+                                   NSFontAttributeName, [self subtextColor],
+                                   NSForegroundColorAttributeName, nil];
   NSSize subtextSize = [subtext sizeWithAttributes:subtextAttributes];
   x -= rightAlign ? subtextSize.width : 0;
   CGFloat y = bounds.origin.y + (bounds.size.height - subtextSize.height) / 2;

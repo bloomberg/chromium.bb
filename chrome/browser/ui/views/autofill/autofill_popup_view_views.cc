@@ -80,7 +80,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   value_rect.Inset(AutofillPopupLayoutModel::kEndPadding, 0);
   canvas->DrawStringRectWithFlags(
       controller_->GetElidedValueAt(index),
-      controller_->GetValueFontListForRow(index),
+      controller_->layout_model().GetValueFontListForRow(index),
       controller_->IsWarning(index) ? kWarningTextColor : kValueTextColor,
       value_rect, text_align);
 
@@ -111,13 +111,13 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   // Draw the label text.
   const int label_width =
       gfx::GetStringWidth(controller_->GetElidedLabelAt(index),
-                          controller_->GetLabelFontList());
+                          controller_->layout_model().GetLabelFontList());
   if (!is_rtl)
     x_align_left -= label_width;
 
   canvas->DrawStringRectWithFlags(
-      controller_->GetElidedLabelAt(index), controller_->GetLabelFontList(),
-      kLabelTextColor,
+      controller_->GetElidedLabelAt(index),
+      controller_->layout_model().GetLabelFontList(), kLabelTextColor,
       gfx::Rect(x_align_left, entry_rect.y(), label_width, entry_rect.height()),
       text_align);
 }

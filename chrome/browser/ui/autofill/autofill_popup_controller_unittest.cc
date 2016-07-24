@@ -93,10 +93,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::RemoveSelectedLine;
   using AutofillPopupControllerImpl::popup_bounds;
   using AutofillPopupControllerImpl::element_bounds;
-#if !defined(OS_ANDROID)
-  using AutofillPopupControllerImpl::GetValueFontListForRow;
-  using AutofillPopupControllerImpl::GetLabelFontList;
-#endif
   using AutofillPopupControllerImpl::SetValues;
   using AutofillPopupControllerImpl::GetWeakPtr;
   MOCK_METHOD1(InvalidateRow, void(size_t));
@@ -445,10 +441,12 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
   int popup_max_width =
       gfx::GetStringWidth(
           suggestions[0].value,
-          autofill_popup_controller_->GetValueFontListForRow(0)) +
+          autofill_popup_controller_->layout_model().GetValueFontListForRow(
+              0)) +
       gfx::GetStringWidth(
           suggestions[0].label,
-          autofill_popup_controller_->GetLabelFontList()) - 25;
+          autofill_popup_controller_->layout_model().GetLabelFontList()) -
+      25;
 
   autofill_popup_controller_->ElideValueAndLabelForRow(0, popup_max_width);
 

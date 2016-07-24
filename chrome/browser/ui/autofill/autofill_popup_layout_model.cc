@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "grit/components_scaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace autofill {
@@ -26,6 +27,11 @@ const size_t kRowHeight = 24;
 
 // The vertical height of a separator in pixels.
 const size_t kSeparatorHeight = 1;
+
+#if !defined(OS_ANDROID)
+// Size difference between the normal font and the smaller font, in pixels.
+const int kSmallerFontSizeDelta = -1;
+#endif
 
 const struct {
   const char* name;
@@ -55,7 +61,21 @@ int GetRowHeightFromId(int identifier) {
 
 AutofillPopupLayoutModel::AutofillPopupLayoutModel(
     AutofillPopupViewDelegate* delegate)
-    : delegate_(delegate) {}
+    : delegate_(delegate) {
+#if !defined(OS_ANDROID)
+  smaller_font_list_ =
+      normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
+  bold_font_list_ = normal_font_list_.DeriveWithWeight(gfx::Font::Weight::BOLD);
+#if defined(OS_MACOSX)
+  // There is no italic version of the system font.
+  warning_font_list_ = normal_font_list_;
+#else
+  warning_font_list_ = normal_font_list_.DeriveWithStyle(gfx::Font::ITALIC);
+#endif
+#endif
+}
+
+AutofillPopupLayoutModel::~AutofillPopupLayoutModel() {}
 
 #if !defined(OS_ANDROID)
 int AutofillPopupLayoutModel::GetDesiredPopupHeight() const {
@@ -124,6 +144,40 @@ void AutofillPopupLayoutModel::UpdatePopupBounds() {
   popup_bounds_ = view_common_.CalculatePopupBounds(
       popup_width, popup_height, RoundedElementBounds(),
       delegate_->container_view(), delegate_->IsRTL());
+}
+
+const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
+    size_t index) const {
+  std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
+
+  // Autofill values have positive |frontend_id|.
+  if (suggestions[index].frontend_id > 0)
+    return bold_font_list_;
+
+  // All other message types are defined here.
+  PopupItemId id = static_cast<PopupItemId>(suggestions[index].frontend_id);
+  switch (id) {
+    case POPUP_ITEM_ID_WARNING_MESSAGE:
+      return warning_font_list_;
+    case POPUP_ITEM_ID_CLEAR_FORM:
+    case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
+    case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
+    case POPUP_ITEM_ID_SEPARATOR:
+      return normal_font_list_;
+    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
+      return smaller_font_list_;
+    case POPUP_ITEM_ID_TITLE:
+    case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
+    case POPUP_ITEM_ID_DATALIST_ENTRY:
+    case POPUP_ITEM_ID_PASSWORD_ENTRY:
+      return bold_font_list_;
+  }
+  NOTREACHED();
+  return normal_font_list_;
+}
+
+const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontList() const {
+  return smaller_font_list_;
 }
 #endif
 

@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -29,6 +30,7 @@ namespace autofill {
 class AutofillPopupLayoutModel {
  public:
   explicit AutofillPopupLayoutModel(AutofillPopupViewDelegate* delegate);
+  ~AutofillPopupLayoutModel();
 
   // The minimum amount of padding between the Autofill name and subtext,
   // in pixels.
@@ -60,6 +62,11 @@ class AutofillPopupLayoutModel {
   // Calculates and sets the bounds of the popup, including placing it properly
   // to prevent it from going off the screen.
   void UpdatePopupBounds();
+
+  // The same font can vary based on the type of data it is showing at the row
+  // |index|.
+  const gfx::FontList& GetValueFontListForRow(size_t index) const;
+  const gfx::FontList& GetLabelFontList() const;
 #endif
 
   // Convert a y-coordinate to the closest line.
@@ -78,6 +85,19 @@ class AutofillPopupLayoutModel {
  private:
   // Returns the enclosing rectangle for the element_bounds.
   const gfx::Rect RoundedElementBounds() const;
+
+#if !defined(OS_ANDROID)
+  // The fonts for the popup text.
+  // Normal font (readable size, non bold).
+  gfx::FontList normal_font_list_;
+  // Slightly smaller than the normal font.
+  gfx::FontList smaller_font_list_;
+  // Bold version of the normal font.
+  gfx::FontList bold_font_list_;
+  // Font used for the warning dialog, which may be italic or not depending on
+  // the platform.
+  gfx::FontList warning_font_list_;
+#endif
 
   // The bounds of the Autofill popup.
   gfx::Rect popup_bounds_;

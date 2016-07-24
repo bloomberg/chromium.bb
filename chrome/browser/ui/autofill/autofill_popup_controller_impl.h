@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -97,10 +96,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int list_index) override;
-#if !defined(OS_ANDROID)
-  const gfx::FontList& GetValueFontListForRow(size_t index) const override;
-  const gfx::FontList& GetLabelFontList() const override;
-#endif
   SkColor GetBackgroundColorForRow(int index) const override;
   int selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
@@ -169,19 +164,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // ensure that it fits on the screen.
   std::vector<base::string16> elided_values_;
   std::vector<base::string16> elided_labels_;
-
-#if !defined(OS_ANDROID)
-  // The fonts for the popup text.
-  // Normal font (readable size, non bold).
-  gfx::FontList normal_font_list_;
-  // Slightly smaller than the normal font.
-  gfx::FontList smaller_font_list_;
-  // Bold version of the normal font.
-  gfx::FontList bold_font_list_;
-  // Font used for the warning dialog, which may be italic or not depending on
-  // the platform.
-  gfx::FontList warning_font_list_;
-#endif
 
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
