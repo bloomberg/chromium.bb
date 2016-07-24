@@ -83,6 +83,10 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
                                           take_memory_measurement=True)
 
   @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+  @classmethod
   def Name(cls):
     return 'system_health.memory_%s' % cls.PLATFORM
 
