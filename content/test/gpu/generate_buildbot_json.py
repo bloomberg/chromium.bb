@@ -671,6 +671,15 @@ COMMON_GTESTS = {
         'allow_on_android': True,
       }
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          # TODO(kbr): investigate inability to recognize this
+          # configuration in the various tests. crbug.com/624621
+          'Android Release (Pixel C)',
+        ],
+      },
+    ],
     'desktop_args': ['--use-gpu-in-tests']
   },
   'gl_unittests': {

@@ -1564,20 +1564,6 @@
         "use_xvfb": false
       },
       {
-        "override_isolate_target": "gl_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        },
-        "test": "gl_tests",
-        "use_xvfb": false
-      },
-      {
         "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
