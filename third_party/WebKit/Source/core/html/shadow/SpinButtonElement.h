@@ -76,7 +76,7 @@ public:
 private:
     SpinButtonElement(Document&, SpinButtonOwner&);
 
-    void detach(const AttachContext&) override;
+    void detachLayoutTree(const AttachContext&) override;
     bool isSpinButtonElement() const override { return true; }
     bool isDisabledFormControl() const override { return shadowHost() && shadowHost()->isDisabledFormControl(); }
     bool matchesReadOnlyPseudoClass() const override;

@@ -76,9 +76,9 @@ SVGElement::~SVGElement()
     ASSERT(isConnected() || !hasRelativeLengths());
 }
 
-void SVGElement::detach(const AttachContext& context)
+void SVGElement::detachLayoutTree(const AttachContext& context)
 {
-    Element::detach(context);
+    Element::detachLayoutTree(context);
     if (SVGElement* element = correspondingElement())
         element->removeInstanceMapping(this);
 }

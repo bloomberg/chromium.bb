@@ -1575,7 +1575,7 @@ void Element::attachLayoutTree(const AttachContext& context)
     createPseudoElementIfNeeded(PseudoIdFirstLetter);
 }
 
-void Element::detach(const AttachContext& context)
+void Element::detachLayoutTree(const AttachContext& context)
 {
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     cancelFocusAppearanceUpdate();
@@ -1607,7 +1607,7 @@ void Element::detach(const AttachContext& context)
             shadow->detach(context);
     }
 
-    ContainerNode::detach(context);
+    ContainerNode::detachLayoutTree(context);
 
     if (!context.performingReattach && isUserActionElement()) {
         if (hovered())

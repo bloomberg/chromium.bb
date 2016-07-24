@@ -920,7 +920,7 @@ void LayoutView::setIsInWindow(bool isInWindow)
     if (m_compositor)
         m_compositor->setIsInWindow(isInWindow);
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    // We don't invalidate layers during document detach(), so must clear the should-keep-alive
+    // We don't invalidate layers during Document::detachLayoutTree(), so must clear the should-keep-alive
     // DisplayItemClients which may be deleted before the layers being subsequence owners.
     if (!isInWindow && layer())
         layer()->endShouldKeepAliveAllClientsRecursive();

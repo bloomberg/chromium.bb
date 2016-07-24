@@ -57,7 +57,7 @@ public:
     virtual bool canAffectSelector() const { return false; }
 
     void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
 
     size_t distributedNodesSize() const { return m_distributedNodes.size(); }
     Node* distributedNodeAt(size_t index)  const { return m_distributedNodes.at(index); }

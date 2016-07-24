@@ -340,7 +340,7 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const
 // 2. FrameNavigationDisabler / LocalFrame::isNavigationAllowed() are intended
 //    to prevent Documents from being reattached during destruction, since it
 //    can cause bugs with security origin confusion. This is primarily intended
-//    to block /synchronous/ navigations during things lke Document::detach().
+//    to block /synchronous/ navigations during things lke Document::detachLayoutTree().
 inline bool NavigationScheduler::shouldScheduleReload() const
 {
     return m_frame->page() && m_frame->isNavigationAllowed() && NavigationDisablerForBeforeUnload::isNavigationAllowed();

@@ -189,11 +189,11 @@ Node* PluginDocument::pluginNode()
     return m_pluginNode.get();
 }
 
-void PluginDocument::detach(const AttachContext& context)
+void PluginDocument::detachLayoutTree(const AttachContext& context)
 {
     // Release the plugin node so that we don't have a circular reference.
     m_pluginNode = nullptr;
-    HTMLDocument::detach(context);
+    HTMLDocument::detachLayoutTree(context);
 }
 
 DEFINE_TRACE(PluginDocument)

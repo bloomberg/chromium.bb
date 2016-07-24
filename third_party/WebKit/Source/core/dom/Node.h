@@ -513,7 +513,7 @@ public:
 
     // Detaches the node from the layout tree, making it invisible in the rendered view. This method will remove
     // the node's layout object from the layout tree and delete it.
-    virtual void detach(const AttachContext& = AttachContext());
+    virtual void detachLayoutTree(const AttachContext& = AttachContext());
 
     void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
@@ -828,7 +828,7 @@ inline void Node::lazyReattachIfAttached()
     AttachContext context;
     context.performingReattach = true;
 
-    detach(context);
+    detachLayoutTree(context);
     markAncestorsWithChildNeedsStyleRecalc();
 }
 

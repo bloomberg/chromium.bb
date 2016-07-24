@@ -49,9 +49,9 @@ ClearButtonElement* ClearButtonElement::create(Document& document, ClearButtonOw
     return element;
 }
 
-void ClearButtonElement::detach(const AttachContext& context)
+void ClearButtonElement::detachLayoutTree(const AttachContext& context)
 {
-    HTMLDivElement::detach(context);
+    HTMLDivElement::detachLayoutTree(context);
 }
 
 void ClearButtonElement::defaultEventHandler(Event* event)

@@ -107,7 +107,7 @@ void PseudoElement::dispose()
     DCHECK(!nextSibling());
     DCHECK(!previousSibling());
 
-    detach();
+    detachLayoutTree();
     Element* parent = parentOrShadowHostElement();
     document().adoptIfNeeded(*this);
     setParentOrShadowHostNode(0);

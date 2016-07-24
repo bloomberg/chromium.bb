@@ -4,7 +4,7 @@
       // Collect the IDBRequest so that only the indexeddb message dispatcher
       // has a reference to IDBDatabase.
       gc();
-      // Make Document::detach run stopActiveDOMObjects.
+      // Make Document::detachLayoutTree run stopActiveDOMObjects.
       location.href = 'database_callbacks_second.html';
     }
     function openConnection() {

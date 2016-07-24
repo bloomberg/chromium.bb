@@ -101,10 +101,10 @@ void HTMLOptionElement::attachLayoutTree(const AttachContext& context)
     HTMLElement::attachLayoutTree(optionContext);
 }
 
-void HTMLOptionElement::detach(const AttachContext& context)
+void HTMLOptionElement::detachLayoutTree(const AttachContext& context)
 {
     m_style.clear();
-    HTMLElement::detach(context);
+    HTMLElement::detachLayoutTree(context);
 }
 
 bool HTMLOptionElement::supportsFocus() const

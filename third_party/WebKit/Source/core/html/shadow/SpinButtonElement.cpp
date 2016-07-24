@@ -59,10 +59,10 @@ SpinButtonElement* SpinButtonElement::create(Document& document, SpinButtonOwner
     return element;
 }
 
-void SpinButtonElement::detach(const AttachContext& context)
+void SpinButtonElement::detachLayoutTree(const AttachContext& context)
 {
     releaseCapture(EventDispatchDisallowed);
-    HTMLDivElement::detach(context);
+    HTMLDivElement::detachLayoutTree(context);
 }
 
 void SpinButtonElement::defaultEventHandler(Event* event)

@@ -51,7 +51,7 @@ public:
     void defaultEventHandler(Event*) override;
     bool willRespondToMouseMoveEvents() override;
     bool willRespondToMouseClickEvents() override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
     const AtomicString& shadowPseudoId() const override;
     HTMLInputElement* hostInput() const;
     void setPositionFromPoint(const LayoutPoint&);

@@ -87,7 +87,7 @@ private:
     unsigned m_fragmentLength;
     bool m_isRemainingTextLayoutObject;
     RefPtr<StringImpl> m_contentString;
-    // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detach() if
+    // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detachLayoutTree() if
     // it goes away first.
     UntracedMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
 };

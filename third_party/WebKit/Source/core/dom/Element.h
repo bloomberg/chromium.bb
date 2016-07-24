@@ -331,7 +331,7 @@ public:
     virtual void copyNonAttributePropertiesFromElement(const Element&) { }
 
     void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
 
     virtual LayoutObject* createLayoutObject(const ComputedStyle&);
     virtual bool layoutObjectIsNeeded(const ComputedStyle&);

@@ -154,7 +154,7 @@ public:
 
     bool layoutObjectIsNeeded(const ComputedStyle&) final;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    void detach(const AttachContext& = AttachContext()) final;
+    void detachLayoutTree(const AttachContext& = AttachContext()) final;
     void updateFocusAppearance(SelectionBehaviorOnFocus) final;
 
     // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the NVI-idiom here by making

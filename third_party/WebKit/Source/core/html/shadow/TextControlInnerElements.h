@@ -75,7 +75,7 @@ public:
 
 private:
     explicit SearchFieldCancelButtonElement(Document&);
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
     bool supportsFocus() const override { return false; }
 
     bool m_capturing;

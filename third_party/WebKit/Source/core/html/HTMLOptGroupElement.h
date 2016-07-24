@@ -53,7 +53,7 @@ private:
     void accessKeyAction(bool sendMouseEvents) override;
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
     void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
     bool matchesEnabledPseudoClass() const override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;

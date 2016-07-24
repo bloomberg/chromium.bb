@@ -144,10 +144,10 @@ void PickerIndicatorElement::closePopup()
     m_chooser->endChooser();
 }
 
-void PickerIndicatorElement::detach(const AttachContext& context)
+void PickerIndicatorElement::detachLayoutTree(const AttachContext& context)
 {
     closePopup();
-    HTMLDivElement::detach(context);
+    HTMLDivElement::detachLayoutTree(context);
 }
 
 AXObject* PickerIndicatorElement::popupRootAXObject() const

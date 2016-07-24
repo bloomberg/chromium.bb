@@ -24,7 +24,7 @@
     // Schedule sibling invalidation set to invalidate span.b
     input.className = "a";
 
-    // Trigger lazyReattachIfAttached() -> detach().
+    // Trigger lazyReattachIfAttached() -> detachLayoutTree().
     document.querySelector("input").type = "button";
 
     // One for attaching the input, and one for the span.b recalc.

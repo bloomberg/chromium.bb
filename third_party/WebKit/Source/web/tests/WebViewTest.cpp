@@ -385,9 +385,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     EXPECT_EQ(kTransparent, webView->backgroundColor());
 
     LocalFrame* frame = webView->mainFrameImpl()->frame();
-    // The detach() and dispose() calls are a hack to prevent this test
+    // The detachLayoutTree() and dispose() calls are a hack to prevent this test
     // from violating invariants about frame state during navigation/detach.
-    frame->document()->detach();
+    frame->document()->detachLayoutTree();
 
     // Creating a new frame view with the background color having 0 alpha.
     frame->createView(IntSize(1024, 768), Color::transparent, true);

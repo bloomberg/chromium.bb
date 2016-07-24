@@ -81,7 +81,7 @@ public:
     bool isV1() const { return type() == ShadowRootType::Open || type() == ShadowRootType::Closed; }
 
     void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;

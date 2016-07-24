@@ -180,7 +180,7 @@ const int showTreeCharacterOffset = 39;
 // LayoutObjects are created during the DOM attachment. This phase computes
 // the style and create the LayoutObject associated with the Node (see
 // Node::attachLayoutTree). LayoutObjects are destructed during detachment (see
-// Node::detach), which can happen when the DOM node is removed from the
+// Node::detachLayoutTree), which can happen when the DOM node is removed from the
 // DOM tree, during page tear down or when the style is changed to contain
 // 'display: none'.
 //

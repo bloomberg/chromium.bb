@@ -196,12 +196,12 @@ void HTMLSlotElement::attachLayoutTree(const AttachContext& context)
     HTMLElement::attachLayoutTree(context);
 }
 
-void HTMLSlotElement::detach(const AttachContext& context)
+void HTMLSlotElement::detachLayoutTree(const AttachContext& context)
 {
     for (auto& node : m_distributedNodes)
         node->lazyReattachIfAttached();
 
-    HTMLElement::detach(context);
+    HTMLElement::detachLayoutTree(context);
 }
 
 void HTMLSlotElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)

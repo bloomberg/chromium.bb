@@ -806,9 +806,9 @@ void HTMLInputElement::attachLayoutTree(const AttachContext& context)
         document().updateFocusAppearanceSoon(SelectionBehaviorOnFocus::Restore);
 }
 
-void HTMLInputElement::detach(const AttachContext& context)
+void HTMLInputElement::detachLayoutTree(const AttachContext& context)
 {
-    HTMLTextFormControlElement::detach(context);
+    HTMLTextFormControlElement::detachLayoutTree(context);
     m_needsToUpdateViewValue = true;
     m_inputTypeView->closePopupView();
 }

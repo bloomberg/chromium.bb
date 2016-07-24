@@ -112,12 +112,12 @@ void InsertionPoint::attachLayoutTree(const AttachContext& context)
     HTMLElement::attachLayoutTree(context);
 }
 
-void InsertionPoint::detach(const AttachContext& context)
+void InsertionPoint::detachLayoutTree(const AttachContext& context)
 {
     for (size_t i = 0; i < m_distributedNodes.size(); ++i)
         m_distributedNodes.at(i)->lazyReattachIfAttached();
 
-    HTMLElement::detach(context);
+    HTMLElement::detachLayoutTree(context);
 }
 
 void InsertionPoint::willRecalcStyle(StyleRecalcChange change)

@@ -357,7 +357,7 @@ void MultiColumnTreeModifyingTest::destroyLayoutObject(LayoutObject* child)
 {
     // Remove and destroy in separate steps, so that we get to test removal of subtrees.
     child->remove();
-    child->node()->detach();
+    child->node()->detachLayoutTree();
 }
 
 void MultiColumnTreeModifyingTest::destroyLayoutObject(const char* childId)

@@ -53,7 +53,7 @@ public:
     void updateTextFragments();
 
     void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
 
 private:
     explicit FirstLetterPseudoElement(Element*);

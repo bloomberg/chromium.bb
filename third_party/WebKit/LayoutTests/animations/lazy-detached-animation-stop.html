@@ -39,7 +39,7 @@ requestAnimationFrame(function() {
     requestAnimationFrame(function() {
         input.type = "button";
         input.type = "text";
-        // Remove the element, but there's no detach() since it's already detach'ed().
+        // Remove the element, but there's no detachLayoutTree() since it's already detached.
         input.remove();
         // Change the id which should mean no more animations.
         input.id = "target2";

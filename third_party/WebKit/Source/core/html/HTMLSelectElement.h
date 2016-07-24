@@ -193,7 +193,7 @@ private:
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     void didRecalcStyle(StyleRecalcChange) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
     void appendToFormData(FormData&) override;
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
 

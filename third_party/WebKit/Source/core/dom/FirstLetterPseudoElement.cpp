@@ -217,7 +217,7 @@ void FirstLetterPseudoElement::attachLayoutTree(const AttachContext& context)
     attachFirstLetterTextLayoutObjects();
 }
 
-void FirstLetterPseudoElement::detach(const AttachContext& context)
+void FirstLetterPseudoElement::detachLayoutTree(const AttachContext& context)
 {
     if (m_remainingTextLayoutObject) {
         if (m_remainingTextLayoutObject->node() && document().isActive()) {
@@ -229,7 +229,7 @@ void FirstLetterPseudoElement::detach(const AttachContext& context)
     }
     m_remainingTextLayoutObject = nullptr;
 
-    PseudoElement::detach(context);
+    PseudoElement::detachLayoutTree(context);
 }
 
 ComputedStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* layoutObjectContainer)

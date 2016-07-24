@@ -48,7 +48,7 @@ public:
 
 private:
     ClearButtonElement(Document&, ClearButtonOwner&);
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
     bool isMouseFocusable() const override { return false; }
     void defaultEventHandler(Event*) override;
     bool isClearButtonElement() const override;

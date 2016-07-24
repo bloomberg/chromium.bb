@@ -108,7 +108,7 @@ private:
     bool willRespondToMouseClickEvents() final;
     void defaultEventHandler(Event*) final;
     void attachLayoutTree(const AttachContext& = AttachContext()) final;
-    void detach(const AttachContext& = AttachContext()) final;
+    void detachLayoutTree(const AttachContext& = AttachContext()) final;
     void finishParsingChildren() final;
 
     // Element functions:

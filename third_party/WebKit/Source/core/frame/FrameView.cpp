@@ -311,8 +311,8 @@ void FrameView::dispose()
 void FrameView::detachScrollbars()
 {
     // Previously, we detached custom scrollbars as early as possible to prevent
-    // Document::detach() from messing with the view such that its scroll bars
-    // won't be torn down. However, scripting in Document::detach() is forbidden
+    // Document::detachLayoutTree() from messing with the view such that its scroll bars
+    // won't be torn down. However, scripting in Document::detachLayoutTree() is forbidden
     // now, so it's not clear if these edge cases can still happen.
     // However, for Oilpan, we still need to remove the native scrollbars before
     // we lose the connection to the HostWindow, so we just unconditionally

@@ -2126,7 +2126,7 @@ void Document::attachLayoutTree(const AttachContext& context)
         view()->didAttachDocument();
 }
 
-void Document::detach(const AttachContext& context)
+void Document::detachLayoutTree(const AttachContext& context)
 {
     TRACE_EVENT0("blink", "Document::detach");
     RELEASE_ASSERT(!m_frame || m_frame->tree().childCount() == 0);
@@ -2142,7 +2142,7 @@ void Document::detach(const AttachContext& context)
     // Defer widget updates to avoid plugins trying to run script inside ScriptForbiddenScope,
     // which will crash the renderer after https://crrev.com/200984
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-    // Don't allow script to run in the middle of detach() because a detaching Document is not in a
+    // Don't allow script to run in the middle of detachLayoutTree() because a detaching Document is not in a
     // consistent state.
     ScriptForbiddenScope forbidScript;
     view()->dispose();
@@ -2195,7 +2195,7 @@ void Document::detach(const AttachContext& context)
         clearAXObjectCache();
 
     m_layoutView = nullptr;
-    ContainerNode::detach(context);
+    ContainerNode::detachLayoutTree(context);
 
     if (this != &axObjectCacheOwner()) {
         if (AXObjectCache* cache = existingAXObjectCache()) {
@@ -2235,10 +2235,10 @@ void Document::detach(const AttachContext& context)
         Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone());
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
-    // us. However, this violates Node::detach() semantics, as it's never
-    // possible to re-attach. Eventually Document::detach() should be renamed,
+    // us. However, this violates Node::detachLayoutTree() semantics, as it's never
+    // possible to re-attach. Eventually Document::detachLayoutTree() should be renamed,
     // or this setting of the frame to 0 could be made explicit in each of the
-    // callers of Document::detach().
+    // callers of Document::detachLayoutTree().
     m_frame = nullptr;
 
     if (m_mediaQueryMatcher)
@@ -2247,7 +2247,7 @@ void Document::detach(const AttachContext& context)
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 
     // FIXME: Currently we call notifyContextDestroyed() only in
-    // Document::detach(), which means that we don't call
+    // Document::detachLayoutTree(), which means that we don't call
     // notifyContextDestroyed() for a document that doesn't get detached.
     // If such a document has any observer, the observer won't get
     // a contextDestroyed() notification. This can happen for a document

@@ -1946,9 +1946,9 @@ void HTMLSelectElement::didRecalcStyle(StyleRecalcChange change)
         m_popup->updateFromElement(PopupMenu::ByStyleChange);
 }
 
-void HTMLSelectElement::detach(const AttachContext& context)
+void HTMLSelectElement::detachLayoutTree(const AttachContext& context)
 {
-    HTMLFormControlElementWithState::detach(context);
+    HTMLFormControlElementWithState::detachLayoutTree(context);
     if (m_popup)
         m_popup->disconnectClient();
     m_popupIsVisible = false;

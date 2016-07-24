@@ -951,7 +951,7 @@ void Node::reattach(const AttachContext& context)
 
     // We only need to detach if the node has already been through attachLayoutTree().
     if (getStyleChangeType() < NeedsReattachStyleChange)
-        detach(reattachContext);
+        detachLayoutTree(reattachContext);
     attachLayoutTree(reattachContext);
 }
 
@@ -968,7 +968,7 @@ void Node::attachLayoutTree(const AttachContext&)
         cache->updateCacheAfterNodeIsAttached(this);
 }
 
-void Node::detach(const AttachContext& context)
+void Node::detachLayoutTree(const AttachContext& context)
 {
     DCHECK(document().lifecycle().stateAllowsDetach());
     DocumentLifecycle::DetachScope willDetach(document().lifecycle());

@@ -56,7 +56,7 @@ class CORE_EXPORT SVGElement : public Element {
 public:
     ~SVGElement() override;
     void attachLayoutTree(const AttachContext&) override;
-    void detach(const AttachContext&) override;
+    void detachLayoutTree(const AttachContext&) override;
 
     short tabIndex() const override;
     bool supportsFocus() const override { return false; }

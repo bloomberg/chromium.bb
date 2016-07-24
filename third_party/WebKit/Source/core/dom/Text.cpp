@@ -374,7 +374,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
     reattachContext.performingReattach = true;
 
     if (getStyleChangeType() < NeedsReattachStyleChange)
-        detach(reattachContext);
+        detachLayoutTree(reattachContext);
     if (layoutObjectIsNeeded)
         LayoutTreeBuilderForText(*this, layoutParent->layoutObject()).createLayoutObject();
     CharacterData::attachLayoutTree(reattachContext);

@@ -71,7 +71,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
 
 HTMLPlugInElement::~HTMLPlugInElement()
 {
-    ASSERT(!m_pluginWrapper); // cleared in detach()
+    DCHECK(!m_pluginWrapper); // cleared in detachLayoutTree()
     ASSERT(!m_isDelayingLoadEvent);
 }
 
@@ -221,7 +221,7 @@ bool HTMLPlugInElement::shouldAccelerate() const
     return false;
 }
 
-void HTMLPlugInElement::detach(const AttachContext& context)
+void HTMLPlugInElement::detachLayoutTree(const AttachContext& context)
 {
     // Update the widget the next time we attach (detaching destroys the plugin).
     // FIXME: None of this "needsWidgetUpdate" related code looks right.
@@ -243,7 +243,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 
     resetInstance();
 
-    HTMLFrameOwnerElement::detach(context);
+    HTMLFrameOwnerElement::detachLayoutTree(context);
 }
 
 LayoutObject* HTMLPlugInElement::createLayoutObject(const ComputedStyle& style)

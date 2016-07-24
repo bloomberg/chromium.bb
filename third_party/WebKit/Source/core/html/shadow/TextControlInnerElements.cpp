@@ -165,13 +165,13 @@ SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::create(Document&
     return element;
 }
 
-void SearchFieldCancelButtonElement::detach(const AttachContext& context)
+void SearchFieldCancelButtonElement::detachLayoutTree(const AttachContext& context)
 {
     if (m_capturing) {
         if (LocalFrame* frame = document().frame())
             frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     }
-    HTMLDivElement::detach(context);
+    HTMLDivElement::detachLayoutTree(context);
 }
 
 

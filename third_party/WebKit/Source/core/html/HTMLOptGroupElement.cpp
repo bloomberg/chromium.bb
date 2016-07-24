@@ -78,10 +78,10 @@ void HTMLOptGroupElement::attachLayoutTree(const AttachContext& context)
     HTMLElement::attachLayoutTree(context);
 }
 
-void HTMLOptGroupElement::detach(const AttachContext& context)
+void HTMLOptGroupElement::detachLayoutTree(const AttachContext& context)
 {
     m_style.clear();
-    HTMLElement::detach(context);
+    HTMLElement::detachLayoutTree(context);
 }
 
 bool HTMLOptGroupElement::supportsFocus() const

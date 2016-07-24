@@ -75,7 +75,7 @@ private:
     PickerIndicatorElement(Document&, PickerIndicatorOwner&);
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     void defaultEventHandler(Event*) override;
-    void detach(const AttachContext& = AttachContext()) override;
+    void detachLayoutTree(const AttachContext& = AttachContext()) override;
     bool isPickerIndicatorElement() const override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void didNotifySubtreeInsertionsToDocument() override;
