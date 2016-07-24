@@ -13,8 +13,6 @@
 
 namespace cc {
 
-class SurfaceManager;
-
 // This is a helper class for generating surface IDs within a specified
 // namespace.  This is not threadsafe, to use from multiple threads wrap this
 // class in a mutex.

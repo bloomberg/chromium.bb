@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/rand_util.h"
-#include "cc/surfaces/surface_manager.h"
 
 namespace cc {
 
