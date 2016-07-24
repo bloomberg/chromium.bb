@@ -1259,6 +1259,16 @@ public:
         SVGSMILBeginOrEndSyncbaseValue = 1456,
         SVGSMILElementInsertedAfterLoad = 1457,
 
+        V8VisualViewport_ScrollLeft_AttributeGetter = 1458,
+        V8VisualViewport_ScrollTop_AttributeGetter = 1459,
+        V8VisualViewport_PageX_AttributeGetter = 1460,
+        V8VisualViewport_PageY_AttributeGetter = 1461,
+        V8VisualViewport_ClientWidth_AttributeGetter = 1462,
+        V8VisualViewport_ClientHeight_AttributeGetter = 1463,
+        V8VisualViewport_Scale_AttributeGetter = 1464,
+        VisualViewportScrollFired = 1465,
+        VisualViewportResizeFired = 1466,
+
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/
