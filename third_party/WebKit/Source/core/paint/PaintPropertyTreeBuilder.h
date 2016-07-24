@@ -30,6 +30,14 @@ struct PaintPropertyTreeBuilderContext {
         // the space with its own layout location.
         TransformPaintPropertyNode* transform = nullptr;
         LayoutPoint paintOffset;
+        // Whether newly created children should flatten their inherited transform
+        // (equivalently, draw into the plane of their parent). Should generally
+        // be updated whenever |transform| is; flattening only needs to happen
+        // to immediate children.
+        bool shouldFlattenInheritedTransform = false;
+        // Rendering context for 3D sorting. See
+        // TransformPaintPropertyNode::renderingContextID.
+        unsigned renderingContextID = 0;
         // The clip node describes the accumulated raster clip for the current subtree.
         // Note that the computed raster region in canvas space for a clip node is independent from
         // the transform and paint offset above. Also the actual raster region may be affected

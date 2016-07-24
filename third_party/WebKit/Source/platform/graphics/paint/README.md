@@ -53,6 +53,12 @@ Each transform node has:
   transform origin will rotate the plane about that point)
 * a pointer to the parent node, which defines the coordinate space relative to
   which the above should be interpreted
+* a boolean indicating whether the transform should be projected into the plane
+  of its parent (i.e., whether the total transform inherited from its parent
+  should be flattened before this node's transform is applied and propagated to
+  children)
+* an integer rendering context ID; content whose transform nodes share a
+  rendering context ID should sort together
 
 The parent node pointers link the transform nodes in a hierarchy (the *transform
 tree*), which defines how the transform for any painted content can be
@@ -66,9 +72,11 @@ may be created to establish a perspective matrix for descendant transforms in
 order to create the illusion of depth.
 ***
 
-*** aside
-TODO(jbroman): Explain flattening, etc., once it exists in the paint properties.
-***
+Note that, even though CSS does not permit it in the DOM, the transform tree can
+have nodes whose children do not flatten their inherited transform and
+participate in no 3D rendering context. For example, not flattening is necessary
+to preserve the 3D character of the perspective transform, but this does not
+imply any 3D sorting.
 
 ### Clips
 

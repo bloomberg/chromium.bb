@@ -1109,6 +1109,176 @@ TEST_F(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset)
     EXPECT_EQ(svgWithTransformProperties->transform(), rectWithTransformProperties->transform()->parent());
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, NoRenderingContextByDefault)
+{
+    setBodyInnerHTML("<div style=\"transform: translateZ(0)\"></div>");
+
+    ObjectPaintProperties* properties = document().body()->firstChild()->layoutObject()->objectPaintProperties();
+    ASSERT_TRUE(properties->transform());
+    EXPECT_FALSE(properties->transform()->hasRenderingContext());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext)
+{
+    setBodyInnerHTML(
+        "<div style=\"transform-style: preserve-3d\">"
+        "  <div id=\"a\" style=\"transform: translateZ(0)\"></div>"
+        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "</div>");
+
+    ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    ASSERT_TRUE(aProperties->transform() && bProperties->transform());
+    EXPECT_NE(aProperties->transform(), bProperties->transform());
+    EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
+    EXPECT_TRUE(bProperties->transform()->hasRenderingContext());
+    EXPECT_EQ(aProperties->transform()->renderingContextID(), bProperties->transform()->renderingContextID());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext)
+{
+    setBodyInnerHTML(
+        "<div style=\"transform-style: preserve-3d\">"
+        "  <div id=\"a\" style=\"transform: translateZ(0)\">"
+        "    <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "  </div>"
+        "</div>");
+
+    ASSERT_FALSE(document().getElementById("a")->layoutObject()->styleRef().preserves3D());
+    ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    ASSERT_TRUE(aProperties->transform() && bProperties->transform());
+
+    // #a should participate in a rendering context (due to its parent), but its
+    // child #b should not.
+    EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
+    EXPECT_FALSE(bProperties->transform()->hasRenderingContext());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, NestedRenderingContexts)
+{
+    setBodyInnerHTML(
+        "<div style=\"transform-style: preserve-3d\">"
+        "  <div id=\"a\" style=\"transform: translateZ(0)\">"
+        "    <div style=\"transform-style: preserve-3d\">"
+        "      <div id=\"b\" style=\"transform: translateZ(0)\">"
+        "    </div>"
+        "  </div>"
+        "</div>");
+
+    ASSERT_FALSE(document().getElementById("a")->layoutObject()->styleRef().preserves3D());
+    ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    ASSERT_TRUE(aProperties->transform() && bProperties->transform());
+
+    // #a should participate in a rendering context (due to its parent). Its
+    // child does preserve 3D, but since #a does not, #a's rendering context is
+    // not passed on to its children. Thus #b ends up in a separate rendering
+    // context rooted at its parent.
+    EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
+    EXPECT_TRUE(bProperties->transform()->hasRenderingContext());
+    EXPECT_NE(aProperties->transform()->renderingContextID(), bProperties->transform()->renderingContextID());
+}
+
+// Returns true if the first node has the second as an ancestor.
+static bool nodeHasAncestor(const TransformPaintPropertyNode* node, const TransformPaintPropertyNode* ancestor)
+{
+    while (node) {
+        if (node == ancestor)
+            return true;
+        node = node->parent();
+    }
+    return false;
+}
+
+// Returns true if some node will flatten the transform due to |node| before it
+// is inherited by |node| (including if node->flattensInheritedTransform()).
+static bool someNodeFlattensTransform(const TransformPaintPropertyNode* node, const TransformPaintPropertyNode* ancestor)
+{
+    while (node != ancestor) {
+        if (node->flattensInheritedTransform())
+            return true;
+        node = node->parent();
+    }
+    return false;
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, FlatTransformStylePropagatesToChildren)
+{
+    setBodyInnerHTML(
+        "<div id=\"a\" style=\"transform: translateZ(0); transform-style: flat\">"
+        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "</div>");
+
+    const auto* aTransform = document().getElementById("a")->layoutObject()->objectPaintProperties()->transform();
+    ASSERT_TRUE(aTransform);
+    const auto* bTransform = document().getElementById("b")->layoutObject()->objectPaintProperties()->transform();
+    ASSERT_TRUE(bTransform);
+    ASSERT_TRUE(nodeHasAncestor(bTransform, aTransform));
+
+    // Some node must flatten the inherited transform from #a before it reaches
+    // #b's transform.
+    EXPECT_TRUE(someNodeFlattensTransform(bTransform, aTransform));
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, Preserve3DTransformStylePropagatesToChildren)
+{
+    setBodyInnerHTML(
+        "<div id=\"a\" style=\"transform: translateZ(0); transform-style: preserve-3d\">"
+        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "</div>");
+
+    const auto* aTransform = document().getElementById("a")->layoutObject()->objectPaintProperties()->transform();
+    ASSERT_TRUE(aTransform);
+    const auto* bTransform = document().getElementById("b")->layoutObject()->objectPaintProperties()->transform();
+    ASSERT_TRUE(bTransform);
+    ASSERT_TRUE(nodeHasAncestor(bTransform, aTransform));
+
+    // No node may flatten the inherited transform from #a before it reaches
+    // #b's transform.
+    EXPECT_FALSE(someNodeFlattensTransform(bTransform, aTransform));
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened)
+{
+    // It's necessary to make nodes from the one that applies perspective to
+    // ones that combine with it preserve 3D. Otherwise, the perspective doesn't
+    // do anything.
+    setBodyInnerHTML(
+        "<div id=\"a\" style=\"perspective: 800px\">"
+        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "</div>");
+
+    ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    const TransformPaintPropertyNode* aPerspective = aProperties->perspective();
+    ASSERT_TRUE(aPerspective);
+    const TransformPaintPropertyNode* bTransform = bProperties->transform();
+    ASSERT_TRUE(bTransform);
+    ASSERT_TRUE(nodeHasAncestor(bTransform, aPerspective));
+    EXPECT_FALSE(someNodeFlattensTransform(bTransform, aPerspective));
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, PerspectiveDoesNotEstablishRenderingContext)
+{
+    // It's necessary to make nodes from the one that applies perspective to
+    // ones that combine with it preserve 3D. Otherwise, the perspective doesn't
+    // do anything.
+    setBodyInnerHTML(
+        "<div id=\"a\" style=\"perspective: 800px\">"
+        "  <div id=\"b\" style=\"transform: translateZ(0)\"></div>"
+        "</div>");
+
+    ObjectPaintProperties* aProperties = document().getElementById("a")->layoutObject()->objectPaintProperties();
+    ObjectPaintProperties* bProperties = document().getElementById("b")->layoutObject()->objectPaintProperties();
+    const TransformPaintPropertyNode* aPerspective = aProperties->perspective();
+    ASSERT_TRUE(aPerspective);
+    EXPECT_FALSE(aPerspective->hasRenderingContext());
+    const TransformPaintPropertyNode* bTransform = bProperties->transform();
+    ASSERT_TRUE(bTransform);
+    EXPECT_FALSE(bTransform->hasRenderingContext());
+}
+
 TEST_F(PaintPropertyTreeBuilderTest, CachedProperties)
 {
     setBodyInnerHTML(

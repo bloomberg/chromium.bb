@@ -8,10 +8,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/transform_node.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
@@ -416,6 +418,11 @@ protected:
         return *m_webLayerTreeView->layerTreeHost()->property_trees();
     }
 
+    const cc::TransformNode& transformNode(const cc::Layer* layer)
+    {
+        return *propertyTrees().transform_tree.Node(layer->transform_tree_index());
+    }
+
     void update(const PaintArtifact& artifact)
     {
         PaintArtifactCompositorTest::update(artifact);
@@ -525,6 +532,119 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformCombining)
     EXPECT_NE(
         contentLayerAt(0)->transform_tree_index(),
         contentLayerAt(1)->transform_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, FlattensInheritedTransform)
+{
+    for (bool transformIsFlattened : { true, false }) {
+        SCOPED_TRACE(transformIsFlattened);
+
+        // The flattens_inherited_transform bit corresponds to whether the _parent_
+        // transform node flattens the transform. This is because Blink's notion of
+        // flattening determines whether content within the node's local transform
+        // is flattened, while cc's notion applies in the parent's coordinate space.
+        RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
+            nullptr, TransformationMatrix(), FloatPoint3D());
+        RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(
+            transform1, TransformationMatrix().rotate3d(0, 45, 0), FloatPoint3D());
+        RefPtr<TransformPaintPropertyNode> transform3 = TransformPaintPropertyNode::create(
+            transform2, TransformationMatrix().rotate3d(0, 45, 0), FloatPoint3D(),
+            transformIsFlattened);
+
+        TestPaintArtifact artifact;
+        artifact.chunk(transform3, nullptr, nullptr)
+            .rectDrawing(FloatRect(0, 0, 300, 200), Color::white);
+        update(artifact.build());
+
+        ASSERT_EQ(1u, contentLayerCount());
+        const cc::Layer* layer = contentLayerAt(0);
+        EXPECT_THAT(layer->GetPicture(),
+            Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::white)));
+
+        // The leaf transform node should flatten its inherited transform node
+        // if and only if the intermediate rotation transform in the Blink tree
+        // flattens.
+        const cc::TransformNode* transformNode3 = propertyTrees().transform_tree.Node(layer->transform_tree_index());
+        EXPECT_EQ(transformIsFlattened, transformNode3->flattens_inherited_transform);
+
+        // Given this, we should expect the correct screen space transform for
+        // each case. If the transform was flattened, we should see it getting
+        // an effective horizontal scale of 1/sqrt(2) each time, thus it gets
+        // half as wide. If the transform was not flattened, we should see an
+        // empty rectangle (as the total 90 degree rotation makes it
+        // perpendicular to the viewport).
+        gfx::RectF rect(0, 0, 100, 100);
+        layer->screen_space_transform().TransformRect(&rect);
+        if (transformIsFlattened)
+            EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 100), rect);
+        else
+            EXPECT_TRUE(rect.IsEmpty());
+    }
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SortingContextID)
+{
+    // Has no 3D rendering context.
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
+        nullptr, TransformationMatrix(), FloatPoint3D());
+    // Establishes a 3D rendering context.
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(
+        transform1, TransformationMatrix(), FloatPoint3D(), false, 1);
+    // Extends the 3D rendering context of transform2.
+    RefPtr<TransformPaintPropertyNode> transform3 = TransformPaintPropertyNode::create(
+        transform2, TransformationMatrix(), FloatPoint3D(), false, 1);
+    // Establishes a 3D rendering context distinct from transform2.
+    RefPtr<TransformPaintPropertyNode> transform4 = TransformPaintPropertyNode::create(
+        transform2, TransformationMatrix(), FloatPoint3D(), false, 2);
+
+    TestPaintArtifact artifact;
+    artifact.chunk(transform1, nullptr, dummyRootEffect())
+        .rectDrawing(FloatRect(0, 0, 300, 200), Color::white);
+    artifact.chunk(transform2, nullptr, dummyRootEffect())
+        .rectDrawing(FloatRect(0, 0, 300, 200), Color::lightGray);
+    artifact.chunk(transform3, nullptr, dummyRootEffect())
+        .rectDrawing(FloatRect(0, 0, 300, 200), Color::darkGray);
+    artifact.chunk(transform4, nullptr, dummyRootEffect())
+        .rectDrawing(FloatRect(0, 0, 300, 200), Color::black);
+    update(artifact.build());
+
+    ASSERT_EQ(4u, contentLayerCount());
+
+    // The white layer is not 3D sorted.
+    const cc::Layer* whiteLayer = contentLayerAt(0);
+    EXPECT_THAT(whiteLayer->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::white)));
+    int whiteSortingContextId = transformNode(whiteLayer).sorting_context_id;
+    EXPECT_EQ(whiteLayer->sorting_context_id(), whiteSortingContextId);
+    EXPECT_EQ(0, whiteSortingContextId);
+
+    // The light gray layer is 3D sorted.
+    const cc::Layer* lightGrayLayer = contentLayerAt(1);
+    EXPECT_THAT(lightGrayLayer->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::lightGray)));
+    int lightGraySortingContextId = transformNode(lightGrayLayer).sorting_context_id;
+    EXPECT_EQ(lightGrayLayer->sorting_context_id(), lightGraySortingContextId);
+    EXPECT_NE(0, lightGraySortingContextId);
+
+    // The dark gray layer is 3D sorted with the light gray layer, but has a
+    // separate transform node.
+    const cc::Layer* darkGrayLayer = contentLayerAt(2);
+    EXPECT_THAT(darkGrayLayer->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::darkGray)));
+    int darkGraySortingContextId = transformNode(darkGrayLayer).sorting_context_id;
+    EXPECT_EQ(darkGrayLayer->sorting_context_id(), darkGraySortingContextId);
+    EXPECT_EQ(lightGraySortingContextId, darkGraySortingContextId);
+    EXPECT_NE(lightGrayLayer->transform_tree_index(), darkGrayLayer->transform_tree_index());
+
+    // The black layer is 3D sorted, but in a separate context from the previous
+    // layers.
+    const cc::Layer* blackLayer = contentLayerAt(3);
+    EXPECT_THAT(blackLayer->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::black)));
+    int blackSortingContextId = transformNode(blackLayer).sorting_context_id;
+    EXPECT_EQ(blackLayer->sorting_context_id(), blackSortingContextId);
+    EXPECT_NE(0, blackSortingContextId);
+    EXPECT_NE(lightGraySortingContextId, blackSortingContextId);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneClip)

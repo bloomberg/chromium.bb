@@ -415,6 +415,8 @@ int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintProper
     compositorNode.post_local.matrix().setTranslate(
         origin.x(), origin.y(), origin.z());
     compositorNode.needs_local_transform_update = true;
+    compositorNode.flattens_inherited_transform = transformNode->flattensInheritedTransform();
+    compositorNode.sorting_context_id = transformNode->renderingContextID();
 
     m_rootLayer->AddChild(dummyLayer);
     dummyLayer->SetTransformTreeIndex(id);
@@ -584,6 +586,10 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
         layer->SetClipTreeIndex(clipId);
         layer->SetEffectTreeIndex(effectId);
         layer->SetScrollTreeIndex(kRealRootNodeId);
+
+        // TODO(jbroman): This probably shouldn't be necessary, but it is still
+        // queried by RenderSurfaceImpl.
+        layer->Set3dSortingContextId(host->property_trees()->transform_tree.Node(transformId)->sorting_context_id);
 
         if (m_extraDataForTestingEnabled)
             m_extraDataForTesting->contentLayers.append(layer);

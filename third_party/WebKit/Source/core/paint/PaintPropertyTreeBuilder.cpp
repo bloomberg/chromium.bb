@@ -68,6 +68,8 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
     context.current.transform = frameView.scrollTranslation();
     context.current.paintOffset = LayoutPoint();
     context.current.clip = frameView.contentClip();
+    context.current.renderingContextID = 0;
+    context.current.shouldFlattenInheritedTransform = true;
     context.absolutePosition = context.current;
     context.containerForAbsolutePosition = nullptr;
     context.fixedPosition = context.current;
@@ -115,7 +117,8 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(const LayoutObject& 
             LayoutPoint fractionalPaintOffset = LayoutPoint(context.current.paintOffset - roundedPaintOffset);
 
             updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::paintOffsetTranslation, &ObjectPaintProperties::setPaintOffsetTranslation>(
-                object, context, context.current.transform, TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y()), FloatPoint3D());
+                object, context, context.current.transform, TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y()), FloatPoint3D(),
+                context.current.shouldFlattenInheritedTransform, context.current.renderingContextID);
             context.current.paintOffset = fractionalPaintOffset;
             return;
         }
@@ -148,17 +151,38 @@ void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, Paint
             // The origin is included in the local transform, so leave origin empty.
             updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::transform, &ObjectPaintProperties::setTransform>(
                 object, context, context.current.transform, TransformationMatrix(transform), FloatPoint3D());
+            context.current.renderingContextID = 0;
+            context.current.shouldFlattenInheritedTransform = false;
             return;
         }
     } else {
         const ComputedStyle& style = object.styleRef();
-        if (object.isBox() && style.hasTransform()) {
+        if (object.isBox() && (style.hasTransform() || style.preserves3D())) {
             TransformationMatrix matrix;
             style.applyTransform(matrix, toLayoutBox(object).size(), ComputedStyle::ExcludeTransformOrigin,
                 ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
             FloatPoint3D origin = transformOrigin(toLayoutBox(object));
+
+            unsigned renderingContextID = context.current.renderingContextID;
+            unsigned renderingContextIDForChildren = 0;
+            bool flattensInheritedTransform = context.current.shouldFlattenInheritedTransform;
+            bool childrenFlattenInheritedTransform = true;
+
+            // TODO(trchen): transform-style should only be respected if a PaintLayer is
+            // created.
+            if (style.preserves3D()) {
+                // If a node with transform-style: preserve-3d does not exist in an
+                // existing rendering context, it establishes a new one.
+                if (!renderingContextID)
+                    renderingContextID = PtrHash<const LayoutObject>::hash(&object);
+                renderingContextIDForChildren = renderingContextID;
+                childrenFlattenInheritedTransform = false;
+            }
+
             updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::transform, &ObjectPaintProperties::setTransform>(
-                object, context, context.current.transform, matrix, origin);
+                object, context, context.current.transform, matrix, origin, flattensInheritedTransform, renderingContextID);
+            context.current.renderingContextID = renderingContextIDForChildren;
+            context.current.shouldFlattenInheritedTransform = childrenFlattenInheritedTransform;
             return;
         }
     }
@@ -275,9 +299,14 @@ void PaintPropertyTreeBuilder::updatePerspective(const LayoutObject& object, Pai
         return;
     }
 
+    // The perspective node must not flatten (else nothing will get
+    // perspective), but it should still extend the rendering context as most
+    // transform nodes do.
+    TransformationMatrix matrix = TransformationMatrix().applyPerspective(style.perspective());
     FloatPoint3D origin = perspectiveOrigin(toLayoutBox(object)) + toLayoutSize(context.current.paintOffset);
     updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::perspective, &ObjectPaintProperties::setPerspective>(
-        object, context, context.current.transform, TransformationMatrix().applyPerspective(style.perspective()), origin);
+        object, context, context.current.transform, matrix, origin, context.current.shouldFlattenInheritedTransform, context.current.renderingContextID);
+    context.current.shouldFlattenInheritedTransform = false;
 }
 
 void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -298,6 +327,8 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutOb
 
     updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::svgLocalToBorderBoxTransform, &ObjectPaintProperties::setSvgLocalToBorderBoxTransform>(
         object, context, context.current.transform, transformToBorderBox, FloatPoint3D());
+    context.current.shouldFlattenInheritedTransform = false;
+    context.current.renderingContextID = 0;
 }
 
 void PaintPropertyTreeBuilder::updateScrollTranslation(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -310,7 +341,8 @@ void PaintPropertyTreeBuilder::updateScrollTranslation(const LayoutObject& objec
         if (!scrollOffset.isZero() || layer->scrollsOverflow()) {
             TransformationMatrix matrix = TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height());
             updateOrCreatePaintProperty<TransformPaintPropertyNode, &ObjectPaintProperties::scrollTranslation, &ObjectPaintProperties::setScrollTranslation>(
-                object, context, context.current.transform, matrix, FloatPoint3D());
+                object, context, context.current.transform, matrix, FloatPoint3D(), context.current.shouldFlattenInheritedTransform, context.current.renderingContextID);
+            context.current.shouldFlattenInheritedTransform = false;
             return;
         }
     }
@@ -412,8 +444,6 @@ void PaintPropertyTreeBuilder::buildTreeNodes(const LayoutObject& object, PaintP
     updateLocalBorderBoxContext(object, context);
     updateScrollbarPaintOffset(object, context);
     updateOverflowClip(object, context);
-    // TODO(trchen): Insert flattening transform here, as specified by
-    // http://www.w3.org/TR/css3-transforms/#transform-style-property
     updatePerspective(object, context);
     updateSvgLocalToBorderBoxTransform(object, context);
     updateScrollTranslation(object, context);
