@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/lock.h"
 
 namespace {
 const int kChannels = 2;
@@ -40,11 +41,65 @@ const int kMaxExpectedTimerLag = 30;
 
 namespace remoting {
 
+class AudioCapturerWin::MMNotificationClient : public IMMNotificationClient {
+ public:
+  HRESULT __stdcall OnDefaultDeviceChanged(
+      EDataFlow flow,
+      ERole role,
+      LPCWSTR pwstrDefaultDevice) override {
+    base::AutoLock lock(lock_);
+    default_audio_device_changed_ = true;
+    return S_OK;
+  }
+
+  HRESULT __stdcall QueryInterface(REFIID iid, void** object) override {
+    if (iid == IID_IUnknown || iid == __uuidof(IMMNotificationClient)) {
+      *object = static_cast<IMMNotificationClient*>(this);
+      return S_OK;
+    }
+    *object = nullptr;
+    return E_NOINTERFACE;
+  }
+
+  // No Ops overrides.
+  HRESULT __stdcall OnDeviceAdded(LPCWSTR pwstrDeviceId) override {
+    return S_OK;
+  }
+  HRESULT __stdcall OnDeviceRemoved(LPCWSTR pwstrDeviceId) override {
+    return S_OK;
+  }
+  HRESULT __stdcall OnDeviceStateChanged(LPCWSTR pwstrDeviceId,
+                                         DWORD dwNewState) override {
+    return S_OK;
+  }
+  HRESULT __stdcall OnPropertyValueChanged(LPCWSTR pwstrDeviceId,
+                                           const PROPERTYKEY key) override {
+    return S_OK;
+  }
+  ULONG __stdcall AddRef() override { return 1; }
+  ULONG __stdcall Release() override { return 1; }
+
+  bool GetAndResetDefaultAudioDeviceChanged() {
+    base::AutoLock lock(lock_);
+    if (default_audio_device_changed_) {
+      default_audio_device_changed_ = false;
+      return true;
+    }
+    return false;
+  }
+
+ private:
+  // |lock_| musted be locked when accessing |default_audio_device_changed_|.
+  bool default_audio_device_changed_ = false;
+  base::Lock lock_;
+};
+
 AudioCapturerWin::AudioCapturerWin()
     : sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID),
       silence_detector_(kSilenceThreshold),
+      mm_notification_client_(new MMNotificationClient()),
       last_capture_error_(S_OK) {
-    thread_checker_.DetachFromThread();
+  thread_checker_.DetachFromThread();
 }
 
 AudioCapturerWin::~AudioCapturerWin() {
@@ -55,6 +110,42 @@ AudioCapturerWin::~AudioCapturerWin() {
 }
 
 bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
+  callback_ = callback;
+
+  if (!Initialize()) {
+    return false;
+  }
+
+  // Initialize the capture timer and start capturing. Note, this timer won't
+  // be reset or restarted in ResetAndInitialize() function. Which means we
+  // expect the audio_device_period_ is a system wide configuration, it would
+  // not be changed with the default audio device.
+  capture_timer_.reset(new base::RepeatingTimer());
+  capture_timer_->Start(FROM_HERE, audio_device_period_, this,
+                        &AudioCapturerWin::DoCapture);
+  return true;
+}
+
+bool AudioCapturerWin::ResetAndInitialize() {
+  Deinitialize();
+  if (!Initialize()) {
+    Deinitialize();
+    return false;
+  }
+  return true;
+}
+
+void AudioCapturerWin::Deinitialize() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  wave_format_ex_.Reset(nullptr);
+  mm_device_enumerator_.Release();
+  audio_capture_client_.Release();
+  audio_client_.Release();
+  mm_device_.Release();
+  audio_volume_.Release();
+}
+
+bool AudioCapturerWin::Initialize() {
   DCHECK(!audio_capture_client_.get());
   DCHECK(!audio_client_.get());
   DCHECK(!mm_device_.get());
@@ -62,24 +153,24 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   DCHECK(static_cast<PWAVEFORMATEX>(wave_format_ex_) == nullptr);
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  callback_ = callback;
-
-  // Initialize the capture timer.
-  capture_timer_.reset(new base::RepeatingTimer());
-
   HRESULT hr = S_OK;
-
-  base::win::ScopedComPtr<IMMDeviceEnumerator> mm_device_enumerator;
-  hr = mm_device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator));
+  hr = mm_device_enumerator_.CreateInstance(__uuidof(MMDeviceEnumerator));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create IMMDeviceEnumerator. Error " << hr;
     return false;
   }
 
+  hr = mm_device_enumerator_->RegisterEndpointNotificationCallback(
+      mm_notification_client_.get());
+  if (FAILED(hr)) {
+    // We cannot predict which kind of error the API may return, but this is
+    // not a fatal error.
+    LOG(ERROR) << "Failed to register IMMNotificationClient. Error " << hr;
+  }
+
   // Get the audio endpoint.
-  hr = mm_device_enumerator->GetDefaultAudioEndpoint(eRender,
-                                                     eConsole,
-                                                     mm_device_.Receive());
+  hr = mm_device_enumerator_->GetDefaultAudioEndpoint(eRender, eConsole,
+                                                      mm_device_.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get IMMDevice. Error " << hr;
     return false;
@@ -209,12 +300,12 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
 
   silence_detector_.Reset(sampling_rate_, kChannels);
 
-  // Start capturing.
-  capture_timer_->Start(FROM_HERE,
-                        audio_device_period_,
-                        this,
-                        &AudioCapturerWin::DoCapture);
   return true;
+}
+
+bool AudioCapturerWin::is_initialized() const {
+  // All Com components should be initialized / deinitialized together.
+  return !!audio_volume_;
 }
 
 float AudioCapturerWin::GetAudioLevel() {
@@ -283,6 +374,14 @@ void AudioCapturerWin::ProcessSamples(uint8_t* data, size_t frames) {
 void AudioCapturerWin::DoCapture() {
   DCHECK(AudioCapturer::IsValidSampleRate(sampling_rate_));
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!is_initialized() ||
+      mm_notification_client_->GetAndResetDefaultAudioDeviceChanged()) {
+    if (!ResetAndInitialize()) {
+      // Initialization failed, we should wait for next DoCapture call.
+      return;
+    }
+  }
 
   // Fetch all packets from the audio capture endpoint buffer.
   HRESULT hr = S_OK;
