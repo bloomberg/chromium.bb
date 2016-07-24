@@ -526,7 +526,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html', bug=483282)
 
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         bug=625365)
@@ -552,22 +551,21 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
-    self.Flaky('deqp/data/gles2/shaders/constants.html', ['win'], bug=594922)
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
+    self.Fail('deqp/data/gles2/shaders/functions.html',
+        ['win'], bug=478572)
 
     # Win NVIDIA failures
-    self.Fail('deqp/data/gles2/shaders/functions.html',
-        ['win', 'nvidia'], bug=478572)
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
         ['win', 'nvidia'], bug=626524)
+    self.Flaky('conformance/textures/misc/texture-upload-size.html',
+        ['win', 'nvidia'], bug=630860)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
               ['win7', 'intel'])
-    self.Fail('deqp/data/gles2/shaders/functions.html',
-        ['win7', 'intel'], bug=478572)
 
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
@@ -576,8 +574,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win AMD failures
-    self.Fail('deqp/data/gles2/shaders/functions.html',
-        ['win', 'amd'], bug=478572)
 
     # Win / AMD D3D9 failures
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
@@ -597,6 +593,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/glsl/functions/*',
         ['win', 'd3d9'], bug=415609)
     self.Flaky('conformance/glsl/matrices/glsl-mat4-to-mat3.html',
+        ['win', 'd3d9'], bug=617148)
+    self.Flaky('conformance/glsl/matrices/glsl-mat3-construction.html',
         ['win', 'd3d9'], bug=617148)
 
     # WIN / D3D9 / Intel failures

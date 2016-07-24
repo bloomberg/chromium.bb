@@ -51,9 +51,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
 
-    self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['win'], bug=483282)
-
     # ANGLE bug id
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
         ['win'], bug=1246)
@@ -79,8 +76,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
-        ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/2d*',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/cube*',
@@ -90,6 +85,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('amd', 0x6779)], bug=626068)
 
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['win', ('amd', 0x6779)], bug=483282)
+    self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
     # It's unfortunate that these suppressions need to be so broad, but
@@ -144,8 +141,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel'], bug=483282)
