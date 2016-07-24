@@ -47,7 +47,7 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"---", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }

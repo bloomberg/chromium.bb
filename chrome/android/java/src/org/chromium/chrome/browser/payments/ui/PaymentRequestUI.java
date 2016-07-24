@@ -186,11 +186,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onPaymentRequestReadyForInput(PaymentRequestUI ui);
 
         /**
-         * Called when clicks on the X close button are possible.
-         */
-        void onPaymentRequestReadyToClose(PaymentRequestUI ui);
-
-        /**
          * Called when clicks on the PAY button are possible.
          */
         void onPaymentRequestReadyToPay(PaymentRequestUI ui);
@@ -597,7 +592,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
         mIsEditingPaymentItem = false;
         updateSectionButtons();
-        notifyReadyToClose();
         updatePayButtonEnabled();
     }
 
@@ -1004,7 +998,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             @Override
             public void run() {
                 mSectionAnimator = null;
-                notifyReadyToClose();
                 notifyReadyForInput();
                 notifyReadyToPay();
             }
@@ -1125,7 +1118,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             // Indicate that the dialog is ready to use.
             mSheetAnimator = null;
             mIsInitialLayoutComplete = true;
-            notifyReadyToClose();
             notifyReadyForInput();
             notifyReadyToPay();
         }
@@ -1206,12 +1198,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private void notifyReadyToPay() {
         if (sObserverForTest != null && isAcceptingUserInput() && mPayButton.isEnabled()) {
             sObserverForTest.onPaymentRequestReadyToPay(this);
-        }
-    }
-
-    private void notifyReadyToClose() {
-        if (sObserverForTest != null && isAcceptingCloseButton()) {
-            sObserverForTest.onPaymentRequestReadyToClose(this);
         }
     }
 

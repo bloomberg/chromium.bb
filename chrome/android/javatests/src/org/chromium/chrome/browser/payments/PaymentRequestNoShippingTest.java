@@ -44,7 +44,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     @MediumTest
     public void testCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mReadyToClose);
+        triggerUIAndWait(mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -54,7 +54,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     public void testEditAndCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyForInput);
-        clickAndWait(R.id.button_secondary, mReadyToClose);
+        clickAndWait(R.id.button_secondary, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -100,7 +100,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -121,7 +121,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -202,7 +202,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         });
         mReadyToEdit.waitForCallback(callCount);
 
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -248,7 +248,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         });
         mReadyToEdit.waitForCallback(callCount);
 
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToClose);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
