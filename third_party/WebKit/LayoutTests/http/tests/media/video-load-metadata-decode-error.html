@@ -1,41 +1,20 @@
-<html>
-<head>
-    <title>Loading corrupted video with proper metadata</title>
-    <script src=../../../media-resources/media-file.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=../../../media-resources/video-test.js></script>
-    <script>
-        function loadedmetadata(e)
-        {
-            consoleWrite("loaded metadata of media file");
-        }
+<!DOCTYPE html>
+<title>This test case simulates a decode error after loading meta data of a video.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-        function error(e)
-        {
-            consoleWrite("failed to load media file");
-            testExpected("video.networkState", HTMLMediaElement.NETWORK_IDLE);
-            endTest();
-        }
-
-        function start()
-        {
-            findMediaElement();
-
-            waitForEvent('loadedmetadata', loadedmetadata);
-            waitForEvent("error", error);
-
-            var movie = findMediaFile("video", "resources/test");
-            var type = mimeTypeForExtension(movie.split('.').pop());
-            video.src = "video-load-metadata-decode-error.cgi?name=" + movie + "&type=" + type;
-            video.play();
-        }
-    </script>
-</head>
-<body onload="start()">
-<video id="video"></video>
-<p>
-This test case simulates a decode error after loading meta data of a video.<br/><br/>
-</p>
-</body>
-</html>
+    var watcher = new EventWatcher(t, video, ["loadedmetadata", "error"]);
+    watcher.wait_for(["loadedmetadata", "error"]).then(t.step_func_done(function() {
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_IDLE);
+    }));
+    var movie = findMediaFile("video", "resources/test");
+    var type = mimeTypeForExtension(movie.split(".").pop());
+    video.src = "video-load-metadata-decode-error.cgi?name=" + movie + "&type=" + type;
+    video.play();
+});
+</script>

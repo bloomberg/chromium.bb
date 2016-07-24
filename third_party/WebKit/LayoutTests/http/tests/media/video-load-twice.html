@@ -1,35 +1,28 @@
-<html>
-<head>
-<script src=../../media-resources/media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../../media-resources/video-test.js></script>
+<!DOCTYPE html>
+<title>Test loading video twice.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<body>
 <script>
+async_test(function(t) {
     var file = findMediaFile("video", "http://127.0.0.1:8000/resources/test");
-
-    function createVideo() {
+    createAndLoadVideo(false);
+    function createAndLoadVideo(endTest) {
         var video = document.createElement("video");
         document.body.appendChild(video);
-        findMediaElement();
-        waitForEvent('loadedmetadata');
-        waitForEvent('loadeddata');
-        waitForEvent('canplay');
-    }
+        var expectedEvents = ["loadedmetadata", "loadeddata", "canplay", "canplaythrough"];
+        var watcher = new EventWatcher(t, video, expectedEvents);
+        watcher.wait_for(expectedEvents).then(t.step_func(function() {
+            if (endTest) {
+                t.done();
+            }  else {
+                document.body.removeChild(video);
+                createAndLoadVideo(true);
+            }
+        }));
 
-    function firstCanPlayThrough() {
-        document.body.removeChild(video);
-        createVideo();
-        waitForEventOnce('canplaythrough', endTest);
-        run("video.src = file");
+        video.src = file;
     }
-
-    function init() {
-        createVideo();
-        waitForEventOnce('canplaythrough', firstCanPlayThrough);
-        run("video.src = file");
-    }
+});
 </script>
-</head>
-<body onload="init()">
-</body>
-</html>

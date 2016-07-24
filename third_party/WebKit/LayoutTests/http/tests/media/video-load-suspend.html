@@ -1,33 +1,16 @@
-<html>
-<head>
-<script src=../../media-resources/media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../../media-resources/video-test.js></script>
+<!DOCTYPE html>
+<title>Test that the load eventually suspends and returns to NETWORK_IDLE.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<video></video>
 <script>
-    var file = findMediaFile("video", "http://127.0.0.1:8000/resources/test");
-
-    function init()
-    {
-        findMediaElement();
-        run("video.src = file");
-        waitForEvent('loadstart', onLoadStart);
-    }
-
-    function onLoadStart()
-    {
-        waitForEvent('suspend', onSuspend);
-    }
-
-    function onSuspend()
-    {
-        testExpected("video.networkState", HTMLMediaElement.NETWORK_IDLE, "==");
-        endTest();
-    }
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "http://127.0.0.1:8000/resources/test");
+    var watcher = new EventWatcher(t, video, ["loadstart", "suspend"]);
+    watcher.wait_for(["loadstart", "suspend"]).then(t.step_func_done(function() {
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_IDLE);
+    }));
+});
 </script>
-</head>
-<body onload="init()">
-    <p>Test that the load eventually suspends and returns to NETWORK_IDLE.</p>
-    <video></video>
-</body>
-</html>

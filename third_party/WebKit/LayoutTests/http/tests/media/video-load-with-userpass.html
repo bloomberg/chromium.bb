@@ -1,40 +1,29 @@
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../media-resources/video-test.js></script>
-        <script src=../../media-resources/media-file.js></script>
-        <script>
-            function loadMediaFrame()
-            {
-                findMediaElement();
+<!DOCTYPE html>
+<title>Tests that the media player does not include authorization information.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<body>
+<video>
+    <source></source>
+</video>
+<script>
+async_test(function(t) {
+    var frame = document.createElement('iframe');
+    frame.onload = t.step_func(function() {
+        var video = document.querySelector('video');
+        video.onerror = t.unreached_func();
+        video.oncanplay = t.step_func_done();
 
-                var movie = findMediaFile('video', 'test');
-                var type = mimeTypeForExtension(movie.split('.').pop());
-                var frame = document.createElement('iframe');
-                frame.width = 0;
-                frame.height = 0;
-                frame.addEventListener('load', function () {
-                        source = document.getElementById('source');
-                        source.src = 'http://user:pass@127.0.0.1:8080/media/resources/video-check-userpass.php?name=' + movie + '&type=' + type;
-                        source.type = type;
+        var movie = findMediaFile('video', 'test');
+        var type = mimeTypeForExtension(movie.split('.').pop());
+        source = document.querySelector('source');
+        source.type = type;
+        source.src = 'http://user:pass@127.0.0.1:8080/media/resources/video-check-userpass.php?name=' + movie + '&type=' + type;
+        video.load();
+    });
 
-                        waitForEventAndFail('error');
-                        waitForEventAndEnd('canplay');
-                        video.load();
-                });
-
-                frame.src = "data:text/html,<b>test</b>";
-                document.body.appendChild(frame);
-            }
-        </script>
-    </head>
-
-    <body onload="loadMediaFrame()">
-        <video id="video">
-            <source id="source">
-        </video>
-        <br>
-        Tests that the media player does not include authorization information.
-    </body>
-</html>
+    frame.src = 'data:text/html,<b>test</b>';
+    document.body.appendChild(frame);
+});
+</script>
