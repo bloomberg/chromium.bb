@@ -179,6 +179,9 @@ class CONTENT_EXPORT RenderViewImpl
   // May return NULL when the view is closing.
   blink::WebView* webview() const;
 
+  // Returns the RenderWidget for this RenderView.
+  RenderWidget* GetWidget() const;
+
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
@@ -402,7 +405,6 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderView implementation -------------------------------------------------
 
   bool Send(IPC::Message* message) override;
-  RenderWidget* GetWidget() const override;
   RenderFrameImpl* GetMainRenderFrame() override;
   int GetRoutingID() const override;
   gfx::Size GetSize() const override;

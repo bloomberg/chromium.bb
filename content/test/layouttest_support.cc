@@ -283,7 +283,9 @@ float GetWindowToViewportScale(RenderView* render_view) {
 
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
   if (name == "reset") {
-    render_view->GetWidget()->ResetDeviceColorProfileForTesting();
+    static_cast<RenderViewImpl*>(render_view)
+        ->GetWidget()
+        ->ResetDeviceColorProfileForTesting();
     return;
   }
 
@@ -415,7 +417,9 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
     color_profile.assign(test.data(), test.data() + test.size());
   }
 
-  render_view->GetWidget()->SetDeviceColorProfileForTesting(color_profile);
+  static_cast<RenderViewImpl*>(render_view)
+      ->GetWidget()
+      ->SetDeviceColorProfileForTesting(color_profile);
 }
 
 void SetTestBluetoothScanDuration() {

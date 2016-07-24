@@ -139,7 +139,7 @@ class RenderFrameTestObserver : public RenderFrameObserver {
 // RenderWidget.
 TEST_F(RenderFrameImplTest, MAYBE_SubframeWidget) {
   EXPECT_TRUE(frame_widget());
-  EXPECT_NE(frame_widget(), view_->GetWidget());
+  EXPECT_NE(frame_widget(), static_cast<RenderViewImpl*>(view_)->GetWidget());
 }
 
 // Verify a subframe RenderWidget properly processes its viewport being
