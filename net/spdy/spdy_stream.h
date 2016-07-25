@@ -307,7 +307,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Called by the SpdySession when a frame carrying request headers opening a
   // push stream is received. Stream transits to STATE_RESERVED_REMOTE state.
-  void OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers);
+  void OnPushPromiseHeadersReceived(SpdyHeaderBlock headers);
 
   // Called by the SpdySession when response data has been received
   // for this stream.  This callback may be called multiple times as

@@ -194,7 +194,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 const SpdyHeaderBlock& headers) override {
+                 SpdyHeaderBlock headers) override {
     if (has_priority) {
       priority_ = Http2WeightToSpdy3Priority(weight);
     }
@@ -218,7 +218,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {}
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
-                     const SpdyHeaderBlock& headers) override {}
+                     SpdyHeaderBlock headers) override {}
   void OnAltSvc(SpdyStreamId stream_id,
                 base::StringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&

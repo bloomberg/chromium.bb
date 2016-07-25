@@ -293,7 +293,7 @@ TEST_F(SpdyStreamTest, PushedStream) {
   // Set required request headers.
   SpdyHeaderBlock request_headers;
   spdy_util_.AddUrlToHeaderBlock(kStreamUrl, &request_headers);
-  stream->OnPushPromiseHeadersReceived(request_headers);
+  stream->OnPushPromiseHeadersReceived(std::move(request_headers));
 
   base::Time response_time = base::Time::Now();
   base::TimeTicks first_byte_time = base::TimeTicks::Now();

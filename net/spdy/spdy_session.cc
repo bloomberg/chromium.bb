@@ -2232,7 +2232,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
                             SpdyStreamId parent_stream_id,
                             bool exclusive,
                             bool fin,
-                            const SpdyHeaderBlock& headers) {
+                            SpdyHeaderBlock headers) {
   CHECK(in_io_loop_);
 
   if (net_log().IsCapturing()) {
@@ -2486,7 +2486,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
 bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                                       SpdyStreamId associated_stream_id,
                                       SpdyPriority priority,
-                                      const SpdyHeaderBlock& headers) {
+                                      SpdyHeaderBlock headers) {
   // Server-initiated streams should have even sequence numbers.
   if ((stream_id & 0x1) != 0) {
     LOG(WARNING) << "Received invalid push stream id " << stream_id;
@@ -2661,7 +2661,7 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     return false;
   }
 
-  active_it->second.stream->OnPushPromiseHeadersReceived(headers);
+  active_it->second.stream->OnPushPromiseHeadersReceived(std::move(headers));
   DCHECK(active_it->second.stream->IsReservedRemote());
   num_pushed_streams_++;
   return true;
@@ -2669,7 +2669,7 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
 void SpdySession::OnPushPromise(SpdyStreamId stream_id,
                                 SpdyStreamId promised_stream_id,
-                                const SpdyHeaderBlock& headers) {
+                                SpdyHeaderBlock headers) {
   CHECK(in_io_loop_);
 
   if (net_log_.IsCapturing()) {
@@ -2680,7 +2680,8 @@ void SpdySession::OnPushPromise(SpdyStreamId stream_id,
 
   // Any priority will do.
   // TODO(baranovich): pass parent stream id priority?
-  if (!TryCreatePushStream(promised_stream_id, stream_id, 0, headers))
+  if (!TryCreatePushStream(promised_stream_id, stream_id, 0,
+                           std::move(headers)))
     return;
 }
 

@@ -114,12 +114,12 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
                             control_frame_fields_->weight,
                             control_frame_fields_->parent_stream_id,
                             control_frame_fields_->exclusive,
-                            control_frame_fields_->fin, headers);
+                            control_frame_fields_->fin, std::move(headers));
         break;
       case PUSH_PROMISE:
         visitor_->OnPushPromise(control_frame_fields_->stream_id,
                                 control_frame_fields_->promised_stream_id,
-                                headers);
+                                std::move(headers));
         break;
       default:
         DCHECK(false) << "Unexpect control frame type: "
@@ -193,17 +193,17 @@ void BufferedSpdyFramer::OnHeaderFrameEnd(SpdyStreamId stream_id,
       NOTREACHED();
       break;
     case HEADERS:
-      visitor_->OnHeaders(control_frame_fields_->stream_id,
-                          control_frame_fields_->has_priority,
-                          control_frame_fields_->weight,
-                          control_frame_fields_->parent_stream_id,
-                          control_frame_fields_->exclusive,
-                          control_frame_fields_->fin, coalescer_->headers());
+      visitor_->OnHeaders(
+          control_frame_fields_->stream_id, control_frame_fields_->has_priority,
+          control_frame_fields_->weight,
+          control_frame_fields_->parent_stream_id,
+          control_frame_fields_->exclusive, control_frame_fields_->fin,
+          coalescer_->release_headers());
       break;
     case PUSH_PROMISE:
       visitor_->OnPushPromise(control_frame_fields_->stream_id,
                               control_frame_fields_->promised_stream_id,
-                              coalescer_->headers());
+                              coalescer_->release_headers());
       break;
     default:
       DCHECK(false) << "Unexpect control frame type: "

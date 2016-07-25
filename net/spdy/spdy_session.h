@@ -673,7 +673,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool TryCreatePushStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           const SpdyHeaderBlock& headers);
+                           SpdyHeaderBlock headers);
 
   // Close the stream pointed to by the given iterator. Note that that
   // stream may hold the last reference to the session.
@@ -874,14 +874,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
-                     const SpdyHeaderBlock& headers) override;
+                     SpdyHeaderBlock headers) override;
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 const SpdyHeaderBlock& headers) override;
+                 SpdyHeaderBlock headers) override;
   void OnAltSvc(SpdyStreamId stream_id,
                 base::StringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&

@@ -4,6 +4,8 @@
 
 #include "net/spdy/header_coalescer.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 
 namespace net {
@@ -53,6 +55,12 @@ void HeaderCoalescer::OnHeader(base::StringPiece key, base::StringPiece value) {
     value.AppendToString(&s);
     headers_.ReplaceOrAppendHeader(key, s);
   }
+}
+
+SpdyHeaderBlock HeaderCoalescer::release_headers() {
+  DCHECK(headers_valid_);
+  headers_valid_ = false;
+  return std::move(headers_);
 }
 
 }  // namespace net

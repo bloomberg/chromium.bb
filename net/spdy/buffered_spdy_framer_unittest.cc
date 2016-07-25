@@ -45,11 +45,11 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 const SpdyHeaderBlock& headers) override {
+                 SpdyHeaderBlock headers) override {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     headers_frame_count_++;
-    headers_ = headers.Clone();
+    headers_ = std::move(headers);
   }
 
   void OnDataFrameHeader(SpdyStreamId stream_id,
@@ -103,13 +103,13 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
 
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
-                     const SpdyHeaderBlock& headers) override {
+                     SpdyHeaderBlock headers) override {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     push_promise_frame_count_++;
     promised_stream_id_ = promised_stream_id;
     EXPECT_NE(promised_stream_id_, SpdyFramer::kInvalidStream);
-    headers_ = headers.Clone();
+    headers_ = std::move(headers);
   }
 
   void OnAltSvc(SpdyStreamId stream_id,

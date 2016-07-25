@@ -465,14 +465,14 @@ int SpdyStream::OnAdditionalResponseHeadersReceived(
   return MergeWithResponseHeaders(additional_response_headers);
 }
 
-void SpdyStream::OnPushPromiseHeadersReceived(const SpdyHeaderBlock& headers) {
+void SpdyStream::OnPushPromiseHeadersReceived(SpdyHeaderBlock headers) {
   CHECK(!request_headers_valid_);
   CHECK_EQ(io_state_, STATE_IDLE);
   CHECK_EQ(type_, SPDY_PUSH_STREAM);
   DCHECK(!delegate_);
 
   io_state_ = STATE_RESERVED_REMOTE;
-  request_headers_ = headers.Clone();
+  request_headers_ = std::move(headers);
   request_headers_valid_ = true;
   url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
 }
