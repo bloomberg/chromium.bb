@@ -28,7 +28,7 @@ struct PaintPropertyTreeBuilderContext {
         // When a layout object recur to its children, the main context is expected to refer
         // the object's border box, then the callee will derive its own border box by translating
         // the space with its own layout location.
-        TransformPaintPropertyNode* transform = nullptr;
+        const TransformPaintPropertyNode* transform = nullptr;
         LayoutPoint paintOffset;
         // Whether newly created children should flatten their inherited transform
         // (equivalently, draw into the plane of their parent). Should generally
@@ -42,7 +42,7 @@ struct PaintPropertyTreeBuilderContext {
         // Note that the computed raster region in canvas space for a clip node is independent from
         // the transform and paint offset above. Also the actual raster region may be affected
         // by layerization and occlusion tracking.
-        ClipPaintPropertyNode* clip = nullptr;
+        const ClipPaintPropertyNode* clip = nullptr;
     };
 
     ContainingBlockContext current;
@@ -62,7 +62,7 @@ struct PaintPropertyTreeBuilderContext {
     // The effect hierarchy is applied by the stacking context tree. It is guaranteed that every
     // DOM descendant is also a stacking context descendant. Therefore, we don't need extra
     // bookkeeping for effect nodes and can generate the effect tree from a DOM-order traversal.
-    EffectPaintPropertyNode* currentEffect = nullptr;
+    const EffectPaintPropertyNode* currentEffect = nullptr;
 };
 
 // Creates paint property tree nodes for special things in the layout tree.
@@ -76,16 +76,6 @@ public:
     void buildTreeNodes(const LayoutObject&, PaintPropertyTreeBuilderContext&);
 
 private:
-    template <typename PropertyNode, void (ObjectPaintProperties::*Setter)(PassRefPtr<PropertyNode>)>
-    static void clearPaintProperty(const LayoutObject&);
-
-    template <
-        typename PropertyNode,
-        PropertyNode* (ObjectPaintProperties::*Getter)() const,
-        void (ObjectPaintProperties::*Setter)(PassRefPtr<PropertyNode>),
-        typename... Args>
-    static void updateOrCreatePaintProperty(const LayoutObject&, const PaintPropertyTreeBuilderContext&, PropertyNode*& contextProperty, const Args&...);
-
     static void updatePaintOffsetTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateEffect(const LayoutObject&, PaintPropertyTreeBuilderContext&);

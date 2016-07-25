@@ -22,14 +22,14 @@ namespace blink {
 class PLATFORM_EXPORT ClipPaintPropertyNode : public RefCounted<ClipPaintPropertyNode> {
 public:
     static PassRefPtr<ClipPaintPropertyNode> create(
-        PassRefPtr<ClipPaintPropertyNode> parent,
-        PassRefPtr<TransformPaintPropertyNode> localTransformSpace,
+        PassRefPtr<const ClipPaintPropertyNode> parent,
+        PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
         const FloatRoundedRect& clipRect)
     {
         return adoptRef(new ClipPaintPropertyNode(parent, localTransformSpace, clipRect));
     }
 
-    void update(PassRefPtr<ClipPaintPropertyNode> parent, PassRefPtr<TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
+    void update(PassRefPtr<const ClipPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
     {
         m_parent = parent;
         m_localTransformSpace = localTransformSpace;
@@ -43,11 +43,11 @@ public:
     const ClipPaintPropertyNode* parent() const { return m_parent.get(); }
 
 private:
-    ClipPaintPropertyNode(PassRefPtr<ClipPaintPropertyNode> parent, PassRefPtr<TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
+    ClipPaintPropertyNode(PassRefPtr<const ClipPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
         : m_parent(parent), m_localTransformSpace(localTransformSpace), m_clipRect(clipRect) { }
 
-    RefPtr<ClipPaintPropertyNode> m_parent;
-    RefPtr<TransformPaintPropertyNode> m_localTransformSpace;
+    RefPtr<const ClipPaintPropertyNode> m_parent;
+    RefPtr<const TransformPaintPropertyNode> m_localTransformSpace;
     FloatRoundedRect m_clipRect;
 };
 

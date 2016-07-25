@@ -48,22 +48,22 @@ public:
     //                                      This is equivalent to the local border box space above,
     //                                      with pixel snapped paint offset baked in. It is really redundant,
     //                                      but it is a pain to teach scrollbars to paint with an offset.
-    TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
-    TransformPaintPropertyNode* transform() const { return m_transform.get(); }
-    TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
-    TransformPaintPropertyNode* svgLocalToBorderBoxTransform() const { return m_svgLocalToBorderBoxTransform.get(); }
-    TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
-    TransformPaintPropertyNode* scrollbarPaintOffset() const { return m_scrollbarPaintOffset.get(); }
+    const TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
+    const TransformPaintPropertyNode* transform() const { return m_transform.get(); }
+    const TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
+    const TransformPaintPropertyNode* svgLocalToBorderBoxTransform() const { return m_svgLocalToBorderBoxTransform.get(); }
+    const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
+    const TransformPaintPropertyNode* scrollbarPaintOffset() const { return m_scrollbarPaintOffset.get(); }
 
-    EffectPaintPropertyNode* effect() const { return m_effect.get(); }
+    const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
     // The hierarchy of the clip subtree created by a LayoutObject is as follows:
     // [ css clip ]
     // |
     // +--- [ overflow clip ]
-    ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
-    ClipPaintPropertyNode* cssClipFixedPosition() const { return m_cssClipFixedPosition.get(); }
-    ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }
+    const ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
+    const ClipPaintPropertyNode* cssClipFixedPosition() const { return m_cssClipFixedPosition.get(); }
+    const ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }
 
     // This is a complete set of property nodes that should be used as a starting point to paint
     // this layout object. It is needed becauase some property inherits from the containing block,
@@ -76,32 +76,52 @@ public:
         LayoutPoint paintOffset;
         PropertyTreeState propertyTreeState;
     };
-    LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
+    const LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
+
+    void clearPaintOffsetTranslation() { m_paintOffsetTranslation = nullptr; }
+    void clearTransform() { m_transform = nullptr; }
+    void clearEffect() { m_effect = nullptr; }
+    void clearCssClip() { m_cssClip = nullptr; }
+    void clearCssClipFixedPosition() { m_cssClipFixedPosition = nullptr; }
+    void clearOverflowClip() { m_overflowClip = nullptr; }
+    void clearPerspective() { m_perspective = nullptr; }
+    void clearSvgLocalToBorderBoxTransform() { m_svgLocalToBorderBoxTransform = nullptr; }
+    void clearScrollTranslation() { m_scrollTranslation = nullptr; }
+    void clearScrollbarPaintOffset() { m_scrollbarPaintOffset = nullptr; }
+
+    template <typename... Args> TransformPaintPropertyNode* createOrUpdatePaintOffsetTranslation(Args&&... args) { return createOrUpdateProperty(m_paintOffsetTranslation, std::forward<Args>(args)...); }
+    template <typename... Args> TransformPaintPropertyNode* createOrUpdateTransform(Args&&... args) { return createOrUpdateProperty(m_transform, std::forward<Args>(args)...); }
+    template <typename... Args> TransformPaintPropertyNode* createOrUpdatePerspective(Args&&... args) { return createOrUpdateProperty(m_perspective, std::forward<Args>(args)...); }
+    template <typename... Args> TransformPaintPropertyNode* createOrUpdateSvgLocalToBorderBoxTransform(Args&&... args)
+    {
+        DCHECK(!scrollTranslation()) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
+        return createOrUpdateProperty(m_svgLocalToBorderBoxTransform, std::forward<Args>(args)...);
+    }
+    template <typename... Args> TransformPaintPropertyNode* createOrUpdateScrollTranslation(Args&&... args)
+    {
+        DCHECK(!svgLocalToBorderBoxTransform()) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
+        return createOrUpdateProperty(m_scrollTranslation, std::forward<Args>(args)...);
+    }
+    template <typename... Args> TransformPaintPropertyNode* createOrUpdateScrollbarPaintOffset(Args&&... args) { return createOrUpdateProperty(m_scrollbarPaintOffset, std::forward<Args>(args)...); }
+    template <typename... Args> EffectPaintPropertyNode* createOrUpdateEffect(Args&&... args) { return createOrUpdateProperty(m_effect, std::forward<Args>(args)...); }
+    template <typename... Args> ClipPaintPropertyNode* createOrUpdateCssClip(Args&&... args) { return createOrUpdateProperty(m_cssClip, std::forward<Args>(args)...); }
+    template <typename... Args> ClipPaintPropertyNode* createOrUpdateCssClipFixedPosition(Args&&... args) { return createOrUpdateProperty(m_cssClipFixedPosition, std::forward<Args>(args)...); }
+    template <typename... Args> ClipPaintPropertyNode* createOrUpdateOverflowClip(Args&&... args) { return createOrUpdateProperty(m_overflowClip, std::forward<Args>(args)...); }
+
+    void setLocalBorderBoxProperties(std::unique_ptr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = std::move(properties); }
 
 private:
     ObjectPaintProperties() { }
 
-    friend class PaintPropertyTreeBuilder;
-    // These setters should only be used by PaintPropertyTreeBuilder.
-    void setPaintOffsetTranslation(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_paintOffsetTranslation = paintOffset; }
-    void setTransform(PassRefPtr<TransformPaintPropertyNode> transform) { m_transform = transform; }
-    void setEffect(PassRefPtr<EffectPaintPropertyNode> effect) { m_effect = effect; }
-    void setCssClip(PassRefPtr<ClipPaintPropertyNode> clip) { m_cssClip = clip; }
-    void setCssClipFixedPosition(PassRefPtr<ClipPaintPropertyNode> clip) { m_cssClipFixedPosition = clip; }
-    void setOverflowClip(PassRefPtr<ClipPaintPropertyNode> clip) { m_overflowClip = clip; }
-    void setPerspective(PassRefPtr<TransformPaintPropertyNode> perspective) { m_perspective = perspective; }
-    void setSvgLocalToBorderBoxTransform(PassRefPtr<TransformPaintPropertyNode> transform)
+    template <typename PaintPropertyNode, typename... Args>
+    PaintPropertyNode* createOrUpdateProperty(RefPtr<PaintPropertyNode>& field, Args&&... args)
     {
-        DCHECK(!scrollTranslation() || !transform) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
-        m_svgLocalToBorderBoxTransform = transform;
+        if (field)
+            field->update(std::forward<Args>(args)...);
+        else
+            field = PaintPropertyNode::create(std::forward<Args>(args)...);
+        return field.get();
     }
-    void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> translation)
-    {
-        DCHECK(!svgLocalToBorderBoxTransform() || !translation) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local to border box transform.";
-        m_scrollTranslation = translation;
-    }
-    void setScrollbarPaintOffset(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_scrollbarPaintOffset = paintOffset; }
-    void setLocalBorderBoxProperties(std::unique_ptr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = std::move(properties); }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;

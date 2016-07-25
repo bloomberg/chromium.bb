@@ -294,7 +294,7 @@ public:
         return m_layoutObject->resolveColor(colorProperty);
     }
 
-    ObjectPaintProperties* objectPaintProperties() const
+    const ObjectPaintProperties* objectPaintProperties() const
     {
         return m_layoutObject->objectPaintProperties();
     }

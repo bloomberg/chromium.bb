@@ -370,7 +370,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
 
         Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
+            const ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
             ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
             PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
             auto& localBorderBoxProperties = *objectPaintProperties->localBorderBoxProperties();
@@ -693,7 +693,7 @@ void PaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const PaintLaye
     Optional<ScrollRecorder> scrollRecorder;
     LayoutPoint paintOffset = -m_paintLayer.layoutBoxLocation();
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
+        const ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
         ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
         paintOffset += toSize(objectPaintProperties->localBorderBoxProperties()->paintOffset);
     } else {

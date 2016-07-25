@@ -29,9 +29,9 @@ struct PaintChunkProperties {
     PaintChunkProperties() : backfaceHidden(false) { }
 
     // TODO(pdr): Add scroll properties.
-    RefPtr<TransformPaintPropertyNode> transform;
-    RefPtr<ClipPaintPropertyNode> clip;
-    RefPtr<EffectPaintPropertyNode> effect;
+    RefPtr<const TransformPaintPropertyNode> transform;
+    RefPtr<const ClipPaintPropertyNode> clip;
+    RefPtr<const EffectPaintPropertyNode> effect;
     bool backfaceHidden;
 };
 

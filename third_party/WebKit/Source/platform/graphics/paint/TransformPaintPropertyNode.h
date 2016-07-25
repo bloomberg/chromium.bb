@@ -22,7 +22,7 @@ namespace blink {
 class PLATFORM_EXPORT TransformPaintPropertyNode : public RefCounted<TransformPaintPropertyNode> {
 public:
     static PassRefPtr<TransformPaintPropertyNode> create(
-        PassRefPtr<TransformPaintPropertyNode> parent,
+        PassRefPtr<const TransformPaintPropertyNode> parent,
         const TransformationMatrix& matrix,
         const FloatPoint3D& origin,
         bool flattensInheritedTransform = false,
@@ -31,7 +31,7 @@ public:
         return adoptRef(new TransformPaintPropertyNode(matrix, origin, parent, flattensInheritedTransform, renderingContextID));
     }
 
-    void update(PassRefPtr<TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin, bool flattensInheritedTransform = false, unsigned renderingContextID = 0)
+    void update(PassRefPtr<const TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin, bool flattensInheritedTransform = false, unsigned renderingContextID = 0)
     {
         m_parent = parent;
         m_matrix = matrix;
@@ -45,7 +45,7 @@ public:
 
     // Parent transform that this transform is relative to, or nullptr if this
     // is the root transform.
-    TransformPaintPropertyNode* parent() const { return m_parent.get(); }
+    const TransformPaintPropertyNode* parent() const { return m_parent.get(); }
 
     // If true, content with this transform node (or its descendant) appears in
     // the plane of its parent. This is implemented by flattening the total
@@ -61,7 +61,7 @@ private:
     TransformPaintPropertyNode(
         const TransformationMatrix& matrix,
         const FloatPoint3D& origin,
-        PassRefPtr<TransformPaintPropertyNode> parent,
+        PassRefPtr<const TransformPaintPropertyNode> parent,
         bool flattensInheritedTransform,
         unsigned renderingContextID)
         : m_matrix(matrix)
@@ -74,7 +74,7 @@ private:
 
     TransformationMatrix m_matrix;
     FloatPoint3D m_origin;
-    RefPtr<TransformPaintPropertyNode> m_parent;
+    RefPtr<const TransformPaintPropertyNode> m_parent;
     bool m_flattensInheritedTransform;
     unsigned m_renderingContextID;
 };

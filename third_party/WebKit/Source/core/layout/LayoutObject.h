@@ -408,9 +408,10 @@ public:
     // property tree nodes that are created by the layout object for painting.
     // The property nodes are only updated during InUpdatePaintProperties phase
     // of the document lifecycle and shall remain immutable during other phases.
-    ObjectPaintProperties* objectPaintProperties() const;
+    const ObjectPaintProperties* objectPaintProperties() const;
+
+private:
     ObjectPaintProperties& ensureObjectPaintProperties();
-    void clearObjectPaintProperties();
 
 private:
     //////////////////////////////////////////
@@ -1387,13 +1388,16 @@ public:
     class MutableForPainting {
     public:
         void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
-        ObjectPaintProperties& ensureObjectPaintProperties() { return m_layoutObject.ensureObjectPaintProperties(); }
-        void clearObjectPaintProperties() { m_layoutObject.clearObjectPaintProperties(); }
         PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState) { return m_layoutObject.invalidatePaintIfNeeded(paintInvalidationState); }
         void clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState) { m_layoutObject.clearPaintInvalidationFlags(paintInvalidationState); }
         void setShouldDoDelayedFullPaintInvalidation() { m_layoutObject.setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull); }
 
     private:
+        friend class PaintPropertyTreeBuilder;
+        // The following two functions can be called from PaintPropertyTreeBuilder only.
+        ObjectPaintProperties& ensureObjectPaintProperties() { return m_layoutObject.ensureObjectPaintProperties(); }
+        ObjectPaintProperties* objectPaintProperties() { return const_cast<ObjectPaintProperties*>(m_layoutObject.objectPaintProperties()); }
+
         friend class LayoutObject;
         MutableForPainting(const LayoutObject& layoutObject) : m_layoutObject(const_cast<LayoutObject&>(layoutObject)) { }
 

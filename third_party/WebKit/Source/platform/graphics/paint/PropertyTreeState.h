@@ -20,14 +20,14 @@ struct PropertyTreeState {
     PropertyTreeState() : PropertyTreeState(nullptr, nullptr, nullptr) {}
 
     PropertyTreeState(
-        TransformPaintPropertyNode* transform,
-        ClipPaintPropertyNode* clip,
-        EffectPaintPropertyNode* effect)
+        const TransformPaintPropertyNode* transform,
+        const ClipPaintPropertyNode* clip,
+        const EffectPaintPropertyNode* effect)
     : transform(transform), clip(clip), effect(effect) {}
 
-    RefPtr<TransformPaintPropertyNode> transform;
-    RefPtr<ClipPaintPropertyNode> clip;
-    RefPtr<EffectPaintPropertyNode> effect;
+    RefPtr<const TransformPaintPropertyNode> transform;
+    RefPtr<const ClipPaintPropertyNode> clip;
+    RefPtr<const EffectPaintPropertyNode> effect;
 };
 
 template <class A>

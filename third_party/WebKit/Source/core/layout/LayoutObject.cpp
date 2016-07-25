@@ -2641,7 +2641,7 @@ void LayoutObject::willBeDestroyed()
         selectionPaintInvalidationMap->remove(this);
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        clearObjectPaintProperties();
+        objectPaintPropertiesMap().remove(this);
 
     clearLayoutRootIfNeeded();
 
@@ -3627,7 +3627,7 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(bool isBackgroundAttachm
         frameView()->removeBackgroundAttachmentFixedObject(this);
 }
 
-ObjectPaintProperties* LayoutObject::objectPaintProperties() const
+const ObjectPaintProperties* LayoutObject::objectPaintProperties() const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     return objectPaintPropertiesMap().get(this);
@@ -3641,12 +3641,6 @@ ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties()
         addResult.storedValue->value = ObjectPaintProperties::create();
 
     return *addResult.storedValue->value;
-}
-
-void LayoutObject::clearObjectPaintProperties()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    objectPaintPropertiesMap().remove(this);
 }
 
 } // namespace blink
