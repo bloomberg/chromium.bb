@@ -9,6 +9,7 @@ import os
 import pickle
 import shutil
 import tempfile
+import threading
 import time
 import zipfile
 
@@ -27,6 +28,37 @@ from pylib.constants import host_paths
 from pylib.local.device import local_device_test_run
 
 
+class HeartBeat(object):
+
+  def __init__(self, shard, wait_time=60*10):
+    """ HeartBeat Logger constructor.
+
+    Args:
+      shard: A perf test runner device shard.
+      wait_time: time to wait between heartbeat messages.
+    """
+    self._shard = shard
+    self._running = False
+    self._timer = None
+    self._wait_time = wait_time
+
+  def Start(self):
+    if not self._running:
+      self._timer = threading.Timer(self._wait_time, self._LogMessage)
+      self._timer.start()
+      self._running = True
+
+  def Stop(self):
+    if self._running:
+      self._timer.cancel()
+      self._running = False
+
+  def _LogMessage(self):
+    logging.info('Currently working on test %s', self._shard.current_test)
+    self._timer = threading.Timer(self._wait_time, self._LogMessage)
+    self._timer.start()
+
+
 class TestShard(object):
   def __init__(
       self, env, test_instance, device, index, tests, retries=3, timeout=None):
@@ -35,6 +67,7 @@ class TestShard(object):
     for t in tests:
       logging.info('  %s', t)
     self._battery = battery_utils.BatteryUtils(device)
+    self._current_test = None
     self._device = device
     self._env = env
     self._index = index
@@ -43,6 +76,7 @@ class TestShard(object):
     self._test_instance = test_instance
     self._tests = tests
     self._timeout = timeout
+    self._heart_beat = HeartBeat(self)
 
   @local_device_test_run.handle_shard_failures
   def RunTestsOnShard(self):
@@ -95,6 +129,9 @@ class TestShard(object):
     if (self._test_instance.collect_chartjson_data
         or self._tests[test].get('archive_output_dir')):
       self._output_dir = tempfile.mkdtemp()
+
+    self._current_test = test
+    self._heart_beat.Start()
 
   def _RunSingleTest(self, test):
     self._test_instance.WriteBuildBotJson(self._output_dir)
@@ -204,7 +241,13 @@ class TestShard(object):
       forwarder.Forwarder.UnmapAllDevicePorts(self._device)
     except Exception: # pylint: disable=broad-except
       logging.exception('Exception when resetting ports.')
+    finally:
+      self._heart_beat.Stop()
+      self._current_test = None
 
+  @property
+  def current_test(self):
+    return self._current_test
 
 class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
 
