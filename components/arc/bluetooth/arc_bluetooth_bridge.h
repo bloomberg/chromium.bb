@@ -21,6 +21,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -36,6 +37,7 @@ class ArcBluetoothBridge
       public InstanceHolder<mojom::BluetoothInstance>::Observer,
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
+      public device::BluetoothLocalGattService::Delegate,
       public mojom::BluetoothHost {
  public:
   explicit ArcBluetoothBridge(ArcBridgeService* bridge_service);
@@ -114,6 +116,45 @@ class ArcBluetoothBridge
       device::BluetoothAdapter* adapter,
       device::BluetoothRemoteGattDescriptor* descriptor,
       const std::vector<uint8_t>& value) override;
+
+  // Overridden from device::BluetoothLocalGattService::Delegate
+  void OnCharacteristicReadRequest(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattCharacteristic* characteristic,
+      int offset,
+      const ValueCallback& callback,
+      const ErrorCallback& error_callback) override;
+
+  void OnCharacteristicWriteRequest(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattCharacteristic* characteristic,
+      const std::vector<uint8_t>& value,
+      int offset,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+
+  void OnDescriptorReadRequest(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattDescriptor* descriptor,
+      int offset,
+      const ValueCallback& callback,
+      const ErrorCallback& error_callback) override;
+
+  void OnDescriptorWriteRequest(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattDescriptor* descriptor,
+      const std::vector<uint8_t>& value,
+      int offset,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+
+  void OnNotificationsStart(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattCharacteristic* characteristic) override;
+
+  void OnNotificationsStop(
+      const device::BluetoothDevice* device,
+      const device::BluetoothLocalGattCharacteristic* characteristic) override;
 
   // Bluetooth Mojo host interface
   void EnableAdapter(const EnableAdapterCallback& callback) override;
@@ -194,6 +235,44 @@ class ArcBluetoothBridge
 
   void OpenBluetoothSocket(
       const OpenBluetoothSocketCallback& callback) override;
+
+  // Bluetooth Mojo host interface - Bluetooth Gatt Server functions
+  // Android counterpart link:
+  // https://source.android.com/devices/halref/bt__gatt__server_8h.html
+  // Create a new service. Chrome will create an integer service handle based on
+  // that BlueZ identifier that will pass back to Android in the callback.
+  // num_handles: number of handle for characteristic / descriptor that will be
+  //              created in this service
+  void AddService(mojom::BluetoothGattServiceIDPtr service_id,
+                  int32_t num_handles,
+                  const AddServiceCallback& callback) override;
+  // Add a characteristic to a service and pass the characteristic handle back.
+  void AddCharacteristic(int32_t service_handle,
+                         mojom::BluetoothUUIDPtr uuid,
+                         int32_t properties,
+                         int32_t permissions,
+                         const AddCharacteristicCallback& callback) override;
+  // Add a descriptor to the last characteristic added to the given service
+  // and pass the descriptor handle back.
+  void AddDescriptor(int32_t service_handle,
+                     mojom::BluetoothUUIDPtr uuid,
+                     int32_t permissions,
+                     const AddDescriptorCallback& callback) override;
+  // Start a local service.
+  void StartService(int32_t service_handle,
+                    const StartServiceCallback& callback) override;
+  // Stop a local service.
+  void StopService(int32_t service_handle,
+                   const StopServiceCallback& callback) override;
+  // Delete a local service.
+  void DeleteService(int32_t service_handle,
+                     const DeleteServiceCallback& callback) override;
+  // Send value indication to a remote device.
+  void SendIndication(int32_t attribute_handle,
+                      mojom::BluetoothAddressPtr address,
+                      bool confirm,
+                      mojo::Array<uint8_t> value,
+                      const SendIndicationCallback& callback) override;
 
   // Chrome observer callbacks
   void OnPoweredOn(

@@ -289,6 +289,33 @@ interface BluetoothHost {
 
   [MinVersion=2] OpenBluetoothSocket@29()
       => (handle sock);
+
+  // Bluetooth Gatt Server functions
+  // Copied from Android API
+  // https://source.android.com/devices/halref/bt__gatt__server_8h.html
+  [MinVersion=3] AddService@30(BluetoothGattServiceID service_id,
+                               int32 num_handles)
+      => (int32 service_handle);
+  [MinVersion=3] AddCharacteristic@31(int32 service_handle,
+                                      BluetoothUUID uuid,
+                                      int32 properties,
+                                      int32 permissions)
+      => (int32 characteristic_handle);
+  [MinVersion=3] AddDescriptor@32(int32 service_handle,
+                                  BluetoothUUID uuid,
+                                  int32 permissions)
+      => (int32 descriptor_handle);
+  [MinVersion=3] StartService@33(int32 service_handle)
+      => (BluetoothGattStatus status);
+  [MinVersion=3] StopService@34(int32 service_handle)
+      => (BluetoothGattStatus status);
+  [MinVersion=3] DeleteService@35(int32 service_handle)
+      => (BluetoothGattStatus status);
+  [MinVersion=3] SendIndication@36(int32 attribute_handle,
+                                   BluetoothAddress address,
+                                   bool confirm,
+                                   array<uint8> value)
+      => (BluetoothGattStatus status);
 };
 
 interface BluetoothInstance {
@@ -328,4 +355,16 @@ interface BluetoothInstance {
                                  BluetoothGattID char_id,
                                  bool is_notify,
                                  array<uint8> value);
+
+  // Bluetooth Gatt Server functions
+  [MinVersion=3] RequestGattRead@14(BluetoothAddress address,
+                                    int32 attribute_handle,
+                                    int32 offset,
+                                    bool is_long)
+      => (BluetoothGattStatus status, array<uint8> value);
+  [MinVersion=3] RequestGattWrite@15(BluetoothAddress address,
+                                     int32 attribute_handle,
+                                     int32 offset,
+                                     array<uint8> value)
+      => (BluetoothGattStatus status);
 };

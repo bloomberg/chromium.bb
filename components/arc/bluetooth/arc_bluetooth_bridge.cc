@@ -22,14 +22,12 @@
 #include "base/time/time.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
-#include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
@@ -44,9 +42,13 @@ using device::BluetoothGattNotifySession;
 using device::BluetoothGattCharacteristic;
 using device::BluetoothGattDescriptor;
 using device::BluetoothGattService;
+using device::BluetoothLocalGattCharacteristic;
+using device::BluetoothLocalGattDescriptor;
+using device::BluetoothLocalGattService;
 using device::BluetoothRemoteGattCharacteristic;
 using device::BluetoothRemoteGattDescriptor;
 using device::BluetoothRemoteGattService;
+using device::BluetoothTransport;
 using device::BluetoothUUID;
 
 namespace {
@@ -292,6 +294,44 @@ void ArcBluetoothBridge::GattDescriptorValueChanged(
     const std::vector<uint8_t>& value) {
   // Placeholder for GATT client functionality
 }
+
+void ArcBluetoothBridge::OnCharacteristicReadRequest(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattCharacteristic* characteristic,
+    int offset,
+    const ValueCallback& callback,
+    const ErrorCallback& error_callback) {}
+
+void ArcBluetoothBridge::OnCharacteristicWriteRequest(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value,
+    int offset,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {}
+
+void ArcBluetoothBridge::OnDescriptorReadRequest(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattDescriptor* descriptor,
+    int offset,
+    const ValueCallback& callback,
+    const ErrorCallback& error_callback) {}
+
+void ArcBluetoothBridge::OnDescriptorWriteRequest(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattDescriptor* descriptor,
+    const std::vector<uint8_t>& value,
+    int offset,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {}
+
+void ArcBluetoothBridge::OnNotificationsStart(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattCharacteristic* characteristic) {}
+
+void ArcBluetoothBridge::OnNotificationsStop(
+    const BluetoothDevice* device,
+    const BluetoothLocalGattCharacteristic* characteristic) {}
 
 void ArcBluetoothBridge::EnableAdapter(const EnableAdapterCallback& callback) {
   DCHECK(bluetooth_adapter_);
@@ -1049,6 +1089,38 @@ void ArcBluetoothBridge::OpenBluetoothSocket(
 
   callback.Run(std::move(scoped_handle));
 }
+
+void ArcBluetoothBridge::AddService(mojom::BluetoothGattServiceIDPtr service_id,
+                                    int32_t num_handles,
+                                    const AddServiceCallback& callback) {}
+
+void ArcBluetoothBridge::AddCharacteristic(
+    int32_t service_handle,
+    mojom::BluetoothUUIDPtr uuid,
+    int32_t properties,
+    int32_t permissions,
+    const AddCharacteristicCallback& callback) {}
+
+void ArcBluetoothBridge::AddDescriptor(int32_t service_handle,
+                                       mojom::BluetoothUUIDPtr uuid,
+                                       int32_t permissions,
+                                       const AddDescriptorCallback& callback) {}
+
+void ArcBluetoothBridge::StartService(int32_t service_handle,
+                                      const StartServiceCallback& callback) {}
+
+void ArcBluetoothBridge::StopService(int32_t service_handle,
+                                     const StopServiceCallback& callback) {}
+
+void ArcBluetoothBridge::DeleteService(int32_t service_handle,
+                                       const DeleteServiceCallback& callback) {}
+
+void ArcBluetoothBridge::SendIndication(
+    int32_t attribute_handle,
+    mojom::BluetoothAddressPtr address,
+    bool confirm,
+    mojo::Array<uint8_t> value,
+    const SendIndicationCallback& callback) {}
 
 void ArcBluetoothBridge::OnDiscoveryError() {
   LOG(WARNING) << "failed to change discovery state";
