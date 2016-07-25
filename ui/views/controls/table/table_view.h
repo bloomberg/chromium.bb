@@ -154,10 +154,17 @@ class VIEWS_EXPORT TableView
   // Sets the width of the column. |index| is in terms of |visible_columns_|.
   void SetVisibleColumnWidth(int index, int width);
 
-  // Toggles the sort order of the specified visible column index.
+  // Modify the table sort order, depending on a clicked column and the previous
+  // table sort order. Does nothing if this column is not sortable.
+  //
+  // When called repeatedly on the same sortable column, the sort order will
+  // cycle through three states in order: sorted -> reverse-sorted -> unsorted.
+  // When switching from one sort column to another, the previous sort column
+  // will be remembered and used as a secondary sort key.
   void ToggleSortOrder(int visible_column_index);
 
   const SortDescriptors& sort_descriptors() const { return sort_descriptors_; }
+  void SetSortDescriptors(const SortDescriptors& descriptors);
   bool is_sorted() const { return !sort_descriptors_.empty(); }
 
   // Maps from the index in terms of the model to that of the view.
@@ -226,9 +233,6 @@ class VIEWS_EXPORT TableView
 
   // Invoked when the number of rows changes in some way.
   void NumRowsChanged();
-
-  // Resets the sort descriptions.
-  void SetSortDescriptors(const SortDescriptors& sort_descriptors);
 
   // Does the actual sort and updates the mappings (|view_to_model_| and
   // |model_to_view_|) appropriately.

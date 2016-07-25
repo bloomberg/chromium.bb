@@ -45,9 +45,8 @@ class TableViewDelegate {
 
   virtual TableSortDescriptor GetSortDescriptor() const = 0;
 
-  // As the name of |visible_column_index| implies, it must by the index of the
-  // column in the visible columns array.
-  virtual void ToggleSortOrder(int visible_column_index) = 0;
+  virtual void SetSortDescriptor(
+      const TableSortDescriptor& sort_descriptor) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TableViewDelegate);

@@ -128,8 +128,7 @@ bool NewTaskManagerView::IsTableSorted() const {
   return tab_table_->is_sorted();
 }
 
-TableSortDescriptor
-NewTaskManagerView::GetSortDescriptor() const {
+TableSortDescriptor NewTaskManagerView::GetSortDescriptor() const {
   if (!IsTableSorted())
     return TableSortDescriptor();
 
@@ -137,8 +136,17 @@ NewTaskManagerView::GetSortDescriptor() const {
   return TableSortDescriptor(descriptor.column_id, descriptor.ascending);
 }
 
-void NewTaskManagerView::ToggleSortOrder(int visible_column_index) {
-  tab_table_->ToggleSortOrder(visible_column_index);
+void NewTaskManagerView::SetSortDescriptor(
+    const TableSortDescriptor& descriptor) {
+  views::TableView::SortDescriptors descriptor_list;
+
+  // If |sorted_column_id| is the default value, it means to clear the sort.
+  if (descriptor.sorted_column_id != TableSortDescriptor().sorted_column_id) {
+    descriptor_list.emplace_back(descriptor.sorted_column_id,
+                                 descriptor.is_ascending);
+  }
+
+  tab_table_->SetSortDescriptors(descriptor_list);
 }
 
 gfx::Size NewTaskManagerView::GetPreferredSize() const {

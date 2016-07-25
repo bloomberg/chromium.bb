@@ -755,18 +755,8 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
 
     if (col_visibility) {
       if (sorted_col_id == col_id_key) {
-        if (sort_is_ascending == kColumns[i].initial_sort_is_ascending) {
-          table_view_delegate_->ToggleSortOrder(current_visible_column_index);
-        } else {
-          // Unfortunately the API of ui::TableView doesn't provide a clean way
-          // to sort by a particular column ID and a sort direction. If the
-          // retrieved sort direction is different than the initial one, we have
-          // to toggle the sort order twice!
-          // Note that the function takes the visible_column_index rather than
-          // a column ID.
-          table_view_delegate_->ToggleSortOrder(current_visible_column_index);
-          table_view_delegate_->ToggleSortOrder(current_visible_column_index);
-        }
+        table_view_delegate_->SetSortDescriptor(
+            TableSortDescriptor(col_id, sort_is_ascending));
       }
 
       ++current_visible_column_index;

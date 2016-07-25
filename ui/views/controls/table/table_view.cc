@@ -234,21 +234,33 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
 void TableView::ToggleSortOrder(int visible_column_index) {
   DCHECK(visible_column_index >= 0 &&
          visible_column_index < static_cast<int>(visible_columns_.size()));
-  if (!visible_columns_[visible_column_index].column.sortable)
+  const ui::TableColumn& column = visible_columns_[visible_column_index].column;
+  if (!column.sortable)
     return;
-  const int column_id = visible_columns_[visible_column_index].column.id;
   SortDescriptors sort(sort_descriptors_);
-  if (!sort.empty() && sort[0].column_id == column_id) {
-    sort[0].ascending = !sort[0].ascending;
+  if (!sort.empty() && sort[0].column_id == column.id) {
+    if (sort[0].ascending == column.initial_sort_is_ascending) {
+      // First toggle inverts the order.
+      sort[0].ascending = !sort[0].ascending;
+    } else {
+      // Second toggle clears the sort.
+      sort.clear();
+    }
   } else {
-    SortDescriptor descriptor(column_id, visible_columns_[
-        visible_column_index].column.initial_sort_is_ascending);
+    SortDescriptor descriptor(column.id, column.initial_sort_is_ascending);
     sort.insert(sort.begin(), descriptor);
     // Only persist two sort descriptors.
     if (sort.size() > 2)
       sort.resize(2);
   }
   SetSortDescriptors(sort);
+}
+
+void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
+  sort_descriptors_ = sort_descriptors;
+  SortItemsAndUpdateMapping();
+  if (header_)
+    header_->SchedulePaint();
 }
 
 bool TableView::IsColumnVisible(int id) const {
@@ -638,13 +650,6 @@ void TableView::NumRowsChanged() {
   SortItemsAndUpdateMapping();
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
-  sort_descriptors_ = sort_descriptors;
-  SortItemsAndUpdateMapping();
-  if (header_)
-    header_->SchedulePaint();
 }
 
 void TableView::SortItemsAndUpdateMapping() {

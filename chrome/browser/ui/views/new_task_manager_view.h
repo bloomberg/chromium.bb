@@ -51,7 +51,7 @@ class NewTaskManagerView
   void SetColumnVisibility(int column_id, bool new_visibility) override;
   bool IsTableSorted() const override;
   TableSortDescriptor GetSortDescriptor() const override;
-  void ToggleSortOrder(int visible_column_index) override;
+  void SetSortDescriptor(const TableSortDescriptor& descriptor) override;
 
   // views::View:
   gfx::Size GetPreferredSize() const override;
