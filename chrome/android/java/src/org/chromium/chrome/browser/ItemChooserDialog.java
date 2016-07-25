@@ -181,6 +181,8 @@ public class ItemChooserDialog {
         @Override
         public void clear() {
             mSelectedItem = ListView.INVALID_POSITION;
+            mDisabledEntries.clear();
+            mItemDescriptionMap.clear();
             mConfirmButton.setEnabled(false);
             super.clear();
         }
