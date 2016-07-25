@@ -96,7 +96,7 @@ private:
                     if (isEndOfData())
                         exceptionState.throwTypeError("Message is incomplete.");
                     else
-                        exceptionState.throwTypeError("Unexpected status byte at index " + getPositionString());
+                        exceptionState.throwTypeError("Unexpected status byte " + getPositionString());
                     return false;
                 }
             }
