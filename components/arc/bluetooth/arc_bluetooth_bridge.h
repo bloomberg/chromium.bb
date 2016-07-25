@@ -43,8 +43,7 @@ class ArcBluetoothBridge
   explicit ArcBluetoothBridge(ArcBridgeService* bridge_service);
   ~ArcBluetoothBridge() override;
 
-  // Overridden from
-  // InstanceHolder<mojom::BluetoothInstance>::Observer:
+  // Overridden from InstanceHolder<mojom::BluetoothInstance>::Observer:
   void OnInstanceReady() override;
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
@@ -346,6 +345,23 @@ class ArcBluetoothBridge
   template <class LocalGattAttribute>
   int32_t CreateGattAttributeHandle(LocalGattAttribute* attribute);
 
+  // Common code for OnCharacteristicReadRequest and OnDescriptorReadRequest
+  template <class LocalGattAttribute>
+  void OnGattAttributeReadRequest(const device::BluetoothDevice* device,
+                                  const LocalGattAttribute* attribute,
+                                  int offset,
+                                  const ValueCallback& success_callback,
+                                  const ErrorCallback& error_callback);
+
+  // Common code for OnCharacteristicWriteRequest and OnDescriptorWriteRequest
+  template <class LocalGattAttribute>
+  void OnGattAttributeWriteRequest(const device::BluetoothDevice* device,
+                                   const LocalGattAttribute* attribute,
+                                   const std::vector<uint8_t>& value,
+                                   int offset,
+                                   const base::Closure& success_callback,
+                                   const ErrorCallback& error_callback);
+
   bool CalledOnValidThread();
 
   mojo::Binding<mojom::BluetoothHost> binding_;
@@ -358,6 +374,8 @@ class ArcBluetoothBridge
       notification_session_;
   // Map from Android int handle to Chrome (BlueZ) string identifier.
   std::unordered_map<int32_t, std::string> gatt_identifier_;
+  // Map from Chrome (BlueZ) string identifier to android int handle.
+  std::unordered_map<std::string, int32_t> gatt_handle_;
   // Store last GattCharacteristic added to each GattService for GattServer.
   std::unordered_map<int32_t, int32_t> last_characteristic_;
   // Monotonically increasing value to use as handle to give to Android side.

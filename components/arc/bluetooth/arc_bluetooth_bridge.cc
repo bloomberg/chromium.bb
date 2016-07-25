@@ -54,6 +54,7 @@ using device::BluetoothUUID;
 namespace {
 constexpr int32_t kMinBtleVersion = 1;
 constexpr int32_t kMinBtleNotifyVersion = 2;
+constexpr int32_t kMinGattServerVersion = 3;
 constexpr uint32_t kGattReadPermission =
     BluetoothGattCharacteristic::Permission::PERMISSION_READ |
     BluetoothGattCharacteristic::Permission::PERMISSION_READ_ENCRYPTED |
@@ -68,6 +69,9 @@ constexpr int32_t kInvalidGattAttributeHandle = -1;
 // Bluetooth Specification Version 4.2 Vol 3 Part F Section 3.2.2
 // An attribute handle of value 0xFFFF is known as the maximum attribute handle.
 constexpr int32_t kMaxGattAttributeHandle = 0xFFFF;
+// Bluetooth Specification Version 4.2 Vol 3 Part F Section 3.2.9
+// The maximum length of an attribute value shall be 512 octets.
+constexpr int kMaxGattAttributeLength = 512;
 
 using GattStatusCallback =
     base::Callback<void(arc::mojom::BluetoothGattStatus)>;
@@ -140,6 +144,33 @@ void OnGattReadError(const GattReadCallback& callback,
       mojo::ConvertTo<arc::mojom::BluetoothGattStatus>(error_code);
   gattValue->value = nullptr;
   callback.Run(std::move(gattValue));
+}
+
+// Callback function for mojom::BluetoothInstance::RequestGattRead
+void OnGattServerRead(
+    const BluetoothLocalGattService::Delegate::ValueCallback& success_callback,
+    const BluetoothLocalGattService::Delegate::ErrorCallback& error_callback,
+    arc::mojom::BluetoothGattStatus status,
+    mojo::Array<uint8_t> value) {
+  if (status == arc::mojom::BluetoothGattStatus::GATT_SUCCESS)
+    success_callback.Run(value.To<std::vector<uint8_t>>());
+  else
+    error_callback.Run();
+}
+
+// Callback function for mojom::BluetoothInstance::RequestGattWrite
+void OnGattServerWrite(
+    const base::Closure& success_callback,
+    const BluetoothLocalGattService::Delegate::ErrorCallback& error_callback,
+    arc::mojom::BluetoothGattStatus status) {
+  if (status == arc::mojom::BluetoothGattStatus::GATT_SUCCESS)
+    success_callback.Run();
+  else
+    error_callback.Run();
+}
+
+bool IsGattOffsetValid(int offset) {
+  return 0 <= offset && offset < kMaxGattAttributeLength;
 }
 
 }  // namespace
@@ -379,12 +410,63 @@ void ArcBluetoothBridge::GattDescriptorValueChanged(
   // Placeholder for GATT client functionality
 }
 
+template <class LocalGattAttribute>
+void ArcBluetoothBridge::OnGattAttributeReadRequest(
+    const BluetoothDevice* device,
+    const LocalGattAttribute* attribute,
+    int offset,
+    const ValueCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(CalledOnValidThread());
+  if (!HasBluetoothInstance() ||
+      !CheckBluetoothInstanceVersion(kMinGattServerVersion) ||
+      !IsGattOffsetValid(offset)) {
+    error_callback.Run();
+    return;
+  }
+
+  DCHECK(gatt_handle_.find(attribute->GetIdentifier()) != gatt_handle_.end());
+
+  arc_bridge_service()->bluetooth()->instance()->RequestGattRead(
+      mojom::BluetoothAddress::From(device->GetAddress()),
+      gatt_handle_[attribute->GetIdentifier()], offset, false /* is_long */,
+      base::Bind(&OnGattServerRead, success_callback, error_callback));
+}
+
+template <class LocalGattAttribute>
+void ArcBluetoothBridge::OnGattAttributeWriteRequest(
+    const BluetoothDevice* device,
+    const LocalGattAttribute* attribute,
+    const std::vector<uint8_t>& value,
+    int offset,
+    const base::Closure& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(CalledOnValidThread());
+  if (!HasBluetoothInstance() ||
+      !CheckBluetoothInstanceVersion(kMinGattServerVersion) ||
+      !IsGattOffsetValid(offset)) {
+    error_callback.Run();
+    return;
+  }
+
+  DCHECK(gatt_handle_.find(attribute->GetIdentifier()) != gatt_handle_.end());
+
+  arc_bridge_service()->bluetooth()->instance()->RequestGattWrite(
+      mojom::BluetoothAddress::From(device->GetAddress()),
+      gatt_handle_[attribute->GetIdentifier()], offset,
+      mojo::Array<uint8_t>::From(value),
+      base::Bind(&OnGattServerWrite, success_callback, error_callback));
+}
+
 void ArcBluetoothBridge::OnCharacteristicReadRequest(
     const BluetoothDevice* device,
     const BluetoothLocalGattCharacteristic* characteristic,
     int offset,
     const ValueCallback& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+  OnGattAttributeReadRequest(device, characteristic, offset, callback,
+                             error_callback);
+}
 
 void ArcBluetoothBridge::OnCharacteristicWriteRequest(
     const BluetoothDevice* device,
@@ -392,14 +474,20 @@ void ArcBluetoothBridge::OnCharacteristicWriteRequest(
     const std::vector<uint8_t>& value,
     int offset,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+  OnGattAttributeWriteRequest(device, characteristic, value, offset, callback,
+                              error_callback);
+}
 
 void ArcBluetoothBridge::OnDescriptorReadRequest(
     const BluetoothDevice* device,
     const BluetoothLocalGattDescriptor* descriptor,
     int offset,
     const ValueCallback& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+  OnGattAttributeReadRequest(device, descriptor, offset, callback,
+                             error_callback);
+}
 
 void ArcBluetoothBridge::OnDescriptorWriteRequest(
     const BluetoothDevice* device,
@@ -407,7 +495,10 @@ void ArcBluetoothBridge::OnDescriptorWriteRequest(
     const std::vector<uint8_t>& value,
     int offset,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+  OnGattAttributeWriteRequest(device, descriptor, value, offset, callback,
+                              error_callback);
+}
 
 void ArcBluetoothBridge::OnNotificationsStart(
     const BluetoothDevice* device,
@@ -1111,6 +1202,7 @@ int32_t ArcBluetoothBridge::CreateGattAttributeHandle(
     return kInvalidGattAttributeHandle;
   const std::string& identifier = attribute->GetIdentifier();
   gatt_identifier_[handle] = identifier;
+  gatt_handle_[identifier] = handle;
   return handle;
 }
 
@@ -1223,9 +1315,9 @@ void ArcBluetoothBridge::DeleteService(int32_t service_handle,
   BluetoothLocalGattService* service =
       bluetooth_adapter_->GetGattService(gatt_identifier_[service_handle]);
   DCHECK(service);
-
-  service->Delete();
   gatt_identifier_.erase(service_handle);
+  gatt_handle_.erase(service->GetIdentifier());
+  service->Delete();
   OnGattOperationDone(callback);
 }
 
