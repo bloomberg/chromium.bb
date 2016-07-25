@@ -622,6 +622,10 @@ if (is_win) {
     public_deps = [
       ":chrome_helper_app",
 
+      # Before bundling the versioned app components, delete any existing
+      # versions.
+      ":clean_up_old_versions",
+
       # keystone_registration_framework copies the framework into the framework
       # bundle via a script that performs additional actions, rather than
       # relying on a bundle_data to copy it.
@@ -631,6 +635,18 @@ if (is_win) {
       # non-component builds, will ensure the export symbol table is correct.
       ":verify_chrome_framework_order",
     ]
+  }
+
+  action("clean_up_old_versions") {
+    script = "//chrome/tools/build/mac/clean_up_old_versions.py"
+    outputs = [
+      "$root_gen_dir/run_$target_name.stamp",
+    ]
+    args = [
+             rebase_path("$root_out_dir/$chrome_product_full_name.app",
+                         root_build_dir),
+             "$chrome_version_full",
+           ] + rebase_path(outputs, root_build_dir)
   }
 
   tweak_info_plist("chrome_helper_plist") {
