@@ -586,8 +586,6 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
 TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
   // Both newroot and oldroot are trusted.
   TrustStore trust_store;
-  // Note: The test assumes newroot will be tried before oldroot.
-  // Currently this depends on the order the roots are added.
   trust_store.AddTrustedCertificate(newroot_);
   trust_store.AddTrustedCertificate(oldroot_);
 
@@ -604,24 +602,31 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(OK, result.error());
-  ASSERT_EQ(2U, result.paths.size());
+  // There may be one or two paths attempted depending if the path builder tried
+  // using newroot first.
+  // TODO(mattm): Once TrustStore is an interface, this could be fixed with a
+  // mock version of TrustStore that returns roots in a deterministic order.
+  ASSERT_LE(1U, result.paths.size());
+  ASSERT_GE(2U, result.paths.size());
 
-  // Path builder will first attempt: target <- oldintermediate <- newroot
-  // but it will fail since oldintermediate is signed by oldroot.
-  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
-  ASSERT_EQ(3U, result.paths[0]->path.size());
-  EXPECT_EQ(target_, result.paths[0]->path[0]);
-  EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
-  EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+  if (result.paths.size() == 2) {
+    // Path builder may first attempt: target <- oldintermediate <- newroot
+    // but it will fail since oldintermediate is signed by oldroot.
+    EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
+    ASSERT_EQ(3U, result.paths[0]->path.size());
+    EXPECT_EQ(target_, result.paths[0]->path[0]);
+    EXPECT_EQ(oldintermediate_, result.paths[0]->path[1]);
+    EXPECT_EQ(newroot_, result.paths[0]->path[2]);
+  }
 
   // Path builder will next attempt:
   // target <- old intermediate <- oldroot
   // which should succeed.
-  EXPECT_EQ(OK, result.paths[1]->error);
-  ASSERT_EQ(3U, result.paths[1]->path.size());
-  EXPECT_EQ(target_, result.paths[1]->path[0]);
-  EXPECT_EQ(oldintermediate_, result.paths[1]->path[1]);
-  EXPECT_EQ(oldroot_, result.paths[1]->path[2]);
+  EXPECT_EQ(OK, result.paths[result.best_result_index]->error);
+  ASSERT_EQ(3U, result.paths[result.best_result_index]->path.size());
+  EXPECT_EQ(target_, result.paths[result.best_result_index]->path[0]);
+  EXPECT_EQ(oldintermediate_, result.paths[result.best_result_index]->path[1]);
+  EXPECT_EQ(oldroot_, result.paths[result.best_result_index]->path[2]);
 }
 
 // Tests that the path builder doesn't build longer than necessary paths.
