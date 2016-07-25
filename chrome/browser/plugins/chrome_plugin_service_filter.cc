@@ -21,6 +21,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,17 +57,20 @@ ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
 }
 
 void ChromePluginServiceFilter::RegisterResourceContext(
-    PluginPrefs* plugin_prefs,
+    scoped_refptr<PluginPrefs> plugin_prefs,
+    scoped_refptr<HostContentSettingsMap> host_content_settings_map,
     const void* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  resource_context_map_[context] = plugin_prefs;
+  plugin_prefs_[context] = std::move(plugin_prefs);
+  host_content_settings_maps_[context] = std::move(host_content_settings_map);
 }
 
 void ChromePluginServiceFilter::UnregisterResourceContext(
     const void* context) {
   base::AutoLock lock(lock_);
-  resource_context_map_.erase(context);
+  plugin_prefs_.erase(context);
+  host_content_settings_maps_.erase(context);
 }
 
 void ChromePluginServiceFilter::OverridePluginForFrame(
@@ -106,21 +110,28 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     }
   }
 
+  // Check whether the plugin is disabled.
+  ResourceContextMap::iterator prefs_it = plugin_prefs_.find(context);
+  DCHECK(prefs_it != plugin_prefs_.end());
+
+  if (!prefs_it->second.get()->IsPluginEnabled(*plugin))
+    return false;
+
   // Check whether PreferHtmlOverPlugins feature is enabled.
   if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName) &&
       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
-    return false;
+    auto host_content_settings_map_it =
+        host_content_settings_maps_.find(context);
+    DCHECK(host_content_settings_map_it != host_content_settings_maps_.end());
+
+    // TODO(trizzofo): Implement site-origin exceptions once we have the
+    // top-level frame origin.
+    ContentSetting content_setting =
+        host_content_settings_map_it->second->GetDefaultContentSetting(
+            CONTENT_SETTINGS_TYPE_PLUGINS, nullptr);
+    if (content_setting == CONTENT_SETTING_BLOCK)
+      return false;
   }
-
-  // Check whether the plugin is disabled.
-  ResourceContextMap::iterator prefs_it =
-      resource_context_map_.find(context);
-  if (prefs_it == resource_context_map_.end())
-    return false;
-
-  PluginPrefs* plugin_prefs = prefs_it->second.get();
-  if (!plugin_prefs->IsPluginEnabled(*plugin))
-    return false;
 
   return true;
 }

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_management/mock_web_contents_task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -169,6 +171,11 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
 void PluginsLoadedCallback(
     const base::Closure& quit_closure,
     const std::vector<content::WebPluginInfo>& /* info */) {
+  quit_closure.Run();
+}
+
+void PluginEnabledCallback(const base::Closure& quit_closure, bool can_enable) {
+  EXPECT_TRUE(can_enable);
   quit_closure.Run();
 }
 
@@ -389,8 +396,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   ASSERT_TRUE(GetPdfPluginInfo(&pdf_plugin_info));
 
   // Disable the PDF plugin.
-  PluginPrefs::GetForProfile(browser()->profile())->EnablePluginGroup(
-      false, base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName));
+  {
+    base::RunLoop run_loop;
+    PluginPrefs::GetForProfile(browser()->profile())->EnablePlugin(
+        false,
+        base::FilePath::FromUTF8Unsafe(ChromeContentClient::kPDFPluginPath),
+        base::Bind(&PluginEnabledCallback, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   // Make sure it is actually disabled for webpages.
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
@@ -398,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_FALSE(filter->IsPluginAvailable(
       initiator()->GetRenderProcessHost()->GetID(),
       initiator()->GetMainFrame()->GetRoutingID(),
-      nullptr,
+      browser()->profile()->GetResourceContext(),
       GURL("http://google.com"),
       GURL(),
       &dummy_pdf_plugin_info));

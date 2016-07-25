@@ -21,6 +21,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "url/gurl.h"
 
+class HostContentSettingsMap;
 class PluginPrefs;
 class Profile;
 
@@ -36,7 +37,10 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   static ChromePluginServiceFilter* GetInstance();
 
   // This method should be called on the UI thread.
-  void RegisterResourceContext(PluginPrefs* plugin_prefs, const void* context);
+  void RegisterResourceContext(
+      scoped_refptr<PluginPrefs> plugin_prefs,
+      scoped_refptr<HostContentSettingsMap> host_content_settings_map,
+      const void* context);
 
   void UnregisterResourceContext(const void* context);
 
@@ -108,7 +112,10 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   base::Lock lock_;  // Guards access to member variables.
   typedef std::map<const void*, scoped_refptr<PluginPrefs> > ResourceContextMap;
-  ResourceContextMap resource_context_map_;
+  ResourceContextMap plugin_prefs_;
+
+  std::map<const void*, scoped_refptr<HostContentSettingsMap>>
+      host_content_settings_maps_;
 
   std::map<int, ProcessDetails> plugin_details_;
 };
