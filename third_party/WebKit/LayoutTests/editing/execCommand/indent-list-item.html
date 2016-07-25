@@ -1,19 +1,11 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-<div id="description">This test uses the execCommand to Outdent the text below.</div>
-<br>
-<div contenteditable="true">
-<ul>
-<li>Foo</li>
-<li id="item1">Bar</li>
-<li>Baz</li>
-</ul>
-</div>
-<script>
-var s = window.getSelection();
-var p1 = document.getElementById("item1");
-s.collapse(p1, 0);
-document.execCommand("Indent", false, "");
+test(() => assert_selection(
+    '<div contenteditable><ul><li>Foo</li><li>|Bar</li><li>Baz</li></ul></div>',
+    'indent',
+    '<div contenteditable><ul><li>Foo</li><ul><li>|Bar</li></ul><li>Baz</li></ul></div>'),
+    'Indent a list item in middle of list');
 </script>
