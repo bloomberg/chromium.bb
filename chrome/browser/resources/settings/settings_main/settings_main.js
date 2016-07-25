@@ -130,6 +130,55 @@ Polymer({
       if (this.showPages_.advanced)
         this.advancedToggleExpanded_ = true;
     }
+
+    // Wait for the dom-if changes prior to calculating the overflow padding.
+    this.async(function() {
+      this.$.overscroll.style.paddingBottom = this.overscrollHeight_() + 'px';
+    });
+  },
+
+  /**
+   * Return the height that the over scroll padding should be set to.
+   * This is used to determine how much padding to apply to the end of the
+   * content so that the last element may align with the top of the content
+   * area.
+   * @return {number}
+   * @private
+   */
+  overscrollHeight_: function() {
+    if (!this.currentRoute || this.currentRoute.subpage.length != 0 ||
+        this.showPages_.about) {
+      return 0;
+    }
+
+    /**
+     * @param {!Element} element
+     * @return {number}
+     */
+    var calcHeight = function(element) {
+      var style = getComputedStyle(element);
+      var height = this.parentNode.scrollHeight - element.offsetHeight +
+          parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+      assert(height >= 0);
+      return height;
+    }.bind(this);
+
+    if (this.showPages_.advanced) {
+      var lastSection = this.$$('settings-advanced-page').$$(
+          'settings-section:last-of-type');
+      // |lastSection| may be null in unit tests.
+      if (!lastSection)
+        return 0;
+      return calcHeight(lastSection);
+    }
+
+    assert(this.showPages_.basic);
+    var lastSection = this.$$('settings-basic-page').$$(
+        'settings-section:last-of-type');
+    // |lastSection| may be null in unit tests.
+    if (!lastSection)
+      return 0;
+    return calcHeight(lastSection) - this.$$('#toggleContainer').offsetHeight;
   },
 
   /** @private */
