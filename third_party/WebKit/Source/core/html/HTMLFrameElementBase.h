@@ -78,6 +78,7 @@ private:
 
     AtomicString m_URL;
     AtomicString m_frameName;
+    mutable bool m_javaScriptURLFailedAccessCheck;
 };
 
 inline bool isHTMLFrameElementBase(const HTMLElement& element)
