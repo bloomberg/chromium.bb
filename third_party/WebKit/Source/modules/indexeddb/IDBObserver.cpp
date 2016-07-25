@@ -38,8 +38,6 @@ IDBObserver::IDBObserver(IDBObserverCallback& callback, const IDBObserverInit& o
     m_operationTypes[WebIDBClear] = options.operationTypes().contains(IndexedDBNames::clear);
 }
 
-IDBObserver::~IDBObserver() {}
-
 void IDBObserver::observe(IDBDatabase* database, IDBTransaction* transaction, ExceptionState& exceptionState)
 {
     if (transaction->isFinished() || transaction->isFinishing()) {

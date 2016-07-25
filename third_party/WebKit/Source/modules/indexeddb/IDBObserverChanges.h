@@ -17,9 +17,8 @@ namespace blink {
 
 class ScriptState;
 
-class IDBObserverChanges final : public GarbageCollectedFinalized<IDBObserverChanges>, public ScriptWrappable {
+class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-
 public:
     static IDBObserverChanges* create(IDBDatabase*, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
 

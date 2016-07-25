@@ -21,13 +21,11 @@ class IDBObserverInit;
 class IDBTransaction;
 struct WebIDBObservation;
 
-class MODULES_EXPORT IDBObserver final : public GarbageCollectedFinalized<IDBObserver>, public ScriptWrappable {
+class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
     static IDBObserver* create(IDBObserverCallback&, const IDBObserverInit&);
-
-    ~IDBObserver();
 
     void removeObserver(int32_t id);
     void onChange(int32_t id, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
