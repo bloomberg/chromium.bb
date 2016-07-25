@@ -22,6 +22,10 @@ bool LoadEGLGLES2Bindings(
     const char* egl_library_name,
     const char* gles_library_name);
 
+void* /* EGLConfig */ ChooseEGLConfig(void* /* EGLConfig */ display,
+                                      const int32_t* attributes);
+
+// TODO(kylechar): This is deprecated, delete when all callers are gone.
 void* /* EGLConfig */ ChooseEGLConfig(const EglConfigCallbacks& egl,
                                       const int32_t* attributes);
 

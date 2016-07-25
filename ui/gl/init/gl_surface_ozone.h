@@ -20,12 +20,6 @@ namespace gl {
 scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
     gfx::AcceleratedWidget window);
 
-scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfaceless(
-    gfx::AcceleratedWidget window);
-
-scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
-    gfx::AcceleratedWidget window);
-
 }  // namespace gl
 
 #endif  // UI_GL_INIT_GL_SURFACE_OZONE_H_

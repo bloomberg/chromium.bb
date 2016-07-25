@@ -64,19 +64,13 @@ scoped_refptr<GLSurface> CreateDefaultOffscreenGLSurface(
 // TODO(kylechar): Remove when all implementations are switched over.
 scoped_refptr<GLSurface> CreateViewGLSurfaceOld(gfx::AcceleratedWidget window) {
   switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2: {
+    case kGLImplementationEGLGLES2:
       DCHECK_NE(window, gfx::kNullAcceleratedWidget);
-      scoped_refptr<GLSurface> surface;
-      if (!surface && GLSurfaceEGL::IsEGLSurfacelessContextSupported())
-        surface = CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(window);
-      if (!surface)
-        surface = CreateViewGLSurfaceOzone(window);
-      return surface;
-    }
+      return CreateViewGLSurfaceOzone(window);
     default:
       NOTREACHED();
-      return nullptr;
   }
+  return nullptr;
 }
 
 // TODO(kylechar): Remove when all implementations are switched over.
@@ -131,16 +125,12 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
                                                   window);
 }
 
-// TODO(kylechar): Update to use new API.
 scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
   TRACE_EVENT0("gpu", "gl::init::CreateSurfacelessViewGLSurface");
-  if (GetGLImplementation() == kGLImplementationEGLGLES2 &&
-      window != gfx::kNullAcceleratedWidget &&
-      GLSurfaceEGL::IsEGLSurfacelessContextSupported()) {
-    return CreateViewGLSurfaceOzoneSurfaceless(window);
-  }
-  return nullptr;
+
+  return GetSurfaceFactory()->CreateSurfacelessViewGLSurface(
+      GetGLImplementation(), window);
 }
 
 scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {

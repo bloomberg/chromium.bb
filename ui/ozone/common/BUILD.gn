@@ -31,5 +31,9 @@ source_set("common") {
     "//ui/ozone:ozone_base",
   ]
 
+  deps = [
+    "//ui/gl",
+  ]
+
   visibility = [ "//ui/ozone/platform/*" ]
 }

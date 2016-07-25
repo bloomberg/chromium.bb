@@ -69,6 +69,8 @@ source_set("gbm") {
     "gpu/gbm_buffer_base.h",
     "gpu/gbm_device.cc",
     "gpu/gbm_device.h",
+    "gpu/gbm_surface.cc",
+    "gpu/gbm_surface.h",
     "gpu/gbm_surface_factory.cc",
     "gpu/gbm_surface_factory.h",
     "gpu/gbm_surfaceless.cc",
@@ -137,8 +139,10 @@ source_set("gbm") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
+    "//ui/ozone/gl",
     "//ui/platform_window",
   ]
 

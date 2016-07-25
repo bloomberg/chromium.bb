@@ -5,6 +5,8 @@
 #include "ui/ozone/common/egl_util.h"
 
 #include "base/files/file_path.h"
+#include "ui/gl/egl_util.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace ui {
 namespace {
@@ -60,6 +62,28 @@ bool LoadEGLGLES2Bindings(
   add_gl_library.Run(gles_library);
 
   return true;
+}
+
+EGLConfig ChooseEGLConfig(EGLDisplay display, const int32_t* attributes) {
+  int32_t num_configs;
+  if (!eglChooseConfig(display, attributes, nullptr, 0, &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << GetLastEGLErrorString();
+    return nullptr;
+  }
+
+  if (num_configs == 0) {
+    LOG(ERROR) << "No suitable EGL configs found.";
+    return nullptr;
+  }
+
+  EGLConfig config;
+  if (!eglChooseConfig(display, attributes, &config, 1, &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << GetLastEGLErrorString();
+    return nullptr;
+  }
+  return config;
 }
 
 void* /* EGLConfig */ ChooseEGLConfig(const EglConfigCallbacks& egl,

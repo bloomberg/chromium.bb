@@ -6,22 +6,25 @@
 
 #include <gbm.h>
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
+#include "ui/ozone/platform/drm/gpu/gbm_surface.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
 
@@ -51,6 +54,54 @@ GbmSurfaceless* GbmSurfaceFactory::GetSurface(
   return it->second;
 }
 
+bool GbmSurfaceFactory::UseNewSurfaceAPI() {
+  return true;
+}
+
+scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateViewGLSurface(
+    gl::GLImplementation implementation,
+    gfx::AcceleratedWidget widget) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return gl::InitializeGLSurface(
+      new GbmSurface(this, drm_thread_->CreateDrmWindowProxy(widget), widget));
+}
+
+scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateSurfacelessViewGLSurface(
+    gl::GLImplementation implementation,
+    gfx::AcceleratedWidget widget) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return gl::InitializeGLSurface(new GbmSurfaceless(
+      this, drm_thread_->CreateDrmWindowProxy(widget), widget));
+}
+
+scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateOffscreenGLSurface(
+    gl::GLImplementation implementation,
+    const gfx::Size& size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  DCHECK_EQ(size.width(), 0);
+  DCHECK_EQ(size.height(), 0);
+
+  return gl::InitializeGLSurface(new gl::SurfacelessEGL(size));
+}
+
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return EGL_DEFAULT_DISPLAY;
@@ -68,20 +119,6 @@ std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG(ERROR) << "Software rendering mode is not supported with GBM platform";
   return nullptr;
-}
-
-std::unique_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
-  NOTREACHED();
-  return nullptr;
-}
-
-std::unique_ptr<SurfaceOzoneEGL>
-GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return base::WrapUnique(
-      new GbmSurfaceless(drm_thread_->CreateDrmWindowProxy(widget), this));
 }
 
 std::vector<gfx::BufferFormat> GbmSurfaceFactory::GetScanoutFormats(
