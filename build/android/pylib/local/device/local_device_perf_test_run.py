@@ -352,7 +352,7 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
 
     device_indices = range(min(len(self._devices), len(self._test_buckets)))
     shards = parallelizer.Parallelizer(device_indices).pMap(run_perf_tests)
-    return shards.pGet(self._timeout)
+    return [x for x in shards.pGet(self._timeout) if x is not None]
 
   # override
   def TestPackage(self):
