@@ -217,17 +217,20 @@ def PrintApkAnalysis(apk_filename, chartjson=None):
   total_install_size = total_apk_size
 
   for group in FILE_GROUPS:
-    apk_size = sum(member.compress_size for member in found_files[group])
-    install_size = apk_size
-    install_bytes = sum(f.file_size for f in found_files[group]
-                        if group.extracted(f.filename))
+    uncompressed_size = sum(member.file_size for member in found_files[group])
+    packed_size = sum(member.compress_size for member in found_files[group])
+    install_size = packed_size
+    install_bytes = sum(member.file_size for member in found_files[group]
+                        if group.extracted(member.filename))
     install_size += install_bytes
     total_install_size += install_bytes
 
     ReportPerfResult(chartjson, apk_basename + '_Breakdown',
-                     group.name + ' size', apk_size, 'bytes')
+                     group.name + ' size', packed_size, 'bytes')
     ReportPerfResult(chartjson, apk_basename + '_InstallBreakdown',
                      group.name + ' size', install_size, 'bytes')
+    ReportPerfResult(chartjson, apk_basename + '_Uncompressed',
+                     group.name + ' size', uncompressed_size, 'bytes')
 
   transfer_size = _CalculateCompressedSize(apk_filename)
   ReportPerfResult(chartjson, apk_basename + '_InstallSize',
