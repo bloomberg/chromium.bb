@@ -247,7 +247,7 @@ void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTri
 void RemoteFontFaceSource::FontLoadHistograms::longLimitExceeded(bool isInterventionTriggered)
 {
     m_isLongLimitExceeded = true;
-    recordInterventionResult(isInterventionTriggered, false);
+    recordInterventionResult(isInterventionTriggered, true);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontResource* font)
