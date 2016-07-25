@@ -228,6 +228,39 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
   EXPECT_EQ("button", speech_monitor_.GetNextUtterance());
 }
 
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_MESSAGE_CENTER_BUBBLE));
+
+  // Wait for it to say "Notification Center, window".
+  while ("Notification Center, window" != speech_monitor_.GetNextUtterance()) {
+  }
+
+  // Tab until we get to the Do Not Disturb button.
+  SendKeyPress(ui::VKEY_TAB);
+  do {
+    std::string ut = speech_monitor_.GetNextUtterance();
+
+    if (ut == "Do not disturb")
+      break;
+    else if (ut == "Button")
+      SendKeyPress(ui::VKEY_TAB);
+  } while (true);
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_SPACE);
+  EXPECT_EQ("Do not disturb", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Pressed", speech_monitor_.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_SPACE);
+  EXPECT_EQ("Do not disturb", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
+}
+
 //
 // Spoken feedback tests in both a logged in browser window and guest mode.
 //

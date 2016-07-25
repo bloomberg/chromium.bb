@@ -215,7 +215,7 @@ void ToggleImageButton::SetToggled(bool toggled) {
   toggled_ = toggled;
   SchedulePaint();
 
-  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED, true);
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState image_state,
@@ -270,6 +270,15 @@ bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
 void ToggleImageButton::GetAccessibleState(ui::AXViewState* state) {
   ImageButton::GetAccessibleState(state);
   GetTooltipText(gfx::Point(), &state->name);
+
+  // Use the visual pressed image as a cue for making this control into an
+  // accessible toggle button.
+  if ((toggled_ && !images_[ButtonState::STATE_NORMAL].isNull()) ||
+      (!toggled_ && !alternate_images_[ButtonState::STATE_NORMAL].isNull())) {
+    state->role = ui::AX_ROLE_TOGGLE_BUTTON;
+    if (toggled_)
+      state->AddStateFlag(ui::AX_STATE_PRESSED);
+  }
 }
 
 }  // namespace views
