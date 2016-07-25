@@ -46,10 +46,10 @@ OfflinePageSuggestionsProvider::GetCategoryStatus(
   return category_status_;
 }
 
-void OfflinePageSuggestionsProvider::DiscardSuggestion(
+void OfflinePageSuggestionsProvider::DismissSuggestion(
     const std::string& suggestion_id) {
   // TODO(pke): Implement some "dont show on NTP anymore" behaviour,
-  // then also implement ClearDiscardedSuggestionsForDebugging.
+  // then also implement ClearDismissedSuggestionsForDebugging.
 }
 
 void OfflinePageSuggestionsProvider::FetchSuggestionImage(
@@ -62,8 +62,8 @@ void OfflinePageSuggestionsProvider::ClearCachedSuggestionsForDebugging() {
   // Ignored.
 }
 
-void OfflinePageSuggestionsProvider::ClearDiscardedSuggestionsForDebugging() {
-  // TODO(pke): Implement when discarded suggestions are supported.
+void OfflinePageSuggestionsProvider::ClearDismissedSuggestionsForDebugging() {
+  // TODO(pke): Implement when dismissed suggestions are supported.
 }
 
 void OfflinePageSuggestionsProvider::OfflinePageModelLoaded(

@@ -71,11 +71,11 @@ class ContentSuggestionsProvider {
   virtual ContentSuggestionsCategoryStatus GetCategoryStatus(
       ContentSuggestionsCategory category) = 0;
 
-  // Discards the suggestion with the given ID. A provider needs to ensure that
-  // a once-discarded suggestion is never delivered again (through the
+  // Dismisses the suggestion with the given ID. A provider needs to ensure that
+  // a once-dismissed suggestion is never delivered again (through the
   // Observer). The provider must not call Observer::OnSuggestionsChanged if the
-  // removal of the discarded suggestion is the only change.
-  virtual void DiscardSuggestion(const std::string& suggestion_id) = 0;
+  // removal of the dismissed suggestion is the only change.
+  virtual void DismissSuggestion(const std::string& suggestion_id) = 0;
 
   // Fetches the image for the suggestion with the given ID and returns it
   // through the callback. This fetch may occur locally or from the internet.
@@ -88,11 +88,11 @@ class ContentSuggestionsProvider {
   // fetch starts from scratch.
   virtual void ClearCachedSuggestionsForDebugging() = 0;
 
-  // Used only for debugging purposes. Clears the cache of discarded
+  // Used only for debugging purposes. Clears the cache of dismissed
   // suggestions, if present, so that no suggestions are suppressed. This does
-  // not necessarily make previously discarded suggestions reappear, as they may
+  // not necessarily make previously dismissed suggestions reappear, as they may
   // have been permanently deleted, depending on the provider implementation.
-  virtual void ClearDiscardedSuggestionsForDebugging() = 0;
+  virtual void ClearDismissedSuggestionsForDebugging() = 0;
 
   const std::vector<ContentSuggestionsCategory>& provided_categories() const {
     return provided_categories_;

@@ -92,7 +92,7 @@ class NTPSnippetsService : public KeyedService,
   void Shutdown() override;
 
   // Returns whether the service is ready. While this is false, the list of
-  // snippets will be empty, and all modifications to it (fetch, discard, etc)
+  // snippets will be empty, and all modifications to it (fetch, dismiss, etc)
   // will be ignored.
   bool ready() const { return state_ == State::READY; }
 
@@ -111,10 +111,10 @@ class NTPSnippetsService : public KeyedService,
   // Available snippets.
   const NTPSnippet::PtrVector& snippets() const { return snippets_; }
 
-  // Returns the list of snippets previously discarded by the user (that are
+  // Returns the list of snippets previously dismissed by the user (that are
   // not expired yet).
-  const NTPSnippet::PtrVector& discarded_snippets() const {
-    return discarded_snippets_;
+  const NTPSnippet::PtrVector& dismissed_snippets() const {
+    return dismissed_snippets_;
   }
 
   const NTPSnippetsFetcher* snippets_fetcher() const {
@@ -137,11 +137,11 @@ class NTPSnippetsService : public KeyedService,
   void SetObserver(Observer* observer) override;
   ContentSuggestionsCategoryStatus GetCategoryStatus(
       ContentSuggestionsCategory category) override;
-  void DiscardSuggestion(const std::string& suggestion_id) override;
+  void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
   void ClearCachedSuggestionsForDebugging() override;
-  void ClearDiscardedSuggestionsForDebugging() override;
+  void ClearDismissedSuggestionsForDebugging() override;
 
   // Returns the lists of suggestion hosts the snippets are restricted to.
   std::set<std::string> GetSuggestionsHosts() const;
@@ -216,7 +216,7 @@ class NTPSnippetsService : public KeyedService,
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
-  // Removes the expired snippets (including discarded) from the service and the
+  // Removes the expired snippets (including dismissed) from the service and the
   // database, and schedules another pass for the next expiration.
   void ClearExpiredSnippets();
 
@@ -272,12 +272,12 @@ class NTPSnippetsService : public KeyedService,
 
   suggestions::SuggestionsService* suggestions_service_;
 
-  // All current suggestions (i.e. not discarded ones).
+  // All current suggestions (i.e. not dismissed ones).
   NTPSnippet::PtrVector snippets_;
 
-  // Suggestions that the user discarded. We keep these around until they expire
+  // Suggestions that the user dismissed. We keep these around until they expire
   // so we won't re-add them on the next fetch.
-  NTPSnippet::PtrVector discarded_snippets_;
+  NTPSnippet::PtrVector dismissed_snippets_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;

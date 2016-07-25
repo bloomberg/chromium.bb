@@ -86,8 +86,8 @@ class MockProvider : public ContentSuggestionsProvider {
   }
 
   MOCK_METHOD0(ClearCachedSuggestionsForDebugging, void());
-  MOCK_METHOD0(ClearDiscardedSuggestionsForDebugging, void());
-  MOCK_METHOD1(DiscardSuggestion, void(const std::string& suggestion_id));
+  MOCK_METHOD0(ClearDismissedSuggestionsForDebugging, void());
+  MOCK_METHOD1(DismissSuggestion, void(const std::string& suggestion_id));
   MOCK_METHOD2(FetchSuggestionImage,
                void(const std::string& suggestion_id,
                     const ImageFetchedCallback& callback));
@@ -305,7 +305,7 @@ TEST_F(ContentSuggestionsServiceTest,
                                 base::Unretained(this)));
 }
 
-TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDiscardSuggestion) {
+TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
   MockProvider provider1(ContentSuggestionsCategory::ARTICLES);
   MockProvider provider2(ContentSuggestionsCategory::OFFLINE_PAGES);
   service()->RegisterProvider(&provider1);
@@ -315,9 +315,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDiscardSuggestion) {
                                    {11});
   std::string suggestion_id = CreateSuggestion(11).id();
 
-  EXPECT_CALL(provider1, DiscardSuggestion(_)).Times(0);
-  EXPECT_CALL(provider2, DiscardSuggestion(suggestion_id)).Times(1);
-  service()->DiscardSuggestion(suggestion_id);
+  EXPECT_CALL(provider1, DismissSuggestion(_)).Times(0);
+  EXPECT_CALL(provider2, DismissSuggestion(suggestion_id)).Times(1);
+  service()->DismissSuggestion(suggestion_id);
   provider1.FireShutdown();
   provider2.FireShutdown();
 }

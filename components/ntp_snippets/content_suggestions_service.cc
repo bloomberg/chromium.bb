@@ -77,25 +77,25 @@ void ContentSuggestionsService::ClearCachedSuggestionsForDebugging() {
   FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions());
 }
 
-void ContentSuggestionsService::ClearDiscardedSuggestionsForDebugging() {
+void ContentSuggestionsService::ClearDismissedSuggestionsForDebugging() {
   for (auto& category_provider_pair : providers_) {
-    category_provider_pair.second->ClearDiscardedSuggestionsForDebugging();
+    category_provider_pair.second->ClearDismissedSuggestionsForDebugging();
   }
 }
 
-void ContentSuggestionsService::DiscardSuggestion(
+void ContentSuggestionsService::DismissSuggestion(
     const std::string& suggestion_id) {
   if (!id_category_map_.count(suggestion_id)) {
-    LOG(WARNING) << "Discarded unknown suggestion " << suggestion_id;
+    LOG(WARNING) << "Dismissed unknown suggestion " << suggestion_id;
     return;
   }
   ContentSuggestionsCategory category = id_category_map_[suggestion_id];
   if (!providers_.count(category)) {
-    LOG(WARNING) << "Discarded suggestion " << suggestion_id
+    LOG(WARNING) << "Dismissed suggestion " << suggestion_id
                  << " for unavailable category " << static_cast<int>(category);
     return;
   }
-  providers_[category]->DiscardSuggestion(suggestion_id);
+  providers_[category]->DismissSuggestion(suggestion_id);
 
   // Remove the suggestion locally.
   id_category_map_.erase(suggestion_id);
@@ -107,9 +107,9 @@ void ContentSuggestionsService::DiscardSuggestion(
                      return suggestion_id == suggestion.id();
                    });
   DCHECK(position != suggestions->end())
-      << "The discarded suggestion " << suggestion_id
+      << "The dismissed suggestion " << suggestion_id
       << " has already been removed. Providers must not call OnNewSuggestions"
-         " in response to DiscardSuggestion.";
+         " in response to DismissSuggestion.";
   suggestions->erase(position);
 }
 

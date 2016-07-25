@@ -122,8 +122,8 @@ class NTPSnippet {
   float score() const { return score_; }
   void set_score(float score) { score_ = score; }
 
-  bool is_discarded() const { return is_discarded_; }
-  void set_discarded(bool discarded) { is_discarded_ = discarded; }
+  bool is_dismissed() const { return is_dismissed_; }
+  void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }
 
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
@@ -139,7 +139,7 @@ class NTPSnippet {
   base::Time publish_date_;
   base::Time expiry_date_;
   float score_;
-  bool is_discarded_;
+  bool is_dismissed_;
 
   size_t best_source_index_;
 

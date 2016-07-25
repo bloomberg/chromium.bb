@@ -35,7 +35,7 @@ namespace {
 std::unique_ptr<base::DictionaryValue> PrepareSnippet(
     const ntp_snippets::NTPSnippet& snippet,
     int index,
-    bool discarded) {
+    bool dismissed) {
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   entry->SetString("snippetId", snippet.id());
   entry->SetString("title", snippet.title());
@@ -50,8 +50,8 @@ std::unique_ptr<base::DictionaryValue> PrepareSnippet(
   entry->SetString("salientImageUrl", snippet.salient_image_url().spec());
   entry->SetDouble("score", snippet.score());
 
-  if (discarded)
-    entry->SetString("id", "discarded-snippet-" + base::IntToString(index));
+  if (dismissed)
+    entry->SetString("id", "dismissed-snippet-" + base::IntToString(index));
   else
     entry->SetString("id", "snippet-" + base::IntToString(index));
 
@@ -183,8 +183,8 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
                              base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "clearDiscarded",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleClearDiscarded,
+      "clearDismissed",
+      base::Bind(&SnippetsInternalsMessageHandler::HandleClearDismissed,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -193,9 +193,9 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "clearDiscardedSuggestions",
+      "clearDismissedSuggestions",
       base::Bind(
-          &SnippetsInternalsMessageHandler::HandleClearDiscardedSuggestions,
+          &SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions,
           base::Unretained(this)));
 }
 
@@ -214,12 +214,12 @@ void SnippetsInternalsMessageHandler::HandleClear(const base::ListValue* args) {
   ntp_snippets_service_->ClearCachedSuggestionsForDebugging();
 }
 
-void SnippetsInternalsMessageHandler::HandleClearDiscarded(
+void SnippetsInternalsMessageHandler::HandleClearDismissed(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
-  ntp_snippets_service_->ClearDiscardedSuggestionsForDebugging();
-  SendDiscardedSnippets();
+  ntp_snippets_service_->ClearDismissedSuggestionsForDebugging();
+  SendDismissedSnippets();
 }
 
 void SnippetsInternalsMessageHandler::HandleDownload(
@@ -245,11 +245,11 @@ void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
   content_suggestions_service_->ClearCachedSuggestionsForDebugging();
 }
 
-void SnippetsInternalsMessageHandler::HandleClearDiscardedSuggestions(
+void SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
-  content_suggestions_service_->ClearDiscardedSuggestionsForDebugging();
+  content_suggestions_service_->ClearDismissedSuggestionsForDebugging();
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
@@ -284,7 +284,7 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
              ntp_snippets_service_->snippets_fetcher()->fetch_url().spec());
 
   SendSnippets();
-  SendDiscardedSnippets();
+  SendDismissedSnippets();
   SendContentSuggestions();
 }
 
@@ -307,17 +307,17 @@ void SnippetsInternalsMessageHandler::SendSnippets() {
     SendString("hosts-status", "Finished: " + status);
 }
 
-void SnippetsInternalsMessageHandler::SendDiscardedSnippets() {
+void SnippetsInternalsMessageHandler::SendDismissedSnippets() {
   std::unique_ptr<base::ListValue> snippets_list(new base::ListValue);
 
   int index = 0;
-  for (const auto& snippet : ntp_snippets_service_->discarded_snippets())
+  for (const auto& snippet : ntp_snippets_service_->dismissed_snippets())
     snippets_list->Append(PrepareSnippet(*snippet, index++, true));
 
   base::DictionaryValue result;
   result.Set("list", std::move(snippets_list));
   web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.receiveDiscardedSnippets", result);
+      "chrome.SnippetsInternals.receiveDismissedSnippets", result);
 }
 
 void SnippetsInternalsMessageHandler::SendHosts() {

@@ -106,7 +106,7 @@ void NTPSnippetsBridge::FetchImage(JNIEnv* env,
 void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        const JavaParamRef<jstring>& id) {
-  content_suggestions_service_->DiscardSuggestion(
+  content_suggestions_service_->DismissSuggestion(
       ConvertJavaStringToUTF8(env, id));
 }
 

@@ -23,7 +23,7 @@ message SnippetProto {
   optional int64 expiry_date = 6;
   optional float score = 7;
   repeated SnippetSourceProto sources = 8;
-  optional bool discarded = 9;
+  optional bool dismissed = 9;
 }
 
 message SnippetImageProto {

@@ -310,7 +310,7 @@ std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
       suggestions_service_->GetSuggestionsDataFromCache());
 }
 
-void NTPSnippetsService::DiscardSuggestion(const std::string& suggestion_id) {
+void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {
   if (!ready())
     return;
 
@@ -324,24 +324,24 @@ void NTPSnippetsService::DiscardSuggestion(const std::string& suggestion_id) {
   if (it == snippets_.end())
     return;
 
-  (*it)->set_discarded(true);
+  (*it)->set_dismissed(true);
 
   database_->SaveSnippet(**it);
   database_->DeleteImage((*it)->id());
 
-  discarded_snippets_.push_back(std::move(*it));
+  dismissed_snippets_.push_back(std::move(*it));
   snippets_.erase(it);
 }
 
-void NTPSnippetsService::ClearDiscardedSuggestionsForDebugging() {
+void NTPSnippetsService::ClearDismissedSuggestionsForDebugging() {
   if (!initialized())
     return;
 
-  if (discarded_snippets_.empty())
+  if (dismissed_snippets_.empty())
     return;
 
-  database_->DeleteSnippets(discarded_snippets_);
-  discarded_snippets_.clear();
+  database_->DeleteSnippets(dismissed_snippets_);
+  dismissed_snippets_.clear();
 }
 
 void NTPSnippetsService::SetObserver(Observer* observer) {
@@ -394,10 +394,10 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
     return;
 
   DCHECK(snippets_.empty());
-  DCHECK(discarded_snippets_.empty());
+  DCHECK(dismissed_snippets_.empty());
   for (std::unique_ptr<NTPSnippet>& snippet : snippets) {
-    if (snippet->is_discarded())
-      discarded_snippets_.emplace_back(std::move(snippet));
+    if (snippet->is_dismissed())
+      dismissed_snippets_.emplace_back(std::move(snippet));
     else
       snippets_.emplace_back(std::move(snippet));
   }
@@ -470,9 +470,9 @@ void NTPSnippetsService::OnFetchFinished(
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticles",
                               snippets_.size());
-  if (snippets_.empty() && !discarded_snippets_.empty()) {
+  if (snippets_.empty() && !dismissed_snippets_.empty()) {
     UMA_HISTOGRAM_COUNTS("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
-                         discarded_snippets_.size());
+                         dismissed_snippets_.size());
   }
 
   NotifyNewSuggestions();
@@ -481,9 +481,9 @@ void NTPSnippetsService::OnFetchFinished(
 void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
   DCHECK(ready());
 
-  // Remove new snippets that we already have, or that have been discarded.
+  // Remove new snippets that we already have, or that have been dismissed.
   std::set<std::string> old_snippet_ids;
-  InsertAllIDs(discarded_snippets_, &old_snippet_ids);
+  InsertAllIDs(dismissed_snippets_, &old_snippet_ids);
   InsertAllIDs(snippets_, &old_snippet_ids);
   new_snippets.erase(
       std::remove_if(
@@ -523,12 +523,12 @@ void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
                          return !snippet->is_complete();
                        }),
         new_snippets.end());
-    int num_snippets_discarded = num_new_snippets - new_snippets.size();
+    int num_snippets_dismissed = num_new_snippets - new_snippets.size();
     UMA_HISTOGRAM_BOOLEAN("NewTabPage.Snippets.IncompleteSnippetsAfterFetch",
-                          num_snippets_discarded > 0);
-    if (num_snippets_discarded > 0) {
+                          num_snippets_dismissed > 0);
+    if (num_snippets_dismissed > 0) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumIncompleteSnippets",
-                                  num_snippets_discarded);
+                                  num_snippets_dismissed);
     }
   }
 
@@ -572,18 +572,18 @@ void NTPSnippetsService::ClearExpiredSnippets() {
   }
   Compact(&snippets_);
 
-  // Move expired discarded snippets over into |to_delete| as well.
-  for (std::unique_ptr<NTPSnippet>& snippet : discarded_snippets_) {
+  // Move expired dismissed snippets over into |to_delete| as well.
+  for (std::unique_ptr<NTPSnippet>& snippet : dismissed_snippets_) {
     if (snippet->expiry_date() <= expiry)
       to_delete.emplace_back(std::move(snippet));
   }
-  Compact(&discarded_snippets_);
+  Compact(&dismissed_snippets_);
 
   // Finally, actually delete the removed snippets from the DB.
   database_->DeleteSnippets(to_delete);
 
   // If there are any snippets left, schedule a timer for the next expiry.
-  if (snippets_.empty() && discarded_snippets_.empty())
+  if (snippets_.empty() && dismissed_snippets_.empty())
     return;
 
   base::Time next_expiry = base::Time::Max();
@@ -591,7 +591,7 @@ void NTPSnippetsService::ClearExpiredSnippets() {
     if (snippet->expiry_date() < next_expiry)
       next_expiry = snippet->expiry_date();
   }
-  for (const auto& snippet : discarded_snippets_) {
+  for (const auto& snippet : dismissed_snippets_) {
     if (snippet->expiry_date() < next_expiry)
       next_expiry = snippet->expiry_date();
   }
@@ -670,7 +670,7 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
 
 void NTPSnippetsService::EnterStateDisabled() {
   ClearCachedSuggestionsForDebugging();
-  ClearDiscardedSuggestionsForDebugging();
+  ClearDismissedSuggestionsForDebugging();
 
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();

@@ -92,9 +92,9 @@ class ContentSuggestionsService : public KeyedService,
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback);
 
-  // Discards the suggestion with the given |suggestion_id|, if it exists.
+  // Dismisses the suggestion with the given |suggestion_id|, if it exists.
   // This will not trigger an update through the observers.
-  void DiscardSuggestion(const std::string& suggestion_id);
+  void DismissSuggestion(const std::string& suggestion_id);
 
   // Observer accessors.
   void AddObserver(Observer* observer);
@@ -110,14 +110,14 @@ class ContentSuggestionsService : public KeyedService,
   // providers. It does, however, not remove any suggestions from the provider's
   // sources, so if their configuration hasn't changed, they should return the
   // same results when they fetch the next time. In particular, calling this
-  // method will not mark any suggestions as discarded.
+  // method will not mark any suggestions as dismissed.
   void ClearCachedSuggestionsForDebugging();
 
   // Only for debugging use through the internals page. Some providers
-  // internally store a list of discarded suggestions to prevent them from
+  // internally store a list of dismissed suggestions to prevent them from
   // reappearing. This function clears all such lists in all providers, making
-  // discarded suggestions reappear (only for certain providers).
-  void ClearDiscardedSuggestionsForDebugging();
+  // dismissed suggestions reappear (only for certain providers).
+  void ClearDismissedSuggestionsForDebugging();
 
  private:
   friend class ContentSuggestionsServiceTest;

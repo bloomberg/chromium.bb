@@ -47,14 +47,14 @@ class SnippetsInternalsMessageHandler
 
   void HandleRefreshContent(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);
-  void HandleClearDiscarded(const base::ListValue* args);
+  void HandleClearDismissed(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
   void HandleClearCachedSuggestions(const base::ListValue* args);
-  void HandleClearDiscardedSuggestions(const base::ListValue* args);
+  void HandleClearDismissedSuggestions(const base::ListValue* args);
 
   void SendAllContent();
   void SendSnippets();
-  void SendDiscardedSnippets();
+  void SendDismissedSnippets();
   void SendHosts();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);

@@ -43,11 +43,11 @@ class OfflinePageSuggestionsProvider
   void SetObserver(ContentSuggestionsProvider::Observer* observer) override;
   ContentSuggestionsCategoryStatus GetCategoryStatus(
       ContentSuggestionsCategory category) override;
-  void DiscardSuggestion(const std::string& suggestion_id) override;
+  void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
   void ClearCachedSuggestionsForDebugging() override;
-  void ClearDiscardedSuggestionsForDebugging() override;
+  void ClearDismissedSuggestionsForDebugging() override;
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(offline_pages::OfflinePageModel* model) override;

@@ -37,7 +37,7 @@ bool operator==(const NTPSnippet& lhs, const NTPSnippet& rhs) {
          lhs.expiry_date() == rhs.expiry_date() &&
          lhs.source_index() == rhs.source_index() &&
          lhs.sources() == rhs.sources() && lhs.score() == rhs.score() &&
-         lhs.is_discarded() == rhs.is_discarded();
+         lhs.is_dismissed() == rhs.is_dismissed();
 }
 
 namespace {

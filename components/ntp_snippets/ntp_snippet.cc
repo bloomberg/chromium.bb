@@ -39,7 +39,7 @@ bool GetURLValue(const base::DictionaryValue& dict,
 namespace ntp_snippets {
 
 NTPSnippet::NTPSnippet(const std::string& id)
-    : id_(id), score_(0), is_discarded_(false), best_source_index_(0) {}
+    : id_(id), score_(0), is_dismissed_(false), best_source_index_(0) {}
 
 NTPSnippet::~NTPSnippet() {}
 
@@ -184,7 +184,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
       base::Time::FromInternalValue(proto.publish_date()));
   snippet->set_expiry_date(base::Time::FromInternalValue(proto.expiry_date()));
   snippet->set_score(proto.score());
-  snippet->set_discarded(proto.discarded());
+  snippet->set_dismissed(proto.dismissed());
 
   for (int i = 0; i < proto.sources_size(); ++i) {
     const SnippetSourceProto& source_proto = proto.sources(i);
@@ -230,7 +230,7 @@ SnippetProto NTPSnippet::ToProto() const {
   if (!expiry_date_.is_null())
     result.set_expiry_date(expiry_date_.ToInternalValue());
   result.set_score(score_);
-  result.set_discarded(is_discarded_);
+  result.set_dismissed(is_dismissed_);
 
   for (const SnippetSource& source : sources_) {
     SnippetSourceProto* source_proto = result.add_sources();
