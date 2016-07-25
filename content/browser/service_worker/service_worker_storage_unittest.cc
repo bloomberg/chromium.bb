@@ -62,15 +62,14 @@ ServiceWorkerStorage::StatusCallback MakeStatusCallback(
   return base::Bind(&StatusCallback, was_called, result);
 }
 
-void FindCallback(
-    bool* was_called,
-    ServiceWorkerStatusCode* result,
-    scoped_refptr<ServiceWorkerRegistration>* found,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+void FindCallback(bool* was_called,
+                  ServiceWorkerStatusCode* result,
+                  scoped_refptr<ServiceWorkerRegistration>* found,
+                  ServiceWorkerStatusCode status,
+                  scoped_refptr<ServiceWorkerRegistration> registration) {
   *was_called = true;
   *result = status;
-  *found = registration;
+  *found = std::move(registration);
 }
 
 ServiceWorkerStorage::FindRegistrationCallback MakeFindCallback(
@@ -434,7 +433,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   ServiceWorkerStatusCode UpdateToActiveState(
-      const scoped_refptr<ServiceWorkerRegistration>& registration) {
+      scoped_refptr<ServiceWorkerRegistration> registration) {
     bool was_called = false;
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->UpdateToActiveState(registration.get(),
@@ -446,7 +445,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   void UpdateLastUpdateCheckTime(
-      const scoped_refptr<ServiceWorkerRegistration>& registration) {
+      scoped_refptr<ServiceWorkerRegistration> registration) {
     storage()->UpdateLastUpdateCheckTime(registration.get());
     base::RunLoop().RunUntilIdle();
   }

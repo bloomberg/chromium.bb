@@ -591,7 +591,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       bool is_browser_startup_complete,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
   void StartWorkerInternal();
 
   void DidSkipWaiting(int request_id);
@@ -639,7 +639,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void FoundRegistrationForUpdate(
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
 
   void OnStoppedInternal(EmbeddedWorkerStatus old_status);
 

@@ -74,7 +74,7 @@ class NavigationURLLoaderImplCore {
   // registered for it.
   void OnServiceWorkerChecksPerformed(
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
 
   base::WeakPtr<NavigationURLLoaderImpl> loader_;
   NavigationResourceHandler* resource_handler_;

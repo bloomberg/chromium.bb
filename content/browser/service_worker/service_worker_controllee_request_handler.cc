@@ -176,10 +176,10 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
                                 weak_factory_.GetWeakPtr()));
 }
 
-void
-ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+void ServiceWorkerControlleeRequestHandler::
+    DidLookupRegistrationForMainResource(
+        ServiceWorkerStatusCode status,
+        scoped_refptr<ServiceWorkerRegistration> registration) {
   // The job may have been canceled and then destroyed before this was invoked.
   if (!job_)
     return;

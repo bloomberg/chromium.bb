@@ -51,7 +51,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
  private:
   void OnRegistrationFound(
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
   void Complete(int64_t registration_id, ServiceWorkerStatusCode status);
   void CompleteInternal(int64_t registration_id,
                         ServiceWorkerStatusCode status);

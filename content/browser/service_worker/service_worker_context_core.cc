@@ -823,7 +823,7 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
     const GURL& other_url,
     const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   if (status != SERVICE_WORKER_OK) {
     callback.Run(false);
     return;
@@ -843,7 +843,7 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
     registration->RegisterRegistrationFinishedCallback(
         base::Bind(&ServiceWorkerContextCore::
                        OnRegistrationFinishedForCheckHasServiceWorker,
-                   AsWeakPtr(), callback, registration));
+                   AsWeakPtr(), callback, std::move(registration)));
     return;
   }
 
@@ -852,7 +852,7 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
 
 void ServiceWorkerContextCore::OnRegistrationFinishedForCheckHasServiceWorker(
     const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   callback.Run(registration->active_version() ||
                registration->waiting_version());
 }
