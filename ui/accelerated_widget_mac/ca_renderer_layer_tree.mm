@@ -556,7 +556,10 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
       ca_layer.reset([[CALayer alloc] init]);
     }
     [ca_layer setAnchorPoint:CGPointZero];
-    [superlayer addSublayer:ca_layer];
+    if (old_layer && old_layer->ca_layer)
+      [superlayer replaceSublayer:old_layer->ca_layer with:ca_layer];
+    else
+      [superlayer addSublayer:ca_layer];
   }
   DCHECK_EQ([ca_layer superlayer], superlayer);
   bool update_anything = update_contents || update_contents_rect ||
