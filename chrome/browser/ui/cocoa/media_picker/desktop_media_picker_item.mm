@@ -10,6 +10,8 @@
 
 @implementation DesktopMediaPickerItem
 
+@synthesize titleHidden = titleHidden_;
+
 - (id)initWithSourceId:(content::DesktopMediaID)sourceID
               imageUID:(int)imageUID
             imageTitle:(NSString*)imageTitle {
@@ -45,7 +47,7 @@
 }
 
 - (NSString*)imageTitle {
-  return imageTitle_.get();
+  return titleHidden_ ? nil : imageTitle_;
 }
 
 - (NSUInteger)imageVersion {

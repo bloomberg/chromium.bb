@@ -167,22 +167,21 @@ TEST_F(DesktopMediaPickerControllerTest, ShowAndDismiss) {
 TEST_F(DesktopMediaPickerControllerTest, ClickShareScreen) {
   [controller_ showWindow:nil];
   ChangeType(DesktopMediaID::TYPE_SCREEN);
+
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
   AddScreen(0);
   screen_list_->SetSourceThumbnail(0);
+  // First screen will be automatically selected.
+  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
+
   AddScreen(1);
   screen_list_->SetSourceThumbnail(1);
 
   EXPECT_EQ(2U, [[controller_ screenItems] count]);
-  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
-
-  NSIndexSet* index_set = [NSIndexSet indexSetWithIndex:1];
-  [[controller_ screenBrowser] setSelectionIndexes:index_set
-                              byExtendingSelection:NO];
-  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
 
   [[controller_ shareButton] performClick:nil];
   EXPECT_TRUE(WaitForCallback());
-  EXPECT_EQ(screen_list_->GetSource(1).id, source_reported_);
+  EXPECT_EQ(screen_list_->GetSource(0).id, source_reported_);
 }
 
 TEST_F(DesktopMediaPickerControllerTest, ClickShareWindow) {
@@ -406,4 +405,22 @@ TEST_F(DesktopMediaPickerControllerTest, TabBrowserFocusAlgorithm) {
   ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
   selected_index = [[browser selectedRowIndexes] firstIndex];
   EXPECT_EQ(1, [[items objectAtIndex:selected_index] sourceID].id);
+}
+
+TEST_F(DesktopMediaPickerControllerTest, SingleScreenNoLabel) {
+  [controller_ showWindow:nil];
+  ChangeType(DesktopMediaID::TYPE_SCREEN);
+
+  NSArray* items = [controller_ screenItems];
+
+  AddScreen(0);
+  screen_list_->SetSourceThumbnail(0);
+  EXPECT_EQ(1U, [items count]);
+  EXPECT_EQ(nil, [[items objectAtIndex:0] imageTitle]);
+
+  AddScreen(1);
+  screen_list_->SetSourceThumbnail(1);
+  EXPECT_EQ(2U, [items count]);
+  EXPECT_NE(nil, [[items objectAtIndex:0] imageTitle]);
+  EXPECT_NE(nil, [[items objectAtIndex:1] imageTitle]);
 }

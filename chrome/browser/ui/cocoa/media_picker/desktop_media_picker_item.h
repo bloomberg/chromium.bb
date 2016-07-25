@@ -20,7 +20,10 @@
   base::scoped_nsobject<NSString> imageTitle_;
   base::scoped_nsobject<NSImage> image_;
   NSUInteger imageVersion_;
+  BOOL titleHidden_;
 }
+
+@property(assign, nonatomic) BOOL titleHidden;
 
 // Designated initializer.
 // |sourceID| is the corresponding source's ID as provided by the media list.

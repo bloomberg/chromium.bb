@@ -597,7 +597,14 @@ NSString* const kTitleId = @"title";
 - (id)imageBrowser:(IKImageBrowserView*)browser itemAtIndex:(NSUInteger)index {
   DesktopMediaID::Type sourceType = [self sourceTypeForBrowser:browser];
   NSMutableArray* items = [self itemSetForType:sourceType];
-  return [items objectAtIndex:index];
+  DesktopMediaPickerItem* item = [items objectAtIndex:index];
+
+  // For screen source, if there is only one source, we can omit the label
+  // "Entire Screen", because it is redundant with tab label "Your Entire
+  // Screen".
+  [item setTitleHidden:browser == screenBrowser_ && [items count] == 1];
+
+  return item;
 }
 
 #pragma mark IKImageBrowserDelegate
@@ -681,10 +688,17 @@ NSString* const kTitleId = @"title";
       [[DesktopMediaPickerItem alloc] initWithSourceId:source.id
                                               imageUID:++lastImageUID_
                                             imageTitle:imageTitle]);
+
   [items insertObject:item atIndex:index];
   [browser reloadData];
-  if (sourceType == DesktopMediaID::TYPE_WEB_CONTENTS)
+  if (sourceType == DesktopMediaID::TYPE_WEB_CONTENTS) {
+    // Memorizing selection.
     [self setTabBrowserIndex:selectedIndex];
+  } else if (sourceType == DesktopMediaID::TYPE_SCREEN && [items count] == 1) {
+    // Preselect the first screen source.
+    [browser setSelectionIndexes:[NSIndexSet indexSetWithIndex:0]
+            byExtendingSelection:NO];
+  }
 
   NSString* autoselectSource = base::SysUTF8ToNSString(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
