@@ -92,6 +92,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       RenderViewHost(),
       "navigator.credentials.get({password: true})"
       ".then(cred => window.location = '/password/done.html')"));
+  WaitForPasswordStore();
   ASSERT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             PasswordsModelDelegateFromWebContents(WebContents())->GetState());
   PasswordsModelDelegateFromWebContents(WebContents())->ChooseCredential(
