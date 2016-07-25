@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 #define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 
+#include "base/memory/memory_pressure_monitor.h"
 #include "components/memory_coordinator/common/client_registry.h"
 #include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -29,6 +30,12 @@ class MemoryCoordinator : public ClientRegistry {
 
  private:
   void OnConnectionError(int render_process_id);
+
+  // Called when MemoryPressureMonitor detects memory pressure.
+  void OnMemoryPressure(base::MemoryPressureMonitor::MemoryPressureLevel level);
+
+  // A callback invoked when MemoryPressureMonitor detects memory pressure.
+  base::MemoryPressureMonitor::DispatchCallback pressure_level_dispatcher_;
 
   // Mappings of RenderProcessHost::GetID() -> MemoryCoordinatorHandleImpl.
   // A mapping is added when a renderer connects to MemoryCoordinator and

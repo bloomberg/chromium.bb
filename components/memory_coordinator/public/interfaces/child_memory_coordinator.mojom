@@ -8,8 +8,7 @@ enum MemoryState {
   UNKNOWN = -1,
   NORMAL = 0,
   THROTTLED = 1,
-  // TODO(bashi): Define SUSPENDED when we need it.
-  // SUSPENDED = 2,
+  SUSPENDED = 2,
 };
 
 // ChildMemoryCoordinator lives in a child process and receives memory events

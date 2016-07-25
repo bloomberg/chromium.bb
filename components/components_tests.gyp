@@ -352,6 +352,7 @@
       'login/screens/screen_context_unittest.cc',
     ],
     'memory_coordinator_unittest_sources': [
+      'memory_coordinator/browser/memory_coordinator_unittest.cc',
       'memory_coordinator/child/child_memory_coordinator_impl_unittest.cc',
     ],
     'memory_pressure_unittest_sources': [
@@ -1362,6 +1363,7 @@
             'components.gyp:guest_view_test_support',
             'components.gyp:history_content_browser',
             'components.gyp:keyed_service_content',
+            'components.gyp:memory_coordinator_browser',
             'components.gyp:memory_coordinator_child',
             'components.gyp:metrics_gpu',
             'components.gyp:navigation_interception',

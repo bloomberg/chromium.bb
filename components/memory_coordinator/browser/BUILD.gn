@@ -17,3 +17,16 @@ static_library("browser") {
     "//components/memory_coordinator/common",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "memory_coordinator_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//testing/gtest",
+  ]
+}
