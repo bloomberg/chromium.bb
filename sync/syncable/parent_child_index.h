@@ -6,11 +6,11 @@
 #define SYNC_SYNCABLE_PARENT_CHILD_INDEX_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/syncable_id.h"
@@ -28,6 +28,7 @@ struct SYNC_EXPORT ChildComparator {
 
 // An ordered set of nodes.
 typedef std::set<EntryKernel*, ChildComparator> OrderedChildSet;
+typedef std::shared_ptr<OrderedChildSet> OrderedChildSetRef;
 
 // Container that tracks parent-child relationships.
 // Provides fast lookup of all items under a given parent.
@@ -63,22 +64,22 @@ class SYNC_EXPORT ParentChildIndex {
  private:
   friend class ParentChildIndexTest;
 
-  typedef std::map<Id, OrderedChildSet*> ParentChildrenMap;
+  typedef std::map<Id, OrderedChildSetRef> ParentChildrenMap;
   typedef std::vector<Id> TypeRootIds;
-  typedef ScopedVector<OrderedChildSet> TypeRootChildSets;
+  typedef std::vector<OrderedChildSetRef> TypeRootChildSets;
 
   static bool ShouldUseParentId(const Id& parent_id, ModelType model_type);
 
   // Returns OrderedChildSet that should contain the specified entry
   // based on the entry's Parent ID or model type.
-  const OrderedChildSet* GetChildSet(EntryKernel* e) const;
+  const OrderedChildSetRef GetChildSet(EntryKernel* e) const;
 
   // Returns OrderedChildSet that contain entries of the |model_type| type.
-  const OrderedChildSet* GetModelTypeChildSet(ModelType model_type) const;
+  const OrderedChildSetRef GetModelTypeChildSet(ModelType model_type) const;
 
   // Returns mutable OrderedChildSet that contain entries of the |model_type|
   // type. Create one as necessary.
-  OrderedChildSet* GetOrCreateModelTypeChildSet(ModelType model_type);
+  OrderedChildSetRef GetOrCreateModelTypeChildSet(ModelType model_type);
 
   // Returns previously cached model type root ID for the given |model_type|.
   const Id& GetModelTypeRootId(ModelType model_type) const;

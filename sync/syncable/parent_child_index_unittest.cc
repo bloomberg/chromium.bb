@@ -470,6 +470,57 @@ TEST_F(ParentChildIndexTest, InsertOutOfOrder) {
   EXPECT_EQ(2UL, children->size());
 }
 
+// Test that if for some reason we wind up with multiple type roots, we
+// gracefully handle it and don't allow any new entities to become invisible.
+TEST_F(ParentChildIndexTest, MultipleTypeRoots) {
+  // Create the good Preferences type root.
+  syncable::Id type_root_id = syncable::Id::CreateFromClientString("type_root");
+  index_.Insert(MakeTypeRoot(PREFERENCES, type_root_id));
+
+  // Then insert the bad Preferences type root
+  syncable::Id bad_type_root_id = syncable::Id::CreateFromServerId("bad");
+  index_.Insert(MakeTypeRoot(PREFERENCES, bad_type_root_id));
+
+  // Insert two Preferences entries with implicit parent.
+  index_.Insert(MakeUniqueClientItem(PREFERENCES, 1));
+  index_.Insert(MakeUniqueClientItem(PREFERENCES, 2));
+
+  // The index should still be able to associate Preferences entries
+  // with the good and bad roots.
+  const OrderedChildSet* children = index_.GetChildren(type_root_id);
+  ASSERT_TRUE(children);
+  EXPECT_EQ(2UL, children->size());
+  const OrderedChildSet* children_bad = index_.GetChildren(bad_type_root_id);
+  ASSERT_TRUE(children_bad);
+  EXPECT_EQ(2UL, children_bad->size());
+}
+
+// Test that if for some reason we wind up with multiple type roots, we
+// gracefully handle it and don't allow any new entities to become invisible.
+// Same as above but with the roots created in inverse order.
+TEST_F(ParentChildIndexTest, MultipleTypeRootsInverse) {
+  // Create the bad Preferences type root
+  syncable::Id bad_type_root_id = syncable::Id::CreateFromServerId("bad");
+  index_.Insert(MakeTypeRoot(PREFERENCES, bad_type_root_id));
+
+  // Then insert the good Preferences type root.
+  syncable::Id type_root_id = syncable::Id::CreateFromClientString("type_root");
+  index_.Insert(MakeTypeRoot(PREFERENCES, type_root_id));
+
+  // Insert two Preferences entries with implicit parent.
+  index_.Insert(MakeUniqueClientItem(PREFERENCES, 1));
+  index_.Insert(MakeUniqueClientItem(PREFERENCES, 2));
+
+  // The index should still be able to associate Preferences entries
+  // with the good root and bad roots.
+  const OrderedChildSet* children = index_.GetChildren(type_root_id);
+  ASSERT_TRUE(children);
+  EXPECT_EQ(2UL, children->size());
+  const OrderedChildSet* children_bad = index_.GetChildren(bad_type_root_id);
+  ASSERT_TRUE(children_bad);
+  EXPECT_EQ(2UL, children_bad->size());
+}
+
 }  // namespace syncable
 }  // namespace syncer
 

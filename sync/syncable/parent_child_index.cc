@@ -4,8 +4,9 @@
 
 #include "sync/syncable/parent_child_index.h"
 
-#include "base/stl_util.h"
+#include <memory>
 
+#include "base/stl_util.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/syncable_id.h"
 
@@ -45,21 +46,7 @@ ParentChildIndex::ParentChildIndex() {
   type_root_child_sets_.resize(MODEL_TYPE_COUNT);
 }
 
-ParentChildIndex::~ParentChildIndex() {
-  for (int i = 0; i < MODEL_TYPE_COUNT; i++) {
-    // Normally all OrderedChildSet instances in |type_root_child_sets_|
-    // are shared with |parent_children_map_|. Null out shared instances and
-    // ScopedVector will take care of the ones that are not shared (if any).
-    if (!model_type_root_ids_[i].IsNull()) {
-      DCHECK_EQ(type_root_child_sets_[i],
-                parent_children_map_.find(model_type_root_ids_[i])->second);
-      type_root_child_sets_[i] = nullptr;
-    }
-  }
-
-  STLDeleteContainerPairSecondPointers(parent_children_map_.begin(),
-                                       parent_children_map_.end());
-}
+ParentChildIndex::~ParentChildIndex() {}
 
 bool ParentChildIndex::ShouldInclude(const EntryKernel* entry) {
   // This index excludes deleted items and the root item.  The root
@@ -70,7 +57,7 @@ bool ParentChildIndex::ShouldInclude(const EntryKernel* entry) {
 bool ParentChildIndex::Insert(EntryKernel* entry) {
   DCHECK(ShouldInclude(entry));
 
-  OrderedChildSet* siblings = nullptr;
+  OrderedChildSetRef siblings = nullptr;
   const Id& parent_id = entry->ref(PARENT_ID);
   ModelType model_type = entry->GetModelType();
 
@@ -81,7 +68,7 @@ bool ParentChildIndex::Insert(EntryKernel* entry) {
     if (it != parent_children_map_.end()) {
       siblings = it->second;
     } else {
-      siblings = new OrderedChildSet();
+      siblings = OrderedChildSetRef(new OrderedChildSet());
       parent_children_map_.insert(std::make_pair(parent_id, siblings));
     }
   } else {
@@ -100,25 +87,15 @@ bool ParentChildIndex::Insert(EntryKernel* entry) {
       syncer::IsRealDataType(model_type) &&
       !TypeSupportsHierarchy(model_type)) {
     const Id& type_root_id = entry->ref(ID);
-    // Disassociate the type root child set with the previous ID if any.
-    const Id& prev_type_root_id = model_type_root_ids_[model_type];
-    if (!prev_type_root_id.IsNull()) {
-      ParentChildrenMap::iterator it =
-          parent_children_map_.find(prev_type_root_id);
-      if (it != parent_children_map_.end()) {
-        // If the entry exists in the map it must already have the same
-        // model type specific child set. This child set will be re-inserted
-        // in the map under the new ID below so it is safe to simply erase
-        // the entry here.
-        DCHECK_EQ(it->second, GetModelTypeChildSet(model_type));
-        parent_children_map_.erase(it);
-      }
-    }
-    // Store the new type root ID and associate the child set.
-    // Note that the child set isn't owned by the map in this case.
+
+    // If the entry exists in the map it must already have the same
+    // model type specific child set. It's possible another type root exists
+    // in parent_children_map_, but that's okay as the new type root will
+    // point to the same OrderedChildSet. As such, we just blindly store the
+    // new type root ID and associate it to the (possibly existing) child set.
     model_type_root_ids_[model_type] = type_root_id;
-    parent_children_map_.insert(
-        std::make_pair(type_root_id, GetOrCreateModelTypeChildSet(model_type)));
+    parent_children_map_.insert(std::make_pair(
+        type_root_id, GetOrCreateModelTypeChildSet(model_type)));
   }
 
   // Finally, insert the entry in the child set.
@@ -129,18 +106,18 @@ bool ParentChildIndex::Insert(EntryKernel* entry) {
 // one does not own any EntryKernels.  This function removes references to the
 // given EntryKernel but does not delete it.
 void ParentChildIndex::Remove(EntryKernel* e) {
-  OrderedChildSet* siblings = nullptr;
+  OrderedChildSetRef siblings = nullptr;
   ModelType model_type = e->GetModelType();
   const Id& parent_id = e->ref(PARENT_ID);
   bool should_erase = false;
-  ParentChildrenMap::iterator it;
+  ParentChildrenMap::iterator sibling_iterator;
 
   if (ShouldUseParentId(parent_id, model_type)) {
     // Hierarchical type, lookup child set in the map.
     DCHECK(!parent_id.IsNull());
-    it = parent_children_map_.find(parent_id);
-    DCHECK(it != parent_children_map_.end());
-    siblings = it->second;
+    sibling_iterator = parent_children_map_.find(parent_id);
+    DCHECK(sibling_iterator != parent_children_map_.end());
+    siblings = sibling_iterator->second;
     should_erase = true;
   } else {
     // Non-hierarchical type, return a pre-defined child set by type.
@@ -155,13 +132,12 @@ void ParentChildIndex::Remove(EntryKernel* e) {
   // If the set is now empty and isn't shareable with |type_root_child_sets_|,
   // erase it from the map.
   if (siblings->empty() && should_erase) {
-    delete siblings;
-    parent_children_map_.erase(it);
+    parent_children_map_.erase(sibling_iterator);
   }
 }
 
 bool ParentChildIndex::Contains(EntryKernel *e) const {
-  const OrderedChildSet* siblings = GetChildSet(e);
+  const OrderedChildSetRef siblings = GetChildSet(e);
   return siblings && siblings->count(e) > 0;
 }
 
@@ -173,12 +149,12 @@ const OrderedChildSet* ParentChildIndex::GetChildren(const Id& id) const {
     return nullptr;
   }
 
-  OrderedChildSet* children = parent->second;
+  OrderedChildSetRef children = parent->second;
   // The expectation is that the function returns nullptr instead of an empty
   // child set
   if (children && children->empty())
     children = nullptr;
-  return children;
+  return children.get();
 }
 
 const OrderedChildSet* ParentChildIndex::GetChildren(EntryKernel* e) const {
@@ -188,9 +164,9 @@ const OrderedChildSet* ParentChildIndex::GetChildren(EntryKernel* e) const {
 const OrderedChildSet* ParentChildIndex::GetSiblings(EntryKernel* e) const {
   // This implies the entry is in the index.
   DCHECK(Contains(e));
-  const OrderedChildSet* siblings = GetChildSet(e);
+  const OrderedChildSetRef siblings = GetChildSet(e);
   DCHECK(siblings && !siblings->empty());
-  return siblings;
+  return siblings.get();
 }
 
 /* static */
@@ -203,7 +179,7 @@ bool ParentChildIndex::ShouldUseParentId(const Id& parent_id,
          !syncer::IsRealDataType(model_type);
 }
 
-const OrderedChildSet* ParentChildIndex::GetChildSet(EntryKernel* e) const {
+const OrderedChildSetRef ParentChildIndex::GetChildSet(EntryKernel* e) const {
   ModelType model_type = e->GetModelType();
 
   const Id& parent_id = e->ref(PARENT_ID);
@@ -219,15 +195,16 @@ const OrderedChildSet* ParentChildIndex::GetChildSet(EntryKernel* e) const {
   return GetModelTypeChildSet(model_type);
 }
 
-const OrderedChildSet* ParentChildIndex::GetModelTypeChildSet(
+const OrderedChildSetRef ParentChildIndex::GetModelTypeChildSet(
     ModelType model_type) const {
   return type_root_child_sets_[model_type];
 }
 
-OrderedChildSet* ParentChildIndex::GetOrCreateModelTypeChildSet(
+OrderedChildSetRef ParentChildIndex::GetOrCreateModelTypeChildSet(
     ModelType model_type) {
   if (!type_root_child_sets_[model_type])
-    type_root_child_sets_[model_type] = new OrderedChildSet();
+    type_root_child_sets_[model_type] =
+        OrderedChildSetRef(new OrderedChildSet());
   return type_root_child_sets_[model_type];
 }
 
