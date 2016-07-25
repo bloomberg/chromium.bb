@@ -221,17 +221,6 @@ void ArcBluetoothBridge::OnInstanceReady() {
   bluetooth_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
-void ArcBluetoothBridge::AdapterPresentChanged(BluetoothAdapter* adapter,
-                                               bool present) {
-  DCHECK(CalledOnValidThread());
-
-  // If the adapter goes away, remove ourselves as an observer.
-  if (!present && adapter == bluetooth_adapter_) {
-    adapter->RemoveObserver(this);
-    bluetooth_adapter_ = nullptr;
-  }
-}
-
 void ArcBluetoothBridge::AdapterPoweredChanged(BluetoothAdapter* adapter,
                                                bool powered) {
   if (!HasBluetoothInstance())

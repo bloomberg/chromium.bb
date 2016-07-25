@@ -49,9 +49,6 @@ class ArcBluetoothBridge
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Overridden from device::BluetoothAdadpter::Observer
-  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                             bool present) override;
-
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                              bool powered) override;
 
