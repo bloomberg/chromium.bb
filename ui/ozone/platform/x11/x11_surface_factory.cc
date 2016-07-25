@@ -6,54 +6,39 @@
 
 #include <X11/Xlib.h>
 
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "third_party/khronos/EGL/egl.h"
-#include "ui/gfx/vsync_provider.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gl/egl_util.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
 
 namespace {
 
-class X11SurfaceEGL : public SurfaceOzoneEGL {
+// GLSurface implementation for Ozone X11 EGL.
+class GLSurfaceEGLOzoneX11 : public gl::NativeViewGLSurfaceEGL {
  public:
-  explicit X11SurfaceEGL(gfx::AcceleratedWidget widget) : widget_(widget) {}
-  ~X11SurfaceEGL() override {}
+  explicit GLSurfaceEGLOzoneX11(EGLNativeWindowType window);
 
-  intptr_t GetNativeWindow() override { return widget_; }
-
-  bool OnSwapBuffers() override { return true; }
-
-  void OnSwapBuffersAsync(const SwapCompletionCallback& callback) override {
-    NOTREACHED();
-  }
-
-  bool ResizeNativeWindow(const gfx::Size& viewport_size) override {
-    return true;
-  }
-
-  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
-    return nullptr;
-  }
-
-  void* /* EGLConfig */ GetEGLSurfaceConfig(
-      const EglConfigCallbacks& egl) override;
+  // gl::NativeViewGLSurfaceEGL:
+  EGLConfig GetConfig() override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              bool has_alpha) override;
 
  private:
-  gfx::AcceleratedWidget widget_;
+  ~GLSurfaceEGLOzoneX11() override;
 
-  DISALLOW_COPY_AND_ASSIGN(X11SurfaceEGL);
+  DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGLOzoneX11);
 };
 
-void* /* EGLConfig */ X11SurfaceEGL::GetEGLSurfaceConfig(
-    const EglConfigCallbacks& egl) {
-  // Try matching the window depth with an alpha channel,
-  // because we're worried the destination alpha width could
-  // constrain blending precision.
-  EGLConfig config;
+GLSurfaceEGLOzoneX11::GLSurfaceEGLOzoneX11(EGLNativeWindowType window)
+    : NativeViewGLSurfaceEGL(window) {}
+
+EGLConfig GLSurfaceEGLOzoneX11::GetConfig() {
+  // Try matching the window depth with an alpha channel, because we're worried
+  // the destination alpha width could constrain blending precision.
   const int kBufferSizeOffset = 1;
   const int kAlphaSizeOffset = 3;
   EGLint config_attribs[] = {EGL_BUFFER_SIZE,
@@ -72,23 +57,27 @@ void* /* EGLConfig */ X11SurfaceEGL::GetEGLSurfaceConfig(
                              EGL_WINDOW_BIT,
                              EGL_NONE};
 
-  // Get the depth of XWindow for surface
+  // Get the depth of XWindow for surface.
   XWindowAttributes win_attribs;
-  if (XGetWindowAttributes(gfx::GetXDisplay(), widget_, &win_attribs)) {
+  if (XGetWindowAttributes(gfx::GetXDisplay(), window_, &win_attribs)) {
     config_attribs[kBufferSizeOffset] = win_attribs.depth;
   }
 
+  EGLDisplay display = GetDisplay();
+
+  EGLConfig config;
   EGLint num_configs;
-  if (!egl.choose_config.Run(config_attribs, &config, 1, &num_configs)) {
+  if (!eglChooseConfig(display, config_attribs, &config, 1, &num_configs)) {
     LOG(ERROR) << "eglChooseConfig failed with error "
-               << egl.get_last_error_string.Run();
+               << GetLastEGLErrorString();
     return nullptr;
   }
+
   if (num_configs > 0) {
     EGLint config_depth;
-    if (!egl.get_config_attribute.Run(config, EGL_BUFFER_SIZE, &config_depth)) {
+    if (!eglGetConfigAttrib(display, config, EGL_BUFFER_SIZE, &config_depth)) {
       LOG(ERROR) << "eglGetConfigAttrib failed with error "
-                 << egl.get_last_error_string.Run();
+                 << GetLastEGLErrorString();
       return nullptr;
     }
     if (config_depth == config_attribs[kBufferSizeOffset]) {
@@ -98,16 +87,36 @@ void* /* EGLConfig */ X11SurfaceEGL::GetEGLSurfaceConfig(
 
   // Try without an alpha channel.
   config_attribs[kAlphaSizeOffset] = 0;
-  if (!egl.choose_config.Run(config_attribs, &config, 1, &num_configs)) {
+  if (!eglChooseConfig(display, config_attribs, &config, 1, &num_configs)) {
     LOG(ERROR) << "eglChooseConfig failed with error "
-               << egl.get_last_error_string.Run();
+               << GetLastEGLErrorString();
     return nullptr;
   }
+
   if (num_configs == 0) {
     LOG(ERROR) << "No suitable EGL configs found.";
     return nullptr;
   }
   return config;
+}
+
+bool GLSurfaceEGLOzoneX11::Resize(const gfx::Size& size,
+                                  float scale_factor,
+                                  bool has_alpha) {
+  if (size == GetSize())
+    return true;
+
+  size_ = size;
+
+  eglWaitGL();
+  XResizeWindow(gfx::GetXDisplay(), window_, size.width(), size.height());
+  eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+
+  return true;
+}
+
+GLSurfaceEGLOzoneX11::~GLSurfaceEGLOzoneX11() {
+  Destroy();
 }
 
 }  // namespace
@@ -116,9 +125,30 @@ X11SurfaceFactory::X11SurfaceFactory() {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
-std::unique_ptr<SurfaceOzoneEGL> X11SurfaceFactory::CreateEGLSurfaceForWidget(
+bool X11SurfaceFactory::UseNewSurfaceAPI() {
+  return true;
+}
+
+scoped_refptr<gl::GLSurface> X11SurfaceFactory::CreateViewGLSurface(
+    gl::GLImplementation implementation,
     gfx::AcceleratedWidget widget) {
-  return base::WrapUnique(new X11SurfaceEGL(widget));
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return gl::InitializeGLSurface(new GLSurfaceEGLOzoneX11(widget));
+}
+
+scoped_refptr<gl::GLSurface> X11SurfaceFactory::CreateOffscreenGLSurface(
+    gl::GLImplementation implementation,
+    const gfx::Size& size) {
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
 }
 
 bool X11SurfaceFactory::LoadEGLGLES2Bindings(

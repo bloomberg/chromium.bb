@@ -24,6 +24,79 @@
 namespace gl {
 namespace init {
 
+namespace {
+
+ui::SurfaceFactoryOzone* GetSurfaceFactory() {
+  return ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+}
+
+bool HasDefaultImplementation(GLImplementation impl) {
+  return impl == kGLImplementationOSMesaGL || impl == kGLImplementationMockGL;
+}
+
+scoped_refptr<GLSurface> CreateDefaultViewGLSurface(
+    gfx::AcceleratedWidget window) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(new GLSurfaceOSMesaHeadless());
+    case kGLImplementationMockGL:
+      return InitializeGLSurface(new GLSurfaceStub());
+    default:
+      NOTREACHED();
+  }
+  return nullptr;
+}
+
+scoped_refptr<GLSurface> CreateDefaultOffscreenGLSurface(
+    const gfx::Size& size) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(
+          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_BGRA, size));
+    case kGLImplementationMockGL:
+      return InitializeGLSurface(new GLSurfaceStub);
+    default:
+      NOTREACHED();
+  }
+  return nullptr;
+}
+
+// TODO(kylechar): Remove when all implementations are switched over.
+scoped_refptr<GLSurface> CreateViewGLSurfaceOld(gfx::AcceleratedWidget window) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationEGLGLES2: {
+      DCHECK_NE(window, gfx::kNullAcceleratedWidget);
+      scoped_refptr<GLSurface> surface;
+      if (!surface && GLSurfaceEGL::IsEGLSurfacelessContextSupported())
+        surface = CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(window);
+      if (!surface)
+        surface = CreateViewGLSurfaceOzone(window);
+      return surface;
+    }
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// TODO(kylechar): Remove when all implementations are switched over.
+scoped_refptr<GLSurface> CreateOffscreenGLSurfaceOld(const gfx::Size& size) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationEGLGLES2:
+      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
+          (size.width() == 0 && size.height() == 0)) {
+        return InitializeGLSurface(new SurfacelessEGL(size));
+      } else {
+        return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
+      }
+    default:
+      NOTREACHED();
+  }
+  return nullptr;
+}
+
+}  // namespace
+
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
                                          GpuPreference gpu_preference) {
@@ -46,26 +119,19 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
 
 scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   TRACE_EVENT0("gpu", "gl::init::CreateViewGLSurface");
-  switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL:
-      return InitializeGLSurface(new GLSurfaceOSMesaHeadless());
-    case kGLImplementationEGLGLES2: {
-      DCHECK_NE(window, gfx::kNullAcceleratedWidget);
-      scoped_refptr<GLSurface> surface;
-      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported())
-        surface = CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(window);
-      if (!surface)
-        surface = CreateViewGLSurfaceOzone(window);
-      return surface;
-    }
-    case kGLImplementationMockGL:
-      return InitializeGLSurface(new GLSurfaceStub());
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
+
+  if (HasDefaultImplementation(GetGLImplementation()))
+    return CreateDefaultViewGLSurface(window);
+
+  // TODO(kylechar): This is deprecated, remove when possible.
+  if (!GetSurfaceFactory()->UseNewSurfaceAPI())
+    return CreateViewGLSurfaceOld(window);
+
+  return GetSurfaceFactory()->CreateViewGLSurface(GetGLImplementation(),
+                                                  window);
 }
 
+// TODO(kylechar): Update to use new API.
 scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
   TRACE_EVENT0("gpu", "gl::init::CreateSurfacelessViewGLSurface");
@@ -79,23 +145,16 @@ scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
 
 scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
   TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
-  switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL:
-      return InitializeGLSurface(
-          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_BGRA, size));
-    case kGLImplementationEGLGLES2:
-      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-          (size.width() == 0 && size.height() == 0)) {
-        return InitializeGLSurface(new SurfacelessEGL(size));
-      } else {
-        return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
-      }
-    case kGLImplementationMockGL:
-      return new GLSurfaceStub;
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
+
+  if (HasDefaultImplementation(GetGLImplementation()))
+    return CreateDefaultOffscreenGLSurface(size);
+
+  // TODO(kylechar): This is deprecated, remove when possible.
+  if (!GetSurfaceFactory()->UseNewSurfaceAPI())
+    return CreateOffscreenGLSurfaceOld(size);
+
+  return GetSurfaceFactory()->CreateOffscreenGLSurface(GetGLImplementation(),
+                                                       size);
 }
 
 }  // namespace init
