@@ -283,7 +283,7 @@ class SmoothnessSimpleMobilePages(_Smoothness):
     return 'smoothness.simple_mobile_sites'
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('all') # http://crbug.com/631015
 class SmoothnessToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases.
