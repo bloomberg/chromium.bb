@@ -10,6 +10,9 @@ import sys
 
 def CleanUpOldVersions(path_to_app, keep_version, stamp_path):
   versions_dir = os.path.join(path_to_app, 'Contents', 'Versions')
+  if not os.path.exists(versions_dir):
+    return
+
   for version in os.listdir(versions_dir):
     if version != keep_version:
       shutil.rmtree(os.path.join(versions_dir, version))
