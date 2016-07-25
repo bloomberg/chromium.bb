@@ -37,19 +37,14 @@ import java.util.List;
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements SnippetsObserver {
     private static final String TAG = "Ntp";
 
-    /**
-     * Position of the first card in the adapter. This is always going to be a valid position,
-     * occupied either by a card showing content or by a status card.
-     */
-    private static final int FIRST_CARD_POSITION = 2;
-
     private final NewTabPageManager mNewTabPageManager;
     private final NewTabPageLayout mNewTabPageLayout;
-    private final AboveTheFoldListItem mAboveTheFoldListItem;
-    private final SnippetHeaderListItem mHeaderListItem;
+    private final AboveTheFoldListItem mAboveTheFold;
+    private final SnippetHeaderListItem mHeader;
     private final UiConfig mUiConfig;
-    private StatusListItem mStatusListItem;
-    private final List<NewTabPageListItem> mNewTabPageListItems;
+    private StatusListItem mStatusCard;
+    private final SpacingListItem mBottomSpacer;
+    private final List<NewTabPageListItem> mItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
     private NewTabPageRecyclerView mRecyclerView;
     private int mProviderStatus;
@@ -118,14 +113,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             SnippetsBridge snippetsBridge, UiConfig uiConfig) {
         mNewTabPageManager = manager;
         mNewTabPageLayout = newTabPageLayout;
-        mAboveTheFoldListItem = new AboveTheFoldListItem();
-        mHeaderListItem = new SnippetHeaderListItem();
+        mAboveTheFold = new AboveTheFoldListItem();
+        mHeader = new SnippetHeaderListItem();
+        mBottomSpacer = new SpacingListItem();
         mItemTouchCallbacks = new ItemTouchCallbacks();
-        mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
+        mItems = new ArrayList<>();
         mProviderStatus = ContentSuggestionsCategoryStatus.INITIALIZING;
         mSnippetsBridge = snippetsBridge;
         mUiConfig = uiConfig;
-        mStatusListItem = StatusListItem.create(snippetsBridge.getCategoryStatus(), this, manager);
+        mStatusCard = StatusListItem.create(snippetsBridge.getCategoryStatus(), this, manager);
 
         loadSnippets(new ArrayList<SnippetArticleListItem>());
         mSnippetsBridge.setObserver(this);
@@ -137,7 +133,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onSnippetsReceived(List<SnippetArticleListItem> listSnippets) {
+    public void onSnippetsReceived(List<SnippetArticleListItem> snippets) {
         // We never want to refresh the suggestions if we already have some content.
         if (hasSuggestions()) return;
 
@@ -145,13 +141,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             return;
         }
 
-        int newSnippetCount = listSnippets.size();
-        Log.d(TAG, "Received %d new snippets.", newSnippetCount);
+        Log.d(TAG, "Received %d new snippets.", snippets.size());
 
         // At first, there might be no snippets available, we wait until they have been fetched.
-        if (newSnippetCount == 0) return;
+        if (snippets.isEmpty()) return;
 
-        loadSnippets(listSnippets);
+        loadSnippets(snippets);
 
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
     }
@@ -163,28 +158,29 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 != ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
 
         mProviderStatus = categoryStatus;
-        mStatusListItem = StatusListItem.create(mProviderStatus, this, mNewTabPageManager);
+        mStatusCard = StatusListItem.create(mProviderStatus, this, mNewTabPageManager);
 
         // We had suggestions but we just got notified about the provider being enabled. Nothing to
         // do then.
         if (SnippetsBridge.isCategoryStatusAvailable(mProviderStatus) && hasSuggestions()) return;
 
         if (hasSuggestions()) {
-            // We had many items, implies that the service was previously enabled and just
-            // transitioned to a disabled state. We now clear it.
+            // We have suggestions, this implies that the service was previously enabled and just
+            // transitioned to a disabled state. Clear them.
             loadSnippets(new ArrayList<SnippetArticleListItem>());
         } else {
-            mNewTabPageListItems.set(FIRST_CARD_POSITION, mStatusListItem);
-
-            // Update both the first card and the spacing item coming after it.
-            notifyItemRangeChanged(FIRST_CARD_POSITION, 2);
+            // If there are no suggestions there is an old status card that must be replaced.
+            int firstCardPosition = getFirstCardPosition();
+            mItems.set(firstCardPosition, mStatusCard);
+            // Update both the status card and the spacer after it.
+            notifyItemRangeChanged(firstCardPosition, 2);
         }
     }
 
     @Override
     @NewTabPageListItem.ViewType
     public int getItemViewType(int position) {
-        return mNewTabPageListItems.get(position).getType();
+        return mItems.get(position).getType();
     }
 
     @Override
@@ -217,12 +213,28 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        holder.onBindViewHolder(mNewTabPageListItems.get(position));
+        holder.onBindViewHolder(mItems.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mNewTabPageListItems.size();
+        return mItems.size();
+    }
+
+    public int getHeaderPosition() {
+        return mItems.indexOf(mHeader);
+    }
+
+    public int getFirstCardPosition() {
+        return getHeaderPosition() + 1;
+    }
+
+    public int getLastCardPosition() {
+        return getBottomSpacerPosition() - 1;
+    }
+
+    public int getBottomSpacerPosition() {
+        return mItems.indexOf(mBottomSpacer);
     }
 
     /** Start a request for new snippets. */
@@ -230,31 +242,32 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         SnippetsBridge.fetchSnippets();
     }
 
-    private void loadSnippets(List<SnippetArticleListItem> listSnippets) {
+    private void loadSnippets(List<SnippetArticleListItem> snippets) {
         // Copy thumbnails over
-        for (SnippetArticleListItem newSnippet : listSnippets) {
-            int existingSnippetIdx = mNewTabPageListItems.indexOf(newSnippet);
+        for (SnippetArticleListItem snippet : snippets) {
+            int existingSnippetIdx = mItems.indexOf(snippet);
             if (existingSnippetIdx == -1) continue;
 
-            newSnippet.setThumbnailBitmap(
-                    ((SnippetArticleListItem) mNewTabPageListItems.get(existingSnippetIdx))
-                            .getThumbnailBitmap());
+            snippet.setThumbnailBitmap(
+                    ((SnippetArticleListItem) mItems.get(existingSnippetIdx)).getThumbnailBitmap());
         }
 
-        boolean hasContentToShow = !listSnippets.isEmpty();
-        mHeaderListItem.setVisible(hasContentToShow);
+        boolean hasContentToShow = !snippets.isEmpty();
 
-        mNewTabPageListItems.clear();
-        mNewTabPageListItems.add(mAboveTheFoldListItem);
-        mNewTabPageListItems.add(mHeaderListItem);
+        // TODO(mvanouwerkerk): Make it so that the header does not need to be manipulated
+        // separately from the cards to which it belongs - crbug.com/616090.
+        mHeader.setVisible(hasContentToShow);
 
+        mItems.clear();
+        mItems.add(mAboveTheFold);
+        mItems.add(mHeader);
         if (hasContentToShow) {
-            mNewTabPageListItems.addAll(listSnippets);
+            mItems.addAll(snippets);
         } else {
-            mNewTabPageListItems.add(mStatusListItem);
+            mItems.add(mStatusCard);
         }
 
-        mNewTabPageListItems.add(new SpacingListItem());
+        mItems.add(mBottomSpacer);
 
         notifyDataSetChanged();
     }
@@ -277,8 +290,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
 
         int position = itemViewHolder.getAdapterPosition();
-        SnippetArticleListItem dismissedSnippet =
-                (SnippetArticleListItem) mNewTabPageListItems.get(position);
+        SnippetArticleListItem dismissedSnippet = (SnippetArticleListItem) mItems.get(position);
 
         mSnippetsBridge.getSnippedVisited(dismissedSnippet, new Callback<Boolean>() {
             @Override
@@ -290,28 +302,29 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         });
 
         mSnippetsBridge.discardSnippet(dismissedSnippet);
-        mNewTabPageListItems.remove(position);
+        mItems.remove(position);
         notifyItemRemoved(position);
     }
 
     private void addStatusCardIfNecessary() {
-        if (mNewTabPageListItems.size() == 3 /* above-the-fold + header + spacing */) {
-            // TODO(dgn) hack until we refactor the entire class with sections, etc.
-            // (see https://crbug.com/616090)
-            mNewTabPageListItems.add(FIRST_CARD_POSITION, mStatusListItem);
+        if (!hasSuggestions() && !mItems.contains(mStatusCard)) {
+            mItems.add(getFirstCardPosition(), mStatusCard);
 
             // We also want to refresh the header and the bottom padding.
-            mHeaderListItem.setVisible(false);
+            mHeader.setVisible(false);
             notifyDataSetChanged();
         }
     }
 
     /** Returns whether we have some suggested content to display. */
     private boolean hasSuggestions() {
-        return getItemViewType(FIRST_CARD_POSITION) == NewTabPageListItem.VIEW_TYPE_SNIPPET;
+        for (NewTabPageListItem item : mItems) {
+            if (item instanceof SnippetArticleListItem) return true;
+        }
+        return false;
     }
 
     List<NewTabPageListItem> getItemsForTesting() {
-        return mNewTabPageListItems;
+        return mItems;
     }
 }
