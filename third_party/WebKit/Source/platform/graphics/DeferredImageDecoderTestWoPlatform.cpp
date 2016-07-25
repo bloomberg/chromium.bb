@@ -35,7 +35,7 @@ static void mixImages(const char* fileName, size_t bytesForFirstFrame, size_t la
     RefPtr<SharedBuffer> file = readFile(fileName);
     ASSERT_NE(file, nullptr);
 
-    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(*file.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
+    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(ImageDecoder::determineImageType(*file.get()), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
     ASSERT_TRUE(decoder.get());
 
     RefPtr<SharedBuffer> partialFile = SharedBuffer::create(file->data(), bytesForFirstFrame);

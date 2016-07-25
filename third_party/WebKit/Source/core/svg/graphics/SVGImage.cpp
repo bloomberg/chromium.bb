@@ -479,13 +479,13 @@ void SVGImage::updateUseCounters(Document& document) const
     }
 }
 
-bool SVGImage::dataChanged(bool allDataReceived)
+Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived)
 {
     TRACE_EVENT0("blink", "SVGImage::dataChanged");
 
     // Don't do anything if is an empty image.
     if (!data()->size())
-        return true;
+        return SizeAvailable;
 
     if (allDataReceived) {
         // SVGImage will fire events (and the default C++ handlers run) but doesn't
@@ -499,7 +499,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         if (m_page) {
             toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml"),
                 AtomicString("UTF-8"), KURL(), ForceSynchronousLoad)));
-            return true;
+            return SizeAvailable;
         }
 
         Page::PageClients pageClients;
@@ -559,7 +559,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         m_intrinsicSize = roundedIntSize(concreteObjectSize(FloatSize(LayoutReplaced::defaultWidth, LayoutReplaced::defaultHeight)));
     }
 
-    return m_page;
+    return m_page ? SizeAvailable : SizeUnavailable;
 }
 
 String SVGImage::filenameExtension() const

@@ -80,49 +80,65 @@ inline bool matchesBMPSignature(const char* contents)
     return !memcmp(contents, "BM", 2);
 }
 
-std::unique_ptr<ImageDecoder> ImageDecoder::create(const char* contents, size_t length, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+std::unique_ptr<ImageDecoder> ImageDecoder::create(SniffResult sniffResult, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
 {
-    const size_t longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
-    ASSERT(longestSignatureLength == 14);
-
-    if (length < longestSignatureLength)
-        return nullptr;
-
     size_t maxDecodedBytes = Platform::current() ? Platform::current()->maxDecodedImageBytes() : noDecodedImageByteLimit;
 
-    if (matchesJPEGSignature(contents))
+    switch (sniffResult) {
+    case SniffResult::JPEG:
         return wrapUnique(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-
-    if (matchesPNGSignature(contents))
+    case SniffResult::PNG:
         return wrapUnique(new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-
-    if (matchesGIFSignature(contents))
+    case SniffResult::GIF:
         return wrapUnique(new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-
-    if (matchesWebPSignature(contents))
+    case SniffResult::WEBP:
         return wrapUnique(new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-
-    if (matchesICOSignature(contents) || matchesCURSignature(contents))
+    case SniffResult::ICO:
         return wrapUnique(new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-
-    if (matchesBMPSignature(contents))
+    case SniffResult::BMP:
         return wrapUnique(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-
+    case SniffResult::InsufficientData:
+    case SniffResult::Invalid:
+        return nullptr;
+    }
+    NOTREACHED();
     return nullptr;
 }
 
-std::unique_ptr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+ImageDecoder::SniffResult ImageDecoder::determineImageType(const char* contents, size_t length)
+{
+    const size_t longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
+    DCHECK_EQ(14u, longestSignatureLength);
+
+    if (length < longestSignatureLength)
+        return SniffResult::InsufficientData;
+    if (matchesJPEGSignature(contents))
+        return SniffResult::JPEG;
+    if (matchesPNGSignature(contents))
+        return SniffResult::PNG;
+    if (matchesGIFSignature(contents))
+        return SniffResult::GIF;
+    if (matchesWebPSignature(contents))
+        return SniffResult::WEBP;
+    if (matchesICOSignature(contents) || matchesCURSignature(contents))
+        return SniffResult::ICO;
+    if (matchesBMPSignature(contents))
+        return SniffResult::BMP;
+    return SniffResult::Invalid;
+}
+
+ImageDecoder::SniffResult ImageDecoder::determineImageType(const SharedBuffer& data)
 {
     const char* contents;
     const size_t length = data.getSomeData<size_t>(contents);
-    return create(contents, length, alphaOption, colorOptions);
+    return determineImageType(contents, length);
 }
 
-std::unique_ptr<ImageDecoder> ImageDecoder::create(const SegmentReader& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+ImageDecoder::SniffResult ImageDecoder::determineImageType(const SegmentReader& data)
 {
     const char* contents;
     const size_t length = data.getSomeData(contents, 0);
-    return create(contents, length, alphaOption, colorOptions);
+    return determineImageType(contents, length);
 }
 
 size_t ImageDecoder::frameCount()

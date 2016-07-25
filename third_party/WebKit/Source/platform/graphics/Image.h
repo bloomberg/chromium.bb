@@ -101,8 +101,12 @@ public:
     int height() const { return size().height(); }
     virtual bool getHotSpot(IntPoint&) const { return false; }
 
-    virtual bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
-    virtual bool dataChanged(bool /*allDataReceived*/) { return false; }
+    enum SizeAvailability {
+        SizeAvailable,
+        SizeUnavailable
+    };
+    virtual SizeAvailability setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
+    virtual SizeAvailability dataChanged(bool /*allDataReceived*/) { return SizeUnavailable; }
 
     virtual String filenameExtension() const { return String(); } // null string if unknown
 
