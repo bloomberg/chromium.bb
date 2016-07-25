@@ -189,9 +189,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
 
-  // TODO(nhiroki): Make sure the instance info is not mixed up.
-  // (http://crbug.com/568915)
-  CHECK(!ContainsKey(instance_info_, embedded_worker_id))
+  DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
   if (can_use_existing_process) {
