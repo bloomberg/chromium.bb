@@ -94,6 +94,7 @@
         'accelerators/accelerator_history.h',
         'accelerators/accelerator_manager.cc',
         'accelerators/accelerator_manager.h',
+        'accelerators/accelerator_manager_delegate.h',
         'accelerators/menu_label_accelerator_util_linux.cc',
         'accelerators/menu_label_accelerator_util_linux.h',
         'accelerators/platform_accelerator.h',
