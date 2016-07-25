@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/passwords_counter.h"
+#include "components/browsing_data/core/counters/passwords_counter.h"
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -136,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
   AddLogin("https://www.chrome.com", "user2", false);
 
   Profile* profile = browser()->profile();
-  PasswordsCounter counter(profile);
+  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
   counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -152,7 +153,9 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
   AddLogin("https://www.chrome.com", "user3", true);
 
   Profile* profile = browser()->profile();
-  PasswordsCounter counter(profile);
+  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
+
   counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -169,7 +172,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefChanged) {
   AddLogin("https://www.chrome.com", "user", false);
 
   Profile* profile = browser()->profile();
-  PasswordsCounter counter(profile);
+  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
   counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
                                                base::Unretained(this)));
   SetPasswordsDeletionPref(true);
@@ -185,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefIsFalse) {
   AddLogin("https://www.google.com", "user", false);
 
   Profile* profile = browser()->profile();
-  PasswordsCounter counter(profile);
+  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
   counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -199,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
   AddLogin("https://www.google.com", "user", false);
 
   Profile* profile = browser()->profile();
-  PasswordsCounter counter(profile);
+  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
   counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -228,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   AddLogin("https://www.chrome.com", "user", false);
 
   Profile* profile = browser()->profile();
-  PasswordsCounter counter(profile);
+  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
   counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
                                                base::Unretained(this)));
 

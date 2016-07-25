@@ -10,9 +10,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browsing_data/autofill_counter.h"
+#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browsing_data/core/counters/autofill_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -34,7 +35,10 @@ class BrowsingDataCounterUtilsTest : public testing::Test {
 
 // Tests the complex output of the Autofill counter.
 TEST_F(BrowsingDataCounterUtilsTest, AutofillCounterResult) {
-  AutofillCounter counter(GetProfile());
+  browsing_data::AutofillCounter counter(
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          GetProfile(), ServiceAccessType::EXPLICIT_ACCESS)
+          .get());
 
   // This test assumes that the strings are served exactly as defined,
   // i.e. that the locale is set to the default "en".
@@ -61,10 +65,8 @@ TEST_F(BrowsingDataCounterUtilsTest, AutofillCounterResult) {
   };
 
   for (const TestCase& test_case : kTestCases) {
-    AutofillCounter::AutofillResult result(
-        &counter,
-        test_case.num_suggestions,
-        test_case.num_credit_cards,
+    browsing_data::AutofillCounter::AutofillResult result(
+        &counter, test_case.num_suggestions, test_case.num_credit_cards,
         test_case.num_addresses);
 
     SCOPED_TRACE(base::StringPrintf(

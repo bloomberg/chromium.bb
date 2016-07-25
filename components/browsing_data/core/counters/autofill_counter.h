@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_AUTOFILL_COUNTER_H_
-#define CHROME_BROWSER_BROWSING_DATA_AUTOFILL_COUNTER_H_
+#ifndef COMPONENTS_BROWSING_DATA_CORE_COUNTERS_AUTOFILL_COUNTER_H_
+#define COMPONENTS_BROWSING_DATA_CORE_COUNTERS_AUTOFILL_COUNTER_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-
-class Profile;
 
 namespace autofill {
 class AutofillWebDataService;
 }
+
+namespace browsing_data {
 
 class AutofillCounter : public browsing_data::BrowsingDataCounter,
                         public WebDataServiceConsumer {
@@ -38,7 +39,8 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
     DISALLOW_COPY_AND_ASSIGN(AutofillResult);
   };
 
-  explicit AutofillCounter(Profile* profile);
+  explicit AutofillCounter(
+      scoped_refptr<autofill::AutofillWebDataService> web_data_service);
   ~AutofillCounter() override;
 
   // BrowsingDataCounter implementation.
@@ -49,6 +51,8 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
     return suggestions_query_ || credit_cards_query_ || addresses_query_;
   }
 
+  const char* GetPrefName() const override;
+
   // Set the beginning of the time period for testing. AutofillTable does not
   // allow us to set time explicitly, and BrowsingDataCounter recognizes
   // only predefined time periods, out of which the lowest one is one hour.
@@ -58,7 +62,15 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
   void SetPeriodStartForTesting(const base::Time& period_start_for_testing);
 
  private:
-  Profile* profile_;
+  void Count() override;
+
+  // WebDataServiceConsumer implementation.
+  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
+                                   const WDTypedResult* result) override;
+
+  // Cancel all pending requests to AutofillWebdataService.
+  void CancelAllRequests();
+
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
@@ -73,16 +85,9 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
 
   base::Time period_start_for_testing_;
 
-  void Count() override;
-
-  // WebDataServiceConsumer implementation.
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
-                                   const WDTypedResult* result) override;
-
-  // Cancel all pending requests to AutofillWebdataService.
-  void CancelAllRequests();
-
   DISALLOW_COPY_AND_ASSIGN(AutofillCounter);
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_AUTOFILL_COUNTER_H_
+}  // namespace browsing_data
+
+#endif  // COMPONENTS_BROWSING_DATA_CORE_COUNTERS_AUTOFILL_COUNTER_H_

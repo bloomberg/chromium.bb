@@ -38,6 +38,8 @@ class MediaLicensesCounter : public browsing_data::BrowsingDataCounter {
   explicit MediaLicensesCounter(Profile* profile);
   ~MediaLicensesCounter() override;
 
+  const char* GetPrefName() const override;
+
  private:
   Profile* profile_;
 

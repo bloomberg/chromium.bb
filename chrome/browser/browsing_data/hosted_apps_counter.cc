@@ -14,10 +14,13 @@
 #include "extensions/common/extension.h"
 
 HostedAppsCounter::HostedAppsCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeleteHostedAppsData),
-      profile_(profile) {}
+    : profile_(profile) {}
 
 HostedAppsCounter::~HostedAppsCounter() {}
+
+const char* HostedAppsCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeleteHostedAppsData;
+}
 
 void HostedAppsCounter::Count() {
   int count = 0;

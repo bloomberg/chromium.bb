@@ -2,35 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/history_counter.h"
+#include "components/browsing_data/core/counters/history_counter.h"
 
 #include <limits.h>
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/web_history_service.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 static const int64_t kWebHistoryTimeoutSeconds = 10;
 }
 
-HistoryCounter::HistoryCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeleteBrowsingHistory),
-      profile_(profile),
+namespace browsing_data {
+
+HistoryCounter::HistoryCounter(
+    history::HistoryService* history_service,
+    const GetUpdatedWebHistoryServiceCallback& callback,
+    sync_driver::SyncService* sync_service)
+    : history_service_(history_service),
+      web_history_service_callback_(callback),
+      sync_service_(sync_service),
       has_synced_visits_(false),
       local_counting_finished_(false),
       web_counting_finished_(false),
-      testing_web_history_service_(nullptr),
-      sync_service_(nullptr),
       history_sync_enabled_(false),
       weak_ptr_factory_(this) {}
 
@@ -40,19 +36,17 @@ HistoryCounter::~HistoryCounter() {
 }
 
 void HistoryCounter::OnInitialized() {
-  sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service_)
     sync_service_->AddObserver(this);
-  history_sync_enabled_ = !!WebHistoryServiceFactory::GetForProfile(profile_);
+  history_sync_enabled_ = !!web_history_service_callback_.Run();
 }
 
 bool HistoryCounter::HasTrackedTasks() {
   return cancelable_task_tracker_.HasTrackedTasks();
 }
 
-void HistoryCounter::SetWebHistoryServiceForTesting(
-    history::WebHistoryService* service) {
-  testing_web_history_service_ = service;
+const char* HistoryCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeleteBrowsingHistory;
 }
 
 void HistoryCounter::Count() {
@@ -64,22 +58,15 @@ void HistoryCounter::Count() {
   // Count the locally stored items.
   local_counting_finished_ = false;
 
-  history::HistoryService* service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-
-  service->GetHistoryCount(
-      GetPeriodStart(),
-      base::Time::Max(),
+  history_service_->GetHistoryCount(
+      GetPeriodStart(), base::Time::Max(),
       base::Bind(&HistoryCounter::OnGetLocalHistoryCount,
                  weak_ptr_factory_.GetWeakPtr()),
       &cancelable_task_tracker_);
 
   // If the history sync is enabled, test if there is at least one synced item.
-  // If the testing web history service is present, use that one instead.
   history::WebHistoryService* web_history =
-      testing_web_history_service_
-          ? testing_web_history_service_
-          : WebHistoryServiceFactory::GetForProfile(profile_);
+      web_history_service_callback_.Run();
 
   if (!web_history) {
     web_counting_finished_ = true;
@@ -89,9 +76,7 @@ void HistoryCounter::Count() {
   web_counting_finished_ = false;
 
   web_history_timeout_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
-      this,
+      FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds), this,
       &HistoryCounter::OnWebHistoryTimeout);
 
   history::QueryOptions options;
@@ -99,8 +84,7 @@ void HistoryCounter::Count() {
   options.begin_time = GetPeriodStart();
   options.end_time = base::Time::Max();
   web_history_request_ = web_history->QueryHistory(
-      base::string16(),
-      options,
+      base::string16(), options,
       base::Bind(&HistoryCounter::OnGetWebHistoryCount,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -141,8 +125,7 @@ void HistoryCounter::OnGetWebHistoryCount(
   // entry in the "event" list.
   const base::ListValue* events;
   has_synced_visits_ =
-      !result ||
-      (result->GetList("event", &events) && !events->empty());
+      !result || (result->GetList("event", &events) && !events->empty());
   web_counting_finished_ = true;
   MergeResults();
 }
@@ -168,20 +151,15 @@ void HistoryCounter::MergeResults() {
       new HistoryResult(this, local_result_, has_synced_visits_)));
 }
 
-HistoryCounter::HistoryResult::HistoryResult(
-    const HistoryCounter* source,
-    ResultInt value,
-    bool has_synced_visits)
-    : FinishedResult(source, value),
-      has_synced_visits_(has_synced_visits) {
-}
+HistoryCounter::HistoryResult::HistoryResult(const HistoryCounter* source,
+                                             ResultInt value,
+                                             bool has_synced_visits)
+    : FinishedResult(source, value), has_synced_visits_(has_synced_visits) {}
 
-HistoryCounter::HistoryResult::~HistoryResult() {
-}
+HistoryCounter::HistoryResult::~HistoryResult() {}
 
 void HistoryCounter::OnStateChanged() {
-  bool history_sync_enabled_new_state =
-      !!WebHistoryServiceFactory::GetForProfile(profile_);
+  bool history_sync_enabled_new_state = !!web_history_service_callback_.Run();
 
   // If the history sync was just enabled or disabled, restart the counter
   // so that we update the result accordingly.
@@ -190,3 +168,5 @@ void HistoryCounter::OnStateChanged() {
     Restart();
   }
 }
+
+}  // namespace browsing_data

@@ -1,26 +1,28 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/passwords_counter.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/core/counters/passwords_counter.h"
+
 #include "components/browsing_data/core/pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 
-PasswordsCounter::PasswordsCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeletePasswords),
-      profile_(profile) {}
+namespace browsing_data {
+
+PasswordsCounter::PasswordsCounter(
+    scoped_refptr<password_manager::PasswordStore> store) : store_(store) {}
 
 PasswordsCounter::~PasswordsCounter() {
   store_->RemoveObserver(this);
 }
 
 void PasswordsCounter::OnInitialized() {
-  store_ = PasswordStoreFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(store_);
   store_->AddObserver(this);
+}
+
+const char* PasswordsCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeletePasswords;
 }
 
 void PasswordsCounter::Count() {
@@ -35,15 +37,15 @@ void PasswordsCounter::Count() {
 void PasswordsCounter::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
   base::Time start = GetPeriodStart();
-  ReportResult(std::count_if(
-      results.begin(),
-      results.end(),
-      [start](const autofill::PasswordForm* form) {
-        return form->date_created >= start;
-      }));
+  ReportResult(std::count_if(results.begin(), results.end(),
+                             [start](const autofill::PasswordForm* form) {
+                               return form->date_created >= start;
+                             }));
 }
 
 void PasswordsCounter::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
   Restart();
 }
+
+}  // namespace browsing_data

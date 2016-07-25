@@ -58,14 +58,14 @@ class BrowsingDataCounter {
 
   typedef base::Callback<void(std::unique_ptr<Result>)> Callback;
 
-  BrowsingDataCounter(const std::string& pref_name);
+  BrowsingDataCounter();
   virtual ~BrowsingDataCounter();
 
   // Should be called once to initialize this class.
   void Init(PrefService* pref_service, const Callback& callback);
 
   // Name of the preference associated with this counter.
-  const std::string& GetPrefName() const;
+  virtual const char* GetPrefName() const = 0;
 
   // PrefService that manages the preferences for the user profile
   // associated with this counter.
@@ -94,9 +94,6 @@ class BrowsingDataCounter {
 
   // Count the data.
   virtual void Count() = 0;
-
-  // Name of the preference associated with this counter.
-  const std::string pref_name_;
 
   // Pointer to the PrefService that manages the preferences for the user
   // profile associated with this counter.

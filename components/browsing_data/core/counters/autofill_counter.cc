@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/autofill_counter.h"
+#include "components/browsing_data/core/counters/autofill_counter.h"
 
 #include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/pref_names.h"
 
-AutofillCounter::AutofillCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeleteFormData),
-      profile_(profile),
-      web_data_service_(nullptr),
+namespace browsing_data {
+
+AutofillCounter::AutofillCounter(
+    scoped_refptr<autofill::AutofillWebDataService> web_data_service)
+    : web_data_service_(web_data_service),
       suggestions_query_(0),
       credit_cards_query_(0),
       addresses_query_(0),
@@ -32,9 +31,11 @@ AutofillCounter::~AutofillCounter() {
 }
 
 void AutofillCounter::OnInitialized() {
-  web_data_service_ = WebDataServiceFactory::GetAutofillWebDataForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(web_data_service_);
+}
+
+const char* AutofillCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeleteFormData;
 }
 
 void AutofillCounter::SetPeriodStartForTesting(
@@ -44,8 +45,8 @@ void AutofillCounter::SetPeriodStartForTesting(
 
 void AutofillCounter::Count() {
   const base::Time start = period_start_for_testing_.is_null()
-      ? GetPeriodStart()
-      : period_start_for_testing_;
+                               ? GetPeriodStart()
+                               : period_start_for_testing_;
 
   CancelAllRequests();
 
@@ -78,7 +79,8 @@ void AutofillCounter::Count() {
 }
 
 void AutofillCounter::OnWebDataServiceRequestDone(
-    WebDataServiceBase::Handle handle, const WDTypedResult* result) {
+    WebDataServiceBase::Handle handle,
+    const WDTypedResult* result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!result) {
     CancelAllRequests();
@@ -86,8 +88,8 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   }
 
   const base::Time start = period_start_for_testing_.is_null()
-      ? GetPeriodStart()
-      : period_start_for_testing_;
+                               ? GetPeriodStart()
+                               : period_start_for_testing_;
 
   if (handle == suggestions_query_) {
     // Autocomplete suggestions.
@@ -99,8 +101,8 @@ void AutofillCounter::OnWebDataServiceRequestDone(
     // Credit cards.
     DCHECK_EQ(AUTOFILL_CREDITCARDS_RESULT, result->GetType());
     const std::vector<autofill::CreditCard*> credit_cards =
-        static_cast<const WDResult<std::vector<autofill::CreditCard*>>*>(
-            result)->GetValue();
+        static_cast<const WDResult<std::vector<autofill::CreditCard*>>*>(result)
+            ->GetValue();
 
     // We own the result from this query. Make sure it will be deleted.
     ScopedVector<const autofill::CreditCard> owned_result;
@@ -119,18 +121,18 @@ void AutofillCounter::OnWebDataServiceRequestDone(
     DCHECK_EQ(AUTOFILL_PROFILES_RESULT, result->GetType());
     const std::vector<autofill::AutofillProfile*> addresses =
         static_cast<const WDResult<std::vector<autofill::AutofillProfile*>>*>(
-            result)->GetValue();
+            result)
+            ->GetValue();
 
     // We own the result from this query. Make sure it will be deleted.
     ScopedVector<const autofill::AutofillProfile> owned_result;
     owned_result.assign(addresses.begin(), addresses.end());
 
-    num_addresses_ = std::count_if(
-        addresses.begin(),
-        addresses.end(),
-        [start](const autofill::AutofillProfile* address) {
-          return address->modification_date() >= start;
-        });
+    num_addresses_ =
+        std::count_if(addresses.begin(), addresses.end(),
+                      [start](const autofill::AutofillProfile* address) {
+                        return address->modification_date() >= start;
+                      });
     addresses_query_ = 0;
 
   } else {
@@ -157,15 +159,14 @@ void AutofillCounter::CancelAllRequests() {
 
 // AutofillCounter::AutofillResult ---------------------------------------------
 
-AutofillCounter::AutofillResult::AutofillResult(
-    const AutofillCounter* source,
-    ResultInt num_suggestions,
-    ResultInt num_credit_cards,
-    ResultInt num_addresses)
+AutofillCounter::AutofillResult::AutofillResult(const AutofillCounter* source,
+                                                ResultInt num_suggestions,
+                                                ResultInt num_credit_cards,
+                                                ResultInt num_addresses)
     : FinishedResult(source, num_suggestions),
       num_credit_cards_(num_credit_cards),
-      num_addresses_(num_addresses) {
-}
+      num_addresses_(num_addresses) {}
 
-AutofillCounter::AutofillResult::~AutofillResult() {
-}
+AutofillCounter::AutofillResult::~AutofillResult() {}
+
+}  // namespace browsing_data

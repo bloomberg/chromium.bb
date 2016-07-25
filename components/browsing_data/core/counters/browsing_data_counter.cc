@@ -13,8 +13,7 @@
 
 namespace browsing_data {
 
-BrowsingDataCounter::BrowsingDataCounter(const std::string& pref_name)
-    : pref_name_(pref_name) {}
+BrowsingDataCounter::BrowsingDataCounter() {}
 
 BrowsingDataCounter::~BrowsingDataCounter() {}
 
@@ -59,10 +58,6 @@ void BrowsingDataCounter::ReportResult(ResultInt value) {
 void BrowsingDataCounter::ReportResult(std::unique_ptr<Result> result) {
   DCHECK(initialized_);
   callback_.Run(std::move(result));
-}
-
-const std::string& BrowsingDataCounter::GetPrefName() const {
-  return pref_name_;
 }
 
 PrefService* BrowsingDataCounter::GetPrefs() const {

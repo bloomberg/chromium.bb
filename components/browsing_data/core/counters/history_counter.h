@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_HISTORY_COUNTER_H_
-#define CHROME_BROWSER_BROWSING_DATA_HISTORY_COUNTER_H_
+#ifndef COMPONENTS_BROWSING_DATA_CORE_COUNTERS_HISTORY_COUNTER_H_
+#define COMPONENTS_BROWSING_DATA_CORE_COUNTERS_HISTORY_COUNTER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
+#include "components/sync_driver/sync_service.h"
 #include "components/sync_driver/sync_service_observer.h"
 
-class Profile;
-
-class ProfileSyncService;
+namespace browsing_data {
 
 class HistoryCounter : public browsing_data::BrowsingDataCounter,
                        public sync_driver::SyncServiceObserver {
  public:
+  typedef base::Callback<history::WebHistoryService*()>
+      GetUpdatedWebHistoryServiceCallback;
+
   class HistoryResult : public FinishedResult {
    public:
     HistoryResult(const HistoryCounter* source,
@@ -33,7 +34,9 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
     bool has_synced_visits_;
   };
 
-  explicit HistoryCounter(Profile* profile);
+  explicit HistoryCounter(history::HistoryService* history_service,
+                          const GetUpdatedWebHistoryServiceCallback& callback,
+                          sync_driver::SyncService* sync_service);
   ~HistoryCounter() override;
 
   void OnInitialized() override;
@@ -41,32 +44,9 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
   // Whether there are counting tasks in progress. Only used for testing.
   bool HasTrackedTasks();
 
-  // Make the history counter use a custom WebHistoryService instance. Only
-  // used for testing.
-  void SetWebHistoryServiceForTesting(history::WebHistoryService* service);
+  const char* GetPrefName() const override;
 
  private:
-  Profile* profile_;
-
-  BrowsingDataCounter::ResultInt local_result_;
-  bool has_synced_visits_;
-
-  bool local_counting_finished_;
-  bool web_counting_finished_;
-
-  history::WebHistoryService* testing_web_history_service_;
-
-  base::CancelableTaskTracker cancelable_task_tracker_;
-  std::unique_ptr<history::WebHistoryService::Request> web_history_request_;
-  base::OneShotTimer web_history_timeout_;
-
-  base::ThreadChecker thread_checker_;
-
-  ProfileSyncService* sync_service_;
-  bool history_sync_enabled_;
-
-  base::WeakPtrFactory<HistoryCounter> weak_ptr_factory_;
-
   void Count() override;
 
   void OnGetLocalHistoryCount(history::HistoryCountResult result);
@@ -77,6 +57,31 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
 
   // SyncServiceObserver implementation.
   void OnStateChanged() override;
+
+  history::HistoryService* history_service_;
+
+  GetUpdatedWebHistoryServiceCallback web_history_service_callback_;
+
+  sync_driver::SyncService* sync_service_;
+
+  bool has_synced_visits_;
+
+  bool local_counting_finished_;
+  bool web_counting_finished_;
+
+  base::CancelableTaskTracker cancelable_task_tracker_;
+  std::unique_ptr<history::WebHistoryService::Request> web_history_request_;
+  base::OneShotTimer web_history_timeout_;
+
+  base::ThreadChecker thread_checker_;
+
+  BrowsingDataCounter::ResultInt local_result_;
+
+  bool history_sync_enabled_;
+
+  base::WeakPtrFactory<HistoryCounter> weak_ptr_factory_;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_HISTORY_COUNTER_H_
+}  // namespace browsing_data
+
+#endif  // COMPONENTS_BROWSING_DATA_CORE_COUNTERS_HISTORY_COUNTER_H_

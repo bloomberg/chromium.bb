@@ -9,12 +9,15 @@
 #include "net/base/net_errors.h"
 
 CacheCounter::CacheCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeleteCache),
-      profile_(profile),
+    : profile_(profile),
       pending_(false),
       weak_ptr_factory_(this) {}
 
 CacheCounter::~CacheCounter() {
+}
+
+const char* CacheCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeleteCache;
 }
 
 void CacheCounter::Count() {

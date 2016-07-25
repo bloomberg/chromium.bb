@@ -34,6 +34,8 @@ class HostedAppsCounter : public browsing_data::BrowsingDataCounter {
   explicit HostedAppsCounter(Profile* profile);
   ~HostedAppsCounter() override;
 
+  const char* GetPrefName() const override;
+
  private:
   // BrowsingDataCounter:
   void Count() override;

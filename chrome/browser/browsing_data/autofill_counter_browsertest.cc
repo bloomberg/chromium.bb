@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/autofill_counter.h"
+#include "components/browsing_data/core/counters/autofill_counter.h"
 
 #include "base/guid.h"
 #include "base/macros.h"
@@ -142,6 +142,10 @@ class AutofillCounterTest : public InProcessBrowserTest {
         browsing_data::prefs::kDeleteTimePeriod, static_cast<int>(period));
   }
 
+  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() {
+    return web_data_service_;
+  }
+
   // Callback and result retrieval ---------------------------------------------
 
   void WaitForCounting() {
@@ -169,8 +173,9 @@ class AutofillCounterTest : public InProcessBrowserTest {
     finished_ = result->Finished();
 
     if (finished_) {
-      AutofillCounter::AutofillResult* autofill_result =
-          static_cast<AutofillCounter::AutofillResult*>(result.get());
+      browsing_data::AutofillCounter::AutofillResult* autofill_result =
+          static_cast<browsing_data::AutofillCounter::AutofillResult*>(
+              result.get());
 
       num_suggestions_ = autofill_result->Value();
       num_credit_cards_ = autofill_result->num_credit_cards();
@@ -203,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, PrefIsFalse) {
   SetAutofillDeletionPref(false);
 
   Profile* profile = browser()->profile();
-  AutofillCounter counter(profile);
+  browsing_data::AutofillCounter counter(GetWebDataService());
   counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -214,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, PrefIsFalse) {
 // Tests that we count the correct number of autocomplete suggestions.
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, AutocompleteSuggestions) {
   Profile* profile = browser()->profile();
-  AutofillCounter counter(profile);
+  browsing_data::AutofillCounter counter(GetWebDataService());
   counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -250,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, AutocompleteSuggestions) {
 // Tests that we count the correct number of credit cards.
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, CreditCards) {
   Profile* profile = browser()->profile();
-  AutofillCounter counter(profile);
+  browsing_data::AutofillCounter counter(GetWebDataService());
   counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -286,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, CreditCards) {
 // Tests that we count the correct number of addresses.
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, Addresses) {
   Profile* profile = browser()->profile();
-  AutofillCounter counter(profile);
+  browsing_data::AutofillCounter counter(GetWebDataService());
   counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -336,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, ComplexResult) {
   AddAddress("John", "Smith", "Side Street 47");
 
   Profile* profile = browser()->profile();
-  AutofillCounter counter(profile);
+  browsing_data::AutofillCounter counter(GetWebDataService());
   counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
                                                base::Unretained(this)));
   counter.Restart();
@@ -391,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   };
 
   Profile* profile = browser()->profile();
-  AutofillCounter counter(profile);
+  browsing_data::AutofillCounter counter(GetWebDataService());
   counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
                                                base::Unretained(this)));
 

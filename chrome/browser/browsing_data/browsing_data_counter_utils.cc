@@ -6,15 +6,15 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browsing_data/autofill_counter.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
-#include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
-#include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browsing_data/core/counters/autofill_counter.h"
+#include "components/browsing_data/core/counters/history_counter.h"
+#include "components/browsing_data/core/counters/passwords_counter.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,8 +103,9 @@ base::string16 GetCounterTextFromResult(
 
   } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     // History counter.
-    const HistoryCounter::HistoryResult* history_result =
-        static_cast<const HistoryCounter::HistoryResult*>(result);
+    const browsing_data::HistoryCounter::HistoryResult* history_result =
+        static_cast<const browsing_data::HistoryCounter::HistoryResult*>(
+            result);
     browsing_data::BrowsingDataCounter::ResultInt local_item_count =
         history_result->Value();
     bool has_synced_visits = history_result->has_synced_visits();
@@ -117,12 +118,15 @@ base::string16 GetCounterTextFromResult(
 
   } else if (pref_name == browsing_data::prefs::kDeleteFormData) {
     // Autofill counter.
-    const AutofillCounter::AutofillResult* autofill_result =
-        static_cast<const AutofillCounter::AutofillResult*>(result);
-    AutofillCounter::ResultInt num_suggestions = autofill_result->Value();
-    AutofillCounter::ResultInt num_credit_cards =
+    const browsing_data::AutofillCounter::AutofillResult* autofill_result =
+        static_cast<const browsing_data::AutofillCounter::AutofillResult*>(
+            result);
+    browsing_data::AutofillCounter::ResultInt num_suggestions =
+        autofill_result->Value();
+    browsing_data::AutofillCounter::ResultInt num_credit_cards =
         autofill_result->num_credit_cards();
-    AutofillCounter::ResultInt num_addresses = autofill_result->num_addresses();
+    browsing_data::AutofillCounter::ResultInt num_addresses =
+        autofill_result->num_addresses();
 
     std::vector<base::string16> displayed_strings;
 

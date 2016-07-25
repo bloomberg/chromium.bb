@@ -52,11 +52,14 @@ const std::string& MediaLicensesCounter::MediaLicenseResult::GetOneOrigin()
 }
 
 MediaLicensesCounter::MediaLicensesCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeleteMediaLicenses),
-      profile_(profile),
+    : profile_(profile),
       weak_ptr_factory_(this) {}
 
 MediaLicensesCounter::~MediaLicensesCounter() {}
+
+const char* MediaLicensesCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeleteMediaLicenses;
+}
 
 void MediaLicensesCounter::Count() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

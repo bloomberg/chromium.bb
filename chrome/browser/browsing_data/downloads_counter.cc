@@ -10,10 +10,13 @@
 #include "content/public/browser/download_manager.h"
 
 DownloadsCounter::DownloadsCounter(Profile* profile)
-    : BrowsingDataCounter(browsing_data::prefs::kDeleteDownloadHistory),
-      profile_(profile) {}
+    : profile_(profile) {}
 
 DownloadsCounter::~DownloadsCounter() {
+}
+
+const char* DownloadsCounter::GetPrefName() const {
+  return browsing_data::prefs::kDeleteDownloadHistory;
 }
 
 void DownloadsCounter::Count() {

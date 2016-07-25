@@ -21,6 +21,8 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
   // Used only for testing.
   bool Pending();
 
+  const char* GetPrefName() const override;
+
  private:
   Profile* profile_;
   bool pending_;

@@ -16,11 +16,11 @@ class DownloadsCounter : public browsing_data::BrowsingDataCounter {
   explicit DownloadsCounter(Profile* profile);
   ~DownloadsCounter() override;
 
+  const char* GetPrefName() const override;
+
  private:
   // BrowsingDataRemover implementation.
   void Count() override;
-
-  const std::string pref_name_;
 
   Profile* profile_;
 
