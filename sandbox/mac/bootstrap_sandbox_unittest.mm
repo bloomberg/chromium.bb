@@ -138,6 +138,11 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_Unsandboxed) {
 // Run the test with the sandbox enabled without notifications on the policy
 // whitelist.
 TEST_F(BootstrapSandboxTest, DistributedNotifications_SandboxDeny) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
+
   base::scoped_nsobject<DistributedNotificationObserver> observer(
       [[DistributedNotificationObserver alloc] init]);
 
@@ -151,6 +156,11 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_SandboxDeny) {
 
 // Run the test with notifications permitted.
 TEST_F(BootstrapSandboxTest, DistributedNotifications_SandboxAllow) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
+
   base::scoped_nsobject<DistributedNotificationObserver> observer(
       [[DistributedNotificationObserver alloc] init]);
 
@@ -181,6 +191,10 @@ MULTIPROCESS_TEST_MAIN(PostNotification) {
 const char kTestServer[] = "org.chromium.test_bootstrap_server";
 
 TEST_F(BootstrapSandboxTest, PolicyDenyError) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
   BootstrapSandboxPolicy policy(BaselinePolicy());
   policy.rules[kTestServer] = Rule(POLICY_DENY_ERROR);
   sandbox_->RegisterSandboxPolicy(1, policy);
@@ -204,6 +218,10 @@ MULTIPROCESS_TEST_MAIN(PolicyDenyError) {
 }
 
 TEST_F(BootstrapSandboxTest, PolicyDenyDummyPort) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
   BootstrapSandboxPolicy policy(BaselinePolicy());
   policy.rules[kTestServer] = Rule(POLICY_DENY_DUMMY_PORT);
   sandbox_->RegisterSandboxPolicy(1, policy);
@@ -232,6 +250,11 @@ struct SubstitutePortAckRecv : public SubstitutePortAckSend {
 const char kSubstituteAck[] = "Hello, this is doge!";
 
 TEST_F(BootstrapSandboxTest, PolicySubstitutePort) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
+
   mach_port_t task = mach_task_self();
 
   mach_port_t port;
@@ -348,6 +371,11 @@ const char kDefaultRuleTestDeny[] =
     "org.chromium.sandbox.test.DefaultRuleAllow.Deny";
 
 TEST_F(BootstrapSandboxTest, DefaultRuleAllow) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
+
   mach_port_t task = mach_task_self();
 
   mach_port_t port;
@@ -415,6 +443,11 @@ MULTIPROCESS_TEST_MAIN(DefaultRuleAllow) {
 }
 
 TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
+  if (base::mac::IsOSSierraOrLater()) {
+    LOG(ERROR) << "BootstrapSandbox does not work on macOS Sierra or later.";
+    return;
+  }
+
   const int kTestPolicyId = 1;
   mach_port_t task = mach_task_self();
 
