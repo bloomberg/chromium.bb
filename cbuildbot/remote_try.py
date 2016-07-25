@@ -11,20 +11,15 @@ import json
 import os
 import time
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import topology
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cache
 from chromite.lib import git
-from chromite.lib import retry_util
-from chromite.lib import auth
-
-# from third_party
-import httplib2
 
 site_config = config_lib.GetConfig()
 
@@ -241,34 +236,13 @@ class RemoteTryJob(object):
             'properties': self._GetProperties(bot),
         }),
     })
+    buildbucket_id = buildbucket_lib.PutBuildBucket(
+        body, http, buildbucket_put_url, dryrun)
 
-    def try_put():
-      response, content = http.request(
-          buildbucket_put_url,
-          'PUT',
-          body=body,
-          headers={'Content-Type': 'application/json'},
-      )
-
-      if int(response['status']) // 100 != 2:
-        raise Exception('Got a %s response from Buildbucket.'
-                        % response['status'])
-
-      content_dict = json.loads(content)
-      buildbucket_id = content_dict['build']['id']
+    if buildbucket_id is not None:
       print('Successfully PUT %s in buildbucket_bucket %s '
             'with buildbucket_id %s .' %
             (bot, BUILDBUCKET_BUCKET, buildbucket_id))
-
-    if dryrun:
-      logging.info('dryrun mode is on; skipping request to buildbucket. '
-                   'Would have made a request with body:\n%s', body)
-      return
-
-    retry_util.GenericRetry(lambda _: True, 3, try_put)
-
-  def _BuildBucketAuth(self):
-    return auth.Authorize(auth.GetAccessToken, httplib2.Http())
 
   def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
     """Posts the tryjob configs to buildbucket.
@@ -277,15 +251,11 @@ class RemoteTryJob(object):
       dryrun: Whether to skip the request to buildbucket.
       testjob: Whether to use the test instance of the buildbucket server.
     """
-    http = self._BuildBucketAuth()
+    http = buildbucket_lib.BuildBucketAuth(
+        service_account=buildbucket_lib.GetServiceAccount(
+            constants.CHROMEOS_SERVICE_ACCOUNT))
 
-    host = topology.topology[
-        topology.BUILDBUCKET_TEST_HOST_KEY if testjob
-        else topology.BUILDBUCKET_HOST_KEY]
-
-    buildbucket_put_url = (
-        'https://{hostname}/_ah/api/buildbucket/v1/builds'.format(
-            hostname=host))
+    buildbucket_put_url = buildbucket_lib.GetBuildBucketPutUrl(testjob)
 
     for bot in self.bots:
       self._PutConfigToBuildBucket(bot, http, buildbucket_put_url, dryrun)

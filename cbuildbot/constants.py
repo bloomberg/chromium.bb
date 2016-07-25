@@ -947,3 +947,6 @@ GMAIL_TOKEN_JSON_FILE = '/creds/refresh_tokens/chromeos_gmail_alerts'
 # chosen/adjusted based on expected release build times such that successive
 # builds don't overlap and create a backlog.
 MAX_RELEASE_GROUP_BOARDS = 4
+
+CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
+                                        'service-account-chromeos.json')
