@@ -3575,6 +3575,18 @@ void Element::inlineStyleChanged()
     DCHECK(elementData());
     elementData()->m_styleAttributeIsDirty = true;
     InspectorInstrumentation::didInvalidateStyleAttr(this);
+
+    if (MutationObserverInterestGroup* recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, styleAttr)) {
+        // We don't use getAttribute() here to get a style attribute value
+        // before the change.
+        AtomicString oldValue;
+        if (const Attribute* attribute = elementData()->attributes().find(styleAttr))
+            oldValue = attribute->value();
+        recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, styleAttr, oldValue));
+        // Need to synchronize every time so that following MutationRecords will
+        // have correct oldValues.
+        synchronizeAttribute(styleAttr);
+    }
 }
 
 void Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)
