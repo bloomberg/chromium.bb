@@ -100904,7 +100904,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SimpleCache.SyncOpenResult"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SkiaDrawScaleFactorFilterQuality">
+<histogram_suffixes name="SkiaDrawScaleFactorFilterQuality" separator=".">
   <affected-histogram name="Skia.DrawScaleFactor"/>
   <suffix name="AnyFilterQuality" label="Any filter quality was used."/>
   <suffix name="HighFilterQuality" label="High filter quality was used."/>
