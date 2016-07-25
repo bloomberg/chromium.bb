@@ -353,8 +353,8 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
     if (token != EOB_TOKEN) {
       aom_write(w, token != ZERO_TOKEN, p->context_tree[1]);
       if (token != ZERO_TOKEN) {
-        aom_write_tree_cdf(w, token - ONE_TOKEN, *p->token_cdf,
-                           CATEGORY6_TOKEN - ONE_TOKEN + 1);
+        aom_write_symbol(w, token - ONE_TOKEN, *p->token_cdf,
+                         CATEGORY6_TOKEN - ONE_TOKEN + 1);
       }
     }
 #else
@@ -556,8 +556,8 @@ static void write_switchable_interp_filter(AV1_COMP *const cpi,
 #endif
     ctx = av1_get_pred_context_switchable_interp(xd);
 #if CONFIG_DAALA_EC
-    aom_write_tree_cdf(w, av1_switchable_interp_ind[mbmi->interp_filter],
-                       cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
+    aom_write_symbol(w, av1_switchable_interp_ind[mbmi->interp_filter],
+                     cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
 #else
     av1_write_token(w, av1_switchable_interp_tree,
                     cm->fc->switchable_interp_prob[ctx],
@@ -712,8 +712,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     if (is_inter) {
 #if CONFIG_DAALA_EC
-      aom_write_tree_cdf(w, av1_ext_tx_ind[mbmi->tx_type],
-                         cm->fc->inter_ext_tx_cdf[mbmi->tx_size], TX_TYPES);
+      aom_write_symbol(w, av1_ext_tx_ind[mbmi->tx_type],
+                       cm->fc->inter_ext_tx_cdf[mbmi->tx_size], TX_TYPES);
 #else
       av1_write_token(w, av1_ext_tx_tree,
                       cm->fc->inter_ext_tx_prob[mbmi->tx_size],
@@ -721,7 +721,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif
     } else {
 #if CONFIG_DAALA_EC
-      aom_write_tree_cdf(
+      aom_write_symbol(
           w, av1_ext_tx_ind[mbmi->tx_type],
           cm->fc->intra_ext_tx_cdf[mbmi->tx_size]
                                   [intra_mode_to_tx_type_context[mbmi->mode]],
@@ -839,7 +839,7 @@ static void write_partition(const AV1_COMMON *const cm,
 
   if (has_rows && has_cols) {
 #if CONFIG_DAALA_EC
-    aom_write_tree_cdf(w, p, cm->fc->partition_cdf[ctx], PARTITION_TYPES);
+    aom_write_symbol(w, p, cm->fc->partition_cdf[ctx], PARTITION_TYPES);
 #else
     av1_write_token(w, av1_partition_tree, probs, &partition_encodings[p]);
 #endif
