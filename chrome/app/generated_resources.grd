@@ -7782,6 +7782,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MD_FEEDBACK_SEND_REPORT_BUTTON" desc="Text for Send Report button of the feedback dialog. When clicked, the feedback report will be sent.">
         Send feedback
       </message>
+      <message name="IDS_MD_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the checkbox to indicate whether the shown screenshot should be included in the feedback report.">
+        Include this screenshot:
+      </message>
+      <message name="IDS_MD_FEEDBACK_SEND_SYSTEM_INFO_LABEL" desc="Label for the checkbox to indicate whether the system info should be included in the feedback report.">
+        Send system information
+      </message>
+      <if expr="_google_chrome">
+        <message name="IDS_MD_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note shown on the feedback dialog.">
+          Your Chrome and operating system version will be submitted in addition
+          to any information you choose to include above. If you include your email
+          address, Google may contact you regarding your feedback report. This feedback
+          is used to diagnose problems and help improve Chrome. Any personal information
+          you submit, whether explicitly or incidentally will be protected in
+          accordance with our privacy policies.<ph name="BEGIN_BOLD">&lt;strong&gt;
+          </ph> By submitting this feedback, you agree that Google may use feedback
+          that you provide to improve any Google product or service.
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+        </message>
+      </if>
 
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">

@@ -79,6 +79,10 @@ content::WebUIDataSource* CreateMdFeedbackUIHTMLSource(Profile* profile) {
   // General strings.
   html_source->AddLocalizedString("headingText",
                                   IDS_MD_FEEDBACK_HEADING);
+#if defined(GOOGLE_CHROME_BUILD)
+  html_source->AddLocalizedString("privacyNote",
+                                  IDS_MD_FEEDBACK_PRIVACY_NOTE);
+#endif
 
   // Input labels.
   html_source->AddLocalizedString("emailLabel",
@@ -93,6 +97,12 @@ content::WebUIDataSource* CreateMdFeedbackUIHTMLSource(Profile* profile) {
                                   IDS_MD_FEEDBACK_CANCEL_BUTTON);
   html_source->AddLocalizedString("sendReportButton",
                                   IDS_MD_FEEDBACK_SEND_REPORT_BUTTON);
+
+  // Checkbox labels.
+  html_source->AddLocalizedString("includeScreenshotLabel",
+                                  IDS_MD_FEEDBACK_SCREENSHOT_LABEL);
+  html_source->AddLocalizedString("sendSystemInfoLabel",
+                                  IDS_MD_FEEDBACK_SEND_SYSTEM_INFO_LABEL);
 
   // Polymer resources.
   html_source->AddResourcePath("feedback_container.html",

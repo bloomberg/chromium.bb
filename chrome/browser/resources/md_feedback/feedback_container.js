@@ -7,4 +7,15 @@
 // to show and what will be submitted to the feedback servers.
 Polymer({
   is: 'feedback-container',
+
+  /**
+   * Retrieves the feedback privacy note text, if it exists. On non-officially
+   * branded builds, the string is not defined.
+   *
+   * @return {string} Privacy note text.
+   */
+  getPrivacyNote_: function() {
+    return loadTimeData.valueExists('privacyNote') ?
+        this.i18n('privacyNote') : '';
+  },
 });

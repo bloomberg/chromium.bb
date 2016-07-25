@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
 <dom-module name="feedback-container">
@@ -21,6 +22,15 @@
       <paper-textarea label="$i18n{openEndedLabel}"></paper-textarea>
       <paper-input label="$i18n{urlLabel}"></paper-input>
       <paper-input label="$i18n{emailLabel}"></paper-input>
+    </div>
+    <div>
+      <paper-checkbox>$i18n{includeScreenshotLabel}</paper-checkbox>
+    </div>
+    <div>
+      <paper-checkbox>$i18n{sendSystemInfoLabel}</paper-checkbox>
+    </div>
+    <div>
+      <span>[[getPrivacyNote_()]]</span>
     </div>
     <div>
       <paper-button>$i18n{cancelButton}</paper-button>
