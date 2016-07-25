@@ -56,6 +56,7 @@
         'browser/geolocation/omnibox_geolocation_local_state_unittest.mm',
         'browser/install_time_util_unittest.mm',
         'browser/installation_notifier_unittest.mm',
+        'browser/itunes_links/itunes_links_observer_unittest.mm',
         'browser/metrics/ios_chrome_metrics_service_accessor_unittest.cc',
         'browser/metrics/ios_chrome_stability_metrics_provider_unittest.cc',
         'browser/metrics/mobile_session_shutdown_metrics_provider_unittest.mm',
