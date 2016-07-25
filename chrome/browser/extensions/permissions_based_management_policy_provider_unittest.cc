@@ -49,7 +49,7 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
   // Get API permissions name for |id|, we cannot use arbitrary strings since
   // they will be ignored by ExtensionManagementService.
   std::string GetAPIPermissionName(APIPermission::ID id) {
-    for (const auto& perm : perm_list_) {
+    for (auto* perm : perm_list_) {
       if (perm->id() == id)
         return perm->name();
     }

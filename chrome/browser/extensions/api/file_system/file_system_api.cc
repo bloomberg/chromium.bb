@@ -461,7 +461,7 @@ bool ConsentProviderDelegate::IsAutoLaunched(const Extension& extension) {
 
 bool ConsentProviderDelegate::IsWhitelistedComponent(
     const Extension& extension) {
-  for (const auto& whitelisted_id : kRequestFileSystemComponentWhitelist) {
+  for (auto* whitelisted_id : kRequestFileSystemComponentWhitelist) {
     if (extension.id().compare(whitelisted_id) == 0)
       return true;
   }

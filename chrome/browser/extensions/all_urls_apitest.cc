@@ -71,7 +71,7 @@ class AllUrlsApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   WhitelistExtensions();
 
-  auto bystander = LoadExtension(
+  auto* bystander = LoadExtension(
       test_data_dir_.AppendASCII("all_urls").AppendASCII("bystander"));
   ASSERT_TRUE(bystander);
 

@@ -253,7 +253,7 @@ size_t GetExternalInstallBubbleCount(ExtensionService* service) {
   size_t bubble_count = 0u;
   std::vector<ExternalInstallError*> errors =
       service->external_install_manager()->GetErrorsForTesting();
-  for (const auto& error : errors)
+  for (auto* error : errors)
     bubble_count += error->alert_type() == ExternalInstallError::BUBBLE_ALERT;
   return bubble_count;
 }
@@ -536,11 +536,11 @@ class MockUpdateProviderVisitor : public MockProviderVisitor {
       const ScopedVector<ExternalInstallInfoUpdateUrl>& update_url_extensions,
       const ScopedVector<ExternalInstallInfoFile>& file_extensions,
       const std::set<std::string>& removed_extensions) override {
-    for (const auto& extension_info : update_url_extensions)
+    for (auto* extension_info : update_url_extensions)
       update_url_extension_ids_.insert(extension_info->extension_id);
     EXPECT_EQ(update_url_extension_ids_.size(), update_url_extensions.size());
 
-    for (const auto& extension_info : file_extensions)
+    for (auto* extension_info : file_extensions)
       file_extension_ids_.insert(extension_info->extension_id);
     EXPECT_EQ(file_extension_ids_.size(), file_extensions.size());
 
@@ -3143,7 +3143,7 @@ TEST_F(ExtensionServiceTest, RemoveExtensionFromBlacklist) {
 
   // The extension should be disabled, both "blacklist" and "blacklist_state"
   // prefs should be set.
-  const auto prefs = ExtensionPrefs::Get(profile());
+  auto* prefs = ExtensionPrefs::Get(profile());
   EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
   EXPECT_TRUE(prefs->IsExtensionBlacklisted(good0));
   EXPECT_EQ(extensions::BLACKLISTED_MALWARE,

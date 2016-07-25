@@ -51,7 +51,7 @@ void ChromeExtensionWebContentsObserver::RenderViewCreated(
     return;
 
   int process_id = render_view_host->GetProcess()->GetID();
-  auto policy = content::ChildProcessSecurityPolicy::GetInstance();
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
 
   // Components of chrome that are implemented as extensions or platform apps
   // are allowed to use chrome://resources/ and chrome://theme/ URLs.

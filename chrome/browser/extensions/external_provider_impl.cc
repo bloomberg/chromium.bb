@@ -127,10 +127,10 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
 
   RetrieveExtensionsFromPrefs(&external_update_url_extensions,
                               &external_file_extensions);
-  for (const auto& extension : external_update_url_extensions)
+  for (auto* extension : external_update_url_extensions)
     service_->OnExternalExtensionUpdateUrlFound(*extension, true);
 
-  for (const auto& extension : external_file_extensions)
+  for (auto* extension : external_file_extensions)
     service_->OnExternalExtensionFileFound(*extension);
 
   service_->OnExternalProviderReady(this);

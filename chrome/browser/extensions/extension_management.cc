@@ -219,7 +219,7 @@ std::unique_ptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
 bool ExtensionManagement::IsPermissionSetAllowed(
     const Extension* extension,
     const PermissionSet& perms) const {
-  for (const auto& blocked_api : GetBlockedAPIPermissions(extension)) {
+  for (auto* blocked_api : GetBlockedAPIPermissions(extension)) {
     if (perms.HasAPIPermission(blocked_api->id()))
       return false;
   }

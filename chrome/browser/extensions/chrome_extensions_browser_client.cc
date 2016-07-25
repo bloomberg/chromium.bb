@@ -350,7 +350,7 @@ void ChromeExtensionsBrowserClient::CleanUpWebView(
     int embedder_process_id,
     int view_instance_id) {
   // Clean up context menus for the WebView.
-  auto menu_manager =
+  auto* menu_manager =
       MenuManager::Get(Profile::FromBrowserContext(browser_context));
   menu_manager->RemoveAllContextItems(
       MenuItem::ExtensionKey("", embedder_process_id, view_instance_id));

@@ -157,7 +157,7 @@ bool DialRegistry::PruneExpiredDevices() {
   bool pruned_device = false;
   DeviceByLabelMap::iterator it = device_by_label_map_.begin();
   while (it != device_by_label_map_.end()) {
-    const auto& device = it->second;
+    auto* device = it->second;
     if (IsDeviceExpired(*device)) {
       VLOG(2) << "Device " << device->label() << " expired, removing";
       const size_t num_erased_by_id =

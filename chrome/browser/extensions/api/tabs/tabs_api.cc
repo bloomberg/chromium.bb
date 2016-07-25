@@ -336,7 +336,7 @@ bool WindowsGetLastFocusedFunction::RunSync() {
   // The WindowControllerList should contain a list of application,
   // browser and devtools windows.
   WindowController* controller = nullptr;
-  for (auto iter : WindowControllerList::GetInstance()->windows()) {
+  for (auto* iter : WindowControllerList::GetInstance()->windows()) {
     if (windows_util::CanOperateOnWindow(this, iter,
                                          extractor.type_filters())) {
       controller = iter;

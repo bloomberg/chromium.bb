@@ -722,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
       extensions::ProcessManager::Get(browser()->profile());
   std::set<content::RenderFrameHost*> frame_hosts =
       manager->GetRenderFrameHostsForExtension(extension->id());
-  for (auto host : frame_hosts) {
+  for (auto* host : frame_hosts) {
     if (host->GetFrameName() == "child_frame") {
       frame_host = host;
       break;

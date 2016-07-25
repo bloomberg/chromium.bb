@@ -99,7 +99,7 @@ CastDevicesPrivateUpdateDevicesFunction::Run() {
         ConvertReceiverAndActivityType(device.receiver, device.activity.get()));
   }
 
-  auto listeners = CastDeviceUpdateListeners::Get(browser_context());
+  auto* listeners = CastDeviceUpdateListeners::Get(browser_context());
   listeners->NotifyCallbacks(devices);
 
   return RespondNow(NoArguments());
