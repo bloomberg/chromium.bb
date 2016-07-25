@@ -276,7 +276,7 @@ namespace networkingPrivate {
   dictionary ManagedIPConfigProperties {
     ManagedDOMString? Gateway;
     ManagedDOMString? IPAddress;
-    ManagedDOMString[]? NameServers;
+    ManagedDOMStringList? NameServers;
     ManagedLong? RoutingPrefix;
     ManagedDOMString? Type;
     ManagedDOMString? WebProxyAutoDiscoveryUrl;
@@ -446,11 +446,11 @@ namespace networkingPrivate {
     ManagedDOMString? Proto;
     ManagedDOMString? PushPeerInfo;
     ManagedDOMString? RemoteCertEKU;
-    ManagedDOMString[]? RemoteCertKU;
+    ManagedDOMStringList? RemoteCertKU;
     ManagedDOMString? RemoteCertTLS;
     ManagedLong? RenegSec;
     ManagedBoolean? SaveCredentials;
-    ManagedDOMString[]? ServerCARefs;
+    ManagedDOMStringList? ServerCARefs;
     ManagedDOMString? ServerCertRef;
     ManagedLong? ServerPollTimeout;
     ManagedLong? Shaper;

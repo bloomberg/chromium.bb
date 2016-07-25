@@ -357,7 +357,7 @@ chrome.networkingPrivate.IPConfigProperties;
  * @typedef {{
  *   Gateway: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   IPAddress: (!chrome.networkingPrivate.ManagedDOMString|undefined),
- *   NameServers: (!Array<!chrome.networkingPrivate.ManagedDOMString>|undefined),
+ *   NameServers: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   RoutingPrefix: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   Type: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   WebProxyAutoDiscoveryUrl: (!chrome.networkingPrivate.ManagedDOMString|undefined)
@@ -595,11 +595,11 @@ chrome.networkingPrivate.OpenVPNProperties;
  *   Proto: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   PushPeerInfo: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   RemoteCertEKU: (!chrome.networkingPrivate.ManagedDOMString|undefined),
- *   RemoteCertKU: (!Array<!chrome.networkingPrivate.ManagedDOMString>|undefined),
+ *   RemoteCertKU: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   RemoteCertTLS: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   RenegSec: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   SaveCredentials: (!chrome.networkingPrivate.ManagedBoolean|undefined),
- *   ServerCARefs: (!Array<!chrome.networkingPrivate.ManagedDOMString>|undefined),
+ *   ServerCARefs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   ServerCertRef: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ServerPollTimeout: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   Shaper: (!chrome.networkingPrivate.ManagedLong|undefined),
