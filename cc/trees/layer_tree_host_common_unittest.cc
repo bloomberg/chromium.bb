@@ -100,6 +100,7 @@ class LayerTreeSettingsScaleContent : public LayerTreeSettings {
  public:
   LayerTreeSettingsScaleContent() {
     layer_transforms_should_scale_layer_contents = true;
+    verify_transform_tree_calculations = true;
   }
 };
 
@@ -5379,6 +5380,7 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
     layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
     settings.can_use_lcd_text = can_use_lcd_text_;
     settings.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text_;
+    settings.verify_transform_tree_calculations = true;
     return settings;
   }
 

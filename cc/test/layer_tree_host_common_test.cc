@@ -227,7 +227,7 @@ bool LayerTreeHostCommonTestBase::UpdateLayerListContains(int id) const {
 }
 
 LayerTreeHostCommonTest::LayerTreeHostCommonTest()
-    : LayerTreeHostCommonTestBase(LayerTreeSettings()) {}
+    : LayerTreeHostCommonTestBase(LayerTreeHostCommonTestSettings()) {}
 
 LayerTreeHostCommonTest::LayerTreeHostCommonTest(
     const LayerTreeSettings& settings)

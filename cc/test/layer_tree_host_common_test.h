@@ -156,6 +156,12 @@ class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
                              layer_impl->layer_tree_impl())
         .starting_animation_scale;
   }
+
+  LayerTreeSettings LayerTreeHostCommonTestSettings() {
+    LayerTreeSettings settings;
+    settings.verify_transform_tree_calculations = true;
+    return settings;
+  }
 };
 
 }  // namespace cc

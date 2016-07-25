@@ -595,9 +595,16 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
+    property_trees.verify_transform_tree_calculations = true;
     TransformTree& tree = property_trees.transform_tree;
+    EffectTree& effect_tree = property_trees.effect_tree;
 
     int grand_parent = tree.Insert(TransformNode(), 0);
+    int effect_grand_parent = effect_tree.Insert(EffectNode(), 0);
+    effect_tree.Node(effect_grand_parent)->has_render_surface = true;
+    effect_tree.Node(effect_grand_parent)->transform_id = grand_parent;
+    effect_tree.Node(effect_grand_parent)->surface_contents_scale =
+        gfx::Vector2dF(1.f, 1.f);
     tree.SetContentTargetId(grand_parent, grand_parent);
     tree.SetTargetId(grand_parent, grand_parent);
     tree.Node(grand_parent)->source_node_id = 0;
@@ -606,6 +613,11 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     rotation_about_x.RotateAboutXAxis(15);
 
     int parent = tree.Insert(TransformNode(), grand_parent);
+    int effect_parent = effect_tree.Insert(EffectNode(), effect_grand_parent);
+    effect_tree.Node(effect_parent)->transform_id = parent;
+    effect_tree.Node(effect_parent)->has_render_surface = true;
+    effect_tree.Node(effect_parent)->surface_contents_scale =
+        gfx::Vector2dF(1.f, 1.f);
     tree.Node(parent)->needs_surface_contents_scale = true;
     tree.SetTargetId(parent, grand_parent);
     tree.SetContentTargetId(parent, parent);
@@ -629,18 +641,20 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
+    property_trees.ResetCachedData();
 
     gfx::Transform flattened_rotation_about_x = rotation_about_x;
     flattened_rotation_about_x.FlattenTo2d();
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x, tree.ToTarget(child));
+    EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x,
+                                    tree.ToTarget(child, effect_parent));
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         flattened_rotation_about_x * rotation_about_x, tree.ToScreen(child));
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         flattened_rotation_about_x * rotation_about_x,
-        tree.ToTarget(grand_child));
+        tree.ToTarget(grand_child, effect_parent));
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_x *
                                         flattened_rotation_about_x *
@@ -660,7 +674,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     draw_property_utils::ComputeTransforms(&tree);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x * rotation_about_x,
-                                    tree.ToTarget(grand_child));
+                                    tree.ToTarget(grand_child, effect_parent));
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         flattened_rotation_about_x * rotation_about_x * rotation_about_x,
@@ -1101,9 +1115,13 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     // This tests that to_target transform is not snapped when it has a singular
     // transform.
     PropertyTrees property_trees;
+    property_trees.verify_transform_tree_calculations = true;
     TransformTree& tree = property_trees.transform_tree;
+    EffectTree& effect_tree = property_trees.effect_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
+    int effect_parent = effect_tree.Insert(EffectNode(), 0);
+    effect_tree.Node(effect_parent)->has_render_surface = true;
     tree.SetTargetId(parent, parent);
     tree.Node(parent)->scrolls = true;
 
@@ -1117,20 +1135,21 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
 
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
+    property_trees.ResetCachedData();
 
     gfx::Transform from_target;
-    EXPECT_FALSE(tree.ToTarget(child).GetInverse(&from_target));
+    EXPECT_FALSE(tree.ToTarget(child, effect_parent).GetInverse(&from_target));
     // The following checks are to ensure that snapping is skipped because of
     // singular transform (and not because of other reasons which also cause
     // snapping to be skipped).
     EXPECT_TRUE(child_node->scrolls);
-    EXPECT_TRUE(tree.ToTarget(child).IsScaleOrTranslation());
+    EXPECT_TRUE(tree.ToTarget(child, effect_parent).IsScaleOrTranslation());
     EXPECT_FALSE(child_node->to_screen_is_potentially_animated);
     EXPECT_FALSE(child_node->ancestors_are_invertible);
 
-    gfx::Transform rounded = tree.ToTarget(child);
+    gfx::Transform rounded = tree.ToTarget(child, effect_parent);
     rounded.RoundTranslationComponents();
-    EXPECT_NE(tree.ToTarget(child), rounded);
+    EXPECT_NE(tree.ToTarget(child, effect_parent), rounded);
   }
 };
 

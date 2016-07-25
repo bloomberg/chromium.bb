@@ -31,7 +31,9 @@ void TestLayerTreeHostBase::SetUp() {
 }
 
 LayerTreeSettings TestLayerTreeHostBase::CreateSettings() {
-  return LayerTreeSettings();
+  LayerTreeSettings settings;
+  settings.verify_transform_tree_calculations = true;
+  return settings;
 }
 
 std::unique_ptr<OutputSurface> TestLayerTreeHostBase::CreateOutputSurface() {

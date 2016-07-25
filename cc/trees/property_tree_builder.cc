@@ -1421,6 +1421,10 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     PropertyTrees* property_trees) {
   property_trees->is_main_thread = true;
   property_trees->is_active = false;
+  property_trees->verify_transform_tree_calculations =
+      root_layer->layer_tree_host()
+          ->settings()
+          .verify_transform_tree_calculations;
   SkColor color = root_layer->layer_tree_host()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);
@@ -1433,6 +1437,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   for (auto* layer : *root_layer->layer_tree_host())
     CheckScrollAndClipPointersForLayer(layer);
 #endif
+  property_trees->ResetCachedData();
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(
@@ -1449,6 +1454,10 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     PropertyTrees* property_trees) {
   property_trees->is_main_thread = false;
   property_trees->is_active = root_layer->IsActive();
+  property_trees->verify_transform_tree_calculations =
+      root_layer->layer_tree_impl()
+          ->settings()
+          .verify_transform_tree_calculations;
   SkColor color = root_layer->layer_tree_impl()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);

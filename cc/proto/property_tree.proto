@@ -204,7 +204,7 @@ message EffectTreeData {
 }
 
 // Proto for class PropertyTrees.
-// NEXT ID: 16
+// NEXT ID: 17
 message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
@@ -218,6 +218,7 @@ message PropertyTrees {
   optional int64 sequence_number = 6;
   optional bool is_main_thread = 13;
   optional bool is_active = 14;
+  optional bool verify_transform_tree_calculations = 16;
 
   optional Vector2dF inner_viewport_container_bounds_delta = 8;
   optional Vector2dF outer_viewport_container_bounds_delta = 9;

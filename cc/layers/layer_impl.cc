@@ -160,6 +160,15 @@ void LayerImpl::SetEffectTreeIndex(int index) {
   effect_tree_index_ = index;
 }
 
+int LayerImpl::render_target_effect_tree_index() const {
+  EffectNode* effect_node =
+      layer_tree_impl_->property_trees()->effect_tree.Node(effect_tree_index_);
+  if (effect_node->render_surface)
+    return effect_node->id;
+  else
+    return effect_node->target_id;
+}
+
 void LayerImpl::SetScrollTreeIndex(int index) {
   scroll_tree_index_ = index;
 }
@@ -1162,23 +1171,13 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
 
 RenderSurfaceImpl* LayerImpl::render_target() {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
-  EffectNode* node = effect_tree.Node(effect_tree_index_);
-
-  if (node->render_surface)
-    return node->render_surface;
-  else
-    return effect_tree.Node(node->target_id)->render_surface;
+  return effect_tree.Node(render_target_effect_tree_index())->render_surface;
 }
 
 const RenderSurfaceImpl* LayerImpl::render_target() const {
   const EffectTree& effect_tree =
       layer_tree_impl_->property_trees()->effect_tree;
-  const EffectNode* node = effect_tree.Node(effect_tree_index_);
-
-  if (node->render_surface)
-    return node->render_surface;
-  else
-    return effect_tree.Node(node->target_id)->render_surface;
+  return effect_tree.Node(render_target_effect_tree_index())->render_surface;
 }
 
 bool LayerImpl::IsHidden() const {

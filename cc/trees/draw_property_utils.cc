@@ -485,8 +485,8 @@ void CalculateVisibleRects(
     }
 
     // The clip rect should be intersected with layer rect in target space.
-    gfx::Transform content_to_target =
-        transform_tree.ToTarget(transform_node->id);
+    gfx::Transform content_to_target = transform_tree.ToTarget(
+        transform_node->id, layer->render_target_effect_tree_index());
     content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                 layer->offset_to_transform_parent().y());
     gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
@@ -510,7 +510,8 @@ void CalculateVisibleRects(
 
     gfx::Transform target_to_layer;
     if (transform_node->ancestors_are_invertible) {
-      target_to_layer = transform_tree.FromTarget(transform_node->id);
+      target_to_layer = transform_tree.FromTarget(
+          transform_node->id, layer->render_target_effect_tree_index());
     } else {
       bool success = transform_tree.ComputeTransform(
           target_node_id, transform_node->id, &target_to_layer);
@@ -565,7 +566,9 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
   const TransformNode* node = tree.Node(transform_tree_index);
   return layer->use_local_transform_for_backface_visibility()
              ? node->local.IsBackFaceVisible()
-             : tree.ToTarget(transform_tree_index).IsBackFaceVisible();
+             : tree.ToTarget(transform_tree_index,
+                             layer->render_target_effect_tree_index())
+                   .IsBackFaceVisible();
 }
 
 static inline bool TransformToScreenIsKnown(Layer* layer,
@@ -831,7 +834,9 @@ void ComputeClips(PropertyTrees* property_trees,
     if (clip_node->resets_clip && non_root_surfaces_enabled) {
       if (clip_node->applies_local_clip) {
         clip_node->clip_in_target_space = MathUtil::MapClippedRect(
-            transform_tree.ToTarget(clip_node->transform_id), clip_node->clip);
+            transform_tree.ToTarget(clip_node->transform_id,
+                                    clip_node->target_effect_id),
+            clip_node->clip);
         ResetIfHasNanCoordinate(&clip_node->clip_in_target_space);
         clip_node->combined_clip_in_target_space =
             gfx::IntersectRects(clip_node->clip_in_target_space,
@@ -867,7 +872,8 @@ void ComputeClips(PropertyTrees* property_trees,
         source_to_target = transform_tree.ToScreen(clip_node->transform_id);
       } else if (transform_tree.ContentTargetId(transform_node->id) ==
                  clip_node->target_transform_id) {
-        source_to_target = transform_tree.ToTarget(clip_node->transform_id);
+        source_to_target = transform_tree.ToTarget(clip_node->transform_id,
+                                                   clip_node->target_effect_id);
       } else {
         success = property_trees->ComputeTransformToTarget(
             transform_node->id, clip_node->target_effect_id, &source_to_target);
@@ -1192,7 +1198,8 @@ gfx::Transform DrawTransform(const LayerImpl* layer,
   if (!owns_non_root_surface) {
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.
-    xform = transform_tree.ToTarget(layer->transform_tree_index());
+    xform = transform_tree.ToTarget(layer->transform_tree_index(),
+                                    layer->render_target_effect_tree_index());
     if (layer->should_flatten_transform_from_property_tree())
       xform.FlattenTo2d();
     xform.Translate(layer->offset_to_transform_parent().x(),

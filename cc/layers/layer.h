@@ -430,6 +430,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetEffectTreeIndex(int index);
   int effect_tree_index() const;
 
+  // TODO(sunxd): Remove this when we do not compute target space transforms on
+  // main thread in tests.
+  int render_target_effect_tree_index() const;
+
   void SetScrollTreeIndex(int index);
   int scroll_tree_index() const;
 

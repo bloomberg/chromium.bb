@@ -67,6 +67,10 @@ class CC_EXPORT PropertyTree {
   ~PropertyTree();
   PropertyTree<T>& operator=(const PropertyTree<T>&);
 
+  // Property tree node starts from index 0.
+  static const int kInvalidNodeId = -1;
+  static const int kRootNodeId = 0;
+
   bool operator==(const PropertyTree<T>& other) const;
 
   int Insert(const T& tree_node, int parent_id);
@@ -211,10 +215,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return nodes_affected_by_outer_viewport_bounds_delta_;
   }
 
-  const gfx::Transform& FromTarget(int node_id) const;
+  const gfx::Transform& FromTarget(int node_id, int effect) const;
   void SetFromTarget(int node_id, const gfx::Transform& transform);
 
-  const gfx::Transform& ToTarget(int node_id) const;
+  // TODO(sunxd): Remove target space transforms in cached data when we
+  // completely implement computing draw transforms on demand.
+  const gfx::Transform& ToTarget(int node_id, int effect_id) const;
   void SetToTarget(int node_id, const gfx::Transform& transform);
 
   const gfx::Transform& FromScreen(int node_id) const;
@@ -462,9 +468,34 @@ struct CombinedAnimationScale {
   }
 };
 
+struct DrawTransforms {
+  bool invertible;
+  gfx::Transform from_target;
+  gfx::Transform to_target;
+
+  DrawTransforms(gfx::Transform from, gfx::Transform to)
+      : invertible(true), from_target(from), to_target(to) {}
+  bool operator==(const DrawTransforms& other) const {
+    return invertible == other.invertible && from_target == other.from_target &&
+           to_target == other.to_target;
+  }
+};
+
+struct DrawTransformData {
+  int update_number;
+  DrawTransforms transforms;
+
+  // TODO(sunxd): Move screen space transforms here if it can improve
+  // performance.
+  DrawTransformData()
+      : update_number(-1), transforms(gfx::Transform(), gfx::Transform()) {}
+};
+
 struct PropertyTreesCachedData {
   int property_tree_update_number;
   std::vector<AnimationScaleData> animation_scales;
+  mutable std::vector<std::unordered_map<int, DrawTransformData>>
+      draw_transforms;
 
   PropertyTreesCachedData();
   ~PropertyTreesCachedData();
@@ -509,6 +540,7 @@ class CC_EXPORT PropertyTrees final {
   int sequence_number;
   bool is_main_thread;
   bool is_active;
+  bool verify_transform_tree_calculations;
 
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
@@ -539,6 +571,11 @@ class CC_EXPORT PropertyTrees final {
   void SetAnimationScalesForTesting(int transform_id,
                                     float maximum_animation_scale,
                                     float starting_animation_scale);
+
+  // GetDrawTransforms may change the value of cached_data_.
+  const DrawTransforms& GetDrawTransforms(int transform_id,
+                                          int effect_id) const;
+
   void ResetCachedData();
   void UpdateCachedNumber();
   gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(

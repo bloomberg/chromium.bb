@@ -119,6 +119,7 @@ class CC_EXPORT LayerImpl {
 
   void SetEffectTreeIndex(int index);
   int effect_tree_index() const { return effect_tree_index_; }
+  int render_target_effect_tree_index() const;
 
   void SetScrollTreeIndex(int index);
   int scroll_tree_index() const { return scroll_tree_index_; }

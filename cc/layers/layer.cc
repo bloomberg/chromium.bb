@@ -981,6 +981,15 @@ int Layer::effect_tree_index() const {
   return effect_tree_index_;
 }
 
+int Layer::render_target_effect_tree_index() const {
+  EffectNode* effect_node =
+      layer_tree_host_->property_trees()->effect_tree.Node(effect_tree_index_);
+  if (effect_node->has_render_surface)
+    return effect_node->id;
+  else
+    return effect_node->target_id;
+}
+
 void Layer::SetScrollTreeIndex(int index) {
   DCHECK(IsPropertyChangeAllowed());
   if (scroll_tree_index_ == index)
