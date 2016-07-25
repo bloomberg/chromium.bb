@@ -1107,7 +1107,8 @@ public abstract class CronetEngine {
         CronetEngine cronetEngine = null;
         try {
             Class<? extends CronetEngine> engineClass =
-                    CronetEngine.class.getClassLoader()
+                    builder.getContext()
+                            .getClassLoader()
                             .loadClass(CRONET_URL_REQUEST_CONTEXT)
                             .asSubclass(CronetEngine.class);
             Constructor<? extends CronetEngine> constructor =
