@@ -23,7 +23,6 @@ namespace {
 class StringData final : public content::RequestPeer::ReceivedData {
  public:
   explicit StringData(const std::string& data) : data_(data) {}
-  void Append(const char* data, int length) { data_.append(data, length); }
 
   const char* payload() const override { return data_.data(); }
   int length() const override { return data_.size(); }
@@ -33,7 +32,7 @@ class StringData final : public content::RequestPeer::ReceivedData {
   int encoded_body_length() const override { return data_.size(); }
 
  private:
-  std::string data_;
+  const std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(StringData);
 };
