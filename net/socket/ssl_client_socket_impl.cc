@@ -1219,16 +1219,16 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   RecordChannelIDSupport(channel_id_service_, channel_id_sent_,
                          ssl_config_.channel_id_enabled);
 
-  const uint8_t* ocsp_response_raw;
-  size_t ocsp_response_len;
-  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
-  std::string ocsp_response;
-  if (ocsp_response_len > 0) {
-    ocsp_response_.assign(reinterpret_cast<const char*>(ocsp_response_raw),
-                          ocsp_response_len);
+  // Only record OCSP histograms if OCSP was requested.
+  if (ssl_config_.signed_cert_timestamps_enabled ||
+      cert_verifier_->SupportsOCSPStapling()) {
+    const uint8_t* ocsp_response;
+    size_t ocsp_response_len;
+    SSL_get0_ocsp_response(ssl_, &ocsp_response, &ocsp_response_len);
+
+    set_stapled_ocsp_response_received(ocsp_response_len != 0);
+    UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_response_len != 0);
   }
-  set_stapled_ocsp_response_received(ocsp_response_len != 0);
-  UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_response_len != 0);
 
   const uint8_t* sct_list;
   size_t sct_list_len;
@@ -1313,12 +1313,19 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
     return OK;
   }
 
+  std::string ocsp_response;
+  const uint8_t* ocsp_response_raw;
+  size_t ocsp_response_len;
+  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
+  ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
+                       ocsp_response_len);
+
   start_cert_verification_time_ = base::TimeTicks::Now();
 
   return cert_verifier_->Verify(
       CertVerifier::RequestParams(server_cert_, host_and_port_.host(),
                                   ssl_config_.GetCertVerifyFlags(),
-                                  ocsp_response_, CertificateList()),
+                                  ocsp_response, CertificateList()),
       // TODO(davidben): Route the CRLSet through SSLConfig so
       // SSLClientSocket doesn't depend on SSLConfigService.
       SSLConfigService::GetCRLSet().get(), &server_cert_verify_result_,
@@ -1373,10 +1380,6 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
     DCHECK(!certificate_verified_);
     certificate_verified_ = true;
     MaybeCacheSession();
-    SSLInfo ssl_info;
-    DCHECK(GetSSLInfo(&ssl_info));
-    transport_security_state_->CheckExpectStaple(host_and_port_, ssl_info,
-                                                 ocsp_response_);
   }
 
   completed_connect_ = true;
@@ -1792,6 +1795,15 @@ int SSLClientSocketImpl::TransportReadComplete(int result) {
 }
 
 int SSLClientSocketImpl::VerifyCT() {
+  const uint8_t* ocsp_response_raw;
+  size_t ocsp_response_len;
+  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
+  std::string ocsp_response;
+  if (ocsp_response_len > 0) {
+    ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
+                         ocsp_response_len);
+  }
+
   const uint8_t* sct_list_raw;
   size_t sct_list_len;
   SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list_raw, &sct_list_len);
@@ -1803,7 +1815,7 @@ int SSLClientSocketImpl::VerifyCT() {
   // gets all the data it needs for SCT verification and does not do any
   // external communication.
   cert_transparency_verifier_->Verify(
-      server_cert_verify_result_.verified_cert.get(), ocsp_response_, sct_list,
+      server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
       &ct_verify_result_, net_log_);
 
   ct_verify_result_.ct_policies_applied = true;

@@ -526,7 +526,6 @@ void QuicCryptoClientStream::DoVerifyProofComplete(
     if (!handshake_confirmed()) {
       next_state_ = STATE_GET_CHANNEL_ID;
     } else {
-      // TODO: Enable Expect-Staple. https://crbug.com/631101
       next_state_ = STATE_NONE;
     }
   }
