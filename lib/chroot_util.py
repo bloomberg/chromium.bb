@@ -148,7 +148,7 @@ def SetupBoard(brick=None, board=None, update_chroot=True,
 
 
 def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
-                 retries=None):
+                 retries=None, jobs=None):
   """Runs the unit tests for |packages|.
 
   Args:
@@ -159,6 +159,7 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
     verbose: If True, show the output from emerge, even when the tests succeed.
     retries: Number of time we should retry a failed packages. If None, use
       parallel_emerge's default.
+    jobs: Max number of parallel jobs. (optional)
 
   Raises:
     RunCommandError if the unit tests failed.
@@ -176,6 +177,9 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
 
   if retries is not None:
     command += ['--retries=%s' % retries]
+
+  if jobs is not None:
+    command += ['--jobs=%s' % jobs]
 
   command += list(packages)
 
