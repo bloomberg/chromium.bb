@@ -3059,8 +3059,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)viewDidChangeBackingProperties {
   NSScreen* screen = [[self window] screen];
   if (screen) {
+    gfx::ICCProfile icc_profile =
+        gfx::ICCProfile::FromCGColorSpace([[screen colorSpace] CGColorSpace]);
     renderWidgetHostView_->browser_compositor_->SetDisplayColorSpace(
-        gfx::ColorSpace::FromCGColorSpace([[screen colorSpace] CGColorSpace]));
+        icc_profile.GetColorSpace());
   }
 }
 

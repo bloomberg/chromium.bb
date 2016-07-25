@@ -70,8 +70,6 @@ component("gfx") {
     "color_palette.h",
     "color_space.cc",
     "color_space.h",
-    "color_space_mac.mm",
-    "color_space_win.cc",
     "color_utils.cc",
     "color_utils.h",
     "favicon_size.cc",
@@ -98,6 +96,10 @@ component("gfx") {
     "gdi_util.h",
     "gfx_paths.cc",
     "gfx_paths.h",
+    "icc_profile.cc",
+    "icc_profile.h",
+    "icc_profile_mac.mm",
+    "icc_profile_win.cc",
     "icon_util.cc",
     "icon_util.h",
     "image/image.cc",
@@ -496,6 +498,7 @@ group("memory_buffer") {
     ]
   }
 }
+
 # Cannot be a static_library in component builds due to exported functions
 source_set("memory_buffer_sources") {
   visibility = [ ":*" ]  # Depend on through ":memory_buffer".

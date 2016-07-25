@@ -37,6 +37,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -587,6 +588,7 @@ class CC_EXPORT ResourceProvider
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+    gfx::ColorSpace color_space;
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/icc_profile.h"
 
 #include <windows.h>
 #include <stddef.h>
@@ -30,36 +30,34 @@ void ReadBestMonitorICCProfile(std::vector<char>* profile) {
   if (!base::ReadFileToString(base::FilePath(path), &profile_data))
     return;
   size_t length = profile_data.size();
-  if (!ColorSpace::IsValidProfileLength(length))
-    return;
   profile->assign(profile_data.data(), profile_data.data() + length);
 }
 
 base::LazyInstance<base::Lock> g_best_monitor_color_space_lock =
     LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<gfx::ColorSpace> g_best_monitor_color_space =
+base::LazyInstance<gfx::ICCProfile> g_best_monitor_color_space =
     LAZY_INSTANCE_INITIALIZER;
 bool g_has_initialized_best_monitor_color_space = false;
 
 }  // namespace
 
 // static
-ColorSpace ColorSpace::FromBestMonitor() {
+ICCProfile ICCProfile::FromBestMonitor() {
   base::AutoLock lock(g_best_monitor_color_space_lock.Get());
   return g_best_monitor_color_space.Get();
 }
 
 // static
-bool ColorSpace::CachedProfilesNeedUpdate() {
+bool ICCProfile::CachedProfilesNeedUpdate() {
   base::AutoLock lock(g_best_monitor_color_space_lock.Get());
   return !g_has_initialized_best_monitor_color_space;
 }
 
 // static
-void ColorSpace::UpdateCachedProfilesOnBackgroundThread() {
+void ICCProfile::UpdateCachedProfilesOnBackgroundThread() {
   std::vector<char> icc_profile;
   ReadBestMonitorICCProfile(&icc_profile);
-  gfx::ColorSpace color_space = FromICCProfile(icc_profile);
+  gfx::ICCProfile color_space = FromData(icc_profile);
 
   base::AutoLock lock(g_best_monitor_color_space_lock.Get());
   g_best_monitor_color_space.Get() = color_space;

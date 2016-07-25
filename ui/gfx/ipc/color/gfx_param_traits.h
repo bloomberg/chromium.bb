@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/ipc/color/gfx_ipc_color_export.h"
+#include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
 
 namespace gfx {
 class ColorSpace;

@@ -13,6 +13,7 @@
 #include "cc/base/resource_id.h"
 #include "cc/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -39,6 +40,7 @@ struct CC_EXPORT TransferableResource {
   bool read_lock_fences_enabled;
   bool is_software;
   bool is_overlay_candidate;
+  gfx::ColorSpace color_space;
 };
 
 }  // namespace cc

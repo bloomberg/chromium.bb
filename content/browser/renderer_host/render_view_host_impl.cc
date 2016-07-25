@@ -370,7 +370,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.min_size = GetWidget()->min_size_for_auto_resize();
   params.max_size = GetWidget()->max_size_for_auto_resize();
   params.page_zoom_level = delegate_->GetPendingPageZoomLevel();
-  params.image_decode_color_space = gfx::ColorSpace::FromBestMonitor();
+  params.image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
   GetWidget()->GetResizeParams(&params.initial_size);
 
   if (!Send(new ViewMsg_New(params)))

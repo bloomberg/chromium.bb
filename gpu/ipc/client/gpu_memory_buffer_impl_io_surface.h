@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "ui/gfx/color_space.h"
 
 namespace gpu {
 
@@ -56,6 +57,9 @@ class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   uint32_t lock_flags_;
+  // Cache the color space, because re-assigning the same value can be
+  // expensive.
+  gfx::ColorSpace color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplIOSurface);
 };

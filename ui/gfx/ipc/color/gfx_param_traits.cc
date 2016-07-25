@@ -11,48 +11,31 @@ namespace IPC {
 
 void ParamTraits<gfx::ColorSpace>::GetSize(base::PickleSizer* s,
                                            const gfx::ColorSpace& p) {
-  GetParamSize(s, p.type_);
-  switch (p.type_) {
-    case gfx::ColorSpace::Type::UNDEFINED:
-      break;
-    case gfx::ColorSpace::Type::ICC_PROFILE: {
-      GetParamSize(s, p.GetICCProfile());
-      break;
-    }
-  }
+  GetParamSize(s, p.valid_);
+  if (!p.valid_)
+    return;
+  GetParamSize(s, p.icc_profile_id_);
 }
 
 void ParamTraits<gfx::ColorSpace>::Write(base::Pickle* m,
                                          const gfx::ColorSpace& p) {
-  std::vector<char> icc_profile = p.GetICCProfile();
-  WriteParam(m, p.type_);
-  switch (p.type_) {
-    case gfx::ColorSpace::Type::UNDEFINED:
-      break;
-    case gfx::ColorSpace::Type::ICC_PROFILE: {
-      WriteParam(m, p.GetICCProfile());
-      break;
-    }
-  }
+  WriteParam(m, p.valid_);
+  if (!p.valid_)
+    return;
+  WriteParam(m, p.icc_profile_id_);
 }
 
 bool ParamTraits<gfx::ColorSpace>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         gfx::ColorSpace* r) {
-  if (!ReadParam(m, iter, &r->type_))
+  if (!ReadParam(m, iter, &r->valid_))
     return false;
-  switch (r->type_) {
-    case gfx::ColorSpace::Type::UNDEFINED:
-      return true;
-    case gfx::ColorSpace::Type::ICC_PROFILE: {
-      std::vector<char> icc_profile;
-      if (!ReadParam(m, iter, &icc_profile))
-        return false;
-      *r = gfx::ColorSpace::FromICCProfile(icc_profile);
-      return true;
-    }
-  }
-  return false;
+  if (!r->valid_)
+    return true;
+
+  if (!ReadParam(m, iter, &r->icc_profile_id_))
+    return false;
+  return true;
 }
 
 void ParamTraits<gfx::ColorSpace>::Log(const gfx::ColorSpace& p,

@@ -221,10 +221,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 #if defined(OS_WIN)
   // Update the display color profile cache so that it is likely to be up to
   // date when the renderer process requests the color profile.
-  if (gfx::ColorSpace::CachedProfilesNeedUpdate()) {
+  if (gfx::ICCProfile::CachedProfilesNeedUpdate()) {
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
-        base::Bind(&gfx::ColorSpace::UpdateCachedProfilesOnBackgroundThread));
+        base::Bind(&gfx::ICCProfile::UpdateCachedProfilesOnBackgroundThread));
   }
 #endif
 

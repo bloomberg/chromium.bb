@@ -13,6 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -62,6 +63,10 @@ class CC_EXPORT TextureMailbox {
   void set_nearest_neighbor(bool nearest_neighbor) {
     nearest_neighbor_ = nearest_neighbor;
   }
+  const gfx::ColorSpace& color_space() const { return color_space_; }
+  void set_color_space(const gfx::ColorSpace& color_space) {
+    color_space_ = color_space;
+  }
 
   // This is valid if allow_overlau() or IsSharedMemory() is true.
   gfx::Size size_in_pixels() const { return size_in_pixels_; }
@@ -76,6 +81,7 @@ class CC_EXPORT TextureMailbox {
   bool is_overlay_candidate_;
   bool secure_output_only_;
   bool nearest_neighbor_;
+  gfx::ColorSpace color_space_;
 };
 
 }  // namespace cc

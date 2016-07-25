@@ -5,16 +5,11 @@
 #ifndef UI_GFX_COLOR_SPACE_H_
 #define UI_GFX_COLOR_SPACE_H_
 
-#include <vector>
+#include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
-
-#if defined(OS_MACOSX)
-#include <CoreGraphics/CGColorSpace.h>
-#endif
 
 namespace IPC {
 template <class P>
@@ -23,55 +18,31 @@ struct ParamTraits;
 
 namespace gfx {
 
+class ICCProfile;
+
+// Used to represet a color space for the purpose of color conversion.
+// This is designed to be safe and compact enough to send over IPC
+// between any processes.
 class GFX_EXPORT ColorSpace {
  public:
   ColorSpace();
-  ColorSpace(ColorSpace&& other);
-  ColorSpace(const ColorSpace& other);
-  ColorSpace& operator=(const ColorSpace& other);
-  ~ColorSpace();
+  static ColorSpace CreateSRGB();
+
+  // TODO: Remove these, and replace with more generic constructors.
+  static ColorSpace CreateJpeg();
+  static ColorSpace CreateREC601();
+  static ColorSpace CreateREC709();
+
   bool operator==(const ColorSpace& other) const;
-  bool operator<(const ColorSpace& other) const;
-
-  // Returns the color profile of the monitor that can best represent color.
-  // This profile should be used for creating content that does not know on
-  // which monitor it will be displayed.
-  static ColorSpace FromBestMonitor();
-  static ColorSpace FromICCProfile(const std::vector<char>& icc_profile);
-#if defined(OS_MACOSX)
-  static ColorSpace FromCGColorSpace(CGColorSpaceRef cg_color_space);
-#endif
-
-  const std::vector<char>& GetICCProfile() const;
-
-#if defined(OS_WIN)
-  // This will read monitor ICC profiles from disk and cache the results for the
-  // other functions to read. This should not be called on the UI or IO thread.
-  static void UpdateCachedProfilesOnBackgroundThread();
-  static bool CachedProfilesNeedUpdate();
-#endif
-
-  static bool IsValidProfileLength(size_t length);
 
  private:
-  struct Key;
-  class GlobalData;
-  enum class Type {
-    UNDEFINED,
-    ICC_PROFILE,
-    LAST = ICC_PROFILE
-  };
-  Type type_ = Type::UNDEFINED;
+  bool valid_ = false;
+  // This is used to look up the ICCProfile from which this ColorSpace was
+  // created, if possible.
+  uint64_t icc_profile_id_ = 0;
 
-  // GlobalData stores large or expensive-to-compute data about a color space
-  // (e.g, ICC profile). This structure is shared by all identical ColorSpace
-  // objects in the process. It is lazily initialized for named color spaces.
-  mutable scoped_refptr<GlobalData> global_data_;
-
-  friend struct Key;
-  friend class GlobalData;
+  friend class ICCProfile;
   friend struct IPC::ParamTraits<gfx::ColorSpace>;
-  friend struct IPC::ParamTraits<gfx::ColorSpace::Type>;
 };
 
 }  // namespace gfx

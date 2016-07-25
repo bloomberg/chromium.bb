@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/icc_profile.h"
 #include "ui/gfx/mac/io_surface.h"
 
 namespace gpu {
@@ -112,7 +112,11 @@ int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
 
 void GpuMemoryBufferImplIOSurface::SetColorSpaceForScanout(
     const gfx::ColorSpace& color_space) {
-  const std::vector<char>& icc_profile = color_space.GetICCProfile();
+  if (color_space == color_space_)
+    return;
+  color_space_ = color_space;
+  std::vector<char> icc_profile =
+      gfx::ICCProfile::FromColorSpace(color_space).GetData();
   if (icc_profile.size()) {
     base::ScopedCFTypeRef<CFDataRef> cf_data_icc_profile(CFDataCreate(
         nullptr, reinterpret_cast<const UInt8*>(icc_profile.data()),

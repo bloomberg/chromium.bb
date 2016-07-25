@@ -1474,6 +1474,7 @@ void ResourceProvider::ReceiveFromChild(
                                            it->mailbox_holder.texture_target));
       resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
       resource->is_overlay_candidate = it->is_overlay_candidate;
+      resource->color_space = it->color_space;
     }
     resource->child_id = child;
     // Don't allocate a texture for a child.
@@ -1600,6 +1601,7 @@ void ResourceProvider::TransferResource(Resource* source,
   resource->size = source->size;
   resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
   resource->is_overlay_candidate = source->is_overlay_candidate;
+  resource->color_space = source->color_space;
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;
