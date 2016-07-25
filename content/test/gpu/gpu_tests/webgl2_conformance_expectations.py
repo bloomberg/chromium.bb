@@ -45,15 +45,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['amd'], bug=617290)
 
     # Windows only.
-    self.Fail('conformance/glsl/bugs/' +
-        'pow-of-small-constant-in-user-defined-function.html',
-        ['win'], bug=485641)
-    self.Fail('conformance/rendering/point-specific-shader-variables.html',
-        ['win'], bug=616335)
 
-    # ANGLE bug id
+    # This should be fixed in the latest driver.
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
-        ['win'], bug=1246)
+        ['win'], bug=1246) # ANGLE bug.
 
     # Windows 8 only.
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
