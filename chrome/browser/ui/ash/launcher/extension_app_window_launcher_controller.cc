@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
-#include "ash/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -163,8 +163,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     } else if (app_shelf_id == app_id) {
       // show_in_shelf in false and not a panel
       shelf_id =
-          ash::Shell::GetInstance()->GetShelfDelegate()->GetShelfIDForAppID(
-              app_id);
+          ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppID(app_id);
       // Check if the shelf_id corresponds to an already opened
       // showInShelf=true window that has the same app_id. The current
       // showInShelf=false window should not fold under this shelf item,

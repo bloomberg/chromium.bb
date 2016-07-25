@@ -9,7 +9,6 @@
 #include "ash/common/shell_delegate.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 
 namespace ash {
@@ -48,10 +47,6 @@ app_list::AppListPresenter* ShellTestApi::app_list_presenter() {
 
 void ShellTestApi::DisableDisplayAnimator() {
   shell_->display_configuration_controller()->ResetAnimatorForTest();
-}
-
-void ShellTestApi::SetShelfDelegate(ShelfDelegate* delegate) {
-  shell_->shelf_delegate_.reset(delegate);
 }
 
 void ShellTestApi::SetSessionStateDelegate(

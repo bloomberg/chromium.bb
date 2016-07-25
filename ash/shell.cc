@@ -22,6 +22,7 @@
 #include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
@@ -57,7 +58,6 @@
 #include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell_factory.h"
@@ -372,6 +372,18 @@ void Shell::OnRootWindowAdded(WmWindow* root_window) {
 }
 
 void Shell::CreateShelf() {
+  // Must occur after SessionStateDelegate creation and user login.
+  DCHECK(session_state_delegate_);
+  DCHECK_GT(session_state_delegate_->NumberOfLoggedInUsers(), 0);
+  wm_shell_->CreateShelfDelegate();
+
+  // TODO(jamescook): This is here for historical reasons. Move it to WmShell.
+  // http://crbug.com/629257
+  if (!shelf_window_watcher_) {
+    shelf_window_watcher_.reset(
+        new ShelfWindowWatcher(wm_shell_->shelf_model()));
+  }
+
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
@@ -501,16 +513,6 @@ bool Shell::HasPrimaryStatusArea() {
 
 SystemTray* Shell::GetPrimarySystemTray() {
   return GetPrimaryRootWindowController()->GetSystemTray();
-}
-
-ShelfDelegate* Shell::GetShelfDelegate() {
-  if (!shelf_delegate_) {
-    ShelfModel* shelf_model = wm_shell_->shelf_model();
-    shelf_delegate_.reset(
-        wm_shell_->delegate()->CreateShelfDelegate(shelf_model));
-    shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model));
-  }
-  return shelf_delegate_.get();
 }
 
 void Shell::SetTouchHudProjectionEnabled(bool enabled) {
@@ -667,10 +669,6 @@ Shell::~Shell() {
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
   wm_shell_->DeleteMruWindowTracker();
-
-  // Chrome implementation of shelf delegate depends on FocusClient,
-  // so must be deleted before |focus_client_| (below).
-  shelf_delegate_.reset();
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.

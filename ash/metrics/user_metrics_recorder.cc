@@ -5,6 +5,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
@@ -13,7 +14,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
@@ -157,7 +157,9 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
 
 // Records the number of items in the shelf as an UMA statistic.
 void RecordShelfItemCounts() {
-  ShelfDelegate* shelf_delegate = Shell::GetInstance()->GetShelfDelegate();
+  ShelfDelegate* shelf_delegate = WmShell::Get()->shelf_delegate();
+  DCHECK(shelf_delegate);
+
   int pinned_item_count = 0;
   int unpinned_item_count = 0;
 

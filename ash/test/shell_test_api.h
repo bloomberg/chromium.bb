@@ -40,9 +40,6 @@ class ShellTestApi {
   MaximizeModeWindowManager* maximize_mode_window_manager();
   void DisableDisplayAnimator();
 
-  // Set ShelfDelegate.
-  void SetShelfDelegate(ShelfDelegate* delegate);
-
   // Set SessionStateDelegate.
   void SetSessionStateDelegate(SessionStateDelegate* session_state_delegate);
 

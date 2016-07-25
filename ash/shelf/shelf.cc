@@ -8,14 +8,15 @@
 #include <cmath>
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_navigator.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
@@ -39,13 +40,14 @@ namespace ash {
 const char Shelf::kNativeViewName[] = "ShelfView";
 
 Shelf::Shelf(ShelfModel* shelf_model,
-             ShelfDelegate* shelf_delegate,
              WmShelf* wm_shelf,
              ShelfWidget* shelf_widget)
-    : delegate_(shelf_delegate),
-      wm_shelf_(wm_shelf),
+    : wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
-      shelf_view_(new ShelfView(shelf_model, delegate_, wm_shelf, this)),
+      shelf_view_(new ShelfView(shelf_model,
+                                WmShell::Get()->shelf_delegate(),
+                                wm_shelf,
+                                this)),
       shelf_locking_manager_(wm_shelf) {
   DCHECK(wm_shelf_);
   shelf_view_->Init();
@@ -54,7 +56,7 @@ Shelf::Shelf(ShelfModel* shelf_model,
 }
 
 Shelf::~Shelf() {
-  delegate_->OnShelfDestroyed(this);
+  WmShell::Get()->shelf_delegate()->OnShelfDestroyed(this);
 }
 
 // static
@@ -82,7 +84,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   shelf_view_->OnShelfAlignmentChanged();
   shelf_widget_->OnShelfAlignmentChanged();
-  delegate_->OnShelfAlignmentChanged(this);
+  WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(this);
   Shell::GetInstance()->OnShelfAlignmentChanged(
       WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
   // ShelfLayoutManager will resize the shelf.
@@ -97,7 +99,7 @@ void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
     return;
 
   auto_hide_behavior_ = auto_hide_behavior;
-  delegate_->OnShelfAutoHideBehaviorChanged(this);
+  WmShell::Get()->shelf_delegate()->OnShelfAutoHideBehaviorChanged(this);
   Shell::GetInstance()->OnShelfAutoHideBehaviorChanged(
       WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
 }

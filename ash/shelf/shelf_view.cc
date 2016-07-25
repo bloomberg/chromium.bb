@@ -15,6 +15,7 @@
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/overflow_button.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
@@ -24,7 +25,6 @@
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -390,6 +390,7 @@ ShelfView::ShelfView(ShelfModel* model,
       is_repost_event_on_same_item_(false),
       last_pressed_index_(-1) {
   DCHECK(model_);
+  DCHECK(delegate_);
   DCHECK(wm_shelf_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);

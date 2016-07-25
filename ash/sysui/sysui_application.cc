@@ -11,6 +11,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
@@ -333,7 +334,8 @@ void SysUIApplication::Create(
     ::shell::Connection* connection,
     mash::shelf::mojom::ShelfControllerRequest request) {
   mash::shelf::mojom::ShelfController* shelf_controller =
-      static_cast<ShelfDelegateMus*>(Shell::GetInstance()->GetShelfDelegate());
+      static_cast<ShelfDelegateMus*>(WmShell::Get()->shelf_delegate());
+  DCHECK(shelf_controller);
   shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
 }
 

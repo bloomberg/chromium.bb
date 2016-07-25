@@ -16,6 +16,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
@@ -28,7 +29,6 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
@@ -686,7 +686,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   // The delegate must be notified after |state_| is updated so that it can
   // query the new target bounds.
-  ShelfDelegate* shelf_delegate = Shell::GetInstance()->GetShelfDelegate();
+  ShelfDelegate* shelf_delegate = WmShell::Get()->shelf_delegate();
+  DCHECK(shelf_delegate);
   if (old_state.visibility_state != state_.visibility_state)
     shelf_delegate->OnShelfVisibilityStateChanged(shelf_widget_->shelf());
 

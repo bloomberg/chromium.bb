@@ -10,7 +10,9 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -67,6 +69,8 @@ void WmShell::Shutdown() {
   // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
   // shelf items in Chrome) so explicitly shutdown early.
   shelf_model_->DestroyItemDelegates();
+  // Must be destroyed before FocusClient.
+  shelf_delegate_.reset();
 }
 
 void WmShell::OnMaximizeModeStarted() {
@@ -106,6 +110,11 @@ void WmShell::AddLockStateObserver(LockStateObserver* observer) {
 
 void WmShell::RemoveLockStateObserver(LockStateObserver* observer) {
   lock_state_observers_.RemoveObserver(observer);
+}
+
+void WmShell::SetShelfDelegateForTesting(
+    std::unique_ptr<ShelfDelegate> test_delegate) {
+  shelf_delegate_ = std::move(test_delegate);
 }
 
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
@@ -193,6 +202,18 @@ void WmShell::DeleteSystemTrayDelegate() {
   logout_confirmation_controller_.reset();
 #endif
   system_tray_delegate_.reset();
+}
+
+void WmShell::CreateShelfDelegate() {
+  // May be called multiple times as shelves are created and destroyed.
+  if (shelf_delegate_)
+    return;
+  // Must occur after SessionStateDelegate creation and user login because
+  // Chrome's implementation of ShelfDelegate assumes it can get information
+  // about multi-profile login state.
+  DCHECK(GetSessionStateDelegate());
+  DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
+  shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
 }
 
 void WmShell::DeleteWindowCycleController() {

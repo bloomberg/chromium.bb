@@ -37,6 +37,7 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -685,20 +686,17 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void ReplaceShelfDelegate() {
-    // Replace ShelfDelegate.
-    ShellTestApi shell_test_api(Shell::GetInstance());
-    shell_test_api.SetShelfDelegate(NULL);
     shelf_delegate_ = new TestShelfDelegateForShelfView();
-    shell_test_api.SetShelfDelegate(shelf_delegate_);
-    ShelfTestAPI(Shelf::ForPrimaryDisplay()).set_delegate(shelf_delegate_);
     test_api_->SetShelfDelegate(shelf_delegate_);
+    WmShell::Get()->SetShelfDelegateForTesting(
+        base::WrapUnique(shelf_delegate_));
   }
 
   ShelfModel* model_;
   ShelfView* shelf_view_;
   int browser_index_;
 
-  // Owned by ash::Shell.
+  // Owned by ash::WmShell.
   TestShelfDelegateForShelfView* shelf_delegate_;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;

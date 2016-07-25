@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_DELEGATE_H_
-#define ASH_SHELF_SHELF_DELEGATE_H_
+#ifndef ASH_COMMON_SHELF_SHELF_DELEGATE_H_
+#define ASH_COMMON_SHELF_SHELF_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_item_types.h"
@@ -11,10 +11,9 @@
 namespace ash {
 class Shelf;
 
-// Delegate for the Shelf.
+// Delegate shared by all shelf instances.
 class ASH_EXPORT ShelfDelegate {
  public:
-  // Shelf owns the delegate.
   virtual ~ShelfDelegate() {}
 
   // Callback used to allow delegate to perform initialization actions that
@@ -62,4 +61,4 @@ class ASH_EXPORT ShelfDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_DELEGATE_H_
+#endif  // ASH_COMMON_SHELF_SHELF_DELEGATE_H_

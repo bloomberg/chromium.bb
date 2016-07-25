@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_controller_test_api.h"
@@ -118,6 +119,9 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   void LogIn(const AccountId& account_id, const std::string& user_id_hash) {
     user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
                                                    false);
+    // Adding a secondary display creates a shelf on that display, which
+    // assumes a shelf on the primary display if the user was logged in.
+    ash::Shell::GetInstance()->CreateShelf();
     WaitAsyncWallpaperLoadStarted();
   }
 
@@ -130,6 +134,11 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
         user_manager::UserManager::Get()->FindUserAndModify(account_id);
     user_manager::UserManager::Get()->ChangeUserChildStatus(
         user, true /* is_child */);
+    // TODO(jamescook): For some reason creating the shelf here (which is what
+    // would happen in normal login) causes the child wallpaper tests to fail
+    // with the wallpaper having alpha. This looks like the wallpaper is mid-
+    // animation, but happens even if animations are disabled. Something is
+    // wrong with how these tests simulate login.
   }
 
   int LoadedWallpapers() {

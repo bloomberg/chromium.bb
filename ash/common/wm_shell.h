@@ -33,6 +33,7 @@ class MaximizeModeController;
 class MruWindowTracker;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
+class ShelfDelegate;
 class ShelfModel;
 class ShellDelegate;
 class ShellObserver;
@@ -99,6 +100,8 @@ class ASH_EXPORT WmShell {
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
 
   MediaDelegate* media_delegate() { return media_delegate_.get(); }
+
+  ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
 
   ShelfModel* shelf_model() { return shelf_model_.get(); }
 
@@ -258,6 +261,8 @@ class ASH_EXPORT WmShell {
   void AddLockStateObserver(LockStateObserver* observer);
   void RemoveLockStateObserver(LockStateObserver* observer);
 
+  void SetShelfDelegateForTesting(std::unique_ptr<ShelfDelegate> test_delegate);
+
 #if defined(OS_CHROMEOS)
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
@@ -281,6 +286,8 @@ class ASH_EXPORT WmShell {
   // TODO(msw|jamescook): Remove these once ShellDelegate, etc. are ported.
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
+
+  void CreateShelfDelegate();
 
   void DeleteWindowCycleController();
 
@@ -316,6 +323,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+  std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;

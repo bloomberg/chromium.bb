@@ -5,9 +5,9 @@
 #include "ash/shelf/shelf_widget.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"

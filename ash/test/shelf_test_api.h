@@ -21,8 +21,6 @@ class ShelfTestAPI {
 
   ShelfView* shelf_view() { return shelf_->shelf_view_; }
 
-  void set_delegate(ShelfDelegate* delegate) { shelf_->delegate_ = delegate; }
-
  private:
   Shelf* shelf_;
 

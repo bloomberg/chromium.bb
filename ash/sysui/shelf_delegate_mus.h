@@ -7,9 +7,9 @@
 
 #include <map>
 
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/public/interfaces/shelf_layout.mojom.h"
 #include "ash/public/interfaces/user_window_controller.mojom.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"

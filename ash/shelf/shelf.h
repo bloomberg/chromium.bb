@@ -54,7 +54,6 @@ class ASH_EXPORT Shelf {
   static const char kNativeViewName[];
 
   Shelf(ShelfModel* model,
-        ShelfDelegate* delegate,
         WmShelf* wm_shelf,
         ShelfWidget* widget);
   virtual ~Shelf();
@@ -160,7 +159,6 @@ class ASH_EXPORT Shelf {
  private:
   friend class test::ShelfTestAPI;
 
-  ShelfDelegate* delegate_;
   // The shelf controller. Owned by the root window controller.
   WmShelf* wm_shelf_;
   ShelfWidget* shelf_widget_;

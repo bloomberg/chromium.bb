@@ -11,13 +11,13 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
@@ -725,13 +725,11 @@ bool ShelfWidget::GetDimsShelf() const {
 void ShelfWidget::CreateShelf(WmShelfAura* wm_shelf_aura) {
   DCHECK(!shelf_);
 
-  ShelfDelegate* delegate = Shell::GetInstance()->GetShelfDelegate();
-  shelf_.reset(
-      new Shelf(WmShell::Get()->shelf_model(), delegate, wm_shelf_aura, this));
+  shelf_.reset(new Shelf(WmShell::Get()->shelf_model(), wm_shelf_aura, this));
   // Must be initialized before the delegate is notified because the delegate
   // may try to access the WmShelf.
   wm_shelf_aura->SetShelf(shelf_.get());
-  delegate->OnShelfCreated(shelf_.get());
+  WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
 
   SetFocusCycler(WmShell::Get()->focus_cycler());
 }

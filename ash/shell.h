@@ -121,7 +121,6 @@ class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
 class Shelf;
-class ShelfDelegate;
 class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
@@ -449,9 +448,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
-  // Returns the launcher delegate, creating if necesary.
-  ShelfDelegate* GetShelfDelegate();
-
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
 
   void SetTouchHudProjectionEnabled(bool enabled);
@@ -555,7 +551,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
-  std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 

@@ -6,10 +6,10 @@
 
 #include <vector>
 
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/shelf_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
@@ -72,11 +72,6 @@ BrowserShortcutLauncherItemController::
 }
 
 void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
-  // The shell will not be available for win7_aura unittests like
-  // ChromeLauncherControllerTest.BrowserMenuGeneration.
-  if (!ash::Shell::HasInstance())
-    return;
-
   // Determine the new browser's active state and change if necessary.
   int browser_index =
       shelf_model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
@@ -338,9 +333,8 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     return false;
 
   // v1 App popup windows with a valid app id have their own icon.
-  if (browser->is_app() &&
-      browser->is_type_popup() &&
-      ash::Shell::GetInstance()->GetShelfDelegate()->GetShelfIDForAppID(
+  if (browser->is_app() && browser->is_type_popup() &&
+      ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppID(
           web_app::GetExtensionIdFromApplicationName(browser->app_name())) > 0)
     return false;
 
