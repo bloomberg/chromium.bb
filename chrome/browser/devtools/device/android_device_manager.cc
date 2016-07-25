@@ -489,6 +489,7 @@ AndroidDeviceManager::HandlerThread::message_loop() {
 void AndroidDeviceManager::HandlerThread::StopThread(
     base::Thread* thread) {
   thread->Stop();
+  delete thread;
 }
 
 AndroidDeviceManager::HandlerThread::~HandlerThread() {
