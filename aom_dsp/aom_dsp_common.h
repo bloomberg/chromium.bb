@@ -42,6 +42,22 @@ typedef int32_t tran_high_t;
 typedef int16_t tran_low_t;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
+#define IMPLIES(a, b) (!(a) || (b))  //  Logical 'a implies b' (or 'a -> b')
+
+#define IS_POWER_OF_TWO(x) (((x) & ((x)-1)) == 0)
+
+// These can be used to give a hint about branch outcomes.
+// This can have an effect, even if your target processor has a
+// good branch predictor, as these hints can affect basic block
+// ordering by the compiler.
+#ifdef __GNUC__
+#define LIKELY(v) __builtin_expect(v, 1)
+#define UNLIKELY(v) __builtin_expect(v, 0)
+#else
+#define LIKELY(v) (v)
+#define UNLIKELY(v) (v)
+#endif
+
 static INLINE uint8_t clip_pixel(int val) {
   return (val > 255) ? 255 : (val < 0) ? 0 : val;
 }

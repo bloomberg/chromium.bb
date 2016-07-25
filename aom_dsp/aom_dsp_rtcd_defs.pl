@@ -961,6 +961,25 @@ if (aom_config("CONFIG_AOM_QM") eq "yes") {
   }  # CONFIG_AV1_ENCODER
 } # CONFIG_AOM_QM
 
+#
+# Alpha blending with mask
+#
+add_proto qw/void aom_blend_a64_mask/, "uint8_t *dst, uint32_t dst_stride, const uint8_t *src0, uint32_t src0_stride, const uint8_t *src1, uint32_t src1_stride, const uint8_t *mask, uint32_t mask_stride, int h, int w, int suby, int subx";
+add_proto qw/void aom_blend_a64_hmask/, "uint8_t *dst, uint32_t dst_stride, const uint8_t *src0, uint32_t src0_stride, const uint8_t *src1, uint32_t src1_stride, const uint8_t *mask, int h, int w";
+add_proto qw/void aom_blend_a64_vmask/, "uint8_t *dst, uint32_t dst_stride, const uint8_t *src0, uint32_t src0_stride, const uint8_t *src1, uint32_t src1_stride, const uint8_t *mask, int h, int w";
+specialize "aom_blend_a64_mask", qw/sse4_1/;
+specialize "aom_blend_a64_hmask", qw/sse4_1/;
+specialize "aom_blend_a64_vmask", qw/sse4_1/;
+
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+  add_proto qw/void aom_highbd_blend_a64_mask/, "uint8_t *dst, uint32_t dst_stride, const uint8_t *src0, uint32_t src0_stride, const uint8_t *src1, uint32_t src1_stride, const uint8_t *mask, uint32_t mask_stride, int h, int w, int suby, int subx, int bd";  
+  add_proto qw/void aom_highbd_blend_a64_hmask/, "uint8_t *dst, uint32_t dst_stride, const uint8_t *src0, uint32_t src0_stride, const uint8_t *src1, uint32_t src1_stride, const uint8_t *mask, int h, int w, int bd";
+  add_proto qw/void aom_highbd_blend_a64_vmask/, "uint8_t *dst, uint32_t dst_stride, const uint8_t *src0, uint32_t src0_stride, const uint8_t *src1, uint32_t src1_stride, const uint8_t *mask, int h, int w, int bd";
+  specialize "aom_highbd_blend_a64_mask", qw/sse4_1/;
+  specialize "aom_highbd_blend_a64_hmask", qw/sse4_1/;
+  specialize "aom_highbd_blend_a64_vmask", qw/sse4_1/;
+}
+
 if (aom_config("CONFIG_ENCODERS") eq "yes") {
 #
 # Block subtraction

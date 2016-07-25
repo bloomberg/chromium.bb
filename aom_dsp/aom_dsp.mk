@@ -15,6 +15,8 @@ DSP_SRCS-yes += aom_dsp_common.h
 
 DSP_SRCS-$(HAVE_MSA)    += mips/macros_msa.h
 
+DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/synonyms.h
+
 # bit reader
 DSP_SRCS-yes += prob.h
 DSP_SRCS-yes += prob.c
@@ -86,6 +88,16 @@ DSP_SRCS-$(HAVE_DSPR2)  += mips/intrapred16_dspr2.c
 
 DSP_SRCS-$(HAVE_DSPR2)  += mips/common_dspr2.h
 DSP_SRCS-$(HAVE_DSPR2)  += mips/common_dspr2.c
+
+# inter predictions
+DSP_SRCS-yes            += blend.h
+DSP_SRCS-yes            += blend_a64_mask.c
+DSP_SRCS-yes            += blend_a64_hmask.c
+DSP_SRCS-yes            += blend_a64_vmask.c
+DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_sse4.h
+DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_a64_mask_sse4.c
+DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_a64_hmask_sse4.c
+DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_a64_vmask_sse4.c
 
 # interpolation filters
 DSP_SRCS-yes += aom_convolve.c

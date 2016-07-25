@@ -197,16 +197,13 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
                           const struct scale_factors *sf);
 
 #if CONFIG_MOTION_VAR
-void av1_setup_obmc_mask(int length, const uint8_t *mask[2]);
+const uint8_t *av1_get_obmc_mask(int length);
 void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col,
-                                     int use_tmp_dst_buf,
-                                     uint8_t *final_buf[MAX_MB_PLANE],
-                                     const int final_stride[MAX_MB_PLANE],
-                                     uint8_t *above_pred_buf[MAX_MB_PLANE],
-                                     const int above_pred_stride[MAX_MB_PLANE],
-                                     uint8_t *left_pred_buf[MAX_MB_PLANE],
-                                     const int left_pred_stride[MAX_MB_PLANE]);
+                                     uint8_t *above[MAX_MB_PLANE],
+                                     const int above_stride[MAX_MB_PLANE],
+                                     uint8_t *left[MAX_MB_PLANE],
+                                     const int left_stride[MAX_MB_PLANE]);
 void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],

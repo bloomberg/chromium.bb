@@ -13,6 +13,7 @@
 
 #include "./aom_scale_rtcd.h"
 #include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 
 #include "aom/aom_integer.h"
 
@@ -345,61 +346,32 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
 }
 
 #if CONFIG_MOTION_VAR
-#define OBMC_MASK_PREC_BITS 6
-// obmc_mask_N[is_neighbor_predictor][overlap_position]
-static const uint8_t obmc_mask_1[2][1] = { { 55 }, { 9 } };
+// obmc_mask_N[overlap_position]
+static const uint8_t obmc_mask_1[1] = { 55 };
 
-static const uint8_t obmc_mask_2[2][2] = { { 45, 62 }, { 19, 2 } };
+static const uint8_t obmc_mask_2[2] = { 45, 62 };
 
-static const uint8_t obmc_mask_4[2][4] = { { 39, 50, 59, 64 },
-                                           { 25, 14, 5, 0 } };
+static const uint8_t obmc_mask_4[4] = { 39, 50, 59, 64 };
 
-static const uint8_t obmc_mask_8[2][8] = { { 36, 42, 48, 53, 57, 61, 63, 64 },
-                                           { 28, 22, 16, 11, 7, 3, 1, 0 } };
+static const uint8_t obmc_mask_8[8] = { 36, 42, 48, 53, 57, 61, 63, 64 };
 
-static const uint8_t obmc_mask_16[2][16] = {
-  { 34, 37, 40, 43, 46, 49, 52, 54, 56, 58, 60, 61, 63, 64, 64, 64 },
-  { 30, 27, 24, 21, 18, 15, 12, 10, 8, 6, 4, 3, 1, 0, 0, 0 }
-};
+static const uint8_t obmc_mask_16[16] = { 34, 37, 40, 43, 46, 49, 52, 54,
+                                          56, 58, 60, 61, 63, 64, 64, 64 };
 
-static const uint8_t obmc_mask_32[2][32] = {
-  { 33, 35, 36, 38, 40, 41, 43, 44, 45, 47, 48, 50, 51, 52, 53, 55, 56, 57, 58,
-    59, 60, 60, 61, 62, 62, 63, 63, 64, 64, 64, 64, 64 },
-  { 31, 29, 28, 26, 24, 23, 21, 20, 19, 17, 16, 14, 13, 12, 11, 9, 8, 7, 6, 5,
-    4, 4, 3, 2, 2, 1, 1, 0, 0, 0, 0, 0 }
-};
+static const uint8_t obmc_mask_32[32] = { 33, 35, 36, 38, 40, 41, 43, 44,
+                                          45, 47, 48, 50, 51, 52, 53, 55,
+                                          56, 57, 58, 59, 60, 60, 61, 62,
+                                          62, 63, 63, 64, 64, 64, 64, 64 };
 
-void av1_setup_obmc_mask(int length, const uint8_t *mask[2]) {
+const uint8_t *av1_get_obmc_mask(int length) {
   switch (length) {
-    case 1:
-      mask[0] = obmc_mask_1[0];
-      mask[1] = obmc_mask_1[1];
-      break;
-    case 2:
-      mask[0] = obmc_mask_2[0];
-      mask[1] = obmc_mask_2[1];
-      break;
-    case 4:
-      mask[0] = obmc_mask_4[0];
-      mask[1] = obmc_mask_4[1];
-      break;
-    case 8:
-      mask[0] = obmc_mask_8[0];
-      mask[1] = obmc_mask_8[1];
-      break;
-    case 16:
-      mask[0] = obmc_mask_16[0];
-      mask[1] = obmc_mask_16[1];
-      break;
-    case 32:
-      mask[0] = obmc_mask_32[0];
-      mask[1] = obmc_mask_32[1];
-      break;
-    default:
-      mask[0] = NULL;
-      mask[1] = NULL;
-      assert(0);
-      break;
+    case 1: return obmc_mask_1;
+    case 2: return obmc_mask_2;
+    case 4: return obmc_mask_4;
+    case 8: return obmc_mask_8;
+    case 16: return obmc_mask_16;
+    case 32: return obmc_mask_32;
+    default: assert(0); return NULL;
   }
 }
 
@@ -409,13 +381,10 @@ void av1_setup_obmc_mask(int length, const uint8_t *mask[2]) {
 // xd->plane[].dst.buf
 void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col,
-                                     int use_tmp_dst_buf,
-                                     uint8_t *final_buf[MAX_MB_PLANE],
-                                     const int final_stride[MAX_MB_PLANE],
-                                     uint8_t *above_pred_buf[MAX_MB_PLANE],
-                                     const int above_pred_stride[MAX_MB_PLANE],
-                                     uint8_t *left_pred_buf[MAX_MB_PLANE],
-                                     const int left_pred_stride[MAX_MB_PLANE]) {
+                                     uint8_t *above[MAX_MB_PLANE],
+                                     const int above_stride[MAX_MB_PLANE],
+                                     uint8_t *left[MAX_MB_PLANE],
+                                     const int left_stride[MAX_MB_PLANE]) {
   const TileInfo *const tile = &xd->tile;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int plane, i, mi_step;
@@ -423,30 +392,6 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_AOM_HIGHBITDEPTH
   int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-
-  if (use_tmp_dst_buf) {
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-      const struct macroblockd_plane *pd = &xd->plane[plane];
-      const int bw = (xd->n8_w << 3) >> pd->subsampling_x;
-      const int bh = (xd->n8_h << 3) >> pd->subsampling_y;
-      int row;
-#if CONFIG_AOM_HIGHBITDEPTH
-      if (is_hbd) {
-        uint16_t *final_buf16 = CONVERT_TO_SHORTPTR(final_buf[plane]);
-        uint16_t *bmc_buf16 = CONVERT_TO_SHORTPTR(pd->dst.buf);
-        for (row = 0; row < bh; ++row)
-          memcpy(final_buf16 + row * final_stride[plane],
-                 bmc_buf16 + row * pd->dst.stride, bw * sizeof(uint16_t));
-      } else {
-#endif
-        for (row = 0; row < bh; ++row)
-          memcpy(final_buf[plane] + row * final_stride[plane],
-                 pd->dst.buf + row * pd->dst.stride, bw);
-#if CONFIG_AOM_HIGHBITDEPTH
-      }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-    }
-  }
 
   // handle above row
   for (i = 0; above_available && i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
@@ -465,47 +410,23 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *pd = &xd->plane[plane];
-      const int bw = (mi_step << 3) >> pd->subsampling_x;
+      const int bw = (mi_step * MI_SIZE) >> pd->subsampling_x;
       const int bh = overlap >> pd->subsampling_y;
-      int row, col;
-      const int dst_stride =
-          use_tmp_dst_buf ? final_stride[plane] : pd->dst.stride;
-      uint8_t *dst = use_tmp_dst_buf
-                         ? &final_buf[plane][(i << 3) >> pd->subsampling_x]
-                         : &pd->dst.buf[(i << 3) >> pd->subsampling_x];
-      const int tmp_stride = above_pred_stride[plane];
-      uint8_t *tmp = &above_pred_buf[plane][(i << 3) >> pd->subsampling_x];
-      const uint8_t *mask[2];
-
-      av1_setup_obmc_mask(bh, mask);
+      const int dst_stride = pd->dst.stride;
+      uint8_t *dst = &pd->dst.buf[(i * MI_SIZE) >> pd->subsampling_x];
+      const int tmp_stride = above_stride[plane];
+      const uint8_t *const tmp =
+          &above[plane][(i * MI_SIZE) >> pd->subsampling_x];
+      const uint8_t *const mask = av1_get_obmc_mask(bh);
 
 #if CONFIG_AOM_HIGHBITDEPTH
-      if (is_hbd) {
-        uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
-        uint16_t *tmp16 = CONVERT_TO_SHORTPTR(tmp);
-
-        for (row = 0; row < bh; ++row) {
-          for (col = 0; col < bw; ++col)
-            dst16[col] = ROUND_POWER_OF_TWO(
-                mask[0][row] * dst16[col] + mask[1][row] * tmp16[col],
-                OBMC_MASK_PREC_BITS);
-
-          dst16 += dst_stride;
-          tmp16 += tmp_stride;
-        }
-      } else {
+      if (is_hbd)
+        aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp,
+                                   tmp_stride, mask, bh, bw, xd->bd);
+      else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-        for (row = 0; row < bh; ++row) {
-          for (col = 0; col < bw; ++col)
-            dst[col] = ROUND_POWER_OF_TWO(
-                mask[0][row] * dst[col] + mask[1][row] * tmp[col],
-                OBMC_MASK_PREC_BITS);
-          dst += dst_stride;
-          tmp += tmp_stride;
-        }
-#if CONFIG_AOM_HIGHBITDEPTH
-      }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+        aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
+                            mask, bh, bw);
     }
   }  // each mi in the above row
 
@@ -528,47 +449,23 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *pd = &xd->plane[plane];
       const int bw = overlap >> pd->subsampling_x;
-      const int bh = (mi_step << 3) >> pd->subsampling_y;
-      int row, col;
-      const int dst_stride =
-          use_tmp_dst_buf ? final_stride[plane] : pd->dst.stride;
+      const int bh = (mi_step * MI_SIZE) >> pd->subsampling_y;
+      const int dst_stride = pd->dst.stride;
       uint8_t *dst =
-          use_tmp_dst_buf
-              ? &final_buf[plane][((i << 3) >> pd->subsampling_y) * dst_stride]
-              : &pd->dst.buf[((i << 3) >> pd->subsampling_y) * dst_stride];
-      const int tmp_stride = left_pred_stride[plane];
-      uint8_t *tmp =
-          &left_pred_buf[plane][((i << 3) >> pd->subsampling_y) * tmp_stride];
-      const uint8_t *mask[2];
-
-      av1_setup_obmc_mask(bw, mask);
+          &pd->dst.buf[(i * MI_SIZE * dst_stride) >> pd->subsampling_y];
+      const int tmp_stride = left_stride[plane];
+      const uint8_t *const tmp =
+          &left[plane][(i * MI_SIZE * tmp_stride) >> pd->subsampling_y];
+      const uint8_t *const mask = av1_get_obmc_mask(bw);
 
 #if CONFIG_AOM_HIGHBITDEPTH
-      if (is_hbd) {
-        uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
-        uint16_t *tmp16 = CONVERT_TO_SHORTPTR(tmp);
-
-        for (row = 0; row < bh; ++row) {
-          for (col = 0; col < bw; ++col)
-            dst16[col] = ROUND_POWER_OF_TWO(
-                mask[0][col] * dst16[col] + mask[1][col] * tmp16[col],
-                OBMC_MASK_PREC_BITS);
-          dst16 += dst_stride;
-          tmp16 += tmp_stride;
-        }
-      } else {
+      if (is_hbd)
+        aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp,
+                                   tmp_stride, mask, bh, bw, xd->bd);
+      else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-        for (row = 0; row < bh; ++row) {
-          for (col = 0; col < bw; ++col)
-            dst[col] = ROUND_POWER_OF_TWO(
-                mask[0][col] * dst[col] + mask[1][col] * tmp[col],
-                OBMC_MASK_PREC_BITS);
-          dst += dst_stride;
-          tmp += tmp_stride;
-        }
-#if CONFIG_AOM_HIGHBITDEPTH
-      }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+        aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
+                            mask, bh, bw);
     }
   }  // each mi in the left column
 }
@@ -765,7 +662,7 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
                                      dst_stride2);
   av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
-  av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, 0, NULL, NULL,
-                                  dst_buf1, dst_stride1, dst_buf2, dst_stride2);
+  av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, dst_buf1, dst_stride1,
+                                  dst_buf2, dst_stride2);
 }
 #endif  // CONFIG_MOTION_VAR

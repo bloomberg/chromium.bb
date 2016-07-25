@@ -3382,9 +3382,9 @@ static int64_t handle_inter_mode(
     int tmp_rate2 = rate2_nocoeff;
 
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-      av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, 0, NULL, NULL,
-                                      above_pred_buf, above_pred_stride,
-                                      left_pred_buf, left_pred_stride);
+      av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, above_pred_buf,
+                                      above_pred_stride, left_pred_buf,
+                                      left_pred_stride);
       model_rd_for_sb(cpi, bsize, x, xd, &tmp_rate, &tmp_dist, &skip_txfm_sb,
                       &skip_sse_sb);
     }
