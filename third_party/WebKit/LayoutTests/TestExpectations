@@ -1379,3 +1379,5 @@ crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.
 
 crbug.com/629711 [ Linux Debug ] fast/workers/shared-worker-exception.html [ Crash Pass ]
 crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-worker-exception.html [ Crash Pass ]
+
+crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
