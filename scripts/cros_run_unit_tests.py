@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 
 from chromite.lib import commandline
@@ -97,7 +98,8 @@ def main(argv):
     env = {'USE': use_flags}
 
   try:
-    chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env)
+    chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env,
+                             jobs=min(10, multiprocessing.cpu_count()))
   except cros_build_lib.RunCommandError:
     logging.error('Unittests failed.')
     raise
