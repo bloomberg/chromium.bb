@@ -25,15 +25,14 @@ public:
     virtual void addInspectedObject(std::unique_ptr<Inspectable>) = 0;
 
     // Dispatching protocol messages.
-    // TODO(dgozman): generate this one.
-    static bool isV8ProtocolMethod(const String16& method);
+    static bool canDispatchMethod(const String16& method);
     virtual void dispatchProtocolMessage(const String16& message) = 0;
     virtual String16 stateJSON() = 0;
 
     // Debugger actions.
-    virtual void schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) = 0;
+    virtual void schedulePauseOnNextStatement(const String16& breakReason, const String16& breakDetails) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
-    virtual void breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) = 0;
+    virtual void breakProgram(const String16& breakReason, const String16& breakDetails) = 0;
     virtual void setSkipAllPauses(bool) = 0;
     virtual void resume() = 0;
     virtual void stepOver() = 0;

@@ -55,9 +55,9 @@ public:
     void dispatchProtocolMessage(const String16& message) override;
     String16 stateJSON() override;
     void addInspectedObject(std::unique_ptr<V8InspectorSession::Inspectable>) override;
-    void schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
+    void schedulePauseOnNextStatement(const String16& breakReason, const String16& breakDetails) override;
     void cancelPauseOnNextStatement() override;
-    void breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
+    void breakProgram(const String16& breakReason, const String16& breakDetails) override;
     void setSkipAllPauses(bool) override;
     void resume() override;
     void stepOver() override;

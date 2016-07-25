@@ -369,7 +369,7 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 {
     if (m_enabled)
         return;
-    m_session->client()->runtimeEnabled();
+    m_debugger->client()->beginEnsureAllContextsInGroup(m_session->contextGroupId());
     m_enabled = true;
     m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, true);
     m_session->debugger()->enableStackCapturingIfNeeded();
@@ -388,7 +388,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     m_session->debugger()->disableStackCapturingIfNeeded();
     m_session->discardInjectedScripts();
     reset();
-    m_session->client()->runtimeDisabled();
+    m_debugger->client()->endEnsureAllContextsInGroup(m_session->contextGroupId());
 }
 
 void V8RuntimeAgentImpl::reset()

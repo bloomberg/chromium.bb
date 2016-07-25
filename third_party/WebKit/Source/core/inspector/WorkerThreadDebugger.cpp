@@ -126,16 +126,21 @@ void WorkerThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
     m_workerThread->workerGlobalScope()->consoleMessageStorage()->unmute();
 }
 
-bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
-{
-    return true;
-}
-
 v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
 {
     ASSERT(contextGroupId == workerContextGroupId);
     ScriptState* scriptState = m_workerThread->workerGlobalScope()->scriptController()->getScriptState();
     return scriptState ? scriptState->context() : v8::Local<v8::Context>();
+}
+
+void WorkerThreadDebugger::beginEnsureAllContextsInGroup(int contextGroupId)
+{
+    DCHECK(contextGroupId == workerContextGroupId);
+}
+
+void WorkerThreadDebugger::endEnsureAllContextsInGroup(int contextGroupId)
+{
+    DCHECK(contextGroupId == workerContextGroupId);
 }
 
 void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)

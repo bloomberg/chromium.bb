@@ -22,9 +22,13 @@ namespace blink {
 const char V8InspectorSession::backtraceObjectGroup[] = "backtrace";
 
 // static
-bool V8InspectorSession::isV8ProtocolMethod(const String16& method)
+bool V8InspectorSession::canDispatchMethod(const String16& method)
 {
-    return method.startWith("Debugger.") || method.startWith("HeapProfiler.") || method.startWith("Profiler.") || method.startWith("Runtime.") || method.startWith("Console.");
+    return method.startWith(protocol::Runtime::Metainfo::commandPrefix)
+        || method.startWith(protocol::Debugger::Metainfo::commandPrefix)
+        || method.startWith(protocol::Profiler::Metainfo::commandPrefix)
+        || method.startWith(protocol::HeapProfiler::Metainfo::commandPrefix)
+        || method.startWith(protocol::Console::Metainfo::commandPrefix);
 }
 
 std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
@@ -278,9 +282,9 @@ V8InspectorSession::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigne
     return m_inspectedObjects[num].get();
 }
 
-void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
+void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, const String16& breakDetails)
 {
-    m_debuggerAgent->schedulePauseOnNextStatement(breakReason, std::move(data));
+    m_debuggerAgent->schedulePauseOnNextStatement(breakReason, protocol::DictionaryValue::cast(parseJSON(breakDetails)));
 }
 
 void V8InspectorSessionImpl::cancelPauseOnNextStatement()
@@ -288,9 +292,9 @@ void V8InspectorSessionImpl::cancelPauseOnNextStatement()
     m_debuggerAgent->cancelPauseOnNextStatement();
 }
 
-void V8InspectorSessionImpl::breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
+void V8InspectorSessionImpl::breakProgram(const String16& breakReason, const String16& breakDetails)
 {
-    m_debuggerAgent->breakProgram(breakReason, std::move(data));
+    m_debuggerAgent->breakProgram(breakReason, protocol::DictionaryValue::cast(parseJSON(breakDetails)));
 }
 
 void V8InspectorSessionImpl::setSkipAllPauses(bool skip)

@@ -16,6 +16,7 @@ namespace {{domain.domain}} {
 // ------------- Enum values from types.
 
 const char Metainfo::domainName[] = "{{domain.domain}}";
+const char Metainfo::commandPrefix[] = "{{domain.domain}}.";
   {% for type in domain.types %}
     {% if "enum" in type %}
 

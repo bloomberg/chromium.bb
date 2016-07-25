@@ -14,8 +14,6 @@ namespace blink {
 class PLATFORM_EXPORT V8InspectorSessionClient {
 public:
     virtual ~V8InspectorSessionClient() { }
-    virtual void runtimeEnabled() = 0;
-    virtual void runtimeDisabled() = 0;
     virtual void resumeStartup() = 0;
     // TODO(dgozman): this was added to support service worker shadow page. We should not connect at all.
     virtual bool canExecuteScripts() = 0;

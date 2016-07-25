@@ -285,6 +285,7 @@ public:
     using FrontendClass = Frontend;
     using DispatcherClass = Dispatcher;
     static const char domainName[];
+    static const char commandPrefix[];
 };
 
 } // namespace {{domain.domain}}

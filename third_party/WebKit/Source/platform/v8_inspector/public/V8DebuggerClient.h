@@ -24,7 +24,6 @@ public:
     virtual void unmuteWarningsAndDeprecations(int contextGroupId) = 0;
     virtual void beginUserGesture() = 0;
     virtual void endUserGesture() = 0;
-    virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
     virtual String16 valueSubtype(v8::Local<v8::Value>) = 0;
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;
     virtual bool isExecutionAllowed() = 0;
@@ -33,6 +32,8 @@ public:
     virtual bool isInspectableHeapObject(v8::Local<v8::Object>) = 0;
     virtual void enableAsyncInstrumentation() = 0;
     virtual void disableAsyncInstrumentation() = 0;
+    virtual void beginEnsureAllContextsInGroup(int contextGroupId) = 0;
+    virtual void endEnsureAllContextsInGroup(int contextGroupId) = 0;
 
     virtual void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) = 0;
 

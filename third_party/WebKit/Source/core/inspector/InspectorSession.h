@@ -61,8 +61,6 @@ private:
     void sendProtocolNotification(const protocol::String16& message) override;
 
     // V8InspectorSessionClient implementation.
-    void runtimeEnabled() override;
-    void runtimeDisabled() override;
     void resumeStartup() override;
     bool canExecuteScripts() override;
     void profilingStarted() override;

@@ -45,6 +45,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
@@ -219,16 +220,23 @@ void MainThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
         frame->host()->consoleMessageStorage().unmute();
 }
 
-bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
-{
-    return BindingSecurity::shouldAllowAccessTo(m_isolate, calling, target, DoNotReportSecurityError);
-}
-
 v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     ScriptState* scriptState = frame ? ScriptState::forMainWorld(frame) : nullptr;
     return scriptState ? scriptState->context() : v8::Local<v8::Context>();
+}
+
+void MainThreadDebugger::beginEnsureAllContextsInGroup(int contextGroupId)
+{
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    frame->settings()->setForceMainWorldInitialization(true);
+}
+
+void MainThreadDebugger::endEnsureAllContextsInGroup(int contextGroupId)
+{
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    frame->settings()->setForceMainWorldInitialization(false);
 }
 
 void MainThreadDebugger::consoleAPIMessage(int contextGroupId, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)

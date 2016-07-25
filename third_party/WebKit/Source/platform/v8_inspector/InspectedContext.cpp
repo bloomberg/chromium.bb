@@ -72,11 +72,6 @@ v8::Isolate* InspectedContext::isolate() const
 void InspectedContext::createInjectedScript()
 {
     DCHECK(!m_injectedScript);
-    v8::HandleScope handles(isolate());
-    v8::Local<v8::Context> localContext = context();
-    v8::Local<v8::Context> callingContext = isolate()->GetCallingContext();
-    if (!callingContext.IsEmpty() && !m_debugger->client()->callingContextCanAccessContext(callingContext, localContext))
-        return;
     m_injectedScript = InjectedScript::create(this);
 }
 

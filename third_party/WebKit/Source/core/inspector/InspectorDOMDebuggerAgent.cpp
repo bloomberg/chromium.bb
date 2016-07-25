@@ -310,7 +310,7 @@ void InspectorDOMDebuggerAgent::didInvalidateStyleAttr(Node* node)
     if (hasBreakpoint(node, AttributeModified)) {
         std::unique_ptr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(node, AttributeModified, false, eventData.get());
-        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, eventData->toJSONString());
     }
 }
 
@@ -483,7 +483,7 @@ void InspectorDOMDebuggerAgent::willInsertDOMNode(Node* parent)
     if (hasBreakpoint(parent, SubtreeModified)) {
         std::unique_ptr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(parent, SubtreeModified, true, eventData.get());
-        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, eventData->toJSONString());
     }
 }
 
@@ -493,11 +493,11 @@ void InspectorDOMDebuggerAgent::willRemoveDOMNode(Node* node)
     if (hasBreakpoint(node, NodeRemoved)) {
         std::unique_ptr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(node, NodeRemoved, false, eventData.get());
-        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, eventData->toJSONString());
     } else if (parentNode && hasBreakpoint(parentNode, SubtreeModified)) {
         std::unique_ptr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(node, SubtreeModified, false, eventData.get());
-        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, eventData->toJSONString());
     }
     didRemoveDOMNode(node);
 }
@@ -507,7 +507,7 @@ void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element, const Atomic
     if (hasBreakpoint(element, AttributeModified)) {
         std::unique_ptr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
         descriptionForDOMEvent(element, AttributeModified, false, eventData.get());
-        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::DOM, eventData->toJSONString());
     }
 }
 
@@ -575,9 +575,9 @@ void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(std::unique_ptr<proto
     if (!eventData)
         return;
     if (synchronous)
-        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::EventListener, std::move(eventData));
+        m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::EventListener, eventData->toJSONString());
     else
-        m_v8Session->schedulePauseOnNextStatement(protocol::Debugger::API::Paused::ReasonEnum::EventListener, std::move(eventData));
+        m_v8Session->schedulePauseOnNextStatement(protocol::Debugger::API::Paused::ReasonEnum::EventListener, eventData->toJSONString());
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const String* targetName)
@@ -679,7 +679,7 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpOrFetchNetworkRequest(const Strin
     std::unique_ptr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();
     eventData->setString("breakpointURL", breakpointURL);
     eventData->setString("url", url);
-    m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::XHR, std::move(eventData));
+    m_v8Session->breakProgram(protocol::Debugger::API::Paused::ReasonEnum::XHR, eventData->toJSONString());
 }
 
 void InspectorDOMDebuggerAgent::didAddBreakpoint()

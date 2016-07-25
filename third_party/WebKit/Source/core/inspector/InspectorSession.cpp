@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -81,7 +80,7 @@ void InspectorSession::dispose()
 void InspectorSession::dispatchProtocolMessage(const String& method, const String& message)
 {
     DCHECK(!m_disposed);
-    if (V8InspectorSession::isV8ProtocolMethod(method))
+    if (V8InspectorSession::canDispatchMethod(method))
         m_v8Session->dispatchProtocolMessage(message);
     else
         m_inspectorBackendDispatcher->dispatch(message);
@@ -126,20 +125,6 @@ void InspectorSession::flushProtocolNotifications()
     for (size_t i = 0; i < m_notificationQueue.size(); ++i)
         m_client->sendProtocolMessage(m_sessionId, 0, m_notificationQueue[i], String());
     m_notificationQueue.clear();
-}
-
-void InspectorSession::runtimeEnabled()
-{
-    if (!m_inspectedFrames)
-        return;
-    m_inspectedFrames->root()->settings()->setForceMainWorldInitialization(true);
-}
-
-void InspectorSession::runtimeDisabled()
-{
-    if (!m_inspectedFrames)
-        return;
-    m_inspectedFrames->root()->settings()->setForceMainWorldInitialization(false);
 }
 
 void InspectorSession::resumeStartup()
