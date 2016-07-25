@@ -1,0 +1,46 @@
+{
+  "Files": {
+    "$LOCAL_APPDATA\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome.dll":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\$MINI_INSTALLER_FILE_VERSION.manifest":
+        {"exists": true}
+  },
+  "RegistryEntries": {
+    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
+      "exists": "required",
+      "values": {
+        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
+    },
+    "HKEY_CURRENT_USER\\$BINARIES_UPDATE_REGISTRY_SUBKEY": {
+      "exists": "forbidden"
+    },
+    "HKEY_CURRENT_USER\\$LAUNCHER_UPDATE_REGISTRY_SUBKEY": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+      "exists": "required",
+      "values": {
+        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
+    },
+    "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME": {
+      "exists": "required",
+      "values": {
+        "UninstallString": {
+          "type": "SZ",
+          "data": "\"$LOCAL_APPDATA\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --verbose-logging"
+        },
+        "Version": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
+    },
+    "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME$USER_SPECIFIC_REGISTRY_SUFFIX": {
+      "exists": "forbidden"
+    }
+  }
+}

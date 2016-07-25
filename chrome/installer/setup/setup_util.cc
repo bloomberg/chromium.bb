@@ -34,7 +34,6 @@
 #include "chrome/installer/setup/user_hive_visitor.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"

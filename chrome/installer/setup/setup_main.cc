@@ -466,9 +466,7 @@ installer::InstallStatus RenameChromeExecutables(
   return ret;
 }
 
-// If only the binaries are being updated, fail.
-// If any product is being installed in single-mode that already exists in
-// multi-mode, fail.
+// Fail with UNUSED_BINARIES if only the binaries are being updated.
 bool CheckMultiInstallConditions(const InstallationState& original_state,
                                  InstallerState* installer_state,
                                  installer::InstallStatus* status) {
@@ -956,6 +954,7 @@ installer::InstallStatus InstallProducts(
         system_install, archive_type, install_status);
   }
 
+  // Handle installer::UNUSED_BINARIES returned by CheckPreInstallConditions.
   UninstallBinariesIfUnused(original_state, *installer_state, &install_status);
 
   RepairChromeIfBroken(original_state, *installer_state);
