@@ -1609,7 +1609,7 @@ bool LayoutBlock::hasDragCaret() const
 LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, LayoutUnit* extraWidthToEndOfLine)
 {
     // Do the normal calculation in most cases.
-    if (firstChild() || isInlineBoxWrapperActuallyChild())
+    if ((firstChild() && !firstChild()->isPseudoElement()) || isInlineBoxWrapperActuallyChild())
         return LayoutBox::localCaretRect(inlineBox, caretOffset, extraWidthToEndOfLine);
 
     LayoutRect caretRect = localCaretRectForEmptyElement(size().width(), textIndentOffset());

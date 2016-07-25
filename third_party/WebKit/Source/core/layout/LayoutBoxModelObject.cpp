@@ -943,7 +943,7 @@ void LayoutBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) co
 
 LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset)
 {
-    ASSERT(!slowFirstChild());
+    DCHECK(!slowFirstChild() || slowFirstChild()->isPseudoElement());
 
     // FIXME: This does not take into account either :first-line or :first-letter
     // However, as soon as some content is entered, the line boxes will be
