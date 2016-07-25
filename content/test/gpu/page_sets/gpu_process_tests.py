@@ -317,7 +317,7 @@ class DriverBugWorkaroundsUponGLRendererPage(DriverBugWorkaroundsTestsPage):
       self.expected_workaround = "texsubimage_faster_than_teximage"
       self.unexpected_workaround = "disable_d3d11"
     elif sys.platform.startswith('linux'):
-      self.expected_workaround = "disable_multisampled_render_to_texture"
+      self.expected_workaround = "disable_transparent_visuals"
     elif sys.platform == 'darwin':
       pass
     super(DriverBugWorkaroundsUponGLRendererPage, self).__init__(

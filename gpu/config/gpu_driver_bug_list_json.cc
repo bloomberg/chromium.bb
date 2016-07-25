@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.78",
+  "version": "8.79",
   "entries": [
     {
       "id": 1,
@@ -634,8 +634,8 @@ LONG_STRING_CONST(
       },
       "gl_vendor": "ARM.*",
       "gl_renderer": ".*Mali-4.*",
-      "features": [
-        "disable_multisampled_render_to_texture"
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
       ]
     },
     {
@@ -1124,8 +1124,8 @@ LONG_STRING_CONST(
         }
       },
       "gl_renderer": "Adreno \\(TM\\) 4.*",
-      "features": [
-        "disable_multisampled_render_to_texture"
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
       ]
     },
     {
@@ -1598,8 +1598,8 @@ LONG_STRING_CONST(
       },
       "gl_vendor": "Vivante Corporation",
       "gl_renderer": "Vivante GC1000",
-      "features": [
-        "disable_multisampled_render_to_texture"
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
       ]
     },
     {
