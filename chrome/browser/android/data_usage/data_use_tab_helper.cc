@@ -51,9 +51,9 @@ void DataUseTabHelper::DidFinishNavigation(
   // The last committed navigation entry should correspond to the current
   // navigation. This should not be null since the DidFinishNavigation
   // callback is received for a committed navigation.
-  auto navigation_entry = navigation_handle->GetWebContents()
-                              ->GetController()
-                              .GetLastCommittedEntry();
+  auto* navigation_entry = navigation_handle->GetWebContents()
+                               ->GetController()
+                               .GetLastCommittedEntry();
   DCHECK(navigation_entry);
   DCHECK_EQ(navigation_handle->GetURL(), navigation_entry->GetURL());
   data_use_ui_tab_model->ReportBrowserNavigation(

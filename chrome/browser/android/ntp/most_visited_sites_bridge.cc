@@ -64,7 +64,7 @@ void MostVisitedSitesBridge::SupervisorBridge::SetObserver(
 bool MostVisitedSitesBridge::SupervisorBridge::IsBlocked(const GURL& url) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  auto url_filter = supervised_user_service->GetURLFilterForUIThread();
+  auto* url_filter = supervised_user_service->GetURLFilterForUIThread();
   return url_filter->GetFilteringBehaviorForURL(url) ==
          SupervisedUserURLFilter::FilteringBehavior::BLOCK;
 }
