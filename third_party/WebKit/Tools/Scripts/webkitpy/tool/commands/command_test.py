@@ -29,13 +29,13 @@
 import unittest
 
 from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.tool.mock_tool import MockOptions, MockTool
+from webkitpy.tool.mock_tool import MockOptions, MockWebKitPatch
 
 
 class CommandsTest(unittest.TestCase):
 
     def assert_execute_outputs(self, command, args=None, expected_stdout="", expected_stderr="",
-                               expected_exception=None, expected_logs=None, options=MockOptions(), tool=MockTool()):
+                               expected_exception=None, expected_logs=None, options=MockOptions(), tool=MockWebKitPatch()):
         args = args or []
         options.blocks = None
         options.cc = 'MOCK cc'

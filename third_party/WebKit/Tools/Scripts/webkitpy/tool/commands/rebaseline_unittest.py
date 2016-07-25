@@ -10,7 +10,7 @@ from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline import *
-from webkitpy.tool.mock_tool import MockTool, MockOptions
+from webkitpy.tool.mock_tool import MockWebKitPatch, MockOptions
 
 
 class BaseTestCase(unittest.TestCase):
@@ -20,7 +20,7 @@ class BaseTestCase(unittest.TestCase):
     command_constructor = None
 
     def setUp(self):
-        self.tool = MockTool()
+        self.tool = MockWebKitPatch()
         # lint warns that command_constructor might not be set, but this is intentional; pylint: disable=E1102
         self.command = self.command_constructor()
         self.tool.builders = BuilderList({
