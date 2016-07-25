@@ -1,45 +1,19 @@
-<html> 
-<head>
-
-<style>
-body {
-    font-size: 24px; 
-}
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-}
-div {
-    border: 2px solid blue; 
-    padding: 12px; 
-}
-
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-
-function editingTest() {
-    for (i = 0; i < 5; i++)
-        moveSelectionForwardByCharacterCommand();
-    insertParagraphCommand();
-}
-
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<span id="test">foo</span><br><br>|bar',
+        '</div>',
+    ].join(''),
+    'insertParagraph',
+    [
+        '<div contenteditable>',
+            '<span id="test">foo</span><br><br><br><div>|bar</div>',
+        '</div>',
+    ].join('')),
+    'Insert BR and enclose "bar" with DIV');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body contenteditable id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-
-Test inserting paragraphs: should see a blue box with "bar" in it, and two blank lines between "foo" and "bar".
-
-<div style="border: none; height: 12px"></div>
-
-<span id="test">foo</span><br><br>bar
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
