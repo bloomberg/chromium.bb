@@ -19,11 +19,12 @@
 
 #include "wtf/HashTable.h"
 
+#if DUMP_HASHTABLE_STATS
+
 #include "wtf/DataLog.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WTF {
-
-#if DUMP_HASHTABLE_STATS
 
 int HashTableStats::numAccesses;
 int HashTableStats::numCollisions;
@@ -63,6 +64,6 @@ void HashTableStats::dumpStats()
     dataLogF("%d reinserts\n", numReinserts);
 }
 
-#endif
-
 } // namespace WTF
+
+#endif

@@ -32,6 +32,11 @@
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
 
+#if DUMP_HASHTABLE_STATS
+#include "wtf/Atomics.h"
+#include "wtf/Threading.h"
+#endif
+
 #if DUMP_HASHTABLE_STATS_PER_TABLE
 #include "wtf/DataLog.h"
 #endif
@@ -74,7 +79,7 @@ namespace WTF {
 
 #if DUMP_HASHTABLE_STATS
 
-struct HashTableStats {
+struct WTF_EXPORT HashTableStats {
     STATIC_ONLY(HashTableStats);
     // The following variables are all atomically incremented when modified.
     static int numAccesses;
