@@ -2403,6 +2403,11 @@ void LayoutBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild
     }
 }
 
+static bool isMergeableAnonymousBlock(const LayoutBlockFlow* block)
+{
+    return block->isAnonymousBlock() && !block->continuation() && !block->beingDestroyed() && !block->isRubyRun() && !block->isRubyBase();
+}
+
 void LayoutBlockFlow::removeChild(LayoutObject* oldChild)
 {
     // No need to waste time in merging or removing empty anonymous blocks.
@@ -2428,11 +2433,12 @@ void LayoutBlockFlow::removeChild(LayoutObject* oldChild)
     LayoutBlock::removeChild(oldChild);
 
     LayoutObject* child = prev ? prev : next;
-    if (mergedAnonymousBlocks && child && !child->previousSibling() && !child->nextSibling()) {
-        // The removal has knocked us down to containing only a single anonymous
-        // box.  We can go ahead and pull the content right back up into our
+    if (child && child->isLayoutBlockFlow() && !child->previousSibling() && !child->nextSibling()) {
+        // If the removal has knocked us down to containing only a single anonymous
+        // box we can go ahead and pull the content right back up into our
         // box.
-        collapseAnonymousBlockChild(toLayoutBlockFlow(child));
+        if (mergedAnonymousBlocks || isMergeableAnonymousBlock(toLayoutBlockFlow(child)))
+            collapseAnonymousBlockChild(toLayoutBlockFlow(child));
     }
 
     if (!firstChild()) {
@@ -2552,11 +2558,6 @@ void LayoutBlockFlow::collapseAnonymousBlockChild(LayoutBlockFlow* child)
 
     children()->removeChildNode(this, child, child->hasLayer());
     child->destroy();
-}
-
-static bool isMergeableAnonymousBlock(const LayoutBlockFlow* block)
-{
-    return block->isAnonymousBlock() && !block->continuation() && !block->beingDestroyed() && !block->isRubyRun() && !block->isRubyBase();
 }
 
 bool LayoutBlockFlow::mergeSiblingContiguousAnonymousBlock(LayoutBlockFlow* siblingThatMayBeDeleted)
