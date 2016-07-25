@@ -484,12 +484,6 @@ crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
-crbug.com/621772 fast/forms/color/color-suggestion-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/621772 fast/forms/color/color-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
-crbug.com/621772 fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ NeedsRebaseline ]
-crbug.com/621772 fast/forms/color/color-suggestion-picker-one-row-appearance.html [ NeedsRebaseline ]
-crbug.com/621772 fast/forms/color/color-suggestion-picker-two-row-appearance.html [ NeedsRebaseline ]
-crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ NeedsRebaseline ]
 
 # Ref test needs updating due to new font metrics.
 crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
