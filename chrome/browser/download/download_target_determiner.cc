@@ -324,9 +324,9 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
 #if BUILDFLAG(ANDROID_JAVA_UI)
   if (!verified) {
     if (path.empty()) {
-      CancelOnFailureAndDeleteSelf();
       DownloadManagerService::OnDownloadCanceled(
           download_, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+      CancelOnFailureAndDeleteSelf();
       return;
     }
     if (!download_->GetWebContents()) {
@@ -334,10 +334,10 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
       // is no way to prompt user for an infobar. This could happen after chrome
       // gets killed, and user tries to resume a download while another app has
       // created the target file (not the temporary .crdownload file).
-      CancelOnFailureAndDeleteSelf();
       DownloadManagerService::OnDownloadCanceled(
           download_,
           DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
+      CancelOnFailureAndDeleteSelf();
       return;
     }
   }
