@@ -16,6 +16,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decryptor.h"
 #include "media/cdm/player_tracker_impl.h"
+#include "url/gurl.h"
 
 namespace chromecast {
 namespace media {
@@ -109,9 +110,8 @@ void CastCdm::UnregisterPlayer(int registration_id) {
 
 void CastCdm::OnSessionMessage(const std::string& session_id,
                                const std::vector<uint8_t>& message,
-                               const GURL& destination_url,
                                ::media::MediaKeys::MessageType message_type) {
-  session_message_cb_.Run(session_id, message_type, message, destination_url);
+  session_message_cb_.Run(session_id, message_type, message, GURL::EmptyGURL());
 }
 
 void CastCdm::OnSessionClosed(const std::string& session_id) {

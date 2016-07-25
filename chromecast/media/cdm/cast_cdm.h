@@ -77,7 +77,6 @@ class CastCdm : public ::media::MediaKeys {
 
   void OnSessionMessage(const std::string& session_id,
                         const std::vector<uint8_t>& message,
-                        const GURL& destination_url,
                         ::media::MediaKeys::MessageType message_type);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionKeysChange(const std::string& session_id,

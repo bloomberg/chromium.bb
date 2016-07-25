@@ -23,6 +23,7 @@ source_set("cdm") {
     "//base",
     "//chromecast/media/base",
     "//media",
+    "//url:url",
   ]
 
   if (is_android && use_playready) {

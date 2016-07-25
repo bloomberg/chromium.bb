@@ -53,7 +53,7 @@ void CastBrowserCdmFactory::Create(
   if (cast_key_system == chromecast::media::KEY_SYSTEM_CLEAR_KEY) {
     // TODO(gunsch): handle ClearKey decryption. See crbug.com/441957
   } else {
-    cast_cdm = CreatePlatformBrowserCdm(cast_key_system);
+    cast_cdm = CreatePlatformBrowserCdm(cast_key_system, security_origin);
   }
 
   if (!cast_cdm) {
@@ -81,7 +81,8 @@ void CastBrowserCdmFactory::Create(
 }
 
 scoped_refptr<CastCdm> CastBrowserCdmFactory::CreatePlatformBrowserCdm(
-    const CastKeySystem& cast_key_system) {
+    const CastKeySystem& cast_key_system,
+    const GURL& security_origin) {
   return nullptr;
 }
 

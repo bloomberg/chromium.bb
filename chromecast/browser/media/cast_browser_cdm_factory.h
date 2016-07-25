@@ -41,7 +41,8 @@ class CastBrowserCdmFactory : public ::media::CdmFactory {
 
   // Provides a platform-specific BrowserCdm instance.
   virtual scoped_refptr<CastCdm> CreatePlatformBrowserCdm(
-      const CastKeySystem& cast_key_system);
+      const CastKeySystem& cast_key_system,
+      const GURL& security_origin);
 
  protected:
   MediaResourceTracker* media_resource_tracker_;
