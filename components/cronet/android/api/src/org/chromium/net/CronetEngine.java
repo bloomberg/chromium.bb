@@ -247,6 +247,13 @@ public abstract class CronetEngine {
         }
 
         /**
+         * @hide only used by internal implementation.
+         */
+        public String libraryName() {
+            return mLibraryName;
+        }
+
+        /**
          * Sets a {@link LibraryLoader} to be used to load the native library.
          * If not set, the library will be loaded using {@link System#loadLibrary}.
          * @param loader {@code LibraryLoader} to be used to load the native library.
@@ -260,12 +267,8 @@ public abstract class CronetEngine {
         /**
          * @hide only used by internal implementation.
          */
-        public void loadLibrary() {
-            if (mLibraryLoader == null) {
-                System.loadLibrary(mLibraryName);
-            } else {
-                mLibraryLoader.loadLibrary(mLibraryName);
-            }
+        public LibraryLoader libraryLoader() {
+            return mLibraryLoader;
         }
 
         /**

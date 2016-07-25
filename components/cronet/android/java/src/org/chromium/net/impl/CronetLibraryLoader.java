@@ -41,7 +41,11 @@ public class CronetLibraryLoader {
             }
             sInitStarted = true;
             ContextUtils.initApplicationContext(context.getApplicationContext());
-            builder.loadLibrary();
+            if (builder.libraryLoader() != null) {
+                builder.libraryLoader().loadLibrary(builder.libraryName());
+            } else {
+                System.loadLibrary(builder.libraryName());
+            }
             ContextUtils.initApplicationContextForNative();
             if (!ImplVersion.CRONET_VERSION.equals(nativeGetCronetVersion())) {
                 throw new RuntimeException(String.format("Expected Cronet version number %s, "
