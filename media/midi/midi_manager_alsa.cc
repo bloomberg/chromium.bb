@@ -158,13 +158,16 @@ MidiManagerAlsa::~MidiManagerAlsa() {
   // are not destructed here.
   base::AutoLock lock(lazy_init_member_lock_);
 
-  // Extra DCHECK to verify all members are already reset.
-  DCHECK(!initialization_thread_checker_);
-  DCHECK(!in_client_);
-  DCHECK(!out_client_);
-  DCHECK(!decoder_);
-  DCHECK(!udev_);
-  DCHECK(!udev_monitor_);
+  // Extra CHECK to verify all members are already reset.
+  CHECK(!initialization_thread_checker_);
+  CHECK(!in_client_);
+  CHECK(!out_client_);
+  CHECK(!decoder_);
+  CHECK(!udev_);
+  CHECK(!udev_monitor_);
+
+  CHECK(!send_thread_.IsRunning());
+  CHECK(!event_thread_.IsRunning());
 }
 
 void MidiManagerAlsa::StartInitialization() {

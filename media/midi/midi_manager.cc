@@ -60,7 +60,8 @@ MidiManager::MidiManager()
 MidiManager::~MidiManager() {
   // Make sure that Finalize() is called to clean up resources allocated on
   // the Chrome_IOThread.
-  DCHECK(finalized_);
+  base::AutoLock auto_lock(lock_);
+  CHECK(finalized_);
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && \
