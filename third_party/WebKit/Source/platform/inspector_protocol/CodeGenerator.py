@@ -24,11 +24,18 @@ templates_dir = module_path
 # In Blink, jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
 # after path[0] == invoking script dir
-third_party_dir = os.path.normpath(os.path.join(
+blink_third_party_dir = os.path.normpath(os.path.join(
     module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir,
     "third_party"))
-if os.path.isdir(third_party_dir):
-    sys.path.insert(1, third_party_dir)
+if os.path.isdir(blink_third_party_dir):
+    sys.path.insert(1, blink_third_party_dir)
+
+# In V8, it is in third_party folder
+v8_third_party_dir = os.path.normpath(os.path.join(
+    module_path, os.pardir, os.pardir, "third_party"))
+
+if os.path.isdir(v8_third_party_dir):
+    sys.path.insert(1, v8_third_party_dir)
 
 # In Node, it is in deps folder
 deps_dir = os.path.normpath(os.path.join(
