@@ -462,8 +462,8 @@ deps_os = {
     'src/third_party/netty4/src':
       Var('chromium_git') + '/external/netty4.git' + '@' + 'e0f26303b4ce635365be19414d0ac81f2ef6ba3c',
 
-    'src/third_party/robolectric/lib':
-      Var('chromium_git') + '/chromium/third_party/robolectric.git' + '@' + '6b63c99a8b6967acdb42cbed0adb067c80efc810',
+    'src/third_party/robolectric/robolectric':
+      Var('chromium_git') + '/external/robolectric.git' + '@' + 'fdf24a09a4550b9fe47028fb1e24f9f119573bd7',
 
     'src/third_party/ub-uiautomator/lib':
       Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + '00270549ce3161ae72ceb24712618ea28b4f9434',
@@ -631,6 +631,16 @@ hooks = [
                'download',
                '-b', 'chromium-espresso',
                '-l', 'third_party/espresso'
+    ],
+  },
+  {
+    'name': 'robolectric_libs',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/update_deps/update_third_party_deps.py',
+               'download',
+               '-b', 'chromium-robolectric',
+               '-l', 'third_party/robolectric'
     ],
   },
   {

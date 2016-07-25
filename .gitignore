@@ -420,7 +420,7 @@ vs-chromium-project.txt
 /third_party/pywebsocket/src
 /third_party/re2/src
 /third_party/requests/src
-/third_party/robolectric/lib
+/third_party/robolectric/lib/*.jar
 /third_party/scons-2.0.1
 /third_party/sfntly/src
 /third_party/shaderc/src
