@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
@@ -93,8 +93,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   std::unique_ptr<SchedulerServiceThread> service_thread_;
 
 #if DCHECK_IS_ON()
-  // Signaled once JoinForTesting() has returned.
-  WaitableEvent join_for_testing_returned_;
+  // Set once JoinForTesting() has returned.
+  AtomicFlag join_for_testing_returned_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerImpl);

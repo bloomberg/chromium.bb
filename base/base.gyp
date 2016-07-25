@@ -539,7 +539,7 @@
         'strings/utf_string_conversions_unittest.cc',
         'supports_user_data_unittest.cc',
         'sync_socket_unittest.cc',
-        'synchronization/cancellation_flag_unittest.cc',
+        'synchronization/atomic_flag_unittest.cc',
         'synchronization/condition_variable_unittest.cc',
         'synchronization/lock_unittest.cc',
         'synchronization/read_write_lock_unittest.cc',

@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task_runner.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
@@ -28,7 +28,6 @@
 using content::BrowserThread;
 using content::WebContents;
 using content::WebContentsObserver;
-using StartupCompleteFlag = base::CancellationFlag;
 
 namespace {
 
@@ -45,7 +44,7 @@ struct AfterStartupTask {
 };
 
 // The flag may be read on any thread, but must only be set on the UI thread.
-base::LazyInstance<StartupCompleteFlag>::Leaky g_startup_complete_flag;
+base::LazyInstance<base::AtomicFlag>::Leaky g_startup_complete_flag;
 
 // The queue may only be accessed on the UI thread.
 base::LazyInstance<std::deque<AfterStartupTask*>>::Leaky g_after_startup_tasks;

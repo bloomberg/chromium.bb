@@ -31,7 +31,7 @@ std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
 
 TaskSchedulerImpl::~TaskSchedulerImpl() {
 #if DCHECK_IS_ON()
-  DCHECK(join_for_testing_returned_.IsSignaled());
+  DCHECK(join_for_testing_returned_.IsSet());
 #endif
 }
 
@@ -59,13 +59,13 @@ void TaskSchedulerImpl::Shutdown() {
 
 void TaskSchedulerImpl::JoinForTesting() {
 #if DCHECK_IS_ON()
-  DCHECK(!join_for_testing_returned_.IsSignaled());
+  DCHECK(!join_for_testing_returned_.IsSet());
 #endif
   for (const auto& worker_pool : worker_pools_)
     worker_pool->JoinForTesting();
   service_thread_->JoinForTesting();
 #if DCHECK_IS_ON()
-  join_for_testing_returned_.Signal();
+  join_for_testing_returned_.Set();
 #endif
 }
 
@@ -75,11 +75,6 @@ TaskSchedulerImpl::TaskSchedulerImpl(const WorkerPoolIndexForTraitsCallback&
           Bind(&TaskSchedulerImpl::OnDelayedRunTimeUpdated, Unretained(this))),
       worker_pool_index_for_traits_callback_(
           worker_pool_index_for_traits_callback)
-#if DCHECK_IS_ON()
-      ,
-      join_for_testing_returned_(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED)
-#endif
 {
   DCHECK(!worker_pool_index_for_traits_callback_.is_null());
 }
