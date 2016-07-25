@@ -22,10 +22,10 @@ class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
 
   // Move the cursor from the Evdev thread.
   virtual void MoveCursor(const gfx::Vector2dF& delta) = 0;
-  // Move the cursor from the UI thread only.
+  // Move the cursor from the UI or Evdev (e.g. on a tablet).
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) = 0;
-  // Move the cursor from the UI thread only.
+  // Move the cursor from the UI or Evdev thread.
   virtual void MoveCursorTo(const gfx::PointF& location) = 0;
 
   // Location in screen. Either thread, IPC-free.
