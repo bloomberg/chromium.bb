@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_STOREKIT_LAUNCHER_H_
 #define IOS_CHROME_BROWSER_STOREKIT_LAUNCHER_H_
 
+@class NSString;
+
 // Protocol to be implemented by a class that provides an access to the app
 // store with StoreKit.
 @protocol StoreKitLauncher
