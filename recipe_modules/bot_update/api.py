@@ -78,6 +78,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # We can re-use the gclient spec from the gclient module, since all the
     # data bot_update needs is already configured into the gclient spec.
     cfg = gclient_config or self.m.gclient.c
+    assert cfg is not None, (
+        'missing gclient_config or forgot api.gclient.set_config(...) before?')
 
     # Used by bot_update to determine if we want to run or not.
     master = self._mastername
