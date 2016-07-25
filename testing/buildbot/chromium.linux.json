@@ -809,10 +809,6 @@
       {
         "name": "webview_licenses",
         "script": "webview_licenses.py"
-      },
-      {
-        "name": "telemetry_perf_unittests",
-        "script": "telemetry_perf_unittests.py"
       }
     ]
   },
@@ -1877,21 +1873,6 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "args": [
-          "--xvfb"
-        ],
-        "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "override_compile_targets": [
-          "telemetry_perf_unittests_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 960,
-          "shards": 12
         }
       },
       {
