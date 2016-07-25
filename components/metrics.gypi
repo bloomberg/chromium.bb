@@ -270,6 +270,8 @@
             'metrics/leak_detector/call_stack_table.h',
             'metrics/leak_detector/custom_allocator.cc',
             'metrics/leak_detector/custom_allocator.h',
+            'metrics/leak_detector/gnu_build_id_reader.cc',
+            'metrics/leak_detector/gnu_build_id_reader.h',
             'metrics/leak_detector/leak_analyzer.cc',
             'metrics/leak_detector/leak_analyzer.h',
             'metrics/leak_detector/leak_detector.cc',

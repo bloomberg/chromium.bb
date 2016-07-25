@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/metrics/leak_detector/gnu_build_id_reader.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -90,6 +91,9 @@ MemoryLeakReportProto::Params GetVariationParameters() {
 
 LeakDetectorController::LeakDetectorController()
     : params_(GetVariationParameters()) {
+  // Read the build ID once and store it.
+  leak_detector::gnu_build_id_reader::ReadBuildID(&build_id_);
+
   LeakDetector* detector = LeakDetector::GetInstance();
   detector->AddObserver(this);
 
@@ -138,6 +142,8 @@ void LeakDetectorController::StoreLeakReports(
     stored_reports_.push_back(report);
     stored_reports_.back().mutable_params()->CopyFrom(params_);
     stored_reports_.back().set_source_process(process_type);
+    stored_reports_.back().mutable_build_id()->assign(build_id_.begin(),
+                                                      build_id_.end());
   }
 }
 

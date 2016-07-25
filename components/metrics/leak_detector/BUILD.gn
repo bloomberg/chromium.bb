@@ -14,6 +14,8 @@ if (is_chromeos) {
       "call_stack_table.h",
       "custom_allocator.cc",
       "custom_allocator.h",
+      "gnu_build_id_reader.cc",
+      "gnu_build_id_reader.h",
       "leak_analyzer.cc",
       "leak_analyzer.h",
       "leak_detector.cc",

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_CONTROLLER_H_
 #define CHROME_BROWSER_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"
@@ -52,6 +54,9 @@ class LeakDetectorController
   // Contains all the parameters passed to LeakDetector. Store them in a single
   // protobuf message instead of in separate member variables.
   const MemoryLeakReportProto::Params params_;
+
+  // The build ID of the current Chrome binary.
+  std::vector<uint8_t> build_id_;
 
   // For thread safety.
   base::ThreadChecker thread_checker_;
