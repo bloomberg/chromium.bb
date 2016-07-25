@@ -145,11 +145,7 @@ class TaskManagerTesterImpl : public TaskManagerTester {
 
   // Returns the TaskManagerTableModel for the the visible NewTaskManagerView.
   static task_management::TaskManagerTableModel* GetRealModel() {
-    // This downcast is safe, as long as the new task manager is enabled.
-    task_management::TaskManagerTableModel* result =
-        static_cast<task_management::TaskManagerTableModel*>(
-            chrome::ShowTaskManager(nullptr));
-    return result;
+    return chrome::ShowTaskManager(nullptr);
   }
 
   task_management::TaskManagerTableModel* model_;

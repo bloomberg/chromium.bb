@@ -597,7 +597,7 @@ void TaskManagerMac::Hide() {
 namespace chrome {
 
 // Declared in browser_dialogs.h.
-ui::TableModel* ShowTaskManager(Browser* browser) {
+task_management::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
   if (chrome::ToolkitViewsDialogsEnabled())
     return chrome::ShowTaskManagerViews(browser);
 

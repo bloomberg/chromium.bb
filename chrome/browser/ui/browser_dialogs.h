@@ -54,8 +54,11 @@ class AuthChallengeInfo;
 class URLRequest;
 }
 
+namespace task_management {
+class TaskManagerTableModel;
+}
+
 namespace ui {
-class TableModel;
 class WebDialogDelegate;
 }
 
@@ -72,7 +75,7 @@ extern const base::Feature kMacViewsWebUIDialogs;
 // Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
 // Returns a pointer to the underlying TableModel, which can be ignored, or used
 // for testing.
-ui::TableModel* ShowTaskManager(Browser* browser);
+task_management::TaskManagerTableModel* ShowTaskManager(Browser* browser);
 void HideTaskManager();
 
 #if !defined(OS_MACOSX)
@@ -132,7 +135,7 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     bool newly_bookmarked);
 
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
-ui::TableModel* ShowTaskManagerViews(Browser* browser);
+task_management::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
 // Notifies the old task manager with network bytes read events when the Mac
