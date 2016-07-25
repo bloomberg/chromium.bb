@@ -284,7 +284,7 @@ ContainerNode* highestEditableRoot(const PositionInFlatTree& position, EditableT
     return highestEditableRoot(toPositionInDOMTree(position), editableType);
 }
 
-bool isEditablePosition(const Position& position, EditableType editableType)
+bool isEditablePosition(const Position& position)
 {
     Node* node = position.parentAnchoredEquivalent().anchorNode();
     if (!node)
@@ -303,12 +303,12 @@ bool isEditablePosition(const Position& position, EditableType editableType)
 
     if (node->isDocumentNode())
         return false;
-    return hasEditableStyle(*node, editableType);
+    return hasEditableStyle(*node, ContentIsEditable);
 }
 
-bool isEditablePosition(const PositionInFlatTree& p, EditableType editableType)
+bool isEditablePosition(const PositionInFlatTree& p)
 {
-    return isEditablePosition(toPositionInDOMTree(p), editableType);
+    return isEditablePosition(toPositionInDOMTree(p));
 }
 
 bool isAtUnsplittableElement(const Position& pos)
@@ -318,7 +318,7 @@ bool isAtUnsplittableElement(const Position& pos)
 }
 
 
-bool isRichlyEditablePosition(const Position& p, EditableType editableType)
+bool isRichlyEditablePosition(const Position& p)
 {
     Node* node = p.anchorNode();
     if (!node)
@@ -327,7 +327,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     if (isDisplayInsideTable(node))
         node = node->parentNode();
 
-    return layoutObjectIsRichlyEditable(*node, editableType);
+    return layoutObjectIsRichlyEditable(*node);
 }
 
 Element* rootEditableElementOf(const Position& p, EditableType editableType)
@@ -1449,7 +1449,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
 // This assumes that it starts in editable content.
 Position leadingWhitespacePosition(const Position& position, TextAffinity affinity, WhitespacePositionOption option)
 {
-    DCHECK(isEditablePosition(position, ContentIsEditable)) << position;
+    DCHECK(isEditablePosition(position)) << position;
     if (position.isNull())
         return Position();
 
@@ -1477,7 +1477,7 @@ Position leadingWhitespacePosition(const Position& position, TextAffinity affini
 // This assumes that it starts in editable content.
 Position trailingWhitespacePosition(const Position& position, TextAffinity, WhitespacePositionOption option)
 {
-    DCHECK(isEditablePosition(position, ContentIsEditable)) << position;
+    DCHECK(isEditablePosition(position)) << position;
     if (position.isNull())
         return Position();
 

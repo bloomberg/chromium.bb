@@ -714,7 +714,7 @@ bool VisibleSelectionTemplate<Strategy>::isContentEditable() const
 template <typename Strategy>
 bool VisibleSelectionTemplate<Strategy>::hasEditableStyle() const
 {
-    return isEditablePosition(start(), ContentIsEditable);
+    return isEditablePosition(start());
 }
 
 template <typename Strategy>

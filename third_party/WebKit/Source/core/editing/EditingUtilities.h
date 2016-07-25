@@ -232,9 +232,9 @@ int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 // FIXME: Both isEditablePosition and isRichlyEditablePosition rely on up-to-date
 // style to give proper results. They shouldn't update style by default, but
 // should make it clear that that is the contract.
-CORE_EXPORT bool isEditablePosition(const Position&, EditableType = ContentIsEditable);
-bool isEditablePosition(const PositionInFlatTree&, EditableType = ContentIsEditable);
-bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
+CORE_EXPORT bool isEditablePosition(const Position&);
+bool isEditablePosition(const PositionInFlatTree&);
+bool isRichlyEditablePosition(const Position&);
 bool lineBreakExistsAtPosition(const Position&);
 bool isAtUnsplittableElement(const Position&);
 

@@ -359,7 +359,7 @@ void CompositeEditCommand::insertNodeAfter(Node* insertChild, Node* refChild, Ed
 void CompositeEditCommand::insertNodeAt(Node* insertChild, const Position& editingPosition, EditingState* editingState)
 {
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    ABORT_EDITING_COMMAND_IF(!isEditablePosition(editingPosition, ContentIsEditable));
+    ABORT_EDITING_COMMAND_IF(!isEditablePosition(editingPosition));
     // For editing positions like [table, 0], insert before the table,
     // likewise for replaced elements, brs, etc.
     Position p = editingPosition.parentAnchoredEquivalent();
@@ -981,7 +981,7 @@ HTMLElement* CompositeEditCommand::insertNewDefaultParagraphElementAt(const Posi
 // it, and return that block.  Otherwise return 0.
 HTMLElement* CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos, EditingState* editingState)
 {
-    DCHECK(isEditablePosition(pos, ContentIsEditable)) << pos;
+    DCHECK(isEditablePosition(pos)) << pos;
 
     // It's strange that this function is responsible for verifying that pos has not been invalidated
     // by an earlier call to this function.  The caller, applyBlockStyle, should do this.

@@ -167,11 +167,11 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
     initializeStartEnd(start, end);
     DCHECK(start.isNotNull());
     DCHECK(end.isNotNull());
-    if (!isEditablePosition(start, ContentIsEditable)) {
+    if (!isEditablePosition(start)) {
         editingState->abort();
         return;
     }
-    if (!isEditablePosition(end, ContentIsEditable)) {
+    if (!isEditablePosition(end)) {
         Node* highestRoot = highestEditableRoot(start);
         DCHECK(highestRoot);
         end = lastEditablePositionBeforePositionInRoot(end, *highestRoot);
