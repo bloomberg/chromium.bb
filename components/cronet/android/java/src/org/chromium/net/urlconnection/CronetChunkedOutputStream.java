@@ -145,5 +145,6 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
         checkNotClosed();
         mBuffer.flip();
         mMessageLoop.loop();
+        checkNoException();
     }
 }

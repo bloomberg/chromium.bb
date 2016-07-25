@@ -115,6 +115,47 @@ public class CronetChunkedOutputStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    public void testGetResponseAfterWriteFailed() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        NativeTestServer.shutdownNativeTestServer();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        // Set 1 byte as chunk size so internally Cronet will try upload when
+        // 1 byte is filled.
+        connection.setChunkedStreamingMode(1);
+        try {
+            OutputStream out = connection.getOutputStream();
+            out.write(1);
+            out.write(1);
+            fail();
+        } catch (IOException e) {
+            if (!testingSystemHttpURLConnection()) {
+                UrlRequestException requestException = (UrlRequestException) e;
+                assertEquals(UrlRequestException.ERROR_CONNECTION_REFUSED,
+                        requestException.getErrorCode());
+            }
+        }
+        // Make sure IOException is reported again when trying to read response
+        // from the connection.
+        try {
+            connection.getResponseCode();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+            if (!testingSystemHttpURLConnection()) {
+                UrlRequestException requestException = (UrlRequestException) e;
+                assertEquals(UrlRequestException.ERROR_CONNECTION_REFUSED,
+                        requestException.getErrorCode());
+            }
+        }
+        // Restarting server to run the test for a second time.
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
     public void testPost() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

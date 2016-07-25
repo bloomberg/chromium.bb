@@ -131,6 +131,7 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
         checkNotClosed();
         mBuffer.flip();
         mMessageLoop.loop();
+        checkNoException();
     }
 
     /**

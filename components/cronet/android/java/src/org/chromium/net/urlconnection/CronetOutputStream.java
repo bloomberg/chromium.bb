@@ -54,13 +54,21 @@ abstract class CronetOutputStream extends OutputStream {
      */
     protected void checkNotClosed() throws IOException {
         if (mRequestCompleted) {
-            if (mException != null) {
-                throw mException;
-            }
+            checkNoException();
             throw new IOException("Writing after request completed.");
         }
         if (mClosed) {
             throw new IOException("Stream has been closed.");
+        }
+    }
+
+    /**
+     * Throws the same IOException that the request is failed with. If there
+     * is no exception reported, this method is no-op.
+     */
+    protected void checkNoException() throws IOException {
+        if (mException != null) {
+            throw mException;
         }
     }
 }
