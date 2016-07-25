@@ -6,11 +6,44 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 
 using net::ct::SignedTreeHead;
+
+namespace {
+
+// Enum indicating whether an SCT can be checked for inclusion and if not,
+// the reason it cannot.
+//
+// Note: The numeric values are used within a histogram and should not change
+// or be re-assigned.
+enum SCTCanBeCheckedForInclusion {
+  // If the SingleTreeTracker does not have a valid STH, then a valid STH is
+  // first required to evaluate whether the SCT can be checked for inclusion
+  // or not.
+  VALID_STH_REQUIRED = 0,
+  // If the STH does not cover the SCT (the timestamp in the SCT is greater than
+  // MMD + timestamp in the STH), then a newer STH is needed.
+  NEWER_STH_REQUIRED = 1,
+  // When an SCT is observed, if the SingleTreeTracker instance has a valid STH
+  // and the STH covers the SCT (the timestamp in the SCT is less than MMD +
+  // timestamp in the STH), then it can be checked for inclusion.
+  CAN_BE_CHECKED = 2,
+  SCT_CAN_BE_CHECKED_MAX
+};
+
+// Measure how often clients encounter very new SCTs, by measuring whether an
+// SCT can be checked for inclusion upon first observation.
+void LogCanBeCheckedForInclusionToUMA(
+    SCTCanBeCheckedForInclusion can_be_checked) {
+  UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.CanInclusionCheckSCT",
+                            can_be_checked, SCT_CAN_BE_CHECKED_MAX);
+}
+
+}  // namespace
 
 namespace certificate_transparency {
 
@@ -34,15 +67,20 @@ void SingleTreeTracker::OnSCTVerified(
   if (verified_sth_.timestamp.is_null() ||
       (verified_sth_.timestamp <
        (sct->timestamp + base::TimeDelta::FromHours(24)))) {
-    // TODO(eranm): UMA - how often SCTs have to wait for a newer STH for
-    // inclusion check.
     entries_status_.insert(
         std::make_pair(sct->timestamp, SCT_PENDING_NEWER_STH));
+
+    if (!verified_sth_.timestamp.is_null()) {
+      LogCanBeCheckedForInclusionToUMA(NEWER_STH_REQUIRED);
+    } else {
+      LogCanBeCheckedForInclusionToUMA(VALID_STH_REQUIRED);
+    }
+
     return;
   }
 
+  LogCanBeCheckedForInclusionToUMA(CAN_BE_CHECKED);
   // TODO(eranm): Check inclusion here.
-  // TODO(eranm): UMA - how often inclusion can be checked immediately.
   entries_status_.insert(
       std::make_pair(sct->timestamp, SCT_PENDING_INCLUSION_CHECK));
 }

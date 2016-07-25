@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/string_piece.h"
+#include "base/test/histogram_tester.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp.h"
@@ -19,6 +20,9 @@
 namespace certificate_transparency {
 
 namespace {
+
+const char kCanCheckForInclusionHistogramName[] =
+    "Net.CertificateTransparency.CanInclusionCheckSCT";
 
 bool GetOldSignedTreeHead(net::ct::SignedTreeHead* sth) {
   sth->version = net::ct::SignedTreeHead::V1;
@@ -75,6 +79,7 @@ class SingleTreeTrackerTest : public ::testing::Test {
 // Test that an SCT is classified as pending for a newer STH if the
 // SingleTreeTracker has not seen any STHs so far.
 TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTNoSTH) {
+  base::HistogramTester histograms;
   // First make sure the SCT has not been observed at all.
   EXPECT_EQ(
       SingleTreeTracker::SCT_NOT_OBSERVED,
@@ -87,11 +92,16 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTNoSTH) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_PENDING_NEWER_STH,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+
+  // Expect logging of a value indicating a valid STH is required.
+  histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
+  histograms.ExpectBucketCount(kCanCheckForInclusionHistogramName, 0, 1);
 }
 
 // Test that an SCT is classified as pending an inclusion check if the
 // SingleTreeTracker has a fresh-enough STH to check inclusion against.
 TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTWithRecentSTH) {
+  base::HistogramTester histograms;
   // Provide an STH to the tree_tracker_.
   net::ct::SignedTreeHead sth;
   net::ct::GetSampleSignedTreeHead(&sth);
@@ -110,18 +120,26 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTWithRecentSTH) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+
+  // Exactly one value should be logged, indicating the SCT can be checked for
+  // inclusion, as |tree_tracker_| did have a valid STH when it was notified
+  // of a new SCT.
+  histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
+  histograms.ExpectBucketCount(kCanCheckForInclusionHistogramName, 2, 1);
 }
 
 // Test that the SingleTreeTracker correctly queues verified SCTs for inclusion
 // checking such that, upon receiving a fresh STH, it changes the SCT's status
 // from pending newer STH to pending inclusion check.
 TEST_F(SingleTreeTrackerTest, CorrectlyUpdatesSCTStatusOnNewSTH) {
+  base::HistogramTester histograms;
   // Report an observed SCT and make sure it's in the pending newer STH
   // state.
   tree_tracker_->OnSCTVerified(chain_.get(), cert_sct_.get());
   EXPECT_EQ(
       SingleTreeTracker::SCT_PENDING_NEWER_STH,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
 
   // Provide with a fresh STH
   net::ct::SignedTreeHead sth;
@@ -132,6 +150,10 @@ TEST_F(SingleTreeTrackerTest, CorrectlyUpdatesSCTStatusOnNewSTH) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  // Check that no additional UMA was logged for this case as the histogram is
+  // only supposed to measure the state of newly-observed SCTs, not pending
+  // ones.
+  histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
 }
 
 // Test that the SingleTreeTracker does not change an SCT's status if an STH
@@ -153,6 +175,27 @@ TEST_F(SingleTreeTrackerTest, DoesNotUpdatesSCTStatusOnOldSTH) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_PENDING_NEWER_STH,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+}
+
+// Test that the SingleTreeTracker correctly logs that an SCT is pending a new
+// STH, when it has a valid STH,  but the observed SCT is not covered by the
+// STH.
+TEST_F(SingleTreeTrackerTest, LogsUMAForNewSCTAndOldSTH) {
+  base::HistogramTester histograms;
+  // Provide an old STH for the same log.
+  net::ct::SignedTreeHead sth;
+  GetOldSignedTreeHead(&sth);
+  tree_tracker_->NewSTHObserved(sth);
+
+  histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 0);
+
+  // Notify of an SCT and make sure it's in the 'pending newer STH' state.
+  tree_tracker_->OnSCTVerified(chain_.get(), cert_sct_.get());
+
+  // Exactly one value should be logged, indicating the SCT cannot be checked
+  // for inclusion as the STH is too old.
+  histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
+  histograms.ExpectBucketCount(kCanCheckForInclusionHistogramName, 1, 1);
 }
 
 }  // namespace certificate_transparency

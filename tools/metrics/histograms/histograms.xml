@@ -26585,6 +26585,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.CertificateTransparency.CanInclusionCheckSCT"
+    enum="SCTCanBeChecked">
+  <owner>eranm@chromium.org</owner>
+  <summary>
+    Whether an observed Signed Certificate Timestamp (SCT) can be checked for
+    inclusion. An SCT can be checked for inclusion if the client has a valid
+    Signed Tree Head (STH) and the STH currently known to the client was issued
+    24 hours after the timestamp in the SCT (24 hours being the typical Maximum
+    Merge Delay).
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificateTransparency.MainFrameValidSCTCount">
   <owner>eranm@chromium.org</owner>
   <summary>
@@ -89824,6 +89836,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ScrollThread" type="int">
   <int value="0" label="Scroll on impl-thread"/>
   <int value="1" label="Scroll on main-thread"/>
+</enum>
+
+<enum name="SCTCanBeChecked" type="int">
+  <int value="0" label="No valid STH"/>
+  <int value="1" label="Requires newer STH"/>
+  <int value="2" label="Can be checked for inclusion"/>
 </enum>
 
 <enum name="SCTOrigin" type="int">
