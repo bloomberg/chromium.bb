@@ -55,6 +55,7 @@ class EventDispatchMediator;
 class EventListener;
 class ExceptionState;
 class FloatPoint;
+class GetRootNodeOptions;
 class LocalFrame;
 class HTMLInputElement;
 class HTMLQualifiedName;
@@ -201,6 +202,7 @@ public:
     NodeList* childNodes();
     Node* firstChild() const;
     Node* lastChild() const;
+    Node* getRootNode(const GetRootNodeOptions&) const;
     Node& treeRoot() const;
     Node& shadowIncludingRoot() const;
     bool isUnclosedNodeOf(const Node&) const;

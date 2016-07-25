@@ -44,6 +44,7 @@
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/GetRootNodeOptions.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
@@ -379,6 +380,11 @@ Node& Node::treeRoot() const
     while (node->parentNode())
         node = node->parentNode();
     return const_cast<Node&>(*node);
+}
+
+Node* Node::getRootNode(const GetRootNodeOptions& options) const
+{
+    return (options.hasComposed() && options.composed()) ? &shadowIncludingRoot() : &treeRoot();
 }
 
 Node* Node::insertBefore(Node* newChild, Node* refChild, ExceptionState& exceptionState)

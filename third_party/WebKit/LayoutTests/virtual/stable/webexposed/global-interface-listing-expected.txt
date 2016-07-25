@@ -3445,6 +3445,7 @@ interface Node : EventTarget
     method compareDocumentPosition
     method constructor
     method contains
+    method getRootNode
     method hasChildNodes
     method insertBefore
     method isDefaultNamespace

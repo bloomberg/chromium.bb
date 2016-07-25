@@ -1268,6 +1268,7 @@ public:
         V8VisualViewport_Scale_AttributeGetter = 1464,
         VisualViewportScrollFired = 1465,
         VisualViewportResizeFired = 1466,
+        NodeGetRootNode = 1467,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

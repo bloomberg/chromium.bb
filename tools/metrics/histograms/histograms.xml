@@ -77196,6 +77196,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1464" label="V8VisualViewport_Scale_AttributeGetter"/>
   <int value="1465" label="VisualViewportScrollFired"/>
   <int value="1466" label="VisualViewportResizeFired"/>
+  <int value="1467" label="NodeGetRootNode"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
