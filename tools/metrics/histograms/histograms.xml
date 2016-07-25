@@ -73473,7 +73473,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="ExtensionBubbleAction" type="int">
   <int value="0" label="Learn more"/>
   <int value="1" label="Execute"/>
-  <int value="2" label="Dismiss"/>
+  <int value="2" label="Dismiss by user action"/>
+  <int value="3" label="Dismiss by deactivation"/>
 </enum>
 
 <enum name="ExtensionCreationFlags" type="int">
