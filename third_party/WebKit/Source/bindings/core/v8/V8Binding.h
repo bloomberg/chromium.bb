@@ -908,12 +908,6 @@ inline bool isUndefinedOrNull(v8::Local<v8::Value> value)
 }
 v8::Local<v8::Function> getBoundFunction(v8::Local<v8::Function>);
 
-// Attaches |environment| to |function| and returns it.
-inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Local<v8::Value> environment, v8::Isolate* isolate)
-{
-    return v8::Function::New(isolate->GetCurrentContext(), function, environment, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
-}
-
 // FIXME: This will be soon embedded in the generated code.
 template<typename Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
