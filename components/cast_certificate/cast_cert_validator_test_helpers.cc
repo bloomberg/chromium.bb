@@ -13,6 +13,10 @@ namespace cast_certificate {
 
 namespace testing {
 
+namespace {
+
+// Reads a file from the test data directory
+// (//src/components/test/data/cast_certificate)
 std::string ReadTestFileToString(const base::StringPiece& file_name) {
   base::FilePath filepath;
   PathService::Get(base::DIR_SOURCE_ROOT, &filepath);
@@ -31,6 +35,8 @@ std::string ReadTestFileToString(const base::StringPiece& file_name) {
 
   return file_data;
 }
+
+}  // namespace
 
 std::vector<std::string> ReadCertificateChainFromFile(
     const base::StringPiece& file_name) {

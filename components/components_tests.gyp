@@ -107,8 +107,9 @@
       'captive_portal/captive_portal_detector_unittest.cc',
     ],
     'cast_certificate_unittest_sources': [
+      'cast_certificate/cast_cert_validator_test_helpers.cc',
+      'cast_certificate/cast_cert_validator_test_helpers.h',
       'cast_certificate/cast_cert_validator_unittest.cc',
-      'cast_certificate/cast_crl_unittest.cc',
     ],
     'certificate_reporting_unittest_sources': [
       'certificate_reporting/error_report_unittest.cc',
@@ -1156,8 +1157,6 @@
         'components.gyp:bubble',
         'components.gyp:captive_portal_test_support',
         'components.gyp:cast_certificate',
-        'components.gyp:cast_certificate_test_proto',
-        'components.gyp:cast_certificate_test_support',
         'components.gyp:certificate_reporting',
         'components.gyp:cloud_devices_common',
         'components.gyp:component_updater',

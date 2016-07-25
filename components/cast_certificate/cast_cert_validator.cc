@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
-#include "components/cast_certificate/cast_crl.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/parse_certificate.h"
@@ -25,7 +24,6 @@
 #include "net/cert/internal/signature_policy.h"
 #include "net/cert/internal/trust_store.h"
 #include "net/cert/internal/verify_signed_data.h"
-#include "net/der/encode_values.h"
 #include "net/der/input.h"
 
 namespace cast_certificate {
@@ -235,6 +233,19 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
   return true;
 }
 
+// Converts a base::Time::Exploded to a net::der::GeneralizedTime.
+net::der::GeneralizedTime ConvertExplodedTime(
+    const base::Time::Exploded& exploded) {
+  net::der::GeneralizedTime result;
+  result.year = exploded.year;
+  result.month = exploded.month;
+  result.day = exploded.day_of_month;
+  result.hours = exploded.hour;
+  result.minutes = exploded.minute;
+  result.seconds = exploded.second;
+  return result;
+}
+
 // Returns the parsing options used for Cast certificates.
 net::ParseCertificateOptions GetCertParsingOptions() {
   net::ParseCertificateOptions options;
@@ -254,11 +265,9 @@ net::ParseCertificateOptions GetCertParsingOptions() {
 }  // namespace
 
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
-                      const base::Time& time,
+                      const base::Time::Exploded& time,
                       std::unique_ptr<CertVerificationContext>* context,
-                      CastDeviceCertPolicy* policy,
-                      const CastCRL* crl,
-                      CRLPolicy crl_policy) {
+                      CastDeviceCertPolicy* policy) {
   if (certs.empty())
     return false;
 
@@ -286,13 +295,10 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
 
   // Do path building and RFC 5280 compatible certificate verification using the
   // two Cast trust anchors and Cast signature policy.
-  net::der::GeneralizedTime verification_time;
-  if (!net::der::EncodeTimeAsGeneralizedTime(time, &verification_time))
-    return false;
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(target_cert.get(), &CastTrustStore::Get(),
-                                    signature_policy.get(), verification_time,
-                                    &result);
+                                    signature_policy.get(),
+                                    ConvertExplodedTime(time), &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
   net::CompletionStatus rv = path_builder.Run(base::Closure());
   DCHECK_EQ(rv, net::CompletionStatus::SYNC);
@@ -301,25 +307,7 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
 
   // Check properties of the leaf certificate (key usage, policy), and construct
   // a CertVerificationContext that uses its public key.
-  if (!CheckTargetCertificate(target_cert.get(), context, policy))
-    return false;
-
-  // Check if a CRL is available.
-  if (!crl) {
-    if (crl_policy == CRLPolicy::CRL_REQUIRED) {
-      return false;
-    }
-  } else {
-    if (result.paths.empty() ||
-        !result.paths[result.best_result_index]->is_success())
-      return false;
-
-    if (!crl->CheckRevocation(result.paths[result.best_result_index]->path,
-                              time)) {
-      return false;
-    }
-  }
-  return true;
+  return CheckTargetCertificate(target_cert.get(), context, policy);
 }
 
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
@@ -330,13 +318,13 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
       new CertVerificationContextImpl(net::der::Input(spki), "CommonName"));
 }
 
-bool SetTrustAnchorForTest(const std::string& cert) {
+bool AddTrustAnchorForTest(const uint8_t* data, size_t length) {
   scoped_refptr<net::ParsedCertificate> anchor(
-      net::ParsedCertificate::CreateFromCertificateCopy(
-          cert, GetCertParsingOptions()));
+      net::ParsedCertificate::CreateFromCertificateData(
+          data, length, net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
+          GetCertParsingOptions()));
   if (!anchor)
     return false;
-  CastTrustStore::Get().Clear();
   CastTrustStore::Get().AddTrustedCertificate(std::move(anchor));
   return true;
 }
