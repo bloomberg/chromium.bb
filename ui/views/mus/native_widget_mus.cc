@@ -31,7 +31,6 @@
 #include "ui/base/view_prop.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -967,7 +966,7 @@ void NativeWidgetMus::StackBelow(gfx::NativeView native_view) {
   // NOTIMPLEMENTED();
 }
 
-void NativeWidgetMus::SetShape(SkRegion* shape) {
+void NativeWidgetMus::SetShape(std::unique_ptr<SkRegion> shape) {
   // NOTIMPLEMENTED();
 }
 

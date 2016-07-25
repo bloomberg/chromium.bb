@@ -448,11 +448,9 @@ void NativeWidgetAura::StackBelow(gfx::NativeView native_view) {
     window_->parent()->StackChildBelow(window_, native_view);
 }
 
-void NativeWidgetAura::SetShape(SkRegion* region) {
+void NativeWidgetAura::SetShape(std::unique_ptr<SkRegion> region) {
   if (window_)
-    window_->layer()->SetAlphaShape(base::WrapUnique(region));
-  else
-    delete region;
+    window_->layer()->SetAlphaShape(std::move(region));
 }
 
 void NativeWidgetAura::Close() {

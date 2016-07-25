@@ -588,7 +588,8 @@ gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
   return ToDIPRect(GetWorkAreaBoundsInPixels());
 }
 
-void DesktopWindowTreeHostX11::SetShape(SkRegion* native_region) {
+void DesktopWindowTreeHostX11::SetShape(
+    std::unique_ptr<SkRegion> native_region) {
   custom_window_shape_ = false;
   window_shape_.reset();
 
@@ -608,7 +609,6 @@ void DesktopWindowTreeHostX11::SetShape(SkRegion* native_region) {
     }
 
     custom_window_shape_ = true;
-    delete native_region;
   }
   ResetWindowRegion();
 }
@@ -754,7 +754,7 @@ bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {
                   reinterpret_cast<const unsigned char*>(utf8str.c_str()),
                   utf8str.size());
   XTextProperty xtp;
-  char *c_utf8_str = const_cast<char *>(utf8str.c_str());
+  char* c_utf8_str = const_cast<char*>(utf8str.c_str());
   if (Xutf8TextListToTextProperty(xdisplay_, &c_utf8_str, 1,
                                   XUTF8StringStyle, &xtp) == Success) {
     XSetWMName(xdisplay_, xwindow_, &xtp);

@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <stack>
 #include <string>
 #include <vector>
 
@@ -59,7 +58,7 @@ class NativeTheme;
 class OSExchangeData;
 class ThemeProvider;
 class Window;
-}
+}  // namespace ui
 
 namespace views {
 
@@ -476,8 +475,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void StackBelow(gfx::NativeView native_view);
 
   // Sets a shape on the widget. Passing a NULL |shape| reverts the widget to
-  // be rectangular. Takes ownership of |shape|.
-  void SetShape(SkRegion* shape);
+  // be rectangular.
+  void SetShape(std::unique_ptr<SkRegion> shape);
 
   // Hides the widget then closes it after a return to the message loop.
   virtual void Close();

@@ -557,8 +557,8 @@ void Widget::StackBelow(gfx::NativeView native_view) {
   native_widget_->StackBelow(native_view);
 }
 
-void Widget::SetShape(SkRegion* shape) {
-  native_widget_->SetShape(shape);
+void Widget::SetShape(std::unique_ptr<SkRegion> shape) {
+  native_widget_->SetShape(std::move(shape));
 }
 
 void Widget::Close() {

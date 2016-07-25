@@ -45,7 +45,7 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
  public:
   explicit MinimizeWaiter(XID window)
       : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {
-    const char* kAtomsToCache[] = { "_NET_WM_STATE_HIDDEN", NULL };
+    const char* const kAtomsToCache[] = {"_NET_WM_STATE_HIDDEN", nullptr};
     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
   }
 
@@ -84,7 +84,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
   void Wait() override {
     // StackingClientListWaiter may be created after
     // _NET_CLIENT_LIST_STACKING already contains |expected_windows|.
-    if (!ShouldKeepOnWaiting(NULL))
+    if (!ShouldKeepOnWaiting(nullptr))
       return;
 
     X11PropertyChangeWaiter::Wait();
@@ -248,7 +248,7 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
   EXPECT_EQ(window1, FindTopmostLocalProcessWindowAt(150, 150));
 
   EXPECT_EQ(xid2, FindTopmostXWindowAt(250, 150));
-  EXPECT_EQ(NULL, FindTopmostLocalProcessWindowAt(250, 150));
+  EXPECT_FALSE(FindTopmostLocalProcessWindowAt(250, 150));
 
   EXPECT_EQ(xid3, FindTopmostXWindowAt(250, 250));
   EXPECT_EQ(window3, FindTopmostLocalProcessWindowAt(250, 250));
@@ -262,14 +262,12 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
   EXPECT_NE(xid1, FindTopmostXWindowAt(1000, 1000));
   EXPECT_NE(xid2, FindTopmostXWindowAt(1000, 1000));
   EXPECT_NE(xid3, FindTopmostXWindowAt(1000, 1000));
-  EXPECT_EQ(NULL, FindTopmostLocalProcessWindowAt(1000, 1000));
+  EXPECT_FALSE(FindTopmostLocalProcessWindowAt(1000, 1000));
 
   EXPECT_EQ(window1,
             FindTopmostLocalProcessWindowWithIgnore(150, 150, window3));
-  EXPECT_EQ(NULL,
-            FindTopmostLocalProcessWindowWithIgnore(250, 250, window3));
-  EXPECT_EQ(NULL,
-            FindTopmostLocalProcessWindowWithIgnore(150, 250, window3));
+  EXPECT_FALSE(FindTopmostLocalProcessWindowWithIgnore(250, 250, window3));
+  EXPECT_FALSE(FindTopmostLocalProcessWindowWithIgnore(150, 250, window3));
   EXPECT_EQ(window1,
             FindTopmostLocalProcessWindowWithIgnore(150, 195, window3));
 
@@ -320,11 +318,10 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  SkRegion* skregion1 = new SkRegion;
+  auto skregion1 = base::MakeUnique<SkRegion>();
   skregion1->op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
   skregion1->op(SkIRect::MakeXYWH(10, 0, 90, 100), SkRegion::kUnion_Op);
-  // Widget takes ownership of |skregion1|.
-  widget1->SetShape(skregion1);
+  widget1->SetShape(std::move(skregion1));
 
   SkRegion skregion2;
   skregion2.op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
@@ -360,10 +357,10 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  SkRegion* skregion1 = new SkRegion;
+  auto skregion1 = base::MakeUnique<SkRegion>();
   skregion1->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
   // Widget takes ownership of |skregion1|.
-  widget1->SetShape(skregion1);
+  widget1->SetShape(std::move(skregion1));
 
   XID xids[] = { xid1 };
   StackingClientListWaiter stack_waiter(xids, arraysize(xids));
@@ -381,13 +378,12 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  SkRegion* skregion1 = new SkRegion;
+  auto skregion1 = base::MakeUnique<SkRegion>();
   skregion1->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
-  // Widget takes ownership of |skregion1|.
-  widget1->SetShape(skregion1);
+  widget1->SetShape(std::move(skregion1));
 
   // Remove the shape - this is now just a normal window.
-  widget1->SetShape(NULL);
+  widget1->SetShape(nullptr);
 
   XID xids[] = { xid1 };
   StackingClientListWaiter stack_waiter(xids, arraysize(xids));
@@ -415,7 +411,7 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
                                CWOverrideRedirect,
                                &swa);
   {
-    const char* kAtomsToCache[] = { "_NET_WM_WINDOW_TYPE_MENU", NULL };
+    const char* const kAtomsToCache[] = {"_NET_WM_WINDOW_TYPE_MENU", nullptr};
     ui::X11AtomCache atom_cache(gfx::GetXDisplay(), kAtomsToCache);
     ui::SetAtomProperty(menu_xid,
                         "_NET_WM_WINDOW_TYPE",
