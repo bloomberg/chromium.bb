@@ -2,29 +2,20 @@
 <style>
 canvas {
   background-color: gray;
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 100px;
 }
 </style>
-<p>Test passes if a green square inside an orange rectanlge is shown up without a distortion.
+<p>Test passes if a green square inside a gray square is shown without distortion.</p>
 <div>
-  <canvas width='200' height='200'></canvas>
+  <canvas width='100' height='100'></canvas>
 </div>
 <script>
 function paintCanvas(canvas)
 {
   var ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'orange';
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(50, 0, 100, 200);
-  ctx.clip();
-  ctx.fillRect(0, 0, 200, 200);
-  ctx.restore();
-
   ctx.fillStyle = 'green';
-  ctx.fillRect(75, 75, 50, 50);
+  ctx.fillRect(35, 35, 30, 30);
 }
 
 paintCanvas(document.querySelector('canvas'));
