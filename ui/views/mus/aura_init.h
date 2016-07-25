@@ -38,7 +38,7 @@ class VIEWS_MUS_EXPORT AuraInit {
  private:
   void InitializeResources(shell::Connector* connector);
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 

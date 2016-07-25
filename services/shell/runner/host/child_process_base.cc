@@ -18,7 +18,7 @@
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/common/switches.h"
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "services/shell/runner/host/linux_sandbox.h"
@@ -32,7 +32,7 @@ namespace shell {
 
 namespace {
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
 std::unique_ptr<LinuxSandbox> InitializeSandbox() {
   using sandbox::syscall_broker::BrokerFilePermission;
   // Warm parts of base in the copy of base in the mojo runner.
@@ -113,7 +113,7 @@ void ChildProcessMainWithCallback(const RunCallback& callback) {
   // sure symbol names in all loaded libraries will be cached.
   base::debug::EnableInProcessStackDumping();
 #endif
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
   std::unique_ptr<LinuxSandbox> sandbox;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
