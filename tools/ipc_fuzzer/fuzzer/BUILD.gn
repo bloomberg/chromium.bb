@@ -24,5 +24,6 @@ executable("ipc_fuzzer") {
     # Compiling fuzzer.cc with ASan takes too long, see
     # http://crbug.com/360158.
     configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+    configs += [ "//build/config/sanitizers:default_sanitizer_ldflags" ]
   }
 }
