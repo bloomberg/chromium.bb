@@ -8,8 +8,16 @@ namespace ntp_snippets {
 
 bool IsContentSuggestionsCategoryStatusAvailable(
     ContentSuggestionsCategoryStatus status) {
+  // Note: This code is duplicated in SnippetsBridge.java.
   return status == ContentSuggestionsCategoryStatus::AVAILABLE_LOADING ||
          status == ContentSuggestionsCategoryStatus::AVAILABLE;
+}
+
+bool IsContentSuggestionsCategoryStatusInitOrAvailable(
+    ContentSuggestionsCategoryStatus status) {
+  // Note: This code is duplicated in SnippetsBridge.java.
+  return status == ContentSuggestionsCategoryStatus::INITIALIZING ||
+         IsContentSuggestionsCategoryStatusAvailable(status);
 }
 
 }  // namespace ntp_snippets

@@ -50,6 +50,12 @@ enum class ContentSuggestionsCategoryStatus {
 bool IsContentSuggestionsCategoryStatusAvailable(
     ContentSuggestionsCategoryStatus status);
 
+// Determines whether the given status is INITIALIZING or one of the AVAILABLE
+// statuses. All of these statuses have in common that there is or will soon be
+// content.
+bool IsContentSuggestionsCategoryStatusInitOrAvailable(
+    ContentSuggestionsCategoryStatus status);
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_CATEGORY_STATUS_H_

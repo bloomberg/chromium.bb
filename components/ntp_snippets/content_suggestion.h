@@ -17,8 +17,6 @@ namespace ntp_snippets {
 
 // A content suggestion for the new tab page, which can be an article or an
 // offline page, for example.
-// NOTE: This class is not yet in use, please use NTPSnippet for now
-// (see ntp_snippet.h).
 class ContentSuggestion {
  public:
   // Creates a new ContentSuggestion. The caller must ensure that the |id|

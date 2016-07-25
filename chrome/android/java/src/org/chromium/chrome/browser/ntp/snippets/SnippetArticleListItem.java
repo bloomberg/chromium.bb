@@ -20,7 +20,6 @@ public class SnippetArticleListItem implements NewTabPageListItem {
     public final String mPreviewText;
     public final String mUrl;
     public final String mAmpUrl;
-    public final String mThumbnailUrl;
     public final long mPublishTimestampMilliseconds;
     public final float mScore;
     public final int mPosition;
@@ -41,21 +40,18 @@ public class SnippetArticleListItem implements NewTabPageListItem {
      * @param previewText the snippet preview text
      * @param url the URL of the article
      * @param ampUrl the AMP url for the article (possible for this to be empty)
-     * @param thumbnailUrl the URL of the thumbnail
      * @param timestamp the time in ms when this article was published
      * @param score the score expressing relative quality of the article for the user
      * @param position the position of this article in the list of snippets
      */
     public SnippetArticleListItem(String id, String title, String publisher, String previewText,
-            String url, String ampUrl, String thumbnailUrl, long timestamp, float score,
-            int position) {
+            String url, String ampUrl, long timestamp, float score, int position) {
         mId = id;
         mTitle = title;
         mPublisher = publisher;
         mPreviewText = previewText;
         mUrl = url;
         mAmpUrl = ampUrl;
-        mThumbnailUrl = thumbnailUrl;
         mPublishTimestampMilliseconds = timestamp;
         mScore = score;
         mPosition = position;

@@ -12,7 +12,9 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/ntp_snippets/content_suggestions_category.h"
+#include "components/ntp_snippets/content_suggestions_category_status.h"
+#include "components/ntp_snippets/content_suggestions_service.h"
 
 namespace gfx {
 class Image;
@@ -20,7 +22,8 @@ class Image;
 
 // The C++ counterpart to SnippetsBridge.java. Enables Java code to access
 // the list of snippets to show on the NTP
-class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
+class NTPSnippetsBridge
+    : public ntp_snippets::ContentSuggestionsService::Observer {
  public:
   NTPSnippetsBridge(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& j_profile);
@@ -46,9 +49,9 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
                       const base::android::JavaParamRef<jobject>& callback,
                       const base::android::JavaParamRef<jstring>& jurl);
 
-  // Returns a reason why the snippet service is disabled, or 0 if it isn't.
-  // See NTPSnippetsService::DisabledReason for more info.
-  int GetDisabledReason(JNIEnv* env,
+  // Returns the status of the ARTICLES category.
+  // See ContentSuggestionsCategoryStatus for more info.
+  int GetCategoryStatus(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
   static bool Register(JNIEnv* env);
@@ -56,25 +59,27 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
  private:
   ~NTPSnippetsBridge() override;
 
-  // NTPSnippetsServiceObserver overrides
-  void NTPSnippetsServiceLoaded() override;
-  void NTPSnippetsServiceShutdown() override;
-  void NTPSnippetsServiceDisabledReasonChanged(
-      ntp_snippets::DisabledReason disabled_reason) override;
+  // ContentSuggestionsService::Observer overrides
+  void OnNewSuggestions() override;
+  void OnCategoryStatusChanged(
+      ntp_snippets::ContentSuggestionsCategory category,
+      ntp_snippets::ContentSuggestionsCategoryStatus new_status) override;
+  void ContentSuggestionsServiceShutdown() override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const std::string& snippet_id,
                       const gfx::Image& image);
 
-  ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
   history::HistoryService* history_service_;
   base::CancelableTaskTracker tracker_;
 
+  ScopedObserver<ntp_snippets::ContentSuggestionsService,
+                 ntp_snippets::ContentSuggestionsService::Observer>
+      content_suggestions_service_observer_;
+
   // Used to notify the Java side when new snippets have been fetched.
   base::android::ScopedJavaGlobalRef<jobject> observer_;
-  ScopedObserver<ntp_snippets::NTPSnippetsService,
-                 ntp_snippets::NTPSnippetsServiceObserver>
-      snippet_service_observer_;
 
   base::WeakPtrFactory<NTPSnippetsBridge> weak_ptr_factory_;
 

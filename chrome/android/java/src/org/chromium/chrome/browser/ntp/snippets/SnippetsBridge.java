@@ -28,8 +28,20 @@ public class SnippetsBridge {
     public interface SnippetsObserver {
         void onSnippetsReceived(List<SnippetArticleListItem> snippets);
 
-        /** Called when the service is about to change its state. */
-        void onDisabledReasonChanged(int disabledReason);
+        /** Called when the ARTICLES category changed its status. */
+        void onCategoryStatusChanged(int newStatus);
+    }
+
+    public static boolean isCategoryStatusAvailable(int status) {
+        // Note: This code is duplicated in content_suggestions_category_status.cc.
+        return status == ContentSuggestionsCategoryStatus.AVAILABLE_LOADING
+                || status == ContentSuggestionsCategoryStatus.AVAILABLE;
+    }
+
+    public static boolean isCategoryStatusInitOrAvailable(int status) {
+        // Note: This code is duplicated in content_suggestions_category_status.cc.
+        return status == ContentSuggestionsCategoryStatus.INITIALIZING
+                || isCategoryStatusAvailable(status);
     }
 
     /**
@@ -109,31 +121,29 @@ public class SnippetsBridge {
         nativeSetObserver(mNativeSnippetsBridge, observer == null ? null : this);
     }
 
-    public int getDisabledReason() {
+    public int getCategoryStatus() {
         assert mNativeSnippetsBridge != 0;
-        return nativeGetDisabledReason(mNativeSnippetsBridge);
+        return nativeGetCategoryStatus(mNativeSnippetsBridge);
     }
 
     @CalledByNative
     private void onSnippetsAvailable(String[] ids, String[] titles, String[] urls, String[] ampUrls,
-            String[] thumbnailUrls, String[] previewText, long[] timestamps, String[] publishers,
-            float[] scores) {
+            String[] previewText, long[] timestamps, String[] publishers, float[] scores) {
         assert mNativeSnippetsBridge != 0;
         assert mObserver != null;
 
         List<SnippetArticleListItem> newSnippets = new ArrayList<>(ids.length);
         for (int i = 0; i < ids.length; i++) {
-            newSnippets.add(
-                    new SnippetArticleListItem(ids[i], titles[i], publishers[i], previewText[i],
-                            urls[i], ampUrls[i], thumbnailUrls[i], timestamps[i], scores[i], i));
+            newSnippets.add(new SnippetArticleListItem(ids[i], titles[i], publishers[i],
+                    previewText[i], urls[i], ampUrls[i], timestamps[i], scores[i], i));
         }
 
         mObserver.onSnippetsReceived(newSnippets);
     }
 
     @CalledByNative
-    private void onDisabledReasonChanged(int disabledReason) {
-        if (mObserver != null) mObserver.onDisabledReasonChanged(disabledReason);
+    private void onCategoryStatusChanged(int newStatus) {
+        if (mObserver != null) mObserver.onCategoryStatusChanged(newStatus);
     }
 
     private native long nativeInit(Profile profile);
@@ -146,5 +156,5 @@ public class SnippetsBridge {
             Callback<Boolean> callback, String url);
     private native void nativeFetchImage(
             long nativeNTPSnippetsBridge, String snippetId, Callback<Bitmap> callback);
-    private native int nativeGetDisabledReason(long nativeNTPSnippetsBridge);
+    private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge);
 }

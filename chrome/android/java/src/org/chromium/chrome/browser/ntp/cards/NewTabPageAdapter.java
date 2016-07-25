@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
@@ -52,7 +52,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
     private NewTabPageRecyclerView mRecyclerView;
-    private int mServiceStatus;
+    private int mProviderStatus;
 
     private SnippetsBridge mSnippetsBridge;
 
@@ -122,10 +122,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mHeaderListItem = new SnippetHeaderListItem();
         mItemTouchCallbacks = new ItemTouchCallbacks();
         mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
-        mServiceStatus = DisabledReason.NONE;
+        mProviderStatus = ContentSuggestionsCategoryStatus.INITIALIZING;
         mSnippetsBridge = snippetsBridge;
         mUiConfig = uiConfig;
-        mStatusListItem = StatusListItem.create(snippetsBridge.getDisabledReason(), this, manager);
+        mStatusListItem = StatusListItem.create(snippetsBridge.getCategoryStatus(), this, manager);
 
         loadSnippets(new ArrayList<SnippetArticleListItem>());
         mSnippetsBridge.setObserver(this);
@@ -141,8 +141,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         // We never want to refresh the suggestions if we already have some content.
         if (hasSuggestions()) return;
 
-        if (!(mServiceStatus == DisabledReason.NONE
-                    || mServiceStatus == DisabledReason.HISTORY_SYNC_STATE_UNKNOWN)) {
+        if (!SnippetsBridge.isCategoryStatusInitOrAvailable(mProviderStatus)) {
             return;
         }
 
@@ -158,16 +157,17 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onDisabledReasonChanged(int disabledReason) {
+    public void onCategoryStatusChanged(int categoryStatus) {
         // Observers should not be registered for that state
-        assert disabledReason != DisabledReason.EXPLICITLY_DISABLED;
+        assert categoryStatus
+                != ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
 
-        mServiceStatus = disabledReason;
-        mStatusListItem = StatusListItem.create(mServiceStatus, this, mNewTabPageManager);
+        mProviderStatus = categoryStatus;
+        mStatusListItem = StatusListItem.create(mProviderStatus, this, mNewTabPageManager);
 
-        // We had suggestions but we just got notified about the service being enabled. Nothing to
+        // We had suggestions but we just got notified about the provider being enabled. Nothing to
         // do then.
-        if (disabledReason == DisabledReason.NONE && hasSuggestions()) return;
+        if (SnippetsBridge.isCategoryStatusAvailable(mProviderStatus) && hasSuggestions()) return;
 
         if (hasSuggestions()) {
             // We had many items, implies that the service was previously enabled and just

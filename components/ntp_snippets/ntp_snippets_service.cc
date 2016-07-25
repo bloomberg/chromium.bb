@@ -280,10 +280,11 @@ void NTPSnippetsService::RescheduleFetching() {
 void NTPSnippetsService::FetchSuggestionImage(
     const std::string& suggestion_id,
     const ImageFetchedCallback& callback) {
+  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
   database_->LoadImage(
-      suggestion_id,
+      snippet_id,
       base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
-                 base::Unretained(this), suggestion_id, callback));
+                 base::Unretained(this), snippet_id, callback));
 }
 
 void NTPSnippetsService::ClearCachedSuggestionsForDebugging() {
@@ -313,11 +314,13 @@ void NTPSnippetsService::DiscardSuggestion(const std::string& suggestion_id) {
   if (!ready())
     return;
 
-  auto it = std::find_if(
-      snippets_.begin(), snippets_.end(),
-      [&suggestion_id](const std::unique_ptr<NTPSnippet>& snippet) {
-        return snippet->id() == suggestion_id;
-      });
+  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
+
+  auto it =
+      std::find_if(snippets_.begin(), snippets_.end(),
+                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
+                     return snippet->id() == snippet_id;
+                   });
   if (it == snippets_.end())
     return;
 
@@ -328,8 +331,6 @@ void NTPSnippetsService::DiscardSuggestion(const std::string& suggestion_id) {
 
   discarded_snippets_.push_back(std::move(*it));
   snippets_.erase(it);
-
-  NotifyNewSuggestions();
 }
 
 void NTPSnippetsService::ClearDiscardedSuggestionsForDebugging() {
@@ -622,7 +623,8 @@ void NTPSnippetsService::OnSnippetImageDecoded(
     const ImageFetchedCallback& callback,
     const gfx::Image& image) {
   if (!image.IsEmpty()) {
-    callback.Run(snippet_id, image);
+    callback.Run(MakeUniqueID(ContentSuggestionsCategory::ARTICLES, snippet_id),
+                 image);
     return;
   }
 
@@ -641,7 +643,8 @@ void NTPSnippetsService::FetchSnippetImageFromNetwork(
                      return snippet->id() == snippet_id;
                    });
   if (it == snippets_.end()) {
-    callback.Run(snippet_id, gfx::Image());
+    callback.Run(MakeUniqueID(ContentSuggestionsCategory::ARTICLES, snippet_id),
+                 gfx::Image());
     return;
   }
 

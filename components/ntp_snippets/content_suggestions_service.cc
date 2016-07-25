@@ -106,7 +106,10 @@ void ContentSuggestionsService::DiscardSuggestion(
                    [&suggestion_id](const ContentSuggestion& suggestion) {
                      return suggestion_id == suggestion.id();
                    });
-  DCHECK(position != suggestions->end());
+  DCHECK(position != suggestions->end())
+      << "The discarded suggestion " << suggestion_id
+      << " has already been removed. Providers must not call OnNewSuggestions"
+         " in response to DiscardSuggestion.";
   suggestions->erase(position);
 }
 

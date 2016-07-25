@@ -61,8 +61,9 @@ namespace ntp_snippets {
 class NTPSnippetsDatabase;
 class NTPSnippetsServiceObserver;
 
-// Stores and vends fresh content data for the NTP.
-// TODO(pke): Rename this service to ArticleSuggestionsService and move to
+// Retrieves fresh content data (articles) from the server, stores them and
+// provides them as content suggestions.
+// TODO(pke): Rename this service to ArticleSuggestionsProvider and move to
 // a subdirectory.
 class NTPSnippetsService : public KeyedService,
                            public image_fetcher::ImageFetcherDelegate,
@@ -153,6 +154,7 @@ class NTPSnippetsService : public KeyedService,
   static int GetMaxSnippetCountForTesting();
 
  private:
+  friend class NTPSnippetsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, HistorySyncStateChanges);
 
   // TODO(pke): As soon as the DisabledReason is replaced with the new status,

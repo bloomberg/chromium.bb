@@ -14,7 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
@@ -49,14 +49,35 @@ public abstract class StatusListItem implements NewTabPageListItem {
             final StatusListItem listItem = (StatusListItem) item;
             mTitleView.setText(listItem.mHeaderStringId);
             mBodyView.setText(listItem.mDescriptionStringId);
-            mActionView.setText(listItem.mActionStringId);
-            mActionView.setOnClickListener(new OnClickListener() {
 
-                @Override
-                public void onClick(View v) {
-                    listItem.performAction(v.getContext());
-                }
-            });
+            if (listItem.hasAction()) {
+                mActionView.setText(listItem.mActionStringId);
+                mActionView.setOnClickListener(new OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        listItem.performAction(v.getContext());
+                    }
+                });
+                mActionView.setVisibility(View.VISIBLE);
+            } else {
+                mActionView.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private static class ErrorListItem extends StatusListItem {
+        public ErrorListItem(int headerStringId, int descriptionStringId) {
+            super(headerStringId, descriptionStringId, 0);
+        }
+        @Override
+        protected void performAction(Context context) {
+            // No action.
+        }
+
+        @Override
+        protected boolean hasAction() {
+            return false;
         }
     }
 
@@ -139,6 +160,26 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
+    private static class CategoryExplicitlyDisabled extends ErrorListItem {
+        public CategoryExplicitlyDisabled() {
+            // TODO(pke): Those are technically the wrong strings, but they roughly fit in this
+            // case. This should only be called when the category has been disabled via enterprise
+            // policy. Replace this with proper error card once it has been specified.
+            super(R.string.ntp_status_card_title_empty, R.string.ntp_status_card_body_empty);
+            Log.d(TAG, "Registering card for error: Category Explicitly Disabled");
+        }
+    }
+
+    private static class ProviderError extends ErrorListItem {
+        public ProviderError() {
+            // TODO(pke): Those are technically the wrong strings, but they roughly fit in this
+            // case. This is only called if NTPSnippetsDatabase encounters an error.
+            // Replace this with proper error card once it has been specified.
+            super(R.string.ntp_status_card_title_empty, R.string.ntp_status_card_body_empty);
+            Log.d(TAG, "Registering card for error: Provider Error");
+        }
+    }
+
     private static final String TAG = "NtpCards";
 
     private final int mHeaderStringId;
@@ -146,37 +187,53 @@ public abstract class StatusListItem implements NewTabPageListItem {
     private final int mActionStringId;
 
     public static StatusListItem create(
-            int disabledReason, NewTabPageAdapter adapter, NewTabPageManager manager) {
-        switch (disabledReason) {
-            case DisabledReason.NONE:
+            int categoryStatus, NewTabPageAdapter adapter, NewTabPageManager manager) {
+        switch (categoryStatus) {
+            case ContentSuggestionsCategoryStatus.AVAILABLE:
+            case ContentSuggestionsCategoryStatus.AVAILABLE_LOADING:
                 return new NoSnippets(adapter);
 
-            case DisabledReason.SIGNED_OUT:
+            case ContentSuggestionsCategoryStatus.SIGNED_OUT:
                 return new SignedOut();
 
-            case DisabledReason.SYNC_DISABLED:
+            case ContentSuggestionsCategoryStatus.SYNC_DISABLED:
                 return new SyncDisabled();
 
-            case DisabledReason.PASSPHRASE_ENCRYPTION_ENABLED:
+            case ContentSuggestionsCategoryStatus.PASSPHRASE_ENCRYPTION_ENABLED:
                 return new PassphraseEncryptionEnabled(manager);
 
-            case DisabledReason.HISTORY_SYNC_STATE_UNKNOWN:
-                // This should only be a transient state: during app launch, or when the sync
-                // settings are being modified, and the user should never see a card showing this.
-                // So let's just use HistorySyncDisabled as fallback.
-                // TODO(dgn): If we add a spinner at some point (e.g. to show that we are fetching
-                // snippets) we could use it here too.
-            case DisabledReason.HISTORY_SYNC_DISABLED:
+            // INITIALIZING should only be a transient state: during app launch, or when the sync
+            // settings are being modified, and the user should never see a card showing this.
+            // So let's just use HistorySyncDisabled as fallback.
+            // TODO(dgn): If we add a spinner at some point (e.g. to show that we are fetching
+            // snippets) we could use it here too.
+            case ContentSuggestionsCategoryStatus.INITIALIZING:
+            case ContentSuggestionsCategoryStatus.HISTORY_SYNC_DISABLED:
                 return new HistorySyncDisabled();
 
-            case DisabledReason.EXPLICITLY_DISABLED:
+            case ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
                 Log.wtf(TAG, "FATAL: Attempted to create a status card while the feature should be "
                         + "off.");
                 return null;
 
+            case ContentSuggestionsCategoryStatus.CATEGORY_EXPLICITLY_DISABLED:
+                Log.d(TAG, "Not showing ARTICLES suggestions because this category is disabled.");
+                // TODO(pke): Replace this.
+                return new CategoryExplicitlyDisabled();
+
+            case ContentSuggestionsCategoryStatus.NOT_PROVIDED:
+                Log.wtf(TAG, "FATAL: Attempted to create a status card for content suggestions "
+                                + " when provider for ARTICLES is not registered.");
+                return null;
+
+            case ContentSuggestionsCategoryStatus.LOADING_ERROR:
+                Log.d(TAG, "Not showing ARTICLES suggestions because of provider error.");
+                // TODO(pke): Replace this.
+                return new ProviderError();
+
             default:
                 Log.wtf(TAG, "FATAL: Attempted to create a status card for an unknown value: %d",
-                        disabledReason);
+                        categoryStatus);
                 return null;
         }
     }
@@ -188,6 +245,10 @@ public abstract class StatusListItem implements NewTabPageListItem {
     }
 
     protected abstract void performAction(Context context);
+
+    protected boolean hasAction() {
+        return true;
+    }
 
     @Override
     public int getType() {

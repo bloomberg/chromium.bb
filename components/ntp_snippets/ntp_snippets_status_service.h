@@ -21,8 +21,6 @@ class SyncService;
 
 namespace ntp_snippets {
 
-// On Android builds, a Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
 enum class DisabledReason : int {
   // Snippets are enabled
   NONE,

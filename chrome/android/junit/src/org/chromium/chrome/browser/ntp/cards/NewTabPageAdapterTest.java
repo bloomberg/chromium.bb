@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
-import org.chromium.chrome.browser.ntp.snippets.DisabledReason;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
@@ -85,7 +85,7 @@ public class NewTabPageAdapterTest {
         // The adapter should ignore any new incoming data.
         mSnippetsObserver.onSnippetsReceived(
                 Arrays.asList(new SnippetArticleListItem[] {new SnippetArticleListItem(
-                        "foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
+                        "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0)}));
         assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
@@ -120,7 +120,7 @@ public class NewTabPageAdapterTest {
         // The adapter should ignore any new incoming data.
         mSnippetsObserver.onSnippetsReceived(
                 Arrays.asList(new SnippetArticleListItem[] {new SnippetArticleListItem(
-                        "foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
+                        "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0)}));
         assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
@@ -139,16 +139,16 @@ public class NewTabPageAdapterTest {
 
         // If we get told that snippets are enabled, we just leave the current
         // ones there and not clear.
-        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.NONE);
+        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.AVAILABLE);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // When snippets are disabled, we clear them and we should go back to
         // the situation with the status card.
-        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.SIGNED_OUT);
+        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.SIGNED_OUT);
         assertEquals(4, ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
-        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.NONE);
+        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.AVAILABLE);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
     }
@@ -164,28 +164,28 @@ public class NewTabPageAdapterTest {
 
         List<SnippetArticleListItem> snippets = createDummySnippets();
 
-        // By default, state is DisabledReason.NONE, so we can load snippets
+        // By default, status is INITIALIZING, so we can load snippets
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // If we have snippets, we should not load the new list.
         snippets.add(new SnippetArticleListItem("https://site.com/url1", "title1", "pub1", "txt1",
-                "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0, 0));
+                "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0));
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size() - 1, ntpa.getItemCount());
 
         // When snippets are disabled, we should not be able to load them
-        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.SIGNED_OUT);
+        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.SIGNED_OUT);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(4, ntpa.getItemCount());
 
-        // HISTORY_SYNC_STATE_UNKNOWN lets us load snippets still.
-        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.HISTORY_SYNC_STATE_UNKNOWN);
+        // INITIALIZING lets us load snippets still.
+        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.INITIALIZING);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
-        mSnippetsObserver.onDisabledReasonChanged(DisabledReason.NONE);
+        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.AVAILABLE);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
     }
@@ -193,11 +193,11 @@ public class NewTabPageAdapterTest {
     private List<SnippetArticleListItem> createDummySnippets() {
         List<SnippetArticleListItem> snippets = new ArrayList<>();
         snippets.add(new SnippetArticleListItem("https://site.com/url1", "title1", "pub1", "txt1",
-                "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0, 0));
+                "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0));
         snippets.add(new SnippetArticleListItem("https://site.com/url2", "title2", "pub2", "txt2",
-                "https://site.com/url2", "https://amp.site.com/url2", null, 0, 0, 0));
+                "https://site.com/url2", "https://amp.site.com/url2", 0, 0, 0));
         snippets.add(new SnippetArticleListItem("https://site.com/url3", "title3", "pub3", "txt3",
-                "https://site.com/url3", "https://amp.site.com/url3", null, 0, 0, 0));
+                "https://site.com/url3", "https://amp.site.com/url3", 0, 0, 0));
         return snippets;
     }
 }

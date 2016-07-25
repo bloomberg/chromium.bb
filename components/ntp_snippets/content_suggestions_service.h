@@ -25,8 +25,6 @@ namespace ntp_snippets {
 
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.
-// NOTE: This class is not yet in use, please use NTPSnippetsService for now
-// (see ntp_snippets_service.h).
 class ContentSuggestionsService : public KeyedService,
                                   public ContentSuggestionsProvider::Observer {
  public:

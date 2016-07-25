@@ -334,6 +334,11 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
       WaitForDBLoad(service_.get());
   }
 
+  std::string MakeUniqueID(const std::string& within_category_id) {
+    return NTPSnippetsService::MakeUniqueID(
+        ContentSuggestionsCategory::ARTICLES, within_category_id);
+  }
+
  protected:
   const GURL& test_url() { return test_url_; }
   NTPSnippetsService* service() { return service_.get(); }
@@ -499,11 +504,11 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   ASSERT_THAT(service()->snippets(), SizeIs(1));
 
   // Discarding a non-existent snippet shouldn't do anything.
-  service()->DiscardSuggestion("http://othersite.com");
+  service()->DiscardSuggestion(MakeUniqueID("http://othersite.com"));
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 
   // Discard the snippet.
-  service()->DiscardSuggestion(kSnippetUrl);
+  service()->DiscardSuggestion(MakeUniqueID(kSnippetUrl));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
@@ -526,7 +531,7 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
 TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
   LoadFromJSONString(GetTestJson({GetSnippet()}));
 
-  service()->DiscardSuggestion(kSnippetUrl);
+  service()->DiscardSuggestion(MakeUniqueID(kSnippetUrl));
   const NTPSnippet::PtrVector& snippets = service()->discarded_snippets();
   EXPECT_EQ(1u, snippets.size());
   for (auto& snippet : snippets) {
@@ -812,7 +817,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
       IsEmpty());
   // Discarding a snippet should decrease the list size. This will only be
   // logged after the next fetch.
-  service()->DiscardSuggestion(kSnippetUrl);
+  service()->DiscardSuggestion(MakeUniqueID(kSnippetUrl));
   LoadFromJSONString(GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
@@ -851,7 +856,7 @@ TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
       source_urls[0], creation, expiry, source_urls, publishers, amp_urls)}));
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   // Discard the snippet via the mashable source corpus ID.
-  service()->DiscardSuggestion(source_urls[0]);
+  service()->DiscardSuggestion(MakeUniqueID(source_urls[0]));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The same article from the AOL domain should now be detected as discarded.
