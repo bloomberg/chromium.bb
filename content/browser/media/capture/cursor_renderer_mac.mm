@@ -61,12 +61,15 @@ bool CursorRendererMac::SnapshotCursorState(const gfx::Rect& region_in_frame) {
   // Mouse location in window co-ordinates.
   NSPoint mouse_window_location =
       [view_ window].mouseLocationOutsideOfEventStream;
+  // Mouse location with respect to the web contents.
+  NSPoint mouse_tab_location =
+      [view_ convertPoint:mouse_window_location fromView:nil];
 
   // Mouse co-ordinates directly comparable against frame co-ordinates
   // after translation.
-  if (mouse_window_location.x < 0 || mouse_window_location.y < 0 ||
-      mouse_window_location.x > region_in_frame.width() ||
-      mouse_window_location.y > region_in_frame.height()) {
+  if (mouse_tab_location.x < 0 || mouse_tab_location.y < 0 ||
+      mouse_tab_location.x > region_in_frame.width() ||
+      mouse_tab_location.y > region_in_frame.height()) {
     VLOG(2) << "Mouse outside content region";
     return false;
   }
@@ -78,9 +81,9 @@ bool CursorRendererMac::SnapshotCursorState(const gfx::Rect& region_in_frame) {
 
   if ((base::TimeTicks::Now() - last_mouse_movement_timestamp_).InSeconds() >
           MAX_IDLE_TIME_SECONDS &&
-      std::abs(mouse_window_location.x - last_mouse_location_x_) <
+      std::abs(mouse_tab_location.x - last_mouse_location_x_) <
           MIN_MOVEMENT_PIXELS &&
-      std::abs(mouse_window_location.y - last_mouse_location_y_) <
+      std::abs(mouse_tab_location.y - last_mouse_location_y_) <
           MIN_MOVEMENT_PIXELS) {
     VLOG(2) << "No mouse movement in a while";
     return false;
@@ -88,8 +91,8 @@ bool CursorRendererMac::SnapshotCursorState(const gfx::Rect& region_in_frame) {
 
   // Mouse cursor position within the frame.
   cursor_position_in_frame_ =
-      gfx::Point(region_in_frame.x() + mouse_window_location.x,
-                 region_in_frame.y() + mouse_window_location.y);
+      gfx::Point(region_in_frame.x() + mouse_tab_location.x,
+                 region_in_frame.y() + mouse_tab_location.y);
 
   // Grab system cursor.
   NSCursor* nscursor = [NSCursor currentSystemCursor];
@@ -123,13 +126,13 @@ bool CursorRendererMac::SnapshotCursorState(const gfx::Rect& region_in_frame) {
     return false;
   last_cursor_data_.reset(image_data_ref, base::scoped_policy::ASSUME);
 
-  if (std::abs(mouse_window_location.x - last_mouse_location_x_) >
+  if (std::abs(mouse_tab_location.x - last_mouse_location_x_) >
           MIN_MOVEMENT_PIXELS ||
-      std::abs(mouse_window_location.y - last_mouse_location_y_) >
+      std::abs(mouse_tab_location.y - last_mouse_location_y_) >
           MIN_MOVEMENT_PIXELS) {
     last_mouse_movement_timestamp_ = base::TimeTicks::Now();
-    last_mouse_location_x_ = mouse_window_location.x;
-    last_mouse_location_y_ = mouse_window_location.y;
+    last_mouse_location_x_ = mouse_tab_location.x;
+    last_mouse_location_y_ = mouse_tab_location.y;
   }
   return true;
 }
