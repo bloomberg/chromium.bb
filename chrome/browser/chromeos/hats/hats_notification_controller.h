@@ -37,6 +37,18 @@ class HatsNotificationController : public NotificationDelegate,
   static bool ShouldShowSurveyToProfile(Profile* profile);
 
  private:
+  friend class HatsNotificationControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(HatsNotificationControllerTest,
+                           NewDevice_ShouldNotShowNotification);
+  FRIEND_TEST_ALL_PREFIXES(HatsNotificationControllerTest,
+                           OldDevice_ShouldShowNotification);
+  FRIEND_TEST_ALL_PREFIXES(HatsNotificationControllerTest,
+                           NoInternet_DoNotShowNotification);
+  FRIEND_TEST_ALL_PREFIXES(HatsNotificationControllerTest,
+                           InternetConnected_ShowNotification);
+  FRIEND_TEST_ALL_PREFIXES(HatsNotificationControllerTest,
+                           DismissNotification_ShouldUpdatePref);
+
   ~HatsNotificationController() override;
 
   // NotificationDelegate overrides:
