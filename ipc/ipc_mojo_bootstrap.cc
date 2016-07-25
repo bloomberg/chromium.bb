@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -65,6 +66,8 @@ class ChannelAssociatedGroupController
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(task_runner_->BelongsToCurrentThread());
     thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    base::subtle::Release_Store(&is_thread_task_runner_set_, 1);
+
     connector_.reset(new mojo::Connector(
         std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
         task_runner_));
@@ -359,8 +362,11 @@ class ChannelAssociatedGroupController
     // BelongsToCurrentThread() == false during shutdown. By the time shutdown
     // occurs, |thread_task_runner_| will be non-null and is guaranteed to run
     // tasks on the same thread as |task_runner_|.
-    return task_runner_->BelongsToCurrentThread() ||
-        (thread_task_runner_ && thread_task_runner_->BelongsToCurrentThread());
+    base::subtle::Atomic32 has_thread_task_runner =
+        base::subtle::Acquire_Load(&is_thread_task_runner_set_);
+    if (has_thread_task_runner)
+      return thread_task_runner_->BelongsToCurrentThread();
+    return task_runner_->BelongsToCurrentThread();
   }
 
   bool SendMessage(mojo::Message* message) {
@@ -611,6 +617,7 @@ class ChannelAssociatedGroupController
   // MessageLoop destruction which may cause the user-provided |task_runner_| to
   // incorrectly report that BelongsToCurrentThread() == false during shutdown.
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
+  base::subtle::Atomic32 is_thread_task_runner_set_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   const bool set_interface_id_namespace_bit_;
