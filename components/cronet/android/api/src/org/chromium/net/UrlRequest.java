@@ -505,9 +505,10 @@ public interface UrlRequest {
          * Convert a LoadState int to one of values listed above.
          * @param loadState a LoadState to convert.
          * @return static int Status.
+         * @hide only used by internal implementation.
          */
         @StatusValues
-        static int convertLoadState(int loadState) {
+        public static int convertLoadState(int loadState) {
             assert loadState >= LoadState.IDLE && loadState <= LoadState.READING_RESPONSE;
             switch (loadState) {
                 case (LoadState.IDLE):

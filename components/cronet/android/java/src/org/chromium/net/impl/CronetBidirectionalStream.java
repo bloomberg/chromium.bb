@@ -2,13 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.net.BidirectionalStream;
+import org.chromium.net.CronetException;
+import org.chromium.net.Preconditions;
+import org.chromium.net.QuicException;
+import org.chromium.net.RequestPriority;
+import org.chromium.net.UrlRequestException;
+import org.chromium.net.UrlResponseInfo;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
@@ -29,7 +36,8 @@ import javax.annotation.concurrent.GuardedBy;
  * stream is called on Executor thread and posts native tasks to the native network thread.
  */
 @JNINamespace("cronet")
-class CronetBidirectionalStream extends BidirectionalStream {
+@VisibleForTesting
+public class CronetBidirectionalStream extends BidirectionalStream {
     /**
      * States of BidirectionalStream are tracked in mReadState and mWriteState.
      * The write state is separated out as it changes independently of the read state.

@@ -19,13 +19,13 @@ declare_args() {
 
 generate_jni("cronet_jni_headers") {
   sources = [
-    "java/src/org/chromium/net/ChromiumUrlRequest.java",
-    "java/src/org/chromium/net/ChromiumUrlRequestContext.java",
-    "java/src/org/chromium/net/CronetBidirectionalStream.java",
-    "java/src/org/chromium/net/CronetLibraryLoader.java",
-    "java/src/org/chromium/net/CronetUploadDataStream.java",
-    "java/src/org/chromium/net/CronetUrlRequest.java",
-    "java/src/org/chromium/net/CronetUrlRequestContext.java",
+    "java/src/org/chromium/net/impl/ChromiumUrlRequest.java",
+    "java/src/org/chromium/net/impl/ChromiumUrlRequestContext.java",
+    "java/src/org/chromium/net/impl/CronetBidirectionalStream.java",
+    "java/src/org/chromium/net/impl/CronetLibraryLoader.java",
+    "java/src/org/chromium/net/impl/CronetUploadDataStream.java",
+    "java/src/org/chromium/net/impl/CronetUrlRequest.java",
+    "java/src/org/chromium/net/impl/CronetUrlRequestContext.java",
   ]
   jni_package = "cronet"
 }
@@ -76,23 +76,45 @@ java_cpp_template("load_states_list") {
   package_name = "org/chromium/net"
 }
 
-_generated_version_java_dir = "$target_gen_dir/templates/cronet_version_java"
-_generated_version_java =
-    "$_generated_version_java_dir/org/chromium/net/Version.java"
+_generated_api_version_java_dir =
+    "$target_gen_dir/templates/cronet_api_version_java"
+_generated_api_version_java =
+    "$_generated_api_version_java_dir/org/chromium/net/ApiVersion.java"
 
-process_version("cronet_version_java") {
-  template_file = "java/src/org/chromium/net/Version.template"
-  output = _generated_version_java
+process_version("cronet_api_version_java") {
+  template_file = "api/src/org/chromium/net/ApiVersion.template"
+  output = _generated_api_version_java
 }
 
-zip("cronet_version_srcjar") {
+zip("cronet_api_version_srcjar") {
   inputs = [
-    _generated_version_java,
+    _generated_api_version_java,
   ]
   output = "$target_gen_dir/$target_name.srcjar"
-  base_dir = _generated_version_java_dir
+  base_dir = _generated_api_version_java_dir
   deps = [
-    ":cronet_version_java",
+    ":cronet_api_version_java",
+  ]
+}
+
+_generated_impl_version_java_dir =
+    "$target_gen_dir/templates/cronet_impl_version_java"
+_generated_impl_version_java =
+    "$_generated_impl_version_java_dir/org/chromium/net/impl/ImplVersion.java"
+
+process_version("cronet_impl_version_java") {
+  template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
+  output = _generated_impl_version_java
+}
+
+zip("cronet_impl_version_srcjar") {
+  inputs = [
+    _generated_impl_version_java,
+  ]
+  output = "$target_gen_dir/$target_name.srcjar"
+  base_dir = _generated_impl_version_java_dir
+  deps = [
+    ":cronet_impl_version_java",
   ]
 }
 
@@ -278,7 +300,7 @@ android_library("cronet_api") {
   ]
 
   srcjar_deps = [
-    ":cronet_version_srcjar",
+    ":cronet_api_version_srcjar",
     ":http_cache_type_java",
     ":url_request_error_java",
     ":load_states_list",
@@ -290,14 +312,14 @@ android_library("cronet_api") {
 
 android_library("cronet_java") {
   java_files = [
-    "java/src/org/chromium/net/ChromiumUrlRequest.java",
-    "java/src/org/chromium/net/ChromiumUrlRequestContext.java",
-    "java/src/org/chromium/net/ChromiumUrlRequestFactory.java",
-    "java/src/org/chromium/net/CronetBidirectionalStream.java",
-    "java/src/org/chromium/net/CronetLibraryLoader.java",
-    "java/src/org/chromium/net/CronetUploadDataStream.java",
-    "java/src/org/chromium/net/CronetUrlRequest.java",
-    "java/src/org/chromium/net/CronetUrlRequestContext.java",
+    "java/src/org/chromium/net/impl/ChromiumUrlRequest.java",
+    "java/src/org/chromium/net/impl/ChromiumUrlRequestContext.java",
+    "java/src/org/chromium/net/impl/ChromiumUrlRequestFactory.java",
+    "java/src/org/chromium/net/impl/CronetBidirectionalStream.java",
+    "java/src/org/chromium/net/impl/CronetLibraryLoader.java",
+    "java/src/org/chromium/net/impl/CronetUploadDataStream.java",
+    "java/src/org/chromium/net/impl/CronetUrlRequest.java",
+    "java/src/org/chromium/net/impl/CronetUrlRequestContext.java",
     "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetChunkedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetFixedModeOutputStream.java",
@@ -318,6 +340,7 @@ android_library("cronet_java") {
   ]
 
   srcjar_deps = [
+    ":cronet_impl_version_srcjar",
     ":chromium_url_request_java",
     ":net_request_priority_java",
   ]

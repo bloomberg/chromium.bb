@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.HttpUrlRequestFactory;
+import org.chromium.net.HttpUrlRequestListener;
 
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
@@ -29,8 +32,7 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
                 // Cannot use config.getDefaultUserAgent() as config.mContext may be null.
                 userAgent = new CronetEngine.Builder(context).getDefaultUserAgent();
             }
-            mRequestContext = new ChromiumUrlRequestContext(context,
-                    userAgent, config);
+            mRequestContext = new ChromiumUrlRequestContext(context, userAgent, config);
         }
     }
 
@@ -47,16 +49,15 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
     @Override
     public ChromiumUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, HttpUrlRequestListener listener) {
-        return new ChromiumUrlRequest(mRequestContext, url, requestPriority,
-                headers, listener);
+        return new ChromiumUrlRequest(mRequestContext, url, requestPriority, headers, listener);
     }
 
     @Override
     public ChromiumUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, WritableByteChannel channel,
             HttpUrlRequestListener listener) {
-        return new ChromiumUrlRequest(mRequestContext, url, requestPriority,
-                headers, channel, listener);
+        return new ChromiumUrlRequest(
+                mRequestContext, url, requestPriority, headers, channel, listener);
     }
 
     @Override

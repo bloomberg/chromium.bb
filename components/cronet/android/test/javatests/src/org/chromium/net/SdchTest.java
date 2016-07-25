@@ -9,6 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
+import org.chromium.net.impl.ChromiumUrlRequestFactory;
+import org.chromium.net.impl.CronetUrlRequestContext;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

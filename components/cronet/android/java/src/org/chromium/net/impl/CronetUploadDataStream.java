@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.util.Log;
 
@@ -10,6 +10,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.net.UploadDataProvider;
+import org.chromium.net.UploadDataSink;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -28,7 +30,8 @@ import javax.annotation.concurrent.GuardedBy;
  * passed into its constructor.
  */
 @JNINamespace("cronet")
-final class CronetUploadDataStream implements UploadDataSink {
+@VisibleForTesting
+public final class CronetUploadDataStream implements UploadDataSink {
     private static final String TAG = "CronetUploadDataStream";
     // These are never changed, once a request starts.
     private final Executor mExecutor;
@@ -47,8 +50,7 @@ final class CronetUploadDataStream implements UploadDataSink {
                 }
                 checkState(UserCallback.NOT_IN_CALLBACK);
                 if (mByteBuffer == null) {
-                    throw new IllegalStateException(
-                            "Unexpected readData call. Buffer is null");
+                    throw new IllegalStateException("Unexpected readData call. Buffer is null");
                 }
                 mInWhichUserCallback = UserCallback.READ;
             }
@@ -183,8 +185,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         synchronized (mLock) {
             checkState(UserCallback.READ);
             if (lastChunk && mLength >= 0) {
-                throw new IllegalArgumentException(
-                        "Non-chunked upload can't have last chunk");
+                throw new IllegalArgumentException("Non-chunked upload can't have last chunk");
             }
             int bytesRead = mByteBuffer.position();
             mRemainingLength -= bytesRead;
@@ -201,8 +202,7 @@ final class CronetUploadDataStream implements UploadDataSink {
             if (mUploadDataStreamAdapter == 0) {
                 return;
             }
-            nativeOnReadSucceeded(mUploadDataStreamAdapter, bytesRead,
-                    lastChunk);
+            nativeOnReadSucceeded(mUploadDataStreamAdapter, bytesRead, lastChunk);
         }
     }
 
@@ -338,7 +338,7 @@ final class CronetUploadDataStream implements UploadDataSink {
      * @return the address of the native CronetUploadDataStream object.
      */
     @VisibleForTesting
-    long createUploadDataStreamForTesting() throws IOException {
+    public long createUploadDataStreamForTesting() throws IOException {
         synchronized (mLock) {
             mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
             mLength = mDataProvider.getLength();
@@ -354,17 +354,14 @@ final class CronetUploadDataStream implements UploadDataSink {
 
     // Native methods are implemented in upload_data_stream_adapter.cc.
 
-    private native long nativeAttachUploadDataToRequest(long urlRequestAdapter,
-            long length);
+    private native long nativeAttachUploadDataToRequest(long urlRequestAdapter, long length);
 
     private native long nativeCreateAdapterForTesting();
 
-    private native long nativeCreateUploadDataStreamForTesting(long length,
-            long adapter);
+    private native long nativeCreateUploadDataStreamForTesting(long length, long adapter);
 
     @NativeClassQualifiedName("CronetUploadDataStreamAdapter")
-    private native void nativeOnReadSucceeded(long nativePtr,
-            int bytesRead, boolean finalChunk);
+    private native void nativeOnReadSucceeded(long nativePtr, int bytesRead, boolean finalChunk);
 
     @NativeClassQualifiedName("CronetUploadDataStreamAdapter")
     private native void nativeOnRewindSucceeded(long nativePtr);

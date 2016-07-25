@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -15,6 +15,13 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.net.CronetEngine.UrlRequestInfo;
 import org.chromium.net.CronetEngine.UrlRequestMetrics;
+import org.chromium.net.Preconditions;
+import org.chromium.net.QuicException;
+import org.chromium.net.RequestPriority;
+import org.chromium.net.UploadDataProvider;
+import org.chromium.net.UrlRequest;
+import org.chromium.net.UrlRequestException;
+import org.chromium.net.UrlResponseInfo;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
@@ -39,7 +46,8 @@ import javax.annotation.concurrent.GuardedBy;
 @JNINamespace("cronet")
 // Qualifies UrlRequest.StatusListener which is used in onStatus, a JNI method.
 @JNIAdditionalImport(UrlRequest.class)
-final class CronetUrlRequest implements UrlRequest {
+@VisibleForTesting
+public final class CronetUrlRequest implements UrlRequest {
     private static final UrlRequestMetrics EMPTY_METRICS =
             new UrlRequestMetrics(null, null, null, null);
 
@@ -338,12 +346,13 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @VisibleForTesting
-    void setOnDestroyedUploadCallbackForTesting(Runnable onDestroyedUploadCallbackForTesting) {
+    public void setOnDestroyedUploadCallbackForTesting(
+            Runnable onDestroyedUploadCallbackForTesting) {
         mUploadDataStream.setOnDestroyedCallbackForTesting(onDestroyedUploadCallbackForTesting);
     }
 
     @VisibleForTesting
-    long getUrlRequestAdapterForTesting() {
+    public long getUrlRequestAdapterForTesting() {
         synchronized (mUrlRequestAdapterLock) {
             return mUrlRequestAdapter;
         }
@@ -357,8 +366,8 @@ final class CronetUrlRequest implements UrlRequest {
         try {
             mExecutor.execute(task);
         } catch (RejectedExecutionException failException) {
-            Log.e(CronetUrlRequestContext.LOG_TAG,
-                    "Exception posting task to executor", failException);
+            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
+                    failException);
             // If posting a task throws an exception, then there is no choice
             // but to destroy the request without invoking the callback.
             destroyRequestAdapter(false);
@@ -428,8 +437,7 @@ final class CronetUrlRequest implements UrlRequest {
     private void onCallbackException(Exception e) {
         UrlRequestException requestError =
                 new UrlRequestException("Exception received from UrlRequest.Callback", e);
-        Log.e(CronetUrlRequestContext.LOG_TAG,
-                "Exception in CalledByNative method", e);
+        Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in CalledByNative method", e);
         // Do not call into listener if request is finished.
         synchronized (mUrlRequestAdapterLock) {
             if (isDoneLocked()) {
@@ -440,8 +448,8 @@ final class CronetUrlRequest implements UrlRequest {
         try {
             mCallback.onFailed(this, mResponseInfo, requestError);
         } catch (Exception failException) {
-            Log.e(CronetUrlRequestContext.LOG_TAG,
-                    "Exception notifying of failed request", failException);
+            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception notifying of failed request",
+                    failException);
         }
     }
 
@@ -471,8 +479,7 @@ final class CronetUrlRequest implements UrlRequest {
                 try {
                     mCallback.onFailed(CronetUrlRequest.this, mResponseInfo, exception);
                 } catch (Exception e) {
-                    Log.e(CronetUrlRequestContext.LOG_TAG,
-                            "Exception in onError method", e);
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onError method", e);
                 }
             }
         };
@@ -586,8 +593,8 @@ final class CronetUrlRequest implements UrlRequest {
             int initialLimit, long receivedBytesCount) {
         mResponseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects + receivedBytesCount);
         if (byteBuffer.position() != initialPosition || byteBuffer.limit() != initialLimit) {
-            failWithException(new UrlRequestException(
-                    "ByteBuffer modified externally during read", null));
+            failWithException(
+                    new UrlRequestException("ByteBuffer modified externally during read", null));
             return;
         }
         if (mOnReadCompletedTask == null) {
@@ -622,8 +629,7 @@ final class CronetUrlRequest implements UrlRequest {
                 try {
                     mCallback.onSucceeded(CronetUrlRequest.this, mResponseInfo);
                 } catch (Exception e) {
-                    Log.e(CronetUrlRequestContext.LOG_TAG,
-                            "Exception in onComplete method", e);
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onComplete method", e);
                 }
             }
         };
@@ -699,9 +705,12 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     private final class UrlRequestMetricsAccumulator {
-        @Nullable private Long mRequestStartTime;
-        @Nullable private Long mTtfbMs;
-        @Nullable private Long mTotalTimeMs;
+        @Nullable
+        private Long mRequestStartTime;
+        @Nullable
+        private Long mTtfbMs;
+        @Nullable
+        private Long mTotalTimeMs;
 
         private UrlRequestMetrics getRequestMetrics() {
             return new UrlRequestMetrics(mTtfbMs, mTotalTimeMs,
@@ -747,8 +756,8 @@ final class CronetUrlRequest implements UrlRequest {
     private native void nativeFollowDeferredRedirect(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native boolean nativeReadData(long nativePtr, ByteBuffer byteBuffer,
-            int position, int capacity);
+    private native boolean nativeReadData(
+            long nativePtr, ByteBuffer byteBuffer, int position, int capacity);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native void nativeDestroy(long nativePtr, boolean sendOnCanceled);

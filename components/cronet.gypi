@@ -10,13 +10,13 @@
           'target_name': 'cronet_jni_headers',
           'type': 'none',
           'sources': [
-            'cronet/android/java/src/org/chromium/net/CronetBidirectionalStream.java',
-            'cronet/android/java/src/org/chromium/net/CronetLibraryLoader.java',
-            'cronet/android/java/src/org/chromium/net/CronetUploadDataStream.java',
-            'cronet/android/java/src/org/chromium/net/CronetUrlRequest.java',
-            'cronet/android/java/src/org/chromium/net/CronetUrlRequestContext.java',
-            'cronet/android/java/src/org/chromium/net/ChromiumUrlRequest.java',
-            'cronet/android/java/src/org/chromium/net/ChromiumUrlRequestContext.java',
+            'cronet/android/java/src/org/chromium/net/impl/CronetBidirectionalStream.java',
+            'cronet/android/java/src/org/chromium/net/impl/CronetLibraryLoader.java',
+            'cronet/android/java/src/org/chromium/net/impl/CronetUploadDataStream.java',
+            'cronet/android/java/src/org/chromium/net/impl/CronetUrlRequest.java',
+            'cronet/android/java/src/org/chromium/net/impl/CronetUrlRequestContext.java',
+            'cronet/android/java/src/org/chromium/net/impl/ChromiumUrlRequest.java',
+            'cronet/android/java/src/org/chromium/net/impl/ChromiumUrlRequestContext.java',
           ],
           'variables': {
             'jni_gen_package': 'cronet',
@@ -93,14 +93,14 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
-          'target_name': 'cronet_version',
+          'target_name': 'cronet_api_version',
           'type': 'none',
           'variables': {
             'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
             'version_py_path': '<(DEPTH)/build/util/version.py',
             'version_path': '<(DEPTH)/chrome/VERSION',
-            'template_input_path': 'cronet/android/java/src/org/chromium/net/Version.template',
-            'output_path': '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/org/chromium/cronet/Version.java',
+            'template_input_path': 'cronet/android/api/src/org/chromium/net/ApiVersion.template',
+            'output_path': '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/org/chromium/net/ApiVersion.java',
           },
           'direct_dependent_settings': {
             'variables': {
@@ -117,7 +117,7 @@
           },
           'actions': [
             {
-              'action_name': 'cronet_version',
+              'action_name': 'cronet_api_version',
               'inputs': [
                 '<(template_input_path)',
                 '<(version_path)',
@@ -134,7 +134,53 @@
                 '<(template_input_path)',
                 '<(output_path)',
               ],
-              'message': 'Generating version information',
+              'message': 'Generating API version information',
+            },
+          ],
+        },
+        {
+          'target_name': 'cronet_impl_version',
+          'type': 'none',
+          'variables': {
+            'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+            'version_py_path': '<(DEPTH)/build/util/version.py',
+            'version_path': '<(DEPTH)/chrome/VERSION',
+            'template_input_path': 'cronet/android/java/src/org/chromium/net/impl/ImplVersion.template',
+            'output_path': '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/org/chromium/net/impl/ImplVersion.java',
+          },
+          'direct_dependent_settings': {
+            'variables': {
+              # Ensure that the output directory is used in the class path
+              # when building targets that depend on this one.
+              'generated_src_dirs': [
+                '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)',
+              ],
+              # Ensure dependents are rebuilt when the generated Java file changes.
+              'additional_input_paths': [
+                '<(output_path)',
+              ],
+            },
+          },
+          'actions': [
+            {
+              'action_name': 'cronet_impl_version',
+              'inputs': [
+                '<(template_input_path)',
+                '<(version_path)',
+                '<(lastchange_path)',
+              ],
+              'outputs': [
+                '<(output_path)',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(lastchange_path)',
+                '<(template_input_path)',
+                '<(output_path)',
+              ],
+              'message': 'Generating impl version information',
             },
           ],
         },
@@ -247,7 +293,7 @@
           'dependencies': [
             'http_cache_type_java',
             'url_request_error_java',
-            'cronet_version',
+            'cronet_api_version',
             'load_states_list',
             'network_quality_observation_source_java',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_java',
@@ -265,6 +311,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'cronet_api',
+            'cronet_impl_version',
             'chromium_url_request_java',
             'libcronet',
             'net_request_priority_java',
@@ -284,6 +331,7 @@
               '**/CronetUploadDataStream.java',
               '**/CronetUrlRequest.java',
               '**/CronetUrlRequestContext.java',
+              '**/ImplVersion.java',
               '**/RequestPriority.java',
               '**/urlconnection/CronetBufferedOutputStream.java',
               '**/urlconnection/CronetChunkedOutputStream.java',

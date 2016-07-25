@@ -63,8 +63,9 @@ final class JavaCronetEngine extends CronetEngine {
     }
 
     @Override
-    BidirectionalStream createBidirectionalStream(String url, BidirectionalStream.Callback callback,
-            Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
+    public BidirectionalStream createBidirectionalStream(String url,
+            BidirectionalStream.Callback callback, Executor executor, String httpMethod,
+            List<Map.Entry<String, String>> requestHeaders,
             @BidirectionalStream.Builder.StreamPriority int priority, boolean disableAutoFlush,
             boolean delayRequestHeadersUntilFirstFlush) {
         throw new UnsupportedOperationException(
@@ -72,13 +73,13 @@ final class JavaCronetEngine extends CronetEngine {
     }
 
     @Override
-    boolean isEnabled() {
+    public boolean isEnabled() {
         return true;
     }
 
     @Override
     public String getVersionString() {
-        return "CronetHttpURLConnection/" + Version.getVersion();
+        return "CronetHttpURLConnection/" + ApiVersion.getVersion();
     }
 
     @Override
@@ -109,7 +110,7 @@ final class JavaCronetEngine extends CronetEngine {
     public void enableNetworkQualityEstimator(Executor executor) {}
 
     @Override
-    void configureNetworkQualityEstimatorForTesting(
+    public void configureNetworkQualityEstimatorForTesting(
             boolean useLocalHostRequests, boolean useSmallerResponses) {}
 
     @Override

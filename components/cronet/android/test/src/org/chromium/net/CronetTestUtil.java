@@ -8,6 +8,9 @@ import android.os.ConditionVariable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.net.impl.ChromiumUrlRequestFactory;
+import org.chromium.net.impl.CronetUrlRequest;
+import org.chromium.net.impl.CronetUrlRequestContext;
 
 /**
  * Utilities for Cronet testing

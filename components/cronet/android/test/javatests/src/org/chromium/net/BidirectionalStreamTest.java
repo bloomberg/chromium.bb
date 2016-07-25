@@ -12,6 +12,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 import org.chromium.net.TestBidirectionalStreamCallback.FailureType;
 import org.chromium.net.TestBidirectionalStreamCallback.ResponseStep;
+import org.chromium.net.impl.CronetBidirectionalStream;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;

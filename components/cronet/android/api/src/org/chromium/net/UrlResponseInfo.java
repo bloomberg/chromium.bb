@@ -35,7 +35,10 @@ public final class UrlResponseInfo {
         private final List<Map.Entry<String, String>> mAllHeadersList;
         private Map<String, List<String>> mHeadersMap;
 
-        HeaderBlock(List<Map.Entry<String, String>> allHeadersList) {
+        /**
+         * @hide only used by internal implementation.
+         */
+        public HeaderBlock(List<Map.Entry<String, String>> allHeadersList) {
             mAllHeadersList = allHeadersList;
         }
 
@@ -215,8 +218,11 @@ public final class UrlResponseInfo {
                 getProxyServer(), getReceivedBytesCount());
     }
 
-    // Sets mReceivedBytesCount. Must not be called after request completion or cancellation.
-    void setReceivedBytesCount(long currentReceivedBytesCount) {
+    /**
+     * Sets mReceivedBytesCount. Must not be called after request completion or cancellation.
+     * @hide only used by internal implementation.
+     */
+    public void setReceivedBytesCount(long currentReceivedBytesCount) {
         mReceivedBytesCount.set(currentReceivedBytesCount);
     }
 }

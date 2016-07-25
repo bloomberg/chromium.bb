@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.content.Context;
 import android.os.Handler;
@@ -10,8 +10,10 @@ import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.net.CronetEngine;
 
 /**
  * Provides context for the native HTTP operations.
@@ -20,9 +22,9 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("cronet")
 @Deprecated
 public class ChromiumUrlRequestContext {
-    private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
-    private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)
-    private static final int LOG_VERBOSE = -2;  // LOG(FATAL...INFO), VLOG(2)
+    private static final int LOG_NONE = 3; // LOG(FATAL), no VLOG.
+    private static final int LOG_DEBUG = -1; // LOG(FATAL...INFO), VLOG(1)
+    private static final int LOG_VERBOSE = -2; // LOG(FATAL...INFO), VLOG(2)
     static final String LOG_TAG = "ChromiumNetwork";
 
     /**
@@ -48,8 +50,7 @@ public class ChromiumUrlRequestContext {
         // API to handle the case where we are already on main thread.
         Runnable task = new Runnable() {
             public void run() {
-                nativeInitRequestContextOnMainThread(
-                        mChromiumUrlRequestContextAdapter);
+                nativeInitRequestContextOnMainThread(mChromiumUrlRequestContextAdapter);
             }
         };
         new Handler(Looper.getMainLooper()).post(task);
@@ -60,7 +61,7 @@ public class ChromiumUrlRequestContext {
      * N.N.N.N is the version of Chromium and X is the revision number.
      */
     public static String getVersion() {
-        return Version.getVersion();
+        return ImplVersion.getVersion();
     }
 
     /**
@@ -92,8 +93,7 @@ public class ChromiumUrlRequestContext {
      *            false, NetLogCaptureMode::Default() is used instead.
      */
     public void startNetLogToFile(String fileName, boolean logAll) {
-        nativeStartNetLogToFile(mChromiumUrlRequestContextAdapter, fileName,
-                logAll);
+        nativeStartNetLogToFile(mChromiumUrlRequestContextAdapter, fileName, logAll);
     }
 
     /**
@@ -118,7 +118,8 @@ public class ChromiumUrlRequestContext {
         super.finalize();
     }
 
-    protected long getUrlRequestContextAdapter() {
+    @VisibleForTesting
+    public long getUrlRequestContextAdapter() {
         return mChromiumUrlRequestContextAdapter;
     }
 
@@ -143,19 +144,16 @@ public class ChromiumUrlRequestContext {
     private native long nativeCreateRequestContextAdapter(
             String userAgent, int loggingLevel, long config);
 
-    private native void nativeReleaseRequestContextAdapter(
-            long chromiumUrlRequestContextAdapter);
+    private native void nativeReleaseRequestContextAdapter(long chromiumUrlRequestContextAdapter);
 
     private native void nativeInitializeStatistics();
 
     private native String nativeGetStatisticsJSON(String filter);
 
     private native void nativeStartNetLogToFile(
-            long chromiumUrlRequestContextAdapter, String fileName,
-            boolean logAll);
+            long chromiumUrlRequestContextAdapter, String fileName, boolean logAll);
 
     private native void nativeStopNetLog(long chromiumUrlRequestContextAdapter);
 
-    private native void nativeInitRequestContextOnMainThread(
-            long chromiumUrlRequestContextAdapter);
+    private native void nativeInitRequestContextOnMainThread(long chromiumUrlRequestContextAdapter);
 }

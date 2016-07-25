@@ -21,7 +21,7 @@ public abstract class HttpUrlRequestFactory {
     private static final String TAG = "HttpUrlRequestFactory";
 
     private static final String CHROMIUM_URL_REQUEST_FACTORY =
-            "org.chromium.net.ChromiumUrlRequestFactory";
+            "org.chromium.net.impl.ChromiumUrlRequestFactory";
 
     public static HttpUrlRequestFactory createFactory(
             Context context, CronetEngine.Builder config) {

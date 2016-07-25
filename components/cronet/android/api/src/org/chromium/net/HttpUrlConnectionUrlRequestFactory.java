@@ -38,7 +38,7 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
 
     @Override
     public String getName() {
-        return "HttpUrlConnection/" + Version.getVersion();
+        return "HttpUrlConnection/" + ApiVersion.getVersion();
     }
 
     @Override

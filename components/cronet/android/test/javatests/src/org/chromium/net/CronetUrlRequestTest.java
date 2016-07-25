@@ -13,6 +13,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.net.TestUrlRequestCallback.FailureType;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
+import org.chromium.net.impl.CronetUrlRequest;
 import org.chromium.net.test.FailurePhase;
 
 import java.io.IOException;

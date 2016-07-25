@@ -9,11 +9,17 @@ package org.chromium.net;
  */
 // TODO(mef): Will replace UrlRequestException soon.
 public class CronetException extends UrlRequestException {
-    CronetException(String message, Throwable cause) {
+    /**
+     * @hide only used by internal implementation.
+     */
+    public CronetException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    CronetException(String message, int errorCode, int cronetInternalErrorCode) {
+    /**
+     * @hide only used by internal implementation.
+     */
+    public CronetException(String message, int errorCode, int cronetInternalErrorCode) {
         super(message, errorCode, cronetInternalErrorCode);
     }
 }

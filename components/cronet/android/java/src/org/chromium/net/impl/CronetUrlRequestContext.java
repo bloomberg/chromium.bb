@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.content.Context;
 import android.os.Build;
@@ -18,6 +18,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.net.BidirectionalStream;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.NetworkQualityRttListener;
+import org.chromium.net.NetworkQualityThroughputListener;
+import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
@@ -39,10 +44,11 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("cronet")
 @UsedByReflection("CronetEngine.java")
-class CronetUrlRequestContext extends CronetEngine {
-    private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
-    private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)
-    private static final int LOG_VERBOSE = -2;  // LOG(FATAL...INFO), VLOG(2)
+@VisibleForTesting
+public class CronetUrlRequestContext extends CronetEngine {
+    private static final int LOG_NONE = 3; // LOG(FATAL), no VLOG.
+    private static final int LOG_DEBUG = -1; // LOG(FATAL...INFO), VLOG(1)
+    private static final int LOG_VERBOSE = -2; // LOG(FATAL...INFO), VLOG(2)
     static final String LOG_TAG = "ChromiumNetwork";
 
     /**
@@ -117,7 +123,8 @@ class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
-    static long createNativeUrlRequestContextConfig(
+    @VisibleForTesting
+    public static long createNativeUrlRequestContextConfig(
             final Context context, CronetEngine.Builder builder) {
         final long urlRequestContextConfig = nativeCreateRequestContextConfig(
                 builder.getUserAgent(), builder.storagePath(), builder.quicEnabled(),
@@ -158,8 +165,9 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     @Override
-    BidirectionalStream createBidirectionalStream(String url, BidirectionalStream.Callback callback,
-            Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
+    public BidirectionalStream createBidirectionalStream(String url,
+            BidirectionalStream.Callback callback, Executor executor, String httpMethod,
+            List<Map.Entry<String, String>> requestHeaders,
             @BidirectionalStream.Builder.StreamPriority int priority, boolean disableAutoFlush,
             boolean delayRequestHeadersUntilFirstFlush) {
         synchronized (mLock) {
@@ -177,7 +185,7 @@ class CronetUrlRequestContext extends CronetEngine {
 
     @Override
     public String getVersionString() {
-        return "Cronet/" + Version.getVersion();
+        return "Cronet/" + ImplVersion.getVersion();
     }
 
     @Override
@@ -185,14 +193,12 @@ class CronetUrlRequestContext extends CronetEngine {
         synchronized (mLock) {
             checkHaveAdapter();
             if (mActiveRequestCount.get() != 0) {
-                throw new IllegalStateException(
-                        "Cannot shutdown with active requests.");
+                throw new IllegalStateException("Cannot shutdown with active requests.");
             }
             // Destroying adapter stops the network thread, so it cannot be
             // called on network thread.
             if (Thread.currentThread() == mNetworkThread) {
-                throw new IllegalThreadStateException(
-                        "Cannot shutdown from network thread.");
+                throw new IllegalThreadStateException("Cannot shutdown from network thread.");
             }
         }
         // Wait for init to complete on main and network thread (without lock,
@@ -213,8 +219,7 @@ class CronetUrlRequestContext extends CronetEngine {
     public void startNetLogToFile(String fileName, boolean logAll) {
         synchronized (mLock) {
             checkHaveAdapter();
-            nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName,
-                    logAll);
+            nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName, logAll);
         }
     }
 
@@ -291,7 +296,7 @@ class CronetUrlRequestContext extends CronetEngine {
 
     @VisibleForTesting
     @Override
-    void configureNetworkQualityEstimatorForTesting(
+    public void configureNetworkQualityEstimatorForTesting(
             boolean useLocalHostRequests, boolean useSmallerResponses) {
         if (!mNetworkQualityEstimatorEnabled) {
             throw new IllegalStateException("Network quality estimator must be enabled");
@@ -438,7 +443,7 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     @VisibleForTesting
-    long getUrlRequestContextAdapter() {
+    public long getUrlRequestContextAdapter() {
         synchronized (mLock) {
             checkHaveAdapter();
             return mUrlRequestContextAdapter;
@@ -584,8 +589,7 @@ class CronetUrlRequestContext extends CronetEngine {
     private native void nativeDestroy(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
-    private native void nativeStartNetLogToFile(long nativePtr,
-            String fileName, boolean logAll);
+    private native void nativeStartNetLogToFile(long nativePtr, String fileName, boolean logAll);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStopNetLog(long nativePtr);

@@ -57,8 +57,8 @@ final class UserAgent {
             builder.append(id);
         }
 
-        builder.append("; Cronet/");
-        builder.append(Version.CRONET_VERSION);
+        builder.append(";");
+        appendCronetVersion(builder);
 
         builder.append(')');
 
@@ -76,8 +76,7 @@ final class UserAgent {
 
         // Application name and cronet version.
         builder.append(context.getPackageName());
-        builder.append(" Cronet/");
-        builder.append(Version.CRONET_VERSION);
+        appendCronetVersion(builder);
 
         return builder.toString();
     }
@@ -98,5 +97,15 @@ final class UserAgent {
             }
             return sVersionCode;
         }
+    }
+
+    private static void appendCronetVersion(StringBuilder builder) {
+        builder.append(" Cronet/");
+        // TODO(pauljensen): This is the API version not the implementation
+        // version. The implementation version may be more appropriate for the
+        // UserAgent but is not available until after the CronetEngine is
+        // instantiated. Down the road, if the implementation is loaded via
+        // other means, this should be replaced with the implementation version.
+        builder.append(ApiVersion.CRONET_VERSION);
     }
 }

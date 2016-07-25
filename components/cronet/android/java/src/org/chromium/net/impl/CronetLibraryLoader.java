@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.net;
+package org.chromium.net.impl;
 
 import android.content.Context;
 import android.os.Handler;
@@ -10,13 +10,17 @@ import android.os.Looper;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.NetworkChangeNotifier;
 
 /**
  * CronetLibraryLoader loads and initializes native library on main thread.
  */
 @JNINamespace("cronet")
-class CronetLibraryLoader {
+@VisibleForTesting
+public class CronetLibraryLoader {
     // Synchronize initialization.
     private static final Object sLoadLock = new Object();
     private static final String TAG = "CronetLibraryLoader";
@@ -29,7 +33,8 @@ class CronetLibraryLoader {
      * Ensure that native library is loaded and initialized. Can be called from
      * any thread, the load and initialization is performed on main thread.
      */
-    static void ensureInitialized(final Context context, final CronetEngine.Builder builder) {
+    public static void ensureInitialized(
+            final Context context, final CronetEngine.Builder builder) {
         synchronized (sLoadLock) {
             if (sInitStarted) {
                 return;
@@ -38,15 +43,13 @@ class CronetLibraryLoader {
             ContextUtils.initApplicationContext(context.getApplicationContext());
             builder.loadLibrary();
             ContextUtils.initApplicationContextForNative();
-            if (!Version.CRONET_VERSION.equals(nativeGetCronetVersion())) {
-                throw new RuntimeException(String.format(
-                      "Expected Cronet version number %s, "
-                              + "actual version number %s.",
-                      Version.CRONET_VERSION,
-                      nativeGetCronetVersion()));
+            if (!ImplVersion.CRONET_VERSION.equals(nativeGetCronetVersion())) {
+                throw new RuntimeException(String.format("Expected Cronet version number %s, "
+                                + "actual version number %s.",
+                        ImplVersion.CRONET_VERSION, nativeGetCronetVersion()));
             }
-            Log.i(TAG, "Cronet version: %s, arch: %s",
-                    Version.CRONET_VERSION, System.getProperty("os.arch"));
+            Log.i(TAG, "Cronet version: %s, arch: %s", ImplVersion.CRONET_VERSION,
+                    System.getProperty("os.arch"));
             // Init native Chromium CronetEngine on Main UI thread.
             Runnable task = new Runnable() {
                 @Override
