@@ -261,8 +261,10 @@ void V4LocalDatabaseManager::UpdateRequestCompleted(
 }
 
 void V4LocalDatabaseManager::DatabaseUpdated() {
-  v4_update_protocol_manager_->ScheduleNextUpdate(
-      v4_database_->GetStoreStateMap());
+  if (enabled_) {
+    v4_update_protocol_manager_->ScheduleNextUpdate(
+        v4_database_->GetStoreStateMap());
+  }
 }
 
 }  // namespace safe_browsing
