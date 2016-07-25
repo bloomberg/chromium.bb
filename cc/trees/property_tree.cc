@@ -898,7 +898,7 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
     gfx::Transform transform;
     property_trees()->transform_tree.ComputeTransform(source_id, destination_id,
                                                       &transform);
-    if (destination_id != 0) {
+    if (effect_node->id != 1) {
       transform.matrix().postScale(effect_node->surface_contents_scale.x(),
                                    effect_node->surface_contents_scale.y(),
                                    1.f);
