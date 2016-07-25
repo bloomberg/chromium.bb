@@ -4,11 +4,8 @@
 
 /**
  * @fileoverview Polymer element for displaying a list of network properties
- * in a list in the format:
- *    Key1.........Value1
- *    KeyTwo.......ValueTwo
- * This also supports editing fields inline for fields listed in editFieldTypes:
- *    KeyThree....._________
+ * in a list. This also supports editing fields inline for fields listed in
+ * editFieldTypes.
  * TODO(stevenjb): Translate the keys and (where appropriate) values.
  */
 Polymer({
@@ -21,9 +18,7 @@ Polymer({
      * The dictionary containing the properties to display.
      * @type {!Object|undefined}
      */
-    propertyDict: {
-      type: Object
-    },
+    propertyDict: {type: Object},
 
     /**
      * Fields to display.
@@ -31,7 +26,7 @@ Polymer({
      */
     fields: {
       type: Array,
-      value: function() { return []; }
+      value: function() { return []; },
     },
 
     /**
@@ -45,7 +40,7 @@ Polymer({
      */
     editFieldTypes: {
       type: Object,
-      value: function() { return {}; }
+      value: function() { return {}; },
     },
   },
 
@@ -63,8 +58,8 @@ Polymer({
     var curValue = this.get(field, this.propertyDict);
     if (typeof curValue == 'object') {
       // Extract the property from an ONC managed dictionary.
-      curValue =
-          CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */(curValue));
+      curValue = CrOnc.getActiveValue(
+          /** @type {!CrOnc.ManagedProperty} */ (curValue));
     }
     var newValue = event.target.value;
     if (newValue == curValue)
@@ -94,8 +89,20 @@ Polymer({
   },
 
   /**
+   * Generates a filter function dependent on propertyDict and editFieldTypes.
    * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes The editFieldTypes object.
+   * @param {!Object} editFieldTypes
+   * @private
+   */
+  computeFilter_(propertyDict, editFieldTypes) {
+    return function(key) {
+      return this.showProperty_(propertyDict, editFieldTypes, key);
+    }.bind(this);
+  },
+
+  /**
+   * @param {!Object} propertyDict
+   * @param {!Object} editFieldTypes
    * @param {string} key The property key.
    * @return {boolean} Whether or not to show the property. Editable properties
    *     are always shown.
@@ -111,37 +118,17 @@ Polymer({
    * @param {!Object} propertyDict
    * @param {!Object} editFieldTypes The editFieldTypes object.
    * @param {string} key The property key.
-   * @return {boolean} True if |key| exists in |propertiesDict| and is not
-   *     editable.
-   * @private
-   */
-  showNoEdit_: function(propertyDict, editFieldTypes, key) {
-    if (!this.hasPropertyValue_(propertyDict, key))
-      return false;
-    var property = /** @type {!CrOnc.ManagedProperty|undefined} */(
-      this.get(key, propertyDict));
-    if (this.isNetworkPolicyEnforced(property))
-      return true;
-    return !editFieldTypes[key];
-  },
-
-  /**
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes The editFieldTypes object.
-   * @param {string} key The property key.
    * @param {string} type The field type.
-   * @return {boolean} True if |key| exists in |propertyDict| and is of editable
-   *     type |type|.
+   * @return {boolean}
    * @private
    */
-  showEdit_: function(propertyDict, editFieldTypes, key, type) {
-    if (!this.hasPropertyValue_(propertyDict, key))
-      return false;
-    var property = /** @type {!CrOnc.ManagedProperty|undefined} */(
+  isEditable_: function(propertyDict, editFieldTypes, key, type) {
+    var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get(key, propertyDict));
     if (this.isNetworkPolicyEnforced(property))
       return false;
-    return editFieldTypes[key] == type;
+    var editType = editFieldTypes[key];
+    return editType !== undefined && (type == '' || editType == type);
   },
 
   /**
@@ -157,11 +144,11 @@ Polymer({
     if (typeof value == 'object') {
       // Extract the property from an ONC managed dictionary
       value =
-          CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */(value));
+          CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */ (value));
     }
     // TODO(stevenjb): Localize.
     if (typeof value == 'number' || typeof value == 'boolean')
       return value.toString();
-    return /** @type {string} */(value);
+    return /** @type {string} */ (value);
   },
 });
