@@ -45,6 +45,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -3672,6 +3673,26 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
       gl_->ScheduleCALayerSharedStateCHROMIUM(
           ca_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
           sorting_context_id, transform);
+    }
+    if (!ca_layer_overlay.filter_effects.empty()) {
+      std::vector<GLCALayerFilterEffect> effects;
+      effects.resize(ca_layer_overlay.filter_effects.size());
+      for (size_t i = 0; i < ca_layer_overlay.filter_effects.size(); ++i) {
+        const ui::CARendererLayerParams::FilterEffect& filter_effect =
+            ca_layer_overlay.filter_effects[i];
+        GLCALayerFilterEffect& effect = effects[i];
+        effect.type = static_cast<GLint>(filter_effect.type);
+        effect.amount = filter_effect.amount;
+        effect.drop_shadow_offset_x = filter_effect.drop_shadow_offset.x();
+        effect.drop_shadow_offset_y = filter_effect.drop_shadow_offset.y();
+
+        static_assert(sizeof(GLuint) == sizeof(SkColor),
+                      "GLuint and SkColor must have the same size.");
+        effect.drop_shadow_color =
+            static_cast<GLuint>(filter_effect.drop_shadow_color);
+      }
+
+      gl_->ScheduleCALayerFilterEffectsCHROMIUM(effects.size(), effects.data());
     }
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.background_color,

@@ -767,6 +767,7 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
 #define GL_CA_LAYER_EDGE_TOP_CHROMIUM 0x8
 #endif
 
+extern "C" struct GLCALayerFilterEffect;
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY
 glScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
@@ -774,6 +775,9 @@ glScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                      const GLfloat* clip_rect,
                                      GLint sorting_context_id,
                                      const GLfloat* transform);
+GL_APICALL void GL_APIENTRY
+glScheduleCALayerFilterEffectsCHROMIUM(GLsizei count,
+                                       const GLCALayerFilterEffect* effects);
 GL_APICALL void GL_APIENTRY
 glScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                           const GLfloat* contents_rect,
@@ -790,6 +794,9 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERSHAREDSTATECHROMIUMPROC)(
     const GLfloat* clip_rect,
     GLint sorting_context_id,
     const GLfloat* transform);
+typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERFILTEREFFECTSCHROMIUM)(
+    GLsizei count,
+    const GLCALayerFilterEffect* effects);
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(
     GLuint contents_texture_id,
     const GLfloat* contents_rect,

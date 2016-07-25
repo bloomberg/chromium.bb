@@ -35,6 +35,19 @@ New Tokens
     GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM                  0x04
     GL_CA_LAYER_EDGE_TOP_CHROMIUM                     0x08
 
+    Accepted by the <filter_effects> parameter of
+    glScheduleCALayerFilterEffectsCHROMIUM:
+    struct GLCALayerFilterEffect {
+      GLint type;
+      GLfloat amount;
+      GLint drop_shadow_offset_x;
+      GLint drop_shadow_offset_y;
+      GLuint drop_shadow_color;
+    };
+    The valid values for type are in the range [0, 9] inclusive. Clients should
+    convert them from ui::CARendererLayerParams::FilterEffectType, as the
+    service will convert them back to that enum.
+
 New Procedures and Functions
 
     The command
@@ -86,6 +99,15 @@ New Procedures and Functions
     only valid values are GL_LINEAR and GL_NEAREST.
 
     The command
+
+        glScheduleCALayerFilterEffectsCHROMIUM(
+            GLsizei count,
+            GLCALayerFilterEffect* filter_effects)
+
+    applies the <filter_effects> to the next CALayer to be scheduled. A
+    consecutive call to glScheduleCALayerFilterEffectsCHROMIUM overrides the
+    previously saved <filter_effects>. A call to glSwapBuffers clears any saved
+    <filter_effects>
 
        glScheduleCALayerInUseQueryCHROMIUM(GLsizei count, GLuint* textures);
 

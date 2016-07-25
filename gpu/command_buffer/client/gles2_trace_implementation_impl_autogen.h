@@ -2154,6 +2154,14 @@ void GLES2TraceImplementation::ScheduleCALayerSharedStateCHROMIUM(
                                           sorting_context_id, transform);
 }
 
+void GLES2TraceImplementation::ScheduleCALayerFilterEffectsCHROMIUM(
+    GLsizei count,
+    const GLCALayerFilterEffect* effects) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::ScheduleCALayerFilterEffectsCHROMIUM");
+  gl_->ScheduleCALayerFilterEffectsCHROMIUM(count, effects);
+}
+
 void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
     GLuint contents_texture_id,
     const GLfloat* contents_rect,

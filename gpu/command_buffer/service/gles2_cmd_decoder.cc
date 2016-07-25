@@ -1085,6 +1085,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoMatrixLoadfCHROMIUM(GLenum matrix_mode, const GLfloat* matrix);
   void DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode);
+  void DoScheduleCALayerFilterEffectsCHROMIUM(
+      GLsizei count,
+      const GLCALayerFilterEffect* filter_effects);
   void DoScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                            const GLuint* textures);
 
@@ -2051,6 +2054,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // using GL_RGBA and glColorMask.
   bool ChromiumImageNeedsRGBEmulation();
 
+  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
+  // equivalent functions reset shared state.
+  void ClearScheduleCALayerState();
+
   bool InitializeCopyTexImageBlitter(const char* function_name);
   bool InitializeCopyTextureCHROMIUM(const char* function_name);
   // Generate a member function prototype for each command in an automated and
@@ -2311,6 +2318,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   };
 
   std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
+  std::vector<ui::CARendererLayerParams::FilterEffect> ca_layer_filter_effects_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -10850,9 +10858,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
 
-  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
-  // equivalent functions reset shared state.
-  ca_layer_shared_state_.reset();
+  ClearScheduleCALayerState();
 
   if (supports_async_swap_) {
     TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
@@ -10980,6 +10986,8 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
   gfx::RectF bounds_rect(mem[4], mem[5], mem[6], mem[7]);
 
+  // TODO(erikchen): Pass through filter effects. https://crbug.com/581526.
+  ca_layer_filter_effects_.clear();
   ui::CARendererLayerParams params = ui::CARendererLayerParams(
       ca_layer_shared_state_->is_clipped, ca_layer_shared_state_->clip_rect,
       ca_layer_shared_state_->sorting_context_id,
@@ -10991,6 +10999,42 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
                        "failed to schedule CALayer");
   }
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoScheduleCALayerFilterEffectsCHROMIUM(
+    GLsizei count,
+    const GLCALayerFilterEffect* filter_effects) {
+  std::vector<ui::CARendererLayerParams::FilterEffect> effects;
+  effects.reserve(count);
+  for (GLsizei i = 0; i < count; ++i) {
+    const GLCALayerFilterEffect& filter_effect = filter_effects[i];
+    GLint min =
+        static_cast<GLint>(ui::CARendererLayerParams::FilterEffectType::MIN);
+    GLint max =
+        static_cast<GLint>(ui::CARendererLayerParams::FilterEffectType::MAX);
+    if (filter_effect.type < min || filter_effect.type > max) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                         "glScheduleCALayerFilterEffectsCHROMIUM",
+                         "Invalid filter type.");
+      return;
+    }
+    ui::CARendererLayerParams::FilterEffectType filter_type =
+        static_cast<ui::CARendererLayerParams::FilterEffectType>(
+            filter_effect.type);
+
+    ui::CARendererLayerParams::FilterEffect& effect = effects[i];
+    effect.type = filter_type;
+    effect.amount = filter_effect.amount;
+    effect.drop_shadow_offset = gfx::Point(filter_effect.drop_shadow_offset_x,
+                                           filter_effect.drop_shadow_offset_y);
+
+    static_assert(sizeof(GLuint) == sizeof(SkColor),
+                  "GLuint and SkColor must have the same size.");
+    effect.drop_shadow_color =
+        static_cast<SkColor>(filter_effect.drop_shadow_color);
+  }
+
+  ca_layer_filter_effects_.swap(effects);
 }
 
 void GLES2DecoderImpl::DoScheduleCALayerInUseQueryCHROMIUM(
@@ -13916,9 +13960,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
 
-  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
-  // equivalent functions reset shared state.
-  ca_layer_shared_state_.reset();
+  ClearScheduleCALayerState();
 
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
@@ -14038,9 +14080,7 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes() {
                        "command not supported by surface");
     return;
   }
-  // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
-  // equivalent functions reset shared state.
-  ca_layer_shared_state_.reset();
+  ClearScheduleCALayerState();
   if (supports_async_swap_) {
     surface_->CommitOverlayPlanesAsync(base::Bind(
         &GLES2DecoderImpl::FinishSwapBuffers, base::AsWeakPtr(this)));
@@ -17473,6 +17513,11 @@ bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
 bool GLES2DecoderImpl::ChromiumImageNeedsRGBEmulation() {
   gpu::ImageFactory* factory = GetContextGroup()->image_factory();
   return factory ? !factory->SupportsFormatRGB() : false;
+}
+
+void GLES2DecoderImpl::ClearScheduleCALayerState() {
+  ca_layer_shared_state_.reset();
+  ca_layer_filter_effects_.clear();
 }
 
 error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(

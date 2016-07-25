@@ -1867,6 +1867,13 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerSharedStateCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::DoScheduleCALayerFilterEffectsCHROMIUM(
+    GLuint n,
+    const GLCALayerFilterEffect* effects) {
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
     GLuint contents_texture_id,
     const GLfloat* contents_rect,

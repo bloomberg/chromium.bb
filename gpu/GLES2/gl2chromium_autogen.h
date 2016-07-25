@@ -328,6 +328,8 @@
   GLES2_GET_FUN(ScheduleOverlayPlaneCHROMIUM)
 #define glScheduleCALayerSharedStateCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerSharedStateCHROMIUM)
+#define glScheduleCALayerFilterEffectsCHROMIUM \
+  GLES2_GET_FUN(ScheduleCALayerFilterEffectsCHROMIUM)
 #define glScheduleCALayerCHROMIUM GLES2_GET_FUN(ScheduleCALayerCHROMIUM)
 #define glScheduleCALayerInUseQueryCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerInUseQueryCHROMIUM)

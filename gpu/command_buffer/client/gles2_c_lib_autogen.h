@@ -1476,6 +1476,11 @@ GLES2ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
   gles2::GetGLContext()->ScheduleCALayerSharedStateCHROMIUM(
       opacity, is_clipped, clip_rect, sorting_context_id, transform);
 }
+void GL_APIENTRY GLES2ScheduleCALayerFilterEffectsCHROMIUM(
+    GLsizei count,
+    const GLCALayerFilterEffect* effects) {
+  gles2::GetGLContext()->ScheduleCALayerFilterEffectsCHROMIUM(count, effects);
+}
 void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                               const GLfloat* contents_rect,
                                               GLuint background_color,
@@ -2826,6 +2831,11 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glScheduleCALayerSharedStateCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glScheduleCALayerSharedStateCHROMIUM),
+    },
+    {
+        "glScheduleCALayerFilterEffectsCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glScheduleCALayerFilterEffectsCHROMIUM),
     },
     {
         "glScheduleCALayerCHROMIUM",

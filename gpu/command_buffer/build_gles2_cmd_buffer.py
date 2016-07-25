@@ -4425,6 +4425,17 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_schedule_ca_layer',
     'chromium': True,
   },
+  'ScheduleCALayerFilterEffectsCHROMIUM': {
+    'type': 'PUTn',
+    'count': 1,
+    'impl_func': False,
+    'client_test': False,
+    'decoder_func': 'DoScheduleCALayerFilterEffectsCHROMIUM',
+    'cmd_args': 'GLsizei count, const GLCALayerFilterEffect* effects',
+    'extension': 'CHROMIUM_schedule_ca_layer',
+    'chromium': True,
+    'unit_test': False,
+  },
   'ScheduleCALayerCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
@@ -7633,32 +7644,37 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
-    func.WriteDestinationInitalizationValidation(f)
-    self.WriteClientGLCallLog(func, f)
-    last_pointer_name = func.GetLastOriginalPointerArg().name
-    f.write("""  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < count; ++i) {
-""")
-    values_str = ' << ", " << '.join(
-        ["%s[%d + i * %d]" % (
-            last_pointer_name, ndx, self.GetArrayCount(func)) for ndx in range(
-                0, self.GetArrayCount(func))])
-    f.write('       GPU_CLIENT_LOG("  " << i << ": " << %s);\n' % values_str)
-    f.write("    }\n  });\n")
-    for arg in func.GetOriginalArgs():
-      arg.WriteClientSideValidationCode(f, func)
-    f.write("  helper_->%sImmediate(%s);\n" %
-               (func.name, func.MakeInitString("")))
-    f.write("  CheckGLError();\n")
-    f.write("}\n")
-    f.write("\n")
+    impl_func = func.GetInfo('impl_func')
+    if impl_func == None or impl_func == True:
+      f.write("%s GLES2Implementation::%s(%s) {\n" %
+                 (func.return_type, func.original_name,
+                  func.MakeTypedOriginalArgString("")))
+      f.write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
+      func.WriteDestinationInitalizationValidation(f)
+      self.WriteClientGLCallLog(func, f)
+      last_pointer_name = func.GetLastOriginalPointerArg().name
+      f.write("""  GPU_CLIENT_LOG_CODE_BLOCK({
+      for (GLsizei i = 0; i < count; ++i) {
+  """)
+      values_str = ' << ", " << '.join(
+          ["%s[%d + i * %d]" % (
+              last_pointer_name, ndx, self.GetArrayCount(func)) for ndx in
+                  range(0, self.GetArrayCount(func))])
+      f.write('       GPU_CLIENT_LOG("  " << i << ": " << %s);\n' % values_str)
+      f.write("    }\n  });\n")
+      for arg in func.GetOriginalArgs():
+        arg.WriteClientSideValidationCode(f, func)
+      f.write("  helper_->%sImmediate(%s);\n" %
+                 (func.name, func.MakeInitString("")))
+      f.write("  CheckGLError();\n")
+      f.write("}\n")
+      f.write("\n")
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Writes the GLES2 Implemention unit test."""
+    client_test = func.GetInfo('client_test')
+    if client_test is not None and client_test == False:
+      return
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   %(type)s data[%(count_param)d][%(count)d] = {{0}};
@@ -7827,14 +7843,13 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
         count_param = int(arg.GetValidClientSideCmdArg(func))
     f.write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     f.write("  const int kSomeBaseValueToTestWith = 51;\n")
-    f.write("  static %s data[] = {\n" % self.GetArrayType(func))
-    for v in range(0, self.GetArrayCount(func) * count_param):
-      f.write("    static_cast<%s>(kSomeBaseValueToTestWith + %d),\n" %
-                 (self.GetArrayType(func), v))
-    f.write("  };\n")
+    f.write("  const GLsizei kNumElements = %d;\n" % count_param)
+    f.write("  std::vector<%s> vec;\n" % self.GetArrayType(func))
+    f.write("  vec.resize(kNumElements * %d);\n" % self.GetArrayCount(func))
+    f.write("  memset(vec.data(), kSomeBaseValueToTestWith, \n")
+    f.write("      sizeof(%s) * vec.size());\n" % self.GetArrayType(func))
     f.write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
                (func.name, func.name))
-    f.write("  const GLsizei kNumElements = %d;\n" % count_param)
     f.write("  const size_t kExpectedCmdSize =\n")
     f.write("      sizeof(cmd) + kNumElements * sizeof(%s) * %d;\n" %
                (self.GetArrayType(func), self.GetArrayCount(func)))
@@ -7842,7 +7857,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
     f.write("      &cmd")
     for value, arg in enumerate(args):
       if arg.IsPointer():
-        f.write(",\n      data")
+        f.write(",\n      vec.data()")
       elif arg.IsConstant():
         continue
       else:
@@ -7859,7 +7874,8 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
                  (arg.type, value + 1, arg.name))
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
-    f.write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
+    f.write("      RoundSizeToMultipleOfEntries(sizeof(\n")
+    f.write("          %s) * vec.size()));\n" % self.GetArrayType(func))
     # TODO: Check that data was inserted
     f.write("}\n")
     f.write("\n")

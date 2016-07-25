@@ -48,6 +48,14 @@ typedef struct __GLsync *GLsync;
 typedef int64_t GLint64;
 typedef uint64_t GLuint64;
 
+struct GLCALayerFilterEffect {
+  GLint type;
+  GLfloat amount;
+  GLint drop_shadow_offset_x;
+  GLint drop_shadow_offset_y;
+  GLuint drop_shadow_color;
+};
+
 namespace gpu {
 namespace gles2 {
 

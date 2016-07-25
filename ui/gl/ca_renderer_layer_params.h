@@ -49,7 +49,8 @@ struct GL_EXPORT CARendererLayerParams {
 
   // This is a subset of cc::FilterOperation::FilterType.
   enum class FilterEffectType : uint32_t {
-    GRAYSCALE,
+    MIN,
+    GRAYSCALE = MIN,
     SEPIA,
     SATURATE,
     HUE_ROTATE,
@@ -59,6 +60,7 @@ struct GL_EXPORT CARendererLayerParams {
     OPACITY,
     BLUR,
     DROP_SHADOW,
+    MAX = DROP_SHADOW
   };
   struct GL_EXPORT FilterEffect {
     FilterEffectType type = FilterEffectType::GRAYSCALE;
