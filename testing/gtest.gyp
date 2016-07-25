@@ -32,6 +32,7 @@
         ],
         'defines': [
           'GTEST_HAS_POSIX_RE=0',
+          'GTEST_LANG_CXX11=1',
         ],
       },
       'conditions': [

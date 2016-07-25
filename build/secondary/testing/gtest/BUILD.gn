@@ -14,6 +14,7 @@ config("gtest_config") {
     # In order to allow regex matches in gtest to be shared between Windows
     # and other systems, we tell gtest to always use it's internal engine.
     "GTEST_HAS_POSIX_RE=0",
+    "GTEST_LANG_CXX11=1",
   ]
 
   # Gtest headers need to be able to find themselves.
