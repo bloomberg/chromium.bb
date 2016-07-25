@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +30,14 @@ TEST(VersionTest, ValueSemantics) {
     EXPECT_EQ(v1, v2);
   }
   EXPECT_EQ(v3, v1);
+}
+
+TEST(VersionTest, MoveSemantics) {
+  const std::vector<uint32_t> components = {1, 2, 3, 4};
+  Version v1(std::move(components));
+  EXPECT_TRUE(v1.IsValid());
+  Version v2("1.2.3.4");
+  EXPECT_EQ(v1, v2);
 }
 
 TEST(VersionTest, GetVersionFromString) {
