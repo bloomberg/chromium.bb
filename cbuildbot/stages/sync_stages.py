@@ -19,6 +19,7 @@ import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
@@ -1333,10 +1334,15 @@ class PreCQLauncherStage(SyncStage):
     for patch in plan:
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
+
+    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+      # use buildbucket to launch trybots.
+      cmd += ['--use-buildbucket']
+
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
-      cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+      cros_build_lib.RunCommand(cmd, cwd=self._build_root, print_cmd=True)
 
     build_id, db = self._run.GetCIDBHandle()
     actions = [
