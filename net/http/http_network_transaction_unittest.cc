@@ -1392,7 +1392,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   SpdySerializedFrame spdy_request(spdy_util_.ConstructSpdyGet(
       request.url.spec().c_str(), 1, DEFAULT_PRIORITY));
   SpdySerializedFrame spdy_response(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame spdy_data(
       spdy_util_.ConstructSpdyDataFrame(1, "hello", 5, true));
 
@@ -4365,7 +4365,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
       spdy_util_.ConstructSpdyGet("http://www.example.org/", 1, LOWEST));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
@@ -4425,7 +4425,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
       spdy_util_.ConstructSpdyGet("http://www.example.org/", 1, LOWEST));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
@@ -4511,13 +4511,12 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   const char* const kExtraAuthenticationHeaders[] = {
     "proxy-authenticate", "Basic realm=\"MyRealm1\""
   };
-  SpdySerializedFrame resp_authentication(spdy_util_.ConstructSpdySynReplyError(
+  SpdySerializedFrame resp_authentication(spdy_util_.ConstructSpdyReplyError(
       "407 Proxy Authentication Required", kExtraAuthenticationHeaders,
       arraysize(kExtraAuthenticationHeaders) / 2, 1));
   SpdySerializedFrame body_authentication(
       spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame resp_data(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame resp_data(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame body_data(spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp_authentication, 1),
@@ -4599,8 +4598,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
       "Connection: keep-alive\r\n\r\n";
   SpdySerializedFrame wrapped_get(
       spdy_util_.ConstructSpdyDataFrame(1, get, strlen(get), false));
-  SpdySerializedFrame conn_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame conn_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   const char resp[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
   SpdySerializedFrame wrapped_get_resp(
@@ -4681,10 +4679,9 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   SpdySerializedFrame get(
       spdy_util_wrapped.ConstructSpdyGet(kMyUrl, 1, LOWEST));
   SpdySerializedFrame wrapped_get(spdy_util_.ConstructWrappedSpdyFrame(get, 1));
-  SpdySerializedFrame conn_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame conn_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame get_resp(
-      spdy_util_wrapped.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_wrapped.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame wrapped_get_resp(
       spdy_util_.ConstructWrappedSpdyFrame(get_resp, 1));
   SpdySerializedFrame body(spdy_util_wrapped.ConstructSpdyDataFrame(1, true));
@@ -4772,7 +4769,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
       CreateMockWrite(connect, 0), CreateMockWrite(get, 2),
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdySynReplyError(1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyReplyError(1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 3),
@@ -4824,8 +4821,7 @@ TEST_F(HttpNetworkTransactionTest,
   // CONNECT to www.example.org:443 via SPDY.
   SpdySerializedFrame connect1(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  SpdySerializedFrame conn_resp1(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame conn_resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
 
   // Fetch https://www.example.org/ via HTTP.
   const char get1[] =
@@ -4847,11 +4843,10 @@ TEST_F(HttpNetworkTransactionTest,
   SpdyHeaderBlock connect2_block;
   connect2_block[spdy_util_.GetMethodKey()] = "CONNECT";
   connect2_block[spdy_util_.GetHostKey()] = "mail.example.org:443";
-  SpdySerializedFrame connect2(
-      spdy_util_.ConstructSpdySyn(3, std::move(connect2_block), LOWEST, false));
+  SpdySerializedFrame connect2(spdy_util_.ConstructSpdyHeaders(
+      3, std::move(connect2_block), LOWEST, false));
 
-  SpdySerializedFrame conn_resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame conn_resp2(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
 
   // Fetch https://mail.example.org/ via HTTP.
   const char get2[] =
@@ -4958,8 +4953,7 @@ TEST_F(HttpNetworkTransactionTest,
   // CONNECT to www.example.org:443 via SPDY.
   SpdySerializedFrame connect1(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  SpdySerializedFrame conn_resp1(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame conn_resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
 
   // Fetch https://www.example.org/ via HTTP.
   const char get1[] =
@@ -5081,9 +5075,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   SpdyHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.example.org/"));
   SpdySerializedFrame get1(
-      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
-  SpdySerializedFrame get_resp1(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
+  SpdySerializedFrame get_resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, "1", 1, true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
@@ -5091,9 +5084,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   SpdyHeaderBlock headers2(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://mail.example.org/"));
   SpdySerializedFrame get2(
-      spdy_util_.ConstructSpdySyn(3, std::move(headers2), LOWEST, true));
-  SpdySerializedFrame get_resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+      spdy_util_.ConstructSpdyHeaders(3, std::move(headers2), LOWEST, true));
+  SpdySerializedFrame get_resp2(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame body2(
       spdy_util_.ConstructSpdyDataFrame(3, "22", 2, true));
 
@@ -7672,7 +7664,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
     "location",
     "http://login.example.com/",
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdySynReplyError(
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyReplyError(
       "302 Redirect", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
   MockRead data_reads[] = {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),  // EOF
@@ -7772,7 +7764,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorResponseToHttpsConnectViaSpdyProxy) {
     "location",
     "http://login.example.com/",
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdySynReplyError(
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyReplyError(
       "404 Not Found", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(
       1, "The host does not exist", 23, true));
@@ -7854,11 +7846,10 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   const char* const kAuthChallenge[] = {
     "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
-  SpdySerializedFrame conn_auth_resp(spdy_util_.ConstructSpdySynReplyError(
+  SpdySerializedFrame conn_auth_resp(spdy_util_.ConstructSpdyReplyError(
       kAuthStatus, kAuthChallenge, arraysize(kAuthChallenge) / 2, 1));
 
-  SpdySerializedFrame conn_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame conn_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   const char resp[] = "HTTP/1.1 200 OK\r\n"
       "Content-Length: 5\r\n\r\n";
 
@@ -7975,7 +7966,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   };
 
   SpdySerializedFrame stream1_reply(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
 
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
@@ -8089,7 +8080,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   };
 
   SpdySerializedFrame stream1_reply(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
 
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
@@ -8167,7 +8158,7 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   };
 
   SpdySerializedFrame stream1_reply(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, "https://myproxy:70/foo.dat"));
@@ -8175,7 +8166,7 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   SpdySerializedFrame stream2_reply(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
@@ -10741,7 +10732,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
       spdy_util_.ConstructSpdyGet("https://www.example.org/", 1, LOWEST));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
@@ -10839,9 +10830,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   MockWrite spdy_writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };
-  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame data1(spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame data2(spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp1, 2), CreateMockRead(data1, 3),
@@ -11089,7 +11080,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
 
   const char kCONNECTResponse[] = "HTTP/1.1 200 Connected\r\n\r\n";
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       MockRead(ASYNC, 1, kCONNECTResponse), CreateMockRead(resp, 3),
@@ -11179,7 +11170,7 @@ TEST_F(HttpNetworkTransactionTest,
       spdy_util_.ConstructSpdyGet("https://www.example.org/", 1, LOWEST));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
@@ -12332,7 +12323,7 @@ TEST_F(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame data(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(data, 2), MockRead(ASYNC, 0, 3),
@@ -12754,12 +12745,10 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   MockWrite spdy_writes[] = {
       CreateMockWrite(host1_req, 0), CreateMockWrite(host2_req, 3),
   };
-  SpdySerializedFrame host1_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame host1_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame host1_resp_body(
       spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame host2_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame host2_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame host2_resp_body(
       spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead spdy_reads[] = {
@@ -12847,12 +12836,10 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   MockWrite spdy_writes[] = {
       CreateMockWrite(host1_req, 0), CreateMockWrite(host2_req, 3),
   };
-  SpdySerializedFrame host1_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame host1_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame host1_resp_body(
       spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame host2_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame host2_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame host2_resp_body(
       spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead spdy_reads[] = {
@@ -12971,12 +12958,10 @@ TEST_F(HttpNetworkTransactionTest,
   MockWrite spdy_writes[] = {
       CreateMockWrite(host1_req, 0), CreateMockWrite(host2_req, 3),
   };
-  SpdySerializedFrame host1_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame host1_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame host1_resp_body(
       spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame host2_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame host2_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame host2_resp_body(
       spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead spdy_reads[] = {
@@ -13056,7 +13041,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
       CreateMockWrite(req1, 0),
   };
 
-  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads1[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
                        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
@@ -13414,7 +13399,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   req2_block[spdy_util_.GetSchemeKey()] = "http";
   req2_block[spdy_util_.GetPathKey()] = "/";
   SpdySerializedFrame req2(
-      spdy_util_.ConstructSpdySyn(3, std::move(req2_block), MEDIUM, true));
+      spdy_util_.ConstructSpdyHeaders(3, std::move(req2_block), MEDIUM, true));
 
   MockWrite writes1[] = {
       CreateMockWrite(connect, 0), CreateMockWrite(wrapped_req1, 2),
@@ -13422,15 +13407,15 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   };
 
   SpdySerializedFrame conn_resp(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame resp1(
-      spdy_util_wrapped.ConstructSpdyGetSynReply(nullptr, 0, 1));
+      spdy_util_wrapped.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body1(spdy_util_wrapped.ConstructSpdyDataFrame(1, true));
   SpdySerializedFrame wrapped_resp1(
       spdy_util_wrapped.ConstructWrappedSpdyFrame(resp1, 1));
   SpdySerializedFrame wrapped_body1(
       spdy_util_wrapped.ConstructWrappedSpdyFrame(body1, 1));
-  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
   SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead reads1[] = {
       CreateMockRead(conn_resp, 1),
@@ -13525,13 +13510,13 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   SpdyHeaderBlock headers(
       spdy_util_.ConstructGetHeaderBlockForProxy("http://www.example.org/"));
   SpdySerializedFrame req1(
-      spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
+      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
 
   MockWrite writes1[] = {
       CreateMockWrite(req1, 0),
   };
 
-  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads1[] = {
       MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(resp1, 2),
@@ -13554,8 +13539,7 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
       CreateMockWrite(req2, 0),
   };
 
-  SpdySerializedFrame resp2(
-      spdy_util_secure.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp2(spdy_util_secure.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame body2(spdy_util_secure.ConstructSpdyDataFrame(1, true));
   MockRead reads2[] = {CreateMockRead(resp2, 1), CreateMockRead(body2, 2),
                        MockRead(ASYNC, OK, 3)};
@@ -13647,7 +13631,7 @@ TEST_F(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
       CreateMockWrite(req2, 0),
   };
 
-  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads2[] = {
       CreateMockRead(resp2, 1), CreateMockRead(body2, 2),
@@ -13719,8 +13703,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   MockWrite spdy1_writes[] = {
       CreateMockWrite(host1_req, 0),
   };
-  SpdySerializedFrame host1_resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame host1_resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame host1_resp_body(
       spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy1_reads[] = {
@@ -13741,8 +13724,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   MockWrite spdy2_writes[] = {
       CreateMockWrite(host2_req, 0),
   };
-  SpdySerializedFrame host2_resp(
-      spdy_util_2.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame host2_resp(spdy_util_2.ConstructSpdyGetReply(NULL, 0, 1));
   SpdySerializedFrame host2_resp_body(
       spdy_util_2.ConstructSpdyDataFrame(1, true));
   MockRead spdy2_reads[] = {
@@ -15581,7 +15563,7 @@ TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
   ssl.SetNextProto(kProtoHTTP2);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {CreateMockRead(resp), CreateMockRead(body),
                       MockRead(ASYNC, ERR_IO_PENDING)};

@@ -192,7 +192,7 @@ TEST_F(SpdyHttpStreamTest, SendRequest) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
       CreateMockRead(resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
@@ -251,9 +251,9 @@ TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };
-  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, "", 0, true));
-  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 3));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
   SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, "", 0, true));
   MockRead reads[] = {
       CreateMockRead(resp1, 2), CreateMockRead(body1, 3),
@@ -345,7 +345,7 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPost) {
       CreateMockWrite(body, 1)  // POST upload frame
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(resp, 2), CreateMockRead(body, 3),
       MockRead(SYNCHRONOUS, 0, 4)  // EOF
@@ -402,7 +402,7 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
       CreateMockWrite(chunk, 1),
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(resp, 2), CreateMockRead(chunk, 3),
       MockRead(SYNCHRONOUS, 0, 4)  // EOF
@@ -453,7 +453,7 @@ TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
       CreateMockWrite(body, 1)  // First POST upload frame
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   MockRead reads[] = {
       MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2)  // Server hangs up early.
   };
@@ -520,7 +520,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
       CreateMockWrite(chunk1, 1),  // POST upload frames
       CreateMockWrite(chunk2, 2), CreateMockWrite(chunk3, 3),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(resp, 4), CreateMockRead(chunk1, 5),
       CreateMockRead(chunk2, 6), CreateMockRead(chunk3, 7),
@@ -613,7 +613,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
       CreateMockWrite(chunk1, 1),  // POST upload frames
       CreateMockWrite(chunk2, 2),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(resp, 3), CreateMockRead(chunk1, 4),
       CreateMockRead(chunk2, 5), MockRead(ASYNC, 0, 6)  // EOF
@@ -694,7 +694,7 @@ TEST_F(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(chunk, 1),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   MockRead reads[] = {
       CreateMockRead(resp, 2), CreateMockRead(chunk, 3),
       MockRead(ASYNC, 0, 4)  // EOF
@@ -758,7 +758,7 @@ TEST_F(SpdyHttpStreamTest, SpdyURLTest) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
       CreateMockRead(resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
@@ -802,7 +802,7 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(chunk1, 1),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
   SpdySerializedFrame window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   MockRead reads[] = {
@@ -904,7 +904,7 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorSynchronous) {
       CreateMockWrite(rst_frame, 1, SYNCHRONOUS)  // Reset frame
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
 
   MockRead reads[] = {
       CreateMockRead(resp, 2), MockRead(SYNCHRONOUS, 0, 3),
@@ -952,7 +952,7 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
       CreateMockWrite(rst_frame, 1)  // Reset frame
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(nullptr, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
 
   MockRead reads[] = {
       MockRead(ASYNC, 0, 2),

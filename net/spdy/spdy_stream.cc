@@ -58,15 +58,15 @@ bool ContainsUppercaseAscii(const std::string& str) {
 
 void SpdyStream::Delegate::OnTrailers(const SpdyHeaderBlock& trailers) {}
 
-// A wrapper around a stream that calls into ProduceSynStreamFrame().
-class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
+// A wrapper around a stream that calls into ProduceHeadersFrame().
+class SpdyStream::HeadersBufferProducer : public SpdyBufferProducer {
  public:
-  SynStreamBufferProducer(const base::WeakPtr<SpdyStream>& stream)
+  HeadersBufferProducer(const base::WeakPtr<SpdyStream>& stream)
       : stream_(stream) {
     DCHECK(stream_.get());
   }
 
-  ~SynStreamBufferProducer() override {}
+  ~HeadersBufferProducer() override {}
 
   std::unique_ptr<SpdyBuffer> ProduceBuffer() override {
     if (!stream_.get()) {
@@ -75,7 +75,7 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
     }
     DCHECK_GT(stream_->stream_id(), 0u);
     return std::unique_ptr<SpdyBuffer>(
-        new SpdyBuffer(stream_->ProduceSynStreamFrame()));
+        new SpdyBuffer(stream_->ProduceHeadersFrame()));
   }
 
  private:
@@ -200,7 +200,7 @@ void SpdyStream::PushedStreamReplay() {
   }
 }
 
-std::unique_ptr<SpdySerializedFrame> SpdyStream::ProduceSynStreamFrame() {
+std::unique_ptr<SpdySerializedFrame> SpdyStream::ProduceHeadersFrame() {
   CHECK_EQ(io_state_, STATE_IDLE);
   CHECK(request_headers_valid_);
   CHECK_GT(stream_id_, 0u);
@@ -208,7 +208,7 @@ std::unique_ptr<SpdySerializedFrame> SpdyStream::ProduceSynStreamFrame() {
   SpdyControlFlags flags =
       (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
-  std::unique_ptr<SpdySerializedFrame> frame(session_->CreateSynStream(
+  std::unique_ptr<SpdySerializedFrame> frame(session_->CreateHeaders(
       stream_id_, priority_, flags, std::move(request_headers_)));
   request_headers_valid_ = false;
   send_time_ = base::TimeTicks::Now();
@@ -565,11 +565,10 @@ void SpdyStream::OnPaddingConsumed(size_t len) {
 void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
                                       size_t frame_size) {
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  CHECK(frame_type == SYN_STREAM ||
-        frame_type == DATA) << frame_type;
+  CHECK(frame_type == HEADERS || frame_type == DATA) << frame_type;
 
-  int result = (frame_type == SYN_STREAM) ?
-      OnRequestHeadersSent() : OnDataSent(frame_size);
+  int result =
+      (frame_type == HEADERS) ? OnRequestHeadersSent() : OnDataSent(frame_size);
   if (result == ERR_IO_PENDING) {
     // The write operation hasn't completed yet.
     return;
@@ -589,7 +588,7 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
   {
     base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
     write_handler_guard_ = true;
-    if (frame_type == SYN_STREAM) {
+    if (frame_type == HEADERS) {
       delegate_->OnRequestHeadersSent();
     } else {
       delegate_->OnDataSent();
@@ -695,9 +694,9 @@ int SpdyStream::SendRequestHeaders(SpdyHeaderBlock request_headers,
   request_headers_valid_ = true;
   url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
   pending_send_status_ = send_status;
-  session_->EnqueueStreamWrite(GetWeakPtr(), SYN_STREAM,
+  session_->EnqueueStreamWrite(GetWeakPtr(), HEADERS,
                                std::unique_ptr<SpdyBufferProducer>(
-                                   new SynStreamBufferProducer(GetWeakPtr())));
+                                   new HeadersBufferProducer(GetWeakPtr())));
   return ERR_IO_PENDING;
 }
 

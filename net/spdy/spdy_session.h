@@ -362,11 +362,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                           SpdyFrameType frame_type,
                           std::unique_ptr<SpdyBufferProducer> producer);
 
-  // Creates and returns a SYN frame for |stream_id|.
-  std::unique_ptr<SpdySerializedFrame> CreateSynStream(SpdyStreamId stream_id,
-                                                       RequestPriority priority,
-                                                       SpdyControlFlags flags,
-                                                       SpdyHeaderBlock headers);
+  // Creates and returns a HEADERS frame for |stream_id|.
+  std::unique_ptr<SpdySerializedFrame> CreateHeaders(SpdyStreamId stream_id,
+                                                     RequestPriority priority,
+                                                     SpdyControlFlags flags,
+                                                     SpdyHeaderBlock headers);
 
   // Creates and returns a SpdyBuffer holding a data frame with the
   // given data. May return NULL if stalled by flow control.
@@ -605,7 +605,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     ~ActiveStreamInfo();
 
     SpdyStream* stream;
-    bool waiting_for_syn_reply;
+    bool waiting_for_reply_headers_frame;
   };
   typedef std::map<SpdyStreamId, ActiveStreamInfo> ActiveStreamMap;
 

@@ -138,7 +138,7 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
       kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   AddWrite(req);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(NULL, 0));
   AddRead(resp);
 
   SpdySerializedFrame msg(
@@ -216,7 +216,7 @@ TEST_F(SpdyStreamTest, Trailers) {
       spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
   AddWrite(msg);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(NULL, 0));
   AddRead(resp);
 
   SpdySerializedFrame echo(
@@ -339,7 +339,7 @@ TEST_F(SpdyStreamTest, StreamError) {
       kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   AddWrite(req);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(resp);
 
   SpdySerializedFrame msg(
@@ -423,7 +423,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
       1, chunk_data.data(), chunk_data.length(), true));
   AddWrite(last_chunk);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(NULL, 0));
   AddRead(resp);
 
   AddReadEOF();
@@ -472,7 +472,7 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
       kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   AddWrite(req);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(NULL, 0));
   AddRead(resp);
 
   std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
@@ -529,7 +529,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
   SpdySerializedFrame reply(
-      spdy_util_.ConstructSpdyGetSynReply(kExtraHeaders, 1, 1));
+      spdy_util_.ConstructSpdyGetReply(kExtraHeaders, 1, 1));
   AddRead(reply);
 
   SpdySerializedFrame rst(
@@ -574,7 +574,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(syn);
 
-  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(reply);
 
   const char* const extra_headers[] = {"X-UpperCase", "yes"};
@@ -634,7 +634,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(syn);
 
-  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(reply);
 
   SpdySerializedFrame push(
@@ -707,7 +707,7 @@ TEST_F(SpdyStreamTest, DuplicateHeaders) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   AddWrite(syn);
 
-  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(reply);
 
   SpdySerializedFrame push(
@@ -874,7 +874,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
       spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
   AddWrite(body);
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(resp);
 
   AddReadEOF();
@@ -946,7 +946,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   AddReadPause();
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(resp);
 
   SpdySerializedFrame msg(
@@ -1028,7 +1028,7 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
 
   AddReadPause();
 
-  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   AddRead(reply);
 
   AddReadPause();

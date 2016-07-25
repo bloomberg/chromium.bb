@@ -1822,7 +1822,7 @@ function painterTestDontStripCookiesSPDYSession() {
         'type': EventSourceType.HTTP2_SESSION
       },
       'time': '1012984638',
-      'type': EventType.HTTP2_SESSION_SYN_STREAM
+      'type': EventType.HTTP2_SESSION_SEND_HEADERS
     },
     {
       'params': {
@@ -1843,12 +1843,12 @@ function painterTestDontStripCookiesSPDYSession() {
         'type': EventSourceType.HTTP2_SESSION
       },
       'time': '1012992266',
-      'type': EventType.HTTP2_SESSION_SYN_REPLY
+      'type': EventType.HTTP2_SESSION_RECV_HEADERS
     }
   ];
 
   testCase.expectedText =
-    't=1338924082421 [st=   0]  HTTP2_SESSION_SYN_STREAM\n' +
+    't=1338924082421 [st=   0]  HTTP2_SESSION_SEND_HEADERS\n' +
     '                           --> flags = 1\n' +
     '                           --> :host: mail.google.com\n' +
     '                               :method: GET\n' +
@@ -1862,7 +1862,7 @@ function painterTestDontStripCookiesSPDYSession() {
     '                               cookie: MyMagicPony\n' +
     '                               user-agent: Mozilla/5.0\n' +
     '                           --> stream_id = 1\n' +
-    't=1338924090049 [st=7628]  HTTP2_SESSION_SYN_REPLY\n' +
+    't=1338924090049 [st=7628]  HTTP2_SESSION_RECV_HEADERS\n' +
     '                           --> flags = 0\n' +
     '                           --> :status: 204 No Content\n' +
     '                               :version: HTTP/1.1\n' +

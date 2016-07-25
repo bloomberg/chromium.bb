@@ -298,33 +298,33 @@ void SpdyProxyClientSocketTest::PopulateConnectReplyIR(SpdyHeaderBlock* block,
   (*block)[spdy_util_.GetStatusKey()] = status;
 }
 
-// Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
+// Constructs a standard SPDY HEADERS frame for a CONNECT request.
 SpdySerializedFrame SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
-  return spdy_util_.ConstructSpdySyn(kStreamId, std::move(block), LOWEST,
-                                     false);
+  return spdy_util_.ConstructSpdyHeaders(kStreamId, std::move(block), LOWEST,
+                                         false);
 }
 
-// Constructs a SPDY SYN_STREAM frame for a CONNECT request which includes
+// Constructs a SPDY HEADERS frame for a CONNECT request which includes
 // Proxy-Authorization headers.
 SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
   block["proxy-authorization"] = "Basic Zm9vOmJhcg==";
-  return spdy_util_.ConstructSpdySyn(kStreamId, std::move(block), LOWEST,
-                                     false);
+  return spdy_util_.ConstructSpdyHeaders(kStreamId, std::move(block), LOWEST,
+                                         false);
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
+// Constructs a standard SPDY HEADERS frame to match the SPDY CONNECT.
 SpdySerializedFrame SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "200");
   return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT,
+// Constructs a standard SPDY HEADERS frame to match the SPDY CONNECT,
 // including Proxy-Authenticate headers.
 SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
@@ -334,7 +334,7 @@ SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
   return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
-// Constructs a SPDY SYN_REPLY frame with an HTTP 302 redirect.
+// Constructs a SPDY HEADERS frame with an HTTP 302 redirect.
 SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
   SpdyHeaderBlock block;
@@ -344,7 +344,7 @@ SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
   return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
-// Constructs a SPDY SYN_REPLY frame with an HTTP 500 error.
+// Constructs a SPDY HEADERS frame with an HTTP 500 error.
 SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
   SpdyHeaderBlock block;

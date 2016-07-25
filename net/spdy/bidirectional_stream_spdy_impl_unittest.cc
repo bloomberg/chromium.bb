@@ -265,7 +265,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
   SpdySerializedFrame resp(
-      spdy_util_.ConstructSpdyGetSynReply(kExtraHeaders, 1, 1));
+      spdy_util_.ConstructSpdyGetReply(kExtraHeaders, 1, 1));
 
   MockRead reads[] = {
       CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3),
@@ -318,7 +318,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterCancelStream) {
       CreateMockWrite(rst, 5),
   };
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame response_body_frame(
       spdy_util_.ConstructSpdyDataFrame(1, false));
 

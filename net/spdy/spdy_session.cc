@@ -83,7 +83,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSpdySynReplyOrHeadersReceivedCallback(
+std::unique_ptr<base::Value> NetLogSpdyHeadersReceivedCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
     SpdyStreamId stream_id,
@@ -518,13 +518,11 @@ void SpdyStreamRequest::Reset() {
 }
 
 SpdySession::ActiveStreamInfo::ActiveStreamInfo()
-    : stream(NULL),
-      waiting_for_syn_reply(false) {}
+    : stream(NULL), waiting_for_reply_headers_frame(false) {}
 
 SpdySession::ActiveStreamInfo::ActiveStreamInfo(SpdyStream* stream)
     : stream(stream),
-      waiting_for_syn_reply(stream->type() != SPDY_PUSH_STREAM) {
-}
+      waiting_for_reply_headers_frame(stream->type() != SPDY_PUSH_STREAM) {}
 
 SpdySession::ActiveStreamInfo::~ActiveStreamInfo() {}
 
@@ -990,13 +988,11 @@ void SpdySession::EnqueueStreamWrite(
     const base::WeakPtr<SpdyStream>& stream,
     SpdyFrameType frame_type,
     std::unique_ptr<SpdyBufferProducer> producer) {
-  DCHECK(frame_type == HEADERS ||
-         frame_type == DATA ||
-         frame_type == SYN_STREAM);
+  DCHECK(frame_type == HEADERS || frame_type == DATA);
   EnqueueWrite(stream->priority(), frame_type, std::move(producer), stream);
 }
 
-std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
+std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
     SpdyStreamId stream_id,
     RequestPriority priority,
     SpdyControlFlags flags,
@@ -1468,9 +1464,9 @@ int SpdySession::DoWrite() {
     if (stream.get())
       CHECK(!stream->IsClosed());
 
-    // Activate the stream only when sending the SYN_STREAM frame to
+    // Activate the stream only when sending the HEADERS frame to
     // guarantee monotonically-increasing stream IDs.
-    if (frame_type == SYN_STREAM) {
+    if (frame_type == HEADERS) {
       CHECK(stream.get());
       CHECK_EQ(stream->stream_id(), 0u);
       std::unique_ptr<SpdyStream> owned_stream =
@@ -2037,8 +2033,8 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
 
   stream->AddRawReceivedBytes(len);
 
-  if (it->second.waiting_for_syn_reply) {
-    const std::string& error = "Data received before SYN_REPLY.";
+  if (it->second.waiting_for_reply_headers_frame) {
+    const std::string& error = "DATA received before HEADERS.";
     stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
     ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
     return;
@@ -2070,8 +2066,8 @@ void SpdySession::OnStreamEnd(SpdyStreamId stream_id) {
   SpdyStream* stream = it->second.stream;
   CHECK_EQ(stream->stream_id(), stream_id);
 
-  if (it->second.waiting_for_syn_reply) {
-    const std::string& error = "Data received before SYN_REPLY.";
+  if (it->second.waiting_for_reply_headers_frame) {
+    const std::string& error = "DATA received before HEADERS.";
     stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
     ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
     return;
@@ -2136,7 +2132,7 @@ void SpdySession::OnSendCompressedFrame(
     SpdyFrameType type,
     size_t payload_len,
     size_t frame_len) {
-  if (type != SYN_STREAM && type != HEADERS)
+  if (type != HEADERS)
     return;
 
   DCHECK(buffered_spdy_framer_.get());
@@ -2241,8 +2237,8 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
 
   if (net_log().IsCapturing()) {
     net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_RECV_HEADERS,
-                       base::Bind(&NetLogSpdySynReplyOrHeadersReceivedCallback,
-                                  &headers, fin, stream_id));
+                       base::Bind(&NetLogSpdyHeadersReceivedCallback, &headers,
+                                  fin, stream_id));
   }
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
@@ -2261,8 +2257,8 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
-  if (it->second.waiting_for_syn_reply) {
-    it->second.waiting_for_syn_reply = false;
+  if (it->second.waiting_for_reply_headers_frame) {
+    it->second.waiting_for_reply_headers_frame = false;
     ignore_result(OnInitialResponseHeadersReceived(
         headers, response_time, recv_first_byte_time, stream));
   } else if (it->second.stream->IsReservedRemote()) {
