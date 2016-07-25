@@ -18,3 +18,8 @@ def CustomizeBrowserOptionsForGpuRasterization(options):
 def CustomizeBrowserOptionsForSyncScrolling(options):
   """Enables flags needed for synchronous (main thread) scrolling."""
   options.AppendExtraBrowserArgs('--disable-threaded-scrolling')
+
+def CustomizeBrowserOptionsForThreadTimes(options):
+  """Disables options known to cause noise in thread times"""
+  # Remove once crbug.com/621128 is fixed.
+  options.AppendExtraBrowserArgs('--disable-top-sites')

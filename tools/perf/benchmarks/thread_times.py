@@ -26,6 +26,9 @@ class _ThreadTimes(perf_benchmark.PerfBenchmark):
     # Default to only reporting per-frame metrics.
     return 'per_second' not in value.name
 
+  def SetExtraBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForThreadTimes(options)
+
   def CreatePageTest(self, options):
     return thread_times.ThreadTimes(options.report_silk_details)
 
@@ -84,6 +87,7 @@ class ThreadTimesCompositorCases(_ThreadTimes):
   page_set = page_sets.ToughCompositorCasesPageSet
 
   def SetExtraBrowserOptions(self, options):
+    super(ThreadTimesCompositorCases, self).SetExtraBrowserOptions(options)
     silk_flags.CustomizeBrowserOptionsForSoftwareRasterization(options)
 
   @classmethod
