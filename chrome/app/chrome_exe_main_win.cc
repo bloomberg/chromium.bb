@@ -126,7 +126,6 @@ void EnableHighDPISupport() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   bool per_monitor_dpi_switch =
-      command_line->HasSwitch(switches::kEnablePerMonitorDpi) &&
       !command_line->HasSwitch(switches::kDisablePerMonitorDpi);
   PROCESS_DPI_AWARENESS process_dpi_awareness =
       allowed_platform && per_monitor_dpi_switch
