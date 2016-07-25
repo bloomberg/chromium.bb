@@ -665,7 +665,6 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
 
     switch (decoder_state_) {
       case kInitialized:
-      case kAfterReset:
         schedule_task = DecodeBufferInitial(data, decoded_size, &decoded_size);
         break;
       case kDecoding:
@@ -800,8 +799,7 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(const void* data,
                                                      size_t* endpos) {
   DVLOGF(3) << "data=" << data << ", size=" << size;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK_NE(decoder_state_, kUninitialized);
-  DCHECK_NE(decoder_state_, kDecoding);
+  DCHECK_EQ(decoder_state_, kInitialized);
   // Initial decode.  We haven't been able to get output stream format info yet.
   // Get it, and start decoding.
 
@@ -834,7 +832,7 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(const void* data,
   }
 
   // Run this initialization only on first startup.
-  if (decoder_state_ == kInitialized) {
+  if (output_buffer_map_.empty()) {
     DVLOGF(3) << "running initialization";
     // Success! Setup our parameters.
     if (!CreateBuffersForFormat(format, visible_size))
@@ -1336,7 +1334,7 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   TRACE_EVENT0("Video Decoder", "V4L2VDA::FlushTask");
 
   // Flush outstanding buffers.
-  if (decoder_state_ == kInitialized || decoder_state_ == kAfterReset) {
+  if (decoder_state_ == kInitialized) {
     // There's nothing in the pipe, so return done immediately.
     DVLOGF(3) << "returning flush";
     child_task_runner_->PostTask(FROM_HERE,
@@ -1488,13 +1486,7 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
 
   // Jobs drained, we're finished resetting.
   DCHECK_EQ(decoder_state_, kResetting);
-  if (output_buffer_map_.empty()) {
-    // We must have gotten Reset() before we had a chance to request buffers
-    // from the client.
-    decoder_state_ = kInitialized;
-  } else {
-    decoder_state_ = kAfterReset;
-  }
+  decoder_state_ = kInitialized;
 
   decoder_partial_frame_pending_ = false;
   decoder_delay_bitstream_buffer_id_ = -1;

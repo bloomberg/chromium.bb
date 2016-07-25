@@ -133,7 +133,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     kInitialized,    // Initialize() returned true; ready to start decoding.
     kDecoding,       // DecodeBufferInitial() successful; decoding frames.
     kResetting,      // Presently resetting.
-    kAfterReset,     // After Reset(), ready to start decoding again.
     kChangingResolution,  // Performing resolution change, all remaining
                           // pre-change frames decoded and processed.
     kError,               // Error in kDecoding state.
@@ -249,8 +248,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // the NotifyResetDone callback, then set the decoder state to kResetting so
   // that all intervening tasks will drain.
   void ResetTask();
-  // ResetDoneTask() will set the decoder state back to kAfterReset, so
-  // subsequent decoding can continue.
   void ResetDoneTask();
 
   // Device destruction task.
