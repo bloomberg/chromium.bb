@@ -5,7 +5,11 @@
 #include "net/http/http_chunked_decoder.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -291,10 +295,70 @@ TEST(HttpChunkedDecoderTest, InvalidConsecutiveCRLFs) {
   RunTestUntilFailure(inputs, arraysize(inputs), 1);
 }
 
-TEST(HttpChunkedDecoderTest, ExcessiveChunkLen) {
-  const char* const inputs[] = {
-    "c0000000\r\nhello\r\n"
+TEST(HttpChunkedDecoderTest, ReallyBigChunks) {
+  // Number of bytes sent through the chunked decoder per loop iteration. To
+  // minimize runtime, should be the square root of the chunk lengths, below.
+  const int64_t kWrittenBytesPerIteration = 0x10000;
+
+  // Length of chunks to test. Must be multiples of kWrittenBytesPerIteration.
+  int64_t kChunkLengths[] = {
+      // Overflows when cast to a signed int32.
+      0x0c0000000,
+      // Overflows when cast to an unsigned int32.
+      0x100000000,
   };
+
+  for (int64_t chunk_length : kChunkLengths) {
+    HttpChunkedDecoder decoder;
+    EXPECT_FALSE(decoder.reached_eof());
+
+    // Feed just the header to the decode.
+    std::string chunk_header =
+        base::StringPrintf("%" PRIx64 "\r\n", chunk_length);
+    std::vector<char> data(chunk_header.begin(), chunk_header.end());
+    EXPECT_EQ(OK, decoder.FilterBuf(data.data(), data.size()));
+    EXPECT_FALSE(decoder.reached_eof());
+
+    // Set |data| to be kWrittenBytesPerIteration long, and have a repeating
+    // pattern.
+    data.clear();
+    data.reserve(kWrittenBytesPerIteration);
+    for (size_t i = 0; i < kWrittenBytesPerIteration; i++) {
+      data.push_back(static_cast<char>(i));
+    }
+
+    // Repeatedly feed the data to the chunked decoder. Since the data doesn't
+    // include any chunk lengths, the decode will never have to move the data,
+    // and should run fairly quickly.
+    for (int64_t total_written = 0; total_written < chunk_length;
+         total_written += kWrittenBytesPerIteration) {
+      EXPECT_EQ(kWrittenBytesPerIteration,
+                decoder.FilterBuf(data.data(), kWrittenBytesPerIteration));
+      EXPECT_FALSE(decoder.reached_eof());
+    }
+
+    // Chunk terminator and the final chunk.
+    char final_chunk[] = "\r\n0\r\n\r\n";
+    EXPECT_EQ(OK, decoder.FilterBuf(final_chunk, arraysize(final_chunk)));
+    EXPECT_TRUE(decoder.reached_eof());
+
+    // Since |data| never included any chunk headers, it should not have been
+    // modified.
+    for (size_t i = 0; i < kWrittenBytesPerIteration; i++) {
+      EXPECT_EQ(static_cast<char>(i), data[i]);
+    }
+  }
+}
+
+TEST(HttpChunkedDecoderTest, ExcessiveChunkLen) {
+  // Smallest number that can't be represented as a signed int64.
+  const char* const inputs[] = {"8000000000000000\r\nhello\r\n"};
+  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+}
+
+TEST(HttpChunkedDecoderTest, ExcessiveChunkLen2) {
+  // Smallest number that can't be represented as an unsigned int64.
+  const char* const inputs[] = {"10000000000000000\r\nhello\r\n"};
   RunTestUntilFailure(inputs, arraysize(inputs), 0);
 }
 
