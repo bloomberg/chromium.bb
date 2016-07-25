@@ -307,9 +307,9 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       effective_connection_type_recomputation_interval_(
           base::TimeDelta::FromSeconds(15)),
       last_connection_change_(tick_clock_->NowTicks()),
-      current_network_id_(
-          NetworkID(NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
-                    std::string())),
+      current_network_id_(nqe::internal::NetworkID(
+          NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
+          std::string())),
       downstream_throughput_kbps_observations_(weight_multiplier_per_second_),
       rtt_observations_(weight_multiplier_per_second_),
       effective_connection_type_at_last_main_frame_(
@@ -326,12 +326,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       weak_ptr_factory_(this) {
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
-  static_assert(kMaximumNetworkQualityCacheSize > 0,
-                "Size of the network quality cache must be > 0");
-  // This limit should not be increased unless the logic for removing the
-  // oldest cache entry is rewritten to use a doubly-linked-list LRU queue.
-  static_assert(kMaximumNetworkQualityCacheSize <= 10,
-                "Size of the network quality cache must <= 10");
   // None of the algorithms can have an empty name.
   DCHECK(algorithm_name_to_enum_.end() ==
          algorithm_name_to_enum_.find(std::string()));
@@ -923,7 +917,10 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   RecordMetricsOnConnectionTypeChanged();
 
   // Write the estimates of the previous network to the cache.
-  CacheNetworkQualityEstimate();
+  network_quality_store_.Add(current_network_id_,
+                             nqe::internal::CachedNetworkQuality(
+                                 last_effective_connection_type_computation_,
+                                 estimated_quality_at_last_main_frame_));
 
   // Clear the local state.
   last_connection_change_ = tick_clock_->NowTicks();
@@ -1170,7 +1167,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
 
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-  if (GetCurrentNetworkID().type == NetworkChangeNotifier::CONNECTION_NONE)
+  if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_NONE)
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
 
   base::TimeDelta http_rtt = nqe::internal::InvalidRTT();
@@ -1355,8 +1352,7 @@ int32_t NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimateInternal(
   return kbps;
 }
 
-NetworkQualityEstimator::NetworkID
-NetworkQualityEstimator::GetCurrentNetworkID() const {
+nqe::internal::NetworkID NetworkQualityEstimator::GetCurrentNetworkID() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(tbansal): crbug.com/498068 Add NetworkQualityEstimatorAndroid class
@@ -1369,7 +1365,7 @@ NetworkQualityEstimator::GetCurrentNetworkID() const {
   // capture majority of cases, and should not significantly affect estimates
   // (that are approximate to begin with).
   while (true) {
-    NetworkQualityEstimator::NetworkID network_id(
+    nqe::internal::NetworkID network_id(
         NetworkChangeNotifier::GetConnectionType(), std::string());
 
     switch (network_id.type) {
@@ -1405,42 +1401,37 @@ NetworkQualityEstimator::GetCurrentNetworkID() const {
 bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If the network name is unavailable, caching should not be performed.
-  if (current_network_id_.id.empty())
+  nqe::internal::CachedNetworkQuality cached_network_quality;
+
+  const bool cached_estimate_available = network_quality_store_.GetById(
+      current_network_id_, &cached_network_quality);
+  UMA_HISTOGRAM_BOOLEAN("NQE.CachedNetworkQualityAvailable",
+                        cached_estimate_available);
+
+  if (!cached_estimate_available)
     return false;
-
-  CachedNetworkQualities::const_iterator it =
-      cached_network_qualities_.find(current_network_id_);
-
-  if (it == cached_network_qualities_.end())
-    return false;
-
-  nqe::internal::NetworkQuality network_quality(it->second.network_quality());
 
   const base::TimeTicks now = tick_clock_->NowTicks();
-  bool read_cached_estimate = false;
 
-  if (network_quality.downstream_throughput_kbps() !=
+  if (cached_network_quality.network_quality().downstream_throughput_kbps() !=
       nqe::internal::kInvalidThroughput) {
-    read_cached_estimate = true;
     ThroughputObservation througphput_observation(
-        network_quality.downstream_throughput_kbps(), now,
-        NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
+        cached_network_quality.network_quality().downstream_throughput_kbps(),
+        now, NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
     downstream_throughput_kbps_observations_.AddObservation(
         througphput_observation);
     NotifyObserversOfThroughput(througphput_observation);
   }
 
-  if (network_quality.http_rtt() != nqe::internal::InvalidRTT()) {
-    read_cached_estimate = true;
+  if (cached_network_quality.network_quality().http_rtt() !=
+      nqe::internal::InvalidRTT()) {
     RttObservation rtt_observation(
-        network_quality.http_rtt(), now,
+        cached_network_quality.network_quality().http_rtt(), now,
         NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
     rtt_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
   }
-
-  return read_cached_estimate;
+  return true;
 }
 
 void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
@@ -1529,51 +1520,6 @@ void NetworkQualityEstimator::SetTickClockForTesting(
 
 double NetworkQualityEstimator::RandDouble() const {
   return base::RandDouble();
-}
-
-void NetworkQualityEstimator::CacheNetworkQualityEstimate() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_LE(cached_network_qualities_.size(),
-            static_cast<size_t>(kMaximumNetworkQualityCacheSize));
-
-  // If the network name is unavailable, caching should not be performed.
-  if (current_network_id_.id.empty())
-    return;
-
-  base::TimeDelta http_rtt = nqe::internal::InvalidRTT();
-  int32_t downlink_throughput_kbps = nqe::internal::kInvalidThroughput;
-
-  if (!GetHttpRTTEstimate(&http_rtt) ||
-      !GetDownlinkThroughputKbpsEstimate(&downlink_throughput_kbps)) {
-    return;
-  }
-
-  // |transport_rtt| is currently not cached.
-  nqe::internal::NetworkQuality network_quality = nqe::internal::NetworkQuality(
-      http_rtt, nqe::internal::InvalidRTT() /* transport_rtt */,
-      downlink_throughput_kbps);
-
-  if (cached_network_qualities_.size() == kMaximumNetworkQualityCacheSize) {
-    // Remove the oldest entry.
-    CachedNetworkQualities::iterator oldest_entry_iterator =
-        cached_network_qualities_.begin();
-
-    for (CachedNetworkQualities::iterator it =
-             cached_network_qualities_.begin();
-         it != cached_network_qualities_.end(); ++it) {
-      if ((it->second).OlderThan(oldest_entry_iterator->second))
-        oldest_entry_iterator = it;
-    }
-    cached_network_qualities_.erase(oldest_entry_iterator);
-  }
-  DCHECK_LT(cached_network_qualities_.size(),
-            static_cast<size_t>(kMaximumNetworkQualityCacheSize));
-
-  cached_network_qualities_.insert(
-      std::make_pair(current_network_id_,
-                     nqe::internal::CachedNetworkQuality(network_quality)));
-  DCHECK_LE(cached_network_qualities_.size(),
-            static_cast<size_t>(kMaximumNetworkQualityCacheSize));
 }
 
 void NetworkQualityEstimator::OnUpdatedRTTAvailable(

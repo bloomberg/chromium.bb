@@ -35791,6 +35791,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.CachedNetworkQualityAvailable" enum="BooleanAvailable">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records if the cached network quality (from memory or from a persistent
+    source) was available. Recorded right after connection change event.
+  </summary>
+</histogram>
+
 <histogram name="NQE.CellularSignalStrengthAvailable" enum="BooleanAvailable">
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

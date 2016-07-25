@@ -5,9 +5,7 @@
 #include "net/nqe/network_quality.h"
 
 namespace net {
-
 namespace nqe {
-
 namespace internal {
 
 base::TimeDelta InvalidRTT() {
@@ -40,8 +38,12 @@ NetworkQuality& NetworkQuality::operator=(const NetworkQuality& other) {
   return *this;
 }
 
+bool NetworkQuality::operator==(const NetworkQuality& other) const {
+  return http_rtt_ == other.http_rtt_ &&
+         transport_rtt_ == other.transport_rtt_ &&
+         downstream_throughput_kbps_ == other.downstream_throughput_kbps_;
+}
+
 }  // namespace internal
-
 }  // namespace nqe
-
 }  // namespace net

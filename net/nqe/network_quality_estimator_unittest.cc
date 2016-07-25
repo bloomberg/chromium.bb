@@ -269,16 +269,14 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   double RandDouble() const override { return rand_double_; }
 
   using NetworkQualityEstimator::SetTickClockForTesting;
-  using NetworkQualityEstimator::ReadCachedNetworkQualityEstimate;
   using NetworkQualityEstimator::OnConnectionTypeChanged;
 
  private:
   // NetworkQualityEstimator implementation that returns the overridden
   // network
   // id (instead of invoking platform APIs).
-  NetworkQualityEstimator::NetworkID GetCurrentNetworkID() const override {
-    return NetworkQualityEstimator::NetworkID(current_network_type_,
-                                              current_network_id_);
+  nqe::internal::NetworkID GetCurrentNetworkID() const override {
+    return nqe::internal::NetworkID(current_network_type_, current_network_id_);
   }
 
   bool effective_connection_type_set_;
@@ -398,6 +396,11 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);
 
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
+                                      false, 1);
+
   base::TimeDelta rtt;
   int32_t kbps;
   EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
@@ -438,6 +441,8 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
+  histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
+                                      false, 2);
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
 
@@ -464,6 +469,8 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, std::string());
+  histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
+                                      false, 3);
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
 
@@ -480,6 +487,13 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       NetworkQualityEstimator::EffectiveConnectionType::
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
       1);
+
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable", false,
+                                     3);
+  histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable", true,
+                                     1);
 }
 
 TEST(NetworkQualityEstimatorTest, StoreObservations) {
@@ -983,164 +997,6 @@ TEST(NetworkQualityEstimatorTest, HalfLifeParam) {
     EXPECT_NEAR(test.expected_weight_multiplier,
                 estimator.weight_multiplier_per_second_, 0.001)
         << test.description;
-  }
-}
-
-// Test if the network estimates are cached when network change notification
-// is invoked.
-TEST(NetworkQualityEstimatorTest, TestCaching) {
-  std::map<std::string, std::string> variation_params;
-  TestNetworkQualityEstimator estimator(variation_params);
-  size_t expected_cache_size = 0;
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Cache entry will not be added for (NONE, "").
-  estimator.downstream_throughput_kbps_observations_.AddObservation(
-      NetworkQualityEstimator::ThroughputObservation(
-          1, base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(1000), base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-1");
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Entry will be added for (2G, "test1").
-  // Also, set the network quality for (2G, "test1") so that it is stored in
-  // the cache.
-  estimator.downstream_throughput_kbps_observations_.AddObservation(
-      NetworkQualityEstimator::ThroughputObservation(
-          1, base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(1000), base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-1");
-  ++expected_cache_size;
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Entry will be added for (3G, "test1").
-  // Also, set the network quality for (3G, "test1") so that it is stored in
-  // the cache.
-  estimator.downstream_throughput_kbps_observations_.AddObservation(
-      NetworkQualityEstimator::ThroughputObservation(
-          2, base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(500), base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-2");
-  ++expected_cache_size;
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Entry will not be added for (3G, "test2").
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-1");
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Read the network quality for (2G, "test-1").
-  EXPECT_TRUE(estimator.ReadCachedNetworkQualityEstimate());
-
-  base::TimeDelta rtt;
-  int32_t kbps;
-  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
-  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-  EXPECT_EQ(1, kbps);
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), rtt);
-  EXPECT_FALSE(estimator.GetTransportRTTEstimate(&rtt));
-
-  // No new entry should be added for (2G, "test-1") since it already exists
-  // in the cache.
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-1");
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Read the network quality for (3G, "test-1").
-  EXPECT_TRUE(estimator.ReadCachedNetworkQualityEstimate());
-  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
-  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-  EXPECT_EQ(2, kbps);
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(500), rtt);
-  // No new entry should be added for (3G, "test1") since it already exists
-  // in the cache.
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-2");
-  EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
-
-  // Reading quality of (3G, "test-2") should return false.
-  EXPECT_FALSE(estimator.ReadCachedNetworkQualityEstimate());
-
-  // Reading quality of (2G, "test-3") should return false.
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-3");
-  EXPECT_FALSE(estimator.ReadCachedNetworkQualityEstimate());
-}
-
-// Tests if the cache size remains bounded. Also, ensure that the cache is
-// LRU.
-TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
-  std::map<std::string, std::string> variation_params;
-  TestNetworkQualityEstimator estimator(variation_params);
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, std::string());
-  EXPECT_EQ(0U, estimator.cached_network_qualities_.size());
-
-  // Add 100 more networks than the maximum size of the cache.
-  size_t network_count =
-      NetworkQualityEstimator::kMaximumNetworkQualityCacheSize + 100;
-
-  base::TimeTicks update_time_of_network_100;
-  for (size_t i = 0; i < network_count; ++i) {
-    estimator.downstream_throughput_kbps_observations_.AddObservation(
-        NetworkQualityEstimator::ThroughputObservation(
-            2, base::TimeTicks::Now(),
-            NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(500), base::TimeTicks::Now(),
-            NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-
-    if (i == 100)
-      update_time_of_network_100 = base::TimeTicks::Now();
-
-    estimator.SimulateNetworkChangeTo(
-        NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-        base::SizeTToString(i));
-    if (i < NetworkQualityEstimator::kMaximumNetworkQualityCacheSize)
-      EXPECT_EQ(i, estimator.cached_network_qualities_.size());
-    EXPECT_LE(estimator.cached_network_qualities_.size(),
-              static_cast<size_t>(
-                  NetworkQualityEstimator::kMaximumNetworkQualityCacheSize));
-  }
-  // One more call so that the last network is also written to cache.
-  estimator.downstream_throughput_kbps_observations_.AddObservation(
-      NetworkQualityEstimator::ThroughputObservation(
-          2, base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(500), base::TimeTicks::Now(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.SimulateNetworkChangeTo(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
-      base::SizeTToString(network_count - 1));
-  EXPECT_EQ(static_cast<size_t>(
-                NetworkQualityEstimator::kMaximumNetworkQualityCacheSize),
-            estimator.cached_network_qualities_.size());
-
-  // Test that the cache is LRU by examining its contents. Networks in cache
-  // must all be newer than the 100th network.
-  for (NetworkQualityEstimator::CachedNetworkQualities::iterator it =
-           estimator.cached_network_qualities_.begin();
-       it != estimator.cached_network_qualities_.end(); ++it) {
-    EXPECT_GE((it->second).last_update_time_, update_time_of_network_100);
   }
 }
 
