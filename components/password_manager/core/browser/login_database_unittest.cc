@@ -30,6 +30,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
+#endif
+
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::Eq;
@@ -210,6 +214,14 @@ class LoginDatabaseTest : public testing::Test {
 };
 
 TEST_F(LoginDatabaseTest, Logins) {
+#if defined(OS_IOS) && TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/619982): This test is currently failing on the latest iOS10
+  // simulator due to a bug we expect to be fixed shortly.  Temporarilly
+  // disabling the test for iOS10 simulator runs only.
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    return;
+  }
+#endif
   ScopedVector<autofill::PasswordForm> result;
 
   // Verify the database is empty.
