@@ -318,7 +318,7 @@ class DisplayView : public ActionableView {
 };
 
 TrayDisplay::TrayDisplay(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), default_(NULL) {
+    : SystemTrayItem(system_tray, UMA_DISPLAY), default_(nullptr) {
   WmShell::Get()->AddDisplayObserver(this);
   UpdateDisplayInfo(NULL);
 }

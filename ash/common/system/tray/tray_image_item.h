@@ -18,7 +18,7 @@ class TrayItemView;
 
 class ASH_EXPORT TrayImageItem : public SystemTrayItem {
  public:
-  TrayImageItem(SystemTray* system_tray, int resource_id);
+  TrayImageItem(SystemTray* system_tray, int resource_id, UmaType uma_type);
   ~TrayImageItem() override;
 
   views::View* tray_view();

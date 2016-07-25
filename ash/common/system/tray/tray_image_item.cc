@@ -54,8 +54,10 @@ gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
 
 }  // namespace
 
-TrayImageItem::TrayImageItem(SystemTray* system_tray, int resource_id)
-    : SystemTrayItem(system_tray),
+TrayImageItem::TrayImageItem(SystemTray* system_tray,
+                             int resource_id,
+                             UmaType uma_type)
+    : SystemTrayItem(system_tray, uma_type),
       resource_id_(resource_id),
       tray_view_(nullptr) {}
 

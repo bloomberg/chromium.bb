@@ -1405,6 +1405,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The duration of mostly stationary long-duration touches.</summary>
 </histogram>
 
+<histogram name="Ash.SystemMenu.DefaultView.VisibleRows"
+    enum="SystemMenuDefaultViewRows">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The visible rows displayed in the system menu's default view. Recorded each
+    time the menu is opened.
+  </summary>
+</histogram>
+
 <histogram name="Ash.SystemMenu.PercentageOfWorkAreaHeightCoveredByMenu"
     units="%">
   <owner>tdanderson@chromium.org</owner>
@@ -92914,6 +92924,35 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="IP address"/>
   <int value="2" label="Web URL"/>
   <int value="3" label="SSID"/>
+</enum>
+
+<enum name="SystemMenuDefaultViewRows" type="int">
+  <int value="0" label="NOT_RECORDED - Should not be recorded"/>
+  <int value="1" label="TEST - Should not be recorded"/>
+  <int value="2" label="Accessibility"/>
+  <int value="3" label="Audio"/>
+  <int value="4" label="Bluetooth"/>
+  <int value="5" label="Caps lock"/>
+  <int value="6" label="Cast"/>
+  <int value="7" label="Date"/>
+  <int value="8" label="Display settings"/>
+  <int value="9" label="Display brightness"/>
+  <int value="10" label="Enterprise"/>
+  <int value="11" label="IME"/>
+  <int value="12" label="Multi profile media"/>
+  <int value="13" label="Network"/>
+  <int value="14" label="Settings"/>
+  <int value="15" label="Update"/>
+  <int value="16" label="Power"/>
+  <int value="17" label="Rotation lock"/>
+  <int value="18" label="Screen capture"/>
+  <int value="19" label="Screen share"/>
+  <int value="20" label="Session length limit"/>
+  <int value="21" label="SMS"/>
+  <int value="22" label="Supervised user"/>
+  <int value="23" label="Tracing"/>
+  <int value="24" label="User"/>
+  <int value="25" label="VPN"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus" type="int">

@@ -38,7 +38,7 @@ const int kUserLabelToIconPadding = 5;
 namespace ash {
 
 TrayUser::TrayUser(SystemTray* system_tray, UserIndex index)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_USER),
       user_index_(index),
       user_(nullptr),
       layout_view_(nullptr),

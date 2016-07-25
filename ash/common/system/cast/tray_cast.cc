@@ -532,7 +532,8 @@ void CastDetailedView::OnViewClicked(views::View* sender) {
 
 }  // namespace tray
 
-TrayCast::TrayCast(SystemTray* system_tray) : SystemTrayItem(system_tray) {
+TrayCast::TrayCast(SystemTray* system_tray)
+    : SystemTrayItem(system_tray, UMA_CAST) {
   WmShell::Get()->AddShellObserver(this);
 }
 

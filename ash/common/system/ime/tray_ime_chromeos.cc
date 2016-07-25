@@ -224,7 +224,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
 }  // namespace tray
 
 TrayIME::TrayIME(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_IME),
       tray_label_(NULL),
       default_(NULL),
       detailed_(NULL),

@@ -86,7 +86,7 @@ class UpdateView : public ActionableView {
 }  // namespace
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE) {
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE, UMA_UPDATE) {
   WmShell::Get()->system_tray_notifier()->AddUpdateObserver(this);
 }
 

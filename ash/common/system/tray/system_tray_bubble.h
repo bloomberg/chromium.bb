@@ -5,10 +5,12 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 #define ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "ash/common/login_status.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -59,6 +61,10 @@ class SystemTrayBubble {
   // ShouldShowShelf().
   bool ShouldShowShelf() const;
 
+  // Records metrics for visible system menu rows. Only implemented for the
+  // BUBBLE_TYPE_DEFAULT BubbleType.
+  void RecordVisibleRowMetrics();
+
  private:
   void CreateItemViews(LoginStatus login_status);
 
@@ -66,6 +72,9 @@ class SystemTrayBubble {
   views::TrayBubbleView* bubble_view_;
   std::vector<ash::SystemTrayItem*> items_;
   BubbleType bubble_type_;
+
+  // Tracks the views created in the last call to CreateItemViews().
+  std::map<SystemTrayItem::UmaType, views::View*> tray_item_view_map_;
 
   int autoclose_delay_;
   base::OneShotTimer autoclose_;

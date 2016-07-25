@@ -294,7 +294,7 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
 };
 
 TraySms::TraySms(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_SMS),
       default_(nullptr),
       detailed_(nullptr),
       notification_(nullptr) {

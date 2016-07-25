@@ -11,7 +11,7 @@
 namespace ash {
 
 TrayUserSeparator::TrayUserSeparator(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), separator_shown_(false) {}
+    : SystemTrayItem(system_tray, UMA_NOT_RECORDED), separator_shown_(false) {}
 
 views::View* TrayUserSeparator::CreateTrayView(LoginStatus status) {
   return NULL;

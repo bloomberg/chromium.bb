@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/system_tray.h"
 
+#include <string>
 #include <vector>
 
 #include "ash/common/accessibility_delegate.h"
@@ -20,15 +21,14 @@
 #include "ash/common/wm_window.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
+#include "ash/test/test_system_tray_item.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -42,92 +42,8 @@ namespace test {
 
 namespace {
 
-// Trivial item implementation that tracks its views for testing.
-class TestItem : public SystemTrayItem {
- public:
-  TestItem()
-      : SystemTrayItem(AshTestBase::GetPrimarySystemTray()),
-        tray_view_(nullptr),
-        default_view_(nullptr),
-        detailed_view_(nullptr),
-        notification_view_(nullptr) {}
-
-  views::View* CreateTrayView(LoginStatus status) override {
-    tray_view_ = new views::View;
-    // Add a label so it has non-zero width.
-    tray_view_->SetLayoutManager(new views::FillLayout);
-    tray_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Tray")));
-    return tray_view_;
-  }
-
-  views::View* CreateDefaultView(LoginStatus status) override {
-    default_view_ = new views::View;
-    default_view_->SetLayoutManager(new views::FillLayout);
-    default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
-    return default_view_;
-  }
-
-  views::View* CreateDetailedView(LoginStatus status) override {
-    detailed_view_ = new views::View;
-    detailed_view_->SetLayoutManager(new views::FillLayout);
-    detailed_view_->AddChildView(
-        new views::Label(base::UTF8ToUTF16("Detailed")));
-    return detailed_view_;
-  }
-
-  views::View* CreateNotificationView(LoginStatus status) override {
-    notification_view_ = new views::View;
-    return notification_view_;
-  }
-
-  void DestroyTrayView() override { tray_view_ = NULL; }
-
-  void DestroyDefaultView() override { default_view_ = NULL; }
-
-  void DestroyDetailedView() override { detailed_view_ = NULL; }
-
-  void DestroyNotificationView() override { notification_view_ = NULL; }
-
-  void UpdateAfterLoginStatusChange(LoginStatus status) override {}
-
-  views::View* tray_view() const { return tray_view_; }
-  views::View* default_view() const { return default_view_; }
-  views::View* detailed_view() const { return detailed_view_; }
-  views::View* notification_view() const { return notification_view_; }
-
- private:
-  views::View* tray_view_;
-  views::View* default_view_;
-  views::View* detailed_view_;
-  views::View* notification_view_;
-};
-
-// Trivial item implementation that returns NULL from tray/default/detailed
-// view creation methods.
-class TestNoViewItem : public SystemTrayItem {
- public:
-  TestNoViewItem() : SystemTrayItem(AshTestBase::GetPrimarySystemTray()) {}
-
-  views::View* CreateTrayView(LoginStatus status) override { return nullptr; }
-
-  views::View* CreateDefaultView(LoginStatus status) override {
-    return nullptr;
-  }
-
-  views::View* CreateDetailedView(LoginStatus status) override {
-    return nullptr;
-  }
-
-  views::View* CreateNotificationView(LoginStatus status) override {
-    return nullptr;
-  }
-
-  void DestroyTrayView() override {}
-  void DestroyDefaultView() override {}
-  void DestroyDetailedView() override {}
-  void DestroyNotificationView() override {}
-  void UpdateAfterLoginStatusChange(LoginStatus status) override {}
-};
+const char kVisibleRowsHistogramName[] =
+    "Ash.SystemMenu.DefaultView.VisibleRows";
 
 class ModalWidgetDelegate : public views::WidgetDelegateView {
  public:
@@ -144,6 +60,136 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 }  // namespace
 
 typedef AshTestBase SystemTrayTest;
+
+// Verifies only the visible default views are recorded in the
+// "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
+TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
+  SystemTray* tray = GetPrimarySystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  tray->AddTrayItem(test_item);
+
+  base::HistogramTester histogram_tester;
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 1);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 2);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+
+  test_item->set_views_are_visible(false);
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 2);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+}
+
+// Verifies a visible UMA_NOT_RECORDED default view is not recorded in the
+// "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
+TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
+  SystemTray* tray = GetPrimarySystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  TestSystemTrayItem* test_item =
+      new TestSystemTrayItem(SystemTrayItem::UMA_NOT_RECORDED);
+  tray->AddTrayItem(test_item);
+
+  base::HistogramTester histogram_tester;
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_NOT_RECORDED, 0);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+}
+
+// Verifies null default views are not recorded in the
+// "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
+TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
+  SystemTray* tray = GetPrimarySystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  test_item->set_has_views(false);
+  tray->AddTrayItem(test_item);
+
+  base::HistogramTester histogram_tester;
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 0);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+}
+
+// Verifies visible detailed views are not recorded in the
+// "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
+TEST_F(SystemTrayTest, VisibleDetailedViewsIsNotRecorded) {
+  SystemTray* tray = GetPrimarySystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  tray->AddTrayItem(test_item);
+
+  base::HistogramTester histogram_tester;
+
+  tray->ShowDetailedView(test_item, 0, false, BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+
+  histogram_tester.ExpectTotalCount(kVisibleRowsHistogramName, 0);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+}
+
+// Verifies visible default views are not recorded for menu re-shows in the
+// "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
+TEST_F(SystemTrayTest, VisibleDefaultViewIsNotRecordedOnReshow) {
+  SystemTray* tray = GetPrimarySystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  tray->AddTrayItem(test_item);
+
+  base::HistogramTester histogram_tester;
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 1);
+
+  tray->ShowDetailedView(test_item, 0, false, BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 1);
+
+  tray->ShowDefaultView(BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
+  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
+                                     SystemTrayItem::UMA_TEST, 1);
+
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+}
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   SystemTray* tray = GetPrimarySystemTray();
@@ -201,8 +247,8 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestItem* test_item = new TestItem;
-  TestItem* detailed_item = new TestItem;
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  TestSystemTrayItem* detailed_item = new TestSystemTrayItem();
   tray->AddTrayItem(test_item);
   tray->AddTrayItem(detailed_item);
 
@@ -239,7 +285,8 @@ TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
   ASSERT_TRUE(tray->GetWidget());
 
   // Verify that no crashes occur on items lacking some views.
-  TestNoViewItem* no_view_item = new TestNoViewItem;
+  TestSystemTrayItem* no_view_item = new TestSystemTrayItem();
+  no_view_item->set_has_views(false);
   tray->AddTrayItem(no_view_item);
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   tray->ShowDetailedView(no_view_item, 0, false, BUBBLE_USE_EXISTING);
@@ -251,12 +298,12 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
   ASSERT_TRUE(tray->GetWidget());
 
   // Add an initial tray item so that the tray gets laid out correctly.
-  TestItem* initial_item = new TestItem;
+  TestSystemTrayItem* initial_item = new TestSystemTrayItem();
   tray->AddTrayItem(initial_item);
 
   gfx::Size initial_size = tray->GetWidget()->GetWindowBoundsInScreen().size();
 
-  TestItem* new_item = new TestItem;
+  TestSystemTrayItem* new_item = new TestSystemTrayItem();
   tray->AddTrayItem(new_item);
 
   gfx::Size new_size = tray->GetWidget()->GetWindowBoundsInScreen().size();
@@ -279,8 +326,8 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestItem* test_item = new TestItem;
-  TestItem* detailed_item = new TestItem;
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  TestSystemTrayItem* detailed_item = new TestSystemTrayItem();
   tray->AddTrayItem(test_item);
   tray->AddTrayItem(detailed_item);
 
@@ -314,7 +361,7 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestItem* test_item = new TestItem;
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
   tray->AddTrayItem(test_item);
 
   // Ensure the tray views are created.
@@ -384,7 +431,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestItem* test_item = new TestItem;
+  TestSystemTrayItem* test_item = new TestSystemTrayItem();
   tray->AddTrayItem(test_item);
 
   std::unique_ptr<views::Widget> widget(CreateTestWidget(

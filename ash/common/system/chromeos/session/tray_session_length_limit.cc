@@ -44,7 +44,7 @@ const char TraySessionLengthLimit::kNotificationId[] =
     "chrome://session/timeout";
 
 TraySessionLengthLimit::TraySessionLengthLimit(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_SESSION_LENGTH_LIMIT),
       limit_state_(LIMIT_NONE),
       last_limit_state_(LIMIT_NONE),
       tray_bubble_view_(NULL) {

@@ -19,7 +19,7 @@
 namespace ash {
 
 TrayDate::TrayDate(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_DATE),
       time_tray_(NULL),
       default_view_(NULL),
       login_status_(LoginStatus::NOT_LOGGED_IN) {

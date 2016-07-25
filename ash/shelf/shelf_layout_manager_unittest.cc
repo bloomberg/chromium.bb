@@ -29,10 +29,10 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shelf_test_api.h"
+#include "ash/test/test_system_tray_item.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -45,8 +45,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -260,68 +258,6 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
   bool changed_auto_hide_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutObserverTest);
-};
-
-// Trivial item implementation that tracks its views for testing.
-class TestItem : public SystemTrayItem {
- public:
-  TestItem()
-      : SystemTrayItem(GetSystemTray()),
-        tray_view_(nullptr),
-        default_view_(nullptr),
-        detailed_view_(nullptr),
-        notification_view_(nullptr) {}
-
-  views::View* CreateTrayView(LoginStatus status) override {
-    tray_view_ = new views::View;
-    // Add a label so it has non-zero width.
-    tray_view_->SetLayoutManager(new views::FillLayout);
-    tray_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Tray")));
-    return tray_view_;
-  }
-
-  views::View* CreateDefaultView(LoginStatus status) override {
-    default_view_ = new views::View;
-    default_view_->SetLayoutManager(new views::FillLayout);
-    default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
-    return default_view_;
-  }
-
-  views::View* CreateDetailedView(LoginStatus status) override {
-    detailed_view_ = new views::View;
-    detailed_view_->SetLayoutManager(new views::FillLayout);
-    detailed_view_->AddChildView(
-        new views::Label(base::UTF8ToUTF16("Detailed")));
-    return detailed_view_;
-  }
-
-  views::View* CreateNotificationView(LoginStatus status) override {
-    notification_view_ = new views::View;
-    return notification_view_;
-  }
-
-  void DestroyTrayView() override { tray_view_ = nullptr; }
-
-  void DestroyDefaultView() override { default_view_ = nullptr; }
-
-  void DestroyDetailedView() override { detailed_view_ = nullptr; }
-
-  void DestroyNotificationView() override { notification_view_ = nullptr; }
-
-  void UpdateAfterLoginStatusChange(LoginStatus status) override {}
-
-  views::View* tray_view() const { return tray_view_; }
-  views::View* default_view() const { return default_view_; }
-  views::View* detailed_view() const { return detailed_view_; }
-  views::View* notification_view() const { return notification_view_; }
-
- private:
-  views::View* tray_view_;
-  views::View* default_view_;
-  views::View* detailed_view_;
-  views::View* notification_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestItem);
 };
 
 }  // namespace
@@ -2122,7 +2058,7 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
       EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
     } else {
       // In our second iteration we show a bubble.
-      TestItem* item = new TestItem;
+      test::TestSystemTrayItem* item = new test::TestSystemTrayItem();
       tray->AddTrayItem(item);
       tray->ShowNotificationView(item);
       EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());

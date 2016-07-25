@@ -76,7 +76,8 @@ class DefaultTracingView : public ActionableView {
 // ash::TrayTracing
 
 TrayTracing::TrayTracing(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_TRACING), default_(NULL) {
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_TRACING, UMA_TRACING),
+      default_(nullptr) {
   DCHECK(system_tray);
   WmShell::Get()->system_tray_notifier()->AddTracingObserver(this);
 }

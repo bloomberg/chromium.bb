@@ -134,7 +134,7 @@ class CapsLockDefaultView : public ActionableView {
 };
 
 TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_CAPS_LOCK),
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_CAPS_LOCK, UMA_CAPS_LOCK),
       default_(NULL),
       detailed_(NULL),
       caps_lock_enabled_(CapsLockIsEnabled()),

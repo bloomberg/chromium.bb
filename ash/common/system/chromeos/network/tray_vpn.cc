@@ -112,7 +112,9 @@ class VpnDefaultView : public TrayItemMore,
 }  // namespace tray
 
 TrayVPN::TrayVPN(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), default_(NULL), detailed_(NULL) {
+    : SystemTrayItem(system_tray, UMA_VPN),
+      default_(nullptr),
+      detailed_(nullptr) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
 }
 

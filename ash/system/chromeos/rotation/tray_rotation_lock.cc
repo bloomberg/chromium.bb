@@ -105,7 +105,9 @@ void RotationLockDefaultView::UpdateImage() {
 }  // namespace tray
 
 TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED),
+    : TrayImageItem(system_tray,
+                    IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED,
+                    UMA_ROTATION_LOCK),
       observing_rotation_(false),
       observing_shell_(true) {
   WmShell::Get()->AddShellObserver(this);

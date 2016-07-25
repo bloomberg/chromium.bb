@@ -91,7 +91,7 @@ class ScreenNotificationDelegate : public message_center::NotificationDelegate {
 // can stop the screen capture/sharing by pressing the stop button.
 class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
  public:
-  explicit ScreenTrayItem(SystemTray* system_tray);
+  ScreenTrayItem(SystemTray* system_tray, UmaType uma_type);
   ~ScreenTrayItem() override;
 
   tray::ScreenTrayView* tray_view() { return tray_view_; }

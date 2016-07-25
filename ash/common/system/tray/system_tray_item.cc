@@ -10,8 +10,8 @@
 
 namespace ash {
 
-SystemTrayItem::SystemTrayItem(SystemTray* system_tray)
-    : system_tray_(system_tray), restore_focus_(false) {}
+SystemTrayItem::SystemTrayItem(SystemTray* system_tray, UmaType uma_type)
+    : system_tray_(system_tray), uma_type_(uma_type), restore_focus_(false) {}
 
 SystemTrayItem::~SystemTrayItem() {}
 

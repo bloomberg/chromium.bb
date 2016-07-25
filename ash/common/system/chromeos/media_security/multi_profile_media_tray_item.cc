@@ -62,7 +62,8 @@ class MultiProfileMediaTrayView : public TrayItemView,
 }  // namespace tray
 
 MultiProfileMediaTrayItem::MultiProfileMediaTrayItem(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), tray_view_(nullptr) {}
+    : SystemTrayItem(system_tray, UMA_MULTI_PROFILE_MEDIA),
+      tray_view_(nullptr) {}
 
 MultiProfileMediaTrayItem::~MultiProfileMediaTrayItem() {}
 

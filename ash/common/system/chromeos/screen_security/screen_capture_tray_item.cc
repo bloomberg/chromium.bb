@@ -27,7 +27,7 @@ const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
 }  // namespace
 
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
-    : ScreenTrayItem(system_tray) {
+    : ScreenTrayItem(system_tray, UMA_SCREEN_CAPTURE) {
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->system_tray_notifier()->AddScreenCaptureObserver(this);
 }

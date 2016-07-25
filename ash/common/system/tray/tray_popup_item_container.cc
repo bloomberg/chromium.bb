@@ -13,14 +13,9 @@
 namespace ash {
 
 TrayPopupItemContainer::TrayPopupItemContainer(views::View* view,
-                                               bool change_background,
-                                               bool draw_border)
+                                               bool change_background)
     : active_(false), change_background_(change_background) {
   set_notify_enter_exit_on_child(true);
-  if (draw_border) {
-    SetBorder(
-        views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kBorderLightColor));
-  }
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   layout->SetDefaultFlex(1);
@@ -34,6 +29,12 @@ TrayPopupItemContainer::TrayPopupItemContainer(views::View* view,
 }
 
 TrayPopupItemContainer::~TrayPopupItemContainer() {}
+
+void TrayPopupItemContainer::SetDrawBorder(bool draw_border) {
+  SetBorder(draw_border ? views::Border::CreateSolidSidedBorder(
+                              0, 0, 1, 0, kBorderLightColor)
+                        : nullptr);
+}
 
 void TrayPopupItemContainer::SetActive(bool active) {
   if (!change_background_ || active_ == active)

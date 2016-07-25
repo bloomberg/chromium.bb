@@ -14,11 +14,11 @@ namespace ash {
 // hovering or a user is interacting via touch.
 class TrayPopupItemContainer : public views::View {
  public:
-  TrayPopupItemContainer(views::View* view,
-                         bool change_background,
-                         bool draw_border);
+  TrayPopupItemContainer(views::View* view, bool change_background);
 
   ~TrayPopupItemContainer() override;
+
+  void SetDrawBorder(bool draw_border);
 
   bool active() { return active_; }
 

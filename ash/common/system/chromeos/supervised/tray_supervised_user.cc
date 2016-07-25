@@ -28,7 +28,7 @@ const char TraySupervisedUser::kNotificationId[] =
     "chrome://user/locally-managed";
 
 TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_SUPERVISED_USER),
       tray_view_(NULL),
       status_(LoginStatus::NOT_LOGGED_IN),
       is_user_supervised_(false) {

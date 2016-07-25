@@ -25,7 +25,7 @@ const char kScreenShareNotificationId[] = "chrome://screen/share";
 }
 
 ScreenShareTrayItem::ScreenShareTrayItem(SystemTray* system_tray)
-    : ScreenTrayItem(system_tray) {
+    : ScreenTrayItem(system_tray, UMA_SCREEN_SHARE) {
   WmShell::Get()->system_tray_notifier()->AddScreenShareObserver(this);
 }
 

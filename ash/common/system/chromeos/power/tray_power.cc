@@ -143,7 +143,7 @@ const int TrayPower::kNoWarningPercentage = 15;
 const char TrayPower::kUsbNotificationId[] = "usb-charger";
 
 TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_POWER),
       message_center_(message_center),
       power_tray_(NULL),
       notification_state_(NOTIFICATION_NONE),

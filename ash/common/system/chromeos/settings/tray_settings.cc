@@ -126,7 +126,7 @@ class SettingsDefaultView : public ActionableView,
 }  // namespace tray
 
 TraySettings::TraySettings(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), default_view_(NULL) {}
+    : SystemTrayItem(system_tray, UMA_SETTINGS), default_view_(nullptr) {}
 
 TraySettings::~TraySettings() {}
 

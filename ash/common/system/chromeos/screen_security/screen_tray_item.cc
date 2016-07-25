@@ -119,8 +119,8 @@ void ScreenNotificationDelegate::ButtonClick(int button_index) {
 
 }  // namespace tray
 
-ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray, UmaType uma_type)
+    : SystemTrayItem(system_tray, uma_type),
       tray_view_(NULL),
       default_view_(NULL),
       is_started_(false),

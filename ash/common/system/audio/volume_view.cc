@@ -142,7 +142,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   separator_->SetBorder(views::Border::CreateEmptyBorder(
       kSeparatorVerticalInset, 0, kSeparatorVerticalInset, kBoxLayoutPadding));
 
-  more_region_ = new TrayPopupItemContainer(separator_, true, false);
+  more_region_ = new TrayPopupItemContainer(separator_, true);
   more_region_->SetBorder(
       views::Border::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   AddChildView(more_region_);

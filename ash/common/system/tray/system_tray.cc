@@ -751,6 +751,8 @@ void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
 void SystemTray::RecordSystemMenuMetrics() {
   DCHECK(system_bubble_);
 
+  system_bubble_->bubble()->RecordVisibleRowMetrics();
+
   TrayBubbleView* bubble_view = system_bubble_->bubble_view();
   int num_rows = 0;
   for (int i = 0; i < bubble_view->child_count(); i++) {

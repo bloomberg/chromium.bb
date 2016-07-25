@@ -235,7 +235,7 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
 }  // namespace tray
 
 TrayNetwork::TrayNetwork(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
+    : SystemTrayItem(system_tray, UMA_NETWORK),
       tray_(NULL),
       default_(NULL),
       detailed_(NULL),

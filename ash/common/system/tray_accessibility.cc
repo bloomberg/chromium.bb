@@ -303,7 +303,9 @@ void AccessibilityDetailedView::ButtonPressed(views::Button* sender,
 // ash::TrayAccessibility
 
 TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_ACCESSIBILITY),
+    : TrayImageItem(system_tray,
+                    IDR_AURA_UBER_TRAY_ACCESSIBILITY,
+                    UMA_ACCESSIBILITY),
       default_(NULL),
       detailed_popup_(NULL),
       detailed_menu_(NULL),
