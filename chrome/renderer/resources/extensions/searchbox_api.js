@@ -78,9 +78,6 @@ if (!chrome.embeddedSearch) {
       this.onkeycapturechange = null;
       this.onsubmit = null;
       this.onsuggestionchange = null;
-
-      //TODO(jered): Remove this empty method when google no longer requires it.
-      this.setRestrictedValue = function() {};
     };
 
     this.newTabPage = new function() {
@@ -91,7 +88,6 @@ if (!chrome.embeddedSearch) {
       native function CheckIsUserSignedInToChromeAs();
       native function CheckIsUserSyncingHistory();
       native function DeleteMostVisitedItem();
-      native function GetAppLauncherEnabled();
       native function GetMostVisitedItems();
       native function GetThemeBackgroundInfo();
       native function IsInputInProgress();
@@ -128,7 +124,6 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                           Exported functions
       // =======================================================================
-      this.__defineGetter__('appLauncherEnabled', GetAppLauncherEnabled);
       this.__defineGetter__('isInputInProgress', IsInputInProgress);
       this.__defineGetter__('mostVisited', GetMostVisitedItemsWrapper);
       this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);

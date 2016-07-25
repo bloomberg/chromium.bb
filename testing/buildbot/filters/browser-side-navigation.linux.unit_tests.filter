@@ -21,7 +21,6 @@
 -SearchIPCRouterPolicyTest.ProcessUndoAllMostVisitedDeletions
 -SearchIPCRouterPolicyTest.ProcessUndoMostVisitedDeletion
 -SearchIPCRouterPolicyTest.SendMostVisitedItems
--SearchIPCRouterPolicyTest.SendSetPromoInformation
 -SearchIPCRouterPolicyTest.SendThemeBackgroundInfo
 -SearchIPCRouterTest.IgnoreChromeIdentityCheckMsg
 -SearchIPCRouterTest.IgnoreDeleteMostVisitedItemMsg

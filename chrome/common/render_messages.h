@@ -223,9 +223,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItem> /* items */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxPromoInformation,
-                    bool /* is_app_launcher_enabled */)
-
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetInputInProgress,
                     bool /* input_in_progress */)
 

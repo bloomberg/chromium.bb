@@ -235,7 +235,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SearchBox>(render_view),
     page_seq_no_(0),
-    app_launcher_enabled_(false),
     is_focused_(false),
     is_input_in_progress_(false),
     is_key_capture_enabled_(false),
@@ -372,8 +371,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxPromoInformation,
-                        OnPromoInformationReceived)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
                         OnSetDisplayInstantResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetInputInProgress,
@@ -463,10 +460,6 @@ void SearchBox::OnMostVisitedChanged(
     extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
         render_view()->GetWebView()->mainFrame());
   }
-}
-
-void SearchBox::OnPromoInformationReceived(bool is_app_launcher_enabled) {
-  app_launcher_enabled_ = is_app_launcher_enabled;
 }
 
 void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {

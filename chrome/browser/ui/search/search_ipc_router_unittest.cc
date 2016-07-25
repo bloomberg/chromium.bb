@@ -76,7 +76,6 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessChromeIdentityCheck, bool());
   MOCK_METHOD0(ShouldProcessHistorySyncCheck, bool());
-  MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
@@ -552,28 +551,6 @@ TEST_F(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg) {
 
   OnMessageReceived(ChromeViewHostMsg_PasteAndOpenDropdown(
       contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), text));
-}
-
-TEST_F(SearchIPCRouterTest, SendSetPromoInformationMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetPromoInformation()).Times(1)
-      .WillOnce(testing::Return(true));
-
-  GetSearchIPCRouter().SetPromoInformation(true);
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxPromoInformation::ID));
-}
-
-TEST_F(SearchIPCRouterTest, DoNotSendSetPromoInformationMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetPromoInformation()).Times(1)
-      .WillOnce(testing::Return(false));
-
-  GetSearchIPCRouter().SetPromoInformation(false);
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxPromoInformation::ID));
 }
 
 TEST_F(SearchIPCRouterTest,

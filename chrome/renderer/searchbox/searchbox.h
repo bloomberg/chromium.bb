@@ -129,7 +129,6 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion to the browser.
   void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
 
-  bool app_launcher_enabled() const { return app_launcher_enabled_; }
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
@@ -151,7 +150,6 @@ class SearchBox : public content::RenderViewObserver,
   void OnHistorySyncCheckResult(bool sync_history);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items);
-  void OnPromoInformationReceived(bool is_app_launcher_enabled);
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnSetInputInProgress(bool input_in_progress);
   void OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion);
@@ -169,7 +167,6 @@ class SearchBox : public content::RenderViewObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   int page_seq_no_;
-  bool app_launcher_enabled_;
   bool is_focused_;
   bool is_input_in_progress_;
   bool is_key_capture_enabled_;

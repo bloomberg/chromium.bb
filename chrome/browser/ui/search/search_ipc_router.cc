@@ -54,14 +54,6 @@ void SearchIPCRouter::SendHistorySyncCheckResult(bool sync_history) {
   Send(new ChromeViewMsg_HistorySyncCheckResult(routing_id(), sync_history));
 }
 
-void SearchIPCRouter::SetPromoInformation(bool is_app_launcher_enabled) {
-  if (!policy_->ShouldSendSetPromoInformation())
-    return;
-
-  Send(new ChromeViewMsg_SearchBoxPromoInformation(routing_id(),
-                                                   is_app_launcher_enabled));
-}
-
 void SearchIPCRouter::SetDisplayInstantResults() {
   if (!policy_->ShouldSendSetDisplayInstantResults())
     return;

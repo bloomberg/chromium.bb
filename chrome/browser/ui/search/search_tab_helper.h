@@ -139,7 +139,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   explicit SearchTabHelper(content::WebContents* web_contents);
 
   // Overridden from contents::WebContentsObserver:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
