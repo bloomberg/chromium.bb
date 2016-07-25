@@ -576,6 +576,9 @@
               # linux_syscall_support.h:sys_clone()'s inline assembly.
               'cflags': ['-marm'],
             }],
+            ['chromeos==1', {
+              'defines': ['__CHROMEOS__'],
+            }],
             ['OS=="android"', {
               'include_dirs': [
                 'src/common/android/include',
