@@ -551,9 +551,9 @@ TEST_F(TabManagerTest, MAYBE_ChildProcessNotifications) {
       &TabManagerTest::NotifyRendererProcess, base::Unretained(this));
 
   // Create two dummy tabs.
-  auto tab0 = CreateWebContents();
-  auto tab1 = CreateWebContents();
-  auto tab2 = CreateWebContents();
+  auto* tab0 = CreateWebContents();
+  auto* tab1 = CreateWebContents();
+  auto* tab2 = CreateWebContents();
   tabstrip.AppendWebContents(tab0, true);   // Foreground tab.
   tabstrip.AppendWebContents(tab1, false);  // Background tab.
   tabstrip.AppendWebContents(tab2, false);  // Background tab.

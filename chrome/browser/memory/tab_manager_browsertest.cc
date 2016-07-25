@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   browser()->OpenURL(open3);
   load3.Wait();
 
-  auto tsm = browser()->tab_strip_model();
+  auto* tsm = browser()->tab_strip_model();
   EXPECT_EQ(3, tsm->count());
 
   // Navigate the current (third) tab to a different URL, so we can test
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   base::SimpleTestTickClock test_clock_;
   tab_manager->set_test_tick_clock(&test_clock_);
 
-  auto tsm = browser()->tab_strip_model();
+  auto* tsm = browser()->tab_strip_model();
 
   // Set the minimum time of protection.
   tab_manager->minimum_protection_time_ =
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
       browser(), GURL(chrome::kChromeUIAboutURL), NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  auto tab = browser()->tab_strip_model()->GetWebContentsAt(1);
+  auto* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
 
   // Simulate that a video stream is now being captured.
   content::MediaStreamDevice fake_media_device(

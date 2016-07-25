@@ -94,7 +94,7 @@ TEST_F(TabManagerWebContentsDataTest, LastInactiveTime) {
 
 TEST_F(TabManagerWebContentsDataTest, CopyState) {
   std::unique_ptr<WebContents> web_contents2;
-  auto tab_data2 = CreateWebContentsAndTabData(&web_contents2);
+  auto* tab_data2 = CreateWebContentsAndTabData(&web_contents2);
 
   EXPECT_EQ(tab_data()->tab_data_, tab_data2->tab_data_);
   tab_data()->IncrementDiscardCount();

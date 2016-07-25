@@ -337,10 +337,10 @@ TabManagerDelegate::TabManagerDelegate(
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  auto arc_bridge_service = arc::ArcBridgeService::Get();
+  auto* arc_bridge_service = arc::ArcBridgeService::Get();
   if (arc_bridge_service)
     arc_bridge_service->process()->AddObserver(this);
-  auto activation_client = GetActivationClient();
+  auto* activation_client = GetActivationClient();
   if (activation_client)
     activation_client->AddObserver(this);
   BrowserList::GetInstance()->AddObserver(this);
@@ -348,10 +348,10 @@ TabManagerDelegate::TabManagerDelegate(
 
 TabManagerDelegate::~TabManagerDelegate() {
   BrowserList::GetInstance()->RemoveObserver(this);
-  auto activation_client = GetActivationClient();
+  auto* activation_client = GetActivationClient();
   if (activation_client)
     activation_client->RemoveObserver(this);
-  auto arc_bridge_service = arc::ArcBridgeService::Get();
+  auto* arc_bridge_service = arc::ArcBridgeService::Get();
   if (arc_bridge_service)
     arc_bridge_service->process()->RemoveObserver(this);
 }
@@ -373,7 +373,7 @@ void TabManagerDelegate::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void TabManagerDelegate::OnInstanceReady() {
-  auto arc_bridge_service = arc::ArcBridgeService::Get();
+  auto* arc_bridge_service = arc::ArcBridgeService::Get();
   DCHECK(arc_bridge_service);
 
   arc_process_instance_ = arc_bridge_service->process()->instance();

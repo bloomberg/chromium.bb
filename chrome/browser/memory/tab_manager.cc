@@ -116,7 +116,7 @@ int FindTabStripModelById(int64_t target_web_contents_id,
 // TODO(chrisha): Move this do the default implementation of a delegate.
 base::MemoryPressureListener::MemoryPressureLevel
 GetCurrentPressureLevel() {
-  auto monitor = base::MemoryPressureMonitor::Get();
+  auto* monitor = base::MemoryPressureMonitor::Get();
   if (monitor)
     return monitor->GetCurrentPressureLevel();
   return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
@@ -243,7 +243,7 @@ std::vector<content::RenderProcessHost*> TabManager::GetOrderedRenderers() {
   // Convert the tab sort order to a process sort order. The process inherits
   // the priority of its highest priority tab.
   for (auto& tab : tab_stats) {
-    auto renderer = tab.render_process_host;
+    auto* renderer = tab.render_process_host;
 
     // Skip renderers associated with visible tabs as handling memory pressure
     // notifications in these processes can cause jank. This code works because
@@ -314,7 +314,7 @@ void TabManager::TabChangedAt(content::WebContents* contents,
                               TabChangeType change_type) {
   if (change_type != TabChangeType::ALL)
     return;
-  auto data = GetWebContentsData(contents);
+  auto* data = GetWebContentsData(contents);
   bool old_state = data->IsRecentlyAudible();
   bool current_state = contents->WasRecentlyAudible();
   if (old_state != current_state) {
@@ -721,7 +721,7 @@ bool TabManager::IsMediaTab(WebContents* contents) const {
 TabManager::WebContentsData* TabManager::GetWebContentsData(
     content::WebContents* contents) const {
   WebContentsData::CreateForWebContents(contents);
-  auto web_contents_data = WebContentsData::FromWebContents(contents);
+  auto* web_contents_data = WebContentsData::FromWebContents(contents);
   web_contents_data->set_test_tick_clock(test_tick_clock_);
   return web_contents_data;
 }

@@ -84,7 +84,7 @@ class MockTabManagerObserver : public TabManagerObserver {
 IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   ASSERT_TRUE(tab_manager);
-  auto tsm = browser()->tab_strip_model();
+  auto* tsm = browser()->tab_strip_model();
   set_tab_strip_model(tsm);
 
   // Open two tabs.
