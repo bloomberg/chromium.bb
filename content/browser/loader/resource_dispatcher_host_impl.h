@@ -34,6 +34,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
@@ -490,6 +491,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       net::URLRequest* request,
       ResourceType resource_type,
       ResourceContext* resource_context,
+      RequestContextType fetch_request_context_type,
       AppCacheService* appcache_service,
       int child_id,
       int route_id,

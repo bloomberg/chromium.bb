@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/common/request_context_type.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -26,7 +27,6 @@ namespace content {
 
 class NavigatorDelegate;
 class ResourceRequestBodyImpl;
-struct NavigationRequestInfo;
 
 // This class keeps track of a single navigation. It is created upon receipt of
 // a DidStartProvisionalLoad IPC in a RenderFrameHost. The RenderFrameHost owns
@@ -121,6 +121,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigatorDelegate* GetDelegate() const;
 
+  RequestContextType GetRequestContextType() const;
+
   // Returns the response headers for the request or nullptr if there are none.
   // This should only be accessed after a redirect was encountered or after the
   // navigation is ready to commit. The headers returned should not be modified,
@@ -179,6 +181,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool has_user_gesture,
       ui::PageTransition transition,
       bool is_external_protocol,
+      RequestContextType request_context_type,
       const ThrottleChecksFinishedCallback& callback);
 
   // Called when the URLRequest will be redirected in the network stack.
@@ -311,6 +314,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
+
+  // The fetch request context type.
+  RequestContextType request_context_type_;
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;

@@ -51,7 +51,8 @@ void CheckWillStartRequestOnUIThread(
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
     ui::PageTransition transition,
-    bool is_external_protocol) {
+    bool is_external_protocol,
+    RequestContextType request_context_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
@@ -69,7 +70,7 @@ void CheckWillStartRequestOnUIThread(
 
   navigation_handle->WillStartRequest(
       method, resource_request_body, sanitized_referrer, has_user_gesture,
-      transition, is_external_protocol,
+      transition, is_external_protocol, request_context_type,
       base::Bind(&SendCheckResultToIOThread, callback));
 }
 
@@ -138,9 +139,11 @@ void WillProcessResponseOnUIThread(
 
 NavigationResourceThrottle::NavigationResourceThrottle(
     net::URLRequest* request,
-    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate)
+    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
+    RequestContextType request_context_type)
     : request_(request),
       resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
+      request_context_type_(request_context_type),
       weak_ptr_factory_(this) {}
 
 NavigationResourceThrottle::~NavigationResourceThrottle() {}
@@ -171,7 +174,7 @@ void NavigationResourceThrottle::WillStartRequest(bool* defer) {
                      request_->url(), Referrer(GURL(request_->referrer()),
                                                info->GetReferrerPolicy())),
                  info->HasUserGesture(), info->GetPageTransition(),
-                 is_external_protocol));
+                 is_external_protocol, request_context_type_));
   *defer = true;
 }
 

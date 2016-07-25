@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/common/request_context_type.h"
 #include "content/test/test_render_frame_host.h"
 
 namespace content {
@@ -67,6 +68,8 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     test_handle_ = NavigationHandleImpl::Create(
         GURL(), main_test_rfh()->frame_tree_node(), true, false, false,
         base::TimeTicks::Now(), 0);
+    EXPECT_EQ(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+              test_handle_->request_context_type_);
   }
 
   void TearDown() override {
@@ -103,6 +106,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // the NavigationHandleImplTest.
     test_handle_->WillStartRequest(
         "GET", nullptr, Referrer(), false, ui::PAGE_TRANSITION_LINK, false,
+        REQUEST_CONTEXT_TYPE_LOCATION,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -177,6 +181,24 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   bool was_callback_called_;
   NavigationThrottle::ThrottleCheckResult callback_result_;
 };
+
+// Checks that the request_context_type is properly set.
+// Note: can be extended to cover more internal members.
+TEST_F(NavigationHandleImplTest, SimpleDataChecks) {
+  SimulateWillStartRequest();
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+            test_handle()->GetRequestContextType());
+
+  test_handle()->Resume();
+  SimulateWillRedirectRequest();
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+            test_handle()->GetRequestContextType());
+
+  test_handle()->Resume();
+  SimulateWillProcessResponse();
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+            test_handle()->GetRequestContextType());
+}
 
 // Checks that a deferred navigation can be properly resumed.
 TEST_F(NavigationHandleImplTest, ResumeDeferred) {

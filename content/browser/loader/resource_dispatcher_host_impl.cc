@@ -1633,9 +1633,10 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
       handler.reset(new CrossSiteResourceHandler(std::move(handler), request));
   }
 
-  return AddStandardHandlers(request, request_data.resource_type,
-                             resource_context, filter_->appcache_service(),
-                             child_id, route_id, std::move(handler));
+  return AddStandardHandlers(
+      request, request_data.resource_type, resource_context,
+      request_data.fetch_request_context_type, filter_->appcache_service(),
+      child_id, route_id, std::move(handler));
 }
 
 std::unique_ptr<ResourceHandler>
@@ -1643,6 +1644,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     net::URLRequest* request,
     ResourceType resource_type,
     ResourceContext* resource_context,
+    RequestContextType fetch_request_context_type,
     AppCacheService* appcache_service,
     int child_id,
     int route_id,
@@ -1669,8 +1671,10 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // Add a NavigationResourceThrottle for navigations.
   // PlzNavigate: the throttle is unnecessary as communication with the UI
   // thread is handled by the NavigationURLloader.
-  if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type))
-    throttles.push_back(new NavigationResourceThrottle(request, delegate()));
+  if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
+    throttles.push_back(new NavigationResourceThrottle(
+        request, delegate(), fetch_request_context_type));
+  }
 
   if (delegate_) {
     delegate_->RequestBeginning(request,
@@ -2258,6 +2262,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // currently it's a no-op.
   handler =
       AddStandardHandlers(new_request.get(), resource_type, resource_context,
+                          info.begin_params.request_context_type,
                           nullptr,  // appcache_service
                           -1,       // child_id
                           -1,       // route_id

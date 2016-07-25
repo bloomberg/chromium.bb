@@ -72,7 +72,8 @@ NavigationHandleImpl::NavigationHandleImpl(
       frame_tree_node_(frame_tree_node),
       next_index_(0),
       navigation_start_(navigation_start),
-      pending_nav_entry_id_(pending_nav_entry_id) {
+      pending_nav_entry_id_(pending_nav_entry_id),
+      request_context_type_(REQUEST_CONTEXT_TYPE_UNSPECIFIED) {
   DCHECK(!navigation_start.is_null());
   GetDelegate()->DidStartNavigation(this);
 
@@ -100,6 +101,11 @@ NavigationHandleImpl::~NavigationHandleImpl() {
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
   return frame_tree_node_->navigator()->GetDelegate();
+}
+
+RequestContextType NavigationHandleImpl::GetRequestContextType() const {
+  DCHECK_GE(state_, WILL_SEND_REQUEST);
+  return request_context_type_;
 }
 
 const GURL& NavigationHandleImpl::GetURL() {
@@ -270,6 +276,7 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
 
   WillStartRequest(method, resource_request_body, sanitized_referrer,
                    has_user_gesture, transition, is_external_protocol,
+                   REQUEST_CONTEXT_TYPE_LOCATION,
                    base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -318,6 +325,7 @@ void NavigationHandleImpl::WillStartRequest(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
+    RequestContextType request_context_type,
     const ThrottleChecksFinishedCallback& callback) {
   // |method != "POST"| should imply absence of |resource_request_body|.
   if (method != "POST" && resource_request_body) {
@@ -333,7 +341,7 @@ void NavigationHandleImpl::WillStartRequest(
   has_user_gesture_ = has_user_gesture;
   transition_ = transition;
   is_external_protocol_ = is_external_protocol;
-
+  request_context_type_ = request_context_type;
   state_ = WILL_SEND_REQUEST;
   complete_callback_ = callback;
 

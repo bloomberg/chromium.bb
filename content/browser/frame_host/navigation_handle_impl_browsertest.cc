@@ -6,6 +6,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/request_context_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -146,20 +147,38 @@ class TestNavigationThrottle : public NavigationThrottle {
 
   void Resume() { navigation_handle()->Resume(); }
 
+  RequestContextType request_context_type() { return request_context_type_; }
+
  private:
   // NavigationThrottle implementation.
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
+    NavigationHandleImpl* navigation_handle_impl =
+        static_cast<NavigationHandleImpl*>(navigation_handle());
+    CHECK_NE(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+             navigation_handle_impl->GetRequestContextType());
+    request_context_type_ = navigation_handle_impl->GetRequestContextType();
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, did_call_will_start_);
     return will_start_result_;
   }
 
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override {
+    NavigationHandleImpl* navigation_handle_impl =
+        static_cast<NavigationHandleImpl*>(navigation_handle());
+    CHECK_EQ(request_context_type_,
+             navigation_handle_impl->GetRequestContextType());
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             did_call_will_redirect_);
     return will_redirect_result_;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
+    NavigationHandleImpl* navigation_handle_impl =
+        static_cast<NavigationHandleImpl*>(navigation_handle());
+    CHECK_EQ(request_context_type_,
+             navigation_handle_impl->GetRequestContextType());
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             did_call_will_process_);
     return will_process_result_;
@@ -171,6 +190,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   base::Closure did_call_will_start_;
   base::Closure did_call_will_redirect_;
   base::Closure did_call_will_process_;
+  RequestContextType request_context_type_;
 };
 
 // Install a TestNavigationThrottle on all following requests and allows waiting
@@ -652,6 +672,133 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
   EXPECT_FALSE(observer.is_error());
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             GURL(embedded_test_server()->GetURL("bar.com", "/title2.html")));
+}
+
+// Checks that the RequestContextType value is properly set.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       VerifyRequestContextTypeForFrameTree) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  GURL b_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(c())"));
+  GURL c_url(embedded_test_server()->GetURL(
+      "c.com", "/cross_site_iframe_factory.html?c()"));
+
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+  TestNavigationManager main_manager(shell()->web_contents(), main_url);
+  TestNavigationManager b_manager(shell()->web_contents(), b_url);
+  TestNavigationManager c_manager(shell()->web_contents(), c_url);
+  NavigationStartUrlRecorder url_recorder(shell()->web_contents());
+  TestNavigationThrottle* previous_throttle = nullptr;
+
+  // Starts and verifies the main frame navigation.
+  shell()->LoadURL(main_url);
+  main_manager.WaitForWillStartRequest();
+  // The throttle should not be null.
+  EXPECT_NE(previous_throttle, installer.navigation_throttle());
+  // Checks the only URL recorded so far is the one expected for the main frame.
+  EXPECT_EQ(main_url, url_recorder.urls().back());
+  EXPECT_EQ(1ul, url_recorder.urls().size());
+  // Checks the main frame RequestContextType.
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+            installer.navigation_throttle()->request_context_type());
+  // For each navigations the throttle should be a different instance.
+  previous_throttle = installer.navigation_throttle();
+
+  // Ditto for frame b navigation.
+  main_manager.WaitForNavigationFinished();
+  b_manager.WaitForWillStartRequest();
+  EXPECT_NE(previous_throttle, installer.navigation_throttle());
+  EXPECT_EQ(b_url, url_recorder.urls().back());
+  EXPECT_EQ(2ul, url_recorder.urls().size());
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+            installer.navigation_throttle()->request_context_type());
+  previous_throttle = installer.navigation_throttle();
+
+  // Ditto for frame c navigation.
+  b_manager.WaitForNavigationFinished();
+  c_manager.WaitForWillStartRequest();
+  EXPECT_NE(previous_throttle, installer.navigation_throttle());
+  EXPECT_EQ(c_url, url_recorder.urls().back());
+  EXPECT_EQ(3ul, url_recorder.urls().size());
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+            installer.navigation_throttle()->request_context_type());
+
+  // Lets the final navigation finish so that we conclude running the
+  // RequestContextType checks that happen in TestNavigationThrottle.
+  c_manager.WaitForNavigationFinished();
+  // Confirms the last navigation did finish.
+  EXPECT_FALSE(installer.navigation_throttle());
+}
+
+// Checks that the RequestContextType value is properly set for an hyper-link.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       VerifyHyperlinkRequestContextType) {
+  GURL link_url(embedded_test_server()->GetURL("/title2.html"));
+  GURL document_url(embedded_test_server()->GetURL("/simple_links.html"));
+
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+  TestNavigationManager link_manager(shell()->web_contents(), link_url);
+  NavigationStartUrlRecorder url_recorder(shell()->web_contents());
+
+  // Navigate to a page with a link.
+  EXPECT_TRUE(NavigateToURL(shell(), document_url));
+  EXPECT_EQ(document_url, url_recorder.urls().back());
+  EXPECT_EQ(1ul, url_recorder.urls().size());
+
+  // Starts the navigation from a link click and then check it.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell(), "window.domAutomationController.send(clickSameSiteLink());",
+      &success));
+  EXPECT_TRUE(success);
+  link_manager.WaitForWillStartRequest();
+  EXPECT_EQ(link_url, url_recorder.urls().back());
+  EXPECT_EQ(2ul, url_recorder.urls().size());
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_HYPERLINK,
+            installer.navigation_throttle()->request_context_type());
+
+  // Finishes the last navigation.
+  link_manager.WaitForNavigationFinished();
+  EXPECT_FALSE(installer.navigation_throttle());
+}
+
+// Checks that the RequestContextType value is properly set for an form (POST).
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       VerifyFormRequestContextType) {
+  GURL document_url(
+      embedded_test_server()->GetURL("/session_history/form.html"));
+  GURL post_url(embedded_test_server()->GetURL("/echotitle"));
+
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+  TestNavigationManager post_manager(shell()->web_contents(), post_url);
+  NavigationStartUrlRecorder url_recorder(shell()->web_contents());
+
+  // Navigate to a page with a form.
+  EXPECT_TRUE(NavigateToURL(shell(), document_url));
+  EXPECT_EQ(document_url, url_recorder.urls().back());
+  EXPECT_EQ(1ul, url_recorder.urls().size());
+
+  // Executes the form POST navigation and then check it.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  GURL submit_url("javascript:submitForm('isubmit')");
+  shell()->LoadURL(submit_url);
+  post_manager.WaitForWillStartRequest();
+  EXPECT_EQ(post_url, url_recorder.urls().back());
+  EXPECT_EQ(2ul, url_recorder.urls().size());
+  EXPECT_EQ(REQUEST_CONTEXT_TYPE_FORM,
+            installer.navigation_throttle()->request_context_type());
+
+  // Finishes the last navigation.
+  post_manager.WaitForNavigationFinished();
+  EXPECT_FALSE(installer.navigation_throttle());
 }
 
 // Specialized test that verifies the NavigationHandle gets the HTTPS upgraded
