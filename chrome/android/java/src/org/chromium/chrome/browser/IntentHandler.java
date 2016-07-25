@@ -110,6 +110,12 @@ public class IntentHandler {
     public static final String EXTRA_INVOKED_FROM_FRE = "com.android.chrome.invoked_from_fre";
 
     /**
+     * An extra to indicate that the intent was triggered from a launcher shortcut.
+     */
+    public static final String EXTRA_INVOKED_FROM_SHORTCUT =
+            "com.android.chrome.invoked_from_shortcut";
+
+    /**
      * Intent extra used to identify the sending application.
      */
     private static final String TRUSTED_APPLICATION_CODE_EXTRA = "trusted_application_code_extra";

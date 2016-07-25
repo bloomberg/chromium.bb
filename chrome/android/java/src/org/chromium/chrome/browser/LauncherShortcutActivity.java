@@ -37,6 +37,7 @@ public class LauncherShortcutActivity extends Activity {
         newIntent.setAction(Intent.ACTION_VIEW);
         newIntent.setData(Uri.parse(UrlConstants.NTP_URL));
         newIntent.setClass(this, ChromeLauncherActivity.class);
+        newIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, true);
         IntentHandler.addTrustedIntentExtras(newIntent, this);
 
         if (intentAction.equals(ACTION_OPEN_NEW_INCOGNITO_TAB)) {

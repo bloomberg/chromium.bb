@@ -914,6 +914,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.LauncherShortcut.NewIncognitoTab">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User tapped on the 'New Incognito Tab' launcher shortcut option.
+  </description>
+</action>
+
+<action name="Android.LauncherShortcut.NewTab">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User tapped on the 'New Tab' launcher shortcut option.
+  </description>
+</action>
+
 <action name="Android.ManageSpace">
   <owner>dmurph@chromium.org</owner>
   <description>
