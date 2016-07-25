@@ -142,6 +142,7 @@
       "platform/WebMixedContent.h",
       "platform/WebMockClipboard.h",
       "platform/WebNativeScrollBehavior.h",
+      "platform/WebNavigationHintType.h",
       "platform/WebNonCopyable.h",
       "platform/WebOriginTrialTokenStatus.h",
       "platform/WebPageVisibilityState.h",

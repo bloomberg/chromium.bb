@@ -34,8 +34,11 @@
 
 namespace blink {
 
+enum class WebNavigationHintType;
+
 PLATFORM_EXPORT void prefetchDNS(const String& hostname);
 PLATFORM_EXPORT void preconnect(const KURL&, const CrossOriginAttributeValue);
+PLATFORM_EXPORT void sendNavigationHint(const KURL&, WebNavigationHintType);
 
 } // namespace blink
 

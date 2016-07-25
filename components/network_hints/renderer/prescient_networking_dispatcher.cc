@@ -5,6 +5,10 @@
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 
 #include "base/logging.h"
+#include "components/network_hints/common/network_hints_messages.h"
+#include "content/public/renderer/render_thread.h"
+
+using content::RenderThread;
 
 namespace network_hints {
 
@@ -28,6 +32,14 @@ void PrescientNetworkingDispatcher::preconnect(const blink::WebURL& url,
                                                bool allow_credentials) {
   VLOG(2) << "Preconnect: " << url.string().utf8();
   preconnect_.Preconnect(url, allow_credentials);
+}
+
+void PrescientNetworkingDispatcher::sendNavigationHint(
+    const blink::WebURL& url,
+    blink::WebNavigationHintType type) {
+  if (!url.isValid())
+    return;
+  RenderThread::Get()->Send(new NetworkHintsMsg_NavigationHint(url, type));
 }
 
 }  // namespace network_hints

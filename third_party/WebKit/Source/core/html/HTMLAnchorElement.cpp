@@ -37,6 +37,7 @@
 #include "core/page/ChromeClient.h"
 #include "platform/network/NetworkHints.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebNavigationHintType.h"
 
 namespace blink {
 
@@ -44,15 +45,6 @@ using namespace HTMLNames;
 
 class HTMLAnchorElement::NavigationHintSender : public GarbageCollected<HTMLAnchorElement::NavigationHintSender> {
 public:
-    // TODO(horo): Move WebNavigationHintType to public/ directory.
-    enum class WebNavigationHintType {
-        Unknown,
-        LinkMouseDown,
-        LinkTapUnconfirmed,
-        LinkTapDown,
-        Last = LinkTapDown
-    };
-
     static NavigationHintSender* create(HTMLAnchorElement* anchorElement)
     {
         return new NavigationHintSender(anchorElement);
@@ -116,7 +108,7 @@ void HTMLAnchorElement::NavigationHintSender::maybeSendNavigationHint(WebNavigat
     if (!shouldSendNavigationHint())
         return;
 
-    // TODO(horo): Send the navigation hint message to the browser process.
+    sendNavigationHint(m_anchorElement->href(), type);
 }
 
 HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& document)

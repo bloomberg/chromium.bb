@@ -45,4 +45,11 @@ void preconnect(const KURL& url, const CrossOriginAttributeValue crossOrigin)
     }
 }
 
+void sendNavigationHint(const KURL& url, WebNavigationHintType type)
+{
+    if (WebPrescientNetworking* prescientNetworking = Platform::current()->prescientNetworking()) {
+        prescientNetworking->sendNavigationHint(url, type);
+    }
+}
+
 } // namespace blink

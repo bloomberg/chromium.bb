@@ -66,6 +66,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_Preconnect, OnPreconnect)
+    IPC_MESSAGE_HANDLER(NetworkHintsMsg_NavigationHint, OnNavigationHint)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -126,6 +127,14 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
                               chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
                               allow_credentials, count);
   }
+}
+
+void ChromeRenderMessageFilter::OnNavigationHint(
+    const GURL& url,
+    blink::WebNavigationHintType type) {
+  // TODO(horo): We don't need to have this method in //chrome. Move it to
+  // //content while mojoifing network_hints. (crbug.com/610750)
+  // TODO(horo): Implement this.
 }
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(
