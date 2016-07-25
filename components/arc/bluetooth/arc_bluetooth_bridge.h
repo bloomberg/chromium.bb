@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -191,11 +191,6 @@ class ArcBluetoothBridge
   void StopLEListen(const StopLEListenCallback& callback) override;
   void SearchService(mojom::BluetoothAddressPtr remote_addr) override;
 
-  int ConvertGattIdentifierToId(const std::string identifier) const;
-  template <class T>
-  mojom::BluetoothGattDBElementPtr CreateGattDBElement(
-      const mojom::BluetoothGattDBAttributeType type,
-      const T* GattObject) const;
   void GetGattDB(mojom::BluetoothAddressPtr remote_addr) override;
   void ReadGattCharacteristic(
       mojom::BluetoothAddressPtr remote_addr,
@@ -314,28 +309,10 @@ class ArcBluetoothBridge
       const StopLEListenCallback& callback,
       device::BluetoothAdvertisement::ErrorCode error_code);
 
-  using GattReadCallback = base::Callback<void(mojom::BluetoothGattValuePtr)>;
-  void OnGattReadDone(const GattReadCallback& callback,
-                      const std::vector<uint8_t>& result) const;
-  void OnGattReadError(
-      const GattReadCallback& callback,
-      device::BluetoothGattService::GattErrorCode error_code) const;
-
-  using GattWriteCallback = base::Callback<void(mojom::BluetoothGattStatus)>;
-  void OnGattWriteDone(const GattWriteCallback& callback) const;
-  void OnGattWriteError(
-      const GattWriteCallback& callback,
-      device::BluetoothGattService::GattErrorCode error_code) const;
-
   void OnGattNotifyStartDone(
       const RegisterForGattNotificationCallback& callback,
       const std::string char_string_id,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
-  void OnGattNotifyStartError(
-      const RegisterForGattNotificationCallback& callback,
-      device::BluetoothGattService::GattErrorCode error_code) const;
-  void OnGattNotifyStopDone(
-      const DeregisterForGattNotificationCallback& callback) const;
 
  private:
   mojo::Array<mojom::BluetoothPropertyPtr> GetDeviceProperties(
@@ -350,9 +327,6 @@ class ArcBluetoothBridge
   bool HasBluetoothInstance() const;
   bool CheckBluetoothInstanceVersion(uint32_t version_need) const;
 
-  template <class T>
-  T* FindGattObjectFromUuid(const std::vector<T*> objs,
-                            const device::BluetoothUUID uuid) const;
   device::BluetoothRemoteGattCharacteristic* FindGattCharacteristic(
       mojom::BluetoothAddressPtr remote_addr,
       mojom::BluetoothGattServiceIDPtr service_id,
@@ -367,13 +341,29 @@ class ArcBluetoothBridge
   // Propagates the list of paired device to Android.
   void SendCachedPairedDevices() const;
 
+  bool IsGattServerAttributeHandleAvailable(int need);
+  int32_t GetNextGattServerAttributeHandle();
+  template <class LocalGattAttribute>
+  int32_t CreateGattAttributeHandle(LocalGattAttribute* attribute);
+
+  bool CalledOnValidThread();
+
   mojo::Binding<mojom::BluetoothHost> binding_;
 
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisment_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
-  std::map<std::string, std::unique_ptr<device::BluetoothGattNotifySession>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<device::BluetoothGattNotifySession>>
       notification_session_;
+  // Map from Android int handle to Chrome (BlueZ) string identifier.
+  std::unordered_map<int32_t, std::string> gatt_identifier_;
+  // Store last GattCharacteristic added to each GattService for GattServer.
+  std::unordered_map<int32_t, int32_t> last_characteristic_;
+  // Monotonically increasing value to use as handle to give to Android side.
+  int32_t gatt_server_attribute_next_handle_ = 0;
+
+  base::ThreadChecker thread_checker_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_;
