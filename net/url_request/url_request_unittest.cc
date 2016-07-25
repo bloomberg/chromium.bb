@@ -5960,6 +5960,8 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
 
 namespace {
 const char kExpectCTStaticHostname[] = "preloaded-expect-ct.badssl.com";
+const char kExpectStapleStaticHostname[] = "preloaded-expect-staple.badssl.com";
+const char kExpectStapleReportURI[] = "https://report.badssl.com/expect-staple";
 const char kHPKPReportUri[] = "https://hpkp-report.test";
 }  // namespace
 
@@ -9235,6 +9237,110 @@ TEST_F(HTTPSOCSPTest, MAYBE_RevokedStapled) {
   EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+TEST_F(HTTPSOCSPTest, ExpectStapleReportSentOnMissing) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Set up a MockCertVerifier to accept the certificate that the server sends,
+  // but not provide any OCSP information.
+  scoped_refptr<X509Certificate> cert = https_test_server.GetCertificate();
+  ASSERT_TRUE(cert);
+  MockCertVerifier cert_verifier;
+  CertVerifyResult verify_result;
+  verify_result.verified_cert = cert;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.ocsp_result.response_status = OCSPVerifyResult::MISSING;
+  cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
+
+  // Catch the Expect-Staple report.
+  TransportSecurityState transport_security_state;
+  MockCertificateReportSender mock_report_sender;
+  transport_security_state.SetReportSender(&mock_report_sender);
+
+  // Use a MockHostResolver (which by default maps all hosts to 127.0.0.1) so
+  // that the request can be sent to a site on the Expect-Staple preload list.
+  MockHostResolver host_resolver;
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_host_resolver(&host_resolver);
+  context.set_transport_security_state(&transport_security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  // Now send a request to trigger the violation.
+  TestDelegate d;
+  GURL url = https_test_server.GetURL("/");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(kExpectStapleStaticHostname);
+  url = url.ReplaceComponents(replace_host);
+  std::unique_ptr<URLRequest> violating_request(
+      context.CreateRequest(url, DEFAULT_PRIORITY, &d));
+  violating_request->Start();
+  base::RunLoop().Run();
+
+  // Confirm a report was sent.
+  EXPECT_FALSE(mock_report_sender.latest_report().empty());
+  EXPECT_EQ(GURL(kExpectStapleReportURI),
+            mock_report_sender.latest_report_uri());
+}
+
+TEST_F(HTTPSOCSPTest, ExpectStapleReportNotSentOnValid) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Set up a MockCertVerifier to accept the certificate that the server sends,
+  // and provide GOOD revocation status.
+  scoped_refptr<X509Certificate> cert = https_test_server.GetCertificate();
+  ASSERT_TRUE(cert);
+  MockCertVerifier cert_verifier;
+  CertVerifyResult verify_result;
+  verify_result.verified_cert = cert;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.ocsp_result.response_status = OCSPVerifyResult::PROVIDED;
+  verify_result.ocsp_result.revocation_status = OCSPRevocationStatus::GOOD;
+  cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
+
+  // Catch the Expect-Staple report.
+  TransportSecurityState transport_security_state;
+  MockCertificateReportSender mock_report_sender;
+  transport_security_state.SetReportSender(&mock_report_sender);
+
+  // Use a MockHostResolver (which by default maps all hosts to 127.0.0.1) so
+  // that the request can be sent to a site on the Expect-Staple preload list.
+  MockHostResolver host_resolver;
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_host_resolver(&host_resolver);
+  context.set_transport_security_state(&transport_security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  // This request should not not trigger an Expect-Staple violation.
+  TestDelegate d;
+  GURL url = https_test_server.GetURL("/");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(kExpectStapleStaticHostname);
+  url = url.ReplaceComponents(replace_host);
+  std::unique_ptr<URLRequest> ok_request(
+      context.CreateRequest(url, DEFAULT_PRIORITY, &d));
+  ok_request->Start();
+  base::RunLoop().Run();
+
+  // Check that no report was sent.
+  EXPECT_TRUE(mock_report_sender.latest_report().empty());
+  EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
 }
 
 static const struct OCSPVerifyTestData {

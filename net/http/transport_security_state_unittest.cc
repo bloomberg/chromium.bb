@@ -364,8 +364,9 @@ class TransportSecurityStateTest : public testing::Test {
     state->enable_static_expect_ct_ = true;
   }
 
-  static void EnableStaticExpectStaple(TransportSecurityState* state) {
-    state->enable_static_expect_staple_ = true;
+  static void SetEnableStaticExpectStaple(TransportSecurityState* state,
+                                          bool enabled) {
+    state->enable_static_expect_staple_ = enabled;
   }
 
   static HashValueVector GetSampleSPKIHashes() {
@@ -1841,9 +1842,10 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectCT) {
 TEST_F(TransportSecurityStateTest, PreloadedExpectStaple) {
   TransportSecurityState state;
   TransportSecurityState::ExpectStapleState expect_staple_state;
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, false);
   EXPECT_FALSE(GetExpectStapleState(&state, kExpectStapleStaticHostname,
                                     &expect_staple_state));
-  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, true);
   EXPECT_TRUE(GetExpectStapleState(&state, kExpectStapleStaticHostname,
                                    &expect_staple_state));
   EXPECT_EQ(kExpectStapleStaticHostname, expect_staple_state.domain);
@@ -1858,7 +1860,7 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectStaple) {
 
 TEST_F(TransportSecurityStateTest, PreloadedExpectStapleIncludeSubdomains) {
   TransportSecurityState state;
-  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, true);
   TransportSecurityState::ExpectStapleState expect_staple_state;
   std::string subdomain = "subdomain.";
   subdomain += kExpectStapleStaticIncludeSubdomainsHostname;
@@ -2028,7 +2030,7 @@ class ExpectStapleErrorResponseTest
 // serialized correctly.
 TEST_P(ExpectStapleErrorResponseTest, CheckResponseStatusSerialization) {
   TransportSecurityState state;
-  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, true);
   MockCertificateReportSender reporter;
   ExpectStapleErrorResponseData test = GetParam();
 
@@ -2083,7 +2085,7 @@ class ExpectStapleErrorCertStatusTest
 // |revocation_status| != GOOD.
 TEST_P(ExpectStapleErrorCertStatusTest, CheckCertStatusSerialization) {
   TransportSecurityState state;
-  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, true);
   MockCertificateReportSender reporter;
   ExpectStapleErrorCertStatusData test = GetParam();
   std::string ocsp_response = "dummy_response";
@@ -2123,7 +2125,7 @@ INSTANTIATE_TEST_CASE_P(ExpectStaple,
 
 TEST_F(TransportSecurityStateTest, ExpectStapleDoesNotReportValidStaple) {
   TransportSecurityState state;
-  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, true);
   MockCertificateReportSender reporter;
   state.SetReportSender(&reporter);
 
@@ -2158,7 +2160,7 @@ TEST_F(TransportSecurityStateTest, ExpectStapleDoesNotReportValidStaple) {
 
 TEST_F(TransportSecurityStateTest, ExpectStapleRequiresPreload) {
   TransportSecurityState state;
-  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityStateTest::SetEnableStaticExpectStaple(&state, true);
   MockCertificateReportSender reporter;
   state.SetReportSender(&reporter);
 
