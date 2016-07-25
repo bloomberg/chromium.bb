@@ -594,6 +594,8 @@
         'browser/translate/translate_service_ios.h',
         'browser/ui/UIView+SizeClassSupport.h',
         'browser/ui/UIView+SizeClassSupport.mm',
+        'browser/ui/alert_coordinator/alert_coordinator.h',
+        'browser/ui/alert_coordinator/alert_coordinator.mm',
         'browser/ui/animation_util.h',
         'browser/ui/animation_util.mm',
         'browser/ui/autofill/autofill_client_ios.h',

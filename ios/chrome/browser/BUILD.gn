@@ -460,6 +460,8 @@ source_set("browser") {
     "translate/translate_service_ios.h",
     "ui/UIView+SizeClassSupport.h",
     "ui/UIView+SizeClassSupport.mm",
+    "ui/alert_coordinator/alert_coordinator.h",
+    "ui/alert_coordinator/alert_coordinator.mm",
     "ui/animation_util.h",
     "ui/animation_util.mm",
     "ui/autofill/autofill_client_ios.h",
