@@ -182,6 +182,7 @@ void SubtleNotificationView::UpdateContent(
   instruction_view_->SetVisible(!instruction_text.empty());
   link_->SetText(link_text);
   link_->SetVisible(!link_text.empty());
+  Layout();
 }
 
 // static
