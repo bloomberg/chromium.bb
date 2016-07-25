@@ -527,25 +527,23 @@ static void write_switchable_interp_filter(AV1_COMP *const cpi,
   const AV1_COMMON *const cm = &cpi->common;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   if (cm->interp_filter == SWITCHABLE) {
+    int ctx;
 #if CONFIG_EXT_INTERP
-    if (is_interp_needed(xd)) {
-#endif
-      const int ctx = av1_get_pred_context_switchable_interp(xd);
-#if CONFIG_DAALA_EC
-      aom_write_tree_cdf(w, av1_switchable_interp_ind[mbmi->interp_filter],
-                         cm->fc->switchable_interp_cdf[ctx],
-                         SWITCHABLE_FILTERS);
-#else
-      av1_write_token(w, av1_switchable_interp_tree,
-                      cm->fc->switchable_interp_prob[ctx],
-                      &switchable_interp_encodings[mbmi->interp_filter]);
-#endif
-      ++cpi->interp_filter_selected[0][mbmi->interp_filter];
-#if CONFIG_EXT_INTERP
-    } else {
+    if (!is_interp_needed(xd)) {
       assert(mbmi->interp_filter == EIGHTTAP);
+      return;
     }
 #endif
+    ctx = av1_get_pred_context_switchable_interp(xd);
+#if CONFIG_DAALA_EC
+    aom_write_tree_cdf(w, av1_switchable_interp_ind[mbmi->interp_filter],
+                       cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
+#else
+    av1_write_token(w, av1_switchable_interp_tree,
+                    cm->fc->switchable_interp_prob[ctx],
+                    &switchable_interp_encodings[mbmi->interp_filter]);
+#endif
+    ++cpi->interp_filter_selected[0][mbmi->interp_filter];
   }
 }
 
