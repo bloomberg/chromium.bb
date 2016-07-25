@@ -287,7 +287,7 @@ bool NativeBackendLibsecret::DisableAutoSignInForOrigins(
   if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
     return false;
 
-  for (auto& form : all_forms) {
+  for (auto* form : all_forms) {
     if (origin_filter.Run(form->origin) && !form->skip_zero_click) {
       form->skip_zero_click = true;
       if (!UpdateLogin(*form, changes))
@@ -469,7 +469,7 @@ bool NativeBackendLibsecret::GetLoginsBetween(
       date_to_compare == CREATION_TIMESTAMP
           ? &autofill::PasswordForm::date_created
           : &autofill::PasswordForm::date_synced;
-  for (auto& saved_form : all_forms) {
+  for (auto*& saved_form : all_forms) {
     if (get_begin <= saved_form->*date_member &&
         (get_end.is_null() || saved_form->*date_member < get_end)) {
       forms->push_back(saved_form);

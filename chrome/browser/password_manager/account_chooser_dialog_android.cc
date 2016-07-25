@@ -41,7 +41,7 @@ void AddElementsToJavaCredentialArray(
     password_manager::CredentialType type,
     int indexStart = 0) {
   int index = indexStart;
-  for (auto password_form : password_forms) {
+  for (auto* password_form : password_forms) {
     ScopedJavaLocalRef<jobject> java_credential = CreateNativeCredential(
         env, *password_form, index - indexStart, static_cast<int>(type));
     env->SetObjectArrayElement(java_credentials_array.obj(), index,
@@ -93,11 +93,11 @@ void FetchAvatars(
     const std::vector<const autofill::PasswordForm*>& password_forms,
     int index,
     net::URLRequestContextGetter* request_context) {
-  for (auto password_form : password_forms) {
+  for (auto* password_form : password_forms) {
     if (!password_form->icon_url.is_valid())
       continue;
     // Fetcher deletes itself once fetching is finished.
-    auto fetcher =
+    auto* fetcher =
         new AvatarFetcherAndroid(password_form->icon_url, index, java_dialog);
     fetcher->Start(request_context);
     ++index;

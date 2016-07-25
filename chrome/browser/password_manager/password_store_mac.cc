@@ -546,7 +546,7 @@ void MergePasswordForms(ScopedVector<autofill::PasswordForm>* keychain_forms,
   // Clear out all the Keychain entries we used.
   ScopedVector<autofill::PasswordForm> unused_keychain_forms;
   unused_keychain_forms.reserve(keychain_forms->size());
-  for (auto& keychain_form : *keychain_forms) {
+  for (auto*& keychain_form : *keychain_forms) {
     if (!ContainsKey(used_keychain_forms, keychain_form)) {
       unused_keychain_forms.push_back(keychain_form);
       keychain_form = nullptr;

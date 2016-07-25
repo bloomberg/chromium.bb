@@ -3020,7 +3020,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, ReattachWebContents) {
   // frame.
   EXPECT_LT(1u, detached_web_contents->GetAllFrames().size());
 
-  auto tab_strip_model = browser()->tab_strip_model();
+  auto* tab_strip_model = browser()->tab_strip_model();
   // Check that the autofill and password manager driver factories are notified
   // about all frames, not just the main one. The factories should receive
   // messages for non-main frames, in particular

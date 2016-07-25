@@ -162,7 +162,7 @@ gboolean mock_secret_password_clear_sync(const SecretSchema* schema,
 
   ScopedVector<MockSecretItem> kept_mock_libsecret_items;
   kept_mock_libsecret_items.reserve(global_mock_libsecret_items->size());
-  for (auto& item : *global_mock_libsecret_items) {
+  for (auto*& item : *global_mock_libsecret_items) {
     if (!Matches(item, attributes)) {
       kept_mock_libsecret_items.push_back(item);
       item = nullptr;
@@ -895,7 +895,7 @@ TEST_F(NativeBackendLibsecretTest, DisableAutoSignInForOrigins) {
   VerifiedAdd(&backend, form_facebook_);
 
   EXPECT_EQ(2u, global_mock_libsecret_items->size());
-  for (const auto& item : *global_mock_libsecret_items)
+  for (auto* item : *global_mock_libsecret_items)
     CheckUint32Attribute(item, "should_skip_zero_click", 0);
 
   // Set the canonical forms to the updated value for the following comparison.

@@ -478,7 +478,7 @@ bool NativeBackendKWallet::RemoveLogin(
 
   ScopedVector<autofill::PasswordForm> kept_forms;
   kept_forms.reserve(all_forms.size());
-  for (auto& saved_form : all_forms) {
+  for (auto*& saved_form : all_forms) {
     if (!ArePasswordFormUniqueKeyEqual(form, *saved_form)) {
       kept_forms.push_back(saved_form);
       saved_form = nullptr;
@@ -516,7 +516,7 @@ bool NativeBackendKWallet::DisableAutoSignInForOrigins(
   if (!GetAllLogins(&all_forms))
     return false;
 
-  for (auto& form : all_forms) {
+  for (auto* form : all_forms) {
     if (origin_filter.Run(form->origin) && !form->skip_zero_click) {
       form->skip_zero_click = true;
       if (!UpdateLogin(*form, changes))
@@ -630,7 +630,7 @@ bool NativeBackendKWallet::GetLoginsList(
   }
   // We have to read all the entries, and then filter them here.
   forms->reserve(all_forms.size());
-  for (auto& saved_form : all_forms) {
+  for (auto*& saved_form : all_forms) {
     if (saved_form->blacklisted_by_user ==
         (options == BlacklistOptions::BLACKLISTED)) {
       forms->push_back(saved_form);
@@ -742,7 +742,7 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
         date_to_compare == CREATION_TIMESTAMP
             ? &autofill::PasswordForm::date_created
             : &autofill::PasswordForm::date_synced;
-    for (auto& saved_form : all_forms) {
+    for (auto*& saved_form : all_forms) {
       if (delete_begin <= saved_form->*date_member &&
           (delete_end.is_null() || saved_form->*date_member < delete_end)) {
         changes->push_back(password_manager::PasswordStoreChange(

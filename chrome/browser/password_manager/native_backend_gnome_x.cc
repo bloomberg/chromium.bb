@@ -706,7 +706,7 @@ bool NativeBackendGnome::DisableAutoSignInForOrigins(
   if (!GetAllLogins(&forms))
     return false;
 
-  for (auto& form : forms) {
+  for (auto* form : forms) {
     if (origin_filter.Run(form->origin) && !form->skip_zero_click) {
       form->skip_zero_click = true;
       if (!UpdateLogin(*form, changes))
@@ -816,7 +816,7 @@ bool NativeBackendGnome::GetLoginsBetween(base::Time get_begin,
   base::Time PasswordForm::*date_member = date_to_compare == CREATION_TIMESTAMP
                                               ? &PasswordForm::date_created
                                               : &PasswordForm::date_synced;
-  for (auto& saved_form : all_forms) {
+  for (auto*& saved_form : all_forms) {
     if (get_begin <= saved_form->*date_member &&
         (get_end.is_null() || saved_form->*date_member < get_end)) {
       forms->push_back(saved_form);
