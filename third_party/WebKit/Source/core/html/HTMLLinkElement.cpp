@@ -440,8 +440,13 @@ enum StyleSheetCacheStatus {
 
 void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* cachedStyleSheet)
 {
-    if (!m_owner->isConnected()) {
-        ASSERT(!m_sheet);
+    if (!m_owner->isInDocumentTree()) {
+        // While the stylesheet is asynchronously loading, the owner can be moved out of a document tree.
+        // In that case, cancel any processing on the loaded content.
+        m_loading = false;
+        removePendingSheet();
+        if (m_sheet)
+            clearSheet();
         return;
     }
 
@@ -451,15 +456,6 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         m_loading = false;
         removePendingSheet();
         notifyLoadedSheetAndAllCriticalSubresources(Node::ErrorOccurredLoadingSubresource);
-        return;
-    }
-    // While the stylesheet is asynchronously loading, the owner can be moved under
-    // shadow tree.  In that case, cancel any processing on the loaded content.
-    if (m_owner->isInShadowTree()) {
-        m_loading = false;
-        removePendingSheet();
-        if (m_sheet)
-            clearSheet();
         return;
     }
 
