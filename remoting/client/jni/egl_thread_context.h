@@ -12,22 +12,18 @@
 
 namespace remoting {
 
-// Establishes an EGL-OpenGL|ES2 context on current thread. Must be constructed,
-// used, and deleted on single thread (i.e. the display thread). Each thread can
-// have no more than one EglThreadContext.
-//
-// An example use case:
-// class DisplayHandler {
-//   void OnSurfaceCreated(ANativeWindow* surface) {
-//     context_.BindToWindow(surface);
-//   }
-//   void OnSurfaceDestroyed() {
-//     context_.BindToWindow(nullptr);
-//   }
-//   EglThreadContext context_;
-// };
+// Establishes an EGL-OpenGL|ES 2 (if 3 is not supported) or 3 (backward
+// compatible with 2) context on current thread. Must be constructed, used, and
+// deleted on single thread (i.e. the display thread). Each thread can have no
+// more than one EglThreadContext.
 class EglThreadContext {
  public:
+  enum class GlVersion {
+    UNKNOWN = 0,
+    ES_2 = 2,
+    ES_3 = 3
+  };
+
   EglThreadContext();
   ~EglThreadContext();
 
@@ -36,19 +32,32 @@ class EglThreadContext {
   // EGLNativeWindowType is platform specific. E.g. ANativeWindow* on Android.
   void BindToWindow(EGLNativeWindowType window);
 
-  // Returns true IFF the context is bound to a window (i.e. current surface is
+  // Returns true if the context is bound to a window (i.e. current surface is
   // not NULL).
   bool IsWindowBound() const;
 
-  // Posts EGL surface buffer to the window being bound. Window must be bound
-  // before calling this function.
-  void SwapBuffers();
+  // Posts EGL surface buffer to the window being bound.
+  // Returns true if the buffer is successfully swapped.
+  bool SwapBuffers();
+
+  // Returns the current OpenGL ES client version of the EGL context.
+  GlVersion client_version() const {
+    return client_version_;
+  }
 
  private:
+  // Creates an EGLContext with given |renderable_type| and |client_version|.
+  // |renderable_type| and |client_version| must match with each other.
+  // E.g. renderable_type = EGL_OPENGL_ES3_BIT,
+  //      client_version = CLIENT_VERSION_ES_3.
+  bool CreateContextWithClientVersion(int renderable_type,
+                                      GlVersion client_version);
+
   EGLDisplay display_ = EGL_NO_DISPLAY;
   EGLConfig config_ = nullptr;
   EGLSurface surface_ = EGL_NO_SURFACE;
   EGLContext context_ = EGL_NO_CONTEXT;
+  GlVersion client_version_ = GlVersion::UNKNOWN;
 
   base::ThreadChecker thread_checker_;
 
