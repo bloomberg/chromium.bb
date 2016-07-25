@@ -56,7 +56,7 @@ def configuration_options():
         optparse.make_option('--debug', action='store_const', const='Debug', dest="configuration",
                              help='Set the configuration to Debug'),
         optparse.make_option("-t", "--target", dest="target",
-                             help="specify the target configuration to use (Debug/Release)"),
+                             help="Specify the target build subdirectory under src/out/"),
         optparse.make_option('--release', action='store_const', const='Release', dest="configuration",
                              help='Set the configuration to Release'),
     ]

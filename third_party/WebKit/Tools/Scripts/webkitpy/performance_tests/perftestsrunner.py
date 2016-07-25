@@ -81,6 +81,8 @@ class PerfTestsRunner(object):
                                  help='Set the configuration to Debug'),
             optparse.make_option('--release', action='store_const', const='Release', dest="configuration",
                                  help='Set the configuration to Release'),
+            optparse.make_option('-t', '--target', dest='configuration',
+                                 help='Specify the target build subdirectory under src/out/'),
             optparse.make_option("--platform",
                                  help="Specify port/platform being tested (e.g. mac)"),
             optparse.make_option("--chromium",
