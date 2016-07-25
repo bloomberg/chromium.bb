@@ -1986,10 +1986,13 @@ class OcclusionTrackerTestBlendModeDoesNotOcclude
     EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
 
     this->VisitLayer(blend_mode_layer, &occlusion);
-    // |top_layer| occludes but not |blend_mode_layer|.
+    // |top_layer| and |blend_mode_layer| both occlude, since the blend mode
+    // gets applied by blend_mode_layer's render surface, not when drawing the
+    // layer itself.
+    EXPECT_EQ(gfx::Rect(100, 100).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
     EXPECT_EQ(gfx::Rect(10, 12, 20, 22).ToString(),
               occlusion.occlusion_from_outside_target().ToString());
-    EXPECT_TRUE(occlusion.occlusion_from_inside_target().IsEmpty());
 
     this->VisitContributingSurface(blend_mode_layer, &occlusion);
     // |top_layer| occludes but not |blend_mode_layer|.
