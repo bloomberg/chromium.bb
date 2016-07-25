@@ -69,12 +69,14 @@ const base::Value* WebRTCInternals::PendingUpdate::value() const {
   return value_.get();
 }
 
-WebRTCInternals::WebRTCInternals() : WebRTCInternals(500) {}
+WebRTCInternals::WebRTCInternals() : WebRTCInternals(500, true) {}
 
-WebRTCInternals::WebRTCInternals(int aggregate_updates_ms)
+WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
+                                 bool should_block_power_saving)
     : audio_debug_recordings_(false),
       event_log_recordings_(false),
       selecting_event_log_(false),
+      should_block_power_saving_(should_block_power_saving),
       aggregate_updates_ms_(aggregate_updates_ms),
       weak_factory_(this) {
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
@@ -497,6 +499,8 @@ void WebRTCInternals::EnableEventLogRecordingsOnAllRenderProcessHosts() {
 
 void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!should_block_power_saving_)
+    return;
 
   if (peer_connection_data_.empty() && power_save_blocker_) {
     DVLOG(1) << ("Releasing the block on application suspension since no "

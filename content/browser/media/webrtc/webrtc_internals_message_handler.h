@@ -17,11 +17,13 @@ class ListValue;
 namespace content {
 
 class RenderFrameHost;
+class WebRTCInternals;
 
 // This class handles messages to and from WebRTCInternalsUI.
 // It delegates all its work to WebRTCInternalsProxy on the IO thread.
-class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
-                                      public WebRTCInternalsUIObserver{
+class CONTENT_EXPORT WebRTCInternalsMessageHandler
+    : public WebUIMessageHandler,
+      public NON_EXPORTED_BASE(WebRTCInternalsUIObserver) {
  public:
   WebRTCInternalsMessageHandler();
   ~WebRTCInternalsMessageHandler() override;
@@ -31,6 +33,12 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
 
   // WebRTCInternalsUIObserver override.
   void OnUpdate(const std::string& command, const base::Value* args) override;
+
+ protected:
+  // The WebRTCInternals to use. Always WebRTCInternals::GetInstance()
+  // except for testing.
+  explicit WebRTCInternalsMessageHandler(WebRTCInternals* webrtc_internals);
+  WebRTCInternals* const webrtc_internals_;
 
  private:
   // Returns a pointer to the RFH iff it is currently hosting the

@@ -15,12 +15,17 @@
 
 namespace content {
 
-WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler() {
-  WebRTCInternals::GetInstance()->AddObserver(this);
+WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler()
+    : WebRTCInternalsMessageHandler(WebRTCInternals::GetInstance()) {}
+
+WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler(
+    WebRTCInternals* webrtc_internals)
+    : webrtc_internals_(webrtc_internals) {
+  webrtc_internals_->AddObserver(this);
 }
 
 WebRTCInternalsMessageHandler::~WebRTCInternalsMessageHandler() {
-  WebRTCInternals::GetInstance()->RemoveObserver(this);
+  webrtc_internals_->RemoveObserver(this);
 }
 
 void WebRTCInternalsMessageHandler::RegisterMessages() {
@@ -84,10 +89,9 @@ void WebRTCInternalsMessageHandler::OnGetAllStats(
 void WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled(
     bool enable, const base::ListValue* /* unused_list */) {
   if (enable) {
-    WebRTCInternals::GetInstance()->EnableAudioDebugRecordings(
-        web_ui()->GetWebContents());
+    webrtc_internals_->EnableAudioDebugRecordings(web_ui()->GetWebContents());
   } else {
-    WebRTCInternals::GetInstance()->DisableAudioDebugRecordings();
+    webrtc_internals_->DisableAudioDebugRecordings();
   }
 }
 
@@ -95,18 +99,17 @@ void WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled(
     bool enable,
     const base::ListValue* /* unused_list */) {
   if (enable) {
-    WebRTCInternals::GetInstance()->EnableEventLogRecordings(
-        web_ui()->GetWebContents());
+    webrtc_internals_->EnableEventLogRecordings(web_ui()->GetWebContents());
   } else {
-    WebRTCInternals::GetInstance()->DisableEventLogRecordings();
+    webrtc_internals_->DisableEventLogRecordings();
   }
 }
 
 void WebRTCInternalsMessageHandler::OnDOMLoadDone(
     const base::ListValue* /* unused_list */) {
-  WebRTCInternals::GetInstance()->UpdateObserver(this);
+  webrtc_internals_->UpdateObserver(this);
 
-  if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
+  if (webrtc_internals_->IsAudioDebugRecordingsEnabled()) {
     RenderFrameHost* host = GetWebRTCInternalsHost();
     if (!host)
       return;

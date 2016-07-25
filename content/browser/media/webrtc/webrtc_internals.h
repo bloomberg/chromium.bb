@@ -114,7 +114,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // instance.
   // The default ctor sets |aggregate_updates_ms| to 500ms.
   WebRTCInternals();
-  explicit WebRTCInternals(int aggregate_updates_ms);
+  WebRTCInternals(int aggregate_updates_ms, bool should_block_power_saving);
   ~WebRTCInternals() override;
 
  private:
@@ -207,6 +207,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // PowerSaveBlocker.  This prevents the application from being suspended while
   // remoting.
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+  const bool should_block_power_saving_;
 
   // Set of render process hosts that |this| is registered as an observer on.
   base::hash_set<int> render_process_id_set_;

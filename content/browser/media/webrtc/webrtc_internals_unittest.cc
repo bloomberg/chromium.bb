@@ -52,7 +52,7 @@ class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
 // updates (changes down from 500ms to 1ms).
 class WebRTCInternalsForTest : public NON_EXPORTED_BASE(WebRTCInternals) {
  public:
-  WebRTCInternalsForTest() : WebRTCInternals(1) {}
+  WebRTCInternalsForTest() : WebRTCInternals(1, true) {}
   ~WebRTCInternalsForTest() override {}
 };
 
