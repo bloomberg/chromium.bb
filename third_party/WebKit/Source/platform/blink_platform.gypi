@@ -103,6 +103,8 @@
       'PrerenderClient.h',
       'PurgeableVector.cpp',
       'PurgeableVector.h',
+      'ScopedOrientationChangeIndicator.cpp',
+      'ScopedOrientationChangeIndicator.h',
       'ScriptForbiddenScope.cpp',
       'ScriptForbiddenScope.h',
       'SecureTextInput.cpp',
@@ -1142,6 +1144,7 @@
       'weborigin/Suborigin.h',
     ],
     'platform_test_files': [
+      'ScopedOrientationChangeIndicatorTest.cpp',
       'DecimalTest.cpp',
       'DragImageTest.cpp',
       'HistogramTest.cpp',

@@ -13,6 +13,7 @@
 #include "modules/screen_orientation/ScreenOrientation.h"
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/ScopedOrientationChangeIndicator.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
 
@@ -174,6 +175,8 @@ void ScreenOrientationController::dispatchEventTimerFired(Timer<ScreenOrientatio
 {
     if (!m_orientation)
         return;
+
+    ScopedOrientationChangeIndicator orientationChangeIndicator;
     m_orientation->dispatchEvent(Event::create(EventTypeNames::change));
 }
 

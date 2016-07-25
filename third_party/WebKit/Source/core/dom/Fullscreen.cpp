@@ -46,6 +46,7 @@
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/api/LayoutFullScreenItem.h"
 #include "core/page/ChromeClient.h"
+#include "platform/ScopedOrientationChangeIndicator.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -254,25 +255,26 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
         if (!fullscreenElementReady(element))
             break;
 
-        // This algorithm is not allowed to show a pop-up:
-        //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
-        //   - an activation behavior is currently being processed whose click event was trusted, or
-        //   - the event listener for a trusted click event is being handled.
+        // Fullscreen is not supported.
+        if (!fullscreenIsSupported(element.document()))
+            break;
+
+        // This algorithm is not allowed to request fullscreen.
+        // An algorithm is allowed to request fullscreen if one of the following
+        // is true:
+        //  - the algorithm is triggered by a user activation.
+        //  - the algorithm is triggered by a user generated orientation change.
         //
         // If |forCrossProcessDescendant| is true, requestFullscreen
         // was already called on a descendant element in another process, and
         // getting here means that it already passed the user gesture check.
-        if (!UserGestureIndicator::utilizeUserGesture() && !forCrossProcessDescendant) {
+        if (!UserGestureIndicator::utilizeUserGesture() && !ScopedOrientationChangeIndicator::processingOrientationChange() && !forCrossProcessDescendant) {
             String message = ExceptionMessages::failedToExecute("requestFullScreen",
                 "Element", "API can only be initiated by a user gesture.");
             document()->addConsoleMessage(
                 ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
             break;
         }
-
-        // Fullscreen is not supported.
-        if (!fullscreenIsSupported(element.document()))
-            break;
 
         // 2. Let doc be element's node document. (i.e. "this")
         Document* currentDoc = document();
