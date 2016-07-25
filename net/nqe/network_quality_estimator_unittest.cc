@@ -1696,8 +1696,13 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
       base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
       tick_clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
 
+      std::unique_ptr<ExternalEstimateProvider> external_estimate_provider(
+          new TestExternalEstimateProvider(test.rtt, 0));
+
       std::map<std::string, std::string> variation_params;
-      TestNetworkQualityEstimator estimator(variation_params);
+      TestNetworkQualityEstimator estimator(
+          variation_params, std::move(external_estimate_provider));
+
       estimator.SetTickClockForTesting(std::move(tick_clock));
       estimator.SimulateNetworkChangeTo(
           NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
@@ -1788,6 +1793,15 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
           diff, 1);
       histogram_tester.ExpectTotalCount(
           "NQE.Accuracy.TransportRTT.EstimatedObservedDiff." +
+              sign_suffix_with_zero_samples + "." + interval_value + ".60_140",
+          0);
+
+      histogram_tester.ExpectUniqueSample(
+          "NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff." +
+              sign_suffix_with_one_sample + "." + interval_value + ".60_140",
+          diff, 1);
+      histogram_tester.ExpectTotalCount(
+          "NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff." +
               sign_suffix_with_zero_samples + "." + interval_value + ".60_140",
           0);
     }

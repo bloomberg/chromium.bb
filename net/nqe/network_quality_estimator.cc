@@ -19,6 +19,7 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -200,7 +201,7 @@ bool RequestSchemeIsHTTPOrHTTPS(const net::URLRequest& request) {
 // Returns the suffix of the histogram that should be used for recording the
 // accuracy when the observed RTT is |observed_rtt|. The width of the intervals
 // are in exponentially increasing order.
-std::string GetHistogramSuffixObservedRTT(const base::TimeDelta& observed_rtt) {
+const char* GetHistogramSuffixObservedRTT(const base::TimeDelta& observed_rtt) {
   const float rtt_milliseconds = observed_rtt.InMillisecondsF();
   DCHECK_GE(rtt_milliseconds, 0);
 
@@ -220,7 +221,7 @@ std::string GetHistogramSuffixObservedRTT(const base::TimeDelta& observed_rtt) {
 // accuracy when the observed throughput in kilobits per second is
 // |observed_throughput_kbps|. The width of the intervals are in exponentially
 // increasing order.
-std::string GetHistogramSuffixObservedThroughput(
+const char* GetHistogramSuffixObservedThroughput(
     const int32_t& observed_throughput_kbps) {
   DCHECK_GE(observed_throughput_kbps, 0);
 
@@ -267,6 +268,60 @@ int32_t FitInKBitsPerMetricBits(int32_t metric) {
   }
   DCHECK_EQ(0, metric >> kBitsPerMetric);
   return metric;
+}
+
+void RecordRTTAccuracy(const char* prefix,
+                       int32_t metric,
+                       base::TimeDelta measuring_duration,
+                       base::TimeDelta observed_rtt) {
+  const std::string histogram_name =
+      base::StringPrintf("%s.EstimatedObservedDiff.%s.%d.%s", prefix,
+                         metric >= 0 ? "Positive" : "Negative",
+                         static_cast<int32_t>(measuring_duration.InSeconds()),
+                         GetHistogramSuffixObservedRTT(observed_rtt));
+
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      histogram_name, 1, 10 * 1000 /* 10 seconds */, 50 /* Number of buckets */,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(std::abs(metric));
+}
+
+void RecordThroughputAccuracy(const char* prefix,
+                              int32_t metric,
+                              base::TimeDelta measuring_duration,
+                              int32_t observed_throughput_kbps) {
+  const std::string histogram_name = base::StringPrintf(
+      "%s.EstimatedObservedDiff.%s.%d.%s", prefix,
+      metric >= 0 ? "Positive" : "Negative",
+      static_cast<int32_t>(measuring_duration.InSeconds()),
+      GetHistogramSuffixObservedThroughput(observed_throughput_kbps));
+
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      histogram_name, 1, 1000 * 1000 /* 1 Gbps */, 50 /* Number of buckets */,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(std::abs(metric));
+}
+
+void RecordEffectiveConnectionTypeAccuracy(
+    const char* prefix,
+    int32_t metric,
+    base::TimeDelta measuring_duration,
+    net::NetworkQualityEstimator::EffectiveConnectionType
+        observed_effective_connection_type) {
+  const std::string histogram_name = base::StringPrintf(
+      "%s.EstimatedObservedDiff.%s.%d.%s", prefix,
+      metric >= 0 ? "Positive" : "Negative",
+      static_cast<int32_t>(measuring_duration.InSeconds()),
+      net::NetworkQualityEstimator::GetNameForEffectiveConnectionType(
+          observed_effective_connection_type));
+
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      histogram_name, 0,
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_LAST,
+      net::NetworkQualityEstimator::
+          EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(std::abs(metric));
 }
 
 }  // namespace
@@ -571,6 +626,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
         GetEffectiveConnectionType();
 
     RecordMetricsOnMainFrameRequest();
+    MaybeQueryExternalEstimateProvider();
 
     // Post the tasks which will run in the future and record the estimation
     // accuracy based on the observations received between now and the time of
@@ -650,16 +706,9 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
         estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds() -
         recent_http_rtt.InMilliseconds();
 
-    const std::string sign_suffix =
-        estimated_observed_diff_milliseconds >= 0 ? "Positive." : "Negative.";
-
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        "NQE.Accuracy.HttpRTT.EstimatedObservedDiff." + sign_suffix +
-            base::IntToString(measuring_duration.InSeconds()) + "." +
-            GetHistogramSuffixObservedRTT(recent_http_rtt),
-        1, 10 * 1000 /* 10 seconds */, 50 /* Number of buckets */,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(std::abs(estimated_observed_diff_milliseconds));
+    RecordRTTAccuracy("NQE.Accuracy.HttpRTT",
+                      estimated_observed_diff_milliseconds, measuring_duration,
+                      recent_http_rtt);
   }
 
   base::TimeDelta recent_transport_rtt;
@@ -671,16 +720,9 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
         estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds() -
         recent_transport_rtt.InMilliseconds();
 
-    const std::string sign_suffix =
-        estimated_observed_diff_milliseconds >= 0 ? "Positive." : "Negative.";
-
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        "NQE.Accuracy.TransportRTT.EstimatedObservedDiff." + sign_suffix +
-            base::IntToString(measuring_duration.InSeconds()) + "." +
-            GetHistogramSuffixObservedRTT(recent_transport_rtt),
-        1, 10 * 1000 /* 10 seconds */, 50 /* Number of buckets */,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(std::abs(estimated_observed_diff_milliseconds));
+    RecordRTTAccuracy("NQE.Accuracy.TransportRTT",
+                      estimated_observed_diff_milliseconds, measuring_duration,
+                      recent_transport_rtt);
   }
 
   int32_t recent_downstream_throughput_kbps;
@@ -692,17 +734,9 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
         estimated_quality_at_last_main_frame_.downstream_throughput_kbps() -
         recent_downstream_throughput_kbps;
 
-    const std::string sign_suffix =
-        estimated_observed_diff >= 0 ? "Positive." : "Negative.";
-
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        "NQE.Accuracy.DownstreamThroughputKbps.EstimatedObservedDiff." +
-            sign_suffix + base::IntToString(measuring_duration.InSeconds()) +
-            "." + GetHistogramSuffixObservedThroughput(
-                      recent_downstream_throughput_kbps),
-        1, 1000 * 1000 /* 1 Gbps */, 50 /* Number of buckets */,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(std::abs(estimated_observed_diff));
+    RecordThroughputAccuracy("NQE.Accuracy.DownstreamThroughputKbps",
+                             estimated_observed_diff, measuring_duration,
+                             recent_downstream_throughput_kbps);
   }
 
   EffectiveConnectionType recent_effective_connection_type =
@@ -714,18 +748,22 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
         static_cast<int>(effective_connection_type_at_last_main_frame_) -
         static_cast<int>(recent_effective_connection_type);
 
-    const std::string sign_suffix =
-        estimated_observed_diff >= 0 ? "Positive." : "Negative.";
+    RecordEffectiveConnectionTypeAccuracy(
+        "NQE.Accuracy.EffectiveConnectionType", estimated_observed_diff,
+        measuring_duration, recent_effective_connection_type);
+  }
 
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        "NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff." +
-            sign_suffix + base::IntToString(measuring_duration.InSeconds()) +
-            "." +
-            GetNameForEffectiveConnectionType(recent_effective_connection_type),
-        0, EFFECTIVE_CONNECTION_TYPE_LAST,
-        EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(std::abs(estimated_observed_diff));
+  // Add histogram to evaluate the accuracy of the external estimate provider.
+  if (external_estimate_provider_quality_.http_rtt() !=
+          nqe::internal::InvalidRTT() &&
+      recent_http_rtt != nqe::internal::InvalidRTT()) {
+    const int estimated_observed_diff_milliseconds =
+        external_estimate_provider_quality_.http_rtt().InMilliseconds() -
+        recent_http_rtt.InMilliseconds();
+
+    RecordRTTAccuracy("NQE.ExternalEstimateProvider.RTT.Accuracy",
+                      estimated_observed_diff_milliseconds, measuring_duration,
+                      recent_http_rtt);
   }
 }
 
@@ -943,6 +981,19 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   current_network_id_ = GetCurrentNetworkID();
   RecordNetworkIDAvailability();
 
+  MaybeQueryExternalEstimateProvider();
+
+  // Read any cached estimates for the new network. If cached estimates are
+  // unavailable, add the default estimates.
+  if (!ReadCachedNetworkQualityEstimate())
+    AddDefaultEstimates();
+  estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
+  throughput_analyzer_->OnConnectionTypeChanged();
+  MaybeRecomputeEffectiveConnectionType();
+  UpdateSignalStrength();
+}
+
+void NetworkQualityEstimator::MaybeQueryExternalEstimateProvider() const {
   // Query the external estimate provider on certain connection types. Once the
   // updated estimates are available, OnUpdatedEstimateAvailable will be called
   // by |external_estimate_provider_| with updated estimates.
@@ -955,15 +1006,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED);
     external_estimate_provider_->Update();
   }
-
-  // Read any cached estimates for the new network. If cached estimates are
-  // unavailable, add the default estimates.
-  if (!ReadCachedNetworkQualityEstimate())
-    AddDefaultEstimates();
-  estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
-  throughput_analyzer_->OnConnectionTypeChanged();
-  MaybeRecomputeEffectiveConnectionType();
-  UpdateSignalStrength();
 }
 
 void NetworkQualityEstimator::UpdateSignalStrength() {
@@ -1444,6 +1486,8 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
   RecordExternalEstimateProviderMetrics(
       EXTERNAL_ESTIMATE_PROVIDER_STATUS_CALLBACK);
 
+  external_estimate_provider_quality_ = nqe::internal::NetworkQuality();
+
   if (rtt > base::TimeDelta()) {
     RecordExternalEstimateProviderMetrics(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE);
@@ -1451,6 +1495,7 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
     rtt_observations_.AddObservation(
         RttObservation(rtt, tick_clock_->NowTicks(),
                        NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE));
+    external_estimate_provider_quality_.set_http_rtt(rtt);
   }
 
   if (downstream_throughput_kbps > 0) {
@@ -1462,6 +1507,8 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
         ThroughputObservation(
             downstream_throughput_kbps, tick_clock_->NowTicks(),
             NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE));
+    external_estimate_provider_quality_.set_downstream_throughput_kbps(
+        downstream_throughput_kbps);
   }
 }
 

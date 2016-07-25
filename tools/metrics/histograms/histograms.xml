@@ -35881,6 +35881,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff"
+    units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records the difference between the HTTP RTT estimated by the external
+    estimate provider and the observed HTTP RTT. The HTTP RTT estimated by the
+    external estimate provider at the time of navigation start is compared with
+    the HTTP RTT observed during the specified time interval following the start
+    of the navigation.
+  </summary>
+</histogram>
+
 <histogram name="NQE.ExternalEstimateProviderStatus"
     enum="NQEExternalEstimateProviderStatus">
   <owner>bengr@chromium.org</owner>
@@ -98890,6 +98904,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="NQE.Accuracy.EffectiveConnectionType.EstimatedObservedDiff"/>
   <affected-histogram name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff"/>
   <affected-histogram name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NQE.Accuracy.Metric.AccuracyRecordingIntervals"
@@ -98916,6 +98932,10 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Negative"/>
   <affected-histogram
       name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Negative"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Positive"/>
 </histogram_suffixes>
 
 <histogram_suffixes
@@ -99000,6 +99020,18 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive.30"/>
   <affected-histogram
       name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive.60"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Negative.15"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Negative.30"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Negative.60"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Positive.15"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Positive.30"/>
+  <affected-histogram
+      name="NQE.ExternalEstimateProvider.RTT.Accuracy.EstimatedObservedDiff.Positive.60"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NQE.DifferentPercentiles" separator=".">

@@ -380,6 +380,10 @@ class NET_EXPORT NetworkQualityEstimator
   // should discard RTT if it is set to the value returned by |InvalidRTT()|.
   static const base::TimeDelta InvalidRTT();
 
+  // Queries external estimate provider for network quality. When the network
+  // quality is available, OnUpdatedEstimateAvailable() is called.
+  void MaybeQueryExternalEstimateProvider() const;
+
   // Records UMA when there is a change in connection type.
   void RecordMetricsOnConnectionTypeChanged() const;
 
@@ -575,6 +579,10 @@ class NET_EXPORT NetworkQualityEstimator
   // request were received.
   nqe::internal::NetworkQuality estimated_quality_at_last_main_frame_;
   EffectiveConnectionType effective_connection_type_at_last_main_frame_;
+
+  // Estimated network quality obtained from external estimate provider when the
+  // external estimate provider was last queried.
+  nqe::internal::NetworkQuality external_estimate_provider_quality_;
 
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.
