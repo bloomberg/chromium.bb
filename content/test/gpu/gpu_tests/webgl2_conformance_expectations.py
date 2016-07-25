@@ -148,7 +148,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=628863)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['mac', 'intel'], bug=483282)
+        ['win', 'intel'], bug=483282)
 
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
