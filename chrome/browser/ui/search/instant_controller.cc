@@ -25,10 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-// Macro used for logging debug events. |message| should be a std::string.
-#define LOG_INSTANT_DEBUG_EVENT(controller, message) \
-    controller->LogDebugEvent(message)
-
 namespace {
 
 bool IsContentsFrom(const InstantTab* page,
@@ -72,22 +68,25 @@ InstantController::~InstantController() {
 
 bool InstantController::SubmitQuery(const base::string16& search_terms,
                                     const EmbeddedSearchRequestParams& params) {
-  if (instant_tab_ && instant_tab_->supports_instant() &&
-      search_mode_.is_origin_search()) {
-    // Use |instant_tab_| to run the query if we're already on a search results
-    // page. (NOTE: in particular, we do not send the query to NTPs.)
-    SearchTabHelper::FromWebContents(instant_tab_->web_contents())->Submit(
-        search_terms, params);
-    instant_tab_->web_contents()->Focus();
-    EnsureSearchTermsAreSet(instant_tab_->web_contents(), search_terms);
-    return true;
-  }
-  return false;
+  if (!instant_tab_ || !instant_tab_->web_contents())
+    return false;
+
+  SearchTabHelper* search_tab =
+      SearchTabHelper::FromWebContents(instant_tab_->web_contents());
+  if (!search_tab->SupportsInstant() || !search_mode_.is_origin_search())
+    return false;
+
+  // Use |instant_tab_| to run the query if we're already on a search results
+  // page. (NOTE: in particular, we do not send the query to NTPs.)
+  search_tab->Submit(search_terms, params);
+  instant_tab_->web_contents()->Focus();
+  EnsureSearchTermsAreSet(instant_tab_->web_contents(), search_terms);
+  return true;
 }
 
 void InstantController::SearchModeChanged(const SearchMode& old_mode,
                                           const SearchMode& new_mode) {
-  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+  LogDebugEvent(base::StringPrintf(
       "SearchModeChanged: [origin:mode] %d:%d to %d:%d", old_mode.origin,
       old_mode.mode, new_mode.origin, new_mode.mode));
 
@@ -96,7 +95,7 @@ void InstantController::SearchModeChanged(const SearchMode& old_mode,
 }
 
 void InstantController::ActiveTabChanged() {
-  LOG_INSTANT_DEBUG_EVENT(this, "ActiveTabChanged");
+  LogDebugEvent("ActiveTabChanged");
   ResetInstantTab();
 }
 
@@ -114,14 +113,6 @@ void InstantController::ClearDebugEvents() {
   debug_events_.clear();
 }
 
-Profile* InstantController::profile() const {
-  return browser_->profile();
-}
-
-InstantTab* InstantController::instant_tab() const {
-  return instant_tab_.get();
-}
-
 void InstantController::InstantSupportChanged(
     InstantSupportState instant_support) {
   // Handle INSTANT_SUPPORT_YES here because InstantTab is not hooked up to the
@@ -136,7 +127,7 @@ void InstantController::InstantSupportChanged(
 void InstantController::InstantSupportDetermined(
     const content::WebContents* contents,
     bool supports_instant) {
-  DCHECK(IsContentsFrom(instant_tab(), contents));
+  DCHECK(IsContentsFrom(instant_tab_.get(), contents));
 
   if (!supports_instant)
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
@@ -151,7 +142,7 @@ void InstantController::InstantSupportDetermined(
 void InstantController::InstantTabAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
-  DCHECK(IsContentsFrom(instant_tab(), contents));
+  DCHECK(IsContentsFrom(instant_tab_.get(), contents));
 
   // The Instant tab navigated.  Send it the data it needs to display
   // properly.
@@ -162,8 +153,8 @@ void InstantController::ResetInstantTab() {
   if (!search_mode_.is_origin_default()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->web_contents()) {
-      instant_tab_.reset(new InstantTab(this));
-      instant_tab_->Init(active_tab);
+      instant_tab_.reset(new InstantTab(this, active_tab));
+      instant_tab_->Init();
       UpdateInfoForInstantTab();
     }
   } else {
@@ -183,5 +174,5 @@ void InstantController::UpdateInfoForInstantTab() {
 }
 
 InstantService* InstantController::GetInstantService() const {
-  return InstantServiceFactory::GetForProfile(profile());
+  return InstantServiceFactory::GetForProfile(browser_->profile());
 }

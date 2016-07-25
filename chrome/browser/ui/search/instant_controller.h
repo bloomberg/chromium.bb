@@ -57,9 +57,9 @@ class InstantController : public InstantTab::Delegate {
   // Instant search results page.
   void ActiveTabChanged();
 
-  // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
-  // |debug_events_| doesn't get too large.
-  void LogDebugEvent(const std::string& info) const;
+  // Used by BrowserInstantController to notify InstantController about the
+  // instant support change event for the active web contents.
+  void InstantSupportChanged(InstantSupportState instant_support);
 
   // Resets list of debug events.
   void ClearDebugEvents();
@@ -68,16 +68,6 @@ class InstantController : public InstantTab::Delegate {
   const std::list<std::pair<int64_t, std::string>>& debug_events() {
     return debug_events_;
   }
-
-  // Used by BrowserInstantController to notify InstantController about the
-  // instant support change event for the active web contents.
-  void InstantSupportChanged(InstantSupportState instant_support);
-
- protected:
-  // Accessors are made protected for testing purposes.
-  virtual InstantTab* instant_tab() const;
-
-  virtual Profile* profile() const;
 
  private:
   friend class InstantExtendedManualTest;
@@ -110,6 +100,10 @@ class InstantController : public InstantTab::Delegate {
                                 bool supports_instant) override;
   void InstantTabAboutToNavigateMainFrame(const content::WebContents* contents,
                                           const GURL& url) override;
+
+  // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
+  // |debug_events_| doesn't get too large.
+  void LogDebugEvent(const std::string& info) const;
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.

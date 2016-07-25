@@ -22,7 +22,7 @@ class WebContents;
 // InstantTab is used to exchange messages with a page that implements the
 // Instant/Embedded Search API (http://dev.chromium.org/embeddedsearch).
 class InstantTab : public content::WebContentsObserver,
-                    public SearchModelObserver {
+                   public SearchModelObserver {
  public:
   // InstantTab calls its delegate in response to messages received from the
   // page. Each method is called with the |contents| corresponding to the page
@@ -43,34 +43,15 @@ class InstantTab : public content::WebContentsObserver,
     virtual ~Delegate();
   };
 
-  explicit InstantTab(Delegate* delegate);
+  explicit InstantTab(Delegate* delegate, content::WebContents* web_contents);
 
   ~InstantTab() override;
 
-  // Sets |web_contents| as the page to communicate with. |web_contents| may be
-  // NULL, which effectively stops all communication.
-  void Init(content::WebContents* web_contents);
-
-  // Returns true if the page is known to support the Instant API. This starts
-  // out false, and is set to true whenever we get any message from the page.
-  // Once true, it never becomes false (the page isn't expected to drop API
-  // support suddenly).
-  bool supports_instant() const;
-
-  // Returns true if the page is the local NTP (i.e. its URL is
-  // chrome::kChromeSearchLocalNTPURL).
-  bool IsLocal() const;
+  // Sets up communication with the WebContents passed to the constructor. Does
+  // nothing if that WebContents was null. Should not be called more than once.
+  void Init();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest, IsLocal);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
-                           DetermineIfPageSupportsInstant_Local);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
-                           DetermineIfPageSupportsInstant_NonLocal);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
-                           PageURLDoesntBelongToInstantRenderer);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest, PageSupportsInstant);
-
   // Overridden from content::WebContentsObserver:
   void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
@@ -81,12 +62,11 @@ class InstantTab : public content::WebContentsObserver,
   void ModelChanged(const SearchModel::State& old_state,
                     const SearchModel::State& new_state) override;
 
-  // Update the status of Instant support.
   void InstantSupportDetermined(bool supports_instant);
 
-  void ClearContents();
-
   Delegate* const delegate_;
+
+  content::WebContents* pending_web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTab);
 };

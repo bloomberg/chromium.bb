@@ -35,17 +35,9 @@ class FakePageDelegate : public InstantTab::Delegate {
   MOCK_METHOD2(InstantSupportDetermined,
                void(const content::WebContents* contents,
                     bool supports_instant));
-  MOCK_METHOD1(InstantTabRenderProcessGone,
-               void(const content::WebContents* contents));
   MOCK_METHOD2(InstantTabAboutToNavigateMainFrame,
                void(const content::WebContents* contents,
                     const GURL& url));
-  MOCK_METHOD5(NavigateToURL,
-               void(const content::WebContents* contents,
-                    const GURL& url,
-                    ui::PageTransition transition,
-                    WindowOpenDisposition disposition,
-                    bool is_search_type));
 };
 
 }  // namespace
@@ -54,8 +46,8 @@ class InstantTabTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override;
 
-  bool MessageWasSent(uint32_t id) {
-    return process()->sink().GetFirstMessageMatching(id) != NULL;
+  SearchTabHelper* search_tab() {
+    return SearchTabHelper::FromWebContents(web_contents());
   }
 
   std::unique_ptr<InstantTab> page;
@@ -67,36 +59,22 @@ void InstantTabTest::SetUp() {
   SearchTabHelper::CreateForWebContents(web_contents());
 }
 
-TEST_F(InstantTabTest, IsLocal) {
-  page.reset(new InstantTab(&delegate));
-  EXPECT_FALSE(page->supports_instant());
-  EXPECT_FALSE(page->IsLocal());
-  page->Init(web_contents());
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(page->IsLocal());
-  NavigateAndCommit(GURL("http://example.com"));
-  EXPECT_FALSE(page->IsLocal());
-}
-
 TEST_F(InstantTabTest, DetermineIfPageSupportsInstant_Local) {
-  page.reset(new InstantTab(&delegate));
-  EXPECT_FALSE(page->supports_instant());
-  page->Init(web_contents());
+  page.reset(new InstantTab(&delegate, web_contents()));
+  EXPECT_FALSE(search_tab()->SupportsInstant());
+  page->Init();
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(page->IsLocal());
-  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true))
-      .Times(1);
+  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true));
   SearchTabHelper::FromWebContents(web_contents())->
       DetermineIfPageSupportsInstant();
-  EXPECT_TRUE(page->supports_instant());
+  EXPECT_TRUE(search_tab()->SupportsInstant());
 }
 
 TEST_F(InstantTabTest, DetermineIfPageSupportsInstant_NonLocal) {
-  page.reset(new InstantTab(&delegate));
-  EXPECT_FALSE(page->supports_instant());
-  page->Init(web_contents());
+  page.reset(new InstantTab(&delegate, web_contents()));
+  EXPECT_FALSE(search_tab()->SupportsInstant());
+  page->Init();
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(page->IsLocal());
   process()->sink().ClearMessages();
   SearchTabHelper::FromWebContents(web_contents())->
       DetermineIfPageSupportsInstant();
@@ -107,34 +85,32 @@ TEST_F(InstantTabTest, DetermineIfPageSupportsInstant_NonLocal) {
 }
 
 TEST_F(InstantTabTest, PageURLDoesntBelongToInstantRenderer) {
-  page.reset(new InstantTab(&delegate));
-  EXPECT_FALSE(page->supports_instant());
+  page.reset(new InstantTab(&delegate, web_contents()));
+  EXPECT_FALSE(search_tab()->SupportsInstant());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  page->Init(web_contents());
+  page->Init();
 
   // Navigate to a page URL that doesn't belong to Instant renderer.
   // SearchTabHelper::DeterminerIfPageSupportsInstant() should return
   // immediately without dispatching any message to the renderer.
   NavigateAndCommit(GURL("http://www.example.com"));
-  EXPECT_FALSE(page->IsLocal());
   process()->sink().ClearMessages();
-  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), false))
-      .Times(1);
+  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), false));
 
   SearchTabHelper::FromWebContents(web_contents())->
       DetermineIfPageSupportsInstant();
   const IPC::Message* message = process()->sink().GetFirstMessageMatching(
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
   ASSERT_TRUE(message == NULL);
-  EXPECT_FALSE(page->supports_instant());
+  EXPECT_FALSE(search_tab()->SupportsInstant());
 }
 
 // Test to verify that ChromeViewMsg_DetermineIfPageSupportsInstant message
 // reply handler updates the instant support state in InstantTab.
 TEST_F(InstantTabTest, PageSupportsInstant) {
-  page.reset(new InstantTab(&delegate));
-  EXPECT_FALSE(page->supports_instant());
-  page->Init(web_contents());
+  page.reset(new InstantTab(&delegate, web_contents()));
+  EXPECT_FALSE(search_tab()->SupportsInstant());
+  page->Init();
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
   process()->sink().ClearMessages();
   SearchTabHelper::FromWebContents(web_contents())->
@@ -144,8 +120,7 @@ TEST_F(InstantTabTest, PageSupportsInstant) {
   ASSERT_TRUE(message != NULL);
   EXPECT_EQ(web_contents()->GetRoutingID(), message->routing_id());
 
-  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true))
-      .Times(1);
+  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true));
 
   // Assume the page supports instant. Invoke the message reply handler to make
   // sure the InstantTab is notified about the instant support state.
@@ -153,5 +128,5 @@ TEST_F(InstantTabTest, PageSupportsInstant) {
       web_contents()->GetController().GetLastCommittedEntry();
   EXPECT_TRUE(entry);
   SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
-  EXPECT_TRUE(page->supports_instant());
+  EXPECT_TRUE(search_tab()->SupportsInstant());
 }
