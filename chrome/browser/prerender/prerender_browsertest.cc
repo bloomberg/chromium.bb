@@ -122,6 +122,8 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -3778,6 +3780,50 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowClose) {
   DisableLoadEventCheck();
   PrerenderTestURL("/prerender/prerender_window_close.html",
                    FINAL_STATUS_CLOSED, 0);
+}
+
+// Tests interaction between prerender and POST (i.e. POST request should still
+// be made and POST data should not be dropped when the POST target is the same
+// as a prerender link).
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, HttpPost) {
+  // Expect that the prerendered contents won't get used (i.e. the prerendered
+  // content should be destroyed when the test closes the browser under test).
+  std::unique_ptr<TestPrerender> prerender =
+      ExpectPrerender(FINAL_STATUS_APP_TERMINATING);
+
+  // Navigate to a page containing a form that targets a prerendered link.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/prerender/form_that_posts_to_prerendered_echoall.html"));
+  ui_test_utils::NavigateToURL(current_browser(), main_url);
+
+  // Wait for the prerender to be ready.
+  prerender->WaitForStart();
+  prerender->WaitForLoads(1);
+  EXPECT_THAT(prerender->contents()->prerender_url().spec(),
+              ::testing::MatchesRegex("^http://127.0.0.1.*:\\d+/echoall$"));
+
+  // Submit the form.
+  content::WebContents* web_contents =
+      current_browser()->tab_strip_model()->GetActiveWebContents();
+  TestNavigationObserver form_post_observer(web_contents, 1);
+  EXPECT_TRUE(
+      ExecuteScript(web_contents, "document.getElementById('form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected location.
+  GURL target_url(embedded_test_server()->GetURL("/echoall"));
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page (i.e. verify that we haven't used the prerendered
+  // page that doesn't contain the POST body).
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body));
+  EXPECT_EQ("text=value\n", body);
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {

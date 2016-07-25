@@ -1066,13 +1066,6 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
     return true;
   }
 
-  // For now, we skip the rest for POST submissions.  This is because
-  // http://crbug.com/101395 is more likely to cause compatibility issues
-  // with hosted apps and extensions than WebUI pages.  We will remove this
-  // check when cross-process POST submissions are supported.
-  if (http_method != "GET")
-    return false;
-
   // If |url| matches one of the prerendered URLs, stop this navigation and try
   // to swap in the prerendered page on the browser process. If the prerendered
   // page no longer exists by the time the OpenURL IPC is handled, a normal
