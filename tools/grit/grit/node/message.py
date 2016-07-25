@@ -11,15 +11,16 @@ import types
 
 from grit.node import base
 
-import grit.format.rc_header
-import grit.format.rc
-
 from grit import clique
 from grit import exception
 from grit import lazy_re
 from grit import tclib
 from grit import util
 
+
+# Matches exactly three dots ending a line or followed by whitespace.
+_ELLIPSIS_PATTERN = lazy_re.compile(r'(?<!\.)\.\.\.(?=$|\s)')
+_ELLIPSIS_SYMBOL = u'\u2026'  # Ellipsis
 # Finds whitespace at the start and end of a string which can be multiline.
 _WHITESPACE = lazy_re.compile('(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
                               re.DOTALL | re.MULTILINE)
@@ -54,6 +55,9 @@ class MessageNode(base.ContentNode):
     # Example: "foo=5 bar baz=100"
     self.formatter_data = {}
 
+    # Whether or not to convert ... -> U+2026 within Translate().
+    self._replace_ellipsis = False
+
   def _IsValidChild(self, child):
     return isinstance(child, (PhNode))
 
@@ -67,6 +71,11 @@ class MessageNode(base.ContentNode):
         value not in ['true', 'false']):
       return False
     return True
+
+  def SetReplaceEllipsis(self, value):
+    '''Sets whether to replace ... with \u2026.
+    '''
+    self._replace_ellipsis = value
 
   def MandatoryAttributes(self):
     return ['name|offset']
@@ -200,6 +209,8 @@ class MessageNode(base.ContentNode):
                                          self.PseudoIsAllowed(),
                                          self.ShouldFallbackToEnglish()
                                          ).GetRealContent()
+    if self._replace_ellipsis:
+      msg = _ELLIPSIS_PATTERN.sub(_ELLIPSIS_SYMBOL, msg)
     return msg.replace('[GRITLANGCODE]', lang)
 
   def NameOrOffset(self):
