@@ -687,11 +687,6 @@ class TestTouchEditable : public ui::TouchEditable {
     NOTREACHED();
     return false;
   }
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override {
-    NOTREACHED();
-    return false;
-  }
   void ExecuteCommand(int command_id, int event_flags) override {
     NOTREACHED();
   }

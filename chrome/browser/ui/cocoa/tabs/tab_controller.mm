@@ -47,10 +47,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
         static_cast<TabStripModel::ContextMenuCommand>(command_id);
     return [target_ isCommandEnabled:command forController:owner_];
   }
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override {
-    return false;
-  }
   void ExecuteCommand(int command_id, int event_flags) override {
     TabStripModel::ContextMenuCommand command =
         static_cast<TabStripModel::ContextMenuCommand>(command_id);

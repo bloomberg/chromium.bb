@@ -153,12 +153,6 @@ bool TreeViewExample::IsCommandIdEnabled(int command_id) const {
   return const_cast<TreeViewExample*>(this)->IsCommandIdEnabled(command_id);
 }
 
-bool TreeViewExample::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void TreeViewExample::ExecuteCommand(int command_id, int event_flags) {
   NodeType* selected_node =
       static_cast<NodeType*>(tree_view_->GetSelectedNode());

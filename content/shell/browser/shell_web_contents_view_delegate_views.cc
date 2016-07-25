@@ -32,10 +32,6 @@ class ContextMenuModel : public ui::SimpleMenuModel,
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override { return false; }
   bool IsCommandIdEnabled(int command_id) const override { return true; }
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override {
-    return false;
-  }
   void ExecuteCommand(int command_id, int event_flags) override {
     switch (command_id) {
       case COMMAND_OPEN_DEVTOOLS:

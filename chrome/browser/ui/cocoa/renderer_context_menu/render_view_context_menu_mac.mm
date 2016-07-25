@@ -331,12 +331,6 @@ bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
   }
 }
 
-bool RenderViewContextMenuMac::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void RenderViewContextMenuMac::AppendPlatformEditableItems() {
   // OS X provides a contextual menu to set writing direction for BiDi
   // languages.

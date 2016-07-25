@@ -148,10 +148,6 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   virtual void HandleAuthorizeAllPlugins() = 0;
 #endif
 
-  // Returns the accelerator for given |command_id|.
-  bool GetAcceleratorForCommandId(int command_id, ui::Accelerator* accelerator)
-      const override = 0;
-
   // Subclasses should send notification.
   virtual void NotifyMenuShown() = 0;
   virtual void NotifyURLOpened(const GURL& url,

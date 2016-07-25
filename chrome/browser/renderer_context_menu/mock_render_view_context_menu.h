@@ -51,8 +51,6 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void ExecuteCommand(int command_id, int event_flags) override;
   void MenuWillShow(ui::SimpleMenuModel* source) override;
   void MenuClosed(ui::SimpleMenuModel* source) override;
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override;
 
   // RenderViewContextMenuProxy implementation.
   void AddMenuItem(int command_id, const base::string16& title) override;

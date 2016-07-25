@@ -35,13 +35,6 @@ TestRenderViewContextMenu* TestRenderViewContextMenu::Create(
   return menu;
 }
 
-bool TestRenderViewContextMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  // None of our commands have accelerators, so always return false.
-  return false;
-}
-
 bool TestRenderViewContextMenu::IsItemPresent(int command_id) {
   return menu_model_.GetIndexOfCommandId(command_id) != -1;
 }

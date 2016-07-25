@@ -70,12 +70,6 @@ bool AppListMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool AppListMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void AppListMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id >= SELECT_PROFILE) {
     delegate_->ShowForProfileByPath(

@@ -36,10 +36,10 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     virtual bool IsCommandIdVisible(int command_id) const;
 
     // Gets the accelerator for the specified command id. Returns true if the
-    // command id has a valid accelerator, false otherwise.
-    virtual bool GetAcceleratorForCommandId(
-        int command_id,
-        ui::Accelerator* accelerator) const = 0;
+    // command id has a valid accelerator, false otherwise. By default, returns
+    // false for all commands.
+    virtual bool GetAcceleratorForCommandId(int command_id,
+                                            ui::Accelerator* accelerator) const;
 
     // Some command ids have labels, sublabels, minor text and icons that change
     // over time.

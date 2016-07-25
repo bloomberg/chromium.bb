@@ -110,12 +110,6 @@ bool SuggestionsMenuModel::IsCommandIdEnabled(
   return items_[command_id].enabled;
 }
 
-bool SuggestionsMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void SuggestionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   delegate_->SuggestionItemSelected(this, command_id);
 }

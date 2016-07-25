@@ -86,12 +86,6 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       static_cast<DownloadCommands::Command>(command_id));
 }
 
-bool DownloadShelfContextMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 bool DownloadShelfContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return false;
 }

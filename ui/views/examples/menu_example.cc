@@ -31,8 +31,6 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
@@ -117,13 +115,6 @@ bool ExampleMenuModel::IsCommandIdChecked(int command_id) const {
 bool ExampleMenuModel::IsCommandIdEnabled(int command_id) const {
   // All commands are enabled except for COMMAND_GO_HOME.
   return command_id != COMMAND_GO_HOME;
-}
-
-bool ExampleMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  // We don't use this in the example.
-  return false;
 }
 
 void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {

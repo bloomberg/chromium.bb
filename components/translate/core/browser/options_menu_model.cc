@@ -100,12 +100,6 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool OptionsMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void OptionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case NEVER_TRANSLATE_LANGUAGE:

@@ -86,13 +86,6 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   }
 
   void Show() override {}
-
- protected:
-  // RenderViewContextMenu implementation.
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override {
-    return false;
-  }
 };
 
 // This class keeps track of tabs as they are added to the browser. It will be

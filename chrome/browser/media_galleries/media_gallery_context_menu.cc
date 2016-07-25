@@ -29,12 +29,6 @@ bool MediaGalleryContextMenu::IsCommandIdVisible(int command_id) const {
   return true;
 }
 
-bool MediaGalleryContextMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void MediaGalleryContextMenu::ExecuteCommand(int command_id, int event_flags) {
   callback_.Run(pref_id_);
 }

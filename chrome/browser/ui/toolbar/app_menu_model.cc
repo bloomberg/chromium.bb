@@ -169,12 +169,6 @@ bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
   return enabled;
 }
 
-bool EncodingMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void EncodingMenuModel::ExecuteCommand(int command_id, int event_flags) {
   chrome::ExecuteCommand(browser_, command_id);
 }

@@ -41,12 +41,6 @@ bool ContextMenuMus::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool ContextMenuMus::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void ContextMenuMus::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == MENU_AUTO_HIDE) {
     wm_shelf_->SetAutoHideBehavior(wm_shelf_->GetAutoHideBehavior() ==

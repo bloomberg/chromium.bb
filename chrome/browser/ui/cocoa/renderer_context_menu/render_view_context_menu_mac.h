@@ -33,8 +33,6 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
 
  protected:
   // RenderViewContextMenu implementation.
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override;
   void AppendPlatformEditableItems() override;
 
  private:

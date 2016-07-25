@@ -109,12 +109,6 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   }
 }
 
-bool LauncherContextMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN_NEW:

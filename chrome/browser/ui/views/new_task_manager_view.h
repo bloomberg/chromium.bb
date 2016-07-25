@@ -88,8 +88,6 @@ class NewTaskManagerView
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int id) const override;
   bool IsCommandIdEnabled(int id) const override;
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override;
   void ExecuteCommand(int id, int event_flags) override;
 
  private:

@@ -84,12 +84,6 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool AppContextMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void AppContextMenu::TogglePin(const std::string& shelf_app_id) {
   DCHECK_EQ(AppListControllerDelegate::PIN_EDITABLE,
       controller_->GetPinnable(shelf_app_id));

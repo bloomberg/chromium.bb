@@ -45,12 +45,6 @@ bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool ShelfAlignmentMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
   WmShell* shell = WmShell::Get();
   switch (static_cast<MenuItem>(command_id)) {

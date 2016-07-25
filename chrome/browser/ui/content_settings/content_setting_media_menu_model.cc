@@ -45,12 +45,6 @@ bool ContentSettingMediaMenuModel::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool ContentSettingMediaMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void ContentSettingMediaMenuModel::ExecuteCommand(int command_id,
                                                   int event_flags) {
   CommandMap::const_iterator it = commands_.find(command_id);

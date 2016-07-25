@@ -119,13 +119,6 @@ bool PermissionMenuModel::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool PermissionMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  // Accelerators are not supported.
-  return false;
-}
-
 void PermissionMenuModel::ExecuteCommand(int command_id, int event_flags) {
   permission_.setting = static_cast<ContentSetting>(command_id);
   callback_.Run(permission_);

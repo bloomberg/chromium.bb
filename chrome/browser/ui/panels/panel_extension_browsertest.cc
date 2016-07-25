@@ -125,13 +125,6 @@ class PanelContextMenu : public RenderViewContextMenu {
   }
 
   void Show() override {}
-
- protected:
-  // RenderViewContextMenu implementation.
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override {
-    return false;
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {

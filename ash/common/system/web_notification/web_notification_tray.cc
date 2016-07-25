@@ -448,12 +448,6 @@ bool WebNotificationTray::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool WebNotificationTray::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void WebNotificationTray::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kToggleQuietMode) {
     bool in_quiet_mode = message_center()->IsQuietMode();

@@ -27,6 +27,12 @@ bool ButtonMenuItemModel::Delegate::DoesCommandIdDismissMenu(
   return true;
 }
 
+bool ButtonMenuItemModel::Delegate::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
+  return false;
+}
+
 struct ButtonMenuItemModel::Item {
   int command_id;
   ButtonType type;

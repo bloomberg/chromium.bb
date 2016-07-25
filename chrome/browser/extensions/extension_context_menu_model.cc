@@ -227,12 +227,6 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool ExtensionContextMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void ExtensionContextMenuModel::ExecuteCommand(int command_id,
                                                int event_flags) {
   const Extension* extension = GetExtension();

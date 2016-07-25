@@ -46,12 +46,6 @@ bool LauncherApplicationMenuItemModel::IsCommandIdEnabled(
   return launcher_items_[command_id]->IsEnabled();
 }
 
-bool LauncherApplicationMenuItemModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void LauncherApplicationMenuItemModel::ExecuteCommand(int command_id,
                                                       int event_flags) {
   DCHECK(command_id < static_cast<int>(launcher_items_.size()));

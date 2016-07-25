@@ -35,12 +35,6 @@ bool OpenWithMenuObserver::SubMenuDelegate::IsCommandIdEnabled(
   return true;
 }
 
-bool OpenWithMenuObserver::SubMenuDelegate::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void OpenWithMenuObserver::SubMenuDelegate::ExecuteCommand(int command_id,
                                                            int event_flags) {
   parent_->ExecuteCommand(command_id);

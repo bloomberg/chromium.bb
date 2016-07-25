@@ -51,12 +51,6 @@ void MockRenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {}
 
 void MockRenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {}
 
-bool MockRenderViewContextMenu::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void MockRenderViewContextMenu::AddMenuItem(int command_id,
                                             const base::string16& title) {
   MockMenuItem item;

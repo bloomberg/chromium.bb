@@ -40,8 +40,6 @@ class NotificationMenuModel : public ui::SimpleMenuModel,
   // Overridden from ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
@@ -79,12 +77,6 @@ bool NotificationMenuModel::IsCommandIdChecked(int command_id) const {
 
 bool NotificationMenuModel::IsCommandIdEnabled(int command_id) const {
   return tray_->delegate()->IsContextMenuEnabled();
-}
-
-bool NotificationMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
 }
 
 void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {

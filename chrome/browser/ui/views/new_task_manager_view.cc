@@ -278,12 +278,6 @@ bool NewTaskManagerView::IsCommandIdEnabled(int id) const {
   return true;
 }
 
-bool NewTaskManagerView::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void NewTaskManagerView::ExecuteCommand(int id, int event_flags) {
   table_model_->ToggleColumnVisibility(id);
 }
