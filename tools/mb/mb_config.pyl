@@ -129,6 +129,7 @@
       'CrWin7Goma(clbr)': 'gn_shared_release_bot_minimal_symbols_x86',
       'CrWin7Goma(dbg)': 'gn_debug_bot_minimal_symbols_x86',
       'CrWin7Goma(dll)': 'gn_shared_release_bot_minimal_symbols_x86',
+      # if CrWinClang is modified, please update CrWinClangGoma in the same way.
       'CrWinClang':
         'swarming_gn_clang_official_release_bot_minimal_symbols_x86',
       'CrWinClang(dbg)':
@@ -139,7 +140,8 @@
       'CrWinClang tester': 'none',
       'CrWinClang64(dll)':
         'swarming_gyp_clang_minimal_symbols_shared_release_bot_x64',
-      'CrWinClangGoma': 'gyp_clang_minimal_symbols_shared_release_bot_x86',
+      'CrWinClangGoma':
+        'swarming_gn_clang_official_release_bot_minimal_symbols_x86',
       'CrWinGoma': 'gn_release_bot_minimal_symbols_x86',
       'CrWinGoma(dll)': 'gn_shared_release_bot_minimal_symbols_x86',
       'ClangToTAndroidASan': 'android_clang_tot_asan',
@@ -1325,10 +1327,6 @@
 
     'gn_chromeos_with_codecs_debug_bot': [
       'gn', 'chromeos_with_codecs', 'debug_bot',
-    ],
-
-    'gyp_clang_minimal_symbols_shared_release_bot_x86': [
-      'gyp', 'clang', 'minimal_symbols', 'shared_release_bot', 'x86',
     ],
 
     'gyp_debug_bot_minimal_symbols_x64': [
