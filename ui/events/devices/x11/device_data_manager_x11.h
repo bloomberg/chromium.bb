@@ -109,6 +109,10 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
     DT_LAST_ENTRY  // This must come last.
   };
 
+  // A Device ID number that can be passed to InvalidateScrollClasses that
+  // invalidates all devices.
+  static const int kAllDevices = -1;
+
   // Data struct to store extracted data from an input event.
   typedef std::map<int, double> EventData;
 
@@ -200,8 +204,9 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
                              double* y_offset);
 
   // Invalidate stored scroll class counters, since they can change when
-  // pointing at other windows.
-  void InvalidateScrollClasses();
+  // pointing at other windows. If kAllDevices is specified, all devices are
+  // invalidated.
+  void InvalidateScrollClasses(int device_id);
 
   // Extract data from a fling event. User must first verify the event type
   // with IsFlingEvent. Pointers shouldn't be NULL.

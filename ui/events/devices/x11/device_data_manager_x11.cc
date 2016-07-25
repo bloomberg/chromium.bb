@@ -560,10 +560,16 @@ void DeviceDataManagerX11::GetScrollClassOffsets(const XEvent& xev,
   }
 }
 
-void DeviceDataManagerX11::InvalidateScrollClasses() {
-  for (int i = 0; i < kMaxDeviceNum; i++) {
-    scroll_data_[i].horizontal.seen = false;
-    scroll_data_[i].vertical.seen = false;
+void DeviceDataManagerX11::InvalidateScrollClasses(int device_id) {
+  if (device_id == kAllDevices) {
+    for (int i = 0; i < kMaxDeviceNum; i++) {
+      scroll_data_[i].horizontal.seen = false;
+      scroll_data_[i].vertical.seen = false;
+    }
+  } else {
+    CHECK(device_id >= 0 && device_id < kMaxDeviceNum);
+    scroll_data_[device_id].horizontal.seen = false;
+    scroll_data_[device_id].vertical.seen = false;
   }
 }
 

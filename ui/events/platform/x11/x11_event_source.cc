@@ -206,9 +206,24 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
 }
 
 void X11EventSource::PostDispatchEvent(XEvent* xevent) {
-  if (xevent->type == GenericEvent &&
-      (xevent->xgeneric.evtype == XI_HierarchyChanged ||
-       xevent->xgeneric.evtype == XI_DeviceChanged)) {
+  bool should_update_device_list = false;
+
+  if (xevent->type == GenericEvent) {
+    if (xevent->xgeneric.evtype == XI_HierarchyChanged) {
+      should_update_device_list = true;
+    } else if (xevent->xgeneric.evtype == XI_DeviceChanged) {
+      XIDeviceChangedEvent* xev =
+          static_cast<XIDeviceChangedEvent*>(xevent->xcookie.data);
+      if (xev->reason == XIDeviceChange) {
+        should_update_device_list = true;
+      } else if (xev->reason == XISlaveSwitch) {
+        ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
+            xev->sourceid);
+      }
+    }
+  }
+
+  if (should_update_device_list) {
     UpdateDeviceList();
     hotplug_event_handler_->OnHotplugEvent();
   }
@@ -217,7 +232,8 @@ void X11EventSource::PostDispatchEvent(XEvent* xevent) {
       xevent->xcrossing.detail != NotifyInferior &&
       xevent->xcrossing.mode != NotifyUngrab) {
     // Clear stored scroll data
-    ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses();
+    ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
+        DeviceDataManagerX11::kAllDevices);
   }
 }
 
