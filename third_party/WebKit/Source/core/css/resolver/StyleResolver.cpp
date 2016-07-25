@@ -681,7 +681,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     documentStyle->setRTLOrdering(document.visuallyOrdered() ? VisualOrder : LogicalOrder);
     documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
     FontDescription documentFontDescription = documentStyle->getFontDescription();
-    documentFontDescription.setLocale(document.contentLanguage());
+    documentFontDescription.setLocale(LayoutLocale::get(document.contentLanguage()));
     documentStyle->setFontDescription(documentFontDescription);
     documentStyle->setZIndex(0);
     documentStyle->setIsStackingContext(true);

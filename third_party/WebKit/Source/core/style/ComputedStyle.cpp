@@ -1253,6 +1253,12 @@ void ComputedStyle::clearResetDirectives()
         it->value.clearReset();
 }
 
+Hyphenation* ComputedStyle::getHyphenation() const
+{
+    return getHyphens() == HyphensAuto
+        ? getFontDescription().localeOrDefault().getHyphenation() : nullptr;
+}
+
 const AtomicString& ComputedStyle::hyphenString() const
 {
     const AtomicString& hyphenationString = m_rareInheritedData.get()->hyphenationString;

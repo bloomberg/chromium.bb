@@ -147,11 +147,11 @@ static void fontSizeValue(FontBuilder& b)
 
 static void fontScriptBase(FontDescription& d)
 {
-    d.setLocale("no");
+    d.setLocale(LayoutLocale::get("no"));
 }
 static void fontScriptValue(FontBuilder& b)
 {
-    b.setLocale("se");
+    b.setLocale(LayoutLocale::get("se"));
 }
 
 INSTANTIATE_TEST_CASE_P(AllFields, FontBuilderAdditiveTest,

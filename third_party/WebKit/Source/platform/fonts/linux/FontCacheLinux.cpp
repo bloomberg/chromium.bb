@@ -105,7 +105,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     }
 
     FontCache::PlatformFallbackFont fallbackFont;
-    FontCache::getFontForCharacter(c, fontDescription.locale().ascii().data(), &fallbackFont);
+    FontCache::getFontForCharacter(c, fontDescription.localeOrDefault().ascii().data(), &fallbackFont);
     if (fallbackFont.name.isEmpty())
         return nullptr;
 

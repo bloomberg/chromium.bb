@@ -61,7 +61,7 @@ public:
     void setStretch(FontStretch);
     void setFamilyDescription(const FontDescription::FamilyDescription&);
     void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
-    void setLocale(const AtomicString&);
+    void setLocale(PassRefPtr<const LayoutLocale>);
     void setStyle(FontStyle);
     void setVariantCaps(FontDescription::FontVariantCaps);
     void setVariantLigatures(const FontDescription::VariantLigatures&);
@@ -86,7 +86,7 @@ public:
     static FontDescription::FontVariantCaps initialVariantCaps() { return FontDescription::CapsNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
     static FontVariantNumeric initialVariantNumeric() { return FontVariantNumeric(); };
-    static const AtomicString& initialLocale() { return nullAtom; }
+    static LayoutLocale* initialLocale() { return nullptr; }
     static FontStyle initialStyle() { return FontStyleNormal; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }

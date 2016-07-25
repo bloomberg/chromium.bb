@@ -27,6 +27,7 @@
 
 #include "SkFontStyle.h"
 #include "platform/FontFamilyNames.h"
+#include "platform/LayoutLocale.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/FontFeatureSettings.h"
@@ -90,7 +91,6 @@ public:
         m_fields.m_keywordSize = 0;
         m_fields.m_fontSmoothing = AutoSmoothing;
         m_fields.m_textRendering = AutoTextRendering;
-        m_fields.m_script = USCRIPT_COMMON;
         m_fields.m_syntheticBold = false;
         m_fields.m_syntheticItalic = false;
         m_fields.m_subpixelTextPosition = s_useSubpixelTextPositioning;
@@ -178,8 +178,9 @@ public:
     unsigned keywordSize() const { return m_fields.m_keywordSize; }
     FontSmoothingMode fontSmoothing() const { return static_cast<FontSmoothingMode>(m_fields.m_fontSmoothing); }
     TextRenderingMode textRendering() const { return static_cast<TextRenderingMode>(m_fields.m_textRendering); }
-    UScriptCode script() const { return static_cast<UScriptCode>(m_fields.m_script); }
-    const AtomicString& locale(bool includeDefault = true) const;
+    const LayoutLocale* locale() const { return m_locale.get(); }
+    const LayoutLocale& localeOrDefault() const { return LayoutLocale::valueOrDefault(m_locale.get()); }
+    UScriptCode script() const { return localeOrDefault().script(); }
     bool isSyntheticBold() const { return m_fields.m_syntheticBold; }
     bool isSyntheticItalic() const { return m_fields.m_syntheticItalic; }
     bool useSubpixelPositioning() const { return m_fields.m_subpixelTextPosition; }
@@ -217,11 +218,7 @@ public:
     void setTextRendering(TextRenderingMode rendering) { m_fields.m_textRendering = rendering; updateTypesettingFeatures(); }
     void setOrientation(FontOrientation orientation) { m_fields.m_orientation = static_cast<unsigned>(orientation); }
     void setWidthVariant(FontWidthVariant widthVariant) { m_fields.m_widthVariant = widthVariant; }
-    void setLocale(const AtomicString& locale)
-    {
-        m_locale = locale;
-        m_fields.m_script = localeToScriptCodeForFontSelection(locale);
-    }
+    void setLocale(PassRefPtr<const LayoutLocale> locale) { m_locale = locale; }
     void setSyntheticBold(bool syntheticBold) { m_fields.m_syntheticBold = syntheticBold; }
     void setSyntheticItalic(bool syntheticItalic) { m_fields.m_syntheticItalic = syntheticItalic; }
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
@@ -248,7 +245,7 @@ public:
 private:
     FontFamily m_familyList; // The list of font families to be used.
     RefPtr<FontFeatureSettings> m_featureSettings;
-    AtomicString m_locale;
+    RefPtr<const LayoutLocale> m_locale;
 
     void updateTypesettingFeatures();
 
@@ -294,7 +291,6 @@ private:
 
         unsigned m_fontSmoothing : 2; // FontSmoothingMode
         unsigned m_textRendering : 2; // TextRenderingMode
-        unsigned m_script : 7; // Used to help choose an appropriate font for generic font families.
         unsigned m_syntheticBold : 1;
         unsigned m_syntheticItalic : 1;
         unsigned m_subpixelTextPosition : 1;

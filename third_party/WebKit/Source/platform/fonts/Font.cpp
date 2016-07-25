@@ -523,8 +523,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
 
     if (variant == AutoVariant) {
         if (m_fontDescription.variantCaps() == FontDescription::SmallCaps) {
-            bool includeDefault = false;
-            UChar32 upperC = toUpper(c, m_fontDescription.locale(includeDefault));
+            UChar32 upperC = toUpper(c, LayoutLocale::localeString(m_fontDescription.locale()));
             if (upperC != c) {
                 c = upperC;
                 variant = SmallCapsVariant;

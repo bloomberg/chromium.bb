@@ -743,8 +743,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // See: fast/css3-text/css3-word-break/word-break-all-wrap-with-floats.html
     float widthMeasurementAtLastBreakOpportunity = 0;
 
-    Hyphenation* hyphenation = style.getHyphens() == HyphensAuto
-        ? Hyphenation::get(font.getFontDescription().locale()) : nullptr;
+    Hyphenation* hyphenation = style.getHyphenation();
     bool disableSoftHyphen = style.getHyphens() == HyphensNone;
     float hyphenWidth = 0;
 

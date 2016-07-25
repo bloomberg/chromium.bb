@@ -107,6 +107,7 @@ class CSSTransitionData;
 class CSSVariableData;
 class Font;
 class FontMetrics;
+class Hyphenation;
 class RotateTransformOperation;
 class ScaleTransformOperation;
 class ShadowList;
@@ -888,7 +889,7 @@ public:
     const AtomicString& highlight() const { return m_rareInheritedData->highlight; }
     Hyphens getHyphens() const { return static_cast<Hyphens>(m_rareInheritedData->hyphens); }
     const AtomicString& hyphenationString() const { return m_rareInheritedData->hyphenationString; }
-    const AtomicString& locale() const { return getFontDescription().locale(false); }
+    const AtomicString& locale() const { return LayoutLocale::localeString(getFontDescription().locale()); }
     EResize resize() const { return static_cast<EResize>(m_rareNonInheritedData->m_resize); }
     bool hasInlinePaginationAxis() const
     {
@@ -1622,6 +1623,7 @@ public:
     QuotesData* quotes() const { return m_rareInheritedData->quotes.get(); }
     void setQuotes(PassRefPtr<QuotesData>);
 
+    Hyphenation* getHyphenation() const;
     const AtomicString& hyphenString() const;
 
     bool inheritedEqual(const ComputedStyle&) const;

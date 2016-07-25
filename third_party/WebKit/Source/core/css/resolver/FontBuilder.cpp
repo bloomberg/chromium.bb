@@ -141,7 +141,7 @@ void FontBuilder::setStretch(FontStretch fontStretch)
     m_fontDescription.setStretch(fontStretch);
 }
 
-void FontBuilder::setLocale(const AtomicString& locale)
+void FontBuilder::setLocale(PassRefPtr<const LayoutLocale> locale)
 {
     set(PropertySetFlag::Locale);
 
@@ -369,7 +369,7 @@ void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style)
     if (isSet(PropertySetFlag::FeatureSettings))
         description.setFeatureSettings(m_fontDescription.featureSettings());
     if (isSet(PropertySetFlag::Locale))
-        description.setLocale(m_fontDescription.locale(false));
+        description.setLocale(m_fontDescription.locale());
     if (isSet(PropertySetFlag::Style))
         description.setStyle(m_fontDescription.style());
     if (isSet(PropertySetFlag::VariantCaps))
@@ -399,7 +399,7 @@ void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style)
 void FontBuilder::createFontForDocument(FontSelector* fontSelector, ComputedStyle& documentStyle)
 {
     FontDescription fontDescription = FontDescription();
-    fontDescription.setLocale(documentStyle.locale());
+    fontDescription.setLocale(documentStyle.getFontDescription().locale());
 
     setFamilyDescription(fontDescription, FontBuilder::initialFamilyDescription());
     setSize(fontDescription, FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false));

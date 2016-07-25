@@ -4,6 +4,7 @@
 
 #include "platform/text/Hyphenation.h"
 
+#include "platform/LayoutLocale.h"
 #include "platform/Logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,26 +18,16 @@ public:
     }
 };
 
-TEST(HyphenationTest, GetHyphenation)
+TEST(HyphenationTest, Get)
 {
     RefPtr<Hyphenation> hyphenation = adoptRef(new NoHyphenation);
-    Hyphenation::setForTesting("en-US", hyphenation);
-    EXPECT_EQ(hyphenation.get(), Hyphenation::get("en-US"));
+    LayoutLocale::setHyphenationForTesting("en-US", hyphenation);
+    EXPECT_EQ(hyphenation.get(), LayoutLocale::get("en-US")->getHyphenation());
 
-    Hyphenation::setForTesting("en-UK", nullptr);
-    EXPECT_EQ(nullptr, Hyphenation::get("en-UK"));
+    LayoutLocale::setHyphenationForTesting("en-UK", nullptr);
+    EXPECT_EQ(nullptr, LayoutLocale::get("en-UK")->getHyphenation());
 
-    Hyphenation::clearForTesting();
-}
-
-TEST(HyphenationTest, GetHyphenationCaseFolding)
-{
-    RefPtr<Hyphenation> hyphenation = adoptRef(new NoHyphenation);
-    Hyphenation::setForTesting("en-US", hyphenation);
-    EXPECT_EQ(hyphenation, Hyphenation::get("en-US"));
-    EXPECT_EQ(hyphenation, Hyphenation::get("en-us"));
-
-    Hyphenation::clearForTesting();
+    LayoutLocale::clearForTesting();
 }
 
 } // namespace blink

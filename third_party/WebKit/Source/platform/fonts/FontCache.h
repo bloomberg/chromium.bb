@@ -219,8 +219,6 @@ public:
     ~FontCachePurgePreventer() { FontCache::fontCache()->enablePurging(); }
 };
 
-CString toSkFontMgrLocale(const String& locale);
-
 } // namespace blink
 
 #endif

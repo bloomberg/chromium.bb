@@ -927,8 +927,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     bool breakAll = (styleToUse.wordBreak() == BreakAllWordBreak || styleToUse.wordBreak() == BreakWordBreak) && styleToUse.autoWrap();
     bool keepAll = styleToUse.wordBreak() == KeepAllWordBreak && styleToUse.autoWrap();
 
-    Hyphenation* hyphenation = styleToUse.getHyphens() == HyphensAuto
-        ? Hyphenation::get(f.getFontDescription().locale()) : nullptr;
+    Hyphenation* hyphenation = styleToUse.getHyphenation();
     bool disableSoftHyphen = styleToUse.getHyphens() == HyphensNone;
     float maxWordWidth = 0;
     if (!hyphenation)

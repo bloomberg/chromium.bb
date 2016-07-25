@@ -558,9 +558,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
     const FontDescription& fontDescription = m_font->getFontDescription();
-    const String& localeString = fontDescription.locale();
-    CString locale = localeString.latin1();
-    const hb_language_t language = hb_language_from_string(locale.data(), locale.length());
+    const hb_language_t language = fontDescription.localeOrDefault().harfbuzzLanguage();
 
     bool needsCapsHandling = fontDescription.variantCaps() != FontDescription::CapsNormal;
     OpenTypeCapsSupport capsSupport;
@@ -649,7 +647,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 
             CaseMappingHarfBuzzBufferFiller(
                 caseMapIntend,
-                fontDescription.locale(),
+                fontDescription.localeOrDefault(),
                 harfBuzzBuffer.get(),
                 m_normalizedBuffer.get(),
                 m_normalizedBufferLength,

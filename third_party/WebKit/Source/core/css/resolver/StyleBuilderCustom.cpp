@@ -754,9 +754,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState
 {
     if (value.isPrimitiveValue()) {
         DCHECK_EQ(toCSSPrimitiveValue(value).getValueID(), CSSValueAuto);
-        state.fontBuilder().setLocale(nullAtom);
+        state.fontBuilder().setLocale(nullptr);
     } else {
-        state.fontBuilder().setLocale(AtomicString(toCSSStringValue(value).value()));
+        state.fontBuilder().setLocale(LayoutLocale::get(AtomicString(toCSSStringValue(value).value())));
     }
 }
 

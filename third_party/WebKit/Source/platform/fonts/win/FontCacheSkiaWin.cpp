@@ -126,8 +126,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     UScriptCode script;
     const wchar_t* family = getFallbackFamily(character,
         fontDescription.genericFamily(),
-        fontDescription.script(),
-        fontDescription.locale(),
+        fontDescription.localeOrDefault(),
         &script,
         fallbackPriority,
         m_fontManager.get());
@@ -145,8 +144,8 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
         // fall back on the user's default locale.
         // TODO(kulshin): extract locale fallback logic from
         //   FontCacheAndroid.cpp and share that code
-        if (!fontDescription.locale().isEmpty()) {
-            fontLocale = toSkFontMgrLocale(fontDescription.locale());
+        if (fontDescription.locale()) {
+            fontLocale = fontDescription.locale()->localeForSkFontMgr();
             bcp47Locale = fontLocale.data();
             localeCount = 1;
         }

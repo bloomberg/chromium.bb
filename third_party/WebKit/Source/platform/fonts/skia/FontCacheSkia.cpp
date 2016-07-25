@@ -86,13 +86,9 @@ AtomicString FontCache::getFamilyNameForCharacter(SkFontMgr* fm, UChar32 c, cons
     }
     if (const char* hanLocale = AcceptLanguagesResolver::preferredHanSkFontMgrLocale())
         bcp47Locales[localeCount++] = hanLocale;
-    CString defaultLocale = toSkFontMgrLocale(defaultLanguage());
-    bcp47Locales[localeCount++] = defaultLocale.data();
-    CString fontLocale;
-    if (!fontDescription.locale().isEmpty()) {
-        fontLocale = toSkFontMgrLocale(fontDescription.locale());
-        bcp47Locales[localeCount++] = fontLocale.data();
-    }
+    bcp47Locales[localeCount++] = LayoutLocale::getDefault().localeForSkFontMgr().data();
+    if (const LayoutLocale* locale = fontDescription.locale())
+        bcp47Locales[localeCount++] = locale->localeForSkFontMgr().data();
     ASSERT_WITH_SECURITY_IMPLICATION(localeCount < kMaxLocales);
     RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
     if (!typeface)

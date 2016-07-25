@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/timer/elapsed_timer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "platform/LayoutLocale.h"
 #include "platform/text/hyphenation/HyphenatorAOSP.h"
 #include "public/platform/Platform.h"
 #include "public/platform/ServiceRegistry.h"
@@ -173,7 +174,7 @@ PassRefPtr<Hyphenation> Hyphenation::platformGetHyphenation(const AtomicString& 
     DEFINE_STATIC_LOCAL(LocaleMap, localeFallback, (createLocaleFallbackMap()));
     const auto& it = localeFallback.find(locale);
     if (it != localeFallback.end())
-        return get(it->value);
+        return LayoutLocale::get(it->value)->getHyphenation();
 
     return nullptr;
 }

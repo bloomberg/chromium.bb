@@ -123,26 +123,6 @@ FontDescription::VariantLigatures FontDescription::getVariantLigatures() const
     return ligatures;
 }
 
-static const AtomicString& defaultLocale()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, locale, ());
-    if (locale.isNull()) {
-        AtomicString defaultLocale = defaultLanguage();
-        if (!defaultLocale.isEmpty())
-            locale = defaultLocale;
-        else
-            locale = AtomicString("en");
-    }
-    return locale;
-}
-
-const AtomicString& FontDescription::locale(bool includeDefault) const
-{
-    if (m_locale.isNull() && includeDefault)
-        return defaultLocale();
-    return m_locale;
-}
-
 void FontDescription::setTraits(FontTraits traits)
 {
     setStyle(traits.style());
@@ -284,8 +264,11 @@ unsigned FontDescription::styleHashWithoutFamilyList() const
             addToHash(hash, settings->at(i).value());
         }
     }
-    for (unsigned i = 0; i < m_locale.length(); i++)
-        stringHasher.addCharacter(m_locale[i]);
+    if (m_locale) {
+        const AtomicString& locale = m_locale->localeString();
+        for (unsigned i = 0; i < locale.length(); i++)
+            stringHasher.addCharacter(locale[i]);
+    }
     addToHash(hash, stringHasher.hash());
 
     addFloatToHash(hash, m_specifiedSize);

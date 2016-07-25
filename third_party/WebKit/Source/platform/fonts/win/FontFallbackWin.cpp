@@ -318,11 +318,10 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         scriptFontMap[USCRIPT_HAN] = localeFamily;
 }
 
-static UScriptCode scriptForHan(UScriptCode contentScript,
-    const AtomicString& contentLocale)
+static UScriptCode scriptForHan(const LayoutLocale& contentLocale)
 {
-    UScriptCode script = scriptCodeForHanFromLocale(contentScript, contentLocale);
-    if (script != USCRIPT_COMMON)
+    UScriptCode script = contentLocale.scriptForHan();
+    if (script != USCRIPT_HAN)
         return script;
     script = AcceptLanguagesResolver::preferredHanScript();
     if (script != USCRIPT_COMMON)
@@ -481,8 +480,7 @@ const UChar* getFontFamilyForScript(UScriptCode script,
 //    font can cover) need to be taken into account
 const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType generic,
-    UScriptCode contentScript,
-    const AtomicString& contentLocale,
+    const LayoutLocale& contentLocale,
     UScriptCode* scriptChecked,
     FontFallbackPriority fallbackPriority,
     SkFontMgr* fontManager)
@@ -513,7 +511,7 @@ const UChar* getFallbackFamily(UChar32 character,
     // For unified-Han scripts, try the lang attribute, system, or
     // accept-languages.
     if (script == USCRIPT_HAN)
-        script = scriptForHan(contentScript, contentLocale);
+        script = scriptForHan(contentLocale);
 
     family = getFontFamilyForScript(script, generic, fontManager);
     // Another lame work-around to cover non-BMP characters.

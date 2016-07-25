@@ -129,6 +129,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Cursor.h"
 #include "platform/Language.h"
+#include "platform/LayoutLocale.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -1559,12 +1560,13 @@ void Internals::setContinuousSpellCheckingEnabled(bool enabled)
 
 bool Internals::canHyphenate(const AtomicString& locale)
 {
-    return Hyphenation::get(locale);
+    return LayoutLocale::valueOrDefault(LayoutLocale::get(locale))
+        .getHyphenation();
 }
 
 void Internals::setMockHyphenation(const AtomicString& locale)
 {
-    Hyphenation::setForTesting(locale, adoptRef(new MockHyphenation));
+    LayoutLocale::setHyphenationForTesting(locale, adoptRef(new MockHyphenation));
 }
 
 bool Internals::isOverwriteModeEnabled(Document* document)

@@ -20,7 +20,7 @@ protected:
     void SetUp() override
     {
         fontDescription.setComputedSize(12.0);
-        fontDescription.setLocale("en");
+        fontDescription.setLocale(LayoutLocale::get("en"));
         ASSERT_EQ(USCRIPT_LATIN, fontDescription.script());
         fontDescription.setGenericFamily(FontDescription::StandardFamily);
 
