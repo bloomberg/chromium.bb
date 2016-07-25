@@ -266,15 +266,6 @@ extern const char kWindowWorkspace[];
 extern const char kWinHttpProxyResolver[];
 extern const char kWinJumplistAction[];
 
-#if defined(ENABLE_SPELLCHECK)
-#if defined(OS_ANDROID)
-extern const char kEnableAndroidSpellChecker[];
-#endif  // defined(OS_ANDROID)
-extern const char kEnableSpellingFeedbackFieldTrial[];
-extern const char kSpellingServiceFeedbackIntervalSeconds[];
-extern const char kSpellingServiceFeedbackUrl[];
-#endif  // defined(ENABLE_SPELLCHECK)
-
 #if defined(GOOGLE_CHROME_BUILD)
 extern const char kEnableGoogleBrandedContextMenu[];
 #endif  // defined(GOOGLE_CHROME_BUILD)

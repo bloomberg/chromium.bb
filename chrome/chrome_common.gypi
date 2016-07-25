@@ -410,6 +410,7 @@
             '<(DEPTH)/components/components.gyp:password_manager_content_mojo_bindings',
             '<(DEPTH)/components/components.gyp:password_manager_core_common',
             '<(DEPTH)/components/components.gyp:signin_core_common',
+            '<(DEPTH)/components/components.gyp:spellcheck_common',
             '<(DEPTH)/components/components.gyp:translate_content_common',
             '<(DEPTH)/components/components.gyp:visitedlink_common',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common_constants',

@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/spellcheck/common/spellcheck_switches.h"
 
 namespace spellcheck_platform {
 
@@ -19,7 +19,7 @@ std::string GetSpellCheckerLanguage() {
 
 bool SpellCheckerAvailable() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAndroidSpellChecker);
+      spellcheck::switches::kEnableAndroidSpellChecker);
 }
 
 bool SpellCheckerProvidesPanel() {

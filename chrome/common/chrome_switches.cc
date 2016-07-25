@@ -997,32 +997,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // resulted in a browser startup.
 const char kWinJumplistAction[]             = "win-jumplist-action";
 
-#if defined(ENABLE_SPELLCHECK)
-#if defined(OS_ANDROID)
-// Enables use of the Android spellchecker.
-const char kEnableAndroidSpellChecker[] = "enable-android-spellchecker";
-#endif  // defined(OS_ANDROID)
-
-// Enables participation in the field trial for user feedback to spelling
-// service.
-const char kEnableSpellingFeedbackFieldTrial[] =
-    "enable-spelling-feedback-field-trial";
-
-// Specifies the number of seconds between sending batches of feedback to
-// spelling service. The default is 30 minutes. The minimum is 5 seconds. This
-// switch is for temporary testing only.
-// TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
-// August 2013.
-const char kSpellingServiceFeedbackIntervalSeconds[] =
-    "spelling-service-feedback-interval-seconds";
-
-// Specifies the URL where spelling service feedback data will be sent instead
-// of the default URL. This switch is for temporary testing only.
-// TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
-// August 2013.
-const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
-#endif  // defined(ENABLE_SPELLCHECK)
-
 #if defined(GOOGLE_CHROME_BUILD)
 // Shows a Google icon next to context menu items powered by Google services.
 const char kEnableGoogleBrandedContextMenu[] =

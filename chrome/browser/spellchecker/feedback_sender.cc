@@ -45,11 +45,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/word_trimmer.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/spellcheck/common/spellcheck_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "crypto/random.h"
 #include "crypto/secure_hash.h"
@@ -183,7 +183,7 @@ std::string GetApiVersion() {
   if (base::FieldTrialList::FindFullName(kFeedbackFieldTrialName) ==
           kFeedbackFieldTrialEnabledGroupName &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSpellingFeedbackFieldTrial)) {
+          spellcheck::switches::kEnableSpellingFeedbackFieldTrial)) {
     return "v2-internal";
   }
   return "v2";
@@ -206,10 +206,10 @@ FeedbackSender::FeedbackSender(net::URLRequestContextGetter* request_context,
   // TODO(rouslan): Remove the command-line switch when testing is complete.
   // http://crbug.com/247726
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSpellingServiceFeedbackUrl)) {
+          spellcheck::switches::kSpellingServiceFeedbackUrl)) {
     feedback_service_url_ =
         GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kSpellingServiceFeedbackUrl));
+            spellcheck::switches::kSpellingServiceFeedbackUrl));
   }
 }
 
@@ -348,10 +348,10 @@ void FeedbackSender::StartFeedbackCollection() {
   // TODO(rouslan): Remove the command-line switch when testing is complete.
   // http://crbug.com/247726
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSpellingServiceFeedbackIntervalSeconds)) {
+          spellcheck::switches::kSpellingServiceFeedbackIntervalSeconds)) {
     base::StringToInt(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kSpellingServiceFeedbackIntervalSeconds),
+            spellcheck::switches::kSpellingServiceFeedbackIntervalSeconds),
         &interval_seconds);
     if (interval_seconds < kMinIntervalSeconds)
       interval_seconds = kMinIntervalSeconds;

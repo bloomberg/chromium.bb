@@ -191,6 +191,8 @@ per-file sessions.gypi=file://components/sessions/OWNERS
 
 per-file signin.gypi=file://components/signin/OWNERS
 
+per-file spellcheck.gypi=file://components/spellcheck/OWNERS
+
 per-file ssl_errors.gypi=file://components/ssl_errors/OWNERS
 per-file ssl_errors_strings.grdp=file://components/ssl_errors/OWNERS
 

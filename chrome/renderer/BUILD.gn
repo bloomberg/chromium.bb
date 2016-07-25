@@ -156,6 +156,8 @@ static_library("renderer") {
   if (enable_spellcheck) {
     sources +=
         rebase_path(gypi_values.chrome_renderer_spellchecker_sources, ".", "..")
+    deps += [ "//components/spellcheck/common:common" ]
+
     if (!is_android) {
       deps += [ "//third_party/hunspell" ]
     }

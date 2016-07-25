@@ -17,11 +17,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -111,7 +111,7 @@ class FeedbackSenderTest : public testing::Test {
     // The command-line switch is temporary.
     // TODO(rouslan): Remove the command-line switch. http://crbug.com/247726
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSpellingFeedbackFieldTrial);
+        spellcheck::switches::kEnableSpellingFeedbackFieldTrial);
     feedback_.reset(new MockFeedbackSender(NULL, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }

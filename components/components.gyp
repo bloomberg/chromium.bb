@@ -83,6 +83,7 @@
     'security_state.gypi',
     'sessions.gypi',
     'signin.gypi',
+    'spellcheck.gypi',
     'ssl_config.gypi',
     'ssl_errors.gypi',
     'subresource_filter.gypi',

@@ -100,6 +100,7 @@
         '../../components/components.gyp:signin_core_browser',
         '../../components/components.gyp:signin_core_common',
         '../../components/components.gyp:signin_ios_browser',
+        '../../components/components.gyp:spellcheck_common',
         '../../components/components.gyp:ssl_config',
         '../../components/components.gyp:suggestions',
         '../../components/components.gyp:sync_driver',
