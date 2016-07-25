@@ -408,18 +408,6 @@ net::NetLog* AwContentBrowserClient::GetNetLog() {
   return browser_context_->GetAwURLRequestContext()->GetNetLog();
 }
 
-bool AwContentBrowserClient::IsFastShutdownPossible() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    NOTREACHED()
-        << "Android WebView is single process, so IsFastShutdownPossible"
-        << " should never be called";
-    return false;
-  } else {
-    return true;
-  }
-}
-
 void AwContentBrowserClient::ClearCache(content::RenderFrameHost* rfh) {
   RemoveHttpDiskCache(rfh->GetProcess());
 }

@@ -307,10 +307,6 @@ net::NetLog* ContentBrowserClient::GetNetLog() {
   return nullptr;
 }
 
-bool ContentBrowserClient::IsFastShutdownPossible() {
-  return true;
-}
-
 base::FilePath ContentBrowserClient::GetDefaultDownloadDirectory() {
   return base::FilePath();
 }

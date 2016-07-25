@@ -534,9 +534,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Getters for common objects.
   virtual net::NetLog* GetNetLog();
 
-  // Returns true if fast shutdown is possible.
-  virtual bool IsFastShutdownPossible();
-
   // Called by WebContents to override the WebKit preferences that are used by
   // the renderer. The content layer will add its own settings, and then it's up
   // to the embedder to update it if it wants.

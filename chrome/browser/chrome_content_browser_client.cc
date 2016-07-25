@@ -2291,10 +2291,6 @@ net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }
 
-bool ChromeContentBrowserClient::IsFastShutdownPossible() {
-  return true;
-}
-
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
