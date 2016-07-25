@@ -185,10 +185,22 @@ int WebFormControlElement::selectionEnd() const
     return 0;
 }
 
+WebString WebFormControlElement::alignmentForFormData() const
+{
+    if (const ComputedStyle* style = constUnwrap<HTMLFormControlElement>()->computedStyle()) {
+        if (style->textAlign() == RIGHT)
+            return WebString::fromUTF8("right");
+        if (style->textAlign() == LEFT)
+            return WebString::fromUTF8("left");
+    }
+    return WebString();
+}
+
 WebString WebFormControlElement::directionForFormData() const
 {
-    if (const ComputedStyle* style = constUnwrap<HTMLFormControlElement>()->computedStyle())
+    if (const ComputedStyle* style = constUnwrap<HTMLFormControlElement>()->computedStyle()) {
         return style->isLeftToRightDirection() ? WebString::fromUTF8("ltr") : WebString::fromUTF8("rtl");
+    }
     return WebString::fromUTF8("ltr");
 }
 

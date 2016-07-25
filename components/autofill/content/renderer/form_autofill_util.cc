@@ -1398,8 +1398,15 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     if (!g_prevent_layout)
       field->is_focusable = element.isFocusable();
     field->should_autocomplete = element.autoComplete();
+
+    // Use 'text-align: left|right' if set or 'direction' otherwise.
+    // See crbug.com/482339
     field->text_direction = element.directionForFormData() ==
         "rtl" ? base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
+    if (element.alignmentForFormData() == "left")
+        field->text_direction = base::i18n::LEFT_TO_RIGHT;
+    else if (element.alignmentForFormData() == "right")
+        field->text_direction = base::i18n::RIGHT_TO_LEFT;
   }
 
   if (IsAutofillableInputElement(input_element)) {

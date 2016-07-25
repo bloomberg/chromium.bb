@@ -2081,6 +2081,37 @@ TEST_F(FormAutofillTest, DetectTextDirectionWhenStyleAndDIRAttributMixed) {
   EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, result.text_direction);
 }
 
+TEST_F(FormAutofillTest, TextAlignOverridesDirection) {
+  // text-align: right
+  LoadHTML("<STYLE>input{direction:ltr;text-align:right}</STYLE>"
+           "<FORM>"
+           "  <INPUT type='text' id='element'/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormControlElement element = GetFormControlElementById("element");
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
+
+  // text-align: left
+  LoadHTML("<STYLE>input{direction:rtl;text-align:left}</STYLE>"
+           "<FORM>"
+           "  <INPUT type='text' id='element'/>"
+           "</FORM>");
+
+  frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  element = GetFormControlElementById("element");
+
+  WebFormControlElementToFormField(element, EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, result.text_direction);
+}
+
 TEST_F(FormAutofillTest,
        DetectTextDirectionWhenParentHasBothDIRAttributeAndStyle) {
   LoadHTML("<STYLE>form{direction:ltr}</STYLE>"

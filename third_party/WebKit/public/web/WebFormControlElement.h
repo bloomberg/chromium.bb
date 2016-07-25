@@ -100,6 +100,9 @@ public:
     // element nor textarea element, 0 is returned.
     BLINK_EXPORT int selectionEnd() const;
 
+    // Returns text-align(only left and right are supported. see crbug.com/482339) of text of element.
+    BLINK_EXPORT WebString alignmentForFormData() const;
+
     // Returns direction of text of element.
     BLINK_EXPORT WebString directionForFormData() const;
 
