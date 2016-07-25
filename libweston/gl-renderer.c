@@ -1599,6 +1599,27 @@ struct yuv_format_descriptor yuv_formats[] = {
 			.format = DRM_FORMAT_R8,
 			.plane_index = 2
 		}}
+	}, {
+		.format = DRM_FORMAT_YUV444,
+		.input_planes = 3,
+		.output_planes = 3,
+		.texture_type = EGL_TEXTURE_Y_U_V_WL,
+		{{
+			.width_divisor = 1,
+			.height_divisor = 1,
+			.format = DRM_FORMAT_R8,
+			.plane_index = 0
+		}, {
+			.width_divisor = 1,
+			.height_divisor = 1,
+			.format = DRM_FORMAT_R8,
+			.plane_index = 1
+		}, {
+			.width_divisor = 1,
+			.height_divisor = 1,
+			.format = DRM_FORMAT_R8,
+			.plane_index = 2
+		}}
 	}
 };
 
