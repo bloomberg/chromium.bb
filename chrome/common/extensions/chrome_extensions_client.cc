@@ -12,8 +12,12 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/api_features.h"
+#include "chrome/common/extensions/api/behavior_features.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
+#include "chrome/common/extensions/api/manifest_features.h"
+#include "chrome/common/extensions/api/permission_features.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
@@ -140,20 +144,14 @@ const std::string ChromeExtensionsClient::GetProductName() {
 std::unique_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
   std::unique_ptr<FeatureProvider> provider;
-  std::unique_ptr<JSONFeatureProviderSource> source(
-      CreateFeatureProviderSource(name));
   if (name == "api") {
-    provider.reset(new JSONFeatureProvider(source->dictionary(),
-                                           CreateFeature<APIFeature>));
+    provider.reset(new APIFeatureProvider());
   } else if (name == "manifest") {
-    provider.reset(new JSONFeatureProvider(source->dictionary(),
-                                           CreateFeature<ManifestFeature>));
+    provider.reset(new ManifestFeatureProvider());
   } else if (name == "permission") {
-    provider.reset(new JSONFeatureProvider(source->dictionary(),
-                                           CreateFeature<PermissionFeature>));
+    provider.reset(new PermissionFeatureProvider());
   } else if (name == "behavior") {
-    provider.reset(new JSONFeatureProvider(source->dictionary(),
-                                           CreateFeature<BehaviorFeature>));
+    provider.reset(new BehaviorFeatureProvider());
   } else {
     NOTREACHED();
   }
@@ -161,25 +159,11 @@ std::unique_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
 }
 
 std::unique_ptr<JSONFeatureProviderSource>
-ChromeExtensionsClient::CreateFeatureProviderSource(
-    const std::string& name) const {
+ChromeExtensionsClient::CreateAPIFeatureSource() const {
   std::unique_ptr<JSONFeatureProviderSource> source(
-      new JSONFeatureProviderSource(name));
-  if (name == "api") {
-    source->LoadJSON(IDR_EXTENSION_API_FEATURES);
-    source->LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
-  } else if (name == "manifest") {
-    source->LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
-    source->LoadJSON(IDR_CHROME_EXTENSION_MANIFEST_FEATURES);
-  } else if (name == "permission") {
-    source->LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
-    source->LoadJSON(IDR_CHROME_EXTENSION_PERMISSION_FEATURES);
-  } else if (name == "behavior") {
-    source->LoadJSON(IDR_EXTENSION_BEHAVIOR_FEATURES);
-  } else {
-    NOTREACHED();
-    source.reset();
-  }
+      new JSONFeatureProviderSource("api"));
+  source->LoadJSON(IDR_EXTENSION_API_FEATURES);
+  source->LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
   return source;
 }
 

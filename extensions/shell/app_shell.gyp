@@ -46,6 +46,7 @@
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/extensions/shell/browser/api/api_registration.gyp:shell_api_registration',
         '<(DEPTH)/extensions/shell/common/api/api.gyp:shell_api',
+        '<(DEPTH)/extensions/shell/common/api/api.gyp:extensions_features',
         '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',

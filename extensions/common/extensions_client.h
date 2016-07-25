@@ -57,12 +57,10 @@ class ExtensionsClient {
   virtual std::unique_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const = 0;
 
-  // Create a JSONFeatureProviderSource for a specific feature type,
-  // e.g. "permission". Currently, all features are loaded from
-  // JSONFeatureProviderSources.
-  // This is used primarily in CreateFeatureProvider, above.
-  virtual std::unique_ptr<JSONFeatureProviderSource>
-  CreateFeatureProviderSource(const std::string& name) const = 0;
+  // Returns the dictionary of the API features json file.
+  // TODO(devlin): We should find a way to remove this.
+  virtual std::unique_ptr<JSONFeatureProviderSource> CreateAPIFeatureSource()
+      const = 0;
 
   // Takes the list of all hosts and filters out those with special
   // permission strings. Adds the regular hosts to |new_hosts|,

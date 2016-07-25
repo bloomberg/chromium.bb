@@ -50,9 +50,9 @@
       'type': 'static_library',
       'variables': {
         'feature_class': 'APIFeature',
-        'provider_class': 'TestAPIFeatureProvider',
+        'provider_class': 'CompilerTestFeatureProvider',
         'out_dir': 'tools/json_schema_compiler/test',
-        'out_base_filename': 'features_test',
+        'out_base_filename': 'features_compiler_test',
         'in_files': [
           'tools/json_schema_compiler/test/features_test.json',
           'tools/json_schema_compiler/test/features_test2.json',

@@ -25,8 +25,8 @@ class ShellExtensionsClient : public ExtensionsClient {
   const std::string GetProductName() override;
   std::unique_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const override;
-  std::unique_ptr<JSONFeatureProviderSource> CreateFeatureProviderSource(
-      const std::string& name) const override;
+  std::unique_ptr<JSONFeatureProviderSource> CreateAPIFeatureSource()
+      const override;
   void FilterHostPermissions(const URLPatternSet& hosts,
                              URLPatternSet* new_hosts,
                              PermissionIDSet* permissions) const override;

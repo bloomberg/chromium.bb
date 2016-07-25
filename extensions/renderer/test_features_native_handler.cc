@@ -22,7 +22,7 @@ TestFeaturesNativeHandler::TestFeaturesNativeHandler(ScriptContext* context)
 void TestFeaturesNativeHandler::GetAPIFeatures(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::unique_ptr<JSONFeatureProviderSource> source(
-      ExtensionsClient::Get()->CreateFeatureProviderSource("api"));
+      ExtensionsClient::Get()->CreateAPIFeatureSource());
   std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   args.GetReturnValue().Set(

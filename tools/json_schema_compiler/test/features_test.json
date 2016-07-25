@@ -17,12 +17,13 @@
     "channel": "beta",
     "platforms": ["win", "mac"],
     "contexts": ["blessed_extension"],
+    "dependencies": ["permission:gamma"],
     "extension_types": ["extension"],
     "internal": true
   },
   "gamma.child": {
     "whitelist": ["ccc"],
-    "dependencies": ["permission:gamma.child"],
+    "dependencies": [],
     "platforms": ["linux"]
   },
   "gamma.unparented": {
@@ -30,6 +31,15 @@
     "contexts": ["unblessed_extension"],
     "noparent": true
   },
+  "gamma.complex_unparented": [{
+    "channel": "stable",
+    "contexts": ["unblessed_extension"],
+    "noparent": true
+  }, {
+    "channel": "stable",
+    "contexts": ["unblessed_extension"],
+    "noparent": true
+  }],
   "delta": {
     "contexts": ["blessed_extension", "webui"],
     "matches": ["*://example.com/*"]

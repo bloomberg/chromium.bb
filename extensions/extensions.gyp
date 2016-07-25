@@ -276,6 +276,7 @@
         'extensions_browser',
         'extensions_common',
         'extensions_resources.gyp:extensions_resources',
+        'test/test_api.gyp:extensions_features',
       ],
       'include_dirs': [
         '..',

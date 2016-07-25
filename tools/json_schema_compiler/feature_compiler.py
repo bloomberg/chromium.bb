@@ -54,7 +54,10 @@ CC_FILE_BEGIN = """
 #include "%(header_file_path)s"
 
 #include "extensions/common/features/api_feature.h"
+#include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/complex_feature.h"
+#include "extensions/common/features/manifest_feature.h"
+#include "extensions/common/features/permission_feature.h"
 
 namespace extensions {
 
@@ -192,7 +195,7 @@ FEATURE_GRAMMAR = (
 
 # These keys are used to find the parents of different features, but are not
 # compiled into the features themselves.
-IGNORED_KEYS = ['noparent', 'default_parent']
+IGNORED_KEYS = ['default_parent']
 
 # By default, if an error is encountered, assert to stop the compilation. This
 # can be disabled for testing.
@@ -330,6 +333,10 @@ class Feature(object):
 
     if cpp_value:
       self.feature_values[key] = cpp_value
+    elif key in self.feature_values:
+      # If the key is empty and this feature inherited a value from its parent,
+      # remove the inherited value.
+      del self.feature_values[key]
 
   def SetParent(self, parent):
     """Sets the parent of this feature, and inherits all properties from that
@@ -396,8 +403,17 @@ class FeatureCompiler(object):
   def _FindParent(self, feature_name, feature_value):
     """Checks to see if a feature has a parent. If it does, returns the
     parent."""
+    no_parent = False
+    if type(feature_value) is list:
+      no_parent_values = ['noparent' in v for v in feature_value]
+      no_parent = all(no_parent_values)
+      assert no_parent or not any(no_parent_values), (
+              '"%s:" All child features must contain the same noparent value' %
+                  feature_name)
+    else:
+      no_parent = 'noparent' in feature_value
     sep = feature_name.rfind('.')
-    if sep is -1 or 'noparent' in feature_value:
+    if sep is -1 or no_parent:
       return None
     parent_name = feature_name[:sep]
     if parent_name not in self._features:
@@ -431,19 +447,27 @@ class FeatureCompiler(object):
       # This doesn't handle nested complex features. I think that's probably for
       # the best.
       for v in feature_value:
-        feature = Feature(feature_name)
-        if parent:
-          feature.SetParent(parent)
-        feature.Parse(v)
-        feature_list.append(feature)
+        try:
+          feature = Feature(feature_name)
+          if parent:
+            feature.SetParent(parent)
+          feature.Parse(v)
+          feature_list.append(feature)
+        except:
+          print('Failure to parse feature "%s"' % feature_name)
+          raise
       self._features[feature_name] = feature_list
       return
 
-    feature = Feature(feature_name)
-    if parent:
-      feature.SetParent(parent)
-    feature.Parse(feature_value)
-    self._features[feature_name] = feature
+    try:
+      feature = Feature(feature_name)
+      if parent:
+        feature.SetParent(parent)
+      feature.Parse(feature_value)
+      self._features[feature_name] = feature
+    except:
+      print('Failure to parse feature "%s"' % feature_name)
+      raise
 
   def Compile(self):
     """Parses all features after loading the input files."""

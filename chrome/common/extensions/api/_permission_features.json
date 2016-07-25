@@ -353,7 +353,8 @@
   },
   "fileSystem": [{
     "channel": "stable",
-    "extension_types": ["platform_app"]
+    "extension_types": ["platform_app"],
+    "default_parent": true
   },{
     "channel": "stable",
     "extension_types": ["extension"],
@@ -366,14 +367,14 @@
       "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
     ]
   }],
-  "fileSystem.directory": [{
+  "fileSystem.directory": {
     "channel": "stable",
     "extension_types": ["platform_app"]
-  }],
-  "fileSystem.retainEntries": [{
+  },
+  "fileSystem.retainEntries": {
     "channel": "stable",
     "extension_types": ["platform_app"]
-  }],
+  },
   "fileSystem.write": [{
     "channel": "stable",
     "extension_types": ["platform_app"]
@@ -463,14 +464,10 @@
   "input": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
-    // TODO(kalman): Um what does this inply?
-    "inplies_full_url_access": true,
     "platforms": ["chromeos"]
   }, {
     "channel": "dev",
     "extension_types": ["extension", "legacy_packaged_app"],
-    // TODO(kalman): Um what does this inply?
-    "inplies_full_url_access": true,
     "platforms": ["win", "linux"]
   }],
   "inputMethodPrivate": [{
@@ -495,7 +492,7 @@
   "launcherSearchProvider": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
-    "platform": ["chromeos"],
+    "platforms": ["chromeos"],
     "whitelist": [
       "A948368FC53BE437A55FEB414106E207925482F5"  // File Manager
     ]

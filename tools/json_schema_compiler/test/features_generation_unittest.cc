@@ -7,7 +7,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "tools/json_schema_compiler/test/features_test.h"
+#include "tools/json_schema_compiler/test/features_compiler_test.h"
 
 namespace extensions {
 
@@ -89,7 +89,7 @@ void FeatureComparator::CompareFeature(SimpleFeature* feature) {
 }
 
 TEST(FeaturesGenerationTest, FeaturesTest) {
-  TestAPIFeatureProvider provider;
+  CompilerTestFeatureProvider provider;
 
   auto GetAPIFeature = [&provider](const std::string& name) {
     Feature* feature = provider.GetFeature(name);
@@ -125,6 +125,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
         new version_info::Channel(version_info::Channel::BETA));
     comparator.platforms = {Feature::WIN_PLATFORM, Feature::MACOSX_PLATFORM};
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
+    comparator.dependencies = {"permission:gamma"};
     comparator.extension_types = {Manifest::TYPE_EXTENSION};
     comparator.internal = true;
     comparator.CompareFeature(feature);
@@ -133,9 +134,9 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     // case that it specifies its own value. Thus, we reuse |comparator|.
     feature = GetAPIFeature("gamma.child");
     comparator.name = "gamma.child";
-    comparator.dependencies = {"permission:gamma.child"};
     comparator.whitelist = {"ccc"};
     comparator.platforms = {Feature::LINUX_PLATFORM};
+    comparator.dependencies.clear();
     comparator.CompareFeature(feature);
   }
   {
@@ -146,6 +147,18 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     comparator.blacklist = {"ddd"};
     comparator.contexts = {Feature::UNBLESSED_EXTENSION_CONTEXT};
     comparator.CompareFeature(feature);
+  }
+  {
+    ComplexFeature* complex_feature = static_cast<ComplexFeature*>(
+        provider.GetFeature("gamma.complex_unparented"));
+    FeatureComparator comparator("gamma.complex_unparented");
+    comparator.contexts = {Feature::UNBLESSED_EXTENSION_CONTEXT};
+    comparator.channel.reset(
+        new version_info::Channel(version_info::Channel::STABLE));
+    // We cheat and have both children exactly the same for ease of comparing;
+    // complex features are tested more thoroughly below.
+    for (const auto& feature : complex_feature->features_)
+      comparator.CompareFeature(static_cast<SimpleFeature*>(feature.get()));
   }
   {
     APIFeature* feature = GetAPIFeature("delta");

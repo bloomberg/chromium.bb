@@ -91,6 +91,7 @@ static_library("test_support") {
     "//extensions/common",
     "//extensions/common/api",
     "//extensions/common/api:api_registration",
+    "//extensions/test:extensions_features",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

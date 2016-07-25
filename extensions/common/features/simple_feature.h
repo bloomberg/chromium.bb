@@ -127,6 +127,7 @@ class SimpleFeature : public Feature {
   void set_min_manifest_version(int min_manifest_version) {
     min_manifest_version_ = min_manifest_version;
   }
+  void set_noparent(bool no_parent) { no_parent_ = no_parent; }
   void set_platforms(std::vector<Platform>&& platforms);
   void set_whitelist(std::vector<std::string>&& whitelist);
 

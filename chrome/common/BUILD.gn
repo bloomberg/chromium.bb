@@ -165,6 +165,7 @@ static_library("common") {
                            "//chrome")
     public_deps += [
       "//chrome/common/extensions/api",
+      "//chrome/common/extensions/api:extensions_features",
       "//device/usb",
       "//extensions:extensions_resources",
       "//extensions/common",

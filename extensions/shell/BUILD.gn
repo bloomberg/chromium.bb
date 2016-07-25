@@ -53,6 +53,7 @@ source_set("app_shell_lib") {
     "//extensions/renderer",
     "//extensions/shell/common/api",
     "//extensions/shell/common/api:api_registration",
+    "//extensions/shell/common/api:extensions_features",
     "//extensions/utility",
     "//skia",
     "//third_party/WebKit/public:blink",
