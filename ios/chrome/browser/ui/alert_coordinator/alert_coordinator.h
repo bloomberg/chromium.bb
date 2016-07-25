@@ -10,11 +10,10 @@
 #include "base/ios/block_types.h"
 #import "ios/chrome/browser/chrome_coordinator.h"
 
-// A coordinator specialization for the case where the coordinator is
-// creating and managing an alert (popup or action sheet) to be displayed to the
-// user. Dismiss it with no animation.
-// The type of alert displayed depends on the init called.
-// Calling |-stop| on this coordinator destroys the current alert.
+// A coordinator specialization for the case where the coordinator is creating
+// and managing a modal alert to be displayed to the user.
+// Calling |-stop| on this coordinator dismisses the current alert with no
+// animation then destroys it.
 @interface AlertCoordinator : ChromeCoordinator
 
 // Whether a cancel button has been added.
@@ -24,19 +23,17 @@
 // Whether the alert is visible. This will be true after |-start| is called
 // until a subsequent |-stop|.
 @property(nonatomic, readonly, getter=isVisible) BOOL visible;
+// Handler executed when calling |-stop| on this coordinator.
+@property(nonatomic, copy) ProceduralBlock stopAction;
+
+// Init a coordinator for displaying a alert on this view controller.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
-
-// Init a coordinator for displaying a alert on this view controller. If
-// |-configureForActionSheetWithRect:popoverView:| is not called, it will be a
-// modal alert.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title
-    NS_DESIGNATED_INITIALIZER;
-
-// Call this before adding any button to change the alert to an action sheet.
-- (void)configureForActionSheetWithRect:(CGRect)rect popoverView:(UIView*)view;
 
 // Adds an item at the end of the menu. It does nothing if |visible| is true or
 // if trying to add an item with a UIAlertActionStyleCancel while
@@ -45,9 +42,11 @@
                   action:(ProceduralBlock)actionBlock
                    style:(UIAlertActionStyle)style;
 
-// Returns the number of actions attached to the current alert.
-- (NSUInteger)actionsCount;
+@end
 
+@interface AlertCoordinator (Subclassing)
+// Lazy initializer to create the alertController.
+@property(nonatomic, readonly) UIAlertController* alertController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_ALERT_COORDINATOR_H_

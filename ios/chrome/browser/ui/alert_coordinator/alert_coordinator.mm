@@ -6,6 +6,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_block.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -13,25 +14,20 @@
   // Variables backing properties of the same name.
   base::scoped_nsobject<UIAlertController> _alertController;
   base::scoped_nsobject<NSString> _message;
+  base::mac::ScopedBlock<ProceduralBlock> _stopAction;
 
   // Title for the alert.
   base::scoped_nsobject<NSString> _title;
-  // Rectangle for the popover alert.
-  CGRect _rect;
-  // View for the popovert alert.
-  base::scoped_nsobject<UIView> _view;
-  // Style for this alert.
-  UIAlertControllerStyle _style;
 }
 
 // Redefined to readwrite.
 @property(nonatomic, readwrite, getter=isVisible) BOOL visible;
-// Lazy initializer to create the |_alert|.
-@property(nonatomic, readonly) UIAlertController* alertController;
 
 // Called when the alert is dismissed to perform cleanup.
 - (void)alertDismissed;
 
+- (UIAlertController*)alertControllerWithTitle:(NSString*)title
+                                       message:(NSString*)message;
 @end
 
 @implementation AlertCoordinator
@@ -45,25 +41,17 @@
 }
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title {
+                                     title:(NSString*)title
+                                   message:(NSString*)message {
   self = [super initWithBaseViewController:viewController];
   if (self) {
-    _style = UIAlertControllerStyleAlert;
     _title.reset([title copy]);
+    _message.reset([message copy]);
   }
   return self;
 }
 
 #pragma mark - Public Methods.
-
-- (void)configureForActionSheetWithRect:(CGRect)rect popoverView:(UIView*)view {
-  if (_alertController)
-    return;
-
-  _style = UIAlertControllerStyleActionSheet;
-  _view.reset([view retain]);
-  _rect = rect;
-}
 
 - (void)addItemWithTitle:(NSString*)title
                   action:(ProceduralBlock)actionBlock
@@ -82,9 +70,9 @@
       [UIAlertAction actionWithTitle:title
                                style:style
                              handler:^(UIAlertAction*) {
-                               [weakSelf alertDismissed];
                                if (actionBlock)
                                  actionBlock();
+                               [weakSelf alertDismissed];
                              }];
 
   [self.alertController addAction:alertAction];
@@ -99,7 +87,7 @@
   }
 
   // Display at least one button to let the user dismiss the alert.
-  if ([self actionsCount] == 0) {
+  if ([self.alertController actions].count == 0) {
     [self addItemWithTitle:l10n_util::GetNSString(IDS_APP_OK)
                     action:nil
                      style:UIAlertActionStyleDefault];
@@ -113,11 +101,9 @@
 
 - (void)stop {
   [_alertController dismissViewControllerAnimated:NO completion:nil];
+  if (_stopAction)
+    _stopAction.get()();
   [self alertDismissed];
-}
-
-- (NSUInteger)actionsCount {
-  return [_alertController actions].count;
 }
 
 #pragma mark - Property Implementation.
@@ -125,17 +111,10 @@
 - (UIAlertController*)alertController {
   if (!_alertController) {
     UIAlertController* alert =
-        [UIAlertController alertControllerWithTitle:_title
-                                            message:_message
-                                     preferredStyle:_style];
+        [self alertControllerWithTitle:_title message:_message];
 
     if (alert)
       _alertController.reset([alert retain]);
-
-    if (_style == UIAlertControllerStyleActionSheet) {
-      alert.popoverPresentationController.sourceView = _view;
-      alert.popoverPresentationController.sourceRect = _rect;
-    }
   }
   return _alertController;
 }
@@ -148,12 +127,29 @@
   _message.reset([message copy]);
 }
 
+- (ProceduralBlock)stopAction {
+  return _stopAction;
+}
+
+- (void)setStopAction:(ProceduralBlock)stopAction {
+  _stopAction.reset([stopAction copy]);
+}
+
 #pragma mark - Private Methods.
 
 - (void)alertDismissed {
   self.visible = NO;
   _cancelButtonAdded = NO;
   _alertController.reset();
+  _stopAction.reset();
+}
+
+- (UIAlertController*)alertControllerWithTitle:(NSString*)title
+                                       message:(NSString*)message {
+  return
+      [UIAlertController alertControllerWithTitle:title
+                                          message:message
+                                   preferredStyle:UIAlertControllerStyleAlert];
 }
 
 @end

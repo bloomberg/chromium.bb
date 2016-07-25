@@ -32,24 +32,17 @@ class AlertCoordinatorTest : public PlatformTest {
   UIViewController* getViewController() { return view_controller_; }
 
   AlertCoordinator* getAlertCoordinator(UIViewController* viewController) {
-    return getAlertCoordinator(viewController, @"Test title");
+    return getAlertCoordinator(viewController, @"Test title", nil);
   }
 
   AlertCoordinator* getAlertCoordinator(UIViewController* viewController,
-                                        NSString* title) {
+                                        NSString* title,
+                                        NSString* message) {
     alert_coordinator_.reset([[AlertCoordinator alloc]
         initWithBaseViewController:viewController
-                             title:title]);
+                             title:title
+                           message:message]);
     return alert_coordinator_;
-  }
-  AlertCoordinator* getAlertCoordinator(UIViewController* viewController,
-                                        NSString* title,
-                                        CGRect rect,
-                                        UIView* view) {
-    AlertCoordinator* alertCoordinator =
-        getAlertCoordinator(viewController, title);
-    [alertCoordinator configureForActionSheetWithRect:rect popoverView:view];
-    return alertCoordinator;
   }
 
   void deleteAlertCoordinator() { alert_coordinator_.reset(); }
@@ -79,7 +72,10 @@ TEST_F(AlertCoordinatorTest, ValidateIsVisible) {
   EXPECT_TRUE(alertCoordinator.isVisible);
   EXPECT_TRUE([viewController.presentedViewController
       isKindOfClass:[UIAlertController class]]);
-  EXPECT_EQ(1LU, [alertCoordinator actionsCount]);
+  UIAlertController* alertController =
+      base::mac::ObjCCastStrict<UIAlertController>(
+          viewController.presentedViewController);
+  EXPECT_EQ(1LU, alertController.actions.count);
 }
 
 // Tests the alert coordinator reports as not visible after presenting on a non
@@ -109,9 +105,7 @@ TEST_F(AlertCoordinatorTest, TitleAndMessage) {
   NSString* title = @"Foo test title!";
   NSString* message = @"Foo bar message.";
 
-  AlertCoordinator* alertCoordinator =
-      getAlertCoordinator(viewController, title);
-  alertCoordinator.message = message;
+  getAlertCoordinator(viewController, title, message);
 
   // Action.
   startAlertCoordinator();
@@ -259,36 +253,4 @@ TEST_F(AlertCoordinatorTest, OnlyOneCancelAction) {
   UIAlertAction* action = [alertController.actions objectAtIndex:0];
   EXPECT_EQ(firstButtonTitle, action.title);
   EXPECT_EQ(UIAlertActionStyleCancel, action.style);
-}
-
-// Tests that if there is a popover, it uses the CGRect passed in init.
-TEST_F(AlertCoordinatorTest, CGRectUsage) {
-  // Setup.
-  UIViewController* viewController = getViewController();
-  UIView* view = [[[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]]
-      autorelease];
-  [viewController.view addSubview:view];
-  CGRect rect = CGRectMake(124, 432, 126, 63);
-  getAlertCoordinator(viewController, @"Title", rect, view);
-
-  // Action.
-  startAlertCoordinator();
-
-  // Test.
-  // Get the alert.
-  EXPECT_TRUE([viewController.presentedViewController
-      isKindOfClass:[UIAlertController class]]);
-  UIAlertController* alertController =
-      base::mac::ObjCCastStrict<UIAlertController>(
-          viewController.presentedViewController);
-
-  // Test the results.
-  EXPECT_EQ(UIAlertControllerStyleActionSheet, alertController.preferredStyle);
-
-  if (alertController.popoverPresentationController) {
-    UIPopoverPresentationController* popover =
-        alertController.popoverPresentationController;
-    EXPECT_TRUE(CGRectEqualToRect(rect, popover.sourceRect));
-    EXPECT_EQ(view, popover.sourceView);
-  }
 }
