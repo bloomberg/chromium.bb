@@ -154,7 +154,10 @@ WebrtcTransport::~WebrtcTransport() {}
 
 std::unique_ptr<MessagePipe> WebrtcTransport::CreateOutgoingChannel(
     const std::string& name) {
-  return data_stream_adapter_->CreateOutgoingChannel(name);
+  webrtc::DataChannelInit config;
+  config.reliable = true;
+  return base::WrapUnique(new WebrtcDataStreamAdapter(
+      peer_connection_->CreateDataChannel(name, &config)));
 }
 
 void WebrtcTransport::Start(
@@ -196,8 +199,6 @@ void WebrtcTransport::Start(
           transport_context_);
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
       rtc_config, &constraints, std::move(port_allocator), nullptr, this);
-
-  data_stream_adapter_.reset(new WebrtcDataStreamAdapter(peer_connection_));
 
   event_handler_->OnWebrtcTransportConnecting();
 
@@ -439,7 +440,7 @@ void WebrtcTransport::OnDataChannel(
   DCHECK(thread_checker_.CalledOnValidThread());
   event_handler_->OnWebrtcTransportIncomingDataChannel(
       data_channel->label(),
-      data_stream_adapter_->WrapIncomingDataChannel(data_channel));
+      base::WrapUnique(new WebrtcDataStreamAdapter(data_channel)));
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {
@@ -573,8 +574,6 @@ void WebrtcTransport::Close(ErrorCode error) {
     return;
 
   weak_factory_.InvalidateWeakPtrs();
-
-  data_stream_adapter_.reset();
 
   peer_connection_->Close();
   peer_connection_ = nullptr;

@@ -15,71 +15,34 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/compound_buffer.h"
-#include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
 namespace protocol {
 
-namespace {
-
-class WebrtcDataChannel : public MessagePipe,
-                          public webrtc::DataChannelObserver {
- public:
-  explicit WebrtcDataChannel(
-      rtc::scoped_refptr<webrtc::DataChannelInterface> channel);
-  ~WebrtcDataChannel() override;
-
-  std::string name() { return channel_->label(); }
-
-  // MessagePipe interface.
-  void Start(EventHandler* event_handler) override;
-  void Send(google::protobuf::MessageLite* message,
-            const base::Closure& done) override;
-
- private:
-  enum class State { CONNECTING, OPEN, CLOSED };
-
-  // webrtc::DataChannelObserver interface.
-  void OnStateChange() override;
-  void OnMessage(const webrtc::DataBuffer& buffer) override;
-
-  void OnConnected();
-
-  void OnClosed();
-
-  rtc::scoped_refptr<webrtc::DataChannelInterface> channel_;
-
-  EventHandler* event_handler_ = nullptr;
-
-  State state_ = State::CONNECTING;
-
-  DISALLOW_COPY_AND_ASSIGN(WebrtcDataChannel);
-};
-
-WebrtcDataChannel::WebrtcDataChannel(
+WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel)
     : channel_(channel) {
   channel_->RegisterObserver(this);
   DCHECK_EQ(channel_->state(), webrtc::DataChannelInterface::kConnecting);
 }
 
-WebrtcDataChannel::~WebrtcDataChannel() {
+WebrtcDataStreamAdapter::~WebrtcDataStreamAdapter() {
   if (channel_) {
     channel_->UnregisterObserver();
     channel_->Close();
   }
 }
 
-void WebrtcDataChannel::Start(EventHandler* event_handler) {
+void WebrtcDataStreamAdapter::Start(EventHandler* event_handler) {
   DCHECK(!event_handler_);
   DCHECK(event_handler);
 
   event_handler_ = event_handler;
 }
 
-void WebrtcDataChannel::Send(google::protobuf::MessageLite* message,
-                             const base::Closure& done) {
+void WebrtcDataStreamAdapter::Send(google::protobuf::MessageLite* message,
+                                   const base::Closure& done) {
   DCHECK(state_ == State::OPEN);
 
   rtc::CopyOnWriteBuffer buffer;
@@ -97,7 +60,7 @@ void WebrtcDataChannel::Send(google::protobuf::MessageLite* message,
     done.Run();
 }
 
-void WebrtcDataChannel::OnStateChange() {
+void WebrtcDataStreamAdapter::OnStateChange() {
   switch (channel_->state()) {
     case webrtc::DataChannelInterface::kOpen:
       DCHECK(state_ == State::CONNECTING);
@@ -118,7 +81,7 @@ void WebrtcDataChannel::OnStateChange() {
   }
 }
 
-void WebrtcDataChannel::OnMessage(const webrtc::DataBuffer& rtc_buffer) {
+void WebrtcDataStreamAdapter::OnMessage(const webrtc::DataBuffer& rtc_buffer) {
   if (state_ != State::OPEN) {
     LOG(ERROR) << "Dropping a message received when the channel is not open.";
     return;
@@ -129,26 +92,6 @@ void WebrtcDataChannel::OnMessage(const webrtc::DataBuffer& rtc_buffer) {
                        rtc_buffer.data.size());
   buffer->Lock();
   event_handler_->OnMessageReceived(std::move(buffer));
-}
-
-}  // namespace
-
-WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(
-    rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection)
-    : peer_connection_(peer_connection) {}
-WebrtcDataStreamAdapter::~WebrtcDataStreamAdapter() {}
-
-std::unique_ptr<MessagePipe> WebrtcDataStreamAdapter::CreateOutgoingChannel(
-    const std::string& name) {
-  webrtc::DataChannelInit config;
-  config.reliable = true;
-  return base::WrapUnique(new WebrtcDataChannel(
-      peer_connection_->CreateDataChannel(name, &config)));
-}
-
-std::unique_ptr<MessagePipe> WebrtcDataStreamAdapter::WrapIncomingDataChannel(
-    rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
-  return base::WrapUnique(new WebrtcDataChannel(data_channel));
 }
 
 }  // namespace protocol

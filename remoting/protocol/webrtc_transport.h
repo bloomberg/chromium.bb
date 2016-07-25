@@ -148,8 +148,6 @@ class WebrtcTransport : public Transport,
 
   ScopedVector<webrtc::IceCandidateInterface> pending_incoming_candidates_;
 
-  std::unique_ptr<WebrtcDataStreamAdapter> data_stream_adapter_;
-
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcTransport);

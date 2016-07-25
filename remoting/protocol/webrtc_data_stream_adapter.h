@@ -10,36 +10,44 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "remoting/protocol/errors.h"
-#include "remoting/protocol/message_channel_factory.h"
+#include "remoting/protocol/message_pipe.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/base/refcount.h"
-
-namespace rtc {
-class PeerConnectionInterface;
-}  // namespace rtc
 
 namespace remoting {
 namespace protocol {
 
-// WebrtcDataStreamAdapter wraps MessagePipe for WebRTC data channels.
-class WebrtcDataStreamAdapter {
+// WebrtcDataStreamAdapter implements MessagePipe for WebRTC data channels.
+class WebrtcDataStreamAdapter : public MessagePipe,
+                                public webrtc::DataChannelObserver {
  public:
-  typedef base::Callback<void(ErrorCode)> ErrorCallback;
-
   explicit WebrtcDataStreamAdapter(
-      rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection);
-  ~WebrtcDataStreamAdapter();
+      rtc::scoped_refptr<webrtc::DataChannelInterface> channel);
+  ~WebrtcDataStreamAdapter() override;
 
-  // Creates outgoing data channel.
-  std::unique_ptr<MessagePipe> CreateOutgoingChannel(const std::string& name);
+  std::string name() { return channel_->label(); }
 
-  // Creates incoming data channel.
-  std::unique_ptr<MessagePipe> WrapIncomingDataChannel(
-      rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel);
+  // MessagePipe interface.
+  void Start(EventHandler* event_handler) override;
+  void Send(google::protobuf::MessageLite* message,
+            const base::Closure& done) override;
 
  private:
-  rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
+  enum class State { CONNECTING, OPEN, CLOSED };
+
+  // webrtc::DataChannelObserver interface.
+  void OnStateChange() override;
+  void OnMessage(const webrtc::DataBuffer& buffer) override;
+
+  void OnConnected();
+
+  void OnClosed();
+
+  rtc::scoped_refptr<webrtc::DataChannelInterface> channel_;
+
+  EventHandler* event_handler_ = nullptr;
+
+  State state_ = State::CONNECTING;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcDataStreamAdapter);
 };
