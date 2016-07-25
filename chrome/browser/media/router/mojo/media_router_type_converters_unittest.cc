@@ -20,8 +20,8 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   interfaces::MediaSinkPtr mojo_sink(interfaces::MediaSink::New());
   mojo_sink->sink_id = "sinkId1";
   mojo_sink->name = "Sink 1";
-  mojo_sink->description = "description";
-  mojo_sink->domain = "domain";
+  mojo_sink->description = std::string("description");
+  mojo_sink->domain = std::string("domain");
   mojo_sink->icon_type = media_router::interfaces::MediaSink::IconType::CAST;
 
   MediaSink media_sink = mojo::TypeConverter<
@@ -83,7 +83,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   mojo_route->media_sink_id = "sinkId";
   mojo_route->description = "Description";
   mojo_route->is_local = false;
-  mojo_route->custom_controller_path = "cast_view.html";
+  mojo_route->custom_controller_path = std::string("cast_view.html");
   mojo_route->for_display = true;
   mojo_route->incognito = true;
 
@@ -122,12 +122,11 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   interfaces::IssuePtr mojoIssue;
   mojoIssue = interfaces::Issue::New();
   mojoIssue->title = "title";
-  mojoIssue->message = "msg";
-  mojoIssue->route_id = "routeId";
+  mojoIssue->message = std::string("msg");
+  mojoIssue->route_id = std::string("routeId");
   mojoIssue->default_action = interfaces::Issue::ActionType::LEARN_MORE;
-  mojoIssue->secondary_actions =
-      mojo::Array<interfaces::Issue::ActionType>::New(1);
-  mojoIssue->secondary_actions[0] = interfaces::Issue::ActionType::DISMISS;
+  mojoIssue->secondary_actions = std::vector<interfaces::Issue::ActionType>(
+      1, interfaces::Issue::ActionType::DISMISS);
   mojoIssue->severity = interfaces::Issue::Severity::WARNING;
   mojoIssue->is_blocking = true;
   mojoIssue->help_page_id = 12345;

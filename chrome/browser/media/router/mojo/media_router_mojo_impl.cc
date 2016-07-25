@@ -46,31 +46,25 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   std::unique_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
     case interfaces::RouteMessage::Type::TEXT: {
-      DCHECK(!input->message.is_null());
-      DCHECK(input->data.is_null());
+      DCHECK(input->message);
+      DCHECK(!input->data);
       output.reset(new content::PresentationSessionMessage(
           content::PresentationMessageType::TEXT));
-      input->message.Swap(&output->message);
+      output->message = std::move(*input->message);
       return output;
     }
     case interfaces::RouteMessage::Type::BINARY: {
-      DCHECK(!input->data.is_null());
-      DCHECK(input->message.is_null());
+      DCHECK(input->data);
+      DCHECK(!input->message);
       output.reset(new content::PresentationSessionMessage(
           content::PresentationMessageType::ARRAY_BUFFER));
-      output->data.reset(new std::vector<uint8_t>);
-      input->data.Swap(output->data.get());
+      output->data.reset(new std::vector<uint8_t>(std::move(*input->data)));
       return output;
     }
   }
 
   NOTREACHED() << "Invalid route message type " << input->type;
   return output;
-}
-
-void ForwardSinkSearchCallback(const MediaSinkSearchResponseCallback& callback,
-                               mojo::String sink_id) {
-  callback.Run(sink_id);
 }
 
 }  // namespace
@@ -200,9 +194,9 @@ void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
 }
 
 void MediaRouterMojoImpl::OnSinksReceived(
-    const mojo::String& media_source,
-    mojo::Array<interfaces::MediaSinkPtr> sinks,
-    mojo::Array<mojo::String> origins) {
+    const std::string& media_source,
+    std::vector<interfaces::MediaSinkPtr> sinks,
+    const std::vector<std::string>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
   auto it = sinks_queries_.find(media_source);
@@ -214,7 +208,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
   std::vector<GURL> origin_list;
   origin_list.reserve(origins.size());
   for (size_t i = 0; i < origins.size(); ++i) {
-    GURL origin(origins[i].get());
+    GURL origin(origins[i]);
     if (!origin.is_valid()) {
       LOG(WARNING) << "Received invalid origin: " << origin
                    << ". Dropping result.";
@@ -244,9 +238,9 @@ void MediaRouterMojoImpl::OnSinksReceived(
 }
 
 void MediaRouterMojoImpl::OnRoutesUpdated(
-    mojo::Array<interfaces::MediaRoutePtr> routes,
-    const mojo::String& media_source,
-    mojo::Array<mojo::String> joinable_route_ids) {
+    std::vector<interfaces::MediaRoutePtr> routes,
+    const std::string& media_source,
+    const std::vector<std::string>& joinable_route_ids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DVLOG_WITH_INSTANCE(1) << "OnRoutesUpdated";
@@ -260,16 +254,12 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
 
   std::vector<MediaRoute> routes_converted;
   routes_converted.reserve(routes.size());
-
   for (size_t i = 0; i < routes.size(); ++i)
     routes_converted.push_back(routes[i].To<MediaRoute>());
 
-  std::vector<MediaRoute::Id> joinable_routes_converted =
-      joinable_route_ids.To<std::vector<std::string>>();
-
   FOR_EACH_OBSERVER(
       MediaRoutesObserver, it->second->observers,
-      OnRoutesUpdated(routes_converted, joinable_routes_converted));
+      OnRoutesUpdated(routes_converted, joinable_route_ids));
 }
 
 void MediaRouterMojoImpl::RouteResponseReceived(
@@ -277,14 +267,13 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     bool incognito,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     interfaces::MediaRoutePtr media_route,
-    mojo::String error_text,
+    const base::Optional<std::string>& error_text,
     interfaces::RouteRequestResultCode result_code) {
   std::unique_ptr<RouteRequestResult> result;
   if (media_route.is_null()) {
     // An error occurred.
-    DCHECK(!error_text.is_null());
-    std::string error =
-        !error_text.get().empty() ? error_text.get() : "Unknown error.";
+    const std::string& error = (error_text && !error_text->empty())
+        ? *error_text : std::string("Unknown error.");
     result = RouteRequestResult::FromError(
         error, mojo::RouteRequestResultCodeFromMojo(result_code));
   } else if (media_route->incognito != incognito) {
@@ -712,10 +701,7 @@ void MediaRouterMojoImpl::DoSendSessionBinaryMessage(
     std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteBinaryMessage " << route_id;
-  mojo::Array<uint8_t> mojo_array;
-  mojo_array.Swap(data.get());
-  media_route_provider_->SendRouteBinaryMessage(route_id, std::move(mojo_array),
-                                                callback);
+  media_route_provider_->SendRouteBinaryMessage(route_id, *data, callback);
 }
 
 void MediaRouterMojoImpl::DoStartListeningForRouteMessages(
@@ -741,16 +727,15 @@ void MediaRouterMojoImpl::DoSearchSinks(
   sink_search_criteria->input = search_input;
   sink_search_criteria->domain = domain;
   media_route_provider_->SearchSinks(
-      sink_id, source_id, std::move(sink_search_criteria),
-      base::Bind(&ForwardSinkSearchCallback, sink_callback));
+      sink_id, source_id, std::move(sink_search_criteria), sink_callback);
 }
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
-    const mojo::String& route_id,
-    mojo::Array<interfaces::RouteMessagePtr> messages) {
+    const std::string& route_id,
+    std::vector<interfaces::RouteMessagePtr> messages) {
   DVLOG_WITH_INSTANCE(1) << "OnRouteMessagesReceived";
 
-  DCHECK(!messages.storage().empty());
+  DCHECK(!messages.empty());
 
   auto* observer_list = messages_observers_.get(route_id);
   if (!observer_list) {
@@ -796,16 +781,16 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
 }
 
 void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
-    const mojo::String& route_id,
+    const std::string& route_id,
     interfaces::MediaRouter::PresentationConnectionState state) {
   NotifyPresentationConnectionStateChange(
       route_id, mojo::PresentationConnectionStateFromMojo(state));
 }
 
 void MediaRouterMojoImpl::OnPresentationConnectionClosed(
-    const mojo::String& route_id,
+    const std::string& route_id,
     interfaces::MediaRouter::PresentationConnectionCloseReason reason,
-    const mojo::String& message) {
+    const std::string& message) {
   NotifyPresentationConnectionClose(
       route_id, mojo::PresentationConnectionCloseReasonFromMojo(reason),
       message);
@@ -813,11 +798,12 @@ void MediaRouterMojoImpl::OnPresentationConnectionClosed(
 
 void MediaRouterMojoImpl::OnTerminateRouteResult(
     const MediaRoute::Id& route_id,
-    mojo::String error_text,
+    const base::Optional<std::string>& error_text,
     interfaces::RouteRequestResultCode result_code) {
   if (result_code != interfaces::RouteRequestResultCode::OK) {
-    LOG(WARNING) << "Failed to terminate route " << route_id <<
-        ": result_code = " << result_code << ", " << error_text;
+    LOG(WARNING) << "Failed to terminate route " << route_id
+                 << ": result_code = " << result_code << ", "
+                 << error_text.value_or(std::string());
   }
   MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(
       mojo::RouteRequestResultCodeFromMojo(result_code));

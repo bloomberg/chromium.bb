@@ -14,8 +14,8 @@ namespace {
 
 const char kInstanceId[] = "instance123";
 
-template <typename T1, typename T2>
-void ExpectAsyncResultEqual(T1 expected, T2 actual) {
+void ExpectEqualStrings(const std::string& expected,
+                        const std::string& actual) {
   EXPECT_EQ(expected, actual);
 }
 
@@ -50,8 +50,7 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
       &mock_media_route_provider_, mojo::GetProxy(&mojo_media_router)));
   media_router_proxy_->RegisterMediaRouteProvider(
       std::move(mojo_media_router),
-      base::Bind(&ExpectAsyncResultEqual<std::string, mojo::String>,
-                 kInstanceId));
+      base::Bind(&ExpectEqualStrings, kInstanceId));
 }
 
 void MediaRouterMojoTest::SetUp() {

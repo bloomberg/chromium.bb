@@ -81,8 +81,6 @@ mojom("mojo_bindings") {
   sources = [
     "mojo/media_router.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 static_library("test_support") {

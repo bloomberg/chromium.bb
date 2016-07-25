@@ -287,29 +287,30 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
           callback) override;
   void OnIssue(interfaces::IssuePtr issue) override;
-  void OnSinksReceived(const mojo::String& media_source,
-                       mojo::Array<interfaces::MediaSinkPtr> sinks,
-                       mojo::Array<mojo::String> origins) override;
-  void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes,
-                       const mojo::String& media_source,
-                       mojo::Array<mojo::String> joinable_route_ids) override;
+  void OnSinksReceived(const std::string& media_source,
+                       std::vector<interfaces::MediaSinkPtr> sinks,
+                       const std::vector<std::string>& origins) override;
+  void OnRoutesUpdated(
+      std::vector<interfaces::MediaRoutePtr> routes,
+      const std::string& media_source,
+      const std::vector<std::string>& joinable_route_ids) override;
   void OnSinkAvailabilityUpdated(
       interfaces::MediaRouter::SinkAvailability availability) override;
   void OnPresentationConnectionStateChanged(
-      const mojo::String& route_id,
+      const std::string& route_id,
       interfaces::MediaRouter::PresentationConnectionState state) override;
   void OnPresentationConnectionClosed(
-      const mojo::String& route_id,
+      const std::string& route_id,
       interfaces::MediaRouter::PresentationConnectionCloseReason reason,
-      const mojo::String& message) override;
+      const std::string& message) override;
   void OnRouteMessagesReceived(
-      const mojo::String& route_id,
-      mojo::Array<interfaces::RouteMessagePtr> messages) override;
+      const std::string& route_id,
+      std::vector<interfaces::RouteMessagePtr> messages) override;
 
   // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
   // to the ID of the route that was terminated.
   void OnTerminateRouteResult(const MediaRoute::Id& route_id,
-                              mojo::String error_text,
+                              const base::Optional<std::string>& error_text,
                               interfaces::RouteRequestResultCode result_code);
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
@@ -319,7 +320,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       bool incognito,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       interfaces::MediaRoutePtr media_route,
-      mojo::String error_text,
+      const base::Optional<std::string>& error_text,
       interfaces::RouteRequestResultCode result_code);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
