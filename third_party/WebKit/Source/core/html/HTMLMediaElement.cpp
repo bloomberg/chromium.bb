@@ -1639,10 +1639,8 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                     // We might end up in a situation where the previous
                     // observer didn't had time to fire yet. We can avoid
                     // creating a new one in this case.
-                    if (!m_autoplayVisibilityObserver) {
-                        m_autoplayVisibilityObserver = new ElementVisibilityObserver(this, WTF::bind(&HTMLMediaElement::onVisibilityChangedForAutoplay, wrapWeakPersistent(this)));
-                        m_autoplayVisibilityObserver->start();
-                    }
+                    if (!m_autoplayVisibilityObserver)
+                        m_autoplayVisibilityObserver = ElementVisibilityObserver::create(this, this);
                 } else {
                     m_paused = false;
                     invalidateCachedTime();
@@ -3671,8 +3669,8 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_srcObject);
     visitor->trace(m_autoplayVisibilityObserver);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
-    Supplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
+    Supplementable<HTMLMediaElement>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 
@@ -3910,7 +3908,7 @@ void HTMLMediaElement::recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus sta
     autoplayUnmuteHistogram.count(status);
 }
 
-void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible)
+void HTMLMediaElement::onVisibilityChanged(bool isVisible)
 {
     if (!isVisible)
         return;

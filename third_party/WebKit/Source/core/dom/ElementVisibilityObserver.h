@@ -5,44 +5,51 @@
 #ifndef ElementVisibilityObserver_h
 #define ElementVisibilityObserver_h
 
-#include "core/dom/IntersectionObserver.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/Member.h"
+#include "core/CoreExport.h"
+#include "core/dom/IntersectionObserverCallback.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
 class Element;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 
 // ElementVisibilityObserver is a helper class to be used to track the
-// visibility of an Element in the viewport. Creating an
-// ElementVisibilityObserver is a no-op with regards to CPU cycle. The observing
-// has be started by calling |start()| and can be stopped with |stop()|.
-// When creating an instance, the caller will have to pass a callback taking
-// a boolean as an argument. The boolean will be the new visibility state.
-// The ElementVisibilityObserver is implemented on top of IntersectionObserver.
-// It is a layer meant to simplify the usage for C++ Blink code checking for the
-// visibility of an element.
-class ElementVisibilityObserver final : public GarbageCollectedFinalized<ElementVisibilityObserver> {
+// visibility of an Element in the viewport; it is implemented on top of
+// IntersectionObserver.
+//
+// When creating an ElementVisibilityObserver instance, alongside the element
+// reference, the caller will have to supply an object reference implementing
+// the |Client| interface and its |onVisibilityChanged| method. The callback
+// method will be invoked when the element changes visibility state,
+// the boolean argument indicating which.
+class ElementVisibilityObserver final : public IntersectionObserverCallback {
     WTF_MAKE_NONCOPYABLE(ElementVisibilityObserver);
 public:
-    using VisibilityCallback = Function<void(bool), WTF::SameThreadAffinity>;
+    class CORE_EXPORT Client : public GarbageCollectedMixin {
+    public:
+        virtual void onVisibilityChanged(bool isVisible) = 0;
+        virtual ExecutionContext* getElementVisibilityExecutionContext() const = 0;
+    };
 
-    ElementVisibilityObserver(Element*, std::unique_ptr<VisibilityCallback>);
-    virtual ~ElementVisibilityObserver();
-
-    void start();
-    void stop();
-
+    static ElementVisibilityObserver* create(Element*, Client*);
+    ~ElementVisibilityObserver();
     DECLARE_VIRTUAL_TRACE();
 
+    void stop();
+
+    // IntersectionObserverCallback implementation:
+    void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&, IntersectionObserver&) override;
+    ExecutionContext* getExecutionContext() const override;
+
 private:
-    class ElementVisibilityCallback;
+    explicit ElementVisibilityObserver(Client*);
 
-    void onVisibilityChanged(const HeapVector<Member<IntersectionObserverEntry>>&);
+    void start(Element*);
 
-    Member<Element> m_element;
+    Member<Client> m_client;
     Member<IntersectionObserver> m_intersectionObserver;
-    std::unique_ptr<VisibilityCallback> m_callback;
 };
 
 } // namespace blink

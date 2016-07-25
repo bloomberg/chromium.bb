@@ -30,6 +30,7 @@ public:
     using EventCallback = Function<void(const HeapVector<Member<IntersectionObserverEntry>>&), WTF::SameThreadAffinity>;
 
     static IntersectionObserver* create(const IntersectionObserverInit&, IntersectionObserverCallback&, ExceptionState&);
+    // TODO(sof): unused, consider retiring?
     static IntersectionObserver* create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document*, std::unique_ptr<EventCallback>);
     static void resumeSuspendedObservers();
 
