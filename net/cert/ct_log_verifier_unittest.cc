@@ -140,10 +140,11 @@ class CTLogVerifierTest : public ::testing::Test {
 
   void SetUp() override {
     log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog",
-                                 "https://ct.example.com");
+                                 "https://ct.example.com", "ct.example.com");
 
     ASSERT_TRUE(log_);
-    ASSERT_EQ(log_->key_id(), ct::GetTestPublicKeyId());
+    ASSERT_EQ(ct::GetTestPublicKeyId(), log_->key_id());
+    ASSERT_EQ("ct.example.com", log_->dns_domain());
   }
 
   // Given a consistency proof between two snapshots of the tree, asserts that
@@ -317,8 +318,8 @@ TEST_F(CTLogVerifierTest, ExcessDataInPublicKey) {
   std::string key = ct::GetTestPublicKey();
   key += "extra";
 
-  scoped_refptr<const CTLogVerifier> log =
-      CTLogVerifier::Create(key, "testlog", "https://ct.example.com");
+  scoped_refptr<const CTLogVerifier> log = CTLogVerifier::Create(
+      key, "testlog", "https://ct.example.com", "ct.example.com");
   EXPECT_FALSE(log);
 }
 

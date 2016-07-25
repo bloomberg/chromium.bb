@@ -103,13 +103,17 @@ const char kBypassAppBannerEngagementChecks[] =
 // Certificate Transparency: Uses the provided log(s) for checking Signed
 // Certificate Timestamps provided with certificates.
 // The switch's value is:
-//   log_description:log_key:log_url,log_description:log_key:log_url,...
+//   log_description:log_key:log_url[:log_dns_domain],
+//   log_description:log_key:log_url[:log_dns_domain],...
 // where
 //   log_description is a textual description of the log.
 //   log_key is a Base64'd DER-encoded SubjectPublicKeyInfo of the log's
 //   public key.
 //   log_url is a URL for the log, excluding the schema (which is always
 //   assumed to be HTTPS as required by RFC6962).
+//   log_dns_domain is the domain name to use for DNS queries requesting
+//   inclusion proofs (as per
+//   https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md).
 // Multiple logs can be specified by repeating description:key pairs,
 // separated by a comma.
 const char kCertificateTransparencyLog[]    = "certificate-transparency-log";

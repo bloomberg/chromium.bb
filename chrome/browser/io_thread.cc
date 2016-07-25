@@ -548,15 +548,18 @@ void IOThread::Init() {
           curr_log, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       CHECK_GE(log_metadata.size(), 3u)
           << "CT log metadata missing: Switch format is "
-          << "'description:base64_key:url_without_schema'.";
+          << "'description:base64_key:url_without_schema[:dns_domain]'.";
       std::string log_description(log_metadata[0]);
       std::string log_url(std::string("https://") + log_metadata[2]);
+      std::string log_dns_domain;
+      if (log_metadata.size() >= 4)
+        log_dns_domain = log_metadata[3];
       std::string ct_public_key_data;
       CHECK(base::Base64Decode(log_metadata[1], &ct_public_key_data))
           << "Unable to decode CT public key.";
       scoped_refptr<const net::CTLogVerifier> external_log_verifier(
           net::CTLogVerifier::Create(ct_public_key_data, log_description,
-                                     log_url));
+                                     log_url, log_dns_domain));
       CHECK(external_log_verifier) << "Unable to parse CT public key.";
       VLOG(1) << "Adding log with description " << log_description;
       ct_logs.push_back(external_log_verifier);

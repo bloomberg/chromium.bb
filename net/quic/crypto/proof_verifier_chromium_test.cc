@@ -118,8 +118,9 @@ class ProofVerifierChromiumTest : public ::testing::Test {
         .WillRepeatedly(
             Return(ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY));
 
-    scoped_refptr<const CTLogVerifier> log(CTLogVerifier::Create(
-        ct::GetTestPublicKey(), kLogDescription, "https://test.example.com"));
+    scoped_refptr<const CTLogVerifier> log(
+        CTLogVerifier::Create(ct::GetTestPublicKey(), kLogDescription,
+                              "https://test.example.com", ""));
     ASSERT_TRUE(log);
     log_verifiers_.push_back(log);
 
