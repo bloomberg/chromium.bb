@@ -78,6 +78,12 @@
       <structure name="IDR_SETTINGS_ANIMATION_ANIMATION_JS"
                  file="animation/animation.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_ANIMATION_ANIMATION_GROUP_HTML"
+                 file="animation/animation_group.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_ANIMATION_ANIMATION_GROUP_JS"
+                 file="animation/animation_group.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ANIMATED_PAGES_HTML"
                  file="settings_page/settings_animated_pages.html"
                  type="chrome_html" />

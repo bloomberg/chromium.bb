@@ -130,7 +130,7 @@ TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
 
         animation.cancel();
 
-        // The promise should resolve before the finish event is scheduled.
+        // The promise should be rejected before the cancel event is scheduled.
         animation.finished.catch(function() {
           expectEquals(0, div.clientHeight);
           animation.removeEventListener('cancel', onCancelUnexpectedly);

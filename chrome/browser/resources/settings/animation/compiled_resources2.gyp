@@ -12,5 +12,12 @@
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'animation_group',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }
