@@ -136,9 +136,6 @@ crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download
 crbug.com/518989 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
 crbug.com/518998 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
-crbug.com/630695 fast/images/sprite-no-bleed.html [ NeedsRebaseline ]
-crbug.com/630695 virtual/gpu-rasterization/fast/images/sprite-no-bleed.html [ NeedsRebaseline ]
-
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
 # See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
 crbug.com/567965 [ Debug ] imported/wpt/user-timing/test_user_timing_measure.html [ Skip ]
