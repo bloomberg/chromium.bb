@@ -348,5 +348,26 @@ TEST_P(ConnectionTest, VideoWithSlowSignaling) {
   WaitFirstVideoFrame();
 }
 
+TEST_P(ConnectionTest, DestroyOnIncomingMessage) {
+  Connect();
+
+  KeyEvent event;
+  event.set_usb_keycode(3);
+  event.set_pressed(true);
+
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(host_event_handler_,
+              OnInputEventReceived(host_connection_.get(), _));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(event)))
+      .WillOnce(DoAll(InvokeWithoutArgs(this, &ConnectionTest::DestroyHost),
+                      QuitRunLoop(&run_loop)));
+
+  // Send key event from the client.
+  client_connection_->input_stub()->InjectKeyEvent(event);
+
+  run_loop.Run();
+}
+
 }  // namespace protocol
 }  // namespace remoting

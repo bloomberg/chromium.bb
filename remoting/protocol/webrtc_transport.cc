@@ -135,8 +135,88 @@ class SetSessionDescriptionObserver
   DISALLOW_COPY_AND_ASSIGN(SetSessionDescriptionObserver);
 };
 
-
 }  // namespace
+
+class WebrtcTransport::PeerConnectionWrapper
+    : public webrtc::PeerConnectionObserver {
+ public:
+  PeerConnectionWrapper(
+      rtc::Thread* worker_thread,
+      std::unique_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory,
+      std::unique_ptr<cricket::PortAllocator> port_allocator,
+      base::WeakPtr<WebrtcTransport> transport)
+      : transport_(transport) {
+    peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
+        worker_thread, rtc::Thread::Current(), &fake_audio_device_module_,
+        encoder_factory.release(), nullptr);
+
+    webrtc::FakeConstraints constraints;
+    constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
+                             webrtc::MediaConstraintsInterface::kValueTrue);
+    peer_connection_ = peer_connection_factory_->CreatePeerConnection(
+        webrtc::PeerConnectionInterface::RTCConfiguration(), &constraints,
+        std::move(port_allocator), nullptr, this);
+  }
+  virtual ~PeerConnectionWrapper() { peer_connection_->Close(); }
+
+  webrtc::PeerConnectionInterface* peer_connection() {
+    return peer_connection_.get();
+  }
+
+  webrtc::PeerConnectionFactoryInterface* peer_connection_factory() {
+    return peer_connection_factory_.get();
+  }
+
+  // webrtc::PeerConnectionObserver interface.
+  void OnSignalingChange(
+      webrtc::PeerConnectionInterface::SignalingState new_state) override {
+    if (transport_)
+      transport_->OnSignalingChange(new_state);
+  }
+  void OnAddStream(
+      rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override {
+    if (transport_)
+      transport_->OnAddStream(stream);
+  }
+  void OnRemoveStream(
+      rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override {
+    if (transport_)
+      transport_->OnRemoveStream(stream);
+  }
+  void OnDataChannel(
+      rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) override {
+    if (transport_)
+      transport_->OnDataChannel(data_channel);
+  }
+  void OnRenegotiationNeeded() override {
+    if (transport_)
+      transport_->OnRenegotiationNeeded();
+  }
+  void OnIceConnectionChange(
+      webrtc::PeerConnectionInterface::IceConnectionState new_state) override {
+    if (transport_)
+      transport_->OnIceConnectionChange(new_state);
+  }
+  void OnIceGatheringChange(
+      webrtc::PeerConnectionInterface::IceGatheringState new_state) override {
+    if (transport_)
+      transport_->OnIceGatheringChange(new_state);
+  }
+  void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override {
+    if (transport_)
+      transport_->OnIceCandidate(candidate);
+  }
+
+ private:
+  webrtc::FakeAudioDeviceModule fake_audio_device_module_;
+  scoped_refptr<webrtc::PeerConnectionFactoryInterface>
+      peer_connection_factory_;
+  scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
+
+  base::WeakPtr<WebrtcTransport> transport_;
+
+  DISALLOW_COPY_AND_ASSIGN(PeerConnectionWrapper);
+};
 
 WebrtcTransport::WebrtcTransport(
     rtc::Thread* worker_thread,
@@ -150,14 +230,28 @@ WebrtcTransport::WebrtcTransport(
   transport_context_->set_relay_mode(TransportContext::RelayMode::TURN);
 }
 
-WebrtcTransport::~WebrtcTransport() {}
+WebrtcTransport::~WebrtcTransport() {
+  Close(OK);
+}
+
+webrtc::PeerConnectionInterface* WebrtcTransport::peer_connection() {
+  return peer_connection_wrapper_ ? peer_connection_wrapper_->peer_connection()
+                                  : nullptr;
+}
+
+webrtc::PeerConnectionFactoryInterface*
+WebrtcTransport::peer_connection_factory() {
+  return peer_connection_wrapper_
+             ? peer_connection_wrapper_->peer_connection_factory()
+             : nullptr;
+}
 
 std::unique_ptr<MessagePipe> WebrtcTransport::CreateOutgoingChannel(
     const std::string& name) {
   webrtc::DataChannelInit config;
   config.reliable = true;
   return base::WrapUnique(new WebrtcDataStreamAdapter(
-      peer_connection_->CreateDataChannel(name, &config)));
+      peer_connection()->CreateDataChannel(name, &config)));
 }
 
 void WebrtcTransport::Start(
@@ -177,28 +271,15 @@ void WebrtcTransport::Start(
     LOG(FATAL) << "HMAC::Init() failed.";
   }
 
-  fake_audio_device_module_.reset(new webrtc::FakeAudioDeviceModule());
   video_encoder_factory_ = new remoting::WebrtcVideoEncoderFactory();
-
-  // Takes ownership of video_encoder_factory_
-  peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-      worker_thread_, rtc::Thread::Current(), fake_audio_device_module_.get(),
-      video_encoder_factory_, nullptr);
-
-  webrtc::PeerConnectionInterface::IceServer stun_server;
-  stun_server.urls.push_back("stun:stun.l.google.com:19302");
-  webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
-  rtc_config.servers.push_back(stun_server);
-
-  webrtc::FakeConstraints constraints;
-  constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-                           webrtc::MediaConstraintsInterface::kValueTrue);
-
   std::unique_ptr<cricket::PortAllocator> port_allocator =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
           transport_context_);
-  peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      rtc_config, &constraints, std::move(port_allocator), nullptr, this);
+
+  // Takes ownership of video_encoder_factory_.
+  peer_connection_wrapper_.reset(new PeerConnectionWrapper(
+      worker_thread_, base::WrapUnique(video_encoder_factory_),
+      std::move(port_allocator), weak_factory_.GetWeakPtr()));
 
   event_handler_->OnWebrtcTransportConnecting();
 
@@ -212,7 +293,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
   if (transport_info->Name() != QName(kTransportNamespace, "transport"))
     return false;
 
-  if (!peer_connection_)
+  if (!peer_connection())
     return false;
 
   XmlElement* session_description = transport_info->FirstNamed(
@@ -222,7 +303,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
         transport_context_->role() == TransportRole::CLIENT
             ? webrtc::PeerConnectionInterface::kStable
             : webrtc::PeerConnectionInterface::kHaveLocalOffer;
-    if (peer_connection_->signaling_state() != expected_state) {
+    if (peer_connection()->signaling_state() != expected_state) {
       LOG(ERROR) << "Received unexpected WebRTC session_description.";
       return false;
     }
@@ -279,7 +360,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
       return false;
     }
 
-    peer_connection_->SetRemoteDescription(
+    peer_connection()->SetRemoteDescription(
         SetSessionDescriptionObserver::Create(
             base::Bind(&WebrtcTransport::OnRemoteDescriptionSet,
                        weak_factory_.GetWeakPtr(),
@@ -314,9 +395,9 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
       return false;
     }
 
-    if (peer_connection_->signaling_state() ==
+    if (peer_connection()->signaling_state() ==
         webrtc::PeerConnectionInterface::kStable) {
-      if (!peer_connection_->AddIceCandidate(candidate.get())) {
+      if (!peer_connection()->AddIceCandidate(candidate.get())) {
         LOG(ERROR) << "Failed to add incoming ICE candidate.";
         return false;
       }
@@ -333,7 +414,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
     const std::string& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!peer_connection_)
+  if (!peer_connection())
     return;
 
   if (!description) {
@@ -370,7 +451,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
 
   send_transport_info_callback_.Run(std::move(transport_info));
 
-  peer_connection_->SetLocalDescription(
+  peer_connection()->SetLocalDescription(
       SetSessionDescriptionObserver::Create(base::Bind(
           &WebrtcTransport::OnLocalDescriptionSet, weak_factory_.GetWeakPtr())),
       description.release());
@@ -380,7 +461,7 @@ void WebrtcTransport::OnLocalDescriptionSet(bool success,
                                             const std::string& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!peer_connection_)
+  if (!peer_connection())
     return;
 
   if (!success) {
@@ -397,7 +478,7 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
                                              const std::string& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!peer_connection_)
+  if (!peer_connection())
     return;
 
   if (!success) {
@@ -408,7 +489,7 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
 
   // Create and send answer on the server.
   if (send_answer) {
-    peer_connection_->CreateAnswer(
+    peer_connection()->CreateAnswer(
         CreateSessionDescriptionObserver::Create(
             base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
                        weak_factory_.GetWeakPtr())),
@@ -538,7 +619,7 @@ void WebrtcTransport::SendOffer() {
       webrtc::MediaConstraintsInterface::kValueFalse);
   offer_config.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                             webrtc::MediaConstraintsInterface::kValueTrue);
-  peer_connection_->CreateOffer(
+  peer_connection()->CreateOffer(
       CreateSessionDescriptionObserver::Create(
           base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
                      weak_factory_.GetWeakPtr())),
@@ -555,10 +636,10 @@ void WebrtcTransport::SendTransportInfo() {
 void WebrtcTransport::AddPendingCandidatesIfPossible() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (peer_connection_->signaling_state() ==
+  if (peer_connection()->signaling_state() ==
       webrtc::PeerConnectionInterface::kStable) {
     for (auto* candidate : pending_incoming_candidates_) {
-      if (!peer_connection_->AddIceCandidate(candidate)) {
+      if (!peer_connection()->AddIceCandidate(candidate)) {
         LOG(ERROR) << "Failed to add incoming candidate";
         Close(INCOMPATIBLE_PROTOCOL);
         return;
@@ -570,14 +651,15 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 
 void WebrtcTransport::Close(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!peer_connection_)
+  if (!peer_connection_wrapper_)
     return;
 
   weak_factory_.InvalidateWeakPtrs();
 
-  peer_connection_->Close();
-  peer_connection_ = nullptr;
-  peer_connection_factory_ = nullptr;
+  // Close and delete PeerConnection asynchronously. PeerConnection may be on
+  // the stack and so it must be destroyed later.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, peer_connection_wrapper_.release());
 
   if (error != OK)
     event_handler_->OnWebrtcTransportError(error);

@@ -22,7 +22,7 @@ namespace protocol {
 
 WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel)
-    : channel_(channel) {
+    : channel_(channel.get()) {
   channel_->RegisterObserver(this);
   DCHECK_EQ(channel_->state(), webrtc::DataChannelInterface::kConnecting);
 }
@@ -31,6 +31,11 @@ WebrtcDataStreamAdapter::~WebrtcDataStreamAdapter() {
   if (channel_) {
     channel_->UnregisterObserver();
     channel_->Close();
+
+    // Destroy |channel_| asynchronously as it may be on stack.
+    channel_->AddRef();
+    base::ThreadTaskRunnerHandle::Get()->ReleaseSoon(FROM_HERE, channel_.get());
+    channel_ = nullptr;
   }
 }
 
