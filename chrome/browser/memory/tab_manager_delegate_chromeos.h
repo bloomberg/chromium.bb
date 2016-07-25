@@ -11,6 +11,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,47 +29,19 @@
 
 namespace memory {
 
-// The importance of tabs/apps. The lower the value, the more likely a process
-// is to be selected on memory pressure. The values is additive, for example,
-// one tab could be of value (CHROME_NORMAL | CHROME_PINNED).
-// TODO(cylee): Refactor this CL so the prioritize logic is unified in
-// TabManager.
-enum ProcessPriority {
-  // Processes on Android side which generally don't have an app window, and
-  // possibly be auto relaunched if killed.
-  ANDROID_BACKGROUND = 1,
-  ANDROID_SERVICE = 1 << 1,
-  ANDROID_CANT_SAVE_STATE = 1 << 2,
-  ANDROID_PERCEPTIBLE = 1 << 3,
-  ANDROID_VISIBLE = 1 << 4,
-  ANDROID_TOP_SLEEPING = 1 << 5,
-  ANDROID_FOREGROUND_SERVICE = 1 << 6,
-  ANDROID_FOREGROUND = 1 << 7,
-  // A chrome window can be one of the 3 exclusive types below:
-  // internal page, normal page, or chrome app.
-  CHROME_INTERNAL = 1 << 8,
-  CHROME_NORMAL = 1 << 9,
-  CHROME_APP = 1 << 10,
-  // An android app which is on top of screen from Android's point of view,
-  // but the app window is inactive from Chrome OS's point of view.
-  // Give it a higher priority then normal chrome tab since it could not be
-  // reloaded if killed.
-  ANDROID_TOP_INACTIVE = CHROME_APP,
-  // A chrome tab could have following 3 additional attributes
-  // (not exclusive).
-  CHROME_PINNED = 1 << 11,
-  CHROME_MEDIA = 1 << 12,
-  CHROME_CANT_SAVE_STATE = 1 << 13,
-  // The highest level of priority. Either a selected tab or an Android app in
-  // an active window. In theory there should be at most one process with this
-  // priority at a time, but at the time of writing Chrome couldn't get Android
-  // window stack info yet so there may be multiple Android apps be token as on
-  // top of screen for now.
-  CHROME_SELECTED = 1 << 14,
-  ANDROID_TOP = CHROME_SELECTED,
+// Possible types of Apps/Tabs processes. From most important to least
+// important.
+enum class ProcessType {
+  // There can be only one process having process type "FOCUSED_APP"
+  // or "FOCUSED_TAB" in the system at any give time (i.e., The focused window
+  // could be either a chrome window or an Android app. But not both.
+  FOCUSED_APP = 1,
+  FOCUSED_TAB = FOCUSED_APP,
 
-  ANDROID_PERSISTENT = 1 << 30,
-  ANDROID_NON_EXISTS = 0x7FFFFFFF
+  VISIBLE_APP = 2,
+  BACKGROUND_TAB = 3,
+  BACKGROUND_APP = 4,
+  UNKNOWN_TYPE = 5,
 };
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
@@ -134,7 +108,7 @@ class TabManagerDelegate
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
 
-  struct Candidate;
+  class Candidate;
   class FocusedProcess;
   class UmaReporter;
 
@@ -152,7 +126,7 @@ class TabManagerDelegate
   // Cache OOM scores in memory.
   typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
 
-  // Get the list of candidates to kill, sorted by reversed importance.
+  // Get the list of candidates to kill, sorted by descending importance.
   static std::vector<Candidate> GetSortedCandidates(
       const TabStatsList& tab_list,
       const std::vector<arc::ArcProcess>& arc_processes);
@@ -190,8 +164,8 @@ class TabManagerDelegate
   // distributed evenly in [|range_begin|, |range_end|).
   // The new score is set in |new_map|.
   void DistributeOomScoreInRange(
-      std::vector<TabManagerDelegate::Candidate>::reverse_iterator rbegin,
-      std::vector<TabManagerDelegate::Candidate>::reverse_iterator rend,
+      std::vector<TabManagerDelegate::Candidate>::const_iterator begin,
+      std::vector<TabManagerDelegate::Candidate>::const_iterator end,
       int range_begin,
       int range_end,
       ProcessScoreMap* new_map);
@@ -236,23 +210,39 @@ class TabManagerDelegate
 };
 
 // On ARC enabled machines, either a tab or an app could be a possible
-// victim of low memory kill process. This is a helper struct which holds a
+// victim of low memory kill process. This is a helper class which holds a
 // pointer to an app or a tab (but not both) to facilitate prioritizing the
 // victims.
-struct TabManagerDelegate::Candidate {
-  Candidate(const TabStats* _tab, int _priority)
-      : tab(_tab), priority(_priority), is_arc_app(false) {}
-  Candidate(const arc::ArcProcess* _app, int _priority)
-      : app(_app), priority(_priority), is_arc_app(true) {}
+class TabManagerDelegate::Candidate {
+ public:
+  explicit Candidate(const TabStats* tab)
+      : tab_(tab), app_(nullptr), process_type_(GetProcessTypeInternal()) {
+    DCHECK(tab_);
+  }
+  explicit Candidate(const arc::ArcProcess* app)
+      : tab_(nullptr), app_(app), process_type_(GetProcessTypeInternal()) {
+    DCHECK(app_);
+  }
 
-  bool operator<(const Candidate& rhs) const { return priority < rhs.priority; }
+  // Move-only class.
+  Candidate(Candidate&&) = default;
+  Candidate& operator=(Candidate&& other);
 
-  union {
-    const TabStats* tab;
-    const arc::ArcProcess* app;
-  };
-  int priority;
-  bool is_arc_app;
+  // Higher priority first.
+  bool operator<(const Candidate& rhs) const;
+
+  const TabStats* tab() const { return tab_; }
+  const arc::ArcProcess* app() const { return app_; }
+  ProcessType process_type() const { return process_type_; }
+
+ private:
+  // Derive process type for this candidate. Used to initialize |process_type_|.
+  ProcessType GetProcessTypeInternal() const;
+
+  const TabStats* tab_;
+  const arc::ArcProcess* app_;
+  ProcessType process_type_;
+  DISALLOW_COPY_AND_ASSIGN(Candidate);
 };
 
 // A thin wrapper over library process_metric.h to get memory status so unit

@@ -124,7 +124,6 @@ class TabManager : public TabStripModelObserver {
   // thread.
   TabStatsList GetUnsortedTabStats();
 
-  // Add/remove observers.
   void AddObserver(TabManagerObserver* observer);
   void RemoveObserver(TabManagerObserver* observer);
 
@@ -137,6 +136,10 @@ class TabManager : public TabStripModelObserver {
 
   // Sets/clears the auto-discardable state of the tab.
   void SetTabAutoDiscardableState(content::WebContents* contents, bool state);
+
+  // Returns true if |first| is considered less desirable to be killed than
+  // |second|.
+  static bool CompareTabStats(const TabStats& first, const TabStats& second);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
@@ -259,10 +262,6 @@ class TabManager : public TabStripModelObserver {
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
   WebContentsData* GetWebContentsData(content::WebContents* contents) const;
-
-  // Returns true if |first| is considered less desirable to be killed than
-  // |second|.
-  static bool CompareTabStats(TabStats first, TabStats second);
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|
   // for more details.

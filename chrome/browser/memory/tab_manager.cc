@@ -727,7 +727,8 @@ TabManager::WebContentsData* TabManager::GetWebContentsData(
 }
 
 // static
-bool TabManager::CompareTabStats(TabStats first, TabStats second) {
+bool TabManager::CompareTabStats(const TabStats& first,
+                                 const TabStats& second) {
   // Being currently selected is most important to protect.
   if (first.is_selected != second.is_selected)
     return first.is_selected;

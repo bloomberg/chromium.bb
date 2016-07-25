@@ -28,52 +28,23 @@
 
 namespace memory {
 
+using TabManagerDelegateTest = testing::Test;
+
 namespace {
-
-const char kExoShellSurfaceWindowName[] = "ExoShellSurface";
-const char kArcProcessNamePrefix[] = "org.chromium.arc.";
-
+constexpr bool kIsFocused = true;
+constexpr bool kNotFocused = false;
 }  // namespace
-
-class TabManagerDelegateTest : public ash::test::AshTestBase {
- public:
-  TabManagerDelegateTest() : application_id_(kArcProcessNamePrefix) {}
-  ~TabManagerDelegateTest() override {}
-
-  void SetUp() override {
-    AshTestBase::SetUp();
-
-    arc_window_ = CreateTestWindowInShellWithId(0);
-    arc_window_->SetName(kExoShellSurfaceWindowName);
-    exo::ShellSurface::SetApplicationId(arc_window_,
-                                        &application_id_);
-  }
-
- protected:
-  void ActivateArcWindow() {
-    GetActivationClient()->ActivateWindow(arc_window_);
-  }
-  void DeactivateArcWindow() {
-    GetActivationClient()->DeactivateWindow(arc_window_);
-  }
-
- private:
-  aura::client::ActivationClient* GetActivationClient() {
-    return aura::client::GetActivationClient(
-        ash::Shell::GetPrimaryRootWindow());
-  }
-
-  aura::Window* arc_window_;
-  std::string application_id_;
-};
 
 TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "top", arc::mojom::ProcessState::TOP);
-  arc_processes.emplace_back(2, 20, "foreground",
-                             arc::mojom::ProcessState::FOREGROUND_SERVICE);
-  arc_processes.emplace_back(3, 30, "service",
-                             arc::mojom::ProcessState::SERVICE);
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
+                             kIsFocused, 100);
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 200);
+  arc_processes.emplace_back(
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "visible2", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 150);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.tab_contents_id = 100;
@@ -97,55 +68,28 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
 
   std::vector<TabManagerDelegate::Candidate> candidates;
 
-  // Case 1: ARC window in the foreground.
-  ActivateArcWindow();
   candidates = TabManagerDelegate::GetSortedCandidates(
           tab_list, arc_processes);
-  EXPECT_EQ(8U, candidates.size());
+  EXPECT_EQ(9U, candidates.size());
 
-  EXPECT_EQ("service", candidates[0].app->process_name());
-  EXPECT_EQ("foreground", candidates[1].app->process_name());
-  // internal page.
-  EXPECT_EQ(200, candidates[2].tab->tab_contents_id);
+  // focused app.
+  EXPECT_EQ("focused", candidates[0].app()->process_name());
+  // visible app 1, last_activity_time larger than visible app 2.
+  EXPECT_EQ("visible1", candidates[1].app()->process_name());
+  // visible app 2, last_activity_time less than visible app 1.
+  EXPECT_EQ("visible2", candidates[2].app()->process_name());
+  // pinned and media.
+  EXPECT_EQ(300, candidates[3].tab()->tab_contents_id);
+  // media.
+  EXPECT_EQ(400, candidates[4].tab()->tab_contents_id);
+  // pinned.
+  EXPECT_EQ(100, candidates[5].tab()->tab_contents_id);
   // chrome app.
-  EXPECT_EQ(500, candidates[3].tab->tab_contents_id);
-  // pinned.
-  EXPECT_EQ(100, candidates[4].tab->tab_contents_id);
-  // media.
-  EXPECT_EQ(400, candidates[5].tab->tab_contents_id);
-  // pinned and media.
-  EXPECT_EQ(300, candidates[6].tab->tab_contents_id);
-  // ARC window is the active window, so top app has highest priority.
-  EXPECT_EQ("top", candidates[7].app->process_name());
-
-  // Case 2: ARC window in the background.
-  DeactivateArcWindow();
-  candidates = TabManagerDelegate::GetSortedCandidates(
-          tab_list, arc_processes);
-  EXPECT_EQ(8U, candidates.size());
-
-  EXPECT_EQ("service", candidates[0].app->process_name());
-  EXPECT_EQ("foreground", candidates[1].app->process_name());
+  EXPECT_EQ(500, candidates[6].tab()->tab_contents_id);
   // internal page.
-  EXPECT_EQ(200, candidates[2].tab->tab_contents_id);
-
-  // Chrome app and android app are tied, so both orders are correct.
-  if (candidates[3].is_arc_app) {
-    EXPECT_EQ("top", candidates[3].app->process_name());
-    // chrome app.
-    EXPECT_EQ(500, candidates[4].tab->tab_contents_id);
-  } else {
-    // chrome app.
-    EXPECT_EQ(500, candidates[3].tab->tab_contents_id);
-    EXPECT_EQ("top", candidates[4].app->process_name());
-  }
-
-  // pinned.
-  EXPECT_EQ(100, candidates[5].tab->tab_contents_id);
-  // media.
-  EXPECT_EQ(400, candidates[6].tab->tab_contents_id);
-  // pinned and media.
-  EXPECT_EQ(300, candidates[7].tab->tab_contents_id);
+  EXPECT_EQ(200, candidates[7].tab()->tab_contents_id);
+  // background service.
+  EXPECT_EQ("service", candidates[8].app()->process_name());
 }
 
 class MockTabManagerDelegate : public TabManagerDelegate {
@@ -226,13 +170,15 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   arc::FakeArcBridgeService fake_arc_bridge_service;
   MockTabManagerDelegate tab_manager_delegate;
 
-  ActivateArcWindow();
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "top", arc::mojom::ProcessState::TOP);
-  arc_processes.emplace_back(2, 20, "foreground",
-                             arc::mojom::ProcessState::FOREGROUND_SERVICE);
-  arc_processes.emplace_back(3, 30, "service",
-                             arc::mojom::ProcessState::SERVICE);
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
+                             kIsFocused, 100);
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 200);
+  arc_processes.emplace_back(
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "visible2", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 150);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;
@@ -253,27 +199,29 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   TabStatsList tab_list = {tab1, tab2, tab3, tab4, tab5};
 
   // Sorted order:
-  // app "service"     pid: 30  oom_socre_adj: 825
-  // app "foreground"  pid: 20  oom_score_adj: 650
-  // tab2              pid: 11  oom_socre_adj: 417
-  // tab5              pid: 12  oom_score_adj: 358
-  // tab1              pid: 11  oom_socre_adj: 417
-  // tab4              pid: 12  oom_socre_adj: 358
-  // tab3              pid: 12  oom_score_adj: 358
-  // app "top"         pid: 10  oom_score_adj: 300
+  // app "focused"     pid: 10
+  // app "visible1"    pid: 20
+  // app "visible2"    pid: 40
+  // tab3              pid: 12
+  // tab4              pid: 12
+  // tab1              pid: 11
+  // tab5              pid: 12
+  // tab2              pid: 11
+  // app "service"     pid: 30
   tab_manager_delegate.AdjustOomPrioritiesImpl(tab_list, arc_processes);
   auto& oom_score_map = tab_manager_delegate.oom_score_map_;
 
-  EXPECT_EQ(5U, oom_score_map.size());
+  EXPECT_EQ(6U, oom_score_map.size());
 
   // Higher priority part.
   EXPECT_EQ(300, oom_score_map[10]);
-  EXPECT_EQ(358, oom_score_map[12]);
-  EXPECT_EQ(417, oom_score_map[11]);
+  EXPECT_EQ(344, oom_score_map[20]);
+  EXPECT_EQ(388, oom_score_map[40]);
+  EXPECT_EQ(431, oom_score_map[12]);
+  EXPECT_EQ(475, oom_score_map[11]);
 
   // Lower priority part.
-  EXPECT_EQ(650, oom_score_map[20]);
-  EXPECT_EQ(825, oom_score_map[30]);
+  EXPECT_EQ(650, oom_score_map[30]);
 }
 
 TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
@@ -285,14 +233,15 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // Instantiate the mock instance.
   MockTabManagerDelegate tab_manager_delegate(memory_stat);
 
-  ActivateArcWindow();
-
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(10001, 100, "top", arc::mojom::ProcessState::TOP);
-  arc_processes.emplace_back(10002, 200, "foreground",
-                             arc::mojom::ProcessState::FOREGROUND_SERVICE);
-  arc_processes.emplace_back(10003, 300, "service",
-                             arc::mojom::ProcessState::SERVICE);
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
+                             kIsFocused, 100);
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 200);
+  arc_processes.emplace_back(
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "visible2", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 150);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;
@@ -318,36 +267,40 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   TabStatsList tab_list = {tab1, tab2, tab3, tab4, tab5};
 
   // Sorted order:
-  // app "service"     pid: 30
-  // app "foreground"  pid: 20
-  // tab2              pid: 11
-  // tab5              pid: 12
-  // tab1              pid: 11
-  // tab4              pid: 12
-  // tab3              pid: 12
-  // app "top"         pid: 10
+  // app "focused"     pid: 10  nspid 1
+  // app "visible1"    pid: 20  nspid 2
+  // app "visible2"    pid: 40  nspid 4
+  // tab3              pid: 12  tab_contents_id 3
+  // tab4              pid: 12  tab_contents_id 4
+  // tab1              pid: 11  tab_contents_id 1
+  // tab5              pid: 12  tab_contents_id 5
+  // tab2              pid: 11  tab_contents_id 2
+  // app "service"     pid: 30  nspid 3
   memory_stat->SetTargetMemoryToFreeKB(250000);
-  // The 3 entities to be killed.
-  memory_stat->SetProcessPss(300, 10000);
-  memory_stat->SetProcessPss(200, 200000);
-  memory_stat->SetProcessPss(11, 50000);
+  // Entities to be killed.
+  memory_stat->SetProcessPss(30, 10000);
+  memory_stat->SetProcessPss(11, 200000);
+  memory_stat->SetProcessPss(12, 30000);
   // Should not be used.
-  memory_stat->SetProcessPss(100, 30000);
-  memory_stat->SetProcessPss(12, 100000);
+  memory_stat->SetProcessPss(40, 50000);
+  memory_stat->SetProcessPss(20, 30000);
+  memory_stat->SetProcessPss(10, 100000);
 
   tab_manager_delegate.LowMemoryKillImpl(tab_list, arc_processes);
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
   auto killed_tabs = tab_manager_delegate.GetKilledTabs();
 
-  EXPECT_EQ(2U, killed_arc_processes.size());
-  EXPECT_EQ(1U, killed_tabs.size());
-
-  // nspid.
-  EXPECT_EQ(10003, killed_arc_processes[0]);
-  EXPECT_EQ(10002, killed_arc_processes[1]);
-  // tab content id.
+  // Killed apps and their nspid.
+  EXPECT_EQ(1U, killed_arc_processes.size());
+  EXPECT_EQ(3, killed_arc_processes[0]);
+  // Killed tabs and their content id.
+  // Note that process with pid 11 is counted twice. But so far I don't have a
+  // good way to estimate the memory freed if multiple tabs share one process.
+  EXPECT_EQ(3U, killed_tabs.size());
   EXPECT_EQ(2, killed_tabs[0]);
+  EXPECT_EQ(5, killed_tabs[1]);
+  EXPECT_EQ(1, killed_tabs[2]);
 }
 
 }  // namespace memory

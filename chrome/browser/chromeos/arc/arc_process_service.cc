@@ -172,7 +172,8 @@ void ArcProcessService::PopulateProcessList(
     // In case the process already dies so couldn't find corresponding pid.
     if (it != nspid_to_pid_.end() && it->second != kNullProcessId) {
       ArcProcess arc_process(entry->pid, it->second, entry->process_name,
-                             entry->process_state);
+                             entry->process_state, entry->is_focused,
+                             entry->last_activity_time);
       // |entry->packages| is provided only when process.mojom's verion is >=4.
       if (entry->packages) {
         for (const auto& package : entry->packages) {
