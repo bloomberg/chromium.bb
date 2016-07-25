@@ -226,10 +226,6 @@ class ListenerExpectingErrors : public IPC::Listener {
  public:
   ListenerExpectingErrors() : has_error_(false) {}
 
-  void OnChannelConnected(int32_t peer_pid) override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-
   bool OnMessageReceived(const IPC::Message& message) override { return true; }
 
   void OnChannelError() override {
@@ -265,8 +261,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoErraticTestClient,
   Close();
 }
 
-// Disabled because flake. http://crbug.com/630831
-TEST_F(IPCChannelMojoTest, DISABLED_SendFailWithPendingMessages) {
+TEST_F(IPCChannelMojoTest, SendFailWithPendingMessages) {
   InitWithMojo("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
