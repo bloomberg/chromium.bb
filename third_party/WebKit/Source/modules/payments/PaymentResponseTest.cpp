@@ -69,6 +69,19 @@ TEST(PaymentResponseTest, DataCopiedOver)
     EXPECT_EQ(123, transactionId.v8Value().As<v8::Number>()->Value());
 }
 
+TEST(PaymentResponseTest, PaymentResponseDetailsJSONObject)
+{
+    V8TestingScope scope;
+    mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
+    input->stringified_details = "transactionId";
+    MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
+    PaymentResponse output(std::move(input), completeCallback);
+
+    ScriptValue details = output.details(scope.getScriptState(), scope.getExceptionState());
+
+    ASSERT_TRUE(scope.getExceptionState().hadException());
+}
+
 TEST(PaymentResponseTest, CompleteCalledWithSuccess)
 {
     V8TestingScope scope;
