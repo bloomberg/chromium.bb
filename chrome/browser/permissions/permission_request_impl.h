@@ -27,6 +27,7 @@ class PermissionRequestImpl : public PermissionRequest {
       const GURL& request_origin,
       content::PermissionType permission_type,
       Profile* profile,
+      bool has_gesture,
       const PermissionDecidedCallback& permission_decided_callback,
       const base::Closure delete_callback);
 
@@ -48,10 +49,12 @@ class PermissionRequestImpl : public PermissionRequest {
   void Cancelled() override;
   void RequestFinished() override;
   PermissionRequestType GetPermissionRequestType() const override;
+  PermissionRequestGestureType GetGestureType() const override;
 
   GURL request_origin_;
   content::PermissionType permission_type_;
   Profile* profile_;
+  bool has_gesture_;
 
   // Called once a decision is made about the permission.
   const PermissionDecidedCallback permission_decided_callback_;

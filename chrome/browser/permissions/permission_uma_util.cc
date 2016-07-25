@@ -40,11 +40,22 @@
                               PERMISSION_ACTION_NUM);                       \
   }
 
-#define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type)      \
-    UMA_HISTOGRAM_ENUMERATION(                                               \
-        metric_name,                                                         \
-        static_cast<base::HistogramBase::Sample>(permission_bubble_type),    \
-        static_cast<base::HistogramBase::Sample>(PermissionRequestType::NUM))
+#define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type) \
+  UMA_HISTOGRAM_ENUMERATION(                                            \
+      metric_name,                                                      \
+      static_cast<base::HistogramBase::Sample>(permission_bubble_type), \
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::NUM))
+
+#define PERMISSION_BUBBLE_GESTURE_TYPE_UMA(gesture_metric_name,              \
+                                           no_gesture_metric_name,           \
+                                           gesture_type,                     \
+                                           permission_bubble_type)           \
+  if (gesture_type == PermissionRequestGestureType::GESTURE) {               \
+    PERMISSION_BUBBLE_TYPE_UMA(gesture_metric_name, permission_bubble_type); \
+  } else if (gesture_type == PermissionRequestGestureType::NO_GESTURE) {     \
+    PERMISSION_BUBBLE_TYPE_UMA(no_gesture_metric_name,                       \
+                               permission_bubble_type);                      \
+  }
 
 using content::PermissionType;
 
@@ -171,10 +182,22 @@ void RecordPermissionRequest(PermissionType permission,
 
 const char PermissionUmaUtil::kPermissionsPromptShown[] =
     "Permissions.Prompt.Shown";
+const char PermissionUmaUtil::kPermissionsPromptShownGesture[] =
+    "Permissions.Prompt.Shown.Gesture";
+const char PermissionUmaUtil::kPermissionsPromptShownNoGesture[] =
+    "Permissions.Prompt.Shown.NoGesture";
 const char PermissionUmaUtil::kPermissionsPromptAccepted[] =
     "Permissions.Prompt.Accepted";
+const char PermissionUmaUtil::kPermissionsPromptAcceptedGesture[] =
+    "Permissions.Prompt.Accepted.Gesture";
+const char PermissionUmaUtil::kPermissionsPromptAcceptedNoGesture[] =
+    "Permissions.Prompt.Accepted.NoGesture";
 const char PermissionUmaUtil::kPermissionsPromptDenied[] =
     "Permissions.Prompt.Denied";
+const char PermissionUmaUtil::kPermissionsPromptDeniedGesture[] =
+    "Permissions.Prompt.Denied.Gesture";
+const char PermissionUmaUtil::kPermissionsPromptDeniedNoGesture[] =
+    "Permissions.Prompt.Denied.NoGesture";
 const char PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt[] =
     "Permissions.Prompt.RequestsPerPrompt";
 const char PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes[] =
@@ -243,9 +266,17 @@ void PermissionUmaUtil::PermissionPromptShown(
 
   PermissionRequestType permission_prompt_type =
       PermissionRequestType::MULTIPLE;
-  if (requests.size() == 1)
+  PermissionRequestGestureType permission_gesture_type =
+      PermissionRequestGestureType::UNKNOWN;
+  if (requests.size() == 1) {
     permission_prompt_type = requests[0]->GetPermissionRequestType();
+    permission_gesture_type = requests[0]->GetGestureType();
+  }
+
   PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptShown, permission_prompt_type);
+  PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
+      kPermissionsPromptShownGesture, kPermissionsPromptShownNoGesture,
+      permission_gesture_type, permission_prompt_type);
 
   UMA_HISTOGRAM_ENUMERATION(
       kPermissionsPromptRequestsPerPrompt,
@@ -269,8 +300,11 @@ void PermissionUmaUtil::PermissionPromptAccepted(
   bool all_accepted = accept_states[0];
   PermissionRequestType permission_prompt_type =
       requests[0]->GetPermissionRequestType();
+  PermissionRequestGestureType permission_gesture_type =
+      requests[0]->GetGestureType();
   if (requests.size() > 1) {
     permission_prompt_type = PermissionRequestType::MULTIPLE;
+    permission_gesture_type = PermissionRequestGestureType::UNKNOWN;
     for (size_t i = 0; i < requests.size(); ++i) {
       const auto* request = requests[i];
       if (accept_states[i]) {
@@ -287,9 +321,15 @@ void PermissionUmaUtil::PermissionPromptAccepted(
   if (all_accepted) {
     PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptAccepted,
                                permission_prompt_type);
+    PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
+        kPermissionsPromptAcceptedGesture, kPermissionsPromptAcceptedNoGesture,
+        permission_gesture_type, permission_prompt_type);
   } else {
     PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
                                permission_prompt_type);
+    PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
+        kPermissionsPromptDeniedGesture, kPermissionsPromptDeniedNoGesture,
+        permission_gesture_type, permission_prompt_type);
   }
 }
 
@@ -300,6 +340,9 @@ void PermissionUmaUtil::PermissionPromptDenied(
 
   PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
                              requests[0]->GetPermissionRequestType());
+  PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
+      kPermissionsPromptDeniedGesture, kPermissionsPromptDeniedNoGesture,
+      requests[0]->GetGestureType(), requests[0]->GetPermissionRequestType());
 }
 
 bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {

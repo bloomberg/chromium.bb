@@ -22,12 +22,16 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   PermissionRequestManagerTest()
       : ChromeRenderViewHostTestHarness(),
-        request1_("test1", PermissionRequestType::QUOTA),
-        request2_("test2", PermissionRequestType::DOWNLOAD),
+        request1_("test1",
+                  PermissionRequestType::QUOTA,
+                  PermissionRequestGestureType::GESTURE),
+        request2_("test2",
+                  PermissionRequestType::DOWNLOAD,
+                  PermissionRequestGestureType::NO_GESTURE),
         iframe_request_same_domain_("iframe",
                                     GURL("http://www.google.com/some/url")),
-        iframe_request_other_domain_("iframe",
-                                     GURL("http://www.youtube.com")) {}
+        iframe_request_other_domain_("iframe", GURL("http://www.youtube.com")) {
+  }
   ~PermissionRequestManagerTest() override {}
 
   void SetUp() override {
@@ -454,7 +458,7 @@ TEST_F(PermissionRequestManagerTest, RequestsDontNeedUserGesture) {
   EXPECT_TRUE(view_factory_->is_visible());
 }
 
-TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedBubble) {
+TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);
@@ -465,6 +469,12 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedBubble) {
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
   histograms.ExpectUniqueSample(
+      PermissionUmaUtil::kPermissionsPromptShownGesture,
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      1);
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
+  histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 1, 1);
 
   ToggleAccept(0, true);
@@ -473,22 +483,47 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedBubble) {
       PermissionUmaUtil::kPermissionsPromptAccepted,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
-}
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptDenied, 0);
 
-TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubble) {
-  base::HistogramTester histograms;
-
-  manager_->AddRequest(&request1_);
-  manager_->DisplayPendingRequests();
-  WaitForCoalescing();
-  // No need to test UMA for showing prompts again, they were tested in
-  // UMAForSimpleAcceptedBubble.
-
-  Deny();
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDenied,
+      PermissionUmaUtil::kPermissionsPromptAcceptedGesture,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
       1);
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptAcceptedNoGesture, 0);
+}
+
+TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
+  base::HistogramTester histograms;
+
+  manager_->AddRequest(&request2_);
+  manager_->DisplayPendingRequests();
+  WaitForCoalescing();
+
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
+  histograms.ExpectUniqueSample(
+      PermissionUmaUtil::kPermissionsPromptShownNoGesture,
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
+      1);
+  // No need to test the other UMA for showing prompts again, they were tested
+  // in UMAForSimpleAcceptedBubble.
+
+  Deny();
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptAccepted, 0);
+  histograms.ExpectUniqueSample(
+      PermissionUmaUtil::kPermissionsPromptDenied,
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
+      1);
+
+  histograms.ExpectUniqueSample(
+      PermissionUmaUtil::kPermissionsPromptDeniedNoGesture,
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
+      1);
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptDeniedGesture, 0);
 }
 
 // This code path (calling Accept on a non-merged bubble, with no accepted
@@ -533,6 +568,10 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
       1);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 2, 1);
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
+  histograms.ExpectTotalCount(
+      PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
 
   ToggleAccept(0, true);
   ToggleAccept(1, true);

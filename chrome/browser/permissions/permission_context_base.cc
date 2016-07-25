@@ -177,7 +177,7 @@ void PermissionContextBase::DecidePermission(
   if (!permission_request_manager)
     return;
   std::unique_ptr<PermissionRequest> request_ptr(new PermissionRequestImpl(
-          requesting_origin, permission_type_, profile_,
+          requesting_origin, permission_type_, profile_, user_gesture,
           base::Bind(&PermissionContextBase::PermissionDecided,
                      weak_factory_.GetWeakPtr(), id, requesting_origin,
                      embedding_origin, callback),

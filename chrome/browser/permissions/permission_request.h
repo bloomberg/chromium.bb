@@ -37,6 +37,17 @@ enum class PermissionRequestType {
   NUM
 };
 
+// Used for UMA to record whether a gesture was associated with the request. For
+// simplicity not all request types track whether a gesture is associated with
+// it or not, for these types of requests metrics are not recorded.
+enum class PermissionRequestGestureType {
+  UNKNOWN,
+  GESTURE,
+  NO_GESTURE,
+  // NUM must be the last value in the enum.
+  NUM
+};
+
 // Describes the interface a feature making permission requests should
 // implement. A class of this type is registered with the permission request
 // manager to receive updates about the result of the permissions request
@@ -85,6 +96,11 @@ class PermissionRequest {
 
   // Used to record UMA metrics for permission requests.
   virtual PermissionRequestType GetPermissionRequestType() const;
+
+  // Used to record UMA for whether requests are associated with a user gesture.
+  // To keep things simple this metric is only recorded for the most popular
+  // request types.
+  virtual PermissionRequestGestureType GetGestureType() const;
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_H_

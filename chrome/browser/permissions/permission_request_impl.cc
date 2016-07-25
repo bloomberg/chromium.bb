@@ -18,11 +18,13 @@ PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
     content::PermissionType permission_type,
     Profile* profile,
+    bool has_gesture,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
       permission_type_(permission_type),
       profile_(profile),
+      has_gesture_(has_gesture),
       permission_decided_callback_(permission_decided_callback),
       delete_callback_(delete_callback),
       is_finished_(false),
@@ -157,4 +159,10 @@ PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;
   }
+}
+
+PermissionRequestGestureType PermissionRequestImpl::GetGestureType()
+    const {
+  return has_gesture_ ? PermissionRequestGestureType::GESTURE
+                      : PermissionRequestGestureType::NO_GESTURE;
 }

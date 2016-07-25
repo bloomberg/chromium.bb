@@ -51,8 +51,14 @@ enum class PermissionSourceUI {
 class PermissionUmaUtil {
  public:
   static const char kPermissionsPromptShown[];
+  static const char kPermissionsPromptShownGesture[];
+  static const char kPermissionsPromptShownNoGesture[];
   static const char kPermissionsPromptAccepted[];
+  static const char kPermissionsPromptAcceptedGesture[];
+  static const char kPermissionsPromptAcceptedNoGesture[];
   static const char kPermissionsPromptDenied[];
+  static const char kPermissionsPromptDeniedGesture[];
+  static const char kPermissionsPromptDeniedNoGesture[];
   static const char kPermissionsPromptRequestsPerPrompt[];
   static const char kPermissionsPromptMergedBubbleTypes[];
   static const char kPermissionsPromptMergedBubbleAccepted[];

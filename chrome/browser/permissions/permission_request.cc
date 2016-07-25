@@ -13,3 +13,7 @@ gfx::VectorIconId PermissionRequest::GetVectorIconId() const {
 PermissionRequestType PermissionRequest::GetPermissionRequestType() const {
   return PermissionRequestType::UNKNOWN;
 }
+
+PermissionRequestGestureType PermissionRequest::GetGestureType() const {
+  return PermissionRequestGestureType::UNKNOWN;
+}

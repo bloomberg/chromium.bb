@@ -99613,6 +99613,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PerformanceMonitor.HighCPU"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PermissionRequestGesture" separator=".">
+  <suffix name="Gesture" label="With user gesture"/>
+  <suffix name="NoGesture" label="Without user gesture"/>
+  <affected-histogram name="Permissions.Prompt.Accepted"/>
+  <affected-histogram name="Permissions.Prompt.Denied"/>
+  <affected-histogram name="Permissions.Prompt.Shown"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PermissionTypes" separator=".">
   <suffix name="MidiSysEx" label="Midi SysEx permsision actions"/>
   <suffix name="PushMessaging" label="Push messaging permission actions"/>
