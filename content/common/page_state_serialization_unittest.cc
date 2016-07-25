@@ -241,7 +241,7 @@ TEST_F(PageStateSerializationTest, BasicEmpty) {
   ExplodedPageState input;
 
   std::string encoded;
-  EXPECT_TRUE(EncodePageState(input, &encoded));
+  EncodePageState(input, &encoded);
 
   ExplodedPageState output;
   EXPECT_TRUE(DecodePageState(encoded, &output));
@@ -254,7 +254,7 @@ TEST_F(PageStateSerializationTest, BasicFrame) {
   PopulateFrameState(&input.top);
 
   std::string encoded;
-  EXPECT_TRUE(EncodePageState(input, &encoded));
+  EncodePageState(input, &encoded);
 
   ExplodedPageState output;
   EXPECT_TRUE(DecodePageState(encoded, &output));
@@ -268,7 +268,7 @@ TEST_F(PageStateSerializationTest, BasicFramePOST) {
   PopulateHttpBody(&input.top.http_body, &input.referenced_files);
 
   std::string encoded;
-  EXPECT_TRUE(EncodePageState(input, &encoded));
+  EncodePageState(input, &encoded);
 
   ExplodedPageState output;
   EXPECT_TRUE(DecodePageState(encoded, &output));
@@ -288,7 +288,7 @@ TEST_F(PageStateSerializationTest, BasicFrameSet) {
   }
 
   std::string encoded;
-  EXPECT_TRUE(EncodePageState(input, &encoded));
+  EncodePageState(input, &encoded);
 
   ExplodedPageState output;
   EXPECT_TRUE(DecodePageState(encoded, &output));
@@ -371,7 +371,7 @@ TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
   PopulatePageStateForBackwardsCompatTest(&state);
 
   std::string encoded;
-  EXPECT_TRUE(EncodePageState(state, &encoded));
+  EncodePageState(state, &encoded);
 
   std::string base64;
   base::Base64Encode(encoded, &base64);

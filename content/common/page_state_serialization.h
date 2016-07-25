@@ -71,7 +71,7 @@ struct CONTENT_EXPORT ExplodedPageState {
 
 CONTENT_EXPORT bool DecodePageState(const std::string& encoded,
                                     ExplodedPageState* exploded);
-CONTENT_EXPORT bool EncodePageState(const ExplodedPageState& exploded,
+CONTENT_EXPORT void EncodePageState(const ExplodedPageState& exploded,
                                     std::string* encoded);
 
 #if defined(OS_ANDROID)

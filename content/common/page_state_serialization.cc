@@ -741,12 +741,11 @@ bool DecodePageState(const std::string& encoded, ExplodedPageState* exploded) {
   return !obj.parse_error;
 }
 
-bool EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
+void EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
   SerializeObject obj;
   obj.version = kCurrentVersion;
   WritePageState(exploded, &obj);
   *encoded = obj.GetAsString();
-  return true;
 }
 
 #if defined(OS_ANDROID)

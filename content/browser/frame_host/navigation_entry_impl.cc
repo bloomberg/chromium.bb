@@ -51,8 +51,8 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
   ExplodedPageState page_state;
   page_state.top = state;
   std::string data;
-  if (EncodePageState(page_state, &data))
-    node->frame_entry->set_page_state(PageState::CreateFromEncodedData(data));
+  EncodePageState(page_state, &data);
+  node->frame_entry->set_page_state(PageState::CreateFromEncodedData(data));
 
   for (const ExplodedFrameState& child_state : state.children) {
     NavigationEntryImpl::TreeNode* child_node =
@@ -317,9 +317,7 @@ PageState NavigationEntryImpl::GetPageState() const {
                                 &exploded_state.referenced_files);
 
   std::string encoded_data;
-  if (!EncodePageState(exploded_state, &encoded_data))
-    return frame_tree_->frame_entry->page_state();
-
+  EncodePageState(exploded_state, &encoded_data);
   return PageState::CreateFromEncodedData(encoded_data);
 }
 

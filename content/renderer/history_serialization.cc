@@ -122,9 +122,7 @@ PageState HistoryEntryToPageState(HistoryEntry* entry) {
                                 &state.referenced_files);
 
   std::string encoded_data;
-  if (!EncodePageState(state, &encoded_data))
-    return PageState();
-
+  EncodePageState(state, &encoded_data);
   return PageState::CreateFromEncodedData(encoded_data);
 }
 
@@ -135,9 +133,7 @@ PageState SingleHistoryItemToPageState(const WebHistoryItem& item) {
   GenerateFrameStateFromItem(item, &state.top);
 
   std::string encoded_data;
-  if (!EncodePageState(state, &encoded_data))
-    return PageState();
-
+  EncodePageState(state, &encoded_data);
   return PageState::CreateFromEncodedData(encoded_data);
 }
 

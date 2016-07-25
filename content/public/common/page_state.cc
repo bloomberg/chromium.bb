@@ -32,9 +32,7 @@ void ToFilePathVector(const std::vector<base::NullableString16>& input,
 
 PageState ToPageState(const ExplodedPageState& state) {
   std::string encoded_data;
-  if (!EncodePageState(state, &encoded_data))
-    return PageState();
-
+  EncodePageState(state, &encoded_data);
   return PageState::CreateFromEncodedData(encoded_data);
 }
 
