@@ -1386,3 +1386,10 @@ crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-w
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 crbug.com/399507 [ Mac10.9 Mac10.10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
+
+crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/subframe-scrollBy.html [ Pass Failure ]
+crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scroll.html [ Pass Failure ]
+crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scrollBy.html [ Pass Failure ]
+crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scrollTo.html [ Pass Failure ]
+crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-scroll.html [ Pass Failure ]
+crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-scroll.html [ Pass Failure ]
