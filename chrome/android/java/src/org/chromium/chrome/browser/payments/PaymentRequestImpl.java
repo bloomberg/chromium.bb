@@ -739,6 +739,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
             @Override
             public void onResult(AutofillAddress completeAddress) {
+                if (mUI == null) return;
+
                 if (completeAddress == null) {
                     mShippingAddressesSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
                 } else if (toEdit == null) {
@@ -764,6 +766,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
             public void onResult(AutofillContact completeContact) {
+                if (mUI == null) return;
+
                 if (completeContact == null) {
                     mContactSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
                 } else if (toEdit == null) {
@@ -779,6 +783,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
             public void onResult(AutofillPaymentInstrument completeCard) {
+                if (mUI == null) return;
+
                 if (completeCard == null) {
                     mPaymentMethodsSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
                 } else if (toEdit == null) {

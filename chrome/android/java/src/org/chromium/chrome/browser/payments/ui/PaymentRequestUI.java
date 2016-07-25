@@ -946,11 +946,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *  <li>Failure to process the payment.</li>
      *  <li>The JavaScript calling the abort() method in PaymentRequest API.</li>
      *  <li>The PaymentRequest JavaScript object being destroyed.</li>
+     *  <li>User closing all incognito windows with PaymentRequest UI open in an incognito
+     *      window.</li>
      * </ul>
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
         mIsClosing = true;
+        if (mEditorView.isShowing()) mEditorView.dismiss();
+        if (mCardEditorView.isShowing()) mCardEditorView.dismiss();
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestDismiss();
         if (!mIsClientClosing) mClient.onDismiss();
     }
