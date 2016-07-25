@@ -303,6 +303,10 @@ void BrowserCompositorMac::UpdateVSyncParameters(
     recyclable_compositor_->compositor()
         ->vsync_manager()
         ->UpdateVSyncParameters(timebase, interval);
+    recyclable_compositor_->compositor()
+        ->context_factory()
+        ->SetDisplayVSyncParameters(recyclable_compositor_->compositor(),
+                                    timebase, interval);
   }
 }
 

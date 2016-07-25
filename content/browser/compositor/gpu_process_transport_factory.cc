@@ -730,6 +730,19 @@ void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
     data->begin_frame_source->SetAuthoritativeVSyncInterval(interval);
 }
 
+void GpuProcessTransportFactory::SetDisplayVSyncParameters(
+    ui::Compositor* compositor,
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second;
+  DCHECK(data);
+  if (data->begin_frame_source)
+    data->begin_frame_source->OnUpdateVSyncParameters(timebase, interval);
+}
+
 void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
                                                    bool secure) {
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);

@@ -144,6 +144,11 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                              base::TimeDelta interval) = 0;
+  // Mac path for transporting vsync parameters to the display.  Other platforms
+  // update it via the BrowserCompositorOutputSurface directly.
+  virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
+                                         base::TimeTicks timebase,
+                                         base::TimeDelta interval) = 0;
 
   virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
 

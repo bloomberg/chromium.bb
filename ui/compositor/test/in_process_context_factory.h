@@ -68,6 +68,9 @@ class InProcessContextFactory : public ContextFactory {
                             const gfx::ColorSpace& color_space) override {}
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override {}
+  void SetDisplayVSyncParameters(ui::Compositor* compositor,
+                                 base::TimeTicks timebase,
+                                 base::TimeDelta interval) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
