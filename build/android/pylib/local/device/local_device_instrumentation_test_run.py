@@ -13,6 +13,7 @@ from devil.android import flag_changer
 from devil.utils import reraiser_thread
 from pylib import valgrind_tools
 from pylib.base import base_test_result
+from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 
 
@@ -67,7 +68,7 @@ class LocalDeviceInstrumentationTestRun(
       else:
         return d
 
-    @local_device_test_run.handle_shard_failures_with(
+    @local_device_environment.handle_shard_failures_with(
         self._env.BlacklistDevice)
     def individual_device_set_up(dev, host_device_tuples):
       def install_apk():
@@ -148,7 +149,7 @@ class LocalDeviceInstrumentationTestRun(
         self._test_instance.GetDataDependencies())
 
   def TearDown(self):
-    @local_device_test_run.handle_shard_failures_with(
+    @local_device_environment.handle_shard_failures_with(
         self._env.BlacklistDevice)
     def individual_device_tear_down(dev):
       if str(dev) in self._flag_changers:

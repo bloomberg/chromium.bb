@@ -25,6 +25,7 @@ from devil.utils import parallelizer
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.constants import host_paths
+from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 
 
@@ -78,7 +79,7 @@ class TestShard(object):
     self._timeout = timeout
     self._heart_beat = HeartBeat(self)
 
-  @local_device_test_run.handle_shard_failures
+  @local_device_environment.handle_shard_failures
   def RunTestsOnShard(self):
     results = base_test_result.TestRunResults()
     for test in self._tests:

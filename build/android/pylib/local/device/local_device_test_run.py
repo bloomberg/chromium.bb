@@ -3,20 +3,18 @@
 # found in the LICENSE file.
 
 import fnmatch
-import functools
 import imp
 import logging
 import signal
 import thread
 import threading
 
-from devil import base_error
-from devil.android import device_errors
 from devil.utils import signal_handler
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import test_run
 from pylib.base import test_collection
+from pylib.local.device import local_device_environment
 
 
 def IncrementalInstall(device, apk_helper, installer_script):
@@ -41,49 +39,6 @@ def IncrementalInstall(device, apk_helper, installer_script):
                     permissions=None)  # Auto-grant permissions from manifest.
 
 
-def handle_shard_failures(f):
-  """A decorator that handles device failures for per-device functions.
-
-  Args:
-    f: the function being decorated. The function must take at least one
-      argument, and that argument must be the device.
-  """
-  return handle_shard_failures_with(None)(f)
-
-
-def handle_shard_failures_with(on_failure):
-  """A decorator that handles device failures for per-device functions.
-
-  This calls on_failure in the event of a failure.
-
-  Args:
-    f: the function being decorated. The function must take at least one
-      argument, and that argument must be the device.
-    on_failure: A binary function to call on failure.
-  """
-  def decorator(f):
-    @functools.wraps(f)
-    def wrapper(dev, *args, **kwargs):
-      try:
-        return f(dev, *args, **kwargs)
-      except device_errors.CommandTimeoutError:
-        logging.exception('Shard timed out: %s(%s)', f.__name__, str(dev))
-      except device_errors.DeviceUnreachableError:
-        logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
-      except base_error.BaseError:
-        logging.exception('Shard failed: %s(%s)', f.__name__, str(dev))
-      except SystemExit:
-        logging.exception('Shard killed: %s(%s)', f.__name__, str(dev))
-        raise
-      if on_failure:
-        on_failure(dev, f.__name__)
-      return None
-
-    return wrapper
-
-  return decorator
-
-
 class LocalDeviceTestRun(test_run.TestRun):
 
   def __init__(self, env, test_instance):
@@ -96,7 +51,7 @@ class LocalDeviceTestRun(test_run.TestRun):
 
     exit_now = threading.Event()
 
-    @handle_shard_failures
+    @local_device_environment.handle_shard_failures
     def run_tests_on_device(dev, tests, results):
       for test in tests:
         if exit_now.isSet():

@@ -232,7 +232,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def SetUp(self):
-    @local_device_test_run.handle_shard_failures_with(
+    @local_device_environment.handle_shard_failures_with(
         on_failure=self._env.BlacklistDevice)
     def individual_device_set_up(dev):
       def install_apk():
@@ -313,7 +313,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     # Even when there's only one device, it still makes sense to retrieve the
     # test list so that tests can be split up and run in batches rather than all
     # at once (since test output is not streamed).
-    @local_device_test_run.handle_shard_failures_with(
+    @local_device_environment.handle_shard_failures_with(
         on_failure=self._env.BlacklistDevice)
     def list_tests(dev):
       raw_test_list = self._delegate.Run(
@@ -363,7 +363,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def TearDown(self):
-    @local_device_test_run.handle_shard_failures
+    @local_device_environment.handle_shard_failures
     def individual_device_tear_down(dev):
       for s in self._servers.get(str(dev), []):
         s.TearDown()
