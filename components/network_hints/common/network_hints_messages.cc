@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/network_hints/public/cpp/network_hints_param_traits.h"
+#include "components/network_hints/common/network_hints_messages.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "components/network_hints/common/network_hints_common.h"
 
 namespace IPC {
-
-void ParamTraits<network_hints::LookupRequest>::GetSize(base::PickleSizer* s,
-                                                        const param_type& p) {
-  IPC::GetParamSize(s, p.hostname_list);
-}
 
 void ParamTraits<network_hints::LookupRequest>::Write(
     base::Pickle* m,
@@ -39,8 +34,7 @@ bool ParamTraits<network_hints::LookupRequest>::Read(
 }
 
 void ParamTraits<network_hints::LookupRequest>::Log(
-    const network_hints::LookupRequest& p,
-    std::string* l) {
+    const network_hints::LookupRequest& p, std::string* l) {
   l->append("<network_hints::LookupRequest: ");
   l->append(base::SizeTToString(p.hostname_list.size()));
   l->append(" hostnames>");

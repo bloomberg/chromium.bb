@@ -4,6 +4,5 @@
 
 typemaps = [
   "//components/autofill/content/public/cpp/autofill_types.typemap",
-  "//components/network_hints/public/cpp/network_hints.typemap",
   "//components/safe_json/public/interfaces/safe_json.typemap",
 ]

@@ -957,14 +957,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   net::URLRequestContextGetter* context =
       host->GetStoragePartition()->GetURLRequestContext();
 
-  // The host owns both |chrome_render| and the interface registry, which will
-  // be destroyed before the filter.
-  auto* chrome_render_filter = new ChromeRenderMessageFilter(id, profile);
-  host->GetInterfaceRegistry()->AddInterface(
-      base::Bind(&ChromeRenderMessageFilter::BindNetworkHints,
-                 base::Unretained(chrome_render_filter)),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  host->AddFilter(chrome_render_filter);
+  host->AddFilter(new ChromeRenderMessageFilter(id, profile));
 #if defined(ENABLE_EXTENSIONS)
   host->AddFilter(new cast::CastTransportHostFilter);
 #endif

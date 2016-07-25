@@ -342,6 +342,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
 #endif
 
+  prescient_networking_dispatcher_.reset(
+      new network_hints::PrescientNetworkingDispatcher());
 #if defined(ENABLE_SPELLCHECK)
   // ChromeRenderViewTest::SetUp() creates a Spellcheck and injects it using
   // SetSpellcheck(). Don't overwrite it.
@@ -1138,7 +1140,7 @@ bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
 
 blink::WebPrescientNetworking*
 ChromeContentRendererClient::GetPrescientNetworking() {
-  return chrome_observer_->prescient_networking_dispatcher();
+  return prescient_networking_dispatcher_.get();
 }
 
 bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(

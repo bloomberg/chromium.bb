@@ -207,6 +207,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
 
+  std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
+      prescient_networking_dispatcher_;
+
 #if defined(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif

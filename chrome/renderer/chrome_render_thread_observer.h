@@ -27,10 +27,6 @@ namespace content {
 class ResourceDispatcherDelegate;
 }
 
-namespace network_hints {
-class PrescientNetworkingDispatcher;
-}
-
 // This class filters the incoming control messages (i.e. ones not destined for
 // a RenderView) for Chrome specific messages that the content layer doesn't
 // happen.  If a few messages are related, they should probably have their own
@@ -47,11 +43,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   // |ChromeRenderThreadObserver|.
   const RendererContentSettingRules* content_setting_rules() const;
 
-  network_hints::PrescientNetworkingDispatcher*
-  prescient_networking_dispatcher() {
-    return prescient_networking_dispatcher_.get();
-  }
-
  private:
   // Initializes field trial state change observation and notifies the browser
   // of any field trials that might have already been activated.
@@ -59,7 +50,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
-  void OnRenderProcessShutdown() override;
 
   // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
@@ -77,9 +67,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
   chrome_variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
-
-  std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
-      prescient_networking_dispatcher_;
 
   base::WeakPtrFactory<ChromeRenderThreadObserver> weak_factory_;
 
