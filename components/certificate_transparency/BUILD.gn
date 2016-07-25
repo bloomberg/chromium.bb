@@ -36,9 +36,10 @@ source_set("unit_tests") {
     "ct_policy_manager_unittest.cc",
     "log_dns_client_unittest.cc",
     "log_proof_fetcher_unittest.cc",
+    "mock_log_dns_traffic.cc",
+    "mock_log_dns_traffic.h",
     "single_tree_tracker_unittest.cc",
   ]
-
   deps = [
     ":certificate_transparency",
     "//base/test:test_support",

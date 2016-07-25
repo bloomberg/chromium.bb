@@ -35,6 +35,6 @@
         'certificate_transparency/tree_state_tracker.h',
         'certificate_transparency/tree_state_tracker.cc',
       ],
-    }
+    },
   ],
 }

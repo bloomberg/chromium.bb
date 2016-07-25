@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/base32/base32.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"

@@ -119,6 +119,8 @@
       'certificate_transparency/ct_policy_manager_unittest.cc',
       'certificate_transparency/log_dns_client_unittest.cc',
       'certificate_transparency/log_proof_fetcher_unittest.cc',
+      'certificate_transparency/mock_log_dns_traffic.cc',
+      'certificate_transparency/mock_log_dns_traffic.h',
       'certificate_transparency/single_tree_tracker_unittest.cc',
     ],
     'child_trace_message_filter_unittest_sources': [
