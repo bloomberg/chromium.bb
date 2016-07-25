@@ -200,8 +200,8 @@ public class OfflinePageUtils {
                 Tab foundTab = tabModelSelector.getTabById(tabId);
                 if (foundTab == null) return;
 
-                LoadUrlParams params = new LoadUrlParams(
-                        foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD);
+                LoadUrlParams params =
+                        new LoadUrlParams(foundTab.getOriginalUrl(), PageTransition.RELOAD);
                 foundTab.loadUrl(params);
             }
 

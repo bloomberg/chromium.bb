@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -71,7 +70,7 @@ public class BookmarkUtils {
             parent = bookmarkModel.getDefaultFolder();
         }
 
-        String url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(tab.getUrl());
+        String url = tab.getOriginalUrl();
         BookmarkId bookmarkId = bookmarkModel.addBookmark(parent,
                 bookmarkModel.getChildCount(parent), tab.getTitle(), url);
 

@@ -2068,7 +2068,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         Tab currentTab = getCurrentTab();
         if (currentTab == null) return "";
         if (currentTab.isOfflinePage()) {
-            return currentTab.getOfflinePageOriginalUrl().trim();
+            return currentTab.getOriginalUrl().trim();
         }
         return currentTab.getUrl().trim();
     }

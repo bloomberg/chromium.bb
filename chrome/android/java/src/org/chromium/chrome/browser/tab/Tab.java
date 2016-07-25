@@ -2911,6 +2911,18 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Original url of the tab, if tab currently displays offline copy, would return url of
+     * the original page. Otherwise return the original url from DOMDistiller.
+     */
+    public String getOriginalUrl() {
+        if (isOfflinePage()) {
+            return getOfflinePageOriginalUrl();
+        } else {
+            return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrl());
+        }
+    }
+
+    /**
      * If a Lo-Fi snackbar has not been shown yet for this page load, a Lo-Fi snackbar is shown.
      *
      * @param isPreview Whether the Lo-Fi response was a preview response.

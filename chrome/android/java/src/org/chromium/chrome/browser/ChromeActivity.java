@@ -963,7 +963,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     @Override
                     public void onFinishGetBitmap(Bitmap bitmap, int response) {
                         // Check whether this page is an offline page, and use its online URL if so.
-                        String url = currentTab.getOfflinePageOriginalUrl();
+                        String url = currentTab.getOriginalUrl();
                         RecordHistogram.recordBooleanHistogram(
                                 "OfflinePages.SharedPageWasOffline", url != null);
 
