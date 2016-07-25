@@ -57,6 +57,9 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
     if (arm_float_abi == "") {
       if (current_os == "android" || target_os == "android") {
         arm_float_abi = "softfp"
+      } else if (current_os == "linux" && current_cpu != v8_current_cpu) {
+        # Default to the same as Android for V8 simulator builds.
+        arm_float_abi = "softfp"
       } else {
         arm_float_abi = "hard"
       }
