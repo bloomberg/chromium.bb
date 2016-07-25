@@ -175,7 +175,7 @@ def GenerateSymbols(options, binaries):
           break
 
         binary_info = GetBinaryInfoFromHeaderInfo(
-            GetCommandOutput([dump_syms, '-i', binary]))
+            GetCommandOutput([dump_syms, '-i', binary]).splitlines()[0])
         if not binary_info:
           should_dump_syms = False
           reason = "Could not obtain binary information."

@@ -76,11 +76,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
-  'lss_revision': '4fc942258fe5509549333b9487ec018e3c8c5b10',
+  'lss_revision': '3f6478ac95edf86cd3da300c2c0d34a438f5dbeb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '0ea1fef9391b6084be99b9238542b4782365e23c',
+  'nacl_revision': '412a6e2bb153f39f22b9b3e47bc1ed0abb82df3f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype-android
   # and whatever else without interference from each other.
@@ -106,7 +106,7 @@ allowed_hosts = [
 
 deps = {
   'src/breakpad/src':
-   Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '7c70f47255713629c8053826008bd00f98d71ced',
+   Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '51db53eec7293a35cb6fc10bd2e333f22dd9d201',
 
   'src/buildtools':
    Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
@@ -362,7 +362,7 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
 
     'src/third_party/lss':
-      Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
+      Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
 
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
@@ -472,7 +472,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/square/leakcanary.git' + '@' + '608ded739e036a3aa69db47ac43777dcee506f8e',
 
     'src/third_party/lss':
-      Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
+      Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
 
     'src/third_party/requests/src':
       Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'f172b30356d821d180fa4ecfa3e71c7274a32de4',
