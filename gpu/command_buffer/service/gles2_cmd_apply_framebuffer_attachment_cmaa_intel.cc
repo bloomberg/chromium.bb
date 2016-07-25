@@ -1503,12 +1503,11 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         uint packedEdgesC = packedEdgesArray[(1 + _x) * 4 + (1 + _y)];
 
         uvec4 edges = UnpackEdge(packedEdgesC);
-        vec4 edgesFlt = vec4(edges);
-
-        float numberOfEdges = dot(edgesFlt, vec4(1, 1, 1, 1));
-        if (numberOfEdges <= 1.0)
+        uint numberOfEdges = edges.x + edges.y + edges.z + edges.w;
+        if (numberOfEdges <= 1u)
           continue;
 
+        vec4 edgesFlt = vec4(edges);
         float fromRight = edgesFlt.r;
         float fromAbove = edgesFlt.g;
         float fromLeft = edgesFlt.b;
@@ -1531,7 +1530,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         // the current pixel's colour in return.
         // However, in the case when this is an actual corner, the pixel's
         // colour will be partially overwritten by it's 2 neighbours.
-        if( numberOfEdges == 2.0 )
+        if (numberOfEdges == 2u)
         {
           // with value of 0.15, the pixel will retain approx 77% of its
           // colour and the remaining 23% will come from its 2 neighbours
@@ -1602,7 +1601,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         }
 
         // 2.) U-like shape (surrounded with edges from 3 sides)
-        if (numberOfEdges == 3.0) {
+        if (numberOfEdges == 3u) {
           // with value of 0.13, the pixel will retain approx 72% of its
           // colour and the remaining 28% will be picked from its 3
           // neighbours (which are unlikely to be blurred too but could be)
@@ -1610,7 +1609,7 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
         }
 
         // 3.) Completely surrounded with edges from all 4 sides
-        if (numberOfEdges == 4.0) {
+        if (numberOfEdges == 4u) {
           // with value of 0.07, the pixel will retain 78% of its colour
           // and the remaining 22% will come from its 4 neighbours (which
           // are unlikely to be blurred)
@@ -1670,11 +1669,11 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
 
     \n#ifdef DEBUG_OUTPUT_AAINFO\n
         imageStore(g_resultTextureSlot2, screenPosI.xy,
-                   PackBlurAAInfo(screenPosI.xy, uint(numberOfEdges)));
+                   PackBlurAAInfo(screenPosI.xy, numberOfEdges));
     \n#endif\n
         imageStore(g_resultTextureFlt4Slot1, screenPosI.xy, color);
 
-        if (numberOfEdges == 2.0) {
+        if (numberOfEdges == 2u) {
           uint packedEdgesL = packedEdgesArray[(0 + _x) * 4 + (1 + _y)];
           uint packedEdgesB = packedEdgesArray[(1 + _x) * 4 + (0 + _y)];
           uint packedEdgesR = packedEdgesArray[(2 + _x) * 4 + (1 + _y)];
