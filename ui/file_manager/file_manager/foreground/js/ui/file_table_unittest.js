@@ -183,3 +183,44 @@ function testExportAndRestoreColumnConfigWithHidingColumn() {
   assertArrayEquals(expectedWidths, getColumnWidths(newModel));
   assertEquals(expectedTotalWidth, newModel.totalWidth);
 }
+
+function testNormalizeWidth() {
+  var newContentWidth = 150;
+  var expectedWidths = [10, 20, 30, 40, 50];
+
+  for (var i = 0; i < model.size; i++) {
+    model.setWidth(i, expectedWidths[i] * 17);
+  }
+
+  // Resizes columns proportionally
+  model.normalizeWidths(newContentWidth);
+
+  assertArrayEquals(expectedWidths, getColumnWidths(model));
+  assertEquals(newContentWidth, model.totalWidth);
+}
+
+function testNormalizeWidthWithSmallWidth() {
+  model.normalizeWidths(10);  // not enough width to contain all columns
+
+  // Should keep the minimum width.
+  getColumnWidths(model).map(function(width) {
+    assertEquals(FileTableColumnModel.MIN_WIDTH_, width);
+  });
+}
+
+function testSetWidthAndKeepTotal() {
+  // Make sure to take column snapshot. Required for setWidthAndKeepTotal.
+  model.initializeColumnPos();
+
+  // Attempt to expand the 3rd column exceeding the window.
+  model.setWidthAndKeepTotal(2, 400);
+
+  // Should keep the minimum width.
+  getColumnWidths(model).map(function(width) {
+    assertTrue(width >= FileTableColumnModel.MIN_WIDTH_);
+  });
+  var minWidth = FileTableColumnModel.MIN_WIDTH_;
+  // Total width = 500.
+  expectedWidths = [100, 100, 500 - 100 * 2 - minWidth * 2, minWidth, minWidth];
+  assertArrayEquals(expectedWidths, getColumnWidths(model));
+}
