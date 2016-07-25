@@ -171,7 +171,7 @@ bool StructTraits<skia::mojom::Bitmap, SkBitmap>::Read(
   SkAutoPixmapUnlock pixmap;
   if (static_cast<uint32_t>(b->width()) != data.width() ||
       static_cast<uint32_t>(b->height()) != data.height() ||
-      !b->requestLock(&pixmap) || !b->lockPixelsAreWritable() ||
+      !b->requestLock(&pixmap) ||
       !b->readyToDraw()) {
     return false;
   }
