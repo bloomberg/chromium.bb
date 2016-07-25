@@ -74,7 +74,7 @@ void CaptivePortalWindowProxy::Show() {
   InitCaptivePortalView();
 
   CaptivePortalView* portal = captive_portal_view_.release();
-  auto manager =
+  auto* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   widget_ = CreateWindowAsFramelessChild(
       portal,

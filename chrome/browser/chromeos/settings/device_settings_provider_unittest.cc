@@ -159,7 +159,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     };
 
     const base::FundamentalValue expected_enable_value(expected_enable_state);
-    for (const auto& setting : reporting_settings) {
+    for (auto* setting : reporting_settings) {
       EXPECT_TRUE(base::Value::Equals(provider_->Get(setting),
                                       &expected_enable_value))
           << "Value for " << setting << " does not match expected";

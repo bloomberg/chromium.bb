@@ -179,7 +179,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
   }
 
   std::string SetModesWithError(const std::string& args) {
-    auto func = new QuickUnlockPrivateSetModesFunction();
+    auto* func = new QuickUnlockPrivateSetModesFunction();
     func->SetAuthenticatorAllocatorForTesting(
         base::Bind(&CreateFakeAuthenticator));
     func->SetModesChangedEventHandlerForTesting(base::Bind(&DoNothing));

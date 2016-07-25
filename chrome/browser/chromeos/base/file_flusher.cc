@@ -166,14 +166,14 @@ void FileFlusher::Job::FinishOnUIThread() {
 FileFlusher::FileFlusher() : weak_factory_(this) {}
 
 FileFlusher::~FileFlusher() {
-  for (const auto& job : jobs_)
+  for (auto* job : jobs_)
     job->Cancel();
 }
 
 void FileFlusher::RequestFlush(const base::FilePath& path,
                                const std::vector<base::FilePath>& excludes,
                                const base::Closure& callback) {
-  for (const auto& job : jobs_) {
+  for (auto* job : jobs_) {
     if (path == job->path() || path.IsParent(job->path()))
       job->Cancel();
   }
@@ -187,7 +187,7 @@ void FileFlusher::ScheduleJob() {
   if (jobs_.empty())
     return;
 
-  auto job = jobs_.front();
+  auto* job = jobs_.front();
   if (!job->started())
     job->Start();
 }

@@ -139,7 +139,7 @@ bool AccessibilityHighlightManager::IsCursorVisible() {
 }
 
 void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
-  auto controller = AccessibilityFocusRingController::GetInstance();
+  auto* controller = AccessibilityFocusRingController::GetInstance();
 
   // The caret highlight takes precedence over the focus highlight if
   // both are visible.

@@ -98,10 +98,10 @@ void ArcProcessService::OnReceiveProcessList(
     mojo::Array<arc::mojom::RunningAppProcessInfoPtr> mojo_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto raw_processes = new vector<mojom::RunningAppProcessInfoPtr>();
+  auto* raw_processes = new vector<mojom::RunningAppProcessInfoPtr>();
   mojo_processes.Swap(raw_processes);
 
-  auto ret_processes = new vector<ArcProcess>();
+  auto* ret_processes = new vector<ArcProcess>();
   // Post to its dedicated worker thread to avoid race condition.
   // Since no two tasks with the same token should be run at the same.
   // Note: GetSequencedTaskRunner's shutdown behavior defaults to

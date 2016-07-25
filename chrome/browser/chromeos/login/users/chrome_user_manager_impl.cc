@@ -976,7 +976,7 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
 
   // Get the current list of device local accounts.
   std::vector<std::string> old_accounts;
-  for (const auto& user : users_) {
+  for (auto* user : users_) {
     if (user->IsDeviceLocalAccount())
       old_accounts.push_back(user->email());
   }

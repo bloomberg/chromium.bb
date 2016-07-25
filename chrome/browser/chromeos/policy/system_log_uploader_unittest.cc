@@ -27,7 +27,7 @@ const char* const kTestSystemLogFileNames[] = {"name1.txt", "name32.txt"};
 // Generate the fake system log files.
 SystemLogUploader::SystemLogs GenerateTestSystemLogFiles() {
   SystemLogUploader::SystemLogs system_logs;
-  for (auto const file_path : kTestSystemLogFileNames) {
+  for (auto* file_path : kTestSystemLogFileNames) {
     system_logs.push_back(std::make_pair(file_path, file_path));
   }
   return system_logs;

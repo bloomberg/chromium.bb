@@ -230,7 +230,7 @@ void ExistingUserController::UpdateLoginDisplay(
 
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
-  for (const auto& user : users) {
+  for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
     // KioskAppManager.

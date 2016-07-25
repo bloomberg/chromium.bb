@@ -306,7 +306,7 @@ void ArcPolicyBridge::InitializePolicyService() {
       user_manager::UserManager::Get()->GetPrimaryUser();
   Profile* const profile =
       chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-  auto profile_policy_connector =
+  auto* profile_policy_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
   policy_service_ = profile_policy_connector->policy_service();
   is_managed_ = profile_policy_connector->IsManaged();

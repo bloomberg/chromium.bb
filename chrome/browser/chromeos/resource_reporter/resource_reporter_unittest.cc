@@ -161,7 +161,7 @@ class ResourceReporterTest : public testing::Test {
   // properly sorted by the CPU usage in a descending order.
   bool IsCpuRecordsSetSorted() const {
     double current_cpu = std::numeric_limits<double>::max();
-    for (const auto& record : resource_reporter()->task_records_by_cpu_) {
+    for (auto* record : resource_reporter()->task_records_by_cpu_) {
       if (record->cpu_percent > current_cpu)
         return false;
       current_cpu = record->cpu_percent;
@@ -174,7 +174,7 @@ class ResourceReporterTest : public testing::Test {
   // are properly sorted by the memory usage in a descending order.
   bool IsMemoryRecordsSetSorted() const {
     int64_t current_memory = std::numeric_limits<int64_t>::max();
-    for (const auto& record : resource_reporter()->task_records_by_memory_) {
+    for (auto* record : resource_reporter()->task_records_by_memory_) {
       if (record->memory_bytes > current_memory)
         return false;
       current_memory = record->memory_bytes;

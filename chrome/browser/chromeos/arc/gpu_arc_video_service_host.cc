@@ -73,7 +73,7 @@ GpuArcVideoServiceHost::~GpuArcVideoServiceHost() {
 
 void GpuArcVideoServiceHost::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto video_instance = arc_bridge_service()->video()->instance();
+  auto* video_instance = arc_bridge_service()->video()->instance();
   DCHECK(video_instance);
   video_instance->Init(binding_.CreateInterfacePtrAndBind());
 }

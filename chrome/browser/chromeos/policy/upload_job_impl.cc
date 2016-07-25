@@ -212,7 +212,7 @@ bool UploadJobImpl::SetUpMultipart() {
   std::set<std::string> used_names;
 
   // Check uniqueness of header field names.
-  for (const auto& data_segment : data_segments_) {
+  for (auto* data_segment : data_segments_) {
     if (!used_names.insert(data_segment->GetName()).second)
       return false;
   }
@@ -224,7 +224,7 @@ bool UploadJobImpl::SetUpMultipart() {
   // allocation more efficient. It is not an error if this turns out to be too
   // small as std::string will take care of the realloc.
   size_t size = 0;
-  for (const auto& data_segment : data_segments_) {
+  for (auto* data_segment : data_segments_) {
     for (const auto& entry : data_segment->GetHeaderEntries())
       size += entry.first.size() + entry.second.size();
     size += kMaxMimeBoundarySize + data_segment->GetName().size() +
@@ -237,7 +237,7 @@ bool UploadJobImpl::SetUpMultipart() {
   post_data_.reset(new std::string);
   post_data_->reserve(size);
 
-  for (const auto& data_segment : data_segments_) {
+  for (auto* data_segment : data_segments_) {
     post_data_->append("--" + *mime_boundary_.get() + "\r\n");
     post_data_->append("Content-Disposition: form-data; name=\"" +
                        data_segment->GetName() + "\"");

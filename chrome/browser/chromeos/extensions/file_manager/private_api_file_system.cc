@@ -303,7 +303,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
 
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (const auto& profile : profiles) {
+  for (auto* profile : profiles) {
     if (profile->IsOffTheRecord())
       continue;
     const GURL site = util::GetSiteForExtensionId(extension_id(), profile);

@@ -46,7 +46,7 @@ std::unique_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
   std::unique_ptr<policy::SystemLogUploader::SystemLogs> system_logs(
       new policy::SystemLogUploader::SystemLogs());
   feedback::AnonymizerTool anonymizer;
-  for (auto const file_path : kSystemLogFileNames) {
+  for (auto* file_path : kSystemLogFileNames) {
     if (!base::PathExists(base::FilePath(file_path)))
       continue;
     std::string data = std::string();

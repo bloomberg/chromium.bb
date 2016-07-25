@@ -327,7 +327,7 @@ const ResourceReporter::TaskRecord* ResourceReporter::SampleTaskByCpu() const {
   // See https://en.wikipedia.org/wiki/Reservoir_sampling.
   TaskRecord* sampled_task = nullptr;
   double cpu_weights_sum = 0;
-  for (const auto& task_data : task_records_by_cpu_) {
+  for (auto* task_data : task_records_by_cpu_) {
     if ((base::RandDouble() * (cpu_weights_sum + task_data->cpu_percent)) >=
         cpu_weights_sum) {
       sampled_task = task_data;
@@ -346,7 +346,7 @@ ResourceReporter::SampleTaskByMemory() const {
   // See https://en.wikipedia.org/wiki/Reservoir_sampling.
   TaskRecord* sampled_task = nullptr;
   int64_t memory_weights_sum = 0;
-  for (const auto& task_data : task_records_by_memory_) {
+  for (auto* task_data : task_records_by_memory_) {
     if ((base::RandDouble() * (memory_weights_sum + task_data->memory_bytes)) >=
         memory_weights_sum) {
       sampled_task = task_data;
@@ -381,7 +381,7 @@ void ResourceReporter::OnMemoryPressure(
         GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
 
     // For the rest of tasks, report them using Rappor.
-    auto rappor_service = g_browser_process->rappor_service();
+    auto* rappor_service = g_browser_process->rappor_service();
     if (!rappor_service)
       return;
 

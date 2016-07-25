@@ -86,7 +86,7 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
   }
 
   if (!gaia_client_.get()) {
-    auto request_context =
+    auto* request_context =
         chromeos::ProfileHelper::Get()->GetSigninProfile()->GetRequestContext();
     gaia_client_.reset(new gaia::GaiaOAuthClient(request_context));
   }

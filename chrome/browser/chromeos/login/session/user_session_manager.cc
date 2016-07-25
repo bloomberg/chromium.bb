@@ -1855,7 +1855,7 @@ bool UserSessionManager::TokenHandlesEnabled() {
     return false;
   bool ephemeral_users_enabled = false;
   bool show_names_on_signin = true;
-  auto cros_settings = CrosSettings::Get();
+  auto* cros_settings = CrosSettings::Get();
   cros_settings->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
                             &ephemeral_users_enabled);
   cros_settings->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,

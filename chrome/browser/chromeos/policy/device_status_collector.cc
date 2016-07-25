@@ -881,7 +881,7 @@ void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
   const user_manager::UserList& users =
       chromeos::ChromeUserManager::Get()->GetUsers();
 
-  for (const auto& user : users) {
+  for (auto* user : users) {
     // Only users with gaia accounts (regular) are reported.
     if (!user->HasGaiaAccount())
       continue;
