@@ -7,17 +7,24 @@
 chrome.send('queryHistory', ['', 0, 0, 0, RESULTS_PER_PAGE]);
 chrome.send('getForeignSessions');
 
+/** @type {Promise} */
+var upgradePromise = null;
+
 /**
- * @param {HTMLElement} element
- * @return {!Promise} Resolves once a Polymer element has been fully upgraded.
+ * @return {!Promise} Resolves once the history-app has been fully upgraded.
  */
-function waitForUpgrade(element) {
-  return new Promise(function(resolve, reject) {
-    if (window.Polymer && Polymer.isInstance && Polymer.isInstance(element))
-      resolve();
-    else
-      $('bundle').addEventListener('load', resolve);
-  });
+function waitForAppUpgrade() {
+  if (!upgradePromise) {
+    upgradePromise = new Promise(function(resolve, reject) {
+      if (window.Polymer && Polymer.isInstance &&
+          Polymer.isInstance($('history-app'))) {
+        resolve();
+      } else {
+        $('bundle').addEventListener('load', resolve);
+      }
+    });
+  }
+  return upgradePromise;
 }
 
 // Chrome Callbacks-------------------------------------------------------------
@@ -28,9 +35,9 @@ function waitForUpgrade(element) {
  * @param {!Array<HistoryEntry>} results A list of results.
  */
 function historyResult(info, results) {
-  var appElem = $('history-app');
-  waitForUpgrade(appElem).then(function() {
-    /** @type {HistoryAppElement} */(appElem).historyResult(info, results);
+  waitForAppUpgrade().then(function() {
+    /** @type {HistoryAppElement} */($('history-app'))
+        .historyResult(info, results);
     // TODO(tsergeant): Showing everything as soon as the list is ready is not
     // ideal, as the sidebar can still pop in after. Fix this to show everything
     // at once.
@@ -52,9 +59,8 @@ function showNotification(
   // in the MD history anymore, so the parameter is not needed. Remove it
   // when WebUI is removed and this becomes the only client of
   // BrowsingHistoryHandler.
-  var appElem = $('history-app');
-  waitForUpgrade(appElem).then(function() {
-    /** @type {HistoryAppElement} */(appElem)
+  waitForAppUpgrade().then(function() {
+    /** @type {HistoryAppElement} */($('history-app'))
         .getSideBar().showFooter = includeOtherFormsOfBrowsingHistory;
   });
 }
@@ -69,9 +75,8 @@ function showNotification(
  * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
  */
 function setForeignSessions(sessionList, isTabSyncEnabled) {
-  var appElem = $('history-app');
-  waitForUpgrade(appElem).then(function() {
-    /** @type {HistoryAppElement} */(appElem)
+  waitForAppUpgrade().then(function() {
+    /** @type {HistoryAppElement} */($('history-app'))
         .setForeignSessions(sessionList, isTabSyncEnabled);
   });
 }
@@ -87,9 +92,8 @@ function historyDeleted() {
  * @param {boolean} isUserSignedIn Whether user is signed in or not now.
  */
 function updateSignInState(isUserSignedIn) {
-  var appElem = $('history-app');
-  waitForUpgrade(appElem).then(function() {
-    /** @type {HistoryAppElement} */(appElem)
+  waitForAppUpgrade().then(function() {
+    /** @type {HistoryAppElement} */($('history-app'))
         .updateSignInState(isUserSignedIn);
   });
 }

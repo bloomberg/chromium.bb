@@ -45,7 +45,7 @@ MaterialHistoryBrowserTest.prototype = {
 
     suiteSetup(function() {
       // Wait for the top-level app element to be upgraded.
-      return waitForUpgrade($('history-app')).then(function() {
+      return waitForAppUpgrade().then(function() {
         $('history-app').queryState_.queryingDisabled = true;
       });
     });
@@ -132,7 +132,7 @@ MaterialHistoryWithQueryParamTest.prototype = {
       });
 
       // Wait for the top-level app element to be upgraded.
-      return waitForUpgrade($('history-app'));
+      return waitForAppUpgrade();
     });
   },
 };
