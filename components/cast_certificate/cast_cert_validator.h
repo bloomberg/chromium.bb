@@ -16,6 +16,8 @@
 
 namespace cast_certificate {
 
+class CastCRL;
+
 // Describes the policy for a Device certificate.
 enum class CastDeviceCertPolicy {
   // The device certificate is unrestricted.
@@ -23,6 +25,14 @@ enum class CastDeviceCertPolicy {
 
   // The device certificate is for an audio-only device.
   AUDIO_ONLY,
+};
+
+enum class CRLPolicy {
+  // Revocation is only checked if a CRL is provided.
+  CRL_OPTIONAL,
+
+  // Revocation is always checked. A missing CRL results in failure.
+  CRL_REQUIRED,
 };
 
 // An object of this type is returned by the VerifyDeviceCert function, and can
@@ -58,8 +68,15 @@ class CertVerificationContext {
 //   * |certs[1..n-1]| are intermediates certificates to use in path building.
 //     Their ordering does not matter.
 //
-// * |time| is the UTC time to use for determining if the certificate
+// * |time| is the unix timestamp to use for determining if the certificate
 //   is expired.
+//
+// * |crl| is the CRL to check for certificate revocation status.
+//   If this is a nullptr, then revocation checking is currently disabled.
+//
+// * |crl_options| is for choosing how to handle the absence of a CRL.
+//   If crl_required is set to true, then an empty |crl| input would result
+//   in a failed verification. Otherwise, |crl| is ignored if it is absent.
 //
 // Outputs:
 //
@@ -72,9 +89,11 @@ class CertVerificationContext {
 //   * |policy| is filled with an indication of the device certificate's policy
 //     (i.e. is it for audio-only devices or is it unrestricted?)
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
-                      const base::Time::Exploded& time,
+                      const base::Time& time,
                       std::unique_ptr<CertVerificationContext>* context,
-                      CastDeviceCertPolicy* policy) WARN_UNUSED_RESULT;
+                      CastDeviceCertPolicy* policy,
+                      const CastCRL* crl,
+                      CRLPolicy crl_policy) WARN_UNUSED_RESULT;
 
 // Exposed only for unit-tests, not for use in production code.
 // Production code would get a context from VerifyDeviceCert().
@@ -86,13 +105,9 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
 
 // Exposed only for testing, not for use in production code.
 //
-// Injects trusted root certificates into the CastTrustStore.
-// |data| must remain valid and not be mutated throughout the lifetime of
-// the program.
-// Warning: Using this function concurrently with VerifyDeviceCert()
-//          is not thread safe.
-bool AddTrustAnchorForTest(const uint8_t* data,
-                           size_t length) WARN_UNUSED_RESULT;
+// Replaces trusted root certificates in the CastTrustStore.
+// Returns true if successful, false if nothing is changed.
+bool SetTrustAnchorForTest(const std::string& cert) WARN_UNUSED_RESULT;
 
 }  // namespace cast_certificate
 

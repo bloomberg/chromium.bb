@@ -39,14 +39,15 @@ void RunTest(TestResult expected_result,
              const std::string& expected_common_name,
              CastDeviceCertPolicy expected_policy,
              const std::string& certs_file_name,
-             const base::Time::Exploded& time,
+             const base::Time& time,
              const std::string& optional_signed_data_file_name) {
   auto certs =
       cast_certificate::testing::ReadCertificateChainFromFile(certs_file_name);
 
   std::unique_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
-  bool result = VerifyDeviceCert(certs, time, &context, &policy);
+  bool result = VerifyDeviceCert(certs, time, &context, &policy, nullptr,
+                                 CRLPolicy::CRL_OPTIONAL);
 
   if (expected_result == RESULT_FAIL) {
     ASSERT_FALSE(result);
@@ -89,24 +90,26 @@ void RunTest(TestResult expected_result,
 }
 
 // Creates a time in UTC at midnight.
-base::Time::Exploded CreateDate(int year, int month, int day) {
+base::Time CreateDate(int year, int month, int day) {
   base::Time::Exploded time = {0};
   time.year = year;
   time.month = month;
   time.day_of_month = day;
-  return time;
+  base::Time result;
+  EXPECT_TRUE(base::Time::FromUTCExploded(time, &result));
+  return result;
 }
 
 // Returns 2016-04-01 00:00:00 UTC.
 //
 // This is a time when most of the test certificate paths are
 // valid.
-base::Time::Exploded AprilFirst2016() {
+base::Time AprilFirst2016() {
   return CreateDate(2016, 4, 1);
 }
 
 // Returns 2015-01-01 00:00:00 UTC.
-base::Time::Exploded JanuaryFirst2015() {
+base::Time JanuaryFirst2015() {
   return CreateDate(2015, 1, 1);
 }
 
@@ -114,7 +117,7 @@ base::Time::Exploded JanuaryFirst2015() {
 //
 // This is so far in the future that the test chains in this unit-test
 // should all be invalid.
-base::Time::Exploded MarchFirst2040() {
+base::Time MarchFirst2040() {
   return CreateDate(2040, 3, 1);
 }
 

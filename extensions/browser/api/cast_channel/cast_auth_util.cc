@@ -148,12 +148,13 @@ AuthResult VerifyCredentials(const AuthResponse& response,
                     response.intermediate_certificate().end());
 
   // Use the current time when checking certificate validity.
-  base::Time::Exploded now;
-  base::Time::Now().UTCExplode(&now);
+  base::Time now = base::Time::Now();
 
+  // CRL should not be enforced until it is served.
   cast_crypto::CastDeviceCertPolicy device_policy;
-  if (!cast_crypto::VerifyDeviceCert(cert_chain, now, &verification_context,
-                                     &device_policy)) {
+  if (!cast_crypto::VerifyDeviceCert(
+          cert_chain, now, &verification_context, &device_policy, nullptr,
+          cast_certificate::CRLPolicy::CRL_OPTIONAL)) {
     // TODO(eroman): The error information was lost; this error is ambiguous.
     return AuthResult("Failed verifying cast device certificate",
                       AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
