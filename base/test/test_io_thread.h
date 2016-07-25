@@ -18,6 +18,13 @@ namespace base {
 // Create and run an IO thread with a MessageLoop, and
 // making the MessageLoop accessible from its client.
 // It also provides some ideomatic API like PostTaskAndWait().
+//
+// This API is not thread-safe:
+//   - Start()/Stop() should only be called from the main (creation) thread.
+//   - PostTask()/message_loop()/task_runner() are also safe to call from the
+//     underlying thread itself (to post tasks from other threads: get the
+//     task_runner() from the main thread first, it is then safe to pass _it_
+//     around).
 class TestIOThread {
  public:
   enum Mode { kAutoStart, kManualStart };
@@ -25,19 +32,14 @@ class TestIOThread {
   // Stops the I/O thread if necessary.
   ~TestIOThread();
 
-  // |Start()|/|Stop()| should only be called from the main (creation) thread.
-  // After |Stop()|, |Start()| may be called again to start a new I/O thread.
-  // |Stop()| may be called even when the I/O thread is not started.
+  // After Stop(), Start() may be called again to start a new I/O thread.
+  // Stop() may be called even when the I/O thread is not started.
   void Start();
   void Stop();
 
   // Post |task| to the IO thread.
   void PostTask(const tracked_objects::Location& from_here,
                 const base::Closure& task);
-  // Posts |task| to the IO-thread with an WaitableEvent associated blocks on
-  // it until the posted |task| is executed, then returns.
-  void PostTaskAndWait(const tracked_objects::Location& from_here,
-                       const base::Closure& task);
 
   base::MessageLoopForIO* message_loop() {
     return static_cast<base::MessageLoopForIO*>(io_thread_.message_loop());
