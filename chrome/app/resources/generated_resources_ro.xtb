@@ -1932,6 +1932,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Parola a fost salvată. O poți accesa împreună cu toate <ph name="SAVED_PASSWORDS_LINK" /> din orice browser.</translation>
 <translation id="3590587280253938212">rapid</translation>
 <translation id="3592260987370335752">&amp;Aflați mai multe</translation>
+<translation id="3592313833691251126">Permite extensiilor să creeze ferestre panou care se deschid în afara cadrului browserului. Dacă nu este activat, când încerci să deschizi un panou, se va deschide o fereastră pop-up. Comportamentul prestabilit implică să permită panouri doar pentru extensiile de pe lista albă. Comportamentul activat implică să permită panouri pentru toate extensiile. Comportamentul dezactivat implică să nu permită niciun panou pentru nicio extensie.</translation>
 <translation id="359283478042092570">Accesați</translation>
 <translation id="3593152357631900254">Activează modul Pinyin simplificat</translation>
 <translation id="3593965109698325041">Limitări privind numele certificatului</translation>
@@ -2254,7 +2255,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Reduceți luminozitatea tastelor</translation>
 <translation id="4035758313003622889">&amp;Manager de activități</translation>
 <translation id="4037084878352560732">Cal</translation>
-<translation id="4037102579141982963">Acest dispozitiv va trimite automat la Google date de diagnosticare și privind utilizarea. Poți modifica această setare oricând în <ph name="BEGIN_LINK1" />setările<ph name="END_LINK1" /> dispozitivului. <ph name="BEGIN_LINK2" />Află mai multe<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Activează comutatorul filelor de accesibilitate pentru Android.</translation>
 <translation id="4044260751144303020">Compunere pentru elementele cu poziție fixă.</translation>
 <translation id="404493185430269859">Motor de căutare prestabilit</translation>
@@ -3227,7 +3227,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5439568486246921931">Această acțiune va șterge definitiv descărcările, fișierele offline și datele de navigare ale utilizatorului. Acțiunea nu poate fi anulată.</translation>
 <translation id="544083962418256601">Creați comenzi rapide...</translation>
 <translation id="5441100684135434593">Rețea cu fir</translation>
-<translation id="5445088910157062298">Permite serviciului de localizare Google să ajute aplicațiile să îți găsească locația mai rapid și mai precis, ceea ce poate reduce consumul resurselor bateriei. La Google vor fi trimise date anonime privind locația, chiar și atunci când nu rulează nicio aplicație.</translation>
 <translation id="5448293924669608770">Hopa, a apărut o eroare la conectare</translation>
 <translation id="5449588825071916739">Marcați toate filele</translation>
 <translation id="5449716055534515760">Închide fe&amp;reastra</translation>
@@ -3693,7 +3692,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6110466548232134880">Identitatea organizației <ph name="ORGANIZATION" /> din <ph name="LOCALITY" /> a fost confirmată de <ph name="ISSUER" />. Serverul nu a oferit nicio informație privind Certificate Transparency.</translation>
 <translation id="6111770213269631447">Transliterație (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Permis în mod prestabilit</translation>
-<translation id="6112929985131461002">Acest dispozitiv va trimite automat la Google date de diagnosticare și privind utilizarea. Această <ph name="BEGIN_LINK1" />setare<ph name="END_LINK1" /> este impusă de administrator. <ph name="BEGIN_LINK2" />Află mai multe<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Schimbați setările pentru limbă și introducere de text</translation>
 <translation id="6120205520491252677">Fixați această pagină pe ecranul de pornire...</translation>
 <translation id="6122081475643980456">Conexiunea la internet este controlată</translation>
@@ -3929,7 +3927,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6452181791372256707">Respingeți</translation>
 <translation id="6454421252317455908">Metoda de introducere a textului în chineză (rapidă)</translation>
 <translation id="6455348477571378046">Tip de certificat:</translation>
-<translation id="6456234919706689841">Administratorul poate alege să trimită la Google date de diagnosticare și privind utilizarea pentru acest dispozitiv. Poți vedea această <ph name="BEGIN_LINK1" />setare<ph name="END_LINK1" /> aici. <ph name="BEGIN_LINK2" />Află mai multe<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Continuă blocarea JavaScript</translation>
 <translation id="6458308652667395253">Gestionează blocarea JavaScript...</translation>
 <translation id="6459488832681039634">Folosește selecția pentru a găsi</translation>
@@ -4708,7 +4705,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="7589461650300748890">Ușurel. Fiți atent(ă).</translation>
 <translation id="7589661784326793847">Așteptați puțin</translation>
-<translation id="7593635197364225277">Fă backup și restabilește automat datele aplicațiilor Play din Google Drive. Poți modifica oricând opțiunea în Setările Android. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (cod de eroare <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, importați</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
@@ -5214,7 +5210,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8300607741108698921">Configurare într-un minut</translation>
 <translation id="8303650969500425356">Permite JavaScript să blocheze orientarea ecranului.</translation>
 <translation id="8303655282093186569">Setări de introducere Pinyin</translation>
-<translation id="830424806940379275">Permite extensiilor să creeze ferestre panou care se deschid în afara cadrului de browser. În mod prestabilit sau dacă este dezactivat, când se încearcă deschiderea unui panou, se va deschide o fereastră pop-up. S-a renunțat la dezvoltarea panourilor pe sistemele de operare pentru desktop, iar opțiunea va fi eliminată în curând.</translation>
 <translation id="8306534594034939679">Activează compatibilitatea pentru Servicii alternative, o funcție experimentală HTTP.</translation>
 <translation id="8307376264102990850">Se calculează timpul până la finalizarea încărcării</translation>
 <translation id="8308179586020895837">Întreabă dacă <ph name="HOST" /> solicită acces la cameră</translation>

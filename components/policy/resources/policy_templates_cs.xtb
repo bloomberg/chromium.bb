@@ -22,13 +22,6 @@ Pokud je tato zásada nastavena na hodnotu false, statistiky nebudou hlášeny.
 Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny budou.</translation>
 <translation id="1046484220783400299">Na omezenou dobu povolit zastaralé funkce platformy Web Platform</translation>
 <translation id="1047128214168693844">Nepovolovat sledování fyzické polohy žádným webovým stránkám</translation>
-<translation id="1057535219415338480">Aktivuje předvídání síťových akcí v prohlížeči <ph name="PRODUCT_NAME" /> a zabraňuje uživatelům ve změně tohoto nastavení.
-
-      Kromě předběžného načítání záznamů DNS ovlivňuje tato zásada také předběžná připojení TCP a SSL a předběžné vykreslování webových stránek. Název této zásady odkazuje na předběžné načítání záznamů DNS pouze z historických důvodů.
-
-      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit.
-
-      Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání síťových akcí aktivováno, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="1062011392452772310">Povolit vzdálené ověření identity zařízení</translation>
 <translation id="1090892140761957285">Adresa URL k potvrzení ověřovacího tokenu klienta vzdáleného připojení.
 

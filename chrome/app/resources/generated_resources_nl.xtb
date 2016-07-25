@@ -1934,6 +1934,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Wachtwoord opgeslagen. Je hebt nu toegang tot dit wachtwoord en al je andere <ph name="SAVED_PASSWORDS_LINK" /> via je browser.</translation>
 <translation id="3590587280253938212">snel</translation>
 <translation id="3592260987370335752">&amp;Meer informatie</translation>
+<translation id="3592313833691251126">Extensies toestaan vensters te maken die buiten het browserframe worden geopend. Als dit niet is ingeschakeld, wordt bij het openen van een venster een pop-up geopend. Het standaardgedrag is dit alleen toe te staan voor extensies op de witte lijst. Als deze instelling is ingeschakeld, worden alle extensies toegestaan. Als deze instelling is uitgeschakeld, worden geen afzonderlijke vensters toegestaan voor extensies.</translation>
 <translation id="359283478042092570">Invoeren</translation>
 <translation id="3593152357631900254">Fuzzy-pinyinmethode inschakelen</translation>
 <translation id="3593965109698325041">Naambeperkingen voor certificaten</translation>
@@ -2256,7 +2257,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Helderheid van het toetsenbord verlagen</translation>
 <translation id="4035758313003622889">&amp;Taakbeheer</translation>
 <translation id="4037084878352560732">Paard</translation>
-<translation id="4037102579141982963">Dit apparaat verzendt automatisch diagnostische en gebruiksgegevens naar Google. Je kunt dit op elk gewenst moment wijzigen in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> van je apparaat. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">De tabbladschakelaar voor toegankelijkheidsservices inschakelen voor Android.</translation>
 <translation id="4044260751144303020">Samenstellen voor elementen met een vaste positie.</translation>
 <translation id="404493185430269859">Standaardzoekmachine</translation>
@@ -3228,7 +3228,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5439568486246921931">Met deze actie worden de downloads, offline bestanden en browsergegevens van deze gebruiker definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.</translation>
 <translation id="544083962418256601">Snelle links maken...</translation>
 <translation id="5441100684135434593">Bedraad netwerk</translation>
-<translation id="5445088910157062298">Laat de locatieservice van Google apps helpen je locatie snel en nauwkeurig te bepalen. Hierdoor kan het accuverbruik afnemen. Er worden anonieme locatiegegevens verzonden naar Google, ook als er geen apps actief zijn.</translation>
 <translation id="5448293924669608770">Er is een fout opgetreden tijdens het inloggen</translation>
 <translation id="5449588825071916739">Bladwijzer toevoegen aan alle tabbladen</translation>
 <translation id="5449716055534515760">Ve&amp;nster sluiten</translation>
@@ -3696,7 +3695,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="6110466548232134880">De identiteit van <ph name="ORGANIZATION" /> op <ph name="LOCALITY" /> is geverifieerd door <ph name="ISSUER" />. Er zijn geen certificaattransparantiegegevens geleverd door de server.</translation>
 <translation id="6111770213269631447">Transliteratie (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Standaard toegestaan</translation>
-<translation id="6112929985131461002">Dit apparaat verzendt automatisch diagnostische en gebruiksgegevens naar Google. Deze <ph name="BEGIN_LINK1" />instelling<ph name="END_LINK1" /> wordt afgedwongen door je beheerder. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Taal- en invoerinstellingen wijzigen</translation>
 <translation id="6120205520491252677">Deze pagina vastzetten op het startscherm...</translation>
 <translation id="6122081475643980456">Je internetverbinding wordt beheerd</translation>
@@ -3932,7 +3930,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="6452181791372256707">Weigeren</translation>
 <translation id="6454421252317455908">Chinese invoermethode (eenvoudig)</translation>
 <translation id="6455348477571378046">Type certificaat:</translation>
-<translation id="6456234919706689841">Je beheerder kan ervoor kiezen diagnostische en gebruiksgegevens van dit apparaat naar Google te verzenden. Je kunt hier deze <ph name="BEGIN_LINK1" />instelling<ph name="END_LINK1" /> weergeven. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">JavaScript blijven blokkeren</translation>
 <translation id="6458308652667395253">Blokkeren van JavaScript beheren...</translation>
 <translation id="6459488832681039634">Gebruik selectie voor zoekactie</translation>
@@ -4714,7 +4711,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="7587108133605326224">Baltisch</translation>
 <translation id="7589461650300748890">Oei, wees voorzichtig!</translation>
 <translation id="7589661784326793847">Een ogenblik geduld</translation>
-<translation id="7593635197364225277">Automatisch een back-up van app-gegevens van Google Play maken en terugzetten op Google Drive. Je kunt dit op elk gewenst moment wijzigen in de instellingen van Android. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (foutcode <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, importeren</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nooit vertalen</translation>
@@ -5221,7 +5217,6 @@ Resterende tijd berekenen</translation>
 <translation id="8300607741108698921">Installatie van één minuut</translation>
 <translation id="8303650969500425356">Hiermee geef je JavaScript de toestemming om de schermstand te vergrendelen.</translation>
 <translation id="8303655282093186569">Invoerinstellingen voor Pinyin</translation>
-<translation id="830424806940379275">Extensies toestaan vensters te maken die buiten het browserframe worden geopend. Standaard, of als de optie is uitgeschakeld, wordt er bij het openen van een venster een pop-up geopend. Vensters op desktopbesturingssystemen zijn verouderd en worden binnenkort verwijderd.</translation>
 <translation id="8306534594034939679">Ondersteuning inschakelen voor 'Alternatieve services', een experimentele HTTP-functie.</translation>
 <translation id="8307376264102990850">Wordt opgeladen
 Tijd berekenen tot vol</translation>
@@ -5666,7 +5661,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8940081510938872932">Je computer voert op dit moment te veel acties tegelijk uit. Probeer het later opnieuw.</translation>
 <translation id="8941173171815156065">Het recht '<ph name="PERMISSION" />' intrekken</translation>
 <translation id="8941248009481596111">Je verbinding met deze site is privé.</translation>
-<translation id="8941729603749328384">www.example.com</translation>
+<translation id="8941729603749328384">www.voorbeeld.com</translation>
 <translation id="8941882480823041320">Vorig woord</translation>
 <translation id="8942416694471994740">De toegang tot je microfoon wordt bepaald door je beheerder.</translation>
 <translation id="894360074127026135">Internationale Netscape-step-up</translation>

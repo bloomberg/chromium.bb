@@ -22,13 +22,6 @@
       Ja politikai ir iestatīta vērtība Patiesa vai nav iestatījuma, statistika tiks ziņota.</translation>
 <translation id="1046484220783400299">Iespējot novecojušu tīmekļa platformu funkcijas uz ierobežotu laiku</translation>
 <translation id="1047128214168693844">Neatļaut nevienai vietnei izsekot lietotāju fizisko atrašanās vietu</translation>
-<translation id="1057535219415338480">Pārlūkprogrammā <ph name="PRODUCT_NAME" /> tiek iespējota tīkla paredzēšana, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
-
-      Šī politika nodrošina ne tikai DNS pirmsielādes, bet arī TCP un SSL iepriekšējas savienojuma izveides un tīmekļa lapu iepriekšējas atveidošanas vadību. Politikas nosaukuma saistībai ar DNS pirmsielādi ir vēsturisks iemesls.
-
-      Ja šis iestatījums tiek iespējots vai atspējots, lietotāji pārlūkprogrammā <ph name="PRODUCT_NAME" /> to nevar mainīt vai ignorēt.
-
-      Ja šī politika nav iestatīta, šis iestatījums tiek iespējots, taču lietotājs to var mainīt.</translation>
 <translation id="1062011392452772310">Iespējot ierīces attālu apstiprināšanu</translation>
 <translation id="1090892140761957285">Vietrādis URL attālās piekļuves klienta autentifikācijas pilnvaras apstiprināšanai.
 

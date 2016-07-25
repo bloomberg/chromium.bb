@@ -78,11 +78,11 @@
 <translation id="1853692000353488670">Нов раздел „инкогнито“</translation>
 <translation id="1871284979644508959">Задължително поле</translation>
 <translation id="189172778771606813">Затваряне на слоя за навигация</translation>
-<translation id="1924956916668006832">Избиране на адрес за доставка</translation>
 <translation id="1933845786846280168">Избран раздел</translation>
 <translation id="194341124344773587">Включете разрешението за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Запазени пароли</translation>
 <translation id="1944384637046898011">Шифроване на всичко с паролата за Google от <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Приемани карти</translation>
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1984321224716884559">Отметки от Chrome Dev</translation>
@@ -159,7 +159,6 @@
 <translation id="2777555524387840389">Остават <ph name="SECONDS" /> сек</translation>
 <translation id="278029852808208386">Няма намерени устройства с Bluetooth. <ph name="BEGIN_LINK" />Потърсете отново<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Остава 1 сек</translation>
-<translation id="2781389167600714117">Избиране на опции за доставка</translation>
 <translation id="2811892995384186721">Не виждате устройството си? <ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
 <translation id="2842985007712546952">Основна папка</translation>
@@ -188,7 +187,6 @@
 <translation id="3117051980354074377">Влезте в Chrome, за да получите отметките си от другите си устройства.</translation>
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
 <translation id="3149891296864842641">Опция за доставка</translation>
-<translation id="3162882791484435636">Избиране на опция за доставка</translation>
 <translation id="3177909033752230686">Език на страницата:</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
@@ -216,6 +214,7 @@
 <translation id="3386292677130313581">Извеждане на запитване, преди на сайтовете да се разреши достъп до местоположението ви (препоръчително)</translation>
 <translation id="3387650086002190359">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки във файловата система.</translation>
 <translation id="3414952576877147120">Размер:</translation>
+<translation id="3431636764301398940">Запазване на картата на това устройство</translation>
 <translation id="3435896845095436175">Активиране</translation>
 <translation id="3452612588551937789">Влезте с профила си в Google, за да получите своите отметки, история, пароли и други настройки на всичките си устройства.</translation>
 <translation id="3485544713029068372">Smart Lock за пароли</translation>
@@ -261,7 +260,6 @@
 <translation id="4062305924942672200">Правна информация</translation>
 <translation id="4089831646916293264">Тази функция може да възпрепятства достъпа до предоставените от оператора ви платени услуги за данни.</translation>
 <translation id="4095146165863963773">Да се изтрият ли данните на приложенията?</translation>
-<translation id="4099423833822562131">Изберете адрес за доставка, за да проверите начините за доставяне.</translation>
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="410351446219883937">Автоматично възпроизвеждане</translation>
 <translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
@@ -412,6 +410,7 @@
 <translation id="572328651809341494">Скорошни раздели</translation>
 <translation id="5748802427693696783">Превключихте към стандартните раздели</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
+<translation id="57586589942790530">Невалиден номер на карта</translation>
 <translation id="5763382633136178763">Раздели в режим „инкогнито“</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771382037724542929">Искате ли да замените съществуващия файл „<ph name="FILE_NAME" />“ в/ъв „<ph name="DIRECTORY_NAME" />“?</translation>
@@ -430,7 +429,6 @@
 <translation id="5911030830365207728">Google Преводач</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5939518447894949180">Нулиране</translation>
-<translation id="5961742032223302715">Избиране на данни за връзка</translation>
 <translation id="5968595432776860642">„<ph name="VIDEO_TITLE" />“ се възпроизвежда</translation>
 <translation id="6010869025736512584">Осъществява се достъп до видеовхода</translation>
 <translation id="6012342843556706400">Chrome се нуждае от достъп до местоположението, за да го сподели с този сайт.</translation>

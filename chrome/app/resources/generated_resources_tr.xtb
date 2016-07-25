@@ -1934,6 +1934,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3590559774363307859">Şifre kaydedildi. Bu şifreye ve tüm <ph name="SAVED_PASSWORDS_LINK" /> öğelerinize herhangi bir tarayıcıdan erişebilirsiniz.</translation>
 <translation id="3590587280253938212">hızlı</translation>
 <translation id="3592260987370335752">&amp;Daha fazla bilgi edinin</translation>
+<translation id="3592313833691251126">Uzantıların, tarayıcı çerçevesinin dışında açılan panel pencereleri oluşturmasına izin verin. Bu etkinleştirilmezse, bir panel açılmaya çalışıldığında onun yerine pop-up açılır. Varsayılan davranış, yalnızca beyaz listeye eklenmiş uzantılara izin verilmesidir. Etkin durumdayken davranış, tüm uzantılara izin verilmesidir. Devre dışıyken davranış, hiçbir uzantının panellerine izin verilmemesidir.</translation>
 <translation id="359283478042092570">Gir</translation>
 <translation id="3593152357631900254">Benzer Pinyin modunu etkinleştir</translation>
 <translation id="3593965109698325041">Sertifika Adı Kısıtlamaları</translation>
@@ -2256,7 +2257,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="4034042927394659004">Tuş parlaklığını azalt</translation>
 <translation id="4035758313003622889">&amp;Görev yöneticisi</translation>
 <translation id="4037084878352560732">At</translation>
-<translation id="4037102579141982963">Bu cihaz, teşhis ve kullanım verilerini otomatik olarak Google'a gönderir. Bu seçimi, cihaz <ph name="BEGIN_LINK1" />ayarlarınızdan<ph name="END_LINK1" /> istediğiniz zaman değiştirebilirsiniz. <ph name="BEGIN_LINK2" />Daha Fazla Bilgi Edinin<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Android için erişilebilirlik sekmesi anahtarını etkinleştirin.</translation>
 <translation id="4044260751144303020">Sabit konumlu öğeler için birleştirme.</translation>
 <translation id="404493185430269859">Varsayılan arama motoru</translation>
@@ -3230,7 +3230,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5439568486246921931">Bu işlem, bu kullanıcının indirilen dosyalarını, çevrimdışı dosyalarını ve tarama verilerini kalıcı olarak silecektir ve geri alınamaz.</translation>
 <translation id="544083962418256601">Kısayol oluştur...</translation>
 <translation id="5441100684135434593">Kablolu ağ</translation>
-<translation id="5445088910157062298">Uygulamaların konumunuzu hızlı ve doğru bir şekilde bulmasına yardımcı olması için Google'ın konum hizmetine izin verin. Bu seçenek, pil tüketimini azaltabilir. Hiçbir uygulama çalışmıyorken bile konum bilgileri Google'a anonim olarak gönderilir.</translation>
 <translation id="5448293924669608770">Hata! Oturum açarken bir hata oluştu</translation>
 <translation id="5449588825071916739">Tüm Sekmelere Yer İşareti Koy</translation>
 <translation id="5449716055534515760">Pencereyi &amp;Kapat</translation>
@@ -3697,7 +3696,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6110466548232134880"><ph name="LOCALITY" /> konumundaki <ph name="ORGANIZATION" /> kuruluşunun kimliği <ph name="ISSUER" /> tarafından doğrulandı. Sunucu tarafından Sertifika Şeffaflığı ile ilgili bilgi sağlanmadı.</translation>
 <translation id="6111770213269631447">Harf çevirisi (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Varsayılan olarak izin verilir</translation>
-<translation id="6112929985131461002">Bu cihaz teşhis ve kullanım verilerini Google'a otomatik olarak gönderir. Bu <ph name="BEGIN_LINK1" />ayar<ph name="END_LINK1" />, yöneticiniz tarafından zorunlu tutuluyor. <ph name="BEGIN_LINK2" />Daha Fazla Bilgi Edinin<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Dil ve giriş ayarlarını değiştir</translation>
 <translation id="6120205520491252677">Bu sayfayı Başlangıç ekranına sabitle...</translation>
 <translation id="6122081475643980456">İnternet bağlantınız kontrol ediliyor</translation>
@@ -3933,7 +3931,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6452181791372256707">Reddet</translation>
 <translation id="6454421252317455908">Çince giriş yöntemi (hızlı)</translation>
 <translation id="6455348477571378046">Sertifika Türü:</translation>
-<translation id="6456234919706689841">Yöneticiniz bu cihazın teşhis ve kullanım verilerini Google'a göndermeyi seçebilir. Bu <ph name="BEGIN_LINK1" />ayarı<ph name="END_LINK1" />, buradan görüntüleyebilirsiniz. <ph name="BEGIN_LINK2" />Daha Fazla Bilgi Edinin<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">JavaScript'i engellemeye devam et</translation>
 <translation id="6458308652667395253">JavaScript engellemeyi yönet...</translation>
 <translation id="6459488832681039634">Bul için Seçim'i Kullan</translation>
@@ -4712,7 +4709,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7587108133605326224">Baltık</translation>
 <translation id="7589461650300748890">Aman, dikkatli olun.</translation>
 <translation id="7589661784326793847">Bir saniye bekleyin</translation>
-<translation id="7593635197364225277">Play uygulama verilerini otomatik olarak Google Drive'a yedekleyin ve geri yükleyin. Bunu istediğiniz zaman Android Ayarları'ndan değiştirebilirsiniz. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi Edinin<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (hata kodu <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Tamam, içe aktar</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
@@ -5219,7 +5215,6 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8300607741108698921">1 dakikada kurulum</translation>
 <translation id="8303650969500425356">JavaScript'in ekran yönünü kilitlemesine izin verir.</translation>
 <translation id="8303655282093186569">Pinyin giriş ayarları</translation>
-<translation id="830424806940379275">Uzantıların, tarayıcı çerçevesinin dışında açılan panel pencereleri oluşturmalarına izin verin. Varsayılan olarak veya devre dışı bırakıldığında, panel açma girişimleri bunun yerine bir pop-up açar. OSes masaüstündeki paneller artık kullanılmamaktadır ve yakında kaldırılacaktır.</translation>
 <translation id="8306534594034939679">Deneysel bir HTTP özelliği olan Alternatif Hizmetler için desteği etkinleştirin.</translation>
 <translation id="8307376264102990850">Şarj ediliyor
 Dolana kadar geçecek süre hesaplanıyor</translation>

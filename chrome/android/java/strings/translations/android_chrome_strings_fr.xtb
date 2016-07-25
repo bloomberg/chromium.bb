@@ -78,7 +78,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="1871284979644508959">Veuillez compléter ce champ.</translation>
 <translation id="189172778771606813">Fermer le panneau de navigation</translation>
-<translation id="1924956916668006832">Sélectionner une adresse de livraison</translation>
 <translation id="1933845786846280168">Onglet sélectionné</translation>
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
@@ -159,7 +158,6 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="2777555524387840389"><ph name="SECONDS" /> secondes restantes</translation>
 <translation id="278029852808208386">Aucun appareil Bluetooth trouvé. <ph name="BEGIN_LINK" />Relancez la recherche<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 seconde restante</translation>
-<translation id="2781389167600714117">Sélectionner une option de livraison</translation>
 <translation id="2811892995384186721">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
@@ -188,7 +186,6 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="3117051980354074377">Connectez-vous à Chrome pour accéder à vos favoris sur vos autres appareils.</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3149891296864842641">Option d'expédition</translation>
-<translation id="3162882791484435636">Sélectionner une option d'expédition</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de données stockées</translation>
@@ -261,7 +258,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4062305924942672200">Informations légales</translation>
 <translation id="4089831646916293264">Cette fonctionnalité peut perturber l'accès aux services de données premium fournis par votre opérateur.</translation>
 <translation id="4095146165863963773">Supprimer les données de l'application ?</translation>
-<translation id="4099423833822562131">Sélectionnez une adresse de livraison pour vérifier les méthodes d'expédition.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
@@ -430,7 +426,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5911030830365207728">Google Traduction</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
-<translation id="5961742032223302715">Sélectionner des coordonnées</translation>
 <translation id="5968595432776860642">Lecture de la vidéo "<ph name="VIDEO_TITLE" />" en cours…</translation>
 <translation id="6010869025736512584">Accès à l'entrée vidéo en cours…</translation>
 <translation id="6012342843556706400">Chrome doit disposer de l'accès à votre position pour la partager avec ce site.</translation>

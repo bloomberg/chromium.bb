@@ -23,6 +23,7 @@
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
+<translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
 <translation id="1653828314016431939">OK – Рестартиране сега</translation>
 <translation id="1682634494516646069">Google Chrome не може да чете и записва в директорията си за данни:
@@ -45,6 +46,7 @@
 <translation id="2286950485307333924">Вече влязохте в Chrome</translation>
 <translation id="2290014774651636340">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Google Chrome ще бъдат деактивирани.</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
+<translation id="2309047409763057870">Тази инсталация на Google Chrome е алтернативна и не може да се зададе като браузър по подразбиране.</translation>
 <translation id="2316129865977710310">Не, благодаря</translation>
 <translation id="2334084861041072223">Авторски права <ph name="YEAR" /> Google Inc. Всички права запазени.</translation>
 <translation id="2346876346033403680">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Ако това не е профилът ви, създайте нов потребител в браузъра, за да се съхранява отделно информацията ви.
@@ -68,6 +70,7 @@
 <translation id="2847461019998147611">Показване на Google Chrome на този език</translation>
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
+<translation id="2900322993655997287">Google Chrome не може да определи или зададе браузъра по подразбиране.</translation>
 <translation id="2997147809295888909">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът не предостави информация за прозрачност на сертификата.</translation>
 <translation id="3037838751736561277">Google Chrome работи на заден план.</translation>
 <translation id="3047079729301751317">Прекратяването на връзката с/ъс <ph name="USERNAME" /> ще изчисти историята, отметките, настройките и другите данни в Chrome, съхранени на това устройство. Данните в профила ви в Google няма да бъдат изчистени и могат да се управляват в <ph name="GOOGLE_DASHBOARD_LINK" />Google Табло за управление<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -84,6 +87,7 @@
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3311976847535831054">Този компютър вече няма да получава актуализации за 32-битовата версия на Google Chrome. Моля, надстройте до 64-битовата версия на браузъра.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="3395323229510056640">Получаване на помощ за Chrome OS</translation>
 <translation id="3396977131400919238">По време на инсталирането възникна грешка в операционната система. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="3398288718845740432">Скриване в менюто на Chrome</translation>
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
@@ -137,7 +141,9 @@
 <translation id="5132929315877954718">Открийте отлични приложения, игри, разширения и теми за Google Chrome.</translation>
 <translation id="5148419164691878332">Chrome ще съхрани това при <ph name="SAVED_PASSWORDS_LINK" /> и ще си го спомни следващия път, когато ви е необходимо.</translation>
 <translation id="5170938038195470297">Потребителският ви профил не може да се използва, защото е от по-нова версия на Google Chrome. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chrome.</translation>
+<translation id="5176234269072261959">Помогнете за подобряването на Chrome, като подадете сигнал за текущите настройки.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Общи условия<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome</translation>
+<translation id="5243785881901838525">Google Payments (копирано в Chrome)</translation>
 <translation id="5251420635869119124">Гостите могат да използват Chrome, без да оставят следи.</translation>
 <translation id="5253588388888612165">Ако споделяте компютъра с/ъс <ph name="PROFILE_NAME" />, добавете се към Chrome, за да сърфирате отделно. В противен случай прекратете връзката с профила в Google на този потребител.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ще се рестартира след 1 секунда.}other{Google Chrome ще се рестартира след # секунди.}}</translation>
@@ -171,6 +177,7 @@
 <translation id="6235018212288296708">Правило за Google Chrome за допускане на входящия трафик за mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome спря да се актуализира и вече не поддържа тази версия на операционната ви система.</translation>
 <translation id="629218512217695915">Използвайте парола, генерирана от Chrome</translation>
+<translation id="6338556085225130112">Google Chrome се актуализира</translation>
 <translation id="6368805772029492593">За повишаване на сигурността Google Chrome ще шифрова данните ви.</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече няма да се поддържат.</translation>
@@ -180,6 +187,7 @@
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6626317981028933585">За съжаление настройките на Mozilla Firefox са недостъпни, докато този браузър работи. За да импортирате тези настройки в Google Chrome, запазете работата си и затворете всички прозорци на Firefox. След това кликнете върху „Напред”.</translation>
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
+<translation id="6648058004052854464">Google Chrome не можа да се зададе като браузър по подразбиране.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>
@@ -205,6 +213,7 @@
 <translation id="7242029209006116544">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. По избор можете да създадете нов потребителски профил, за да отделите съществуващите си данни в Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече няма да се поддържат.</translation>
 <translation id="7339898014177206373">Нов прозорец</translation>
+<translation id="7393806081343982361">Google Chrome е браузърът ви по подразбиране. Ура!</translation>
 <translation id="7398801000654795464">Бяхте влезли в Chrome като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="7408085963519505752">Общи условия на Chrome OS</translation>
@@ -254,6 +263,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">То също контролира коя страница се показва при стартиране на Chrome.</translation>
 <translation id="870251953148363156">Актуализиране на &amp;Google Chrome</translation>
+<translation id="8793772303278047003">Chrome не е актуален.</translation>
 <translation id="8796108026289707191">Трябва да рестартирате Google Chrome сега.</translation>
 <translation id="8823341990149967727">Chrome не е актуален</translation>
 <translation id="884296878221830158">То също контролира коя страница се показва при стартиране на Chrome или при кликване върху бутона „Начална страница“.</translation>

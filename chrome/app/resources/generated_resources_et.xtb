@@ -1934,6 +1934,7 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Parool salvestati. Saate selle ja kõik oma <ph name="SAVED_PASSWORDS_LINK" /> avada igas brauseris.</translation>
 <translation id="3590587280253938212">kiire</translation>
 <translation id="3592260987370335752">&amp;Lisateave</translation>
+<translation id="3592313833691251126">Laiendustel lubatakse luua paneelaknad, mis avanevad brauserist väljaspool. Kui seade on keelatud, ilmub paneeli avamisel selle asemel hüpik. Vaikekäitumisel lubatakse see ainult lubatute loendisse lisatud laienduste puhul. Lubatud käitumisel lubatakse see kõigi laienduste puhul. Keelatud käitumise puhul keelatakse kõikide laienduste paneelid.</translation>
 <translation id="359283478042092570">Sisestusklahv</translation>
 <translation id="3593152357631900254">Luba hägus pinyini režiim</translation>
 <translation id="3593965109698325041">Sertifikaadi nimepiirangud</translation>
@@ -2256,7 +2257,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4034042927394659004">Klaviatuuri heleduse vähendamine</translation>
 <translation id="4035758313003622889">&amp;Tegumihaldur</translation>
 <translation id="4037084878352560732">Hobune</translation>
-<translation id="4037102579141982963">See seade saadab Google'ile automaatselt diagnostika- ja kasutusandmeid. Seda saate seadme <ph name="BEGIN_LINK1" />seadetes<ph name="END_LINK1" /> alati muuta. <ph name="BEGIN_LINK2" />Lisateave<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Androidi vahelehe vahetajale juurdepääsu lubamine.</translation>
 <translation id="4044260751144303020">Fikseeritud positsiooni elementide jaoks küljendamine.</translation>
 <translation id="404493185430269859">Vaikeotsingumootor</translation>
@@ -3229,7 +3229,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5439568486246921931">See toiming kustutab jäädavalt selle kasutaja allalaadimised, võrguühenduseta failid ja sirvimisandmed. Seda ei saa tagasi võtta.</translation>
 <translation id="544083962418256601">Loo otseteid ...</translation>
 <translation id="5441100684135434593">Kaabelvõrk</translation>
-<translation id="5445088910157062298">Lubage Google'i asukohateenuste abirakendustel kiirelt ja täpselt teie asukoht leida. See aitab vähendada akukasutust. Google'ile saadetakse anonüümsed asukohaandmed, isegi kui ükski rakendus ei tööta.</translation>
 <translation id="5448293924669608770">Vabandust! Sisselogimisel läks midagi valesti</translation>
 <translation id="5449588825071916739">Kõikide vahelehtede järjehoidjatesse lisamine</translation>
 <translation id="5449716055534515760">Sule &amp;aken</translation>
@@ -3697,7 +3696,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="6110466548232134880">Organisatsiooni <ph name="ORGANIZATION" /> identiteedi asukohas <ph name="LOCALITY" /> kinnitas väljaandja <ph name="ISSUER" />. Server ei esitanud sertifikaadi läbipaistvuse teavet.</translation>
 <translation id="6111770213269631447">Transliteratsioon (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Vaikimisi lubatud</translation>
-<translation id="6112929985131461002">See seade saadab Google'ile automaatselt diagnostika- ja kasutusandmeid. Selle <ph name="BEGIN_LINK1" />seade<ph name="END_LINK1" /> on jõustanud administraator. <ph name="BEGIN_LINK2" />Lisateave<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Keele ja sisestusseadete muutmine</translation>
 <translation id="6120205520491252677">Kinnita see leht avakuvale ...</translation>
 <translation id="6122081475643980456">Teie Interneti-ühendust juhitakse</translation>
@@ -3933,7 +3931,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="6452181791372256707">Lükka tagasi</translation>
 <translation id="6454421252317455908">Hiina sisestusviis (kiire)</translation>
 <translation id="6455348477571378046">Sertifikaadi tüüp:</translation>
-<translation id="6456234919706689841">Administraator võib otsustada saata Google'ile diagnostika- ja kasutusandmeid. Seda <ph name="BEGIN_LINK1" />seadet<ph name="END_LINK1" /> saate vaadata siin. <ph name="BEGIN_LINK2" />Lisateave<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Jätka JavaScripti blokeerimist</translation>
 <translation id="6458308652667395253">JavaScripti blokeerimise haldamine...</translation>
 <translation id="6459488832681039634">Kasuta otsimiseks valikut</translation>
@@ -4714,7 +4711,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7587108133605326224">Balti</translation>
 <translation id="7589461650300748890">Hei! Olge ettevaatlik.</translation>
 <translation id="7589661784326793847">Oodake sekund</translation>
-<translation id="7593635197364225277">Play rakenduse andmed varundatakse automaatselt Google Drive'i ja taastatakse. Seda seadet saate Androidi seadetes alati muuta. <ph name="BEGIN_LINK1" />Lisateave<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (veakood <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Jah, impordi</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE" /></translation>
@@ -5220,7 +5216,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8300607741108698921">1-minutiline seadistus</translation>
 <translation id="8303650969500425356">Lubab JavaScriptil ekraanisuuna lukustada.</translation>
 <translation id="8303655282093186569">Pinyini sisestusseaded</translation>
-<translation id="830424806940379275">Lubage laiendustel luua brauseriraamist väljaspool avanevaid paneelaknaid. Kui reegel on keelatud või määratud vaikeseadele, avaneb paneeli asemel hüpik. Lauaarvutitele mõeldud operatsioonisüsteemides on paneelide tugi katkestatud ja eemaldatakse peagi.</translation>
 <translation id="8306534594034939679">Alternatiivsete teenuste, eksperimentaalse HTTP-funktsiooni toe lubamine.</translation>
 <translation id="8307376264102990850">Laadimine
 Täislaadimiseks kuluva aja arvutamine</translation>

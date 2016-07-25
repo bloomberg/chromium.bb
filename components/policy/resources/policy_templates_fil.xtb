@@ -22,13 +22,6 @@
       Kung itatakda sa true o hindi naitakda, iuulat ang mga istatistika.</translation>
 <translation id="1046484220783400299">I-enable ang mga hindi na ginagamit na feature ng web platform sa loob ng limitadong panahon</translation>
 <translation id="1047128214168693844">Huwag payagan ang anumang site na subaybayan ang aktwal na lokasyon ng mga user</translation>
-<translation id="1057535219415338480">Binibigyang-daan ang paghuhula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
-
-      Kinokontrol nito hindi lang ang paunang pag-fetch ng DNS ngunit pati rin ang paunang pagkonekta at pag-render na TCP at SSL ng mga web page. Ang pangalan ng patakaran ay tumutukoy sa paunang pag-fetch ng DNS para sa mga makasaysayang dahilan.
-
-      Kung papaganahin mo o hindi mo papaganahin ang setting na ito, hindi mababago o ma-o-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
-
-      Kung hahayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit mababago ito ng user.</translation>
 <translation id="1062011392452772310">I-enable ang malayuang pagpapatotoo para sa device</translation>
 <translation id="1090892140761957285">URL para sa pagpapatunay ng token ng pagpapatotoo ng client ng malayuang access.
 

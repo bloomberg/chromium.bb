@@ -22,13 +22,6 @@
       If set to true or left unset, statistics will be reported.</translation>
 <translation id="1046484220783400299">Enable deprecated web platform features for a limited time</translation>
 <translation id="1047128214168693844">Do not allow any site to track the users' physical location</translation>
-<translation id="1057535219415338480">Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
-
-      This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="1090892140761957285">URL for validating remote access client authentication token.
 

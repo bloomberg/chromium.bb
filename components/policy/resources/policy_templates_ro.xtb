@@ -22,13 +22,6 @@
       Dacă politica este activată sau nu este configurată, statisticile vor fi raportate.</translation>
 <translation id="1046484220783400299">Activează funcții învechite ale platformei web pentru o perioadă limitată</translation>
 <translation id="1047128214168693844">Nu permite niciunui site să urmărească locația fizică a utilizatorilor</translation>
-<translation id="1057535219415338480">Activează predicția rețelei în <ph name="PRODUCT_NAME" /> și împiedică modificarea acestei setări de către utilizatori.
-
-      Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web. Numele politicii se referă la preluarea anticipată a datelor DNS din motive de consecvență.
-
-      Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />.
-
-      Dacă această politică nu este setată, această setare va fi activată, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="1062011392452772310">Activați atestarea la distanță pentru dispozitiv</translation>
 <translation id="1090892140761957285">Adresă URL pentru validarea indicativului de autentificare a clientului cu acces la distanță.
 

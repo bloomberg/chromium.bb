@@ -22,13 +22,6 @@
       Ist die Richtlinie auf "true" eingestellt oder nicht konfiguriert, werden Statistiken ausgegeben.</translation>
 <translation id="1046484220783400299">Veraltete Webplattformfunktionen für einen begrenzten Zeitraum aktivieren</translation>
 <translation id="1047128214168693844">Verfolgung des physischen Standorts der Nutzer für keine Website zulassen</translation>
-<translation id="1057535219415338480">Aktiviert die Netzwerkvervollständigung in <ph name="PRODUCT_NAME" /> und verhindert, dass diese Einstellung von Nutzern geändert wird.
-
-      Hiermit wird nicht nur der DNS-Vorabruf gesteuert, sondern auch die TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten. Der Richtlinienname bezieht sich aus historischen Gründen auf den DNS-Vorabruf.
-
-      Wenn Sie diese Einstellung aktivieren oder deaktivieren, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
-
-      Bleibt diese Richtlinie unkonfiguriert, wird diese Einstellung aktiviert, kann jedoch vom Nutzer geändert werden.</translation>
 <translation id="1062011392452772310">Remote-Bescheinigung (Remote Attestation) für das Gerät aktivieren</translation>
 <translation id="1090892140761957285">URL zur Validierung der Authentifizierungstoken von Clients für den Remotezugriff
 

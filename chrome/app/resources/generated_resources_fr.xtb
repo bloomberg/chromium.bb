@@ -1933,6 +1933,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Le mot de passe a bien été enregistré. Vous pouvez y accéder, ainsi qu'à tous vos <ph name="SAVED_PASSWORDS_LINK" />, dans n'importe quel navigateur.</translation>
 <translation id="3590587280253938212">rapide</translation>
 <translation id="3592260987370335752">&amp;En savoir plus</translation>
+<translation id="3592313833691251126">Autorise les extensions à créer des fenêtres de type panneau qui s'ouvrent en dehors du cadre du navigateur. Si cette fonctionnalité n'est pas activée, les tentatives d'ouverture d'un panneau entraînent l'ouverture d'une fenêtre pop-up. Le comportement par défaut consiste à n'autoriser les panneaux que pour les extensions ajoutées à la liste blanche. Si l'option est activée, toutes les extensions sont autorisées à créer des panneaux. Si elle est désactivée, les panneaux sont interdits pour toutes les extensions.</translation>
 <translation id="359283478042092570">Se connecter</translation>
 <translation id="3593152357631900254">Activer le mode Pinyin fuzzy</translation>
 <translation id="3593965109698325041">Contraintes de nom du certificat</translation>
@@ -2255,7 +2256,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4034042927394659004">Réduire la luminosité du clavier</translation>
 <translation id="4035758313003622889">Gestionnaire de &amp;tâches</translation>
 <translation id="4037084878352560732">Cheval</translation>
-<translation id="4037102579141982963">Cet appareil enverra automatiquement des diagnostics et des données d'utilisation à Google. Vous pouvez modifier cette option à tout moment dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" /> de l'appareil. <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Activer la fonctionnalité d'accessibilité pour le changement d'onglets sur Android</translation>
 <translation id="4044260751144303020">Composition des éléments fixes</translation>
 <translation id="404493185430269859">Moteur de recherche par défaut</translation>
@@ -3228,7 +3228,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5439568486246921931">Les téléchargements, les fichiers hors connexion et les données de navigation de cet utilisateur seront supprimés définitivement. Cette action est irréversible.</translation>
 <translation id="544083962418256601">Créer des raccourcis…</translation>
 <translation id="5441100684135434593">Réseau câblé</translation>
-<translation id="5445088910157062298">L'activation du service de localisation de Google permet aux applications de rechercher rapidement et précisément votre position, ce qui peut économiser la batterie. Des données de localisation anonymes sont envoyées à Google, même si aucune application ne fonctionne.</translation>
 <translation id="5448293924669608770">Un problème est survenu lors de la connexion</translation>
 <translation id="5449588825071916739">Ajouter tous les onglets aux favoris…</translation>
 <translation id="5449716055534515760">Fe&amp;rmer la fenêtre</translation>
@@ -3697,7 +3696,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6110466548232134880">L'identité de l'organisation <ph name="ORGANIZATION" />, située à <ph name="LOCALITY" />, a été validée par <ph name="ISSUER" />. Aucune information relative à la transparence des certificats n'a été fournie par le serveur.</translation>
 <translation id="6111770213269631447">Translittération (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Autorisée par défaut</translation>
-<translation id="6112929985131461002">Cet appareil enverra automatiquement des diagnostics et des données d'utilisation à Google. Ce <ph name="BEGIN_LINK1" />paramètre<ph name="END_LINK1" /> est contrôlé par votre administrateur. <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Modifier les paramètres de langue et de saisie</translation>
 <translation id="6120205520491252677">Épingler cette page à l'écran de démarrage…</translation>
 <translation id="6122081475643980456">Une extension a pris le contrôle de votre connexion Internet</translation>
@@ -3933,7 +3931,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6452181791372256707">Refuser</translation>
 <translation id="6454421252317455908">Mode de saisie du chinois (quick)</translation>
 <translation id="6455348477571378046">Type de certificat :</translation>
-<translation id="6456234919706689841">Votre administrateur peut choisir d'envoyer à Google des diagnostics et des données d'utilisation relatifs à cet appareil. Vous pouvez consulter ce <ph name="BEGIN_LINK1" />paramètre<ph name="END_LINK1" /> ici. <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Continuer à bloquer JavaScript</translation>
 <translation id="6458308652667395253">Configurer le blocage de JavaScript...</translation>
 <translation id="6459488832681039634">Rechercher la sélection</translation>
@@ -4712,7 +4709,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7587108133605326224">Langues baltes</translation>
 <translation id="7589461650300748890">Attention !</translation>
 <translation id="7589661784326793847">Veuillez patienter un court instant.</translation>
-<translation id="7593635197364225277">Sauvegardez et restaurez automatiquement les données de l'application Play dans Google Drive. Vous pouvez modifier cette fonctionnalité à tout moment dans les paramètres Android. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (code d'erreur : <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, importer</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /> </translation>
@@ -5219,7 +5215,6 @@ Calcul de la durée restante</translation>
 <translation id="8300607741108698921">Configurer en une minute</translation>
 <translation id="8303650969500425356">Cette option permet de verrouiller l'orientation de l'écran avec JavaScript.</translation>
 <translation id="8303655282093186569">Paramètres de saisie pinyin</translation>
-<translation id="830424806940379275">Autorise les extensions à créer des fenêtres de type panneau qui s'ouvrent en dehors du cadre du navigateur. Par défaut ou si cette option est désactivée, une tentative d'ouverture d'un panneau entraîne l'ouverture d'une fenêtre pop-up. Les panneaux sur les OS de bureau sont abandonnés et seront prochainement supprimés.</translation>
 <translation id="8306534594034939679">Activer la compatibilité avec les autres services, une fonctionnalité HTTP expérimentale</translation>
 <translation id="8307376264102990850">Calcul du temps de chargement</translation>
 <translation id="8308179586020895837">Demander si l'accès à votre caméra est requis sur <ph name="HOST" /></translation>

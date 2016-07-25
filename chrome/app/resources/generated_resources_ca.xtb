@@ -1931,6 +1931,7 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">S'ha desat la contrasenya. Hi podeu accedir, així com a totes les <ph name="SAVED_PASSWORDS_LINK" />, des de qualsevol navegador.</translation>
 <translation id="3590587280253938212">ràpid</translation>
 <translation id="3592260987370335752">&amp;Més informació</translation>
+<translation id="3592313833691251126">Permet que les extensions creïn finestres del tauler que s'obren fora del marc del navegador. Si es prova d'obrir un tauler i aquesta funció no està activada, s'obrirà una finestra emergent. S'admeten només les extensions afegides a la llista blanca de manera predeterminada. Si activeu aquesta opció, es permeten en totes les extensions. Si l'opció està desactivada no s'admet en cap extensió.</translation>
 <translation id="359283478042092570">Entra</translation>
 <translation id="3593152357631900254">Activa el mode pinyin per aproximació</translation>
 <translation id="3593965109698325041">Restriccions del nom de certificat</translation>
@@ -2252,7 +2253,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Disminueix la brillantor de les tecles</translation>
 <translation id="4035758313003622889">Gestor de &amp;tasques</translation>
 <translation id="4037084878352560732">Cavall</translation>
-<translation id="4037102579141982963">Aquest dispositiu enviarà automàticament dades de diagnòstic i d'ús a Google. Podeu canviar-ho en qualsevol moment a la <ph name="BEGIN_LINK1" />configuració<ph name="END_LINK1" /> del dispositiu. <ph name="BEGIN_LINK2" />Més informació<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Activa el selector de pestanyes d'accessibilitat per a Android.</translation>
 <translation id="4044260751144303020">Composició per a elements de posició fixa.</translation>
 <translation id="404493185430269859">Motor de cerca predeterminat</translation>
@@ -3222,7 +3222,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5439568486246921931">Amb aquesta acció, se suprimiran definitivament les baixades, els fitxers sense connexió i les dades de navegació d'aquest usuari. Aquesta acció no es pot desfer.</translation>
 <translation id="544083962418256601">Crea dreceres...</translation>
 <translation id="5441100684135434593">Xarxa de cable</translation>
-<translation id="5445088910157062298">Permet que el servei d'ubicació de Google ajudi les aplicacions a trobar la teva ubicació de manera ràpida i precisa, la qual cosa pot reduir el consum de bateria. A més, s'enviaran dades d'ubicació anònimes a Google, fins i tot quan no s'estigui executant cap aplicació.</translation>
 <translation id="5448293924669608770">S'ha produït un problema en iniciar la sessió</translation>
 <translation id="5449588825071916739">Afegeix totes les pestanyes a les adreces d'interès</translation>
 <translation id="5449716055534515760">Tanca la &amp;finestra</translation>
@@ -3690,7 +3689,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6110466548232134880"><ph name="ISSUER" /> ha verificat la identitat de l'organització <ph name="ORGANIZATION" /> a <ph name="LOCALITY" />. El servidor no ha proporcionat informació de Transparència de certificats.</translation>
 <translation id="6111770213269631447">Transliteració (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Permès de manera predeterminada</translation>
-<translation id="6112929985131461002">Aquest dispositiu enviarà automàticament dades de diagnòstic i d'ús a Google. L'administrador ha definit aquesta <ph name="BEGIN_LINK1" />opció de configuració<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Més informació<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Canvia la configuració d'idioma i d'introducció de text</translation>
 <translation id="6120205520491252677">Fixa aquesta pàgina a la pantalla d'inici...</translation>
 <translation id="6122081475643980456">La vostra connexió a Internet s'està controlant</translation>
@@ -3925,7 +3923,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6452181791372256707">Rebutja</translation>
 <translation id="6454421252317455908">Mètode d'entrada de xinès (ràpid)</translation>
 <translation id="6455348477571378046">Tipus de certificat:</translation>
-<translation id="6456234919706689841">És possible que l'administrador decideixi enviar automàticament a Google dades de diagnòstic i d'ús sobre aquest dispositiu. Podeu <ph name="BEGIN_LINK1" />consultar aquesta opció de configuració<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Més informació<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Continua bloquejant JavaScript</translation>
 <translation id="6458308652667395253">Gestiona el bloqueig de JavaScript...</translation>
 <translation id="6459488832681039634">Utilitza la selecció per a la cerca</translation>
@@ -4697,7 +4694,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7587108133605326224">Bàltic</translation>
 <translation id="7589461650300748890">Aneu amb compte</translation>
 <translation id="7589661784326793847">Espereu un moment.</translation>
-<translation id="7593635197364225277">Crea còpies de seguretat automàtiques de les dades de l'aplicació Play a Google Drive i restaura-les. Pots canviar-ho en qualsevol moment a la configuració d'Android. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (codi d'error <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">D'acord, importa</translation>
 <translation id="7600965453749440009">No tradueixis mai de: <ph name="LANGUAGE" /></translation>
@@ -5203,7 +5199,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8300607741108698921">Configuració en 1 minut</translation>
 <translation id="8303650969500425356">Permet que JavaScript bloquegi l'orientació de la pantalla.</translation>
 <translation id="8303655282093186569">Configuració de la introducció en pinyin</translation>
-<translation id="830424806940379275">Permet que les extensions creïn finestres de tauler que s'obrin fora del marc del navegador. De manera predeterminada, o bé si es desactiva, s'obrirà una finestra emergent en provar d'obrir un tauler. Els taulers de sistemes operatius d'ordinador estan obsolets i se suprimiran aviat.</translation>
 <translation id="8306534594034939679">Activa la compatibilitat amb Serveis alternatius, una funció HTTP experimental.</translation>
 <translation id="8307376264102990850">S'està carregant el temps de càlcul fins que estigui ple</translation>
 <translation id="8308179586020895837">Pregunta si <ph name="HOST" /> vol accedir a la càmera</translation>

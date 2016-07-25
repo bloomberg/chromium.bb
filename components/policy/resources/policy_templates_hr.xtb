@@ -22,13 +22,6 @@
       Ako se postavi na "istinito" ili se ne postavi, izvješćivat će se o statističkim podacima.</translation>
 <translation id="1046484220783400299">Omogući zastarjele značajke web-platforme na ograničeno vrijeme</translation>
 <translation id="1047128214168693844">Ne dopuštaj web-lokacijama praćenje fizičke lokacije korisnika</translation>
-<translation id="1057535219415338480">Omogućuje predviđanje mreže na usluzi <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene ovu postavku.
-
-      Ovime se ne nadzire samo pretpreuzimanje DNS-a, već i TCP i SSL pretpovezivanje i pretprikaz web-stranica. Naziv pravila odnosi se na pretpreuzimanje DNS-a iz povijesnih razloga.
-
-      Ako omogućite ili onemogućite ovu postavku, korisnici je ne mogu na usluzi <ph name="PRODUCT_NAME" /> promijeniti niti nadjačati.
-
-      Ako ovo pravilo nije postavljeno, bit će omogućeno, no korisnik će ga moći promijeniti.</translation>
 <translation id="1062011392452772310">Omogući daljinsku ovjeru za uređaj</translation>
 <translation id="1090892140761957285">URL za potvrđivanje autentifikacijske oznake klijenta daljinskog pristupa.
 

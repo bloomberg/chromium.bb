@@ -25,6 +25,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1587223624401073077">Google Chrome använder din kamera.</translation>
 <translation id="1619887657840448962">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
+<translation id="1628000112320670027">Få hjälp med Chrome</translation>
 <translation id="163860049029591106">Komma igång med Chrome OS</translation>
 <translation id="1653828314016431939">OK - starta om nu</translation>
 <translation id="1682634494516646069">Google Chrome kan inte läsa och skriva till datakatalogen:
@@ -47,6 +48,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2286950485307333924">Du är nu inloggad i Chrome</translation>
 <translation id="2290014774651636340">Googles API-nycklar saknas. Vissa funktioner i Google Chrome kommer att vara inaktiverade.</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
+<translation id="2309047409763057870">Det här är en sekundär installation av Google Chrome. Det går inte att göra den till standardwebbläsare.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="2334084861041072223">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2346876346033403680">Någon har tidigare loggat in i Chrome på den här datorn som <ph name="ACCOUNT_EMAIL_LAST" />. Om det inte är ditt konto skapar du en ny Chrome-användare för att hålla din information privat för dig.
@@ -70,6 +72,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2847461019998147611">Visa Google Chrome på det här språket</translation>
 <translation id="2871893339301912279">Du är inloggad i Chrome.</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
+<translation id="2900322993655997287">Google Chrome kan inte fastställa eller ange standardwebbläsaren.</translation>
 <translation id="2997147809295888909">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Inga certifikattransparensuppgifter skickades från servern.</translation>
 <translation id="3037838751736561277">Google Chrome körs i bakgrundsläge.</translation>
 <translation id="3047079729301751317">Om du kopplar från <ph name="USERNAME" /> rensas din historik, dina bokmärken, dina inställningar och annan Chrome-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK" />Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
@@ -86,6 +89,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="3311976847535831054">Den här datorn får inte längre uppdateringar för 32-bitarsversionen av Google Chrome. Uppgradera till Google Chrome med 64 bitar.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="3395323229510056640">Få hjälp med Chrome OS</translation>
 <translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Ladda ned Google Chrome igen.</translation>
 <translation id="3398288718845740432">Dölj i Chrome-menyn</translation>
 <translation id="3451115285585441894">Lägger till i Chrome ...</translation>
@@ -141,7 +145,9 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="5170938038195470297">Profilen kan inte användas eftersom den tillhör en nyare version av Google Chrome.
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om du vill använda en nyare version av Chrome.</translation>
+<translation id="5176234269072261959">Hjälp oss att förbättra Chrome genom att rapportera dina aktuella inställningar.</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="5243785881901838525">Google Payments (har kopierats till Chrome)</translation>
 <translation id="5251420635869119124">Gäster kan använda Chrome utan att lämna spår.</translation>
 <translation id="5253588388888612165">Om du delar den här datorn med <ph name="PROFILE_NAME" /> lägger du till dig själv i Chrome så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome startas om om en sekund.}other{Google Chrome startas om om # sekunder.}}</translation>
@@ -177,6 +183,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6235018212288296708">Regel som tillåter inkommande mDNS-trafik för Google Chrome.</translation>
 <translation id="6236285698028833233">Google Chrome uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
 <translation id="629218512217695915">Använd lösenordet som genererats av Chrome</translation>
+<translation id="6338556085225130112">Uppdatera Google Chrome</translation>
 <translation id="6368805772029492593">Din data krypteras i Google Chrome för att öka säkerheten.</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />öppen källkod<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Mac OS X 10.6, 10.7 och 10.8 kommer att upphöra.</translation>
@@ -186,6 +193,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="6634887557811630702">Google Chrome behöver inte uppdateras.</translation>
+<translation id="6648058004052854464">Det gick inte att ange Google Chrome som standardwebbläsare.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>
@@ -211,6 +219,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Windows XP och Windows Vista kommer att upphöra.</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
+<translation id="7393806081343982361">Google Chrome är din standardwebbläsare.</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7408085963519505752">Villkor för Chrome OS</translation>
@@ -260,6 +269,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Det styr också vilken sida som visas när du startar Chrome.</translation>
 <translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>
+<translation id="8793772303278047003">Den här versionen av Chrome är inaktuell.</translation>
 <translation id="8796108026289707191">Starta om Google Chrome nu.</translation>
 <translation id="8823341990149967727">Den här versionen av Chrome är inaktuell</translation>
 <translation id="884296878221830158">Det styr också vilken sida som visas när du startar Chrome eller klickar på knappen Startsida.</translation>

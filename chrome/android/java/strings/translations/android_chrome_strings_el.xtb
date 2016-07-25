@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">Νέα καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="1871284979644508959">Απαιτούμενο πεδίο</translation>
 <translation id="189172778771606813">Κλείσιμο συρταριού πλοήγησης</translation>
-<translation id="1924956916668006832">Επιλογή διεύθυνσης αποστολής</translation>
 <translation id="1933845786846280168">Επιλεγμένη καρτέλα</translation>
 <translation id="194341124344773587">Ενεργοποίηση των αδειών για το Chrome στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Αποθήκευση κωδικών πρόσβασης</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389">Απομένουν <ph name="SECONDS" /> δευτερόλεπτα</translation>
 <translation id="278029852808208386">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Νέα αναζήτηση<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Απομένει 1 δευτερόλεπτο</translation>
-<translation id="2781389167600714117">Επιλογή αποστολής</translation>
 <translation id="2811892995384186721">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Πατήστε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">Για να εμφανίζονται οι σελιδοδείκτες από τις άλλες συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="3137521801621304719">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="3149891296864842641">Επιλογή αποστολής</translation>
-<translation id="3162882791484435636">Ορίστε επιλογή αποστολής</translation>
 <translation id="3177909033752230686">Γλώσσα σελίδας:</translation>
 <translation id="3190152372525844641">Ενεργοποίηση των αδειών για το Chrome στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> αποθηκευμένα δεδομένα</translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">Νομικές πληροφορίες</translation>
 <translation id="4089831646916293264">Αυτή η λειτουργία ενδέχεται να εμποδίζει την πρόσβαση σε υπηρεσίες δεδομένων υψηλής ποιότητας που παρέχονται από την εταιρεία κινητής τηλεφωνίας.</translation>
 <translation id="4095146165863963773">Διαγραφή δεδομένων εφαρμογών;</translation>
-<translation id="4099423833822562131">Επιλέξτε μια διεύθυνση αποστολής, για να ελέγξετε τους τρόπους αποστολής.</translation>
 <translation id="4099578267706723511">Συμβάλετε στη βελτίωση του Chrome, στέλνοντας στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
 <translation id="410351446219883937">Αυτόματη αναπαραγωγή</translation>
 <translation id="411254640334432676">Αποτυχία λήψης.</translation>
@@ -430,7 +426,6 @@
 <translation id="5911030830365207728">Μετάφραση Google</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
-<translation id="5961742032223302715">Επιλογή στοιχείων επικοινωνίας</translation>
 <translation id="5968595432776860642">Αναπαραγωγή "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Πρόσβαση στην είσοδο βίντεο</translation>
 <translation id="6012342843556706400">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία προκειμένου να την μοιραστεί με αυτόν τον ιστότοπο.</translation>

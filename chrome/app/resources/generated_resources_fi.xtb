@@ -1933,6 +1933,7 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Salasana tallennettiin. Voit käyttää sitä ja muita <ph name="SAVED_PASSWORDS_LINK" /> millä tahansa selaimella.</translation>
 <translation id="3590587280253938212">nopea</translation>
 <translation id="3592260987370335752">&amp;Lisätietoja</translation>
+<translation id="3592313833691251126">Sallii selainkehyksen ulkopuolella avautuvat paneeli-ikkunat. Jos tämä on pois käytöstä, paneeli-ikkunan sijaan avataan ponnahdusikkuna. Oletuksena paneeli-ikkunat on sallittu vain sallittujen luettelossa oleville laajennuksille. Jos asetus on käytössä, paneelit sallitaan kaikille laajennuksille. Jos se on pois käytöstä, minkään laajennuksen paneeleja ei sallita.</translation>
 <translation id="359283478042092570">Sisään</translation>
 <translation id="3593152357631900254">Ota Fuzzy-Pinyin-tila käyttöön</translation>
 <translation id="3593965109698325041">Varmenteen nimirajoitukset</translation>
@@ -2252,7 +2253,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Vähennä näppäimistön kirkkautta</translation>
 <translation id="4035758313003622889">&amp;Tehtävänhallinta</translation>
 <translation id="4037084878352560732">Hevonen</translation>
-<translation id="4037102579141982963">Tämä laite lähettää diagnostiikka- ja käyttötietoja automaattisesti Googlelle. Voit muokata tätä asetusta milloin tahansa laitteesi <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Ota käytettävyystoiminnon välilehden vaihtaja käyttöön Androidissa.</translation>
 <translation id="4044260751144303020">Kiinteiden sijaintielementtien yhdistäminen.</translation>
 <translation id="404493185430269859">Oletushakukone</translation>
@@ -3218,7 +3218,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5439568486246921931">Tämä toimenpide poistaa pysyvästi tämän käyttäjän ladatut tiedostot, offline-tiedostot ja selaustiedot. Toimenpidettä ei voi kumota.</translation>
 <translation id="544083962418256601">Luo pikakuvakkeita...</translation>
 <translation id="5441100684135434593">Langallinen verkko</translation>
-<translation id="5445088910157062298">Kun annat Googlen sijaintipalveluiden auttaa sovelluksia paikantamaan sijaintisi nopeasti ja tarkasti, voit vähentää akun kulutusta. Palvelut lähettävät Googlelle anonyymejä sijaintitietoja myös silloin, kun sovelluksia ei ole käynnissä.</translation>
 <translation id="5448293924669608770">Hups, jokin meni vikaan kirjautumisessa</translation>
 <translation id="5449588825071916739">Lisää kaikki välilehdet kirjanmerkkeihin</translation>
 <translation id="5449716055534515760">&amp;Sulje ikkuna</translation>
@@ -3684,7 +3683,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6110466548232134880"><ph name="ISSUER" /> on vahvistanut identiteetin <ph name="ORGANIZATION" /> sijainnissa <ph name="LOCALITY" />. Palvelin ei antanut Certificate Transparency -tietoja.</translation>
 <translation id="6111770213269631447">Translitterointi (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Sallittu oletuksena</translation>
-<translation id="6112929985131461002">Tämä laite lähettää diagnostiikka- ja käyttötietoja automaattisesti Googlelle. Järjestelmänvalvojasi on ottanut tämän <ph name="BEGIN_LINK1" />asetuksen<ph name="END_LINK1" /> käyttöön. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Vaihda kielen ja syöttötavan asetuksia</translation>
 <translation id="6120205520491252677">Kiinnitä tämä sivu aloitusruutuun...</translation>
 <translation id="6122081475643980456">Internetyhteyttäsi hallinnoidaan</translation>
@@ -3922,7 +3920,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6452181791372256707">Hylkää</translation>
 <translation id="6454421252317455908">Kiinalainen syöttötapa (nopea)</translation>
 <translation id="6455348477571378046">Varmenteen tyyppi:</translation>
-<translation id="6456234919706689841">Järjestelmänvalvojasi voi lähettää tätä laitetta koskevia diagnostiikka- ja käyttötietoja Googlelle. Voit tarkastella tätä <ph name="BEGIN_LINK1" />asetusta<ph name="END_LINK1" /> täällä. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Estä JavaScript edelleen</translation>
 <translation id="6458308652667395253">Hallinnoi JavaScriptin estoa...</translation>
 <translation id="6459488832681039634">Hae valinnan avulla</translation>
@@ -4699,7 +4696,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7587108133605326224">baltialainen</translation>
 <translation id="7589461650300748890">Hei, varo vähän.</translation>
 <translation id="7589661784326793847">Odota hetki</translation>
-<translation id="7593635197364225277">Varmuuskopioi ja palauta Play-sovellustiedot automaattisesti Google Driven avulla. Voit muuttaa valintaa koska tahansa Android-asetuksissa. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (virhekoodi <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, tuo</translation>
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
@@ -5205,7 +5201,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8300607741108698921">1 minuutin asennus</translation>
 <translation id="8303650969500425356">Sallii JavaScriptin lukita näytön suunnan.</translation>
 <translation id="8303655282093186569">Pinyin-syöttöasetukset</translation>
-<translation id="830424806940379275">Sallii laajennusten luoda selainikkunan ulkopuolella avautuvia paneeli-ikkunoita. Jos tämä ei ole käytössä tai oletusarvo on käytössä, paneelin avaamisyritys avaa ponnahdusikkunan. Tietokonekäyttöjärjestelmien paneelit on poistettu käytöstä ja ne poistetaan pian kokonaan.</translation>
 <translation id="8306534594034939679">Ota käyttöön kokeellinen HTTP-ominaisuus Vaihtoehtoiset palvelut.</translation>
 <translation id="8307376264102990850">Ladataan – Aika, kunnes akku on täynnä</translation>
 <translation id="8308179586020895837">Kysy, jos <ph name="HOST" /> haluaa käyttää kameraasi</translation>

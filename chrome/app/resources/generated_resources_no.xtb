@@ -1927,6 +1927,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Passordet er lagret. Du finner det og alle dine <ph name="SAVED_PASSWORDS_LINK" /> fra en hvilken som helst nettleser.</translation>
 <translation id="3590587280253938212">rask</translation>
 <translation id="3592260987370335752">&amp;Les mer</translation>
+<translation id="3592313833691251126">Gi utvidelser tillatelse til å opprette panelvinduer som åpnes utenfor nettleserrammen. Hvis du ikke har slått på dette alternativet, fører forsøk på å åpne paneler til at det åpnes forgrunnsvinduer i stedet. Som standard tillates bare godkjente utvidelser. Hvis alternativet er slått på, tillates alle utvidelser, og hvis det er slått av, tillates ikke paneler for noen utvidelser.</translation>
 <translation id="359283478042092570">Angi</translation>
 <translation id="3593152357631900254">Aktiver modusen Fuzzy pinyin</translation>
 <translation id="3593965109698325041">Begrensninger for sertifikatnavn</translation>
@@ -2247,7 +2248,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Reduser lysstyrke for taster</translation>
 <translation id="4035758313003622889">&amp;Oppgavebehandling</translation>
 <translation id="4037084878352560732">Hest</translation>
-<translation id="4037102579141982963">Denne enheten sender diagnostikk og bruksdata til Google automatisk. Du kan endre dette når som helst i <ph name="BEGIN_LINK1" />enhetsinnstillingene<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Finn ut mer<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Aktiver tilgjengeligheten av fanebytte for Android.</translation>
 <translation id="4044260751144303020">Sammensetting for elementer med faste posisjoner</translation>
 <translation id="404493185430269859">Standard søkemotor</translation>
@@ -3217,7 +3217,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5439568486246921931">Denne handlingen sletter denne brukerens nedlastinger, filer som er lagret lokalt, og nettlesingsdata. Dette kan ikke angres.</translation>
 <translation id="544083962418256601">Opprett snarveier</translation>
 <translation id="5441100684135434593">Kablet nettverk</translation>
-<translation id="5445088910157062298">La Googles posisjonstjenester hjelpe apper med å finne posisjonen din kjapt og nøyaktig, noe som kan redusere batteribruken. Anonyme posisjonsdata sendes til Google – selv når ingen apper kjører.</translation>
 <translation id="5448293924669608770">Noe gikk galt under påloggingen</translation>
 <translation id="5449588825071916739">Angi bokmerker for alle faner</translation>
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
@@ -3683,7 +3682,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6110466548232134880">Identiteten til <ph name="ORGANIZATION" /> på <ph name="LOCALITY" /> er verifisert av <ph name="ISSUER" />. Det er ikke mottatt informasjon om sertifikatåpenhet fra tjeneren.</translation>
 <translation id="6111770213269631447">Translitterasjon (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Tillatt som standard</translation>
-<translation id="6112929985131461002">Denne enheten sender diagnostikk og bruksdata til Google automatisk, og denne <ph name="BEGIN_LINK1" />innstillingen<ph name="END_LINK1" /> håndheves av administratoren din. <ph name="BEGIN_LINK2" />Finn ut mer<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Endre språk- og inndatainnstillinger</translation>
 <translation id="6120205520491252677">Fest denne siden til startsiden</translation>
 <translation id="6122081475643980456">Internett-tilkoblingen din kontrolleres</translation>
@@ -3918,7 +3916,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6452181791372256707">Avslå</translation>
 <translation id="6454421252317455908">Kinesisk inndatametode (rask)</translation>
 <translation id="6455348477571378046">Sertifikattype:</translation>
-<translation id="6456234919706689841">Administratoren din kan velge å sende diagnostiskk og bruksdata for denne enheten til Google. Du kan se denne <ph name="BEGIN_LINK1" />innstillingen<ph name="END_LINK1" /> her. <ph name="BEGIN_LINK2" />Finn ut mer<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Fortsett blokkering av JavaScript</translation>
 <translation id="6458308652667395253">Administrer blokkering av JavaScript</translation>
 <translation id="6459488832681039634">Bruk markering for Finn</translation>
@@ -4690,7 +4687,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7587108133605326224">Baltisk</translation>
 <translation id="7589461650300748890">Oops! Vær forsiktig.</translation>
 <translation id="7589661784326793847">Vent et øyeblikk</translation>
-<translation id="7593635197364225277">Sikkerhetskopiér og gjenopprett data automatisk for Play-apper på Google Disk. Du kan når som helst endre dette i Android-innstillingene. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (feilkode <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, importer</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
@@ -5196,7 +5192,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8300607741108698921">Konfigurering på ett minutt</translation>
 <translation id="8303650969500425356">Gjør at skjermretningen kan låses av JavaScript.</translation>
 <translation id="8303655282093186569">Inndatainnstillinger for pinyin</translation>
-<translation id="830424806940379275">Tillat utvidelser for å opprette panelvinduer som åpnes utenfor nettleserrammen. Som standard – eller hvis dette alternativet er slått av – fører forsøk på å åpne panelvinduer til at det åpnes forgrunnsvinduer i stedet. Paneler på operativsystemer for datamaskiner er avviklet og blir snart fjernet.</translation>
 <translation id="8306534594034939679">Slå på støtte for Alternative tjenester. Dette er en eksperimentell HTTP-funksjon.</translation>
 <translation id="8307376264102990850">Beregnet ladetid før fulladet</translation>
 <translation id="8308179586020895837">Spør om <ph name="HOST" /> vil bruke kameraet ditt</translation>

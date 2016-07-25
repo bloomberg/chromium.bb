@@ -22,13 +22,6 @@
       Si cette règle est définie sur "True" ou si elle n'est pas configurée, les statistiques seront envoyées.</translation>
 <translation id="1046484220783400299">Activer les fonctionnalités obsolètes de la plate-forme Web pour une durée limitée</translation>
 <translation id="1047128214168693844">Interdire à tous les sites de suivre la position géographique des utilisateurs</translation>
-<translation id="1057535219415338480">Active la prédiction de réseau dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Cela contrôle non seulement la prélecture des DNS, mais également la préconnexion et le préchargement TCP et SSL des pages Web. Le nom de la règle fait référence à la prélecture des DNS pour des raisons historiques.
-
-      Que vous activiez ou désactiviez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer dans <ph name="PRODUCT_NAME" />.
-
-      Si vous ne définissez pas cette règle, ce paramètres est activé, mais les utilisateurs sont en mesure de le modifier.</translation>
 <translation id="1062011392452772310">Activer l'attestation à distance pour l'appareil</translation>
 <translation id="1090892140761957285">URL de validation du jeton d'authentification du client distant.
 

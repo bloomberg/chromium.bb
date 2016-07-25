@@ -1930,6 +1930,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3590559774363307859">Password salvata. Puoi accedere a questa password e a tutte le tue <ph name="SAVED_PASSWORDS_LINK" /> da qualsiasi browser.</translation>
 <translation id="3590587280253938212">veloce</translation>
 <translation id="3592260987370335752">&amp;Ulteriori informazioni</translation>
+<translation id="3592313833691251126">Consente alle estensioni di creare riquadri che si aprono al di fuori del frame del browser. Se tenti di aprire un riquadro senza attivare questa opzione, viene visualizzato un popup. Se lasci l'opzione predefinita, soltanto le estensioni autorizzate possono svolgere questa operazione; se attivi l'opzione, l'operazione è consentita a tutte le estensioni; se disattivi l'opzione, nessuna estensione può creare riquadri.</translation>
 <translation id="359283478042092570">Entra</translation>
 <translation id="3593152357631900254">Abilita modalità Fuzzy pinyin</translation>
 <translation id="3593965109698325041">Vincoli nomi certificati</translation>
@@ -2252,7 +2253,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4034042927394659004">Consente di diminuire la luminosità dei tasti</translation>
 <translation id="4035758313003622889">&amp;Task Manager</translation>
 <translation id="4037084878352560732">Cavallo</translation>
-<translation id="4037102579141982963">Questo dispositivo invierà automaticamente a Google dati di diagnostica e utilizzo. Potrai modificare questa opzione in qualsiasi momento nelle <ph name="BEGIN_LINK1" />impostazioni<ph name="END_LINK1" /> del dispositivo. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Consente di attivare il selettore di schede accessibilità per Android.</translation>
 <translation id="4044260751144303020">Composizione per elementi con posizione fissa.</translation>
 <translation id="404493185430269859">Motore di ricerca predefinito</translation>
@@ -3222,7 +3222,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5439568486246921931">Questa azione eliminerà definitivamente download, file offline e dati di navigazione dell'utente. L'azione non può essere annullata.</translation>
 <translation id="544083962418256601">Crea scorciatoie...</translation>
 <translation id="5441100684135434593">Rete cablata</translation>
-<translation id="5445088910157062298">Consenti al servizio di geolocalizzazione di Google di aiutare le app a rilevare la tua posizione in modo veloce e preciso, riducendo allo stesso tempo il consumo di batteria. A Google verranno inviati dati anonimi sulla posizione, anche quando non ci sono app in esecuzione.</translation>
 <translation id="5448293924669608770">Spiacenti, qualcosa è andato storto in fase di accesso</translation>
 <translation id="5449588825071916739">Aggiungi tutte le schede ai Preferiti</translation>
 <translation id="5449716055534515760">Chiu&amp;di finestra</translation>
@@ -3688,7 +3687,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6110466548232134880">L'identità di <ph name="ORGANIZATION" /> a <ph name="LOCALITY" /> è stata verificata da <ph name="ISSUER" />. Non sono state fornite informazioni su Certificate Transparency dal server.</translation>
 <translation id="6111770213269631447">Traslitterazione (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Consentito per impostazione predefinita</translation>
-<translation id="6112929985131461002">Questo dispositivo invierà automaticamente a Google dati di diagnostica e utilizzo. Questa <ph name="BEGIN_LINK1" />impostazione<ph name="END_LINK1" /> viene applicata dall'amministratore. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Modifica impostazioni della lingua e di immissione</translation>
 <translation id="6120205520491252677">Blocca questa pagina in schermata iniziale...</translation>
 <translation id="6122081475643980456">La tua connessione Internet è controllata</translation>
@@ -3924,7 +3922,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6452181791372256707">Rifiuto</translation>
 <translation id="6454421252317455908">Metodo di immissione cinese (rapido)</translation>
 <translation id="6455348477571378046">Tipo di certificato:</translation>
-<translation id="6456234919706689841">Il tuo amministratore potrebbe decidere di inviare a Google dati di diagnostica e utilizzo relativi a questo dispositivo. Puoi visualizzare questa <ph name="BEGIN_LINK1" />impostazione<ph name="END_LINK1" /> qui. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Continua a bloccare JavaScript</translation>
 <translation id="6458308652667395253">Gestisci il blocco di JavaScript...</translation>
 <translation id="6459488832681039634">Utilizza selezione per Trova</translation>
@@ -4695,7 +4692,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7587108133605326224">Baltico</translation>
 <translation id="7589461650300748890">Attenzione.</translation>
 <translation id="7589661784326793847">Aspetta solo un secondo</translation>
-<translation id="7593635197364225277">Effettua automaticamente il backup e il ripristino dei dati delle app Play su Google Drive. Potrai modificare questa impostazione in qualsiasi momento nelle Impostazioni Android. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (codice di errore: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, importa</translation>
 <translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE" /></translation>
@@ -5201,7 +5197,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8300607741108698921">Configurazione in un minuto</translation>
 <translation id="8303650969500425356">Consente di attivare la funzione di blocco dell'orientamento dello schermo per JavaScript.</translation>
 <translation id="8303655282093186569">Impostazioni di immissione pinyin</translation>
-<translation id="830424806940379275">Consente alle estensioni di creare riquadri che si aprono al di fuori del frame del browser. Per impostazione predefinita o se provi ad aprire un riquadro senza attivare questa opzione, verrà invece aperto un popup. I riquadri nei sistemi operativi desktop sono obsoleti e saranno presto rimossi.</translation>
 <translation id="8306534594034939679">Consente di attivare il supporto di Servizi alternativi, una funzione HTTP sperimentale.</translation>
 <translation id="8307376264102990850">Calcolo del tempo per completare la ricarica</translation>
 <translation id="8308179586020895837">Chiedi conferma se <ph name="HOST" /> vuole accedere alla webcam</translation>

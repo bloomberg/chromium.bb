@@ -78,11 +78,11 @@
 <translation id="1853692000353488670">새 시크릿 탭</translation>
 <translation id="1871284979644508959">필수 입력란</translation>
 <translation id="189172778771606813">탐색 창 닫기</translation>
-<translation id="1924956916668006832">배송지 주소 선택</translation>
 <translation id="1933845786846280168">선택된 탭</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="1943432128510653496">비밀번호 저장</translation>
 <translation id="1944384637046898011"><ph name="TIME" />에 Google 비밀번호로 전체 데이터 암호화</translation>
+<translation id="1946821392246652573">카드 사용 가능</translation>
 <translation id="1966710179511230534">로그인 세부정보를 업데이트하세요.</translation>
 <translation id="1974060860693918893">고급</translation>
 <translation id="1984321224716884559">Chrome 개발자 북마크</translation>
@@ -159,7 +159,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="278029852808208386">블루투스 기기를 찾을 수 없습니다. <ph name="BEGIN_LINK" />다시 검색하세요<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1초 남음</translation>
-<translation id="2781389167600714117">배송 선택</translation>
 <translation id="2811892995384186721">기기가 표시되지 않나요? <ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
@@ -188,7 +187,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3117051980354074377">다른 기기에서 북마크를 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
 <translation id="3149891296864842641">배송 옵션</translation>
-<translation id="3162882791484435636">배송 옵션 선택</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
@@ -216,6 +214,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3386292677130313581">사이트에서 내 위치를 파악하도록 허용하기 전에 확인(권장)</translation>
 <translation id="3387650086002190359">파일 시스템에 오류가 발생하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="3414952576877147120">크기:</translation>
+<translation id="3431636764301398940">기기에 카드 저장</translation>
 <translation id="3435896845095436175">사용</translation>
 <translation id="3452612588551937789">Google 계정으로 로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호 및 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="3485544713029068372">비밀번호 대용 Smart Lock</translation>
@@ -261,7 +260,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="4089831646916293264">이 기능을 사용하면 이동통신사에서 제공하는 프리미엄 데이터 서비스에 액세스하는 데 문제가 생길 수 있습니다.</translation>
 <translation id="4095146165863963773">앱 데이터를 삭제하시겠습니까?</translation>
-<translation id="4099423833822562131">배송 방법을 확인할 수 있도록 배송지 주소를 선택하세요.</translation>
 <translation id="4099578267706723511">사용 통계와 오류 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
 <translation id="410351446219883937">자동재생</translation>
 <translation id="411254640334432676">다운로드에 실패했습니다.</translation>
@@ -412,6 +410,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
+<translation id="57586589942790530">카드 번호가 잘못되었습니다.</translation>
 <translation id="5763382633136178763">시크릿 탭</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" />에 있는 기존 <ph name="FILE_NAME" /> 파일을 바꾸시겠습니까?</translation>
@@ -430,7 +429,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5911030830365207728">Google 번역</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5939518447894949180">초기화</translation>
-<translation id="5961742032223302715">연락처 세부정보 선택</translation>
 <translation id="5968595432776860642">'<ph name="VIDEO_TITLE" />' 재생 중</translation>
 <translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
 <translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>

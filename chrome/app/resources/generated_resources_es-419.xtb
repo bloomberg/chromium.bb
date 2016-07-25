@@ -1930,6 +1930,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Se guardó la contraseña. Puedes acceder a ella, al igual que a todas tus <ph name="SAVED_PASSWORDS_LINK" />, desde cualquier navegador.</translation>
 <translation id="3590587280253938212">rápido</translation>
 <translation id="3592260987370335752">&amp;Más información</translation>
+<translation id="3592313833691251126">Permite que las extensiones creen ventanas de panel que se abran fuera del marco del navegador. Si esta opción no se habilita, cada vez que se intente abrir un panel, se abrirá una ventana emergente. De forma predeterminada, se permite solo para las extensiones que se incluyen en la lista blanca. Si se habilita la opción, se permitirá para todas las extensiones. Si se inhabilita la opción, no se permitirán paneles para ninguna extensión.</translation>
 <translation id="359283478042092570">Ingresar</translation>
 <translation id="3593152357631900254">Habilitar modo Pinyin aproximado</translation>
 <translation id="3593965109698325041">Restricciones para el nombre del certificado</translation>
@@ -2252,7 +2253,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Disminuir el brillo del teclado</translation>
 <translation id="4035758313003622889">Adminis&amp;trador de &amp;tareas</translation>
 <translation id="4037084878352560732">Caballo</translation>
-<translation id="4037102579141982963">Este dispositivo enviará a Google datos de uso y diagnóstico automáticamente. Puedes cambiar esta opción en cualquier momento en la <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" /> de tu dispositivo. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Habilita el alternador de pestañas de accesibilidad para Android.</translation>
 <translation id="4044260751144303020">Composición para elementos de posición fija</translation>
 <translation id="404493185430269859">Motor de búsqueda predeterminado</translation>
@@ -3225,7 +3225,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5439568486246921931">Esta acción borrará las descargas, los archivos sin conexión y los datos de navegación de este usuario de forma permanente. Esta acción no puede deshacerse.</translation>
 <translation id="544083962418256601">Crear accesos directos...</translation>
 <translation id="5441100684135434593">Red conectada</translation>
-<translation id="5445088910157062298">Permite que el servicio de ubicación de Google ayude a las apps a encontrar tu ubicación de forma rápida y precisa, lo que permite reducir el consumo de la batería. Se enviarán datos de ubicación anónimos a Google, incluso cuando no se ejecuta ninguna app.</translation>
 <translation id="5448293924669608770">Se produjo un error al acceder</translation>
 <translation id="5449588825071916739">Agregar a marcadores todas las pestañas</translation>
 <translation id="5449716055534515760">Cerrar ven&amp;tana</translation>
@@ -3691,7 +3690,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6110466548232134880"><ph name="ISSUER" /> verificó la identidad de <ph name="ORGANIZATION" /> en <ph name="LOCALITY" />. El servidor no proporcionó ninguna información de transparencia de certificados.</translation>
 <translation id="6111770213269631447">Transliteración (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Permitido de forma predeterminada</translation>
-<translation id="6112929985131461002">Este dispositivo enviará a Google datos de uso y diagnóstico automáticamente. Tu administrador controla esta <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Cambiar la configuración de idioma y de entrada de texto</translation>
 <translation id="6120205520491252677">Fijar esta página a la Pantalla de inicio...</translation>
 <translation id="6122081475643980456">Se está controlando tu conexión a Internet</translation>
@@ -3927,7 +3925,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6454421252317455908">Método de entrada chino (rápido)</translation>
 <translation id="6455348477571378046">Tipo de certificado</translation>
-<translation id="6456234919706689841">Tu administrador puede decidir enviar a Google datos de uso y diagnóstico para este dispositivo. Puedes ver esta <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" /> aquí. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Continuar con el bloqueo de JavaScript</translation>
 <translation id="6458308652667395253">Administrar el bloqueo de JavaScript...</translation>
 <translation id="6459488832681039634">Usar la selección para buscar</translation>
@@ -4706,7 +4703,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7587108133605326224">Báltico</translation>
 <translation id="7589461650300748890">¡Espera! Ten cuidado.</translation>
 <translation id="7589661784326793847">Espera un momento.</translation>
-<translation id="7593635197364225277">Crea una copia de seguridad y restablece los datos de las apps de Play en Google Drive de forma automática. Puedes cambiar esta opción en la configuración de Android en cualquier momento. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (código de error <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">De acuerdo, importar</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE" /></translation>
@@ -5212,7 +5208,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8300607741108698921">Configuración en 1 minuto</translation>
 <translation id="8303650969500425356">Permite que JavaScript bloquee la orientación de la pantalla.</translation>
 <translation id="8303655282093186569">Configuración de entradas en pinyin</translation>
-<translation id="830424806940379275">Permite que las extensiones creen ventanas de panel y las abran fuera del marco del navegador. De manera predeterminada, o si esta política se inhabilita, un intento de abrir un panel abrirá una ventana emergente. Los paneles en sistemas operativos de computadoras de escritorio dejarán de estar disponibles y se quitarán pronto.</translation>
 <translation id="8306534594034939679">Habilita la compatibilidad con Servicios alternativos, una función HTTP experimental.</translation>
 <translation id="8307376264102990850">Calculando el tiempo de carga hasta completarse</translation>
 <translation id="8308179586020895837">Preguntar si <ph name="HOST" /> quiere acceder a la cámara</translation>

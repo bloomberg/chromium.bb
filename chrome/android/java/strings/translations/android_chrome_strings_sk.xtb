@@ -78,7 +78,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1853692000353488670">Nová karta inkognito</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
-<translation id="1924956916668006832">Vybrať dodaciu adresu</translation>
 <translation id="1933845786846280168">Vybratá karta</translation>
 <translation id="194341124344773587">Zapnite povolenie pre Chrome v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Ukladanie hesiel</translation>
@@ -159,7 +158,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="2777555524387840389">Zostáva: <ph name="SECONDS" /> s</translation>
 <translation id="278029852808208386">Nenašli sa žiadne zariadenia Bluetooth. <ph name="BEGIN_LINK" />Vyhľadať znova<ph name="END_LINK" /></translation>
 <translation id="2781151931089541271">Zostáva: 1 s</translation>
-<translation id="2781389167600714117">Vybrať možnosť dodania</translation>
 <translation id="2811892995384186721">Nezobrazuje sa vaše zariadenie? <ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Ukončite režim celej obrazovky klepnutím na tlačidlo Späť.</translation>
 <translation id="2842985007712546952">Nadradený priečinok</translation>
@@ -188,7 +186,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="3117051980354074377">Ak chcete získať svoje záložky z ostatných zariadení, prihláste sa do Chromu.</translation>
 <translation id="3137521801621304719">Ukončiť režim inkognito</translation>
 <translation id="3149891296864842641">Možnosť dodania</translation>
-<translation id="3162882791484435636">Vybrať možnosť dodania</translation>
 <translation id="3177909033752230686">Jazyk stránky:</translation>
 <translation id="3190152372525844641">Zapnite povolenia pre Chrome v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> uložených údajov</translation>
@@ -261,7 +258,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4062305924942672200">Právne informácie</translation>
 <translation id="4089831646916293264">Táto funkcia môže byť v konflikte s prémiovými dátovými službami poskytovanými vaším operátorom.</translation>
 <translation id="4095146165863963773">Odstrániť dáta aplikácie?</translation>
-<translation id="4099423833822562131">Vyberte dodaciu adresu a prezrite si spôsoby dodania.</translation>
 <translation id="4099578267706723511">Odosielanie štatistík používania a prehľadu chýb pomôže Googlu zlepšiť Chrome.</translation>
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
@@ -430,7 +426,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="5911030830365207728">Prekladač Google</translation>
 <translation id="5916664084637901428">Zapnúť</translation>
 <translation id="5939518447894949180">Obnoviť</translation>
-<translation id="5961742032223302715">Vybrať kontaktné údaje</translation>
 <translation id="5968595432776860642">Prehráva sa video <ph name="VIDEO_TITLE" /></translation>
 <translation id="6010869025736512584">Pristupovanie k vstupu videa</translation>
 <translation id="6012342843556706400">Na to, aby Chrome mohol s týmito webovými stránkami zdieľať polohu, musí mať k nej prístup.</translation>

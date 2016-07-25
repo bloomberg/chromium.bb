@@ -21,13 +21,6 @@
       Ak je nastavené na možnosť True alebo nie je nastavené, štatistiky budú hlásené.</translation>
 <translation id="1046484220783400299">Povoliť zastarané funkcie webovej platformy na obmedzený čas</translation>
 <translation id="1047128214168693844">Nepovoliť žiadnym stránkam sledovať fyzickú polohu používateľov</translation>
-<translation id="1057535219415338480">Povolí predvídanie siete v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom toto nastavenie zmeniť.
-
-      Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a technológie SSL a predbežné vykreslenie webových stránok. Názov pravidla je založený na predbežnom načítaní servera DNS z historických dôvodov.
-
-      Ak toto nastavenie povolíte alebo zakážete, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť prepísať.
-
-      Ak toto pravidlo ponecháte nenastavené, nastavenie bude povolené, ale používateľ ho bude môcť zmeniť.</translation>
 <translation id="1062011392452772310">Povoliť pre zariadenie vzdialené overenie</translation>
 <translation id="1090892140761957285">Webová adresa na potvrdenie tokenu na overenie totožnosti klienta vzdialeného prístupu.
 

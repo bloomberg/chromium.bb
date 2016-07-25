@@ -22,13 +22,6 @@
       Si se establece en true o se deja sin configurar, las estadísticas se informarán.</translation>
 <translation id="1046484220783400299">Habilitar funciones de Web Platform, que dejaron de estar disponibles, durante un período limitado</translation>
 <translation id="1047128214168693844">No permitir que ningún sitio rastree la ubicación física de los usuarios.</translation>
-<translation id="1057535219415338480">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
-
-      Esto controla no solo la precarga de DNS sino también la preconexión a TCP y SSL, y la representación previa de páginas web. El nombre de esta política se refiere a la precarga de DNS por razones históricas.
-
-      Si habilitas o inhabilitas esta configuración, los usuarios no podrán cambiar o anular esta configuración en <ph name="PRODUCT_NAME" />.
-
-      Si no se establece esta política, se habilitará pero el usuario podrá cambiarla.</translation>
 <translation id="1062011392452772310">Habilita la atestación remota para el dispositivo.</translation>
 <translation id="1090892140761957285">URL para la validación del token de autenticación del cliente de acceso remoto
 

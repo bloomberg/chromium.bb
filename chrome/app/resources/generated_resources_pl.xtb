@@ -1933,6 +1933,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3590559774363307859">Hasło zostało zapisane. To hasło oraz wszystkie Twoje <ph name="SAVED_PASSWORDS_LINK" /> będą dostępne w każdej przeglądarce.</translation>
 <translation id="3590587280253938212">szybko</translation>
 <translation id="3592260987370335752">&amp;Więcej informacji</translation>
+<translation id="3592313833691251126">Zezwalaj rozszerzeniom na otwieranie okien paneli poza ramką przeglądarki. W przypadku braku tego zezwolenia przy próbie otwarcia panelu pojawia się wyskakujące okienko. Domyślnie uprawnienie to mają tylko rozszerzenia z białej listy. Gdy zasada jest ustawiona jako włączona lub wyłączona, zezwolenie lub zakaz dotyczy wszystkich rozszerzeń.</translation>
 <translation id="359283478042092570">Wpisz</translation>
 <translation id="3593152357631900254">Włącz tryb „ujednolicony pinyin”</translation>
 <translation id="3593965109698325041">Ograniczenia nazwy certyfikatu</translation>
@@ -2255,7 +2256,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="4034042927394659004">Zmniejsz jasność klawiszy</translation>
 <translation id="4035758313003622889">&amp;Menedżer zadań</translation>
 <translation id="4037084878352560732">Koń</translation>
-<translation id="4037102579141982963">To urządzenie będzie automatycznie wysyłać do Google dane diagnostyczne i informacje dotyczące użytkowania. Tę opcję możesz zmienić w dowolnym momencie w <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> urządzenia. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Włącz przełącznik karty ułatwień dostępu w Androidzie.</translation>
 <translation id="4044260751144303020">Komponowanie w celu uzyskania elementów o stałych pozycjach.</translation>
 <translation id="404493185430269859">Domyślna wyszukiwarka</translation>
@@ -3227,7 +3227,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5439568486246921931">Ta czynność spowoduje trwałe usunięcie plików pobranych przez użytkownika, plików offline i danych przeglądania. Nie będzie można tego cofnąć.</translation>
 <translation id="544083962418256601">Utwórz skróty...</translation>
 <translation id="5441100684135434593">Sieć przewodowa</translation>
-<translation id="5445088910157062298">Pozwól usłudze lokalizacyjnej Google na szybkie i dokładne określanie Twojej lokalizacji. Dzięki temu możesz zmniejszyć zużycie baterii. Do Google będą wysyłane anonimowe dane o lokalizacji – nawet wtedy, gdy nie są uruchomione żadne aplikacje.</translation>
 <translation id="5448293924669608770">Ups, podczas logowania coś poszło nie tak</translation>
 <translation id="5449588825071916739">Dodaj wszystkie karty do zakładek</translation>
 <translation id="5449716055534515760">Zamknij o&amp;kno</translation>
@@ -3693,7 +3692,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6110466548232134880">Tożsamość organizacji <ph name="ORGANIZATION" /> w lokalizacji <ph name="LOCALITY" /> została zweryfikowana przez <ph name="ISSUER" />. Serwer nie przekazał informacji o przejrzystości certyfikatu.</translation>
 <translation id="6111770213269631447">Transliteracja (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Dozwolone domyślnie</translation>
-<translation id="6112929985131461002">To urządzenie będzie automatycznie wysyłać do Google dane diagnostyczne i informacje dotyczące użytkowania. To <ph name="BEGIN_LINK1" />ustawienie<ph name="END_LINK1" /> jest narzucone przez administratora. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Zmień język i ustawienia wprowadzania</translation>
 <translation id="6120205520491252677">Przypnij tę stronę do ekranu startowego...</translation>
 <translation id="6122081475643980456">Twoje połączenie internetowe jest kontrolowane</translation>
@@ -3929,7 +3927,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6452181791372256707">Odrzuć</translation>
 <translation id="6454421252317455908">chiński (szybka)</translation>
 <translation id="6455348477571378046">Typ certyfikatu:</translation>
-<translation id="6456234919706689841">Administrator może ustawić wysyłanie do Google danych diagnostycznych i informacji dotyczących użytkowania tego urządzenia. Tę opcję możesz wyświetlić w <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Nadal blokuj wykonywanie kodu JavaScript</translation>
 <translation id="6458308652667395253">Zarządzaj blokowaniem kodu JavaScript...</translation>
 <translation id="6459488832681039634">Użyj zaznaczenia do funkcji Znajdź</translation>
@@ -4700,7 +4697,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7587108133605326224">Bałtycki</translation>
 <translation id="7589461650300748890">Nie tak szybko. Zachowaj ostrożność.</translation>
 <translation id="7589661784326793847">Chwileczkę</translation>
-<translation id="7593635197364225277">Automatycznie twórz na Dysku Google kopie zapasowe i dane do odzyskiwania aplikacji ze Sklepu Play. Tę opcję możesz zmienić w dowolnym momencie w ustawieniach Androida. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (kod błędu: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, zaimportuj</translation>
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
@@ -5206,7 +5202,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8300607741108698921">Skonfiguruj w minutę</translation>
 <translation id="8303650969500425356">Umożliwia blokowanie orientacji ekranu przez JavaScript.</translation>
 <translation id="8303655282093186569">Ustawienia wprowadzania znaków pinyin</translation>
-<translation id="830424806940379275">Zezwalaj rozszerzeniom na tworzenie okien paneli otwieranych poza ramką przeglądarki. Domyślnie lub jeśli ta opcja jest wyłączona, próba otwarcia panelu spowoduje wyświetlenie wyskakującego okienka. W przypadku komputerowych systemów operacyjnych panele są wycofywane i wkrótce zostaną usunięte.</translation>
 <translation id="8306534594034939679">Włącz obsługę eksperymentalnej funkcji HTTP: Usługi alternatywne.</translation>
 <translation id="8307376264102990850">Ładowanie: obliczanie czasu do pełnego naładowania</translation>
 <translation id="8308179586020895837">Pytaj, gdy witryna <ph name="HOST" /> chce mieć dostęp do kamery</translation>

@@ -78,7 +78,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="1871284979644508959">Obligatorisk felt</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
-<translation id="1924956916668006832">Velg leveringsadresse</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="194341124344773587">Slå på tillatelsen for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
@@ -159,7 +158,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder igjen</translation>
 <translation id="278029852808208386">Ingen Bluetooth-enheter ble funnet. <ph name="BEGIN_LINK" />Søk igjen<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sekund igjen</translation>
-<translation id="2781389167600714117">Velg levering</translation>
 <translation id="2811892995384186721">Ser du ikke enheten din? <ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
@@ -188,7 +186,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="3117051980354074377">For å få bokmerkene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
 <translation id="3137521801621304719">Avslutt inkognitomodus</translation>
 <translation id="3149891296864842641">Fraktalternativ</translation>
-<translation id="3162882791484435636">Velg fraktalternativ</translation>
 <translation id="3177909033752230686">Språket siden er på:</translation>
 <translation id="3190152372525844641">Slå på tillatelsene for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
@@ -261,7 +258,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="4089831646916293264">Det kan hende at dette elementet gjør at du ikke får tilgang til premium-datatjenester som tilbys av operatøren din.</translation>
 <translation id="4095146165863963773">Slette appdataene?</translation>
-<translation id="4099423833822562131">Velg en leveringsadresse for å sjekke leveringsmåtene.</translation>
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
 <translation id="411254640334432676">Nedlastingen mislyktes.</translation>
@@ -430,7 +426,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5911030830365207728">Google Oversetter</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
-<translation id="5961742032223302715">Velg kontaktinformasjon</translation>
 <translation id="5968595432776860642">Spiller av <ph name="VIDEO_TITLE" /> ...</translation>
 <translation id="6010869025736512584">Åpner videoinngang</translation>
 <translation id="6012342843556706400">Chrome må ha tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>

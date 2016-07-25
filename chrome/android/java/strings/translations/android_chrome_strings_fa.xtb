@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
 <translation id="1871284979644508959">قسمت الزامی</translation>
 <translation id="189172778771606813">بستن کشوی پیمایش</translation>
-<translation id="1924956916668006832">انتخاب آدرس تحویل کالا</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
 <translation id="194341124344773587">‏مجوز Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="278029852808208386">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />دوباره جستجو کنید<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
-<translation id="2781389167600714117">انتخاب تحویل کالا</translation>
 <translation id="2811892995384186721">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">‏برای دسترسی به نشانک‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
 <translation id="3149891296864842641">گزینه ارسال</translation>
-<translation id="3162882791484435636">انتخاب گزینه ارسال</translation>
 <translation id="3177909033752230686">زبان صفحه:</translation>
 <translation id="3190152372525844641">‏مجوزهای Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> داده‌های ذخیره شده</translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
 <translation id="4089831646916293264">ممکن است این قابلیت با دسترسی به خدمات داده‌های برتر ارائه شده توسط شرکت مخابراتی شما تداخل داشته باشد.</translation>
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
-<translation id="4099423833822562131">برای بررسی روش‌های ارسال کالا، آدرس تحویل کالا را انتخاب کنید.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="411254640334432676">بارگیری نشد.</translation>
@@ -429,7 +425,6 @@
 <translation id="5911030830365207728">‏‫مترجم Google‬</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
-<translation id="5961742032223302715">انتخاب جزئیات تماس</translation>
 <translation id="5968595432776860642">در حال پخش «<ph name="VIDEO_TITLE" />»</translation>
 <translation id="6010869025736512584">در حال دسترسی به ورودی ویدیویی</translation>
 <translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>

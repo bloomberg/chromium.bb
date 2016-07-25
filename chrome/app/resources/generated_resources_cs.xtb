@@ -1931,6 +1931,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3590559774363307859">Heslo bylo uloženo. Toto heslo i ostatní <ph name="SAVED_PASSWORDS_LINK" /> můžete zobrazit v libovolném prohlížeči.</translation>
 <translation id="3590587280253938212">rychlý</translation>
 <translation id="3592260987370335752">&amp;Další informace</translation>
+<translation id="3592313833691251126">Povolí rozšířením vytvářet okna panelů vně prohlížeče. Pokud tuto možnost nepovolíte, otevře se při pokusu o otevření panelu vyskakovací okno. Ve výchozím nastavení je toto chování povoleno jen pro vybraná rozšíření. Pokud tento příznak povolíte, chování bude povoleno pro všechna rozšíření. Pokud jej zakážete, vytváření panelů bude pro všechna rozšíření zakázáno.</translation>
 <translation id="359283478042092570">Vstoupit</translation>
 <translation id="3593152357631900254">Aktivovat režim Fuzzy-Pinyin</translation>
 <translation id="3593965109698325041">Omezení názvu certifikátu</translation>
@@ -2252,7 +2253,6 @@ Vyberte štítek, který nejlépe popisuje zaznamenané trasy. Na základě toho
 <translation id="4034042927394659004">Snížit jas klávesnice</translation>
 <translation id="4035758313003622889">Správce úloh</translation>
 <translation id="4037084878352560732">Kůň</translation>
-<translation id="4037102579141982963">Toto zařízení bude do Googlu automaticky odesílat diagnostické údaje a údaje o využití. Toto chování můžete kdykoliv změnit v <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" /> zařízení. <ph name="BEGIN_LINK2" />Další informace<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Aktivuje přepínač karty přístupnosti pro platformu Android.</translation>
 <translation id="4044260751144303020">Skládání prvků s pevným umístěním.</translation>
 <translation id="404493185430269859">Výchozí vyhledávač</translation>
@@ -3221,7 +3221,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5439568486246921931">Touto akcí trvale smažete stažené soubory, offline soubory a údaje o prohlížení tohoto uživatele. Operaci nelze vrátit zpět.</translation>
 <translation id="544083962418256601">Vytvořit zástupce…</translation>
 <translation id="5441100684135434593">Kabelová síť</translation>
-<translation id="5445088910157062298">Nechat službu určování polohy Google, aby aplikacím pomohla rychle a přesně najít vaši polohu. Můžete tak snížit spotřebu energie. Do Googlu se budou odesílat anonymní údaje o poloze, a to i v případě, že nebudou spuštěné žádné aplikace.</translation>
 <translation id="5448293924669608770">Jejda, při přihlašování se něco pokazilo</translation>
 <translation id="5449588825071916739">Přidat do záložek všechny karty</translation>
 <translation id="5449716055534515760">Zavřít okno</translation>
@@ -3689,7 +3688,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6110466548232134880">Identita organizace <ph name="ORGANIZATION" /> se sídlem na adrese <ph name="LOCALITY" /> byla ověřena organizací <ph name="ISSUER" />. Server neposkytl žádné údaje o transparentnosti certifikátu.</translation>
 <translation id="6111770213269631447">Přepis (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Povoleno ve výchozím nastavení</translation>
-<translation id="6112929985131461002">Toto zařízení bude do Googlu automaticky odesílat diagnostické údaje a údaje o využití. Toto <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" /> je vynuceno administrátorem. <ph name="BEGIN_LINK2" />Další informace<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Změnit nastavení jazyka a vstupu</translation>
 <translation id="6120205520491252677">Připnout tuto stránku na úvodní obrazovku...</translation>
 <translation id="6122081475643980456">Vaše připojení k internetu je ovládáno</translation>
@@ -3925,7 +3923,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6452181791372256707">Odmítnout</translation>
 <translation id="6454421252317455908">Metoda zadávání čínštiny (zrychlená)</translation>
 <translation id="6455348477571378046">Typ certifikátu:</translation>
-<translation id="6456234919706689841">Administrátor může zvolit, že se diagnostické údaje a údaje o využití z tohoto zařízení mají odesílat do Googlu. Zde toto <ph name="BEGIN_LINK1" />natavení<ph name="END_LINK1" /> můžete zobrazit. <ph name="BEGIN_LINK2" />Další informace<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Pokračovat v blokování JavaScriptu</translation>
 <translation id="6458308652667395253">Spravovat blokování JavaScriptu...</translation>
 <translation id="6459488832681039634">Pro hledání použít výběr</translation>
@@ -4702,7 +4699,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="7587108133605326224">Baltské jazyky</translation>
 <translation id="7589461650300748890">Pozor, buďte opatrní!</translation>
 <translation id="7589661784326793847">Chvilku strpení</translation>
-<translation id="7593635197364225277">Automaticky zálohovat a obnovovat data aplikace Play na Disku Google. Toto nastavení můžete kdykoli změnit v nastavení systému Android. <ph name="BEGIN_LINK1" />Další informace<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (kód chyby <ph name="ERROR_CODE" />)</translation>
 <translation id="7596831438341298034">OK, importovat</translation>
 <translation id="7600965453749440009">Jazyk <ph name="LANGUAGE" /> nikdy nepřekládat</translation>
@@ -5209,7 +5205,6 @@ Výpočet zbývajícího času</translation>
 <translation id="8300607741108698921">Nastavit během minuty</translation>
 <translation id="8303650969500425356">Povoluje JavaScriptu uzamknout orientaci obrazovky.</translation>
 <translation id="8303655282093186569">Nastavení zadávání Pinyinu</translation>
-<translation id="830424806940379275">Povolí rozšířením vytvářet okna panelů mimo rámec prohlížeče. Ve výchozím nastavení (nebo pokud je tento příznak deaktivován) se při pokusu o otevření panelu otevře namísto panelu vyskakovací okno. V operačních systémech pro počítače byla podpora panelů ukončena a budou z nich brzo odstraněny.</translation>
 <translation id="8306534594034939679">Umožňuje aktivovat podporu alternativních služeb (experimentální funkce protokolu HTTP).</translation>
 <translation id="8307376264102990850">Nabíjení
 Výpočet času zbývajícího do úplného nabití</translation>

@@ -78,7 +78,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
 <translation id="1871284979644508959">Verplicht veld</translation>
 <translation id="189172778771606813">Zijmenu sluiten</translation>
-<translation id="1924956916668006832">Verzendadres selecteren</translation>
 <translation id="1933845786846280168">Geselecteerd tabblad</translation>
 <translation id="194341124344773587">Schakel het recht in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
@@ -159,7 +158,6 @@ Je kunt het Fysieke web beheren via de instellingen van Chrome.
 <translation id="2777555524387840389"><ph name="SECONDS" /> seconden resterend</translation>
 <translation id="278029852808208386">Geen Bluetooth-apparaten gevonden. <ph name="BEGIN_LINK" />Zoek nogmaals<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 seconde resterend</translation>
-<translation id="2781389167600714117">Verzendoptie selecteren</translation>
 <translation id="2811892995384186721">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK" />Raadpleeg de Help<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
@@ -188,7 +186,6 @@ Je kunt het Fysieke web beheren via de instellingen van Chrome.
 <translation id="3117051980354074377">Log in bij Chrome om de bladwijzers van je andere apparaten te bekijken.</translation>
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
 <translation id="3149891296864842641">Verzendoptie</translation>
-<translation id="3162882791484435636">Verzendoptie selecteren</translation>
 <translation id="3177909033752230686">Brontaal:</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
@@ -261,7 +258,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4062305924942672200">Juridische informatie</translation>
 <translation id="4089831646916293264">Deze functie kan problemen veroorzaken met toegang tot premium gegevensservices geleverd door je provider.</translation>
 <translation id="4095146165863963773">App-gegevens verwijderen?</translation>
-<translation id="4099423833822562131">Selecteer een verzendadres om verzendmethoden te bekijken.</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="411254640334432676">Downloaden mislukt.</translation>
@@ -430,7 +426,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5939518447894949180">Resetten</translation>
-<translation id="5961742032223302715">Contactgegevens selecteren</translation>
 <translation id="5968595432776860642">'<ph name="VIDEO_TITLE" />' afspelen</translation>
 <translation id="6010869025736512584">Video-invoer openen</translation>
 <translation id="6012342843556706400">Chrome heeft locatietoegang nodig om het item te delen met deze site.</translation>
@@ -694,7 +689,7 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>
 <translation id="8931159598799892500">Chrome + Fysieke web</translation>
 <translation id="8941248009481596111">Je verbinding met deze site is privé.</translation>
-<translation id="8941729603749328384">www.example.com</translation>
+<translation id="8941729603749328384">www.voorbeeld.com</translation>
 <translation id="8942627711005830162">Openen in een ander venster</translation>
 <translation id="8959122750345127698">Navigatie is onbereikbaar: <ph name="URL" /></translation>
 <translation id="8979340629087822094">de afgelopen dag</translation>

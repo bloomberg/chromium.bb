@@ -22,13 +22,6 @@
       Om den är inställd på sant eller inte har angetts rapporteras statistik.</translation>
 <translation id="1046484220783400299">Aktivera föråldrade webbplattformsfunktioner under en begränsad tid</translation>
 <translation id="1047128214168693844">Tillåt inte att någon webbplats spårar användarnas fysiska plats</translation>
-<translation id="1057535219415338480">Aktiverar nätverksförutsägelse i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
-
-      Detta styr inte bara DNS-förhämtning utan också TCP- och SSL-föranslutning och förrendering av webbsidor. Policyns namn refererar till DNS-förhämtning av historiska skäl.
-
-      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME" />.
-
-      Om policyn inte ställs in är funktionen aktiverad, men den kan ändras av användarna.</translation>
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
 <translation id="1090892140761957285">Webbadress för att validera autentiseringstoken för fjärråtkomstklient.
 

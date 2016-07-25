@@ -1934,6 +1934,7 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Jelszó mentve. Bármelyik böngészőből elérheti ezt és a(z) <ph name="SAVED_PASSWORDS_LINK" /> közül az összes többit.</translation>
 <translation id="3590587280253938212">gyors</translation>
 <translation id="3592260987370335752">&amp;További információ</translation>
+<translation id="3592313833691251126">Engedély a bővítmények számára olyan panelablakok létrehozására, amelyek a böngésző keretén kívül jelennek meg. Ha nincs engedélyezve, akkor a panel megnyitására irányuló kísérletek egy előugró ablakot nyitnak meg. Az alapértelmezett viselkedés szerint az engedély csak az engedélyezőlistán szereplő bővítményekre vonatkozik. Az engedélyezett viselkedés az összes bővítményre érvényes. A letiltott viselkedés minden bővítmény esetében letiltja a panelek létrehozását.</translation>
 <translation id="359283478042092570">Bejelentkezés</translation>
 <translation id="3593152357631900254">Részleges pinjin mód engedélyezése</translation>
 <translation id="3593965109698325041">Tanúsítvány nevének megkötései</translation>
@@ -2255,7 +2256,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4034042927394659004">Billentyűfényerő csökkentése</translation>
 <translation id="4035758313003622889">&amp;Feladatkezelő</translation>
 <translation id="4037084878352560732">Ló</translation>
-<translation id="4037102579141982963">Az eszköz automatikusan diagnosztikai és használati adatokat küld a Google-nak. Eszköze <ph name="BEGIN_LINK1" />beállításai<ph name="END_LINK1" /> között ezt bármikor módosíthatja. <ph name="BEGIN_LINK2" />További információ<ph name="END_LINK2" />.</translation>
 <translation id="4037463823853863991">A hozzáférhetőségi lap kapcsoló engedélyezése Androidon.</translation>
 <translation id="4044260751144303020">Feldolgozás fix pozíciójú elemekhez.</translation>
 <translation id="404493185430269859">Alapértelmezett keresőmotor</translation>
@@ -3228,7 +3228,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5439568486246921931">Ez a művelet véglegesen törli a felhasználó letöltéseit, offline fájljait és böngészési adatait. A műveletet nem lehet visszavonni.</translation>
 <translation id="544083962418256601">Parancsikonok létrehozása...</translation>
 <translation id="5441100684135434593">Vezetékes hálózat</translation>
-<translation id="5445088910157062298">Engedélyezze, hogy a Google helyszolgáltatása segítsen az alkalmazásoknak a tartózkodási hely gyors és pontos meghatározásában – így később merül le az akkumulátor. A rendszer a névtelen tartózkodásihely-adatokat olyankor is elküldi a Google-nak, amikor az alkalmazások nem futnak.</translation>
 <translation id="5448293924669608770">Hoppá, hiba történt a bejelentkezés során</translation>
 <translation id="5449588825071916739">Összes lap hozzáadása a könyvjelzőkhöz</translation>
 <translation id="5449716055534515760">A&amp;blak bezárása</translation>
@@ -3695,7 +3694,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6110466548232134880">A(z) <ph name="ORGANIZATION" /> identitását a(z) <ph name="LOCALITY" /> régióban <ph name="ISSUER" /> ellenőrizte. A szerver nem tette elérhetővé a tanúsítvány átláthatósági adatait.</translation>
 <translation id="6111770213269631447">Átírás (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Alapértelmezés szerint engedélyezett</translation>
-<translation id="6112929985131461002">Az eszköz automatikusan diagnosztikai és használati adatokat küld a Google-nak. Ezt a <ph name="BEGIN_LINK1" />beállítást<ph name="END_LINK1" /> rendszergazdája kényszeríti. <ph name="BEGIN_LINK2" />További információ<ph name="END_LINK2" />.</translation>
 <translation id="6116921718742659598">Nyelvi és beviteli beállítások módosítása</translation>
 <translation id="6120205520491252677">Az oldal rögzítése a kezdőképernyőn...</translation>
 <translation id="6122081475643980456">Internetkapcsolata felett más vette át az irányítást</translation>
@@ -3931,7 +3929,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6452181791372256707">Elutasítás</translation>
 <translation id="6454421252317455908">Kínai beviteli mód (gyors)</translation>
 <translation id="6455348477571378046">Tanúsítvány típusa:</translation>
-<translation id="6456234919706689841">Rendszergazdája dönthet úgy, hogy a rendszer küldjön diagnosztikai és használati adatokat a Google-nak az eszközzel kapcsolatban. A <ph name="BEGIN_LINK1" />beállítást<ph name="END_LINK1" /> itt tekintheti meg. <ph name="BEGIN_LINK2" />További információ<ph name="END_LINK2" />.</translation>
 <translation id="645705751491738698">A JavaScript letiltásának fenntartása</translation>
 <translation id="6458308652667395253">JavaScript letiltásának kezelése...</translation>
 <translation id="6459488832681039634">Keresés a kijelölésben</translation>
@@ -4710,7 +4707,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7587108133605326224">Balti</translation>
 <translation id="7589461650300748890">Hoppá! Legyen óvatosabb.</translation>
 <translation id="7589661784326793847">Egy pillanat…</translation>
-<translation id="7593635197364225277">Készítsen automatikusan biztonsági másolatot a Play-alkalmazásadatokról a Google Drive-re, és állítsa vissza onnan őket. Az Android-beállítások között bármikor módosíthatja ezt. <ph name="BEGIN_LINK1" />További információ<ph name="END_LINK1" />.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (hibakód: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Rendben, importálás</translation>
 <translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE" /> nyelvű szöveget</translation>
@@ -5216,7 +5212,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8300607741108698921">1 perces beállítás</translation>
 <translation id="8303650969500425356">Lehetővé teszi a képernyő tájolásának zárolását a JavaScript számára.</translation>
 <translation id="8303655282093186569">Pinjin beviteli beállítások</translation>
-<translation id="830424806940379275">Engedély a bővítmények számára olyan panelablakok létrehozására, amelyek a böngésző keretén kívül jelennek meg. Alapértelmezés szerint vagy ha ki van kapcsolva, a panel megnyitására irányuló kísérletek egy előugró ablakot nyitnak meg helyette. Az asztali operációs rendszereken futó panelek elavultak, és hamarosan törlődnek.</translation>
 <translation id="8306534594034939679">Az „Alternatív szolgáltatások” kísérleti HTTP-funkció engedélyezése.</translation>
 <translation id="8307376264102990850">A teljes töltöttségig hátralévő idő kiszámítása</translation>
 <translation id="8308179586020895837">Kérdezzen rá, ha a(z) <ph name="HOST" /> hozzá szeretne férni a kamerához</translation>

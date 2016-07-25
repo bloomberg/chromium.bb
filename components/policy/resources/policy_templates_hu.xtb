@@ -22,13 +22,6 @@
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a böngésző jelenti a statisztikákat.</translation>
 <translation id="1046484220783400299">Elavult Web Platform-funkciók engedélyezése korlátozott ideig</translation>
 <translation id="1047128214168693844">Minden oldal számára tiltja a felhasználók fizikai helyének követését</translation>
-<translation id="1057535219415338480">Engedélyezi a hálózati várható kifejezést a(z) <ph name="PRODUCT_NAME" /> termékben, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
-
-      Ez nem csak a DNS-előtöltést vezérli, hanem az előzetes TCP- és SSL-kapcsolatokat, valamint a weboldalak előzetes megjelenítését is. A házirend neve történeti okok miatt a DNS-előtöltésre utal.
-
-      Ha be- vagy kikapcsolja ezt a beállítást a(z) <ph name="PRODUCT_NAME" /> termékben, a felhasználók nem módosíthatják vagy írhatják felül.
-
-      Ha nem állítja be, akkor be lesz kapcsolva, ám a felhasználók módosíthatják.</translation>
 <translation id="1062011392452772310">Az eszköz távoli tanúsításának engedélyezése</translation>
 <translation id="1090892140761957285">A távoli elérésű ügyfél hitelesítőtokenjének ellenőrzésére szolgáló URL.
 

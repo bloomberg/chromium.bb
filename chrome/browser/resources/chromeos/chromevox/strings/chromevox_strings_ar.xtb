@@ -269,6 +269,7 @@
 <translation id="3392045790598181549">عنصر القائمة <ph name="NAME" /></translation>
 <translation id="3406283310380167331">عرض قائمة النماذج</translation>
 <translation id="3422338090358345848">فتح مستكشف لوحة المفاتيح</translation>
+<translation id="3423495725743882470">صف $1 عمود $2</translation>
 <translation id="3457000393508828486">مضغوط جزئيًا</translation>
 <translation id="3462439746547587373">الزر <ph name="NAME" /></translation>
 <translation id="3473644018603298796">تم تحديد <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">ليس هناك أي نماذج.</translation>
 <translation id="5005670136041063723">ليس هناك المزيد من العناصر المماثلة.</translation>
 <translation id="501473567976723023">كانون الثاني (يناير)</translation>
+<translation id="5040591161308540832">جدول $1، $2 في $3</translation>
 <translation id="5041394372352067729">نقل عرض برايل إلى أعلى الصفحة</translation>
 <translation id="5042770794184672516">زيادة مستوى صوت النطق</translation>
 <translation id="5050015258024679800">عنوان المستوى الرابع السابق</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">العنوان السابق</translation>
 <translation id="6378565991815958969">نسخ $1.</translation>
+<translation id="6385591741672306837">العمود</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">ليس هناك زر اختيار سابق.</translation>
 <translation id="6414968628640960377">العنصر المختلف السابق.</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">ليس بداخل الجدول.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{شرطة سفلية واحدة}zero{# underscores}two{شرطتان سفليتان (#)}few{# شرطات سفلية}many{# شرطة سفلية}other{# من الشرطات السفلية}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">الصف</translation>
 <translation id="8186185314313222077">تبديل وضع ملء الشاشة</translation>
 <translation id="8199231515320852133">الإعلان عن عناوين الخلية الحالية</translation>
 <translation id="820417203470636242">خلية فارغة.</translation>

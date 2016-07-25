@@ -23,13 +23,6 @@
       bırakılırsa istatistikler bildirilir.</translation>
 <translation id="1046484220783400299">Kullanımdan kaldırılan web platformu özelliklerini sınırlı bir süre için etkinleştir</translation>
 <translation id="1047128214168693844">Hiçbir sitenin, kullanıcının fiziksel konumunu izlemesine izin verme</translation>
-<translation id="1057535219415338480"><ph name="PRODUCT_NAME" /> ürününde ağ tahminini sağlar ve kullanıcıların bu ayarı değiştirmesini önler.
-
-      Bu, yalnızca DNS'nin önceden getirilmesini değil, aynı zamanda TCP ve SSL ön bağlantısını ve Web sayfalarının önceden oluşturulmasını da denetler. Politika adı, geçmişe dayanan nedenlerden dolayı DNS'nin önceden getirilmesine gönderme yapar.
-
-      Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar bu ayarı <ph name="PRODUCT_NAME" /> içinden değiştiremez veya geçersiz kılamaz.
-
-      Bu politika ayarlanmadan bırakılırsa etkinleştirilir, ancak kullanıcı ayarda değişiklik yapabilir.</translation>
 <translation id="1062011392452772310">Cihaz için uzaktan doğrulamayı etkinleştir</translation>
 <translation id="1090892140761957285">Uzaktan erişim istemcisi kimlik doğrulama jetonunu doğrulama URL'si.
 

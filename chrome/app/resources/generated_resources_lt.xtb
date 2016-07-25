@@ -1933,6 +1933,7 @@ Iš <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Slaptažodis išsaugotas. Jį ir visus <ph name="SAVED_PASSWORDS_LINK" /> galite pasiekti naudodami bet kurią naršyklę.</translation>
 <translation id="3590587280253938212">greita</translation>
 <translation id="3592260987370335752">&amp;Sužinokite daugiau</translation>
+<translation id="3592313833691251126">Leiskite plėtiniams kurti skydelio langus, kurie atsidaro už naršyklės rėmelio. Jei neįgalinta, bandant atidaryti skydelį bus atidarytas iššokantysis langas. Numatytoji elgsena – leisti tik į baltąjį sąrašą įtrauktus plėtinius. Jei įgalinta, bus leidžiami visi plėtiniai, jei ne – nebus leidžiami jokio plėtinio skydeliai.</translation>
 <translation id="359283478042092570">Įvesti</translation>
 <translation id="3593152357631900254">Įgalinti netikslų Pinjino režimą</translation>
 <translation id="3593965109698325041">Sertifikato pavadinimo apribojimai</translation>
@@ -2255,7 +2256,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4034042927394659004">Sumažinti klaviatūros šviesumą</translation>
 <translation id="4035758313003622889">&amp;Užduočių tvarkytuvė</translation>
 <translation id="4037084878352560732">Arklys</translation>
-<translation id="4037102579141982963">Įrenginys automatiškai siųs diagnostikos ir naudojimo duomenis „Google“. Šį nustatymą galite bet kada pakeisti įrenginio <ph name="BEGIN_LINK1" />nustatymuose<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Sužinokite daugiau<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Įgalinti „Android“ skirtą pasiekiamumo skirtukų perjungiklį.</translation>
 <translation id="4044260751144303020">Fiksuotos pozicijos elementų komponavimas.</translation>
 <translation id="404493185430269859">Numatytasis paieškos variklis</translation>
@@ -3228,7 +3228,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="5439568486246921931">Atlikus šį veiksmą, visam laikui bus ištrinti naudotojo atsisiųsti duomenys, neprisijungus pasiekiami failai ir naršymo duomenys. Šio veiksmo negalima anuliuoti.</translation>
 <translation id="544083962418256601">Kurti sparčiuosius klavišus...</translation>
 <translation id="5441100684135434593">Laidinis tinklas</translation>
-<translation id="5445088910157062298">„Google“ vietovės paslauga gali padėti programoms greitai ir tiksliai nustatyti jūsų buvimo vietą. Tai gali padėti sumažinti akumuliatoriaus energijos sąnaudas. Anoniminiai vietovės duomenys bus siunčiami sistemai „Google“, net jei nepaleista jokia programa.</translation>
 <translation id="5448293924669608770">Oi, prisijungiant įvyko klaida</translation>
 <translation id="5449588825071916739">Žymėti visus skirtukus</translation>
 <translation id="5449716055534515760">Uždaryti lan&amp;gą</translation>
@@ -3697,7 +3696,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="6110466548232134880">„<ph name="ORGANIZATION" />“ (<ph name="LOCALITY" />) tapatybę patvirtino „<ph name="ISSUER" />“. Serveris nepateikė sertifikato skaidrumo informacijos.</translation>
 <translation id="6111770213269631447">Transliteracija (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Leidžiama pagal numatytuosius nustatymus</translation>
-<translation id="6112929985131461002">Įrenginys automatiškai siųs diagnostikos ir naudojimo duomenis „Google“. Šį <ph name="BEGIN_LINK1" />nustatymą<ph name="END_LINK1" /> priverstinai pritaikė administratorius. <ph name="BEGIN_LINK2" />Sužinokite daugiau<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Keisti kalbos ir įvesties nustatymus</translation>
 <translation id="6120205520491252677">Prisegti šį puslapį prie pradžios ekrano...</translation>
 <translation id="6122081475643980456">Jūsų interneto ryšys yra kontroliuojamas</translation>
@@ -3933,7 +3931,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="6452181791372256707">Atmesti</translation>
 <translation id="6454421252317455908">Įvesties kinų k. metodas (spartusis)</translation>
 <translation id="6455348477571378046">Sertifikato tipas:</translation>
-<translation id="6456234919706689841">Administratorius gali pasirinkti siųsti šio įrenginio diagnostikos ir naudojimo duomenis „Google“. Šį <ph name="BEGIN_LINK1" />nustatymą<ph name="END_LINK1" /> galite peržiūrėti čia. <ph name="BEGIN_LINK2" />Sužinokite daugiau<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Tęsti „JavaScript“ blokavimą</translation>
 <translation id="6458308652667395253">Valdyti „JavaScript“ blokavimą...</translation>
 <translation id="6459488832681039634">Paieškai naudoti pasirinkimą</translation>
@@ -4716,7 +4713,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="7587108133605326224">Baltijos šalių</translation>
 <translation id="7589461650300748890">Oi, būkite atsargūs.</translation>
 <translation id="7589661784326793847">Luktelėkite sekundėlę</translation>
-<translation id="7593635197364225277">Atsarginės „Google Play“ programos duomenų kopijos kuriamos automatiškai ir atkuriamos „Google“ diske. Šį nustatymą bet kada galite pakeisti „Android“ nustatymuose. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (klaidos kodas: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Gerai, importuoti</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
@@ -5223,7 +5219,6 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="8300607741108698921">Greitas nustatymas</translation>
 <translation id="8303650969500425356">Leidžiama „JavaScript“ užrakinti ekrano orientaciją.</translation>
 <translation id="8303655282093186569">Pinjino k. įvesties nustatymai</translation>
-<translation id="830424806940379275">Leisti plėtiniams kurti skydelio langus, kurie atidaromi ne naršyklės rėmelyje. Pagal numatytuosius nustatymus arba išjungus, bandant atidaryti skydelį, vietoje jo bus atidarytas iššokantysis langas. Skydeliai stalinių kompiuterių operacinėse sistemose nebenaudojami ir netrukus bus pašalinti.</translation>
 <translation id="8306534594034939679">Įgalinti alternatyviųjų paslaugų palaikymą kaip eksperimentinę HTTP funkciją.</translation>
 <translation id="8307376264102990850">Kraunama
 Skaičiuojamas laikas, kol bus įkrauta</translation>

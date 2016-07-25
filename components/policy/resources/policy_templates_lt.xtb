@@ -22,13 +22,6 @@
       Jei ji nustatyta į „true“ arba yra nenustatyta, statistikos ataskaitos bus teikiamos.</translation>
 <translation id="1046484220783400299">Laikinai įgalinti nebenaudojamas žiniatinklio platformos funkcijas</translation>
 <translation id="1047128214168693844">Neleisti jokioje svetainėje stebėti naudotojo buvimo vietos</translation>
-<translation id="1057535219415338480">Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Pagal šią politiką valdomas ne tik išankstinis DNS pateikimas, bet ir išankstinis TCP ir SSL ryšys bei tinklalapių pateikimas. Politikos pavadinime išankstinis DNS pateikimas įtrauktas dėl ankstesnių priežasčių.
-
-      Jei įgalinsite ar išjungsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ naudotojai negalės jo pakeisti ar nepaisyti.
-
-      Jei ši politika nenustatoma, ji bus įgalinta, bet naudotojas galės tai pakeisti.</translation>
 <translation id="1062011392452772310">Įgalinti nuotolinį įrenginio patvirtinimą</translation>
 <translation id="1090892140761957285">URL, skirtas nuotolinio prisijungimo kliento autentifikavimo prieigos raktui patvirtinti.
 

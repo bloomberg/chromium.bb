@@ -22,13 +22,6 @@
       Jos käytännön arvo on Tosi tai sitä ei aseteta, tiedot raportoidaan.</translation>
 <translation id="1046484220783400299">Ota käytöstä poistettuja verkkokäyttöympäristöjä takaisin käyttöön rajoitetuksi ajaksi</translation>
 <translation id="1047128214168693844">Älä anna minkään sivuston seurata käyttäjien fyysistä sijaintia</translation>
-<translation id="1057535219415338480">Ottaa verkon ennakoinnin käyttöön tuotteessa <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muuttamasta asetusta.
-
-      Tämä säätelee DNS-esilatauksen lisäksi myös TCP- ja SSL-esiyhteyksiä ja verkkosivujen esihahmonnusta. Käytännön nimi viittaa DNS-esilataukseen historiallisista syistä.
-
-      Jos otat tämän asetuksen käyttöön tai poistat sen käytöstä, käyttäjät eivät voi muuttaa tai ohittaa asetusta tuotteessa <ph name="PRODUCT_NAME" />.
-
-      Jos käytäntöä ei ole määritetty, asetus otetaan käyttöön, mutta käyttäjät voivat vaihtaa sitä.</translation>
 <translation id="1062011392452772310">Salli etätodennus laitteelle</translation>
 <translation id="1090892140761957285">URL-osoite, jota käytetään etäkäytön asiakkaan todennustunnuksen vahvistamiseen.
 

@@ -1926,6 +1926,7 @@
 <translation id="3590559774363307859">密码已保存。您可以通过任意浏览器获取此密码以及您所有的<ph name="SAVED_PASSWORDS_LINK" />。</translation>
 <translation id="3590587280253938212">快速</translation>
 <translation id="3592260987370335752">了解详情(&amp;L)</translation>
+<translation id="3592313833691251126">允许扩展程序创建在浏览器框架之外打开的面板窗口。如果未启用，尝试打开面板时，系统将改为打开一个弹出式窗口。默认情况下，只有加入白名单的扩展程序可执行这项操作。启用后，所有扩展程序皆可执行这项操作；停用后，系统将禁止任何扩展程序打开面板。</translation>
 <translation id="359283478042092570">输入</translation>
 <translation id="3593152357631900254">启用模糊拼音模式</translation>
 <translation id="3593965109698325041">证书名称约束</translation>
@@ -2247,7 +2248,6 @@
 <translation id="4034042927394659004">降低键盘亮度</translation>
 <translation id="4035758313003622889">任务管理器(&amp;T)</translation>
 <translation id="4037084878352560732">马</translation>
-<translation id="4037102579141982963">该设备会自动向 Google 发送诊断信息和使用情况数据。您随时可在设备的<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />部分中更改这项设置。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">启用 Android 的无障碍标签页切换器。</translation>
 <translation id="4044260751144303020">为固定位置的元素合成。</translation>
 <translation id="404493185430269859">默认搜索引擎</translation>
@@ -3209,7 +3209,6 @@
 <translation id="5439568486246921931">此操作将永久删除此用户的下载内容、离线文件和浏览数据。此操作无法撤消。</translation>
 <translation id="544083962418256601">创建快捷方式...</translation>
 <translation id="5441100684135434593">有线网络</translation>
-<translation id="5445088910157062298">利用 Google 的位置信息服务帮助应用快速而准确地找到您的位置，这样可以减少电池消耗。系统会将位置数据匿名发送给 Google（即使设备未运行任何应用）。</translation>
 <translation id="5448293924669608770">糟糕，登录时出了点问题</translation>
 <translation id="5449588825071916739">为所有标签页添加书签</translation>
 <translation id="5449716055534515760">关闭窗口(&amp;D)</translation>
@@ -3675,7 +3674,6 @@
 <translation id="6110466548232134880">位于<ph name="LOCALITY" />的<ph name="ORGANIZATION" />的身份已通过了<ph name="ISSUER" />的验证。服务器未提供任何 Certificate Transparency 信息。</translation>
 <translation id="6111770213269631447">音译(namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">默认允许</translation>
-<translation id="6112929985131461002">该设备会自动向 Google 发送诊断信息和使用情况数据。这项<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />由您的管理员强制执行。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">更改语言和输入设置</translation>
 <translation id="6120205520491252677">将此网页固定到“开始”屏幕...</translation>
 <translation id="6122081475643980456">您的互联网连接受到控制</translation>
@@ -3910,7 +3908,6 @@
 <translation id="6452181791372256707">拒绝</translation>
 <translation id="6454421252317455908">中文输入法（快速）</translation>
 <translation id="6455348477571378046">证书类型：</translation>
-<translation id="6456234919706689841">您的管理员可能会选择向 Google 发送该设备的诊断信息和使用情况数据。您可在此处查看这项<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">继续拦截 JavaScript</translation>
 <translation id="6458308652667395253">管理 JavaScript 拦截…</translation>
 <translation id="6459488832681039634">使用所选内容查找</translation>
@@ -4680,7 +4677,6 @@
 <translation id="7587108133605326224">波罗的海周边语言</translation>
 <translation id="7589461650300748890">注意！</translation>
 <translation id="7589661784326793847">请稍候</translation>
-<translation id="7593635197364225277">自动将 Play 应用数据备份到 Google 云端硬盘以及从中恢复相应数据。您随时可以在 Android 设置中更改这项设置。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" />（错误代码为：<ph name="ERROR_CODE" />）。</translation>
 <translation id="7596831438341298034">确认导入</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
@@ -5186,7 +5182,6 @@
 <translation id="8300607741108698921">1分钟即可完成设置</translation>
 <translation id="8303650969500425356">允许 JavaScript 锁定屏幕方向。</translation>
 <translation id="8303655282093186569">拼音输入设置</translation>
-<translation id="830424806940379275">允许扩展程序创建在浏览器框架之外打开的面板窗口。默认情况下或此项处于停用状态时，如果用户尝试打开面板，系统将改为打开弹出式窗口。在桌面版操作系统上，面板已被弃用，并且很快将会被移除。</translation>
 <translation id="8306534594034939679">启用对替代服务（实验性 HTTP 功能）的支持。</translation>
 <translation id="8307376264102990850">正在计算充满电所需剩余时间</translation>
 <translation id="8308179586020895837">当 <ph name="HOST" /> 想要使用摄像头时询问我</translation>

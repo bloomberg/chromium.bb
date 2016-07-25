@@ -22,13 +22,6 @@
       Se viene impostata su true o non viene impostata, le statistiche vengono segnalate.</translation>
 <translation id="1046484220783400299">Consente di attivare le funzioni della piattaforma web obsolete per un periodo di tempo limitato</translation>
 <translation id="1047128214168693844">Non consentire ad alcun sito di monitorare la posizione fisica degli utenti</translation>
-<translation id="1057535219415338480">Consente la previsione della rete in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
-
-      Controlla non solo il precaricamento DNS, ma anche la preconnessione TCP ed SSL e il prerendering delle pagine web. Il nome della norma si riferisce al precaricamento DNS per motivi storici.
-
-      Se attivi o disattivi questa impostazione, gli utenti non potranno modificare o ignorare questa impostazione in <ph name="PRODUCT_NAME" />.
-
-      Se questa norma non viene definita, l'impostazione verrà attivata ma l'utente sarà in grado di modificarla.</translation>
 <translation id="1062011392452772310">Attivazione dell'attestazione da remoto per il dispositivo</translation>
 <translation id="1090892140761957285">URL per la convalida del token di autenticazione del client di accesso remoto.
 

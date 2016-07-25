@@ -1934,6 +1934,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Palavra-passe guardada. Pode aceder à mesma e a todas as suas <ph name="SAVED_PASSWORDS_LINK" /> em qualquer navegador.</translation>
 <translation id="3590587280253938212">rápido</translation>
 <translation id="3592260987370335752">&amp;Saiba mais</translation>
+<translation id="3592313833691251126">Permite que as extensões criem janelas de painel que abrem fora do frame do navegador. As tentativas de abrir um painel abrem uma janela de pop-up se este não estiver ativado. O comportamento predefinido consiste em apenas permitir para extensões que estejam na lista de autorizações. O comportamento ativado consiste em permitir para todas as extensões. O comportamento desativado consiste em não permitir painéis para qualquer extensão.</translation>
 <translation id="359283478042092570">Aceder</translation>
 <translation id="3593152357631900254">Activar modo Pinyin semelhante</translation>
 <translation id="3593965109698325041">Restrições de nome do certificado</translation>
@@ -2256,7 +2257,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Diminuir o brilho das teclas</translation>
 <translation id="4035758313003622889">Gestor de &amp;tarefas</translation>
 <translation id="4037084878352560732">Cavalo</translation>
-<translation id="4037102579141982963">Este dispositivo envia automaticamente dados de diagnóstico e de utilização para a Google. Pode alterar esta definição a qualquer momento nas <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" /> do seu dispositivo. <ph name="BEGIN_LINK2" />Saber mais<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Ativa o comutador de separadores de acessibilidade para Android.</translation>
 <translation id="4044260751144303020">Composição para elementos de posição fixa.</translation>
 <translation id="404493185430269859">Motor de pesquisa predefinido</translation>
@@ -3229,7 +3229,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5439568486246921931">Esta ação, que não pode ser anulada, elimina permanentemente as transferências, os ficheiros offline e os dados de navegação deste utilizador.</translation>
 <translation id="544083962418256601">Criar atalhos...</translation>
 <translation id="5441100684135434593">Rede com fios</translation>
-<translation id="5445088910157062298">Permita que o serviço de localização da Google ajude as aplicações a encontrarem a sua localização com precisão e rapidamente, o que pode reduzir o consumo de bateria. São enviados para a Google dados de localização anónimos, mesmo quando não estão a ser executadas quaisquer aplicações.</translation>
 <translation id="5448293924669608770">Ups, ocorreu um erro ao iniciar sessão</translation>
 <translation id="5449588825071916739">Adicionar Todos os Separadores aos Marcadores</translation>
 <translation id="5449716055534515760">Fechar &amp;Janela</translation>
@@ -3696,7 +3695,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6110466548232134880">A identidade de <ph name="ORGANIZATION" /> em <ph name="LOCALITY" /> foi validada por <ph name="ISSUER" />. O servidor não forneceu quaisquer informações de Transparência do certificado.</translation>
 <translation id="6111770213269631447">Transliteração (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Permitido por predefinição</translation>
-<translation id="6112929985131461002">Este dispositivo envia automaticamente dados de diagnóstico e de utilização à Google. A aplicação desta <ph name="BEGIN_LINK1" />definição<ph name="END_LINK1" /> é da responsabilidade do administrador. <ph name="BEGIN_LINK2" />Saber mais<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Alterar idioma e definições de introdução</translation>
 <translation id="6120205520491252677">Fixar esta página ao ecrã Inicial...</translation>
 <translation id="6122081475643980456">A sua ligação à Internet está a ser controlada</translation>
@@ -3932,7 +3930,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
 <translation id="6454421252317455908">Método de introdução chinês (rápido)</translation>
 <translation id="6455348477571378046">Tipo de Certificado:</translation>
-<translation id="6456234919706689841">O administrador pode optar por enviar dados de diagnóstico e de utilização deste dispositivo à Google. Pode ver esta <ph name="BEGIN_LINK1" />definição<ph name="END_LINK1" /> aqui. <ph name="BEGIN_LINK2" />Saber mais<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Continuar a bloquear JavaScript</translation>
 <translation id="6458308652667395253">Gerir bloqueio de JavaScript...</translation>
 <translation id="6459488832681039634">Utilizar selecção para localizar</translation>
@@ -4711,7 +4708,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7587108133605326224">Báltico</translation>
 <translation id="7589461650300748890">Pare. Tenha cuidado.</translation>
 <translation id="7589661784326793847">Aguarde um momento</translation>
-<translation id="7593635197364225277">Faça uma cópia de segurança e restaure automaticamente os dados de aplicações do Play para o Google Drive. Pode alterar esta opção nas Definições do Android em qualquer altura. <ph name="BEGIN_LINK1" />Saber mais<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (código de erro <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, importar</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
@@ -5217,7 +5213,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8300607741108698921">Configuração de 1 minuto</translation>
 <translation id="8303650969500425356">Permite ao JavaScript bloquear a orientação do ecrã</translation>
 <translation id="8303655282093186569">Definições de introdução Pinyin</translation>
-<translation id="830424806940379275">Permitir que as extensões criem janelas de painel que abrem fora do frame do navegador. Por predefinição ou se estiver desativado, uma tentativa de abrir um painel abre antes um pop-up. Os painéis nos sistemas operativos de computador foram descontinuados e serão removidos em breve.</translation>
 <translation id="8306534594034939679">Ativar suporte para Serviços alternativos, uma funcionalidade HTTP experimental.</translation>
 <translation id="8307376264102990850">A calcular o tempo de carga até estar totalmente carregada</translation>
 <translation id="8308179586020895837">Perguntar se <ph name="HOST" /> pretende aceder à sua câmara</translation>

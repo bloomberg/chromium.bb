@@ -22,13 +22,6 @@
       Als het beleid is ingesteld op 'waar', worden de statistieken gemeld.</translation>
 <translation id="1046484220783400299">Verouderde webplatformfuncties beperkte tijd inschakelen</translation>
 <translation id="1047128214168693844">Niet toestaan dat sites de fysieke locatie van gebruikers bijhouden</translation>
-<translation id="1057535219415338480">Hiermee wordt netwerkvoorspelling in <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-      Hiermee wordt niet alleen DNS-prefetching beheerd, maar ook het vooraf verbinden met TCP en SSL en het vooraf renderen van webpagina's. De beleidsnaam verwijst naar DNS-prefetching vanwege historische redenen.
-
-      Als je deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />.
-
-      Als dit beleid niet wordt ingesteld, wordt het automatisch ingeschakeld, maar de gebruiker kan het wijzigen.</translation>
 <translation id="1062011392452772310">Externe bevestiging van apparaat inschakelen</translation>
 <translation id="1090892140761957285">URL voor het valideren van verificatietoken voor client voor externe toegang.
 

@@ -22,13 +22,6 @@
       Si se asigna el valor true o si la política no se configura, se informará sobre ellas.</translation>
 <translation id="1046484220783400299">Habilita funciones obsoletas de la plataforma web durante un período de tiempo limitado</translation>
 <translation id="1047128214168693844">No permitir que ningún sitio haga un seguimiento de la ubicación física de los usuarios</translation>
-<translation id="1057535219415338480">Permite habilitar la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta configuración.
-
-      Esta opción permite controlar tanto la obtención previa de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web. El nombre de la política hace referencia a la obtención previa de DNS por cuestiones históricas.
-
-      Al habilitar o inhabilitar esta opción, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
-
-      Si no se establece esta política, se habilitará pero el usuario podrá modificarla.</translation>
 <translation id="1062011392452772310">Habilitar confirmación remota para el dispositivo</translation>
 <translation id="1090892140761957285">URL para validar el token de autenticación del cliente de acceso remoto.
 

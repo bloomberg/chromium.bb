@@ -22,13 +22,6 @@
       Se for definida como "true" ou não for configurada, as estatísticas serão informadas.</translation>
 <translation id="1046484220783400299">Ativar por um tempo limitado recursos da plataforma Web cujo uso esteja suspenso</translation>
 <translation id="1047128214168693844">Não permitir que nenhum site rastreie a localização física dos usuários</translation>
-<translation id="1057535219415338480">Ativa as sugestões de rede no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
-
-      Controla não apenas a pré-busca de DNS, mas também a pré-conexão de SSL e o pré-processamento de páginas da Web. O nome da política se refere apenas à pré-busca de DNS por razões históricas.
-
-      Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou substituí-la no <ph name="PRODUCT_NAME" />.
-
-      Se essa política não for definida, ela ficará ativada, e o usuário poderá alterá-la.</translation>
 <translation id="1062011392452772310">Ativar declaração remota para o dispositivo</translation>
 <translation id="1090892140761957285">URL para validação do token de autenticação de cliente de acesso remoto.
 

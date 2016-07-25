@@ -22,13 +22,6 @@
       Kui väärtuseks on määratud Tõene või seda ei määrata, saadetakse statistikat.</translation>
 <translation id="1046484220783400299">Iganenud veebiplatvormi funktsioonide lubamine piiratud ajaks</translation>
 <translation id="1047128214168693844">Keela kõigil saitidel kasutajate füüsilise asukoha jälgimine</translation>
-<translation id="1057535219415338480">Lubab tootes <ph name="PRODUCT_NAME" /> võrguprognoosid ja keelab kasutajatel selle seade muutmise.
-
-      See ei juhi mitte ainult DNS-i eeltoomist, vaid ka veebilehtede TCP ja SSL-i eelühendamist ning eelrenderdust. See reegli nimi viitab ajaloolistel põhjustel DNS-i eeltoomisele.
-
-      Kui selle seade lubate või keelate, ei saa kasutajad seda seadet tootes <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-      Kui see reegel jäetakse määramata, on see lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="1062011392452772310">Seadme kaugatesteerimise lubamine</translation>
 <translation id="1090892140761957285">URL kaugjuurdepääsu kliendi autentimismärgi valideerimiseks.
 

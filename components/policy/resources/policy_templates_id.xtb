@@ -22,13 +22,6 @@
       Jika disetel ke True atau tidak disetel, statistik akan dilaporkan.</translation>
 <translation id="1046484220783400299">Aktifkan fitur platform web usang untuk waktu yang terbatas</translation>
 <translation id="1047128214168693844">Jangan izinkan situs mana pun melacak lokasi fisik pengguna</translation>
-<translation id="1057535219415338480">Mengaktifkan prediksi jaringan dalam <ph name="PRODUCT_NAME" /> dan cegah pengguna agar tidak mengubah setelan ini.
-
-      Tindakan ini tidak hanya mengontrol pengambilan DNS, tetapi juga TCP dan SSL pra-koneksi dan prapenguraian laman web. Nama kebijakan mengacu pada pra-pengambilan DNS untuk alasan historis.
-
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menggantikan setelan ini untuk <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini dibiarkan tidak disetel, maka akan tetap diaktifkan, namun pengguna dapat mengubahnya.</translation>
 <translation id="1062011392452772310">Mengaktifkan pengesahan jarak jauh untuk perangkat tersebut</translation>
 <translation id="1090892140761957285">URL untuk memvalidasi token autentikasi klien akses jarak jauh.
 

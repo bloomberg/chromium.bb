@@ -22,12 +22,6 @@
       Hvis den settes til «true» (sann) eller ikke angis, rapporteres statistikken.</translation>
 <translation id="1046484220783400299">Slå på avviklede nettplattformfunksjoner for en begrenset periode</translation>
 <translation id="1047128214168693844">Ikke la noen nettsteder spore brukernes fysiske plassering</translation>
-<translation id="1057535219415338480">Slår på nettverksforutsigelse i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
-
-      Dette kontrollerer både DNS-forhåndshenting og TCP- samt SSl-forhåndstilkobling og forhåndsgjengivelse av nettsteder. Navnet på retningslinjene viser til DNS-forhåndshenting av historiske grunner.
-      Hvis du slår denne innstillingen på eller av, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne regelen ikke angis, kommer den til å være på, men brukeren kan velge å slå den av.</translation>
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="1090892140761957285">Nettadressen for validering av autentiseringstokenet til fjerntilgangsklienten.
 

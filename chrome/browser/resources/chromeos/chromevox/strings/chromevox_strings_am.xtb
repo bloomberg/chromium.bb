@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />፣ የምናሌ ንጥል</translation>
 <translation id="3406283310380167331">የቅጾች ዝርዝር አሳይ</translation>
 <translation id="3422338090358345848">የቁልፍ ሰሌዳ አሳሽን ይክፈቱ</translation>
+<translation id="3423495725743882470">ረድፍ $1 ዓምድ $2</translation>
 <translation id="3457000393508828486">በከፊል ተጭኗል</translation>
 <translation id="3462439746547587373"><ph name="NAME" />፣ አዝራር</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">ምንም ቅጾች የሉም።</translation>
 <translation id="5005670136041063723">ምንም ተጨማሪ የተለዩ አባላት የሉም።</translation>
 <translation id="501473567976723023">ጃንዩዋሪ</translation>
+<translation id="5040591161308540832">ሰንጠረዥ $1፣ $2 በ$3</translation>
 <translation id="5041394372352067729">የብሬይል ማሳያውን ወደ ገጹ አናት ያንቀሳቅሱ</translation>
 <translation id="5042770794184672516">የንግግር ድምጽ መጠን ይጨምሩ</translation>
 <translation id="5050015258024679800">ቀዳሚ የደረጃ 4 ርዕስ</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ቀዳሚ ርዕስ</translation>
 <translation id="6378565991815958969">$1 ቅዳ።</translation>
+<translation id="6385591741672306837">ዓምድ</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">ምንም ቀዳሚ የሬዲዮ አዝራር የለም።</translation>
 <translation id="6414968628640960377">ቀዳሚ የተለየ አካል።</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">በሠንጠረዥ ውስጥ አይደሉም።</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ሰረዘዘብጥ}one{# ሰረዘዘብጦች}other{# ሰረዘዘብጦች}}</translation>
 <translation id="8179976553408161302">አስገባ</translation>
+<translation id="8184828902145951186">ረድፍ</translation>
 <translation id="8186185314313222077">ሙሉ ማያ ገጽ ቀያይር</translation>
 <translation id="8199231515320852133">የአሁኑ ሕዋስ ራስጌዎችን አስታውቅ</translation>
 <translation id="820417203470636242">ባዶ ሕዋስ።</translation>

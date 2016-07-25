@@ -22,13 +22,6 @@
       Hvis den angives som Sand eller slet ikke indstilles, rapporteres statistikken.</translation>
 <translation id="1046484220783400299">Aktivér forældede funktioner på webplatformen i en begrænset periode</translation>
 <translation id="1047128214168693844">Tillad ikke, at websites sporer brugerens fysiske placering</translation>
-<translation id="1057535219415338480">Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
-
-      Dette styrer både forudhentning af DNS og forhåndstilslutning af TCP og SSL samt forhåndsgengivelse af websider. Navnet på politikken henviser til forudhentning af DNS af historiske årsager.
-
-      Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik ikke angives, aktiveres dette, men brugeren vil kunne ændre det.</translation>
 <translation id="1062011392452772310">Aktivér fjernattestering for enheden</translation>
 <translation id="1090892140761957285">Webadresse til validering af token til klientgodkendelse for fjernadgang.
 

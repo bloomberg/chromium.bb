@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="1871284979644508959">Obvezno polje</translation>
 <translation id="189172778771606813">Zapri predal za krmarjenje</translation>
-<translation id="1924956916668006832">Izbira naslova za pošiljanje</translation>
 <translation id="1933845786846280168">Izbrani zavihek</translation>
 <translation id="194341124344773587">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenje za Chrome.</translation>
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
@@ -159,7 +158,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="2777555524387840389">Še <ph name="SECONDS" /> s</translation>
 <translation id="278029852808208386">Najdena ni bila nobena naprava Bluetooth. <ph name="BEGIN_LINK" />Iščite znova<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Še 1 s</translation>
-<translation id="2781389167600714117">Izbira pošiljanja</translation>
 <translation id="2811892995384186721">Vaša naprava ni prikazana? <ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Dotaknite se gumba za nazaj, če želite zapreti celozaslonski način.</translation>
 <translation id="2842985007712546952">Nadrejena mapa</translation>
@@ -188,7 +186,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="3117051980354074377">Če želite dostopati do zaznamkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="3137521801621304719">Izklop načina brez beleženja zgodovine</translation>
 <translation id="3149891296864842641">Možnost pošiljanja</translation>
-<translation id="3162882791484435636">Izbira možnosti pošiljanja</translation>
 <translation id="3177909033752230686">Jezik strani:</translation>
 <translation id="3190152372525844641">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> shranjenih podatkov</translation>
@@ -261,7 +258,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4062305924942672200">Pravne informacije</translation>
 <translation id="4089831646916293264">Ta funkcija lahko ovira dostop do plačljivih podatkovnih storitev operaterja.</translation>
 <translation id="4095146165863963773">Izbris podatkov aplikacije?</translation>
-<translation id="4099423833822562131">Izberite naslov za pošiljanje, če želite preveriti načine pošiljanja.</translation>
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="411254640334432676">Prenos ni uspel.</translation>
@@ -430,7 +426,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5911030830365207728">Google Prevajalnik</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
-<translation id="5961742032223302715">Izberi podrobnosti o stiku</translation>
 <translation id="5968595432776860642">Predvajanje: »<ph name="VIDEO_TITLE" />«</translation>
 <translation id="6010869025736512584">Dostopanje do videovhoda</translation>
 <translation id="6012342843556706400">Chrome potrebuje dostop do lokacije, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>

@@ -22,13 +22,6 @@
       Jika ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, statistik akan dilaporkan.</translation>
 <translation id="1046484220783400299">Dayakan ciri platform web untuk masa yang terhad</translation>
 <translation id="1047128214168693844">Jangan benarkan mana-mana tapak untuk menjejak lokasi fizikal pengguna</translation>
-<translation id="1057535219415338480">Mendayakan ramalan rangkaian dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Dasar ini bukan sahaja mengawal pra-pengambilan DNS tetapi juga pra-penyambungan TCP dan SSL serta pra-pemaparan halaman web. Nama dasar ini merujuk kepada pra-pengambilan DNS atas sebab-sebab sejarah.
-
-      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau menggantikan tetapan ini dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, dasar ini akan akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
 <translation id="1090892140761957285">URL untuk mengesahkan token pengesahan pelanggan akses jauh.
 

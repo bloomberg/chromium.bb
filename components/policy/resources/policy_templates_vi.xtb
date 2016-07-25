@@ -22,13 +22,6 @@
       Nếu được đặt thành true hoặc không được đặt thì thống kê sẽ được báo cáo.</translation>
 <translation id="1046484220783400299">Bật các tính năng nền tảng web không dùng nữa trong một khoảng thời gian giới hạn</translation>
 <translation id="1047128214168693844">Không cho phép bất kỳ trang web nào theo dõi vị trí thực của người dùng</translation>
-<translation id="1057535219415338480">Bật dự đoán mạng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-      Cài đặt này không chỉ kiểm soát việc tìm nạp trước DNS mà còn cả kết nối trước TCP và SSL cũng như hiển thị trước các trang web. Tên chính sách đề cập đến tìm nạp trước DNS vì các lý do lịch sử.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-      Nếu chính sách này không được thiết lập, cài đặt này sẽ được bật nhưng người dùng sẽ có thể thay đổi cài đặt đó.</translation>
 <translation id="1062011392452772310">Cho phép chứng thực từ xa cho thiết bị</translation>
 <translation id="1090892140761957285">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa.
 

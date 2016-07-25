@@ -51,6 +51,7 @@
 <translation id="2558641060352364164">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>
 <translation id="2595977381794111014">‏استخدام الاختصار <ph name="APPS_ICON_IMAGE" /> في شريط الإشارات المرجعية لـ Chromium لمواصلة الدخول إلى تطبيقاتك.</translation>
+<translation id="2605472041568654097">‏ساعد في تحسين Chromium من خلال الإبلاغ عن الإعدادات الحالية.</translation>
 <translation id="2636877269779209383">‏يحتاج Chromium الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="2685838254101182273">‏توقف تحديث Chromium ولم يعد متوافقًا مع هذا الإصدار من نظام التشغيل.</translation>
@@ -76,6 +77,7 @@
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Chromium عن العمل.</translation>
+<translation id="3289635842886789612">‏إصدار Chromium قديم.</translation>
 <translation id="3296368748942286671">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Chromium</translation>
 <translation id="3312805357485578561">‏لقد اكتشف Chromium سلوكًا غير معتاد</translation>
 <translation id="331951419404882060">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لحدوث خطأ أثناء تسجيل الدخول.</translation>
@@ -94,14 +96,17 @@
 <translation id="3883381313049582448">‏استخدام كلمة المرور التي تم إنشاؤها بواسطة Chromium</translation>
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
 <translation id="390894725198123737">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chromium الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
+<translation id="3994125055863078356">‏تعذر على Chromium أن يكون المتصفح الافتراضي.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="4077262827416206768">‏الرجاء إغلاق جميع نوافذ Chromium وإعادة تشغيل Chromium حتى يسري هذا التغيير.</translation>
+<translation id="4182290826692170034">‏Chromium هو متصفحك الافتراضي. رائع!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />تحذير:<ph name="END_BOLD" /> لا يستطيع منع الإضافات من تسجيل سجل التصفح. لتعطيل هذه الإضافة في وضع التصفح المخفي، ألغ تحديد هذا الخيار.</translation>
 <translation id="421369550622382712">‏اكتشف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Chromium.</translation>
 <translation id="4222580632002216401">‏لقد سجلت الدخول الآن إلى Chromium! عطّل المشرف المزامنة.</translation>
 <translation id="4224199872375172890">‏Chromium محدّث.</translation>
 <translation id="4230135487732243613">‏هل ترغب في ربط بياناتك في Chromium بهذا الحساب؟</translation>
 <translation id="4246125976471362530">{SECONDS,plural, =1{‏ستتم إعادة تشغيل Chromium خلال ثانية واحدة (1).}zero{‏ستتم إعادة تشغيل Chromium خلال # ثانية.}two{‏ستتم إعادة تشغيل Chromium خلال ثانيتين (#).}few{‏ستتم إعادة تشغيل Chromium خلال # ثوانٍ.}many{‏ستتم إعادة تشغيل Chromium خلال # ثانية.}other{‏ستتم إعادة تشغيل Chromium خلال # ثانية.}}</translation>
+<translation id="4271805377592243930">‏الحصول على مساعدة في Chromium</translation>
 <translation id="4285930937574705105">‏أخفقت عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
@@ -112,13 +117,16 @@
 <translation id="459535195905078186">‏تطبيقات Chromium</translation>
 <translation id="4621240073146040695">‏أوشك التحديث على الانتهاء! إعادة تشغيل Chromium لإنهاء التحديث.</translation>
 <translation id="4677944499843243528">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Chromium (<ph name="PROCESS_ID" />) على جهاز كمبيوتر آخر (<ph name="HOST_NAME" />). وقد تمّ قفل الملف الشخصي من جانب Chromium لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chromium مجددًا.</translation>
+<translation id="469338717132742108">‏الحصول على مساعدة في نظام التشغيل Chromium</translation>
 <translation id="4743926867934016338">موافقة وبحث</translation>
 <translation id="4888717733111232871">‏قاعدة الوارد إلى Chromium للسماح بحركة مرور mDNS.</translation>
 <translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="4987820182225656817">‏يمكن للضيف استخدام Chromium بدون أن يترك أي أثر وراءه.</translation>
 <translation id="4994636714258228724">‏إضافة نفسك إلى Chromium</translation>
 <translation id="5032989939245619637">‏حفظ التفاصيل في Chromium</translation>
+<translation id="5113946445248196174">‏يتعذر على Chromium تحديد المتصفح الافتراضي أو تعيينه.</translation>
 <translation id="5116586539350239523">‏سيخزّن Chromium معلوماتك الشخصية بشكلٍ آمن حتى لا تُضطر إلى كتابتها مرةً أخرى.</translation>
+<translation id="5231355151045086930">‏الخروج من Chromium</translation>
 <translation id="5358375970380395591">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">‏يتوفر إصدار جديد من Chromium.</translation>
 <translation id="5427571867875391349">‏تعيين Chromium المتصفح الافتراضي</translation>
@@ -178,6 +186,7 @@
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="7064610482057367130">‏لم يتم العثور على تثبيت Chromium لإجراء التحديث.</translation>
 <translation id="7066436765290594559">‏تعذر على نظام التشغيل Chromium مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
+<translation id="707471633328071618">‏Google Payments (تم النسخ إلى Chromium)</translation>
 <translation id="7090955637699162649">‏قد يستخدم Chromium <ph name="BEGIN_LINK" />خدمات الويب<ph name="END_LINK" /> لتحسين تجربة التصفح. ويمكنك تعطيل هذه الخدمات اختياريًا في أي وقت.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{‏سيؤدي هذا إلى حذف عنصر $1 من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium باعتبارك ($2).}zero{‏سيؤدي هذا إلى حذف $1 عنصر من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium باعتبارك ($2).}two{‏سيؤدي هذا إلى حذف عنصرين ($1) من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium باعتبارك ($2).}few{‏سيؤدي هذا إلى حذف $1 عناصر من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium باعتبارك ($2).}many{‏سيؤدي هذا إلى حذف $1 عنصرًا من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium باعتبارك ($2).}other{‏سيؤدي هذا إلى حذف $1 عنصر من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium باعتبارك ($2).}}</translation>
 <translation id="7138853919861947730">‏قد يستخدم Chromium خدمات الويب لتحسين تجربة التصفح لديك.</translation>
@@ -189,6 +198,7 @@
 <translation id="7223968959479464213">‏إدارة المهام - Chromium</translation>
 <translation id="722928257909516027">‏إظهار قائمة Chromium</translation>
 <translation id="731644333568559921">‏تحديث ن&amp;ظام التشغيل Chromium</translation>
+<translation id="731795002583552498">‏تحديث Chromium</translation>
 <translation id="7318036098707714271">‏ملف التفضيلات تالف أو غير صالح.
 
 يتعذر على Chromium استعادة إعداداتك.</translation>
@@ -218,6 +228,7 @@
 <translation id="7937630085815544518">‏تم تسجيل دخولك إلى Chromium باعتبارك <ph name="USER_EMAIL_ADDRESS" />. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
 <translation id="795025003224538582">عدم إعادة التشغيل</translation>
 <translation id="7962572577636132072">‏يجري تحديث Chromium تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
+<translation id="7975919845073681630">‏هذا تثبيت ثانوي من Chromium، ولا يمكن جعله متصفحك الافتراضي.</translation>
 <translation id="7979877361127045932">‏الإخفاء في قائمة Chromium</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">‏يحتاج Chromium الوصول إلى الأذونات لمشاركتها مع هذا الموقع.</translation>

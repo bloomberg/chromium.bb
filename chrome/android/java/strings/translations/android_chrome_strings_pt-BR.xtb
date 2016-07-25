@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="1871284979644508959">Campo obrigatório</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
-<translation id="1924956916668006832">Selecionar um endereço para envio</translation>
 <translation id="1933845786846280168">Guia selecionada</translation>
 <translation id="194341124344773587">Ative a permissão para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salvar senhas</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="278029852808208386">Nenhum dispositivo Bluetooth foi encontrado. <ph name="BEGIN_LINK" />Pesquisar novamente<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Um segundo restante</translation>
-<translation id="2781389167600714117">Selecionar envio</translation>
 <translation id="2811892995384186721">Não está vendo seu dispositivo? <ph name="BEGIN_LINK" />Receba ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toque no botão "Voltar" para sair da tela cheia.</translation>
 <translation id="2842985007712546952">Pasta mãe</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">Para ver os favoritos dos seus outros dispositivos, faça login no Chrome.</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
 <translation id="3149891296864842641">Opção de envio</translation>
-<translation id="3162882791484435636">Selecionar opção de envio</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3190152372525844641">Ative as permissões para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
@@ -261,7 +258,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4089831646916293264">Este elemento pode interferir no acesso a serviços de dados Premium fornecidos pela sua operadora.</translation>
 <translation id="4095146165863963773">Excluir dados de apps?</translation>
-<translation id="4099423833822562131">Selecione um endereço de envio para verificar os métodos de entrega.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatório de falha ao Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="411254640334432676">Falha no download.</translation>
@@ -429,7 +425,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Redefinir</translation>
-<translation id="5961742032223302715">Selecionar dados de contato</translation>
 <translation id="5968595432776860642">Reproduzindo “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>

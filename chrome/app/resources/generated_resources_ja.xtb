@@ -1934,6 +1934,7 @@
 <translation id="3590559774363307859">パスワードを保存しました。どのブラウザからでも、このパスワードと <ph name="SAVED_PASSWORDS_LINK" />すべてにアクセスできます。</translation>
 <translation id="3590587280253938212">高速</translation>
 <translation id="3592260987370335752">詳細(&amp;L)</translation>
+<translation id="3592313833691251126">拡張機能を使用すると、ブラウザ フレームの外側に開くパネル ウィンドウが作成されます。無効の場合は、パネルを開こうとするとポップアップが表示されます。デフォルトでは、ホワイトリストに登録された拡張機能のみに対応します。有効の場合は、すべての拡張機能に対応します。無効の場合は、どの拡張機能でもパネルは作成されません。</translation>
 <translation id="359283478042092570">ログイン</translation>
 <translation id="3593152357631900254">ファジーピンイン モードを有効にする</translation>
 <translation id="3593965109698325041">証明書名の制約</translation>
@@ -2256,7 +2257,6 @@
 <translation id="4034042927394659004">キーの明るさを下げる</translation>
 <translation id="4035758313003622889">タスク マネージャ(&amp;T)</translation>
 <translation id="4037084878352560732">馬</translation>
-<translation id="4037102579141982963">この端末では診断と使用状況のデータが Google に自動送信されます。この設定は、端末の<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />でいつでも変更できます。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Android のユーザー補助タブ切り替えスイッチを有効にします。</translation>
 <translation id="4044260751144303020">固定位置要素に合成レイヤを作成する。</translation>
 <translation id="404493185430269859">デフォルトの検索エンジン</translation>
@@ -3230,7 +3230,6 @@
 <translation id="5439568486246921931">この操作を行うと、このユーザーのダウンロード、オフライン ファイル、閲覧履歴データが完全に削除されます。この操作は元に戻せません。</translation>
 <translation id="544083962418256601">ショートカットを作成...</translation>
 <translation id="5441100684135434593">有線ネットワーク</translation>
-<translation id="5445088910157062298">Google の位置情報サービスを有効にすると、アプリで現在地をすばやく正確に特定できるようになるため、バッテリーの消費を抑えることができます。アプリが起動していない場合でも、匿名の位置情報が Google に送信されます。</translation>
 <translation id="5448293924669608770">ログイン エラーが発生しました</translation>
 <translation id="5449588825071916739">すべてのタブをブックマークに追加する</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
@@ -3696,7 +3695,6 @@
 <translation id="6110466548232134880"><ph name="ORGANIZATION" />（<ph name="LOCALITY" />）の識別情報が <ph name="ISSUER" /> によって確認されました。証明書の透明性に関する情報がサーバーから提供されませんでした。</translation>
 <translation id="6111770213269631447">文字変換（namaskar → নমস্কার）</translation>
 <translation id="6111974609785983504">デフォルトで許可</translation>
-<translation id="6112929985131461002">この端末では診断と使用状況のデータが Google に自動送信されます。この<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />は管理者によって制御されています。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">言語と入力の設定を変更</translation>
 <translation id="6120205520491252677">このページを起動画面に固定...</translation>
 <translation id="6122081475643980456">インターネット接続が制限されています</translation>
@@ -3932,7 +3930,6 @@
 <translation id="6452181791372256707">拒否</translation>
 <translation id="6454421252317455908">中国語の入力方法（quick）</translation>
 <translation id="6455348477571378046">証明書の種類:</translation>
-<translation id="6456234919706689841">この端末から診断と使用状況のデータを Google に送信するよう管理者が設定している可能性があります。この<ph name="BEGIN_LINK1" />設定はこちら<ph name="END_LINK1" />で確認できます。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Javascript を引き続きブロックする</translation>
 <translation id="6458308652667395253">Javascript のブロックを管理...</translation>
 <translation id="6459488832681039634">選択部分を検索に使用</translation>
@@ -4714,7 +4711,6 @@
 <translation id="7587108133605326224">バルト語</translation>
 <translation id="7589461650300748890">データが失われる危険があります。</translation>
 <translation id="7589661784326793847">少々お待ちください</translation>
-<translation id="7593635197364225277">Google ドライブを使って Play アプリのデータのバックアップと復元を自動的に行います。この設定は Android の設定でいつでも変更できます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" />（エラーコード <ph name="ERROR_CODE" />）。</translation>
 <translation id="7596831438341298034">インポート</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />を翻訳しない</translation>
@@ -5220,7 +5216,6 @@
 <translation id="8300607741108698921">1 分で設定</translation>
 <translation id="8303650969500425356">JavaScript で画面の向きをロックできるようにします。</translation>
 <translation id="8303655282093186569">Pinyin 入力設定</translation>
-<translation id="830424806940379275">ブラウザ フレームの外側で開くパネル ウィンドウの作成を拡張機能に許可します。デフォルトの場合、または無効にした場合、パネルを開こうとすると代わりにポップアップが表示されます。デスクトップ OS ではパネルはサポート終了となっており、まもなく削除されます。</translation>
 <translation id="8306534594034939679">代替サービス（試験運用版の HTTP 機能）のサポートを有効にします。</translation>
 <translation id="8307376264102990850">フル充電までの時間を計算しています</translation>
 <translation id="8308179586020895837"><ph name="HOST" /> がカメラへのアクセスを必要としているときは確認画面を表示する</translation>

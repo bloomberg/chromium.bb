@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="1871284979644508959">שדה חובה</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
-<translation id="1924956916668006832">בחר כתובת למשלוח</translation>
 <translation id="1933845786846280168">הכרטיסייה שנבחרה</translation>
 <translation id="194341124344773587">‏הפעל הרשאה בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="278029852808208386">‏לא נמצאו מכשירי Bluetooth. <ph name="BEGIN_LINK" />חפש שוב<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
-<translation id="2781389167600714117">בחר אפשרויות משלוח</translation>
 <translation id="2811892995384186721">אינך רואה את המכשיר? <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">‏כדי לקבל את הסימניות מהמכשירים האחרים שלך, היכנס ל-Chrome.</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3149891296864842641">אפשרויות משלוח</translation>
-<translation id="3162882791484435636">בחר באפשרות משלוח</translation>
 <translation id="3177909033752230686">שפת הדף:</translation>
 <translation id="3190152372525844641">‏הפעל הרשאות בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
 <translation id="4095146165863963773">למחוק נתוני יישומים?</translation>
-<translation id="4099423833822562131">בחר כתובת למשלוח כדי לבדוק את שיטות המשלוח.</translation>
 <translation id="4099578267706723511">‏עזור לשפר את Chrome על ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
 <translation id="410351446219883937">הפעלה אוטומטית</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
@@ -430,7 +426,6 @@
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5939518447894949180">אפס</translation>
-<translation id="5961742032223302715">בחר פרטים ליצירת קשר</translation>
 <translation id="5968595432776860642">מפעיל את "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">גישה לפלט אודיו</translation>
 <translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>

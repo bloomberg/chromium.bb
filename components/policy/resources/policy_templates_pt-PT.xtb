@@ -22,13 +22,6 @@
       Se estiver definida como verdadeira ou não for definida, as estatísticas são comunicadas.</translation>
 <translation id="1046484220783400299">Ativar funcionalidades das plataformas Web desatualizadas por um tempo limitado</translation>
 <translation id="1047128214168693844">Não permitir que os site registem a localização física dos utilizadores</translation>
-<translation id="1057535219415338480">Ativa a previsão da rede no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
-
-      Controla não só a obtenção prévia de DNS, mas também a ligação e a composição prévia TCP e SSL de páginas Web. Por razões históricas, o nome da política refere-se à obtenção prévia de DNS.
-
-      Se ativar ou desativar esta definição, os utilizadores não podem alterá-la nem substituí-la no <ph name="PRODUCT_NAME" />.
-
-      Se esta política permanecer por definir, será ativada, mas o utilizador será capaz de a alterar.</translation>
 <translation id="1062011392452772310">Ativar a comprovação remota para o dispositivo</translation>
 <translation id="1090892140761957285">URL para validar o símbolo de autenticação de cliente de acesso remoto.
 

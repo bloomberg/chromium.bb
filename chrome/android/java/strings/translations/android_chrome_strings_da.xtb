@@ -78,7 +78,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="1871284979644508959">Obligatorisk felt</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
-<translation id="1924956916668006832">Vælg leveringsadresse</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="194341124344773587">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Gem adgangskoder</translation>
@@ -159,7 +158,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="278029852808208386">Der blev ikke fundet nogen enheder. <ph name="BEGIN_LINK" />Søg igen<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
-<translation id="2781389167600714117">Vælg forsendelse</translation>
 <translation id="2811892995384186721">Kan du ikke se din enhed? <ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
@@ -188,7 +186,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="3117051980354074377">Log ind på Chrome for at se dine bogmærker på dine andre enheder.</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3149891296864842641">Forsendelsesmuligheder</translation>
-<translation id="3162882791484435636">Vælg forsendelsesmulighed</translation>
 <translation id="3177909033752230686">Sidens sprog:</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
@@ -261,7 +258,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>
 <translation id="4095146165863963773">Vil du slette appdata?</translation>
-<translation id="4099423833822562131">Vælg en leveringsadresse for at se forsendelsesmetoder.</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
@@ -430,7 +426,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5939518447894949180">Nulstil</translation>
-<translation id="5961742032223302715">Vælg kontaktoplysninger</translation>
 <translation id="5968595432776860642">Afspiller "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Åbner videoinput</translation>
 <translation id="6012342843556706400">Chrome skal have adgang til din placering for at kunne dele den med dette website.</translation>

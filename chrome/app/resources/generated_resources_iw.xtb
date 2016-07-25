@@ -1928,6 +1928,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3590559774363307859">הסיסמה נשמרה. תוכל לגשת אליה ולכל <ph name="SAVED_PASSWORDS_LINK" /> שלך מכל דפדפן.</translation>
 <translation id="3590587280253938212">מהר</translation>
 <translation id="3592260987370335752">למידע נוסף</translation>
+<translation id="3592313833691251126">אפשר לתוספים ליצור חלונות מסוג 'חלונית', שנפתחים מחוץ למסגרת הדפדפן. אם לא אפשרת והיה ניסיון לפתוח חלונית, ייפתח חלון קופץ. ההתנהגות המוגדרת כברירת מחדל היא לאפשר רק תוספים שנכללים ברשימת ההיתרים. לאחר ההפעלה, מותרים כל התוספים. לאחר ההשבתה, החלוניות אסורות לכל התוספים.</translation>
 <translation id="359283478042092570">הזן</translation>
 <translation id="3593152357631900254">‏הפוך מצב Fuzzy-Pinyin לפעיל</translation>
 <translation id="3593965109698325041">מגבלות שם אישור </translation>
@@ -2250,7 +2251,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4034042927394659004">הפחת את בהירות המקשים</translation>
 <translation id="4035758313003622889">&amp;מנהל המשימות</translation>
 <translation id="4037084878352560732">סוס</translation>
-<translation id="4037102579141982963">‏המכשיר הזה ישלח באופן אוטומטי נתוני ניתוח ושימוש אל Google. ניתן לשנות זאת תמיד ב<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /> המכשיר. <ph name="BEGIN_LINK2" />למידע נוסף<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">‏הפעל את מתגי כרטיסיית הנגישות עבור Android.</translation>
 <translation id="4044260751144303020">הרכבה לרכיבי מיקום קבוע.</translation>
 <translation id="404493185430269859">מנוע החיפוש המוגדר כברירת מחדל</translation>
@@ -3225,7 +3225,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5439568486246921931">הפעולה הזו תמחק לצמיתות את ההורדות, את הקבצים הלא מקוונים ואת נתוני הגלישה של המשתמש הזה. לא ניתן לבטל את הפעולה הזו.</translation>
 <translation id="544083962418256601">יצירת קיצורי דרך...</translation>
 <translation id="5441100684135434593">רשת קווית</translation>
-<translation id="5445088910157062298">‏אפשר לשירות המיקום של Google לעזור ליישומים למצוא את המיקום שלך במהירות ובאופן מדויק. מצב זה יכול לצמצם את צריכת הסוללה. נתוני מיקום אנונימיים יישלחו אל Google, גם כשיישומים אינם פועלים.</translation>
 <translation id="5448293924669608770">אופס. משהו השתבש בכניסה לחשבון</translation>
 <translation id="5449588825071916739">צור סימניה לכל הכרטיסיות</translation>
 <translation id="5449716055534515760">סגור ח&amp;לון</translation>
@@ -3691,7 +3690,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6110466548232134880">הזהות של <ph name="ORGANIZATION" /> במיקום <ph name="LOCALITY" /> אומתה על ידי <ph name="ISSUER" />. השרת לא סיפק מידע שקיפות על האישור.</translation>
 <translation id="6111770213269631447">‏תעתוק (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">מופעל כברירת מחדל</translation>
-<translation id="6112929985131461002">‏המכשיר הזה ישלח באופן אוטומטי נתוני ניתוח ושימוש אל Google. ה<ph name="BEGIN_LINK1" />הגדרה<ph name="END_LINK1" /> הזו נאכפת על-ידי מנהל המערכת שלך. <ph name="BEGIN_LINK2" />למידע נוסף<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">שנה את הגדרות הקלט והשפה</translation>
 <translation id="6120205520491252677">הצמד דף זה למסך הפתיחה...</translation>
 <translation id="6122081475643980456">החיבור שלך לאינטרנט נשלט על ידי גורם כלשהו</translation>
@@ -3927,7 +3925,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6452181791372256707">דחה</translation>
 <translation id="6454421252317455908">‏שיטת קלט סינית (quick)</translation>
 <translation id="6455348477571378046">סוג אישור:</translation>
-<translation id="6456234919706689841">‏מנהל המערכת שלך עשוי לבחור לשלוח נתוני ניתוח ושימוש אל Google. באפשרותך להציג את ה<ph name="BEGIN_LINK1" />הגדרה<ph name="END_LINK1" /> הזו כאן. <ph name="BEGIN_LINK2" />למידע נוסף<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">‏המשך לחסום JavaScript</translation>
 <translation id="6458308652667395253">‏ניהול חסימת JavaScript...</translation>
 <translation id="6459488832681039634">השתמש בבחירה כדי לחפש</translation>
@@ -4697,7 +4694,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7587108133605326224">בלטית</translation>
 <translation id="7589461650300748890">היי! תיזהר.</translation>
 <translation id="7589661784326793847">המתן מספר רגעים</translation>
-<translation id="7593635197364225277">‏גבה ושחזר אוטומטית נתונים מ-Play ב-Google Drive. תוכל תמיד לשנות זאת בהגדרות Android. <ph name="BEGIN_LINK1" />למידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (קוד שגיאה <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">בסדר, יבא</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE" /></translation>
@@ -5203,7 +5199,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8300607741108698921">הגדרה בדקה אחת</translation>
 <translation id="8303650969500425356">‏מאפשר ל-JavaScript לנעול את כיוון המסך.</translation>
 <translation id="8303655282093186569">הגדרות קלט פין-יין</translation>
-<translation id="830424806940379275">התר לתוספים ליצור חלוניות שנפתחות מחוץ למסגרת הדפדפן. כברירת מחדל, או אם תכונה זו מושבתת, ניסיון לפתוח חלונית יפתח במקום זאת חלון קופץ. חלוניות במערכות הפעלה של מחשבים שולחניים יצאו משימוש והן יוסרו בקרוב.</translation>
 <translation id="8306534594034939679">‏הפעל תמיכה לשירותים חלופיים, תכונה ניסיונית של HTTP.</translation>
 <translation id="8307376264102990850">חישוב זמן טעינה עד שמתמלא</translation>
 <translation id="8308179586020895837">שאל אם <ph name="HOST" /> רוצה לגשת למצלמה שלך</translation>

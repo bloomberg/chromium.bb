@@ -1936,6 +1936,7 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Na-save ang password. Maaari mo itong i-access at ang lahat ng iyong <ph name="SAVED_PASSWORDS_LINK" /> mula sa iyong browser.</translation>
 <translation id="3590587280253938212">mabilis</translation>
 <translation id="3592260987370335752">&amp;Matuto nang higit pa</translation>
+<translation id="3592313833691251126">Payagan ang mga extension na gumawa ng mga window ng panel na magbubukas sa labas ng frame ng browser. Ang mga pagsubok na magbukas ng panel ay magbubukas ng popup sa halip kung hindi naka-enable. Ang default na pagkilos ay payagan lang para sa mga naka-whiteliste na extension. Ang naka-enable na apgkilos ay payagan para sa lahat ng extension. Ang naka-disable na pagkilos ay huwag payagan angm ga panel para sa anumang extension.</translation>
 <translation id="359283478042092570">Ilagay</translation>
 <translation id="3593152357631900254">Paganahin ang Fuzzy-Pinyin mode</translation>
 <translation id="3593965109698325041">Mga Limitasyon sa Pangalan ng Certificate</translation>
@@ -2259,7 +2260,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Bawasan ang brightness ng key</translation>
 <translation id="4035758313003622889">&amp;Task manager</translation>
 <translation id="4037084878352560732">Kabayo</translation>
-<translation id="4037102579141982963">Awtomatikong magpapadala sa Google ang device na ito ng data ng diagnostic at paggamit. Maaari mo itong baguhin anumang oras sa <ph name="BEGIN_LINK1" />mga setting<ph name="END_LINK1" /> ng iyong device. <ph name="BEGIN_LINK2" />Matuto nang Higit Pa<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">I-enable ang accessibility na tagalipat ng tab para sa Android.</translation>
 <translation id="4044260751144303020">Paghahati-hati para sa mga elementong hindi nababago ang posisyon.</translation>
 <translation id="404493185430269859">Default na search engine</translation>
@@ -3233,7 +3233,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5439568486246921931">Permanenteng made-delete ng pagkilos na ito ang mga na-download, offline na file at data ng pagba-browse ng user na ito. Hindi na ito maa-undo.</translation>
 <translation id="544083962418256601">Lumikha ng mga shortcut...</translation>
 <translation id="5441100684135434593">Wired na network</translation>
-<translation id="5445088910157062298">Payagan ang serbisyo ng lokasyon ng Google na tumulong sa mga app na mabilis at tumpak na mahanap ang iyong lokasyon, na maaaring makabawas sa pagkonsumo ng baterya. Ang anonymous na data ng lokasyon ay ipapadala sa Google, kahit walang mga gumaganang app.</translation>
 <translation id="5448293924669608770">Oops, nagkaproblema sa pag-sign in</translation>
 <translation id="5449588825071916739">I-bookmark ang Lahat ng Tab</translation>
 <translation id="5449716055534515760">Isara ang Win&amp;dow</translation>
@@ -3701,7 +3700,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="6110466548232134880">Na-verify na ng <ph name="ISSUER" /> ang pagkakakilanlan ng <ph name="ORGANIZATION" /> sa <ph name="LOCALITY" />. Walang ibinigay na impormasyon sa Certificate Transparency ang server.</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Pinapayagan bilang default</translation>
-<translation id="6112929985131461002">Awtomatikong magpapadala sa Google ang device na ito ng data ng diagnostic at paggamit. Ang <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> na ito ay ipinapatupad ng iyong administrator. <ph name="BEGIN_LINK2" />Matuto nang Higit Pa<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Baguhin ang mga setting ng wika at input</translation>
 <translation id="6120205520491252677">I-pin ang pahinang ito screen ng Simula...</translation>
 <translation id="6122081475643980456">Kinokontrol ang iyong koneksyon sa Internet</translation>
@@ -3937,7 +3935,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="6452181791372256707">Tanggihan</translation>
 <translation id="6454421252317455908">Paraan ng pag-input na Chinese (mabilis)</translation>
 <translation id="6455348477571378046">Uri ng Certificate</translation>
-<translation id="6456234919706689841">Maaaring piliin ng iyong administrator na magpadala sa Google ng data ng diagnostic at paggamit para sa device na ito. Maaari mong tingnan dito ang <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> na ito. <ph name="BEGIN_LINK2" />Matuto nang Higit Pa<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Magpatuloy sa pagharang ng JavaScript</translation>
 <translation id="6458308652667395253">Pamahalaan ang pagharang ng JavaScript...</translation>
 <translation id="6459488832681039634">Use Selection for Find</translation>
@@ -4720,7 +4717,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="7589461650300748890">Naku. Mag-ingat.</translation>
 <translation id="7589661784326793847">Maghintay lamang ng isang segundo</translation>
-<translation id="7593635197364225277">Awtomatikong i-back up at i-restore ang data ng app ng Play sa Google Drive. Maaari mo itong baguhin sa Mga Setting ng Android anumang oras. <ph name="BEGIN_LINK1" />Matuto nang Higit pa<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (error code na <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, i-import</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
@@ -5227,7 +5223,6 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="8300607741108698921">1-minutong pag-setup</translation>
 <translation id="8303650969500425356">Nagbibigay-daan sa javascript na i-lock ang oryentasyon ng screen.</translation>
 <translation id="8303655282093186569">Mga setting ng pag-input na Pinyin</translation>
-<translation id="830424806940379275">Payagan ang mga extension na gumawa ng mga panel window na bumubukas sa labas ng browser frame. Bilang default o kung naka-disable, kapag sinubukang magbukas ng panel, magbubukas ang isang popup. Ang mga panel sa mga OS ng desktop ay hindi na ginagamit at malapit nang alisin.</translation>
 <translation id="8306534594034939679">I-enable ang suporta para sa Mga Alternatibong Serbisyo, na isang pang-eksperimentong feature ng HTTP.</translation>
 <translation id="8307376264102990850">Nagcha-charge
 Kinakalkula ang oras hanggang sa mapuno</translation>

@@ -269,6 +269,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3392045790598181549"><ph name="NAME" />, menu item</translation>
 <translation id="3406283310380167331">Show forms list</translation>
 <translation id="3422338090358345848">Open keyboard explorer</translation>
+<translation id="3423495725743882470">row $1 column $2</translation>
 <translation id="3457000393508828486">Partially pressed</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, button</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5000760171916499057">No forms.</translation>
 <translation id="5005670136041063723">No more similar elements.</translation>
 <translation id="501473567976723023">January</translation>
+<translation id="5040591161308540832">Table $1, $2 by $3</translation>
 <translation id="5041394372352067729">Move braille display to top of page</translation>
 <translation id="5042770794184672516">Increase speech volume</translation>
 <translation id="5050015258024679800">Previous level 4 heading</translation>
@@ -555,6 +557,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Previous heading</translation>
 <translation id="6378565991815958969">copy $1.</translation>
+<translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">No previous radio button.</translation>
 <translation id="6414968628640960377">Previous different element.</translation>
@@ -704,6 +707,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">row</translation>
 <translation id="8186185314313222077">toggle full screen</translation>
 <translation id="8199231515320852133">Announce the headers of the current cell</translation>
 <translation id="820417203470636242">Empty cell.</translation>

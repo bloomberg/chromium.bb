@@ -22,13 +22,6 @@
       Jeśli jest włączona lub nieustawiona, statystyki będą raportowane.</translation>
 <translation id="1046484220783400299">Włącz wycofane funkcje platform internetowych na określony czas</translation>
 <translation id="1047128214168693844">Nie zezwalaj żadnej witrynie na śledzenie fizycznej lokalizacji użytkownika</translation>
-<translation id="1057535219415338480">Włącza przewidywanie działań sieciowych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
-
-      Ta zasada steruje nie tylko wstępnym pobieraniem DNS, ale też wstępnym łączeniem przez TCP i SSL oraz wstępnym renderowaniem. Nazwa zasady wiąże się ze wstępnym pobieraniem DNS z przyczyn historycznych.
-
-      Jeśli włączysz lub wyłączysz tę zasadę, użytkownicy nie będą mogli zmienić ani nadpisać tego ustawienia w <ph name="PRODUCT_NAME" />.
-
-      Jeśli ta zasada pozostanie nieustawiona, ustawienie zostanie włączone, ale użytkownicy będą mogli je zmienić.</translation>
 <translation id="1062011392452772310">Włącz zaświadczanie zdalne dla urządzenia</translation>
 <translation id="1090892140761957285">URL do weryfikowania tokena uwierzytelniania klienta dostępu zdalnego.
 

@@ -1935,6 +1935,7 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Parole ir saglabāta. Šai parolei un sarakstam “<ph name="SAVED_PASSWORDS_LINK" />” varat piekļūt jebkurā pārlūkā.</translation>
 <translation id="3590587280253938212">ātra</translation>
 <translation id="3592260987370335752">&amp;Uzziniet vairāk</translation>
+<translation id="3592313833691251126">Paplašinājumiem tiek atļauts izveidot paneļa logus, kuri tiek atvērti ārpus pārlūka ietvara. Ja opcija nav iespējota, mēģinot atvērt paneli, tiks atvērts uznirstošais logs. Pēc noklusējuma tiek atļauti tikai baltajā sarakstā esošie paplašinājumi. Ja opcija ir iespējota, paneļi ir atļauti visiem paplašinājumiem. Ja opcija ir atspējota, paneļu atvēršana netiek atļauta nevienam paplašinājumam.</translation>
 <translation id="359283478042092570">Ievadīt</translation>
 <translation id="3593152357631900254">Iespējot Fuzzy-Pinyin režīmu</translation>
 <translation id="3593965109698325041">Sertifikāta nosaukuma ierobežojumi</translation>
@@ -2257,7 +2258,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4034042927394659004">Samazināt taustiņu spilgtumu</translation>
 <translation id="4035758313003622889">Uzdevumu pārvaldnieks</translation>
 <translation id="4037084878352560732">Zirgs</translation>
-<translation id="4037102579141982963">No šīs ierīces tiks automātiski sūtīti diagnostikas un lietojuma dati Google serveriem. Jebkurā brīdī varat to mainīt ierīces <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Uzziniet vairāk<ph name="END_LINK2" />.</translation>
 <translation id="4037463823853863991">Iespējot pieejamības ciļņu pārslēdzēju Android ierīcēm.</translation>
 <translation id="4044260751144303020">Saliktu slāņu veidošana fiksētas pozīcijas elementiem</translation>
 <translation id="404493185430269859">Noklusējuma meklētājprogramma</translation>
@@ -3231,7 +3231,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5439568486246921931">Veicot šo darbību, tiks neatgriezeniski dzēsti šī lietotāja lejupielādētie dati, bezsaistes faili un pārlūkošanas dati. Šo darbību nevar atsaukt.</translation>
 <translation id="544083962418256601">Izveidot saīsnes...</translation>
 <translation id="5441100684135434593">Vadu tīkls</translation>
-<translation id="5445088910157062298">Atļaujiet Google atrašanās vietu pakalpojumam palīdzēt lietotnēm ātri un precīzi atrast jūsu atrašanās vietu. Tādējādi varat samazināt akumulatora enerģijas patēriņu. Google serveriem tiks sūtīti anonīmi atrašanās vietas dati pat tad, ja nedarbosies neviena lietotne.</translation>
 <translation id="5448293924669608770">Diemžēl pierakstīšanās neizdevās</translation>
 <translation id="5449588825071916739">Saglabāt visas cilnes kā grāmatzīmes</translation>
 <translation id="5449716055534515760">Aizvērt Win&amp;dow</translation>
@@ -3699,7 +3698,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="6110466548232134880">Organizācijas <ph name="ORGANIZATION" /> (atrašanās vieta: <ph name="LOCALITY" />) identitāti ir apstiprinājis <ph name="ISSUER" />. No servera netika iegūta sertifikātu pārskatāmības informācija.</translation>
 <translation id="6111770213269631447">Transliterācija (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Atļauts pēc noklusējuma</translation>
-<translation id="6112929985131461002">No šīs ierīces tiks automātiski sūtīti diagnostikas un lietojuma dati Google serveriem. Šo <ph name="BEGIN_LINK1" />iestatījumu<ph name="END_LINK1" /> ir noteicis administrators. <ph name="BEGIN_LINK2" />Uzziniet vairāk<ph name="END_LINK2" />.</translation>
 <translation id="6116921718742659598">Mainīt valodas un ievades iestatījumus</translation>
 <translation id="6120205520491252677">Piespraust šo lapu sākuma ekrānam...</translation>
 <translation id="6122081475643980456">Jūsu interneta savienojums tiek pārvaldīts</translation>
@@ -3935,7 +3933,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="6452181791372256707">Noraidīt</translation>
 <translation id="6454421252317455908">Ķīniešu valodas ievades metode (ātra)</translation>
 <translation id="6455348477571378046">Sertifikāta veids:</translation>
-<translation id="6456234919706689841">Administrators var izvēlēties nosūtīt šīs ierīces diagnostikas un lietojuma datus Google serveriem. Varat skatīt šo <ph name="BEGIN_LINK1" />iestatījumu<ph name="END_LINK1" /> šeit. <ph name="BEGIN_LINK2" />Uzziniet vairāk<ph name="END_LINK2" />.</translation>
 <translation id="645705751491738698">Turpināt bloķēt JavaScript</translation>
 <translation id="6458308652667395253">Pārvaldīt JavaScript bloķēšanas iestatījumus...</translation>
 <translation id="6459488832681039634">Izmantot atlasīto meklēšanai</translation>
@@ -4717,7 +4714,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="7587108133605326224">Baltu</translation>
 <translation id="7589461650300748890">Uzmanieties!</translation>
 <translation id="7589661784326793847">Mirkli uzgaidiet!</translation>
-<translation id="7593635197364225277">Automātiski dublēt un atjaunot Play lietotņu datus Google diskā. Šo iestatījumu jebkurā laikā varat mainīt Android iestatījumos. <ph name="BEGIN_LINK1" />Uzziniet vairāk<ph name="END_LINK1" />.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (kļūdas kods: <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Labi, importēt</translation>
 <translation id="7600965453749440009">Nekad netulkot saturu, kas rakstīts <ph name="LANGUAGE" /> valodā</translation>
@@ -5224,7 +5220,6 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="8300607741108698921">1 minūtes iestatīšana</translation>
 <translation id="8303650969500425356">Valodai Javascript tiek atļauta ekrāna orientācijas bloķēšana.</translation>
 <translation id="8303655282093186569">Pinyin ievades iestatījumi</translation>
-<translation id="830424806940379275">Atļaut paplašinājumiem izveidot paneļu logus, kas tiek atvērti ārpus pārlūkprogrammas ietvara. Pēc noklusējuma vai, ja šī politika ir atspējota, mēģinot atvērt paneli, tiks atvērts uznirstošais logs. Paneļi datoru operētājsistēmās ir novecojuši un drīzumā tiks noņemti.</translation>
 <translation id="8306534594034939679">Iespējojiet alternatīvo pakalpojumu (eksperimentālas HTTP funkcijas) atbalstu.</translation>
 <translation id="8307376264102990850">Notiek uzlāde
 Tiek rēķināts atlikušais uzlādes laiks</translation>

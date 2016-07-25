@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">Нова картица без архивирања</translation>
 <translation id="1871284979644508959">Обавезно поље</translation>
 <translation id="189172778771606813">Затвори фиоку за навигацију</translation>
-<translation id="1924956916668006832">Изаберите адресу за испоруку</translation>
 <translation id="1933845786846280168">Изабране картице</translation>
 <translation id="194341124344773587">Укључите дозволу за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сачувај лозинке</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389">Још <ph name="SECONDS" /> сек</translation>
 <translation id="278029852808208386">Није пронађен ниједан Bluetooth уређај. <ph name="BEGIN_LINK" />Претражите поново<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Још 1 сек</translation>
-<translation id="2781389167600714117">Изаберите опције испоруке</translation>
 <translation id="2811892995384186721">Не видите уређај? <ph name="BEGIN_LINK" />Потражите помоћ<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Додирните дугме Назад да бисте изашли из режима целог екрана.</translation>
 <translation id="2842985007712546952">Надређени директоријум</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">Да би вам обележивачи били доступни на другим уређајима, пријавите се у Chrome.</translation>
 <translation id="3137521801621304719">Изађи из режима без архивирања</translation>
 <translation id="3149891296864842641">Опције испоруке</translation>
-<translation id="3162882791484435636">Изабери опцију испоруке</translation>
 <translation id="3177909033752230686">Језик странице:</translation>
 <translation id="3190152372525844641">Укључите дозволе за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сачуваних података</translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">Правне информације</translation>
 <translation id="4089831646916293264">Ова функција може да омета приступ премијум услугама за пренос података које пружа мобилни оператер.</translation>
 <translation id="4095146165863963773">Желите ли да избришете податке апликације?</translation>
-<translation id="4099423833822562131">Изаберите адресу за испоруку да бисте видели начине испоруке.</translation>
 <translation id="4099578267706723511">Побољшајте Chrome слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="410351446219883937">Аутоплеј</translation>
 <translation id="411254640334432676">Преузимање није успело.</translation>
@@ -430,7 +426,6 @@
 <translation id="5911030830365207728">Google преводилац</translation>
 <translation id="5916664084637901428">Укључи</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
-<translation id="5961742032223302715">Изаберите контакт информације</translation>
 <translation id="5968595432776860642">Репродукује се „<ph name="VIDEO_TITLE" />“</translation>
 <translation id="6010869025736512584">Приступа се видео улазу</translation>
 <translation id="6012342843556706400">Chrome-у је потребан приступ за локацију да би га делио са овим сајтом.</translation>

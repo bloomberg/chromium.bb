@@ -78,7 +78,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="1871284979644508959">Pole wymagane</translation>
 <translation id="189172778771606813">Zamknij panel nawigacji</translation>
-<translation id="1924956916668006832">Wybierz adres dostawy</translation>
 <translation id="1933845786846280168">Wybrana karta</translation>
 <translation id="194341124344773587">Przyznaj Chrome uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Zapisuj hasła</translation>
@@ -159,7 +158,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="278029852808208386">Nie znaleziono urządzeń Bluetooth. <ph name="BEGIN_LINK" />Wyszukaj ponownie<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
-<translation id="2781389167600714117">Wybierz dostawę</translation>
 <translation id="2811892995384186721">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK" />Skorzystaj z pomocy<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
@@ -188,7 +186,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="3117051980354074377">Aby korzystać z zakładek ze swoich innych urządzeń, zaloguj się w Chrome.</translation>
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
 <translation id="3149891296864842641">Sposób dostawy</translation>
-<translation id="3162882791484435636">Wybierz sposób dostawy</translation>
 <translation id="3177909033752230686">Język strony:</translation>
 <translation id="3190152372525844641">Przyznaj Chrome uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
@@ -261,7 +258,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4062305924942672200">Informacje prawne</translation>
 <translation id="4089831646916293264">Ta funkcja może zakłócać dostęp do udostępnianych przez operatora płatnych usług transmisji danych.</translation>
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
-<translation id="4099423833822562131">Wybierz adres dostawy, by sprawdzić sposoby wysyłki.</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
@@ -430,7 +426,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5939518447894949180">Resetuj</translation>
-<translation id="5961742032223302715">Wybierz dane kontaktowe</translation>
 <translation id="5968595432776860642">Odtwarzam „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Otwieram wejście wideo</translation>
 <translation id="6012342843556706400">Aby zezwolić stronie na wykorzystanie danych o lokalizacji, Chrome musi mieć do nich dostęp.</translation>

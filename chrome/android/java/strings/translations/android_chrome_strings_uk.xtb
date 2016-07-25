@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="1871284979644508959">Обов’язкове поле</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
-<translation id="1924956916668006832">Вибрати адресу доставки</translation>
 <translation id="1933845786846280168">Вибрана вкладка</translation>
 <translation id="194341124344773587">Увімкніть дозвіл для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Зберігання паролів</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="278029852808208386">Пристроїв Bluetooth не знайдено. <ph name="BEGIN_LINK" />Пошукайте ще раз<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Залишилась 1 с</translation>
-<translation id="2781389167600714117">Вибрати варіант доставки</translation>
 <translation id="2811892995384186721">Немає вашого пристрою? <ph name="BEGIN_LINK" />Перегляньте довідку<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">Щоб мати доступ до закладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3149891296864842641">Варіант доставки</translation>
-<translation id="3162882791484435636">Вибрати варіант доставки</translation>
 <translation id="3177909033752230686">Мова сторінки:</translation>
 <translation id="3190152372525844641">Увімкніть дозволи для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> збережених даних</translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">Правова інформація</translation>
 <translation id="4089831646916293264">Ця функція може перешкоджати доступу до платних служб передавання даних, які надаються вашим оператором.</translation>
 <translation id="4095146165863963773">Видалити дані додатка?</translation>
-<translation id="4099423833822562131">Укажіть адресу, щоб переглянути способи доставки.</translation>
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="410351446219883937">Автовідтворення</translation>
 <translation id="411254640334432676">Не завантажено.</translation>
@@ -430,7 +426,6 @@
 <translation id="5911030830365207728">Перекладач Google</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5939518447894949180">Скинути</translation>
-<translation id="5961742032223302715">Виберіть контактні дані</translation>
 <translation id="5968595432776860642">Відео "<ph name="VIDEO_TITLE" />" відтворюється</translation>
 <translation id="6010869025736512584">Отримання доступу до відеовходу</translation>
 <translation id="6012342843556706400">Chrome потрібен доступ до геоданих, щоб дозволити цьому сайту використовувати їх.</translation>

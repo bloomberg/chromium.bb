@@ -1932,6 +1932,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Zaporka je spremljena. Toj i svim drugim zaporkama možete pristupiti tako da otvorite <ph name="SAVED_PASSWORDS_LINK" /> u bilo kojem pregledniku.</translation>
 <translation id="3590587280253938212">brzo</translation>
 <translation id="3592260987370335752">&amp;Saznajte više</translation>
+<translation id="3592313833691251126">Omogućuje proširenjima da izrade prozore ploča koji se otvaraju izvan okvira preglednika. Ako ploče nisu omogućene, otvorit će se skočni prozor. Prema zadanim postavkama prihvaćaju se samo proširenja s popisa dopuštenih. Ako je to pravilo omogućeno, prihvaćaju se sva proširenja. Ako je onemogućeno, ploče nisu dopuštene ni za jedno proširenje.</translation>
 <translation id="359283478042092570">Pridružite se</translation>
 <translation id="3593152357631900254">Omogući način Fuzzy-Pinyin</translation>
 <translation id="3593965109698325041">Ograničenja naziva certifikata</translation>
@@ -2254,7 +2255,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Smanjenje svjetline tipke</translation>
 <translation id="4035758313003622889">&amp;Upravitelj zadacima</translation>
 <translation id="4037084878352560732">Konj</translation>
-<translation id="4037102579141982963">Uređaj će Googleu automatski slati dijagnostiku i podatke o upotrebi. To možete promijeniti u bilo kojem trenutku u <ph name="BEGIN_LINK1" />postavkama<ph name="END_LINK1" /> uređaja. <ph name="BEGIN_LINK2" />Saznajte više<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Omogući izmjenjivač kartica pristupačnosti za Android.</translation>
 <translation id="4044260751144303020">Slaganje za elemente s fiksnim položajem.</translation>
 <translation id="404493185430269859">Zadana tražilica</translation>
@@ -3228,7 +3228,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5439568486246921931">Ovim će se postupkom trajno izbrisati korisnikova preuzimanja, offline datoteke i podaci o pregledavanju. Postupak se ne može poništiti.</translation>
 <translation id="544083962418256601">Stvaranje prečaca...</translation>
 <translation id="5441100684135434593">Žična mreža</translation>
-<translation id="5445088910157062298">Dopustite da Googleova usluga lokacije pomogne aplikacijama da brzo i točno pronađu vašu lokaciju, čime se smanjuje potrošnja baterije. Anonimni podaci o lokaciji slat će se Googleu čak i kad nema pokrenutih aplikacija.</translation>
 <translation id="5448293924669608770">Ups, nešto je pošlo po krivu s prijavom</translation>
 <translation id="5449588825071916739">Označi sve kartice</translation>
 <translation id="5449716055534515760">Close Win&amp;dow (Zatvori prozor)</translation>
@@ -3694,7 +3693,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6110466548232134880">Izdavatelj certifikata <ph name="ISSUER" /> potvrdio je identitet organizacije <ph name="ORGANIZATION" /> na lokaciji <ph name="LOCALITY" />. Poslužitelj nije pružio informacije o transparentnosti certifikata.</translation>
 <translation id="6111770213269631447">transliteracija (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Dopušteno prema zadanim postavkama</translation>
-<translation id="6112929985131461002">Uređaj će Googleu automatski slati dijagnostiku i podatke o upotrebi. Tu <ph name="BEGIN_LINK1" />postavku<ph name="END_LINK1" /> nametnuo je administrator. <ph name="BEGIN_LINK2" />Saznajte više<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Promijenite postavke jezika i unosa</translation>
 <translation id="6120205520491252677">Prikvači ovu stranicu na zaslon Start...</translation>
 <translation id="6122081475643980456">Internetskom vezom upravlja proširenje</translation>
@@ -3930,7 +3928,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6452181791372256707">Odbaci</translation>
 <translation id="6454421252317455908">Kineski način unosa (brzi)</translation>
 <translation id="6455348477571378046">Vrsta certifikata:</translation>
-<translation id="6456234919706689841">Administrator može Googleu slati dijagnostiku i podatke o upotrebi za ovaj uređaj. Tu <ph name="BEGIN_LINK1" />postavku<ph name="END_LINK1" /> možete vidjeti ovdje. <ph name="BEGIN_LINK2" />Saznajte više<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Nastavi blokirati JavaScript</translation>
 <translation id="6458308652667395253">Upravljanje blokiranjem za JavaScript...</translation>
 <translation id="6459488832681039634">Koristi odabir za traženje</translation>
@@ -4707,7 +4704,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7587108133605326224">baltički</translation>
 <translation id="7589461650300748890">Polako. Pazite.</translation>
 <translation id="7589661784326793847">Pričekajte trenutak</translation>
-<translation id="7593635197364225277">Automatski sigurnosno kopirajte i vratite podatke aplikacije Play na Google disk. Tu postavku možete promijeniti u postavkama Androida u bilo kojem trenutku. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (kôd pogreške <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">U redu, uvezi</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
@@ -5213,7 +5209,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8300607741108698921">1-minutno postavljanje</translation>
 <translation id="8303650969500425356">JavaScriptu omogućuje zaključavanje usmjerenja zaslona.</translation>
 <translation id="8303655282093186569">Postavke unosa za Pinyin</translation>
-<translation id="830424806940379275">Omogućuje proširenjima izradu prozora ploča koji se otvaraju izvan okvira preglednika. Prema zadanim postavkama ili ako je onemogućeno, pokušaj otvaranja ploče otvorit će skočni prozor. Ploče su u operativnim sustavima računala zastarjele i uskoro će se ukloniti.</translation>
 <translation id="8306534594034939679">Omogući podršku za Zamjenske usluge, eksperimentalnu HTTP značajku.</translation>
 <translation id="8307376264102990850">Izračunavamo vrijeme punjenja do potpune napunjenosti</translation>
 <translation id="8308179586020895837">Pitaj ako <ph name="HOST" /> želi pristupiti kameri</translation>

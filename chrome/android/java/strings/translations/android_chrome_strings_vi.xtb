@@ -78,11 +78,11 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="1871284979644508959">Trường bắt buộc</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
-<translation id="1924956916668006832">Chọn địa chỉ giao hàng</translation>
 <translation id="1933845786846280168">Tab được chọn</translation>
 <translation id="194341124344773587">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
 <translation id="1944384637046898011">Mã hóa tất cả dữ liệu bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Thẻ được chấp nhận</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1984321224716884559">Dấu trang Chrome Dev</translation>
@@ -159,7 +159,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2777555524387840389">Còn <ph name="SECONDS" /> giây</translation>
 <translation id="278029852808208386">Không tìm thấy thiết bị bluetooth. <ph name="BEGIN_LINK" />Tìm kiếm lại<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">Còn 1 giây</translation>
-<translation id="2781389167600714117">Chọn giao hàng</translation>
 <translation id="2811892995384186721">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
@@ -188,7 +187,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3117051980354074377">Để nhận dấu trang trên các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
 <translation id="3149891296864842641">Tùy chọn giao hàng</translation>
-<translation id="3162882791484435636">Chọn tùy chọn giao hàng</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> dữ liệu được lưu trữ</translation>
@@ -216,6 +214,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3386292677130313581">Hỏi trước khi cho phép các trang web biết vị trí của bạn (được đề xuất)</translation>
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
+<translation id="3431636764301398940">Lưu thẻ này vào thiết bị này</translation>
 <translation id="3435896845095436175">Bật</translation>
 <translation id="3452612588551937789">Đăng nhập bằng Tài khoản Google để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn.</translation>
 <translation id="3485544713029068372">Smart Lock cho Mật khẩu</translation>
@@ -261,7 +260,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
 <translation id="4089831646916293264">Tính năng này có thể ảnh hưởng đến quyền truy cập vào các dịch vụ dữ liệu cao cấp được nhà cung cấp dịch vụ của bạn cung cấp.</translation>
 <translation id="4095146165863963773">Xóa dữ liệu ứng dụng?</translation>
-<translation id="4099423833822562131">Chọn một địa chỉ giao hàng để xem phương thức giao hàng.</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="411254640334432676">Tải xuống không thành công.</translation>
@@ -412,6 +410,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="572328651809341494">Các tab gần đây</translation>
 <translation id="5748802427693696783">Đã chuyển sang tab chuẩn</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
+<translation id="57586589942790530">Số thẻ không hợp lệ</translation>
 <translation id="5763382633136178763">Tab ẩn danh</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5771382037724542929">Bạn có muốn thay thế <ph name="FILE_NAME" /> hiện tại trong <ph name="DIRECTORY_NAME" /> không?</translation>
@@ -430,7 +429,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5911030830365207728">Google Dịch</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
-<translation id="5961742032223302715">Chọn chi tiết liên hệ</translation>
 <translation id="5968595432776860642">Đang phát “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Đang truy cập thiết bị đầu vào video</translation>
 <translation id="6012342843556706400">Chrome cần quyền truy cập vị trí để chia sẻ vị trí với trang web này.</translation>

@@ -78,7 +78,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1853692000353488670">Filă incognito nouă</translation>
 <translation id="1871284979644508959">Câmp obligatoriu</translation>
 <translation id="189172778771606813">Închide panoul de navigare</translation>
-<translation id="1924956916668006832">Selectează adresa de expediere</translation>
 <translation id="1933845786846280168">Fila selectată</translation>
 <translation id="194341124344773587">Activează permisiunea pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Parole salvate</translation>
@@ -159,7 +158,6 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="2777555524387840389"><ph name="SECONDS" /> sec. rămase</translation>
 <translation id="278029852808208386">Nu s-a găsit niciun dispozitiv Bluetooth. <ph name="BEGIN_LINK" />Caută din nou<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sec. rămasă</translation>
-<translation id="2781389167600714117">Selectează expedierea</translation>
 <translation id="2811892995384186721">Dispozitivul nu apare? <ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Atinge butonul Înapoi pentru a ieși din ecranul complet.</translation>
 <translation id="2842985007712546952">Dosar părinte</translation>
@@ -188,7 +186,6 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="3117051980354074377">Pentru a accesa marcajele de pe alte dispozitive, conectează-te la Chrome.</translation>
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
 <translation id="3149891296864842641">Opțiune de expediere</translation>
-<translation id="3162882791484435636">Selectează opțiunea de expediere</translation>
 <translation id="3177909033752230686">Limba paginii:</translation>
 <translation id="3190152372525844641">Activează permisiunile pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
@@ -261,7 +258,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4062305924942672200">Informații juridice</translation>
 <translation id="4089831646916293264">Această funcție poate afecta accesul la serviciile de date premium oferite de operator.</translation>
 <translation id="4095146165863963773">Ștergi datele aplicației?</translation>
-<translation id="4099423833822562131">Selectează o adresă de expediere pentru a vedea care sunt metodele de expediere.</translation>
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
 <translation id="410351446219883937">Redare automată</translation>
 <translation id="411254640334432676">Nu s-a descărcat.</translation>
@@ -430,7 +426,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5911030830365207728">Google Traducere</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5939518447894949180">Resetează</translation>
-<translation id="5961742032223302715">Selectează detaliile de contact</translation>
 <translation id="5968595432776860642">Se redă „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Se accesează intrarea video</translation>
 <translation id="6012342843556706400">Chrome are nevoie de acces la locație pentru a-l acorda acestui site.</translation>

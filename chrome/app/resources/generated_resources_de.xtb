@@ -1929,6 +1929,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Das Passwort wurde gespeichert. <ph name="SAVED_PASSWORDS_LINK" /> können Sie von jedem Browser aus aufrufen.</translation>
 <translation id="3590587280253938212">schnell</translation>
 <translation id="3592260987370335752">&amp;Weitere Informationen</translation>
+<translation id="3592313833691251126">Ermöglicht Erweiterungen das Erstellen von Fenstern mit Steuerfeldern, die außerhalb des Browser-Frames geöffnet werden. Ist diese Funktion deaktiviert, wird anstelle eines Steuerfelds ein Pop-up-Fenster geöffnet. Standardmäßig werden Steuerfelder nur für Erweiterungen zugelassen, die auf der weißen Liste stehen. Bei Aktivierung werden sie für alle Erweiterungen zugelassen. Bei Deaktivierung werden sie für keine Erweiterung zugelassen.</translation>
 <translation id="359283478042092570">Anmelden</translation>
 <translation id="3593152357631900254">Fuzzy-Pinyin-Modus aktivieren</translation>
 <translation id="3593965109698325041">Beschränkungen für Zertifikatsnamen</translation>
@@ -2251,7 +2252,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4034042927394659004">Tastenhelligkeit verringern</translation>
 <translation id="4035758313003622889">&amp;Taskmanager</translation>
 <translation id="4037084878352560732">Pferd</translation>
-<translation id="4037102579141982963">Dieses Gerät sendet automatisch Diagnose- und Nutzungsdaten an Google. Sie können dies jederzeit <ph name="BEGIN_LINK1" />in den Geräteeinstellungen ändern<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Aktiviert den Tab-Wechsler für Bedienungshilfen in Android</translation>
 <translation id="4044260751144303020">Aufbau für Elemente mit fester Position</translation>
 <translation id="404493185430269859">Standardsuchmaschine</translation>
@@ -3220,7 +3220,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5439568486246921931">Durch diese Aktion werden die Downloads, Offlinedateien und Browserdaten des Nutzers dauerhaft gelöscht. Der Vorgang kann nicht rückgängig gemacht werden.</translation>
 <translation id="544083962418256601">Verknüpfungen erstellen...</translation>
 <translation id="5441100684135434593">Verkabeltes Netzwerk</translation>
-<translation id="5445088910157062298">Durch den Standortdienst von Google können Apps Ihren Standort schnell und genau erfassen. Dadurch kann der Akkuverbrauch gesenkt werden. Anonyme Standortdaten werden an Google gesendet, auch wenn keine Apps ausgeführt werden.</translation>
 <translation id="5448293924669608770">Hoppla, bei der Anmeldung ist ein Fehler aufgetreten.</translation>
 <translation id="5449588825071916739">Alle Tabs als Lesezeichen speichern</translation>
 <translation id="5449716055534515760">Fen&amp;ster schließen</translation>
@@ -3686,7 +3685,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6110466548232134880">Die Identität von <ph name="ORGANIZATION" /> in <ph name="LOCALITY" /> wurde von <ph name="ISSUER" /> bestätigt. Informationen zur Zertifikatstransparenz wurden vom Server nicht bereitgestellt.</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Standardmäßig zugelassen</translation>
-<translation id="6112929985131461002">Dieses Gerät sendet automatisch Diagnose- und Nutzungsdaten an Google. <ph name="BEGIN_LINK1" />Diese Einstellung<ph name="END_LINK1" /> wird durch Ihren Administrator erzwungen. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Sprach- und Eingabeeinstellungen ändern</translation>
 <translation id="6120205520491252677">Diese Seite an Startbildschirm anheften...</translation>
 <translation id="6122081475643980456">Internetverbindung wird kontrolliert</translation>
@@ -3922,7 +3920,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6452181791372256707">Ablehnen</translation>
 <translation id="6454421252317455908">Chinesische Eingabemethode (schnell)</translation>
 <translation id="6455348477571378046">Zertifikatstyp:</translation>
-<translation id="6456234919706689841">Ihr Administrator kann festlegen, dass Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Sie können <ph name="BEGIN_LINK1" />diese Einstellung hier aufrufen<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">JavaScript weiterhin blockieren</translation>
 <translation id="6458308652667395253">JavaScript-Blockierung verwalten...</translation>
 <translation id="6459488832681039634">Auswahl suchen</translation>
@@ -4703,7 +4700,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7587108133605326224">Baltisch</translation>
 <translation id="7589461650300748890">Vorsicht!</translation>
 <translation id="7589661784326793847">Einen Moment bitte</translation>
-<translation id="7593635197364225277">Daten der Google Play App automatisch in Google Drive sichern und wiederherstellen. Sie können diese Einstellung jederzeit in den Android-Einstellungen ändern. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (Fehlercode <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Ok, importieren</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
@@ -5209,7 +5205,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8300607741108698921">Schnelle Einrichtung</translation>
 <translation id="8303650969500425356">Ermöglicht JavaScript, die Bildschirmausrichtung zu sperren.</translation>
 <translation id="8303655282093186569">Pinyin-Eingabeeinstellungen</translation>
-<translation id="830424806940379275">Ermöglicht Erweiterungen das Erstellen von Fenstern mit Steuerfeldern, die außerhalb des Browser-Frames geöffnet werden. Standardmäßig oder bei Deaktivieren dieser Funktion wird statt eines Steuerfelds ein Pop-up-Fenster geöffnet. Steuerfelder in Desktop-Betriebssystemen sind veraltet und werden bald entfernt.</translation>
 <translation id="8306534594034939679">Unterstützung für "Alternative Dienste", eine experimentelle HTTP-Funktion, aktivieren</translation>
 <translation id="8307376264102990850">Zeit bis zur vollständigen Aufladung wird berechnet</translation>
 <translation id="8308179586020895837">Nachfragen, wenn <ph name="HOST" /> auf Ihre Kamera zugreifen möchte</translation>

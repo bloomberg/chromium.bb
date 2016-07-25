@@ -1933,6 +1933,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Adgangskoden er gemt. Du kan se den og alle dine <ph name="SAVED_PASSWORDS_LINK" /> fra en hvilken som helst browser.</translation>
 <translation id="3590587280253938212">hurtig</translation>
 <translation id="3592260987370335752">&amp;Få flere oplysninger</translation>
+<translation id="3592313833691251126">Tillad, at udvidelser opretter panelvinduer, der åbner uden for browseren. Forsøg på at åbne et panel åbner et pop op-vindue i stedet, hvis dette ikke er aktiveret. Standardadfærden er kun at tillade dette for hvidlistede udvidelser. Aktiveret adfærd er at tillade dette for alle udvidelser. Deaktiveret adfærd er ikke at tillade paneler for nogen udvidelser.</translation>
 <translation id="359283478042092570">Indtast</translation>
 <translation id="3593152357631900254">Aktiver tilstanden Fuzzy-pinyin</translation>
 <translation id="3593965109698325041">Begrænsninger for certifikatnavn</translation>
@@ -2255,7 +2256,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4034042927394659004">Reducer lysstyrken på tastaturet</translation>
 <translation id="4035758313003622889">&amp;Jobliste</translation>
 <translation id="4037084878352560732">Hest</translation>
-<translation id="4037102579141982963">Denne enhed sender automatisk diagnostik og brugsdata til Google. Du kan til enhver tid ændre dette i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" /> for din enhed. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Aktivér hjælpefunktionen Faneskift i Android.</translation>
 <translation id="4044260751144303020">Sammensætning af faste positionselementer.</translation>
 <translation id="404493185430269859">Standardsøgemaskine</translation>
@@ -3226,7 +3226,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5439568486246921931">Denne handling sletter permanent denne brugers downloads, offlinefiler og browserdata. Handlingen kan ikke fortrydes.</translation>
 <translation id="544083962418256601">Opret genveje...</translation>
 <translation id="5441100684135434593">Kabelnetværk</translation>
-<translation id="5445088910157062298">Lad Googles placeringstjeneste hjælpe apps med at finde din placering hurtigt og nøjagtigt, så du sparer på batteriet. Anonyme placeringsdata sendes til Google, selv når der ikke kører nogen apps.</translation>
 <translation id="5448293924669608770">Ups! Der opstod en fejl under login</translation>
 <translation id="5449588825071916739">Tilføj alle faner som bogmærker</translation>
 <translation id="5449716055534515760">Luk vin&amp;due</translation>
@@ -3692,7 +3691,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="6110466548232134880">Identiteten af <ph name="ORGANIZATION" /> i <ph name="LOCALITY" /> er blevet bekræftet af <ph name="ISSUER" />. Serveren leverede ingen Certificate Transparency-oplysninger.</translation>
 <translation id="6111770213269631447">Translitteration (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Tilladt som standard</translation>
-<translation id="6112929985131461002">Denne enhed sender automatisk diagnostik og brugsdata til Google. Denne <ph name="BEGIN_LINK1" />indstilling<ph name="END_LINK1" /> håndhæves af din administrator. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Rediger indstillingerne for sprog og indtastning</translation>
 <translation id="6120205520491252677">Fastgør denne side til startskærmen...</translation>
 <translation id="6122081475643980456">Din internetforbindelse bliver kontrolleret</translation>
@@ -3929,7 +3927,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6452181791372256707">Afvis</translation>
 <translation id="6454421252317455908">Kinesisk indtastningsmetode (hurtig)</translation>
 <translation id="6455348477571378046">Certifikattype:</translation>
-<translation id="6456234919706689841">Din administrator kan vælge at sende diagnostik og brugsdata for denne enhed til Google. Du kan se <ph name="BEGIN_LINK1" />indstillingen<ph name="END_LINK1" /> her. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Fortsæt blokering af JavaScript</translation>
 <translation id="6458308652667395253">Administrer blokering af JavaScript...</translation>
 <translation id="6459488832681039634">Brug valg til Find</translation>
@@ -4708,7 +4705,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7587108133605326224">Baltisk</translation>
 <translation id="7589461650300748890">Vær forsigtig.</translation>
 <translation id="7589661784326793847">Vent et øjeblik</translation>
-<translation id="7593635197364225277">Sikkerhedskopiér og gendan automatisk Play-appdata til Google Drev. Du kan til enhver tid ændre dette i Android Indstillinger. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (fejlkode <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">OK, start import</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
@@ -5215,7 +5211,6 @@ Beregner resterende tid</translation>
 <translation id="8300607741108698921">Konfiguration på 1 minut</translation>
 <translation id="8303650969500425356">Tillader, at javascript kan låse skærmretningen.</translation>
 <translation id="8303655282093186569">Indstillinger for pinyin-indtastning</translation>
-<translation id="830424806940379275">Tillad, at udvidelser opretter panelvinduer, der åbner uden for browserens ramme. Et forsøg på at åbne et panel åbner som standard (eller hvis det ikke er aktiveret) et pop op-vindue i stedet. Paneler på operativsystemer er udfaset og fjernes snart.</translation>
 <translation id="8306534594034939679">Aktivér understøttelse af Alternative Services – en eksperimentel HTTP-funktion.</translation>
 <translation id="8307376264102990850">Oplader Beregner tid, indtil fuld</translation>
 <translation id="8308179586020895837">Spørg, om <ph name="HOST" /> vil have adgang til dit kamera</translation>

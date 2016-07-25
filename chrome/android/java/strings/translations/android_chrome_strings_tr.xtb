@@ -78,7 +78,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="1871284979644508959">Zorunlu alan</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
-<translation id="1924956916668006832">Gönderim adresi seç</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izni açın.</translation>
 <translation id="1943432128510653496">Şifreleri kaydetme</translation>
@@ -159,7 +158,6 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
 <translation id="278029852808208386">Bluetooth cihaz bulunamadı. <ph name="BEGIN_LINK" />Tekrar arayın<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sn. kaldı</translation>
-<translation id="2781389167600714117">Gönderimi seç</translation>
 <translation id="2811892995384186721">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
 <translation id="2842985007712546952">Ana klasör</translation>
@@ -188,7 +186,6 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="3117051980354074377">Diğer cihazlarınızdaki yer işaretlerinizi almak için Chrome'da oturum açın.</translation>
 <translation id="3137521801621304719">Gizli moddan çık</translation>
 <translation id="3149891296864842641">Gönderim seçeneği</translation>
-<translation id="3162882791484435636">Gönderim seçeneğini belirleyin</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izinleri açın.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> depolanmış veri</translation>
@@ -261,7 +258,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4062305924942672200">Yasal bilgiler</translation>
 <translation id="4089831646916293264">Bu özellik, operatörünüz tarafından sağlanan birinci sınıf veri hizmetlerine erişime engel olabilir.</translation>
 <translation id="4095146165863963773">Uygulama verileri silinsin mi?</translation>
-<translation id="4099423833822562131">Gönderim yöntemlerini kontrol etmek için bir gönderim adresi seçin.</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="410351446219883937">Otomatik oynatma</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
@@ -430,7 +426,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5911030830365207728">Google Çeviri</translation>
 <translation id="5916664084637901428">Açık</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
-<translation id="5961742032223302715">İletişim ayrıntılarını seçin</translation>
 <translation id="5968595432776860642">“<ph name="VIDEO_TITLE" />” oynatılıyor</translation>
 <translation id="6010869025736512584">Video girişine erişiliyor</translation>
 <translation id="6012342843556706400">Chrome'un konumu bu siteyle paylaşması için konum erişimine ihtiyacı var.</translation>

@@ -22,13 +22,6 @@
       如果設為 True 或未設定，則會回報統計資料。</translation>
 <translation id="1046484220783400299">暫時啟用已淘汰網路平台功能</translation>
 <translation id="1047128214168693844">不允許任何網站追蹤使用者的實際位置</translation>
-<translation id="1057535219415338480">啟用 <ph name="PRODUCT_NAME" /> 的網路預測功能，並且禁止使用者變更這項設定。
-
-      除了 DNS 預先擷取之外，這項設定還可控制 TCP 和 SSL 預先連線及網頁預先轉譯。政策名稱中出現「DNS Prefetching」是為了沿用過去的名稱。
-
-      不論您是否啟用或這個政策，使用者都無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
-
-      如未設定這項政策，系統會啟用這項功能，不過使用者可自行變更此一設定。</translation>
 <translation id="1062011392452772310">為裝置啟用遠端認證機制</translation>
 <translation id="1090892140761957285">用於驗證遠端存取用戶端驗證憑證的網址。   
 

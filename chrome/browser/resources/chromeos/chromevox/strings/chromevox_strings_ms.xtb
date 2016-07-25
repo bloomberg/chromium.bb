@@ -269,6 +269,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3392045790598181549">Item menu, <ph name="NAME" /></translation>
 <translation id="3406283310380167331">Paparkan senarai borang</translation>
 <translation id="3422338090358345848">Buka penjelajah papan kekunci</translation>
+<translation id="3423495725743882470">baris $1 lajur $2</translation>
 <translation id="3457000393508828486">Separuh ditekan</translation>
 <translation id="3462439746547587373">Butang, <ph name="NAME" /></translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5000760171916499057">Tiada borang.</translation>
 <translation id="5005670136041063723">Tiada lagi unsur yang serupa.</translation>
 <translation id="501473567976723023">Januari</translation>
+<translation id="5040591161308540832">Jadual $1, $2 kali $3</translation>
 <translation id="5041394372352067729">Alihkan paparan braille ke bahagian atas halaman</translation>
 <translation id="5042770794184672516">Tingkatkan kelantangan pertuturan</translation>
 <translation id="5050015258024679800">Tajuk tahap 4 sebelumnya</translation>
@@ -555,6 +557,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Tajuk sebelumnya</translation>
 <translation id="6378565991815958969">salin $1.</translation>
+<translation id="6385591741672306837">lajur</translation>
 <translation id="6387719785439924554">ke sebelah</translation>
 <translation id="6411426777058107714">Tiada butang radio terdahulu.</translation>
 <translation id="6414968628640960377">Elemen berbeza terdahulu.</translation>
@@ -704,6 +707,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8153880621934657047">Bukan dalam jadual.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">baris</translation>
 <translation id="8186185314313222077">togol skrin penuh</translation>
 <translation id="8199231515320852133">Umumkan pengepala sel semasa</translation>
 <translation id="820417203470636242">Sel kosong.</translation>

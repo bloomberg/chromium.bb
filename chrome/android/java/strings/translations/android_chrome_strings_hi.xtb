@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">नया गुप्त टैब</translation>
 <translation id="1871284979644508959">आवश्यक फ़ील्ड</translation>
 <translation id="189172778771606813">मार्गदर्शक ड्रॉवर बंद करें</translation>
-<translation id="1924956916668006832">शिपिंग पता चुनें</translation>
 <translation id="1933845786846280168">चयनित टैब</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में Chrome के लिए अनुमति चालू करें.</translation>
 <translation id="1943432128510653496">पासवर्ड सहेजें</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंड शेष</translation>
 <translation id="278029852808208386">कोई ब्‍लूटूथ डिवाइस नहीं मिला. <ph name="BEGIN_LINK" />फिर से खोजें<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 सेकंड शेष</translation>
-<translation id="2781389167600714117">शिपिंग चुनें</translation>
 <translation id="2811892995384186721">आपका डिवाइस दिखाई नहीं दे रहा है? <ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">पूर्ण स्क्रीन से बाहर निकलने के लिए वापस जाएं बटन स्पर्श करें.</translation>
 <translation id="2842985007712546952">मूल फ़ोल्‍डर</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">अपने अन्य डिवाइस पर अपने बुकमार्क प्राप्‍त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="3137521801621304719">गुप्त मोड छोड़ें</translation>
 <translation id="3149891296864842641">शिपिंग विकल्प</translation>
-<translation id="3162882791484435636">शिपिंग विकल्प चुनें</translation>
 <translation id="3177909033752230686">पृष्ठ की भाषा:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में Chrome के लिए अनुमतियां चालू करें.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> संग्रहीत डेटा</translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">वैधानिक जानकारी</translation>
 <translation id="4089831646916293264">यह सुविधा आपके वाहक द्वारा प्रदान की जाने वाली प्रीमियम डेटा सुविधाओं की ऐक्‍सेस में हस्तक्षेप कर सकती है.</translation>
 <translation id="4095146165863963773">ऐप्लिकेशन डेटा हटाएं?</translation>
-<translation id="4099423833822562131">शिपिंग की विधियां देखने के लिए एक शिपिंग पता चुनें.</translation>
 <translation id="4099578267706723511">Google को उपयोग के आंकड़े और क्रैश रिपोर्ट भेजकर Chrome को बेहतर बनाने में सहायता करें.</translation>
 <translation id="410351446219883937">स्वतः चलाएं</translation>
 <translation id="411254640334432676">डाउनलोड विफल रहा.</translation>
@@ -430,7 +426,6 @@
 <translation id="5911030830365207728">Google अनुवाद</translation>
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
-<translation id="5961742032223302715">संपर्क विवरण चुनें</translation>
 <translation id="5968595432776860642">“<ph name="VIDEO_TITLE" />” चल रहा है</translation>
 <translation id="6010869025736512584">वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="6012342843556706400">Chrome को स्थान ऐक्सेस की आवश्यकता है ताकि स्थान को इस साइट के साथ साझा किया जा सके.</translation>

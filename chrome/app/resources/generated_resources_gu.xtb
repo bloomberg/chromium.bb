@@ -1929,6 +1929,7 @@
 <translation id="3590559774363307859">પાસવર્ડ સાચવ્યો. તમે તેને અને તમારા બધા <ph name="SAVED_PASSWORDS_LINK" /> ને કોઈપણ બ્રાઉઝરથી ઍક્સેસ કરી શકો છો.</translation>
 <translation id="3590587280253938212">ઝડપી</translation>
 <translation id="3592260987370335752">&amp;વધુ જાણો</translation>
+<translation id="3592313833691251126">એક્સ્ટેન્શન્સને બ્રાઉઝર ફ્રેમની બહાર ખુલતી પેનલ વિંડોઝ બનાવવાની મંજૂરી આપો. જો સક્ષમ નહીં હોય, તો કોઈ પેનલને ખોલવાના પ્રયાસો તેના બદલે એક પૉપઅપ ખોલશે. ડિફોલ્ટ વર્તણૂક વ્હાઇટલિસ્ટ કરેલ એક્સ્ટેન્શન્સને માત્ર તમારા માટે મંજૂરી આપવું છે. સક્ષમ કરેલ વર્તણૂક તમામ એક્સ્ટેન્શન્સ માટે મંજૂરી આપવું છે. અક્ષમ કરેલ વર્તણૂક કોઈપણ વર્તણૂક માટે પેનલ્સને નામંજૂર કરવું છે.</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593152357631900254">Fuzzy-Pinyin મોડને સક્ષમ કરો </translation>
 <translation id="3593965109698325041">પ્રમાણપત્રના નામની મર્યાદાઓ</translation>
@@ -2251,7 +2252,6 @@
 <translation id="4034042927394659004">કીના તેજને ઘટાડો</translation>
 <translation id="4035758313003622889">&amp;કાર્ય વ્યવસ્થાપક</translation>
 <translation id="4037084878352560732">ઘોડો</translation>
-<translation id="4037102579141982963">આ ઉપકરણ, Google ને આપમેળે નિદાન અને વપરાશ ડેટા મોકલશે. તમે તમારી ઉપકરણ <ph name="BEGIN_LINK1" />સેટિંગ્સ<ph name="END_LINK1" />માં આને કોઈપણ સમયે બદલી શકો છો. <ph name="BEGIN_LINK2" />વધુ જાણો<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Android માટે ઍક્સેસિબિલિટી ટેબ સ્વિચર સક્ષમ કરો.</translation>
 <translation id="4044260751144303020">નિશ્ચિત સ્થિતિ તત્વો માટે સંમિશ્રણ.</translation>
 <translation id="404493185430269859">ડિફોલ્ટ શોધ એન્જિન</translation>
@@ -3222,7 +3222,6 @@
 <translation id="5439568486246921931">આ ક્રિયા વપરાશકર્તાના ડાઉનલોડ્સ, ઑફલાઇન ફાઇલો અને બ્રાઉઝિંગ ડેટાને કાયમી રૂપે કાઢી નાખશે. આ પૂર્વવત્‌ કરી શકાતું નથી.</translation>
 <translation id="544083962418256601">શૉર્ટકટ્સ બનાવો ...</translation>
 <translation id="5441100684135434593">વાયર્ડ નેટવર્ક</translation>
-<translation id="5445088910157062298">Google ની સ્થાન સેવાને તમારું સ્થાન ઝડપથી અને સચોટ રીતે શોધવા તમારી ઍપ્લિકેશનોને સહાય કરવા દો, જે બૅટરીનો વપરાશ ઘટાડી શકે છે. કોઇ ઍપ્લિકેશનો ચાલુ ન હોય ત્યારે પણ, Google ને અનામિક સ્થાન ડેટા મોકલવામાં આવશે.</translation>
 <translation id="5448293924669608770">અરેરે, સાઇન ઇનમાં કંઈક ખોટું થયું છે</translation>
 <translation id="5449588825071916739">તમામ ટૅબ્સ બુકમાર્ક કરો</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
@@ -3689,7 +3688,6 @@
 <translation id="6110466548232134880"><ph name="LOCALITY" /> ખાતે <ph name="ORGANIZATION" /> ની ઓળખ <ph name="ISSUER" /> દ્વારા ચકાસવામાં આવી હતી. સર્વર દ્વારા કોઈ પ્રમાણપત્ર પારદર્શિતા માહિતી પૂરી પાડવામાં આવી ન હતી.</translation>
 <translation id="6111770213269631447">લિવ્યંતરણ (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">ડિફોલ્ટ દ્વારા મંજૂર</translation>
-<translation id="6112929985131461002">આ ઉપકરણ Google ને આપમેળે નિદાન અને વપરાશ ડેટા મોકલશે. તમારા વ્યવસ્થાપક દ્વારા આ <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" /> લાગુ કરેલ છે. <ph name="BEGIN_LINK2" />વધુ જાણો<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">ભાષા અને ઇનપુટ સેટિંગ્સ બદલો</translation>
 <translation id="6120205520491252677">પ્રારંભ સ્ક્રીન પર આ પૃષ્ઠ પિન કરો...</translation>
 <translation id="6122081475643980456">તમારું ઇન્ટરનેટ કનેક્શન નિયંત્રિત કરવામાં આવી રહ્યું છે</translation>
@@ -3925,7 +3923,6 @@
 <translation id="6452181791372256707">નકારો</translation>
 <translation id="6454421252317455908">ચાઇનીઝ ઇનપુટ મેથડ (ક્વિક)</translation>
 <translation id="6455348477571378046">પ્રમાણપત્રનો પ્રકાર:</translation>
-<translation id="6456234919706689841">તમારા વ્યવસ્થાપક Google ને આ ઉપકરણ માટે નિદાન અને વપરાશ ડેટા મોકલવાનું પસંદ કરી શકે છે. તમે આ <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" /> અહીં જોઈ શકો છો. <ph name="BEGIN_LINK2" />વધુ જાણો<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">JavaScript ને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="6458308652667395253">JavaScript અવરોધિત કરવાનું મેનેજ કરો...</translation>
 <translation id="6459488832681039634">શોધવા માટે પસંદગીનો ઉપયોગ કરો</translation>
@@ -4706,7 +4703,6 @@
 <translation id="7587108133605326224">બાલ્ટિક</translation>
 <translation id="7589461650300748890">અરે, ત્યાં છો. સાવધ રહો.</translation>
 <translation id="7589661784326793847">ક્ષણભર રોકાવ</translation>
-<translation id="7593635197364225277">Play ઍપ્લિકેશન ડેટાનું Google ડ્રાઇવ પર આપમેળે બેક અપ લો અને પુનઃસ્થાપિત કરો. તમે કોઇપણ સમયે આને Android સેટિંગ્સમાં બદલી શકો છો. <ph name="BEGIN_LINK1" />વધુ જાણો<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (ભૂલ કોડ <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">ઓકે, આયાત કરો</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
@@ -5208,7 +5204,6 @@
 <translation id="8300607741108698921">1-મિનિટ સેટઅપ</translation>
 <translation id="8303650969500425356">સ્ક્રીન ઓરિએન્ટેશનને લૉક કરવા માટેની javascript ને મંજૂરી આપે છે.</translation>
 <translation id="8303655282093186569">Pinyin ઇનપુટ સેટિંગ્સ</translation>
-<translation id="830424806940379275">એક્સ્ટેન્શન્સને બ્રાઉઝર ફ્રેમની બહાર ખુલે છે તે પૅનલ વિંડોઝ બનાવવાની મંજૂરી આપો. ડિફૉલ્ટ તરીકે અથવા જો અક્ષમ કરેલ હોય, તો પૅનલને ખોલવાનો પ્રયત્ન તેના બદલે પૉપઅપ ખોલશે. ડેસ્કટૉપ OS પરની પૅનલ્સ ટાળવામાં આવે છે અને તે ટૂંક સમયમાં દૂર કરી દેવામાં આવશે.</translation>
 <translation id="8306534594034939679">પ્રયોગાત્મક HTTP સુવિધા એવી વૈકલ્પિક સેવાઓ માટે સમર્થન સક્ષમ કરો.</translation>
 <translation id="8307376264102990850">ચાર્જ કરી રહ્યું છે
 સંપૂર્ણ સમય એકમની ગણતરી કરી રહ્યું છે</translation>

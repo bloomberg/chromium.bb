@@ -22,13 +22,6 @@
       如果此政策设为 true 或未设置，系统将报告硬件统计数据。</translation>
 <translation id="1046484220783400299">让已弃用的网络平台功能在限定的时间内发挥功效</translation>
 <translation id="1047128214168693844">不允许任何网站跟踪用户的地理位置</translation>
-<translation id="1057535219415338480">在 <ph name="PRODUCT_NAME" />中启用网络预测功能，并禁止用户更改此设置。
-
-      这项设置不仅控制 DNS 预提取，还控制 TCP 和 SSL 预连接及网页预呈现。但由于历史原因，该策略名称提及的是 DNS 预提取。
-
-      如果您启用或停用此设置，则用户不能在 <ph name="PRODUCT_NAME" />中更改或替换此设置。
-
-      如果不设置此策略，则系统会启用此设置，不过，用户将能够更改此设置。</translation>
 <translation id="1062011392452772310">为设备启用远程认证</translation>
 <translation id="1090892140761957285">验证远程访问客户端身份验证令牌时使用的网址。
 

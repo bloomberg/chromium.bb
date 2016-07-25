@@ -22,13 +22,6 @@
       Če je pravilnik omogočen ali ni nastavljen, se statistični podatki poročajo.</translation>
 <translation id="1046484220783400299">Začasno omogočanje zastarelih funkcij spletnega okolja</translation>
 <translation id="1047128214168693844">Nobenemu mestu ne dovoli spremljanja fizične lokacije uporabnika</translation>
-<translation id="1057535219415338480">Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in preprečuje uporabnikom spreminjanje te nastavitve.
-
-      Ta pravilnik ne nadzira le vnaprejšnjega prenosa podatkov DNS, ampak tudi vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani. Ime pravilnika se nanaša na vnaprejšnji prenos podatkov DNS iz zgodovinskih razlogov.
-
-       Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
-
-       Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="1062011392452772310">Omogoči oddaljeno potrditev naprave</translation>
 <translation id="1090892140761957285">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop.
 

@@ -78,7 +78,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
 <translation id="1871284979644508959">Pakollinen tieto</translation>
 <translation id="189172778771606813">Sulje navigoinnin vetopaneeli</translation>
-<translation id="1924956916668006832">Valitse toimitusosoite</translation>
 <translation id="1933845786846280168">Valittu välilehti</translation>
 <translation id="194341124344773587">Ota käyttöoikeus käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
@@ -159,7 +158,6 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekuntia jäljellä</translation>
 <translation id="278029852808208386">Bluetooth-laitteita ei löytynyt. <ph name="BEGIN_LINK" />Hae uudelleen<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sekunti jäljellä</translation>
-<translation id="2781389167600714117">Valitse toimitusvaihtoehdot</translation>
 <translation id="2811892995384186721">Etkö näe laitettasi? <ph name="BEGIN_LINK" />Tutustu ohjeisiin.<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Poistu koko näytön tilasta Takaisin-painikkeella.</translation>
 <translation id="2842985007712546952">Ylätason kansio</translation>
@@ -188,7 +186,6 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="3117051980354074377">Käytä kirjanmerkkejä muilta laitteiltasi kirjautumalla Chromeen.</translation>
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
 <translation id="3149891296864842641">Toimitustapa</translation>
-<translation id="3162882791484435636">Valitse toimitustapa</translation>
 <translation id="3177909033752230686">Sivun kieli:</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
@@ -261,7 +258,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
 <translation id="4089831646916293264">Tämä ominaisuus voi häiritä operaattorisi tarjoamien premium-tietopalveluiden käyttöä.</translation>
 <translation id="4095146165863963773">Poistetaanko sovellustiedot?</translation>
-<translation id="4099423833822562131">Näet toimitusvaihtoehdot valitsemalla toimitusosoitteen.</translation>
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
@@ -430,7 +426,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5911030830365207728">Google Kääntäjä</translation>
 <translation id="5916664084637901428">Käytössä</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
-<translation id="5961742032223302715">Valitse yhteystiedot</translation>
 <translation id="5968595432776860642">Toistetaan videota <ph name="VIDEO_TITLE" />.</translation>
 <translation id="6010869025736512584">Videotuloa käytetään</translation>
 <translation id="6012342843556706400">Chrome tarvitsee sijainnin käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>

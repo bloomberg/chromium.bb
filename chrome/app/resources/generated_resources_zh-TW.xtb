@@ -1932,6 +1932,7 @@
 <translation id="3590559774363307859">密碼已儲存。您可以透過任何瀏覽器存取該密碼和您的所有 <ph name="SAVED_PASSWORDS_LINK" />。</translation>
 <translation id="3590587280253938212">快</translation>
 <translation id="3592260987370335752">瞭解詳情(&amp;L)</translation>
+<translation id="3592313833691251126">允許擴充功能建立在瀏覽器頁框外開啟的面板視窗。如果未啟用，嘗試開啟面板時，會以彈出式視窗取代。在預設狀態下，只有許可清單中的擴充功能可執行這項操作。啟用後，所有擴充功能皆可執行這項操作；停用後，系統將禁止任何擴充功能開啟面板。</translation>
 <translation id="359283478042092570">輸入</translation>
 <translation id="3593152357631900254">啟用模糊拼音模式</translation>
 <translation id="3593965109698325041">憑證名稱限制</translation>
@@ -2253,7 +2254,6 @@
 <translation id="4034042927394659004">降低按鍵亮度</translation>
 <translation id="4035758313003622889">工作管理員(&amp;T)</translation>
 <translation id="4037084878352560732">馬</translation>
-<translation id="4037102579141982963">這個裝置會自動將診斷資料和使用資料傳送給 Google。您隨時可以在裝置<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中變更這項設定。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">啟用 Android 的協助工具分頁切換選項。</translation>
 <translation id="4044260751144303020">結合固定位置元素。</translation>
 <translation id="404493185430269859">預設搜尋引擎</translation>
@@ -3222,7 +3222,6 @@
 <translation id="5439568486246921931">這個動作會永久刪除這位使用者的下載內容、離線檔案和瀏覽資料，且無法復原。</translation>
 <translation id="544083962418256601">建立捷徑...</translation>
 <translation id="5441100684135434593">有線網路</translation>
-<translation id="5445088910157062298">讓 Google 的定位服務協助應用程式快速找到您的準確位置，減少耗電量。系統會傳送匿名位置資料給 Google (即使未執行任何應用程式)。</translation>
 <translation id="5448293924669608770">糟糕，登入帳戶時發生錯誤</translation>
 <translation id="5449588825071916739">將所有分頁加入書籤</translation>
 <translation id="5449716055534515760">關閉視窗(&amp;D)</translation>
@@ -3688,7 +3687,6 @@
 <translation id="6110466548232134880"><ph name="ORGANIZATION" /> (所在地：<ph name="LOCALITY" />) 的身分已通過 <ph name="ISSUER" /> 驗證，但伺服器未提供 Certificate Transparency 資訊。</translation>
 <translation id="6111770213269631447">音譯 (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">預設允許</translation>
-<translation id="6112929985131461002">這個裝置會自動將診斷資料和使用資料傳送給 Google。您的管理員強制啟用了這項<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">變更語言和輸入設定</translation>
 <translation id="6120205520491252677">將這個網頁固定到開始畫面...</translation>
 <translation id="6122081475643980456">您的網際網路連線目前受到控制</translation>
@@ -3923,7 +3921,6 @@
 <translation id="6452181791372256707">拒絕</translation>
 <translation id="6454421252317455908">中文輸入法 (快速)</translation>
 <translation id="6455348477571378046">憑證類型：</translation>
-<translation id="6456234919706689841">您的管理員可能會選擇將這個裝置的診斷資料和使用資料傳送給 Google。您可以在這裡查看這項<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">繼續封鎖 JavaScript</translation>
 <translation id="6458308652667395253">管理封鎖 JavaScript 設定...</translation>
 <translation id="6459488832681039634">使用所選範圍尋找</translation>
@@ -4699,7 +4696,6 @@
 <translation id="7587108133605326224">波羅的海語系</translation>
 <translation id="7589461650300748890">哎唷，請注意！</translation>
 <translation id="7589661784326793847">請稍候片刻</translation>
-<translation id="7593635197364225277">自動使用 Google 雲端硬碟備份及還原 Play 應用程式資料。您隨時可以在「Android 設定」中變更這項設定。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (錯誤代碼 <ph name="ERROR_CODE" />)。</translation>
 <translation id="7596831438341298034">是的，匯入</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
@@ -5205,7 +5201,6 @@
 <translation id="8300607741108698921">1 分鐘完成設定</translation>
 <translation id="8303650969500425356">允許使用 JavaScript 鎖定螢幕方向。</translation>
 <translation id="8303655282093186569">拼音輸入法設定</translation>
-<translation id="830424806940379275">允許擴充功能建立在瀏覽器頁框以外的區域開啟的面板視窗。在預設或停用狀態下，開啟面板時則會彈出其他視窗。在電腦作業系統上，面板已淘汰，將於近期內遭到移除。</translation>
 <translation id="8306534594034939679">啟用替代服務支援功能，這個服務是實驗性的 HTTP 功能。</translation>
 <translation id="8307376264102990850">充電中：正在計算所需時間</translation>
 <translation id="8308179586020895837">當 <ph name="HOST" /> 要求存取攝影機時詢問我。</translation>

@@ -22,13 +22,6 @@
       Si s'estableix en "true" o no s'estableix, s'informa de les estadístiques.</translation>
 <translation id="1046484220783400299">Activa les funcions obsoletes de la plataforma web durant un temps limitat</translation>
 <translation id="1047128214168693844">No permetis que cap lloc web faci el seguiment de la ubicació física dels usuaris</translation>
-<translation id="1057535219415338480">Permet la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta configuració.
-
-      No només controla l'obtenció prèvia de DNS, sinó també la connexió i la renderització prèvies de TCP i de SSL de les pàgines web. El nom de la política fa referència a l'obtenció prèvia de DNS per qüestions relacionades amb l'historial.
-
-      Si activeu o desactiveu aquesta opció, els usuaris no podran canviar-la ni anul·lar-la a <ph name="PRODUCT_NAME" />.
-
-      Si no es defineix aquesta política, l'opció s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="1062011392452772310">Activa el testimoni remot per al dispositiu.</translation>
 <translation id="1090892140761957285">URL per validar el testimoni d'autenticació del client d'accés remot.
 

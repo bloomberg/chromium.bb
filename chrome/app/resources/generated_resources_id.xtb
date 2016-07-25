@@ -1933,6 +1933,7 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3590559774363307859">Sandi tersimpan. Anda dapat mengaksesnya dan semua <ph name="SAVED_PASSWORDS_LINK" /> dari browser mana pun.</translation>
 <translation id="3590587280253938212">cepat</translation>
 <translation id="3592260987370335752">&amp;Pelajari lebih lanjut</translation>
+<translation id="3592313833691251126">Mengizinkan ekstensi untuk membuat jendela panel yang dibuka di luar bingkai browser. Upaya membuka panel akan membuka munculan jika tidak diaktifkan. Perilaku default hanya mengizinkan ekstensi yang dimasukkan ke daftar putih. Perilaku yang diaktifkan adalah mengizinkan semua ekstensi. Sementara perilaku yang melarang panel untuk ekstensi apa pun dinonaktifkan.</translation>
 <translation id="359283478042092570">Masuk</translation>
 <translation id="3593152357631900254">Aktifkan mode Pinyin Fuzi</translation>
 <translation id="3593965109698325041">Kendala Nama Sertifikat</translation>
@@ -2255,7 +2256,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4034042927394659004">Kurangi kecerahan tombol</translation>
 <translation id="4035758313003622889">&amp;Pengelola tugas</translation>
 <translation id="4037084878352560732">Kuda</translation>
-<translation id="4037102579141982963">Perangkat ini akan otomatis mengirim data diagnosis dan penggunaan ke Google. Anda dapat mengubah setelan ini kapan saja di <ph name="BEGIN_LINK1" />setelan<ph name="END_LINK1" /> pada perangkat. <ph name="BEGIN_LINK2" />Pelajari Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="4037463823853863991">Aktifkan pengalih tab aksesibilitas untuk Android.</translation>
 <translation id="4044260751144303020">Pengomposisian untuk elemen posisi tetap.</translation>
 <translation id="404493185430269859">Mesin telusur default</translation>
@@ -3229,7 +3229,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5439568486246921931">Tindakan ini akan menghapus unduhan, file offline, dan data penjelajahan pengguna ini secara permanen. Tindakan tidak dapat diurungkan.</translation>
 <translation id="544083962418256601">Buat pintasan...</translation>
 <translation id="5441100684135434593">Jaringan kabel</translation>
-<translation id="5445088910157062298">Biarkan layanan lokasi Google membantu aplikasi menemukan lokasi Anda dengan cepat dan akurat, sehingga dapat menghemat penggunaan baterai. Data lokasi anonim akan dikirim ke Google, meski tidak ada aplikasi yang berjalan.</translation>
 <translation id="5448293924669608770">Ups, ada yang tidak beres dengan proses masuk</translation>
 <translation id="5449588825071916739">Bookmark Semua Tab</translation>
 <translation id="5449716055534515760">Tutup Jen&amp;dela</translation>
@@ -3695,7 +3694,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6110466548232134880">Identitas <ph name="ORGANIZATION" /> di <ph name="LOCALITY" /> telah diverifikasi oleh <ph name="ISSUER" />. Tidak ada informasi Transparansi Sertifikat yang diberikan oleh server.</translation>
 <translation id="6111770213269631447">Transliterasi (namaskar → নমস্কার)</translation>
 <translation id="6111974609785983504">Diizinkan secara default</translation>
-<translation id="6112929985131461002">Perangkat ini akan otomatis mengirim data diagnosis dan penggunaan ke Google. <ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> ini diberlakukan oleh administrator. <ph name="BEGIN_LINK2" />Pelajari Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="6116921718742659598">Ubah setelan masukan dan bahasa</translation>
 <translation id="6120205520491252677">Pasang pin laman ini ke layar Awal...</translation>
 <translation id="6122081475643980456">Koneksi internet Anda sedang dikendalikan</translation>
@@ -3931,7 +3929,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6452181791372256707">Tolak</translation>
 <translation id="6454421252317455908">Metode masukan China (cepat)</translation>
 <translation id="6455348477571378046">Jenis Sertifikat:</translation>
-<translation id="6456234919706689841">Administrator Anda dapat memilih untuk mengirim data diagnosis dan penggunaan perangkat ini ke Google. Anda dapat melihat <ph name="BEGIN_LINK1" />setelan<ph name="END_LINK1" /> tersebut di sini. <ph name="BEGIN_LINK2" />Pelajari Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="645705751491738698">Lanjutkan mencekal JavaScript</translation>
 <translation id="6458308652667395253">Kelola pencekalan JavaScript...</translation>
 <translation id="6459488832681039634">Gunakan Pilihan untuk Temukan</translation>
@@ -4710,7 +4707,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7587108133605326224">Baltik</translation>
 <translation id="7589461650300748890">Aduh, hati-hati dong.</translation>
 <translation id="7589661784326793847">Tunggu sebentar</translation>
-<translation id="7593635197364225277">Cadangkan dan pulihkan data aplikasi Play ke Google Drive secara otomatis. Anda dapat mengubahnya di Setelan Android kapan saja. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (kode kesalahan <ph name="ERROR_CODE" />).</translation>
 <translation id="7596831438341298034">Oke, impor</translation>
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
@@ -5216,7 +5212,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8300607741108698921">penyiapan 1 menit</translation>
 <translation id="8303650969500425356">Memungkinkan javascript mengunci orientasi layar.</translation>
 <translation id="8303655282093186569">Setelan masukan Pinyin</translation>
-<translation id="830424806940379275">Memungkinkan ekstensi membuat jendela panel yang terbuka di luar bingkai browser. Secara default atau jika dinonaktifkan, upaya untuk membuka panel akan membuka munculan. Panel di OS desktop sudah tidak digunakan lagi dan akan segera dihapus.</translation>
 <translation id="8306534594034939679">Mengaktifkan dukungan untuk Layanan Alternatif, fitur HTTP eksperimental.</translation>
 <translation id="8307376264102990850">Mengisi - Menghitung waktu sampai penuh</translation>
 <translation id="8308179586020895837">Tanyakan jika <ph name="HOST" /> ingin mengakses kamera Anda</translation>

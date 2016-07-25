@@ -78,11 +78,11 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1871284979644508959">Obligatoriskt fält</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
-<translation id="1924956916668006832">Välj leveransadress</translation>
 <translation id="1933845786846280168">Vald flik</translation>
 <translation id="194341124344773587">Aktivera behörighet för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1944384637046898011">Kryptera alla med Google-lösenordet från <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Godkända kort</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984321224716884559">Bokmärken i Chrome Dev</translation>
@@ -159,7 +159,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
-<translation id="2781389167600714117">Välj frakt</translation>
 <translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
@@ -188,7 +187,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="3117051980354074377">Logga in i Chrome om du vill ha samma bokmärken tillgängliga på alla enheter.</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3149891296864842641">Fraktalternativ</translation>
-<translation id="3162882791484435636">Välj fraktalternativ</translation>
 <translation id="3177909033752230686">Sidans språk:</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sparad data</translation>
@@ -216,6 +214,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="3386292677130313581">Fråga innan webbplatser tillåts att veta var du befinner dig (rekommenderas)</translation>
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
 <translation id="3414952576877147120">Storlek:</translation>
+<translation id="3431636764301398940">Spara kortet på enheten</translation>
 <translation id="3435896845095436175">Aktivera</translation>
 <translation id="3452612588551937789">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter.</translation>
 <translation id="3485544713029068372">Smart Lock för lösenord</translation>
@@ -261,7 +260,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="4089831646916293264">Det kan hända att den här funktionen förhindrar åtkomst till premiumdatatjänster från operatören.</translation>
 <translation id="4095146165863963773">Vill du ta bort appdata?</translation>
-<translation id="4099423833822562131">Välj en leveransadress om du vill visa leveranssätt.</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="410351446219883937">Automatisk uppspelning</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
@@ -412,6 +410,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="572328651809341494">Senaste flikarna</translation>
 <translation id="5748802427693696783">Bytte till standardflikar</translation>
 <translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
+<translation id="57586589942790530">Ogiltigt kortnummer</translation>
 <translation id="5763382633136178763">Inkognitoflikar</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5771382037724542929">Vill du ersätta den befintliga filen <ph name="FILE_NAME" /> i <ph name="DIRECTORY_NAME" />?</translation>
@@ -430,7 +429,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5939518447894949180">Återställ</translation>
-<translation id="5961742032223302715">Välj kontaktuppgifter</translation>
 <translation id="5968595432776860642">Spelar upp <ph name="VIDEO_TITLE" /></translation>
 <translation id="6010869025736512584">Får åtkomst till videoindata</translation>
 <translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>

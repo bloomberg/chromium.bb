@@ -78,7 +78,6 @@
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1871284979644508959">必須フィールド</translation>
 <translation id="189172778771606813">操作パネルを閉じる</translation>
-<translation id="1924956916668006832">配送先住所を選択</translation>
 <translation id="1933845786846280168">選択したタブ</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
@@ -159,7 +158,6 @@
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="278029852808208386">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />もう一度検索してください<ph name="END_LINK" />。</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
-<translation id="2781389167600714117">配送方法を選択</translation>
 <translation id="2811892995384186721">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
@@ -188,7 +186,6 @@
 <translation id="3117051980354074377">他の端末と同じブックマークを使用するには Chrome にログインします。</translation>
 <translation id="3137521801621304719">シークレット モードを終了</translation>
 <translation id="3149891296864842641">配送オプション</translation>
-<translation id="3162882791484435636">配送オプションを選択</translation>
 <translation id="3177909033752230686">ページの言語:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
@@ -261,7 +258,6 @@
 <translation id="4062305924942672200">法的情報</translation>
 <translation id="4089831646916293264">この機能により、携帯通信会社が提供するプレミアム データサービスの利用に問題が発生する可能性があります。</translation>
 <translation id="4095146165863963773">アプリデータを削除しますか？</translation>
-<translation id="4099423833822562131">配送方法を確認するには配送先住所を選択します。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="411254640334432676">ダウンロードできませんでした。</translation>
@@ -430,7 +426,6 @@
 <translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5939518447894949180">リセット</translation>
-<translation id="5961742032223302715">連絡先情報を選択</translation>
 <translation id="5968595432776860642">「<ph name="VIDEO_TITLE" />」を再生しています</translation>
 <translation id="6010869025736512584">ビデオ入力にアクセスしています</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
