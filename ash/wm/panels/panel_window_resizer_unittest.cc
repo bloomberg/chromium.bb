@@ -10,6 +10,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -18,7 +19,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_state_aura.h"
@@ -41,8 +41,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
-    test::ShellTestApi test_api(Shell::GetInstance());
-    model_ = test_api.shelf_model();
+    model_ = WmShell::Get()->shelf_model();
     shelf_delegate_ = test::TestShelfDelegate::instance();
   }
 

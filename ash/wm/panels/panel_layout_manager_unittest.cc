@@ -23,7 +23,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -195,8 +194,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
-    ShelfModel* model = test::ShellTestApi(Shell::GetInstance()).shelf_model();
-    int index = model->ItemIndexByID(GetShelfIDForWindow(window));
+    int index = WmShell::Get()->shelf_model()->ItemIndexByID(
+        GetShelfIDForWindow(window));
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
     ui::test::EventGenerator& event_generator = GetEventGenerator();

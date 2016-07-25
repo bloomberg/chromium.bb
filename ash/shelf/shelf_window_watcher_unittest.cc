@@ -11,10 +11,10 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/shell_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -31,7 +31,7 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    model_ = test::ShellTestApi(Shell::GetInstance()).shelf_model();
+    model_ = WmShell::Get()->shelf_model();
   }
 
   void TearDown() override {

@@ -19,7 +19,6 @@
 #include "ash/shell.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/shell_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
@@ -200,9 +199,7 @@ class LauncherPlatformAppBrowserTest
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
 
-  ash::ShelfModel* shelf_model() {
-    return ash::test::ShellTestApi(ash::Shell::GetInstance()).shelf_model();
-  }
+  ash::ShelfModel* shelf_model() { return ash::WmShell::Get()->shelf_model(); }
 
   ash::ShelfID CreateAppShortcutLauncherItem(const std::string& name) {
     return controller_->CreateAppShortcutLauncherItem(

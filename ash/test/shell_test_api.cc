@@ -4,9 +4,7 @@
 
 #include "ash/test/shell_test_api.h"
 
-#include "ash/aura/wm_shell_aura.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shell_delegate.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -32,17 +30,8 @@ AshNativeCursorManager* ShellTestApi::ash_native_cursor_manager() {
   return shell_->native_cursor_manager_;
 }
 
-ShelfModel* ShellTestApi::shelf_model() {
-  // TODO(jamescook): Remove this and access WmShell::shelf_model() directly.
-  return shell_->wm_shell_->shelf_model();
-}
-
 DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
-}
-
-app_list::AppListPresenter* ShellTestApi::app_list_presenter() {
-  return shell_->wm_shell_->delegate()->GetAppListPresenter();
 }
 
 void ShellTestApi::DisableDisplayAnimator() {
