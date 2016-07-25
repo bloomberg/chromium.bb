@@ -509,6 +509,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kArcEnabled,
     prefs::kArcEnabled,
     base::Value::TYPE_BOOLEAN },
+  { key::kArcBackupRestoreEnabled,
+    prefs::kArcBackupRestoreEnabled,
+    base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

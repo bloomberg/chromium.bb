@@ -73127,6 +73127,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Disable Certificate Transparency enforcement for these sites"/>
   <int value="336"
       label="Configure the list of installed apps on the login screen"/>
+  <int value="337" label="Enable Android Backup Service"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

@@ -3957,6 +3957,36 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   TearDownTest();
 }
 
+// Test ArcBackupRestoreEnabled policy.
+IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
+  SetUpTest();
+
+  const PrefService* const pref = browser()->profile()->GetPrefs();
+
+  // ARC Backup & Restore is switched on by default.
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
+  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
+
+  // Disable ARC Backup & Restore.
+  PolicyMap policies;
+  policies.Set(key::kArcBackupRestoreEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::FundamentalValue>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
+  EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
+
+  // Enable ARC Backup & Restore.
+  policies.Set(key::kArcBackupRestoreEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::FundamentalValue>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcBackupRestoreEnabled));
+  EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
+
+  TearDownTest();
+}
+
 namespace {
 const char kTestUser1[] = "test1@domain.com";
 }  // anonymous namespace

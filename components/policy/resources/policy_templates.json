@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 336
+#   For your editing convenience: highest ID currently used: 337
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8748,6 +8748,28 @@
       'caption': '''Enables cast''',
       'tags': [],
       'desc': '''If this is set to true or is not set, users will be able to cast tabs, sites or the desktop from the browser. If set to false, this option will be disabled.'''
+    },
+    {
+      'name': 'ArcBackupRestoreEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:53-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 337,
+      'caption': '''Enable Android Backup Service''',
+      'tags': [],
+      'desc':
+      '''When this policy is set to true, Android app data is uploaded to Android Backup servers and restored from them upon app re-installations for compatible apps.
+
+      When this policy is set to false, Android Backup Service will be switched off.
+
+      If this setting is configured then users are not able change it themselves.
+
+      If this setting is not configured then users are able to turn Android Backup Service on and off in the Android Settings app.''',
     },
   ],
   'messages': {

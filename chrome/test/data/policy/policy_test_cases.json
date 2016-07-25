@@ -2524,6 +2524,15 @@
     "test_policy": { "ArcCertificatesSyncMode": 0 }
   },
 
+  "ArcBackupRestoreEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ArcBackupRestoreEnabled": false },
+    "pref_mappings": [
+      { "pref": "arc.backup_restore.enabled" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
