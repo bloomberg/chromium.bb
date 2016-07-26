@@ -42,20 +42,21 @@ method is called on the element.
 -->
 
 </head><body><dom-module id="iron-dropdown">
-  <style>
-    :host {
-      position: fixed;
-    }
-
-    #contentWrapper ::content > * {
-      overflow: auto;
-    }
-
-    #contentWrapper.animating ::content > * {
-      overflow: hidden;
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        position: fixed;
+      }
+
+      #contentWrapper ::content > * {
+        overflow: auto;
+      }
+
+      #contentWrapper.animating ::content > * {
+        overflow: hidden;
+      }
+    </style>
+
     <div id="contentWrapper">
       <content id="content" select=".dropdown-content"></content>
     </div>

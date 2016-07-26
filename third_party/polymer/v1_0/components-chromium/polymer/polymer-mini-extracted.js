@@ -498,7 +498,7 @@ node.__dom.previousSibling = ref_node ? ref_node.__dom.previousSibling : contain
 if (node.__dom.previousSibling) {
 node.__dom.previousSibling.__dom.nextSibling = node;
 }
-node.__dom.nextSibling = ref_node;
+node.__dom.nextSibling = ref_node || null;
 if (node.__dom.nextSibling) {
 node.__dom.nextSibling.__dom.previousSibling = node;
 }

@@ -28,6 +28,8 @@ settings.useNativeImports = settings.hasNativeImports;
 settings.useNativeCustomElements = !window.CustomElements || window.CustomElements.useNative;
 settings.useNativeShadow = settings.useShadow && settings.nativeShadow;
 settings.usePolyfillProto = !settings.useNativeCustomElements && !Object.__proto__;
+settings.hasNativeCSSProperties = !navigator.userAgent.match('AppleWebKit/601') && window.CSS && CSS.supports && CSS.supports('box-shadow', '0 0 0 var(--foo)');
+settings.useNativeCSSProperties = settings.hasNativeCSSProperties && settings.lazyRegister && settings.useNativeCSSProperties;
 return settings;
 }()
 };(function () {
@@ -114,6 +116,9 @@ element,
 fn,
 args
 ]);
+},
+hasRendered: function () {
+return this._ready;
 },
 _watchNextRender: function () {
 if (!this._waitingNextRender) {
@@ -666,7 +671,7 @@ default:
 return value != null ? value : undefined;
 }
 }
-});Polymer.version = "1.5.0";Polymer.Base._addFeature({
+});Polymer.version = '1.6.0';Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
 this._prepBehaviors();

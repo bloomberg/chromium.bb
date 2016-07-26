@@ -1992,12 +1992,31 @@ if (!('key' in KeyboardEvent.prototype)) {
      * and uses an expressive syntax to filter key presses.
      *
      * Use the `keyBindings` prototype property to express what combination of keys
-     * will trigger the event to fire.
+     * will trigger the callback. A key binding has the format
+     * `"KEY+MODIFIER:EVENT": "callback"` (`"KEY": "callback"` or
+     * `"KEY:EVENT": "callback"` are valid as well). Some examples:
      *
-     * Use the `key-event-target` attribute to set up event handlers on a specific
+     *      keyBindings: {
+     *        'space': '_onKeydown', // same as 'space:keydown'
+     *        'shift+tab': '_onKeydown',
+     *        'enter:keypress': '_onKeypress',
+     *        'esc:keyup': '_onKeyup'
+     *      }
+     *
+     * The callback will receive with an event containing the following information in `event.detail`:
+     *
+     *      _onKeydown: function(event) {
+     *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. "shift+tab"
+     *        console.log(event.detail.key); // KEY only, e.g. "tab"
+     *        console.log(event.detail.event); // EVENT, e.g. "keydown"
+     *        console.log(event.detail.keyboardEvent); // the original KeyboardEvent
+     *      }
+     *
+     * Use the `keyEventTarget` attribute to set up event handlers on a specific
      * node.
-     * The `keys-pressed` event will fire when one of the key combinations set with the
-     * `keys` property is pressed.
+     *
+     * See the [demo source code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
+     * for an example.
      *
      * @demo demo/index.html
      * @polymerBehavior
@@ -2046,6 +2065,12 @@ if (!('key' in KeyboardEvent.prototype)) {
         '_resetKeyEventListeners(keyEventTarget, _boundKeyHandlers)'
       ],
 
+
+      /**
+       * To be used to express what combination of keys  will trigger the relative
+       * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`
+       * @type {Object}
+       */
       keyBindings: {},
 
       registered: function() {
@@ -5611,7 +5636,6 @@ Polymer({
    * @polymerBehavior Polymer.PaperRippleBehavior
    */
   Polymer.PaperRippleBehavior = {
-
     properties: {
       /**
        * If true, the element will not produce a ripple effect when interacted
@@ -5712,13 +5736,10 @@ Polymer({
         this._ripple.noink = noink;
       }
     }
-
   };
 /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
-
     properties: {
-
       /**
        * The z-depth of this element, from 0-5. Setting to 0 will remove the
        * shadow, and each increasing number greater than 0 will be "deeper"
@@ -5733,7 +5754,6 @@ Polymer({
         reflectToAttribute: true,
         readOnly: true
       }
-
     },
 
     observers: [
@@ -5789,7 +5809,6 @@ Polymer({
         this._ripple.uiUpAction();
       }
     }
-
   };
 
   /** @polymerBehavior */
@@ -7361,11 +7380,12 @@ Polymer({
     /**
      * Focuses the previous item (relative to the currently focused item) in the
      * menu, disabled items will be skipped.
+     * Loop until length + 1 to handle case of single item in menu.
      */
     _focusPrevious: function() {
       var length = this.items.length;
       var curFocusIndex = Number(this.indexOf(this.focusedItem));
-      for (var i = 1; i < length; i++) {
+      for (var i = 1; i < length + 1; i++) {
         var item = this.items[(curFocusIndex - i + length) % length];
         if (!item.hasAttribute('disabled')) {
           this._setFocusedItem(item);
@@ -7377,11 +7397,12 @@ Polymer({
     /**
      * Focuses the next item (relative to the currently focused item) in the
      * menu, disabled items will be skipped.
+     * Loop until length + 1 to handle case of single item in menu.
      */
     _focusNext: function() {
       var length = this.items.length;
       var curFocusIndex = Number(this.indexOf(this.focusedItem));
-      for (var i = 1; i < length; i++) {
+      for (var i = 1; i < length + 1; i++) {
         var item = this.items[(curFocusIndex + i) % length];
         if (!item.hasAttribute('disabled')) {
           this._setFocusedItem(item);
@@ -7785,7 +7806,6 @@ Use `noOverlap` to position the element around another element without overlappi
      * Positions and fits the element into the `fitInto` element.
      */
     fit: function() {
-      this._discoverInfo();
       this.position();
       this.constrain();
       this.center();
@@ -7887,6 +7907,7 @@ Use `noOverlap` to position the element around another element without overlappi
         // needs to be centered, and it is done after constrain.
         return;
       }
+      this._discoverInfo();
 
       this.style.position = 'fixed';
       // Need border-box for margin/padding.
@@ -7947,6 +7968,8 @@ Use `noOverlap` to position the element around another element without overlappi
       if (this.horizontalAlign || this.verticalAlign) {
         return;
       }
+      this._discoverInfo();
+
       var info = this._fitInfo;
       // position at (0px, 0px) if not already positioned, so we can measure the natural size.
       if (!info.positionedBy.vertically) {
@@ -8001,6 +8024,8 @@ Use `noOverlap` to position the element around another element without overlappi
       if (this.horizontalAlign || this.verticalAlign) {
         return;
       }
+      this._discoverInfo();
+
       var positionedBy = this._fitInfo.positionedBy;
       if (positionedBy.vertically && positionedBy.horizontally) {
         // Already positioned.
@@ -8638,9 +8663,12 @@ Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or 
 on top of other content. It includes an optional backdrop, and can be used to implement a variety
 of UI controls including dialogs and drop downs. Multiple overlays may be displayed at once.
 
+See the [demo source code](https://github.com/PolymerElements/iron-overlay-behavior/blob/master/demo/simple-overlay.html)
+for an example.
+
 ### Closing and canceling
 
-A dialog may be hidden by closing or canceling. The difference between close and cancel is user
+An overlay may be hidden by closing or canceling. The difference between close and cancel is user
 intent. Closing generally implies that the user acknowledged the content on the overlay. By default,
 it will cancel whenever the user taps outside it or presses the escape key. This behavior is
 configurable with the `no-cancel-on-esc-key` and the `no-cancel-on-outside-click` properties.
@@ -8658,6 +8686,10 @@ position and size it manually using CSS. See `Polymer.IronFitBehavior`.
 Set the `with-backdrop` attribute to display a backdrop behind the overlay. The backdrop is
 appended to `<body>` and is of type `<iron-overlay-backdrop>`. See its doc page for styling
 options.
+
+In addition, `with-backdrop` will wrap the focus within the content in the light DOM.
+Override the [`_focusableNodes` getter](#Polymer.IronOverlayBehavior:property-_focusableNodes)
+to achieve a different behavior.
 
 ### Limitations
 
@@ -8694,7 +8726,8 @@ context. You should place this element as a child of `<body>` whenever possible.
       },
 
       /**
-       * Set to true to display a backdrop behind the overlay.
+       * Set to true to display a backdrop behind the overlay. It traps the focus
+       * within the light DOM of the overlay.
        */
       withBackdrop: {
         observer: '_withBackdropChanged',
@@ -8959,6 +8992,8 @@ context. You should place this element as a child of `<body>` whenever possible.
           this._prepareRenderOpened();
           this._renderOpened();
         } else {
+          // Move the focus before actually closing.
+          this._applyFocus();
           this._renderClosed();
         }
       }.bind(this));
@@ -8995,6 +9030,9 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.refit();
       this._finishPositioning();
 
+      // Move the focus to the child node with [autofocus].
+      this._applyFocus();
+
       // Safari will apply the focus to the autofocus element when displayed for the first time,
       // so we blur it. Later, _applyFocus will set the focus if necessary.
       if (this.noAutoFocus && document.activeElement === this._focusNode) {
@@ -9023,8 +9061,6 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _finishRenderOpened: function() {
-      // Focus the child node with [autofocus]
-      this._applyFocus();
 
       this.notifyResize();
       this.__isAnimating = false;
@@ -9046,8 +9082,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.display = 'none';
       // Reset z-index only at the end of the animation.
       this.style.zIndex = '';
-
-      this._applyFocus();
 
       this.notifyResize();
       this.__isAnimating = false;
@@ -9374,28 +9408,30 @@ context. You should place this element as a child of `<body>` whenever possible.
    */
   Polymer.NeonAnimationRunnerBehaviorImpl = {
 
-    properties: {
-
-      /** @type {?Object} */
-      _player: {
-        type: Object
-      }
-
-    },
-
-    _configureAnimationEffects: function(allConfigs) {
-      var allAnimations = [];
-      if (allConfigs.length > 0) {
-        for (var config, index = 0; config = allConfigs[index]; index++) {
-          var animation = document.createElement(config.name);
+    _configureAnimations: function(configs) {
+      var results = [];
+      if (configs.length > 0) {
+        for (var config, index = 0; config = configs[index]; index++) {
+          var neonAnimation = document.createElement(config.name);
           // is this element actually a neon animation?
-          if (animation.isNeonAnimation) {
-            var effect = animation.configure(config);
-            if (effect) {
-              allAnimations.push({
-                animation: animation,
+          if (neonAnimation.isNeonAnimation) {
+            var result = null;
+            // configuration or play could fail if polyfills aren't loaded
+            try {
+              result = neonAnimation.configure(config);
+              // Check if we have an Effect rather than an Animation
+              if (typeof result.cancel != 'function') { 
+                result = document.timeline.play(result);
+              }
+            } catch (e) {
+              result = null;
+              console.warn('Couldnt play', '(', config.name, ').', e);
+            }
+            if (result) {
+              results.push({
+                neonAnimation: neonAnimation,
                 config: config,
-                effect: effect
+                animation: result,
               });
             }
           } else {
@@ -9403,16 +9439,26 @@ context. You should place this element as a child of `<body>` whenever possible.
           }
         }
       }
-      return allAnimations;
+      return results;
     },
 
-    _runAnimationEffects: function(allEffects) {
-      return document.timeline.play(new GroupEffect(allEffects));
+    _shouldComplete: function(activeEntries) {
+      var finished = true;
+      for (var i = 0; i < activeEntries.length; i++) {
+        if (activeEntries[i].animation.playState != 'finished') {
+          finished = false;
+          break;
+        }
+      }
+      return finished;
     },
 
-    _completeAnimations: function(allAnimations) {
-      for (var animation, index = 0; animation = allAnimations[index]; index++) {
-        animation.animation.complete(animation.config);
+    _complete: function(activeEntries) {
+      for (var i = 0; i < activeEntries.length; i++) {
+        activeEntries[i].neonAnimation.complete(activeEntries[i].config);
+      }
+      for (var i = 0; i < activeEntries.length; i++) {
+        activeEntries[i].animation.cancel();
       }
     },
 
@@ -9422,43 +9468,44 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @param {!Object=} cookie
      */
     playAnimation: function(type, cookie) {
-      var allConfigs = this.getAnimationConfig(type);
-      if (!allConfigs) {
+      var configs = this.getAnimationConfig(type);
+      if (!configs) {
         return;
       }
-      try {
-        var allAnimations = this._configureAnimationEffects(allConfigs);
-        var allEffects = allAnimations.map(function(animation) {
-          return animation.effect;
-        });
-
-        if (allEffects.length > 0) {
-          this._player = this._runAnimationEffects(allEffects);
-          this._player.onfinish = function() {
-            this._completeAnimations(allAnimations);
-
-            if (this._player) {
-              this._player.cancel();
-              this._player = null;
-            }
-
-            this.fire('neon-animation-finish', cookie, {bubbles: false});
-          }.bind(this);
-          return;
-        }
-      } catch (e) {
-        console.warn('Couldnt play', '(', type, allConfigs, ').', e);
+      this._active = this._active || {};
+      if (this._active[type]) {
+        this._complete(this._active[type]);
+        delete this._active[type];
       }
-      this.fire('neon-animation-finish', cookie, {bubbles: false});
+
+      var activeEntries = this._configureAnimations(configs);
+
+      if (activeEntries.length == 0) {
+        this.fire('neon-animation-finish', cookie, {bubbles: false});
+        return;
+      }
+
+      this._active[type] = activeEntries;
+
+      for (var i = 0; i < activeEntries.length; i++) {
+        activeEntries[i].animation.onfinish = function() {
+          if (this._shouldComplete(activeEntries)) {
+            this._complete(activeEntries);
+            delete this._active[type];
+            this.fire('neon-animation-finish', cookie, {bubbles: false});
+          }
+        }.bind(this);
+      }
     },
 
     /**
-     * Cancels the currently running animation.
+     * Cancels the currently running animations.
      */
     cancelAnimation: function() {
-      if (this._player) {
-        this._player.cancel();
+      for (var k in this._animations) {
+        this._animations[k].cancel();
       }
+      this._animations = {};
     }
   };
 
@@ -9561,6 +9608,14 @@ Polymer({
   });
 (function() {
     'use strict';
+    // Used to calculate the scroll direction during touch events.
+    var LAST_TOUCH_POSITION = {
+      pageX: 0,
+      pageY: 0
+    };
+    // Used to avoid computing event.path and filter scrollable nodes (better perf).
+    var ROOT_TARGET = null;
+    var SCROLLABLE_NODES = [];
 
     /**
      * The IronDropdownScrollManager is intended to provide a central source
@@ -9578,9 +9633,8 @@ Polymer({
         return this._lockingElements[this._lockingElements.length - 1];
       },
 
-
       /**
-       * Returns true if the provided element is "scroll locked," which is to
+       * Returns true if the provided element is "scroll locked", which is to
        * say that it cannot be scrolled via pointer or keyboard interactions.
        *
        * @param {HTMLElement} element An HTML element instance which may or may
@@ -9673,8 +9727,6 @@ Polymer({
 
       _unlockedElementCache: null,
 
-      _originalBodyStyles: {},
-
       _isScrollingKeypress: function(event) {
         return Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(
           event, 'pageup pagedown home end up left down right');
@@ -9722,58 +9774,186 @@ Polymer({
       },
 
       _scrollInteractionHandler: function(event) {
-        var scrolledElement =
-            /** @type {HTMLElement} */(Polymer.dom(event).rootTarget);
-        if (Polymer
-              .IronDropdownScrollManager
-              .elementIsScrollLocked(scrolledElement)) {
-          if (event.type === 'keydown' &&
-              !Polymer.IronDropdownScrollManager._isScrollingKeypress(event)) {
-            return;
-          }
-
+        // Avoid canceling an event with cancelable=false, e.g. scrolling is in
+        // progress and cannot be interrupted.
+        if (event.cancelable && this._shouldPreventScrolling(event)) {
           event.preventDefault();
+        }
+        // If event has targetTouches (touch event), update last touch position.
+        if (event.targetTouches) {
+          var touch = event.targetTouches[0];
+          LAST_TOUCH_POSITION.pageX = touch.pageX;
+          LAST_TOUCH_POSITION.pageY = touch.pageY;
         }
       },
 
       _lockScrollInteractions: function() {
-        // Memoize body inline styles:
-        this._originalBodyStyles.overflow = document.body.style.overflow;
-        this._originalBodyStyles.overflowX = document.body.style.overflowX;
-        this._originalBodyStyles.overflowY = document.body.style.overflowY;
-
-        // Disable overflow scrolling on body:
-        // TODO(cdata): It is technically not sufficient to hide overflow on
-        // body alone. A better solution might be to traverse all ancestors of
-        // the current scroll locking element and hide overflow on them. This
-        // becomes expensive, though, as it would have to be redone every time
-        // a new scroll locking element is added.
-        document.body.style.overflow = 'hidden';
-        document.body.style.overflowX = 'hidden';
-        document.body.style.overflowY = 'hidden';
-
+        this._boundScrollHandler = this._boundScrollHandler ||
+          this._scrollInteractionHandler.bind(this);
         // Modern `wheel` event for mouse wheel scrolling:
-        document.addEventListener('wheel', this._scrollInteractionHandler, true);
+        document.addEventListener('wheel', this._boundScrollHandler, true);
         // Older, non-standard `mousewheel` event for some FF:
-        document.addEventListener('mousewheel', this._scrollInteractionHandler, true);
+        document.addEventListener('mousewheel', this._boundScrollHandler, true);
         // IE:
-        document.addEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
+        document.addEventListener('DOMMouseScroll', this._boundScrollHandler, true);
+        // Save the SCROLLABLE_NODES on touchstart, to be used on touchmove.
+        document.addEventListener('touchstart', this._boundScrollHandler, true);
         // Mobile devices can scroll on touch move:
-        document.addEventListener('touchmove', this._scrollInteractionHandler, true);
+        document.addEventListener('touchmove', this._boundScrollHandler, true);
         // Capture keydown to prevent scrolling keys (pageup, pagedown etc.)
-        document.addEventListener('keydown', this._scrollInteractionHandler, true);
+        document.addEventListener('keydown', this._boundScrollHandler, true);
       },
 
       _unlockScrollInteractions: function() {
-        document.body.style.overflow = this._originalBodyStyles.overflow;
-        document.body.style.overflowX = this._originalBodyStyles.overflowX;
-        document.body.style.overflowY = this._originalBodyStyles.overflowY;
+        document.removeEventListener('wheel', this._boundScrollHandler, true);
+        document.removeEventListener('mousewheel', this._boundScrollHandler, true);
+        document.removeEventListener('DOMMouseScroll', this._boundScrollHandler, true);
+        document.removeEventListener('touchstart', this._boundScrollHandler, true);
+        document.removeEventListener('touchmove', this._boundScrollHandler, true);
+        document.removeEventListener('keydown', this._boundScrollHandler, true);
+      },
 
-        document.removeEventListener('wheel', this._scrollInteractionHandler, true);
-        document.removeEventListener('mousewheel', this._scrollInteractionHandler, true);
-        document.removeEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
-        document.removeEventListener('touchmove', this._scrollInteractionHandler, true);
-        document.removeEventListener('keydown', this._scrollInteractionHandler, true);
+      /**
+       * Returns true if the event causes scroll outside the current locking
+       * element, e.g. pointer/keyboard interactions, or scroll "leaking"
+       * outside the locking element when it is already at its scroll boundaries.
+       * @param {!Event} event
+       * @return {boolean}
+       * @private
+       */
+      _shouldPreventScrolling: function(event) {
+        // Avoid expensive checks if the event is not one of the observed keys.
+        if (event.type === 'keydown') {
+          // Prevent event if it is one of the scrolling keys.
+          return this._isScrollingKeypress(event);
+        }
+
+        // Update if root target changed. For touch events, ensure we don't
+        // update during touchmove.
+        var target = Polymer.dom(event).rootTarget;
+        if (event.type !== 'touchmove' && ROOT_TARGET !== target) {
+          ROOT_TARGET = target;
+          SCROLLABLE_NODES = this._getScrollableNodes(Polymer.dom(event).path);
+        }
+
+        // Prevent event if no scrollable nodes.
+        if (!SCROLLABLE_NODES.length) {
+          return true;
+        }
+        // Don't prevent touchstart event inside the locking element when it has
+        // scrollable nodes.
+        if (event.type === 'touchstart') {
+          return false;
+        }
+        // Get deltaX/Y.
+        var info = this._getScrollInfo(event);
+        // Prevent if there is no child that can scroll.
+        return !this._getScrollingNode(SCROLLABLE_NODES, info.deltaX, info.deltaY);
+      },
+
+      /**
+       * Returns an array of scrollable nodes up to the current locking element,
+       * which is included too if scrollable.
+       * @param {!Array<Node>} nodes
+       * @return {Array<Node>} scrollables
+       * @private
+       */
+      _getScrollableNodes: function(nodes) {
+        var scrollables = [];
+        var lockingIndex = nodes.indexOf(this.currentLockingElement);
+        // Loop from root target to locking element (included).
+        for (var i = 0; i <= lockingIndex; i++) {
+          var node = nodes[i];
+          // Skip document fragments.
+          if (node.nodeType === 11) {
+            continue;
+          }
+          // Check inline style before checking computed style.
+          var style = node.style;
+          if (style.overflow !== 'scroll' && style.overflow !== 'auto') {
+            style = window.getComputedStyle(node);
+          }
+          if (style.overflow === 'scroll' || style.overflow === 'auto') {
+            scrollables.push(node);
+          }
+        }
+        return scrollables;
+      },
+
+      /**
+       * Returns the node that is scrolling. If there is no scrolling,
+       * returns undefined.
+       * @param {!Array<Node>} nodes
+       * @param {number} deltaX Scroll delta on the x-axis
+       * @param {number} deltaY Scroll delta on the y-axis
+       * @return {Node|undefined}
+       * @private
+       */
+      _getScrollingNode: function(nodes, deltaX, deltaY) {
+        // No scroll.
+        if (!deltaX && !deltaY) {
+          return;
+        }
+        // Check only one axis according to where there is more scroll.
+        // Prefer vertical to horizontal.
+        var verticalScroll = Math.abs(deltaY) >= Math.abs(deltaX);
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          var canScroll = false;
+          if (verticalScroll) {
+            // delta < 0 is scroll up, delta > 0 is scroll down.
+            canScroll = deltaY < 0 ? node.scrollTop > 0 :
+              node.scrollTop < node.scrollHeight - node.clientHeight;
+          } else {
+            // delta < 0 is scroll left, delta > 0 is scroll right.
+            canScroll = deltaX < 0 ? node.scrollLeft > 0 :
+              node.scrollLeft < node.scrollWidth - node.clientWidth;
+          }
+          if (canScroll) {
+            return node;
+          }
+        }
+      },
+
+      /**
+       * Returns scroll `deltaX` and `deltaY`.
+       * @param {!Event} event The scroll event
+       * @return {{
+       *  deltaX: number The x-axis scroll delta (positive: scroll right,
+       *                 negative: scroll left, 0: no scroll),
+       *  deltaY: number The y-axis scroll delta (positive: scroll down,
+       *                 negative: scroll up, 0: no scroll)
+       * }} info
+       * @private
+       */
+      _getScrollInfo: function(event) {
+        var info = {
+          deltaX: event.deltaX,
+          deltaY: event.deltaY
+        };
+        // Already available.
+        if ('deltaX' in event) {
+          // do nothing, values are already good.
+        }
+        // Safari has scroll info in `wheelDeltaX/Y`.
+        else if ('wheelDeltaX' in event) {
+          info.deltaX = -event.wheelDeltaX;
+          info.deltaY = -event.wheelDeltaY;
+        }
+        // Firefox has scroll info in `detail` and `axis`.
+        else if ('axis' in event) {
+          info.deltaX = event.axis === 1 ? event.detail : 0;
+          info.deltaY = event.axis === 2 ? event.detail : 0;
+        }
+        // On mobile devices, calculate scroll direction.
+        else if (event.targetTouches) {
+          var touch = event.targetTouches[0];
+          // Touch moves from right to left => scrolling goes right.
+          info.deltaX = LAST_TOUCH_POSITION.pageX - touch.pageX;
+          // Touch moves from down to up => scrolling goes down.
+          info.deltaY = LAST_TOUCH_POSITION.pageY - touch.pageY;
+        }
+        return info;
       }
     };
   })();
@@ -9855,6 +10035,18 @@ Polymer({
           allowOutsideScroll: {
             type: Boolean,
             value: false
+          },
+
+          /**
+           * Callback for scroll events.
+           * @type {Function}
+           * @private
+           */
+          _boundOnCaptureScroll: {
+            type: Function,
+            value: function() {
+              return this._onCaptureScroll.bind(this);
+            }
           }
         },
 
@@ -9881,6 +10073,14 @@ Polymer({
           return this.focusTarget || this.containedElement;
         },
 
+        ready: function() {
+          // Memoized scrolling position, used to block scrolling outside.
+          this._scrollTop = 0;
+          this._scrollLeft = 0;
+          // Used to perform a non-blocking refit on scroll.
+          this._refitOnScrollRAF = null;
+        },
+
         detached: function() {
           this.cancelAnimation();
           Polymer.IronDropdownScrollManager.removeScrollLock(this);
@@ -9897,9 +10097,12 @@ Polymer({
             this.cancelAnimation();
             this.sizingTarget = this.containedElement || this.sizingTarget;
             this._updateAnimationConfig();
-            if (this.opened && !this.allowOutsideScroll) {
-              Polymer.IronDropdownScrollManager.pushScrollLock(this);
+            this._saveScrollPosition();
+            if (this.opened) {
+              document.addEventListener('scroll', this._boundOnCaptureScroll);
+              !this.allowOutsideScroll && Polymer.IronDropdownScrollManager.pushScrollLock(this);
             } else {
+              document.removeEventListener('scroll', this._boundOnCaptureScroll);
               Polymer.IronDropdownScrollManager.removeScrollLock(this);
             }
             Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
@@ -9922,6 +10125,7 @@ Polymer({
          * Overridden from `IronOverlayBehavior`.
          */
         _renderClosed: function() {
+
           if (!this.noAnimations && this.animationConfig.close) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('close');
@@ -9942,6 +10146,47 @@ Polymer({
             this._finishRenderOpened();
           } else {
             this._finishRenderClosed();
+          }
+        },
+
+        _onCaptureScroll: function() {
+          if (!this.allowOutsideScroll) {
+            this._restoreScrollPosition();
+          } else {
+            this._refitOnScrollRAF && window.cancelAnimationFrame(this._refitOnScrollRAF);
+            this._refitOnScrollRAF = window.requestAnimationFrame(this.refit.bind(this));
+          }
+        },
+
+        /**
+         * Memoizes the scroll position of the outside scrolling element.
+         * @private
+         */
+        _saveScrollPosition: function() {
+          if (document.scrollingElement) {
+            this._scrollTop = document.scrollingElement.scrollTop;
+            this._scrollLeft = document.scrollingElement.scrollLeft;
+          } else {
+            // Since we don't know if is the body or html, get max.
+            this._scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+            this._scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
+          }
+        },
+
+        /**
+         * Resets the scroll position of the outside scrolling element.
+         * @private
+         */
+        _restoreScrollPosition: function() {
+          if (document.scrollingElement) {
+            document.scrollingElement.scrollTop = this._scrollTop;
+            document.scrollingElement.scrollLeft = this._scrollLeft;
+          } else {
+            // Since we don't know if is the body or html, set both.
+            document.documentElement.scrollTop = this._scrollTop;
+            document.documentElement.scrollLeft = this._scrollLeft;
+            document.body.scrollTop = this._scrollTop;
+            document.body.scrollLeft = this._scrollLeft;
           }
         },
 
@@ -10115,6 +10360,11 @@ Polymer({
 (function() {
       'use strict';
 
+      var config = {
+        ANIMATION_CUBIC_BEZIER: 'cubic-bezier(.3,.95,.5,1)',
+        MAX_ANIMATION_TIME_MS: 400
+      };
+
       var PaperMenuButton = Polymer({
         is: 'paper-menu-button',
 
@@ -10167,6 +10417,16 @@ Polymer({
           },
 
           /**
+           * If true, the `horizontalAlign` and `verticalAlign` properties will
+           * be considered preferences instead of strict requirements when
+           * positioning the dropdown and may be changed if doing so reduces
+           * the area of the dropdown falling outside of `fitInto`.
+           */
+          dynamicAlign: {
+            type: Boolean
+          },
+
+          /**
            * A pixel value that will be added to the position calculated for the
            * given `horizontalAlign`. Use a negative value to offset to the
            * left, or a positive value to offset to the right.
@@ -10189,6 +10449,14 @@ Polymer({
           },
 
           /**
+           * If true, the dropdown will be positioned so that it doesn't overlap
+           * the button.
+           */
+          noOverlap: {
+            type: Boolean
+          },
+
+          /**
            * Set to true to disable animations when opening and closing the
            * dropdown.
            */
@@ -10202,6 +10470,15 @@ Polymer({
            * a selection has been made.
            */
           ignoreSelect: {
+            type: Boolean,
+            value: false
+          },
+
+          /**
+           * Set to true to enable automatically closing the dropdown after an
+           * item has been activated, even if the selection did not change.
+           */
+          closeOnActivate: {
             type: Boolean,
             value: false
           },
@@ -10224,14 +10501,14 @@ Polymer({
                 timing: {
                   delay: 100,
                   duration: 150,
-                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                  easing: config.ANIMATION_CUBIC_BEZIER
                 }
               }, {
                 name: 'paper-menu-grow-height-animation',
                 timing: {
                   delay: 100,
                   duration: 275,
-                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                  easing: config.ANIMATION_CUBIC_BEZIER
                 }
               }];
             }
@@ -10254,7 +10531,7 @@ Polymer({
                 timing: {
                   delay: 100,
                   duration: 50,
-                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                  easing: config.ANIMATION_CUBIC_BEZIER
                 }
               }, {
                 name: 'paper-menu-shrink-height-animation',
@@ -10264,6 +10541,17 @@ Polymer({
                 }
               }];
             }
+          },
+          
+          /**
+           * By default, the dropdown will constrain scrolling on the page
+           * to itself when opened.
+           * Set to true in order to prevent scroll from being constrained
+           * to the dropdown when it opens.
+           */
+          allowOutsideScroll: {
+            type: Boolean,
+            value: false
           },
 
           /**
@@ -10281,6 +10569,7 @@ Polymer({
         },
 
         listeners: {
+          'iron-activate': '_onIronActivate',
           'iron-select': '_onIronSelect'
         },
 
@@ -10335,6 +10624,18 @@ Polymer({
         },
 
         /**
+         * Closes the dropdown when an `iron-activate` event is received if
+         * `closeOnActivate` is true.
+         *
+         * @param {CustomEvent} event A CustomEvent of type 'iron-activate'.
+         */
+        _onIronActivate: function(event) {
+          if (this.closeOnActivate) {
+            this.close();
+          }
+        },
+
+        /**
          * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
          * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
          *
@@ -10380,8 +10681,9 @@ Polymer({
         }
       });
 
-      PaperMenuButton.ANIMATION_CUBIC_BEZIER = 'cubic-bezier(.3,.95,.5,1)';
-      PaperMenuButton.MAX_ANIMATION_TIME_MS = 400;
+      Object.keys(config).forEach(function (key) {
+        PaperMenuButton[key] = config[key];
+      });
 
       Polymer.PaperMenuButton = PaperMenuButton;
     })();
@@ -10391,7 +10693,6 @@ Polymer({
    * @polymerBehavior Polymer.PaperInkyFocusBehavior
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
-
     observers: [
       '_focusedChanged(receivedFocusFromKeyboard)'
     ],
@@ -10412,7 +10713,6 @@ Polymer({
       ripple.classList.add('circle');
       return ripple;
     }
-
   };
 
   /** @polymerBehavior Polymer.PaperInkyFocusBehavior */

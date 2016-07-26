@@ -76,6 +76,18 @@
           allowOutsideScroll: {
             type: Boolean,
             value: false
+          },
+
+          /**
+           * Callback for scroll events.
+           * @type {Function}
+           * @private
+           */
+          _boundOnCaptureScroll: {
+            type: Function,
+            value: function() {
+              return this._onCaptureScroll.bind(this);
+            }
           }
         },
 
@@ -102,6 +114,14 @@
           return this.focusTarget || this.containedElement;
         },
 
+        ready: function() {
+          // Memoized scrolling position, used to block scrolling outside.
+          this._scrollTop = 0;
+          this._scrollLeft = 0;
+          // Used to perform a non-blocking refit on scroll.
+          this._refitOnScrollRAF = null;
+        },
+
         detached: function() {
           this.cancelAnimation();
           Polymer.IronDropdownScrollManager.removeScrollLock(this);
@@ -118,9 +138,12 @@
             this.cancelAnimation();
             this.sizingTarget = this.containedElement || this.sizingTarget;
             this._updateAnimationConfig();
-            if (this.opened && !this.allowOutsideScroll) {
-              Polymer.IronDropdownScrollManager.pushScrollLock(this);
+            this._saveScrollPosition();
+            if (this.opened) {
+              document.addEventListener('scroll', this._boundOnCaptureScroll);
+              !this.allowOutsideScroll && Polymer.IronDropdownScrollManager.pushScrollLock(this);
             } else {
+              document.removeEventListener('scroll', this._boundOnCaptureScroll);
               Polymer.IronDropdownScrollManager.removeScrollLock(this);
             }
             Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
@@ -143,6 +166,7 @@
          * Overridden from `IronOverlayBehavior`.
          */
         _renderClosed: function() {
+
           if (!this.noAnimations && this.animationConfig.close) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('close');
@@ -163,6 +187,47 @@
             this._finishRenderOpened();
           } else {
             this._finishRenderClosed();
+          }
+        },
+
+        _onCaptureScroll: function() {
+          if (!this.allowOutsideScroll) {
+            this._restoreScrollPosition();
+          } else {
+            this._refitOnScrollRAF && window.cancelAnimationFrame(this._refitOnScrollRAF);
+            this._refitOnScrollRAF = window.requestAnimationFrame(this.refit.bind(this));
+          }
+        },
+
+        /**
+         * Memoizes the scroll position of the outside scrolling element.
+         * @private
+         */
+        _saveScrollPosition: function() {
+          if (document.scrollingElement) {
+            this._scrollTop = document.scrollingElement.scrollTop;
+            this._scrollLeft = document.scrollingElement.scrollLeft;
+          } else {
+            // Since we don't know if is the body or html, get max.
+            this._scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+            this._scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
+          }
+        },
+
+        /**
+         * Resets the scroll position of the outside scrolling element.
+         * @private
+         */
+        _restoreScrollPosition: function() {
+          if (document.scrollingElement) {
+            document.scrollingElement.scrollTop = this._scrollTop;
+            document.scrollingElement.scrollLeft = this._scrollLeft;
+          } else {
+            // Since we don't know if is the body or html, set both.
+            document.documentElement.scrollTop = this._scrollTop;
+            document.documentElement.scrollLeft = this._scrollLeft;
+            document.body.scrollTop = this._scrollTop;
+            document.body.scrollLeft = this._scrollLeft;
           }
         },
 

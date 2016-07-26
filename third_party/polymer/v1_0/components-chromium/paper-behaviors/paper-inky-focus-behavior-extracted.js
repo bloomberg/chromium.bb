@@ -4,7 +4,6 @@
    * @polymerBehavior Polymer.PaperInkyFocusBehavior
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
-
     observers: [
       '_focusedChanged(receivedFocusFromKeyboard)'
     ],
@@ -25,7 +24,6 @@
       ripple.classList.add('circle');
       return ripple;
     }
-
   };
 
   /** @polymerBehavior Polymer.PaperInkyFocusBehavior */

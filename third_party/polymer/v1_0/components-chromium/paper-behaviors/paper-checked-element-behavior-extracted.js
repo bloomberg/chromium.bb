@@ -5,7 +5,6 @@
    * @polymerBehavior Polymer.PaperCheckedElementBehavior
    */
   Polymer.PaperCheckedElementBehaviorImpl = {
-
     /**
      * Synchronizes the element's checked state with its ripple effect.
      */
@@ -32,7 +31,6 @@
         this.checked = this.active;
       }
     }
-
   };
 
   /** @polymerBehavior Polymer.PaperCheckedElementBehavior */

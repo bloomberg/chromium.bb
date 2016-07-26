@@ -179,9 +179,14 @@
       if (!href) {
         return;
       }
+      event.preventDefault();
+      // If the navigation is to the current page we shouldn't add a history
+      // entry or fire a change event.
+      if (href === window.location.href) {
+        return;
+      }
       window.history.pushState({}, '', href);
       this.fire('location-changed', {}, {node: window});
-      event.preventDefault();
     },
     /**
      * Returns the absolute URL of the link (if any) that this click event
@@ -264,11 +269,6 @@
       // Need to use a full URL in case the containing page has a base URI.
       var fullNormalizedHref = new URL(
           normalizedHref, window.location.href).href;
-      // If the navigation is to the current page we shouldn't add a history
-      // entry.
-      if (fullNormalizedHref === window.location.href) {
-        return null;
-      }
       return fullNormalizedHref;
     },
     _makeRegExp: function(urlSpaceRegex) {

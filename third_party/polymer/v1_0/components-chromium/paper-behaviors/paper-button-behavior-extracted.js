@@ -1,8 +1,6 @@
 /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
-
     properties: {
-
       /**
        * The z-depth of this element, from 0-5. Setting to 0 will remove the
        * shadow, and each increasing number greater than 0 will be "deeper"
@@ -17,7 +15,6 @@
         reflectToAttribute: true,
         readOnly: true
       }
-
     },
 
     observers: [
@@ -73,7 +70,6 @@
         this._ripple.uiUpAction();
       }
     }
-
   };
 
   /** @polymerBehavior */

@@ -74,6 +74,17 @@
           },
 
           /**
+           * By default, the dropdown will constrain scrolling on the page
+           * to itself when opened.
+           * Set to true in order to prevent scroll from being constrained
+           * to the dropdown when it opens.
+           */
+          allowOutsideScroll: {
+            type: Boolean,
+            value: false
+          },
+          
+          /**
            * Set to true to disable the floating label. Bind this to the
            * `<paper-input-container>`'s `noLabelFloat` property.
            */

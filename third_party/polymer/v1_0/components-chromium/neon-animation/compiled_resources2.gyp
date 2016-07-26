@@ -22,7 +22,6 @@
       'dependencies': [
         '../iron-resizable-behavior/compiled_resources2.gyp:iron-resizable-behavior-extracted',
         '../iron-selector/compiled_resources2.gyp:iron-selectable-extracted',
-        'animations/compiled_resources2.gyp:opaque-animation-extracted',
         'neon-animation-runner-behavior-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],

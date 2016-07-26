@@ -49,7 +49,7 @@ Polymer({
     /**
      * `maxWidth` or `maxHeight`.
      * @private
-     */    
+     */
     get _dimensionMax() {
       return this.horizontal ? 'maxWidth' : 'maxHeight';
     },
@@ -98,7 +98,7 @@ Polymer({
      * Updates the size of the element.
      * @param {string} size The new value for `maxWidth`/`maxHeight` as css property value, usually `auto` or `0px`.
      * @param {boolean=} animated if `true` updates the size with an animation, otherwise without.
-     */     
+     */
     updateSize: function(size, animated) {
       // No change!
       var curSize = this.style[this._dimensionMax];
@@ -119,9 +119,9 @@ Polymer({
         }
         // Go to startSize without animation.
         this.style[this._dimensionMax] = startSize;
-        // Force layout to ensure transition will go. Set offsetHeight to itself
+        // Force layout to ensure transition will go. Set scrollTop to itself
         // so that compilers won't remove it.
-        this.offsetHeight = this.offsetHeight;
+        this.scrollTop = this.scrollTop;
         // Enable animation.
         this._updateTransition(true);
       }

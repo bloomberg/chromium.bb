@@ -266,8 +266,8 @@ To style it:
     </style>
 
     <!-- this div fulfills an a11y requirement for combobox, do not remove -->
-    <div role="button"></div>
-    <paper-menu-button id="menuButton" vertical-align="[[verticalAlign]]" horizontal-align="[[horizontalAlign]]" vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]" disabled="[[disabled]]" no-animations="[[noAnimations]]" on-iron-select="_onIronSelect" on-iron-deselect="_onIronDeselect" opened="{{opened}}">
+    <span role="button"></span>
+    <paper-menu-button id="menuButton" vertical-align="[[verticalAlign]]" horizontal-align="[[horizontalAlign]]" vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]" disabled="[[disabled]]" no-animations="[[noAnimations]]" on-iron-select="_onIronSelect" on-iron-deselect="_onIronDeselect" opened="{{opened}}" close-on-activate="" allow-outside-scroll="[[allowOutsideScroll]]">
       <div class="dropdown-trigger">
         <label hidden$="[[!label]]" class$="[[_computeLabelClass(noLabelFloat,alwaysFloatLabel,hasContent)]]">[[label]]</label>
         <div id="input" tabindex="-1">&nbsp;</div>

@@ -1,6 +1,11 @@
 (function() {
       'use strict';
 
+      var config = {
+        ANIMATION_CUBIC_BEZIER: 'cubic-bezier(.3,.95,.5,1)',
+        MAX_ANIMATION_TIME_MS: 400
+      };
+
       var PaperMenuButton = Polymer({
         is: 'paper-menu-button',
 
@@ -53,6 +58,16 @@
           },
 
           /**
+           * If true, the `horizontalAlign` and `verticalAlign` properties will
+           * be considered preferences instead of strict requirements when
+           * positioning the dropdown and may be changed if doing so reduces
+           * the area of the dropdown falling outside of `fitInto`.
+           */
+          dynamicAlign: {
+            type: Boolean
+          },
+
+          /**
            * A pixel value that will be added to the position calculated for the
            * given `horizontalAlign`. Use a negative value to offset to the
            * left, or a positive value to offset to the right.
@@ -75,6 +90,14 @@
           },
 
           /**
+           * If true, the dropdown will be positioned so that it doesn't overlap
+           * the button.
+           */
+          noOverlap: {
+            type: Boolean
+          },
+
+          /**
            * Set to true to disable animations when opening and closing the
            * dropdown.
            */
@@ -88,6 +111,15 @@
            * a selection has been made.
            */
           ignoreSelect: {
+            type: Boolean,
+            value: false
+          },
+
+          /**
+           * Set to true to enable automatically closing the dropdown after an
+           * item has been activated, even if the selection did not change.
+           */
+          closeOnActivate: {
             type: Boolean,
             value: false
           },
@@ -110,14 +142,14 @@
                 timing: {
                   delay: 100,
                   duration: 150,
-                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                  easing: config.ANIMATION_CUBIC_BEZIER
                 }
               }, {
                 name: 'paper-menu-grow-height-animation',
                 timing: {
                   delay: 100,
                   duration: 275,
-                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                  easing: config.ANIMATION_CUBIC_BEZIER
                 }
               }];
             }
@@ -140,7 +172,7 @@
                 timing: {
                   delay: 100,
                   duration: 50,
-                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                  easing: config.ANIMATION_CUBIC_BEZIER
                 }
               }, {
                 name: 'paper-menu-shrink-height-animation',
@@ -150,6 +182,17 @@
                 }
               }];
             }
+          },
+          
+          /**
+           * By default, the dropdown will constrain scrolling on the page
+           * to itself when opened.
+           * Set to true in order to prevent scroll from being constrained
+           * to the dropdown when it opens.
+           */
+          allowOutsideScroll: {
+            type: Boolean,
+            value: false
           },
 
           /**
@@ -167,6 +210,7 @@
         },
 
         listeners: {
+          'iron-activate': '_onIronActivate',
           'iron-select': '_onIronSelect'
         },
 
@@ -221,6 +265,18 @@
         },
 
         /**
+         * Closes the dropdown when an `iron-activate` event is received if
+         * `closeOnActivate` is true.
+         *
+         * @param {CustomEvent} event A CustomEvent of type 'iron-activate'.
+         */
+        _onIronActivate: function(event) {
+          if (this.closeOnActivate) {
+            this.close();
+          }
+        },
+
+        /**
          * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
          * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
          *
@@ -266,8 +322,9 @@
         }
       });
 
-      PaperMenuButton.ANIMATION_CUBIC_BEZIER = 'cubic-bezier(.3,.95,.5,1)';
-      PaperMenuButton.MAX_ANIMATION_TIME_MS = 400;
+      Object.keys(config).forEach(function (key) {
+        PaperMenuButton[key] = config[key];
+      });
 
       Polymer.PaperMenuButton = PaperMenuButton;
     })();

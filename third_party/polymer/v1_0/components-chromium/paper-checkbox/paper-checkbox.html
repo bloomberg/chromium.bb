@@ -40,6 +40,8 @@ Custom property | Description | Default
 `--paper-checkbox-label-color` | Label color | `--primary-text-color`
 `--paper-checkbox-label-checked-color` | Label color when the input is checked | `--paper-checkbox-label-color`
 `--paper-checkbox-label-spacing` | Spacing between the label and the checkbox | `8px`
+`--paper-checkbox-label` | Mixin applied to the label | `{}`
+`--paper-checkbox-label-checked` | Mixin applied to the label when the input is checked | `{}`
 `--paper-checkbox-error-color` | Checkbox color when invalid | `--error-color`
 `--paper-checkbox-size` | Size of the checkbox | `18px`
 `--paper-checkbox-margin` | Margin around the checkbox container | `initial`
@@ -62,6 +64,10 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         @apply(--paper-font-common-base);
         line-height: 0;
         -webkit-tap-highlight-color: transparent;
+      }
+
+      :host([hidden]) {
+        display: none !important;
       }
 
       :host(:focus) {
@@ -176,10 +182,12 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         white-space: normal;
         line-height: normal;
         color: var(--paper-checkbox-label-color, --primary-text-color);
+        @apply(--paper-checkbox-label);
       }
 
       :host([checked]) #checkboxLabel {
         color: var(--paper-checkbox-label-checked-color, --paper-checkbox-label-color);
+        @apply(--paper-checkbox-label-checked);
       }
 
       :host-context([dir="rtl"]) #checkboxLabel {

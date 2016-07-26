@@ -222,7 +222,6 @@ Use `noOverlap` to position the element around another element without overlappi
      * Positions and fits the element into the `fitInto` element.
      */
     fit: function() {
-      this._discoverInfo();
       this.position();
       this.constrain();
       this.center();
@@ -324,6 +323,7 @@ Use `noOverlap` to position the element around another element without overlappi
         // needs to be centered, and it is done after constrain.
         return;
       }
+      this._discoverInfo();
 
       this.style.position = 'fixed';
       // Need border-box for margin/padding.
@@ -384,6 +384,8 @@ Use `noOverlap` to position the element around another element without overlappi
       if (this.horizontalAlign || this.verticalAlign) {
         return;
       }
+      this._discoverInfo();
+
       var info = this._fitInfo;
       // position at (0px, 0px) if not already positioned, so we can measure the natural size.
       if (!info.positionedBy.vertically) {
@@ -438,6 +440,8 @@ Use `noOverlap` to position the element around another element without overlappi
       if (this.horizontalAlign || this.verticalAlign) {
         return;
       }
+      this._discoverInfo();
+
       var positionedBy = this._fitInfo.positionedBy;
       if (positionedBy.vertically && positionedBy.horizontally) {
         // Already positioned.

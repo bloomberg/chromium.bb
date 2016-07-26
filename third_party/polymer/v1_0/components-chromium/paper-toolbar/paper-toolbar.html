@@ -218,27 +218,26 @@ be used as the label of the toolbar via `aria-labelledby`.
         pointer-events: none;
 
         @apply(--layout-flex);
-        @apply(--paper-toolbar-title);
       }
 
-      /**
-       * TODO: Refactor these selectors
-       * Work in progress.
-       */
-      .toolbar-tools > ::content paper-icon-button[icon=menu] {
-        margin-right: 24px;
-      }
-
-      .toolbar-tools > ::content > .title,
-      .toolbar-tools > ::content[select=".middle"] > .title,
-      .toolbar-tools > ::content[select=".bottom"] > .title {
+      .toolbar-tools > ::content > .title {
         margin-left: 56px;
       }
 
-      .toolbar-tools > ::content > paper-icon-button + .title,
-      .toolbar-tools > ::content[select=".middle"] paper-icon-button + .title,
-      .toolbar-tools > ::content[select=".bottom"] paper-icon-button + .title {
+      .toolbar-tools > ::content > paper-icon-button + .title {
         margin-left: 0;
+      }
+
+      /**
+       * The --paper-toolbar-title mixin is applied here instead of above to
+       * fix the issue with margin-left being ignored due to css ordering.
+       */
+      .toolbar-tools > ::content .title {
+        @apply(--paper-toolbar-title);
+      }
+
+      .toolbar-tools > ::content paper-icon-button[icon=menu] {
+        margin-right: 24px;
       }
 
       .toolbar-tools > ::content > .fit {

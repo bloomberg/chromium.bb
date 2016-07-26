@@ -455,24 +455,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/">
-
-  <style>
-    :host {
-      @apply(--layout-inline);
-      @apply(--layout-center-center);
-      position: relative;
-
-      vertical-align: middle;
-
-      fill: var(--iron-icon-fill-color, currentcolor);
-      stroke: var(--iron-icon-stroke-color, none);
-
-      width: var(--iron-icon-width, 24px);
-      height: var(--iron-icon-height, 24px);
-    }
-  </style>
-
   <template>
+    <style>
+      :host {
+        @apply(--layout-inline);
+        @apply(--layout-center-center);
+        position: relative;
+
+        vertical-align: middle;
+
+        fill: var(--iron-icon-fill-color, currentcolor);
+        stroke: var(--iron-icon-stroke-color, none);
+
+        width: var(--iron-icon-width, 24px);
+        height: var(--iron-icon-height, 24px);
+      }
+    </style>
   </template>
 
   </dom-module>
@@ -1989,20 +1987,21 @@ paper-button {
 
 
 <dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
-  <style>
-    :host {
-      position: fixed;
-    }
-
-    #contentWrapper ::content > * {
-      overflow: auto;
-    }
-
-    #contentWrapper.animating ::content > * {
-      overflow: hidden;
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        position: fixed;
+      }
+
+      #contentWrapper ::content > * {
+        overflow: auto;
+      }
+
+      #contentWrapper.animating ::content > * {
+        overflow: hidden;
+      }
+    </style>
+
     <div id="contentWrapper">
       <content id="content" select=".dropdown-content"></content>
     </div>
@@ -2059,7 +2058,7 @@ paper-button {
       <content select=".dropdown-trigger"></content>
     </div>
 
-    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]" restore-focus-on-close="" on-iron-overlay-canceled="__onIronOverlayCanceled">
+    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" dynamic-align="[[dynamicAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" no-overlap="[[noOverlap]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]" allow-outside-scroll="[[allowOutsideScroll]]" restore-focus-on-close="" on-iron-overlay-canceled="__onIronOverlayCanceled">
       <div class="dropdown-content">
         <content id="content" select=".dropdown-content"></content>
       </div>
@@ -2159,15 +2158,14 @@ paper-button {
 
 
 <dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/">
-  <style>
-    :host {
-      display: inline-block;
-      position: fixed;
-      clip: rect(0px,0px,0px,0px);
-    }
-  </style>
-
   <template>
+    <style>
+      :host {
+        display: inline-block;
+        position: fixed;
+        clip: rect(0px,0px,0px,0px);
+      }
+    </style>
     <div aria-live$="[[mode]]">[[_text]]</div>
   </template>
 
@@ -2182,7 +2180,7 @@ paper-button {
         @apply(--paper-input-container);
       }
 
-      :host[inline] {
+      :host([inline]) {
         display: inline-block;
       }
 

@@ -15,17 +15,11 @@
 
     _renderOpened: function() {
       this.cancelAnimation();
-      if (this.withBackdrop) {
-        this.backdropElement.open();
-      }
       this.playAnimation('entry');
     },
 
     _renderClosed: function() {
       this.cancelAnimation();
-      if (this.withBackdrop) {
-        this.backdropElement.close();
-      }
       this.playAnimation('exit');
     },
 

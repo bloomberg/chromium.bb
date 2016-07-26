@@ -6,9 +6,12 @@ Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or 
 on top of other content. It includes an optional backdrop, and can be used to implement a variety
 of UI controls including dialogs and drop downs. Multiple overlays may be displayed at once.
 
+See the [demo source code](https://github.com/PolymerElements/iron-overlay-behavior/blob/master/demo/simple-overlay.html)
+for an example.
+
 ### Closing and canceling
 
-A dialog may be hidden by closing or canceling. The difference between close and cancel is user
+An overlay may be hidden by closing or canceling. The difference between close and cancel is user
 intent. Closing generally implies that the user acknowledged the content on the overlay. By default,
 it will cancel whenever the user taps outside it or presses the escape key. This behavior is
 configurable with the `no-cancel-on-esc-key` and the `no-cancel-on-outside-click` properties.
@@ -26,6 +29,10 @@ position and size it manually using CSS. See `Polymer.IronFitBehavior`.
 Set the `with-backdrop` attribute to display a backdrop behind the overlay. The backdrop is
 appended to `<body>` and is of type `<iron-overlay-backdrop>`. See its doc page for styling
 options.
+
+In addition, `with-backdrop` will wrap the focus within the content in the light DOM.
+Override the [`_focusableNodes` getter](#Polymer.IronOverlayBehavior:property-_focusableNodes)
+to achieve a different behavior.
 
 ### Limitations
 
@@ -62,7 +69,8 @@ context. You should place this element as a child of `<body>` whenever possible.
       },
 
       /**
-       * Set to true to display a backdrop behind the overlay.
+       * Set to true to display a backdrop behind the overlay. It traps the focus
+       * within the light DOM of the overlay.
        */
       withBackdrop: {
         observer: '_withBackdropChanged',
@@ -327,6 +335,8 @@ context. You should place this element as a child of `<body>` whenever possible.
           this._prepareRenderOpened();
           this._renderOpened();
         } else {
+          // Move the focus before actually closing.
+          this._applyFocus();
           this._renderClosed();
         }
       }.bind(this));
@@ -363,6 +373,9 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.refit();
       this._finishPositioning();
 
+      // Move the focus to the child node with [autofocus].
+      this._applyFocus();
+
       // Safari will apply the focus to the autofocus element when displayed for the first time,
       // so we blur it. Later, _applyFocus will set the focus if necessary.
       if (this.noAutoFocus && document.activeElement === this._focusNode) {
@@ -391,8 +404,6 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _finishRenderOpened: function() {
-      // Focus the child node with [autofocus]
-      this._applyFocus();
 
       this.notifyResize();
       this.__isAnimating = false;
@@ -414,8 +425,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.display = 'none';
       // Reset z-index only at the end of the animation.
       this.style.zIndex = '';
-
-      this._applyFocus();
 
       this.notifyResize();
       this.__isAnimating = false;

@@ -26,7 +26,7 @@ to include `confirmed: true`.
 This element has `role="dialog"` by default. Depending on the context, it may be more appropriate
 to override this attribute with `role="alertdialog"`.
 
-If `modal` is set, the element will set `aria-modal` and prevent the focus from exiting the element.
+If `modal` is set, the element will prevent the focus from exiting the element.
 It will also ensure that focus remains in the dialog.
 
 @hero hero.svg
@@ -69,12 +69,6 @@ It will also ensure that focus remains in the dialog.
     },
 
     _modalChanged: function(modal, readied) {
-      if (modal) {
-        this.setAttribute('aria-modal', 'true');
-      } else {
-        this.setAttribute('aria-modal', 'false');
-      }
-
       // modal implies noCancelOnOutsideClick, noCancelOnEscKey and withBackdrop.
       // We need to wait for the element to be ready before we can read the
       // properties values.
