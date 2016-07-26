@@ -808,13 +808,6 @@ TELEMETRY_TESTS = {
       },
     ],
   },
-  'memory_test': {
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
   'pixel_test': {
     'target_name': 'pixel',
     'args': [
