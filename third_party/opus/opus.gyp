@@ -159,6 +159,9 @@
                     'OPUS_ARM_MAY_HAVE_NEON_INTR',
                     'OPUS_HAVE_RTCD',
                   ],
+                  'include_dirs': [
+                    'src',
+                  ],
                   'includes': [
                     'opus_srcs_rtcd.gypi',
                   ],

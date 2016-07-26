@@ -11,6 +11,9 @@
     'src/celt/arm/fft_arm.h',
     'src/celt/arm/mdct_arm.h',
     'src/celt/arm/pitch_arm.h',
+    'src/silk/arm/arm_silk_map.c',
+    'src/silk/arm/NSQ_neon.h',
+    'src/silk/arm/NSQ_neon.c',
     '<(INTERMEDIATE_DIR)/celt_pitch_xcorr_arm_gnu.S',
   ],
   'actions': [

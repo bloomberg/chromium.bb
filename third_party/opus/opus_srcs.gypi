@@ -99,6 +99,7 @@
       'src/silk/MacroCount.h',
       'src/silk/MacroDebug.h',
       'src/silk/macros.h',
+      'src/silk/NSQ.h',
       'src/silk/main.h',
       'src/silk/NLSF2A.c',
       'src/silk/NLSF_decode.c',

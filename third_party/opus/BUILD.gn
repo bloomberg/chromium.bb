@@ -137,15 +137,17 @@ static_library("opus") {
 
   if (use_opus_arm_optimization) {
     sources += [
+      "src/celt/arm/fixed_arm64.h",
       "src/celt/arm/fixed_armv4.h",
       "src/celt/arm/fixed_armv5e.h",
       "src/celt/arm/kiss_fft_armv4.h",
       "src/celt/arm/kiss_fft_armv5e.h",
-      "src/celt/pitch_arm.h",
+      "src/celt/arm/pitch_arm.h",
       "src/silk/arm/SigProc_FIX_armv4.h",
       "src/silk/arm/SigProc_FIX_armv5e.h",
-      "src/silk/arm/macro_armv4.h",
-      "src/silk/arm/macro_armv5e.h",
+      "src/silk/arm/macros_arm64.h",
+      "src/silk/arm/macros_armv4.h",
+      "src/silk/arm/macros_armv5e.h",
     ]
 
     defines += [
@@ -164,7 +166,12 @@ static_library("opus") {
         "src/celt/arm/fft_arm.h",
         "src/celt/arm/mdct_arm.h",
         "src/celt/arm/pitch_arm.h",
+        "src/silk/arm/NSQ_neon.c",
+        "src/silk/arm/NSQ_neon.h",
+        "src/silk/arm/arm_silk_map.c",
       ]
+
+      include_dirs += [ "src" ]
 
       defines += [
         "OPUS_ARM_MAY_HAVE_EDSP",
