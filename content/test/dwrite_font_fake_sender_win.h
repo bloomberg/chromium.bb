@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sender.h"
 
 struct DWriteFontStyle;
@@ -44,6 +45,11 @@ class FakeFont {
     return *this;
   }
 
+  FakeFont& AddFileHandle(IPC::PlatformFileForTransit handle) {
+    file_handles_.push_back(handle);
+    return *this;
+  }
+
   FakeFont& AddFamilyName(const base::string16& locale,
                           const base::string16& family_name) {
     family_names_.emplace_back(locale, family_name);
@@ -56,6 +62,7 @@ class FakeFont {
   friend FakeFontCollection;
   base::string16 font_name_;
   std::vector<base::string16> file_paths_;
+  std::vector<IPC::PlatformFileForTransit> file_handles_;
   std::vector<std::pair<base::string16, base::string16>> family_names_;
 
   DISALLOW_ASSIGN(FakeFont);
@@ -117,7 +124,8 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
         uint32_t family_index,
         std::vector<std::pair<base::string16, base::string16>>* family_names);
     void OnGetFontFiles(uint32_t family_index,
-                        std::vector<base::string16>* file_paths_);
+                        std::vector<base::string16>* file_paths,
+                        std::vector<IPC::PlatformFileForTransit>* file_handles);
 
     void OnMapCharacters(const base::string16& text,
                          const DWriteFontStyle& font_style,
@@ -158,7 +166,8 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
       std::vector<std::pair<base::string16, base::string16>>* family_names);
 
   void OnGetFontFiles(uint32_t family_index,
-                      std::vector<base::string16>* file_paths);
+                      std::vector<base::string16>* file_paths,
+                      std::vector<IPC::PlatformFileForTransit>* file_handles);
 
   void OnMapCharacters(const base::string16& text,
                        const DWriteFontStyle& font_style,

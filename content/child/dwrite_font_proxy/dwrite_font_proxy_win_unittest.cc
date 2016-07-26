@@ -373,6 +373,39 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFromFontFaceShouldFindFont) {
   EXPECT_EQ(3u, fake_collection_->MessageCount());
 }
 
+TEST_F(DWriteFontProxyUnitTest, TestCustomFontFiles) {
+  scoped_refptr<FakeFontCollection> fonts = new FakeFontCollection();
+  FakeFont& arial = fonts->AddFont(L"Arial").AddFamilyName(L"en-us", L"Arial");
+  for (auto& path : arial_font_files) {
+    base::File file(base::FilePath(path), base::File::FLAG_OPEN |
+                                              base::File::FLAG_READ |
+                                              base::File::FLAG_EXCLUSIVE_WRITE);
+    arial.AddFileHandle(IPC::TakePlatformFileForTransit(std::move(file)));
+  }
+  mswr::ComPtr<DWriteFontCollectionProxy> collection;
+  mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
+      &collection, factory.Get(), fonts->GetTrackingSender());
+
+  // Check that we can get the font family and match a font.
+  UINT32 index = UINT_MAX;
+  BOOL exists = FALSE;
+  collection->FindFamilyName(L"Arial", &index, &exists);
+  mswr::ComPtr<IDWriteFontFamily> family;
+  collection->GetFontFamily(index, &family);
+
+  mswr::ComPtr<IDWriteFont> font;
+  HRESULT hr = family->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL,
+                                            DWRITE_FONT_STRETCH_NORMAL,
+                                            DWRITE_FONT_STYLE_NORMAL, &font);
+
+  EXPECT_TRUE(SUCCEEDED(hr));
+  EXPECT_NE(nullptr, font.Get());
+
+  mswr::ComPtr<IDWriteFontFace> font_face;
+  hr = font->CreateFontFace(&font_face);
+  EXPECT_TRUE(SUCCEEDED(hr));
+}
+
 }  // namespace
 
 }  // namespace content

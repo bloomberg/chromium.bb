@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "ipc/ipc_platform_file.h"
 
 struct DWriteFontStyle;
 struct MapCharactersResult;
@@ -37,6 +38,8 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override;
 
+  void SetWindowsFontsPathForTesting(base::string16 path);
+
  protected:
   ~DWriteFontProxyMessageFilter() override;
 
@@ -46,7 +49,8 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
       UINT32 family_index,
       std::vector<std::pair<base::string16, base::string16>>* family_names);
   void OnGetFontFiles(UINT32 family_index,
-                      std::vector<base::string16>* file_paths);
+                      std::vector<base::string16>* file_paths,
+                      std::vector<IPC::PlatformFileForTransit>* file_handles);
   void OnMapCharacters(const base::string16& text,
                        const DWriteFontStyle& font_style,
                        const base::string16& locale_name,
@@ -57,19 +61,25 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
   void InitializeDirectWrite();
 
  private:
-  bool AddFilesForFont(std::set<base::string16>* path_set, IDWriteFont* font);
+  bool AddFilesForFont(std::set<base::string16>* path_set,
+                       std::set<base::string16>* custom_font_path_set,
+                       IDWriteFont* font);
   bool AddLocalFile(std::set<base::string16>* path_set,
+                    std::set<base::string16>* custom_font_path_set,
                     IDWriteLocalFontFileLoader* local_loader,
                     IDWriteFontFile* font_file);
 
   bool IsLastResortFallbackFont(uint32_t font_index);
 
  private:
+  enum CustomFontFileLoadingMode { ENABLE, DISABLE, FORCE };
+
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
   Microsoft::WRL::ComPtr<IDWriteFontFallback> font_fallback_;
   base::string16 windows_fonts_path_;
+  CustomFontFileLoadingMode custom_font_file_loading_mode_;
 
   // Temp code to help track down crbug.com/561873
   std::vector<uint32_t> last_resort_fonts_;

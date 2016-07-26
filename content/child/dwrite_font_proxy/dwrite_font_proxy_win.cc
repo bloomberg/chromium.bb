@@ -18,6 +18,7 @@
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/common/dwrite_font_proxy_messages.h"
 #include "content/public/child/child_thread.h"
+#include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sender.h"
 
 namespace mswr = Microsoft::WRL;
@@ -51,6 +52,7 @@ enum FontProxyError {
   FAMILY_INDEX_OUT_OF_RANGE = 3,
   GET_FONT_FILES_SEND_FAILED = 4,
   MAPPED_FILE_FAILED = 5,
+  DUPLICATE_HANDLE_FAILED = 6,
 
   FONT_PROXY_ERROR_MAX_VALUE
 };
@@ -192,14 +194,32 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
   DCHECK(!families_[*family_index]->IsLoaded());
 
   std::vector<base::string16> file_names;
-  if (!GetSender()->Send(
-          new DWriteFontProxyMsg_GetFontFiles(*family_index, &file_names))) {
+  std::vector<IPC::PlatformFileForTransit> file_handles;
+  if (!GetSender()->Send(new DWriteFontProxyMsg_GetFontFiles(
+          *family_index, &file_names, &file_handles))) {
     LogFontProxyError(GET_FONT_FILES_SEND_FAILED);
     return E_FAIL;
   }
 
+  std::vector<HANDLE> handles;
+  file_handles.reserve(file_names.size() + file_handles.size());
+  for (const base::string16& file_name : file_names) {
+    // This leaks the handles, since they are used as the reference key to
+    // CreateStreamFromKey, and DirectWrite requires the reference keys to
+    // remain valid for the lifetime of the loader. The loader is the font
+    // collection proxy, which remains alive for the lifetime of the renderer.
+    HANDLE handle =
+        CreateFile(file_name.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL,
+                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (handle != INVALID_HANDLE_VALUE)
+      handles.push_back(handle);
+  }
+  for (const IPC::PlatformFileForTransit& file_handle : file_handles) {
+    handles.push_back(IPC::PlatformFileForTransitToPlatformFile(file_handle));
+  }
+
   HRESULT hr = mswr::MakeAndInitialize<FontFileEnumerator>(
-      font_file_enumerator, factory, this, &file_names);
+      font_file_enumerator, factory, this, &handles);
 
   if (!SUCCEEDED(hr)) {
     DCHECK(false);
@@ -213,24 +233,23 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
     const void* font_file_reference_key,
     UINT32 font_file_reference_key_size,
     IDWriteFontFileStream** font_file_stream) {
-  if (!font_file_reference_key) {
-    return E_FAIL;
-  }
-
-  const base::char16* file_name =
-      reinterpret_cast<const base::char16*>(font_file_reference_key);
-  DCHECK_EQ(font_file_reference_key_size % sizeof(base::char16), 0u);
-  size_t file_name_size =
-      static_cast<size_t>(font_file_reference_key_size) / sizeof(base::char16);
-
-  if (file_name_size == 0 || file_name[file_name_size - 1] != L'\0') {
+  if (font_file_reference_key_size != sizeof(HANDLE)) {
     return E_FAIL;
   }
 
   TRACE_EVENT0("dwrite", "FontFileEnumerator::CreateStreamFromKey");
 
-  mswr::ComPtr<IDWriteFontFileStream> stream;
-  if (!SUCCEEDED(mswr::MakeAndInitialize<FontFileStream>(&stream, file_name))) {
+  HANDLE file_handle =
+      *reinterpret_cast<const HANDLE*>(font_file_reference_key);
+
+  if (file_handle == NULL || file_handle == INVALID_HANDLE_VALUE) {
+    DCHECK(false);
+    return E_FAIL;
+  }
+
+  mswr::ComPtr<FontFileStream> stream;
+  if (!SUCCEEDED(
+          mswr::MakeAndInitialize<FontFileStream>(&stream, file_handle))) {
     DCHECK(false);
     return E_FAIL;
   }
@@ -511,17 +530,18 @@ FontFileEnumerator::~FontFileEnumerator() = default;
 
 HRESULT FontFileEnumerator::GetCurrentFontFile(IDWriteFontFile** file) {
   DCHECK(file);
-  if (current_file_ >= file_names_.size()) {
+  if (current_file_ >= files_.size()) {
     return E_FAIL;
   }
 
   TRACE_EVENT0("dwrite", "FontFileEnumerator::GetCurrentFontFile");
+
   // CreateCustomFontFileReference ends up calling
   // DWriteFontCollectionProxy::CreateStreamFromKey.
   HRESULT hr = factory_->CreateCustomFontFileReference(
-      reinterpret_cast<const void*>(file_names_[current_file_].c_str()),
-      (file_names_[current_file_].length() + 1) * sizeof(base::char16),
-      loader_.Get() /*IDWriteFontFileLoader*/, file);
+      reinterpret_cast<const void*>(&files_[current_file_]),
+      sizeof(files_[current_file_]), loader_.Get() /*IDWriteFontFileLoader*/,
+      file);
   DCHECK(SUCCEEDED(hr));
   return hr;
 }
@@ -530,7 +550,7 @@ HRESULT FontFileEnumerator::MoveNext(BOOL* has_current_file) {
   DCHECK(has_current_file);
 
   TRACE_EVENT0("dwrite", "FontFileEnumerator::MoveNext");
-  if (next_file_ >= file_names_.size()) {
+  if (next_file_ >= files_.size()) {
     *has_current_file = FALSE;
     current_file_ = UINT_MAX;
     return S_OK;
@@ -545,11 +565,10 @@ HRESULT FontFileEnumerator::MoveNext(BOOL* has_current_file) {
 HRESULT FontFileEnumerator::RuntimeClassInitialize(
     IDWriteFactory* factory,
     IDWriteFontFileLoader* loader,
-    std::vector<base::string16>* file_names) {
+    std::vector<HANDLE>* files) {
   factory_ = factory;
   loader_ = loader;
-  file_names_.swap(*file_names);
-  file_streams_.resize(file_names_.size());
+  files_.swap(*files);
   return S_OK;
 }
 
@@ -580,9 +599,18 @@ HRESULT FontFileStream::ReadFileFragment(const void** fragment_start,
   return S_OK;
 }
 
-HRESULT FontFileStream::RuntimeClassInitialize(
-    const base::string16& file_name) {
-  data_.Initialize(base::FilePath(file_name));
+HRESULT FontFileStream::RuntimeClassInitialize(HANDLE handle) {
+  // Duplicate the original handle so we can reopen the file after the memory
+  // mapped section closes it.
+  HANDLE duplicate_handle;
+  if (!DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(),
+                       &duplicate_handle, 0 /* dwDesiredAccess */,
+                       false /* bInheritHandle */, DUPLICATE_SAME_ACCESS)) {
+    LogFontProxyError(DUPLICATE_HANDLE_FAILED);
+    return E_FAIL;
+  }
+
+  data_.Initialize(base::File(duplicate_handle));
   if (!data_.IsValid()) {
     LogFontProxyError(MAPPED_FILE_FAILED);
     return E_FAIL;

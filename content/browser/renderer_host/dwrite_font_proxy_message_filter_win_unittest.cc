@@ -7,6 +7,9 @@
 #include <dwrite.h>
 #include <dwrite_2.h>
 
+#include <memory>
+
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
@@ -127,7 +130,8 @@ TEST_F(DWriteFontProxyMessageFilterUnitTest, GetFontFiles) {
   filter_->ResetReply();
 
   std::vector<base::string16> files;
-  Send(new DWriteFontProxyMsg_GetFontFiles(arial_index, &files));
+  std::vector<IPC::PlatformFileForTransit> handles;
+  Send(new DWriteFontProxyMsg_GetFontFiles(arial_index, &files, &handles));
 
   EXPECT_LT(0u, files.size());
   for (const base::string16& file : files) {
@@ -137,8 +141,9 @@ TEST_F(DWriteFontProxyMessageFilterUnitTest, GetFontFiles) {
 
 TEST_F(DWriteFontProxyMessageFilterUnitTest, GetFontFilesIndexOutOfBounds) {
   std::vector<base::string16> files;
+  std::vector<IPC::PlatformFileForTransit> handles;
   UINT32 invalid_index = 1000000;
-  Send(new DWriteFontProxyMsg_GetFontFiles(invalid_index, &files));
+  Send(new DWriteFontProxyMsg_GetFontFiles(invalid_index, &files, &handles));
 
   EXPECT_EQ(0u, files.size());
 }
@@ -206,6 +211,30 @@ TEST_F(DWriteFontProxyMessageFilterUnitTest, MapCharacterInvalidAfterValid) {
   EXPECT_NE(0, result.font_style.font_weight);
   EXPECT_EQ(DWRITE_FONT_STYLE_NORMAL, result.font_style.font_slant);
   EXPECT_NE(0, result.font_style.font_stretch);
+}
+
+TEST_F(DWriteFontProxyMessageFilterUnitTest, TestCustomFontFiles) {
+  // Override windows fonts path to force the custom font file codepath.
+  filter_->SetWindowsFontsPathForTesting(L"X:\\NotWindowsFonts");
+  // Set the peer process so the filter duplicates handles into the current
+  // process.
+  filter_->set_peer_process_for_testing(base::Process::Current());
+
+  UINT32 arial_index = 0;
+  Send(new DWriteFontProxyMsg_FindFamily(L"Arial", &arial_index));
+  filter_->ResetReply();
+
+  std::vector<base::string16> files;
+  std::vector<IPC::PlatformFileForTransit> handles;
+  Send(new DWriteFontProxyMsg_GetFontFiles(arial_index, &files, &handles));
+
+  EXPECT_TRUE(files.empty());
+  EXPECT_FALSE(handles.empty());
+  for (const IPC::PlatformFileForTransit& handle : handles) {
+    EXPECT_TRUE(handle.IsValid());
+    base::File file = IPC::PlatformFileForTransitToFile(handle);
+    EXPECT_LT(0, file.GetLength());  // Check the file exists
+  }
 }
 
 }  // namespace

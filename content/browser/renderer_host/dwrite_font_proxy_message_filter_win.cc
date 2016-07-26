@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -110,11 +111,23 @@ base::string16 GetWindowsFontsPath() {
 const wchar_t* kLastResortFontNames[] = {L"Sans", L"Arial", L"MS UI Gothic",
                                          L"Microsoft Sans Serif"};
 
+// Feature to enable loading font files from outside the system font directory.
+const base::Feature kEnableCustomFonts {
+  "DirectWriteCustomFonts", base::FEATURE_ENABLED_BY_DEFAULT
+};
+
+// Feature to force loading font files using the custom font file path. Has no
+// effect if kEnableCustomFonts is disabled.
+const base::Feature kForceCustomFonts {
+  "ForceDirectWriteCustomFonts", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 }  // namespace
 
 DWriteFontProxyMessageFilter::DWriteFontProxyMessageFilter()
     : BrowserMessageFilter(DWriteFontProxyMsgStart),
-      windows_fonts_path_(GetWindowsFontsPath()) {}
+      windows_fonts_path_(GetWindowsFontsPath()),
+      custom_font_file_loading_mode_(ENABLE) {}
 
 DWriteFontProxyMessageFilter::~DWriteFontProxyMessageFilter() = default;
 
@@ -137,6 +150,11 @@ void DWriteFontProxyMessageFilter::OverrideThreadForMessage(
     content::BrowserThread::ID* thread) {
   if (IPC_MESSAGE_CLASS(message) == DWriteFontProxyMsgStart)
     *thread = BrowserThread::FILE_USER_BLOCKING;
+}
+
+void DWriteFontProxyMessageFilter::SetWindowsFontsPathForTesting(
+    base::string16 path) {
+  windows_fonts_path_.swap(path);
 }
 
 void DWriteFontProxyMessageFilter::OnFindFamily(
@@ -228,7 +246,8 @@ void DWriteFontProxyMessageFilter::OnGetFamilyNames(
 
 void DWriteFontProxyMessageFilter::OnGetFontFiles(
     uint32_t family_index,
-    std::vector<base::string16>* file_paths) {
+    std::vector<base::string16>* file_paths,
+    std::vector<IPC::PlatformFileForTransit>* file_handles) {
   InitializeDirectWrite();
   TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFontFiles");
   DCHECK(collection_);
@@ -246,6 +265,7 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
   UINT32 font_count = family->GetFontCount();
 
   std::set<base::string16> path_set;
+  std::set<base::string16> custom_font_path_set;
   // Iterate through all the fonts in the family, and all the files for those
   // fonts. If anything goes wrong, bail on the entire family to avoid having
   // a partially-loaded font family.
@@ -258,9 +278,25 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
       return;
     }
 
-    if (!AddFilesForFont(&path_set, font.Get())) {
+    if (!AddFilesForFont(&path_set, &custom_font_path_set, font.Get())) {
       if (IsLastResortFallbackFont(family_index))
         LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
+    }
+  }
+
+  // For files outside the windows fonts directory we pass them to the renderer
+  // as file handles. The renderer would be unable to open the files directly
+  // due to sandbox policy (it would get ERROR_ACCESS_DENIED instead). Passing
+  // handles allows the renderer to bypass the restriction and use the fonts.
+  for (const base::string16& custom_font_path : custom_font_path_set) {
+    // Specify FLAG_EXCLUSIVE_WRITE to prevent base::File from opening the file
+    // with FILE_SHARE_WRITE access. FLAG_EXCLUSIVE_WRITE doesn't actually open
+    // the file for write access.
+    base::File file(base::FilePath(custom_font_path),
+                    base::File::FLAG_OPEN | base::File::FLAG_READ |
+                        base::File::FLAG_EXCLUSIVE_WRITE);
+    if (file.IsValid()) {
+      file_handles->push_back(IPC::TakePlatformFileForTransit(std::move(file)));
     }
   }
 
@@ -392,6 +428,11 @@ void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
     return;
   }
 
+  if (!base::FeatureList::IsEnabled(kEnableCustomFonts))
+    custom_font_file_loading_mode_ = DISABLE;
+  else if (base::FeatureList::IsEnabled(kForceCustomFonts))
+    custom_font_file_loading_mode_ = FORCE;
+
   // Temp code to help track down crbug.com/561873
   for (size_t font = 0; font < arraysize(kLastResortFontNames); font++) {
     uint32_t font_index = 0;
@@ -407,6 +448,7 @@ void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
 
 bool DWriteFontProxyMessageFilter::AddFilesForFont(
     std::set<base::string16>* path_set,
+    std::set<base::string16>* custom_font_path_set,
     IDWriteFont* font) {
   mswr::ComPtr<IDWriteFontFace> font_face;
   HRESULT hr;
@@ -457,7 +499,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
       return false;
     }
 
-    if (!AddLocalFile(path_set, local_loader.Get(),
+    if (!AddLocalFile(path_set, custom_font_path_set, local_loader.Get(),
                       font_files[file_index].Get())) {
       return false;
     }
@@ -467,6 +509,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
 
 bool DWriteFontProxyMessageFilter::AddLocalFile(
     std::set<base::string16>* path_set,
+    std::set<base::string16>* custom_font_path_set,
     IDWriteLocalFontFileLoader* local_loader,
     IDWriteFontFile* font_file) {
   HRESULT hr;
@@ -492,23 +535,6 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   }
 
   base::string16 file_path = base::i18n::FoldCase(file_path_chars.data());
-  if (!base::StartsWith(file_path, windows_fonts_path_,
-                        base::CompareCase::SENSITIVE)) {
-    // Skip loading fonts from outside the system fonts directory, since
-    // these families will not be accessible to the renderer process. If
-    // this turns out to be a common case, we can either grant the renderer
-    // access to these files (not sure if this is actually possible), or
-    // load the file data ourselves and hand it to the renderer.
-
-    // Really, really, really want to know what families hit this. Current
-    // data indicates about 0.09% of families fall into this case. Nothing to
-    // worry about if it's random obscure fonts noone has ever heard of, but
-    // could be a problem if it's common fonts.
-
-    LogLoaderType(FILE_OUTSIDE_SANDBOX);
-    NOTREACHED();  // Not yet implemented.
-    return false;
-  }
 
   // Refer to comments in kFontsToIgnore for this block.
   for (const auto& file_to_ignore : kFontsToIgnore) {
@@ -525,8 +551,16 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
     }
   }
 
-  LogLoaderType(FILE_SYSTEM_FONT_DIR);
-  path_set->insert(file_path);
+  if (!base::StartsWith(file_path, windows_fonts_path_,
+                        base::CompareCase::SENSITIVE) ||
+      custom_font_file_loading_mode_ == FORCE) {
+    LogLoaderType(FILE_OUTSIDE_SANDBOX);
+    if (custom_font_file_loading_mode_ != DISABLE)
+      custom_font_path_set->insert(file_path);
+  } else {
+    LogLoaderType(FILE_SYSTEM_FONT_DIR);
+    path_set->insert(file_path);
+  }
   return true;
 }
 

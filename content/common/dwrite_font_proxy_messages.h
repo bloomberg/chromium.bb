@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -55,9 +56,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(
 
 // Returns the list of font file paths in the system font directory that contain
 // font data for the font family at the specified index.
-IPC_SYNC_MESSAGE_CONTROL1_1(DWriteFontProxyMsg_GetFontFiles,
-                            uint32_t /* family_index */,
-                            std::vector<base::string16> /* out file_paths */)
+IPC_SYNC_MESSAGE_CONTROL1_2(
+    DWriteFontProxyMsg_GetFontFiles,
+    uint32_t /* family_index */,
+    std::vector<base::string16> /* out file_paths */,
+    std::vector<IPC::PlatformFileForTransit> /* out file_handles*/)
 
 // Locates a font family that is able to render the specified text using the
 // specified style. If successful, the family_index and family_name will

@@ -109,8 +109,9 @@ void FakeFontCollection::ReplySender::OnGetFamilyNames(
 
 void FakeFontCollection::ReplySender::OnGetFontFiles(
     uint32_t family_index,
-    std::vector<base::string16>* file_paths) {
-  collection_->OnGetFontFiles(family_index, file_paths);
+    std::vector<base::string16>* file_paths,
+    std::vector<IPC::PlatformFileForTransit>* file_handles) {
+  collection_->OnGetFontFiles(family_index, file_paths, file_handles);
 }
 
 void FakeFontCollection::ReplySender::OnMapCharacters(
@@ -172,10 +173,12 @@ void FakeFontCollection::OnGetFamilyNames(
 
 void FakeFontCollection::OnGetFontFiles(
     uint32_t family_index,
-    std::vector<base::string16>* file_paths) {
+    std::vector<base::string16>* file_paths,
+    std::vector<IPC::PlatformFileForTransit>* file_handles) {
   if (family_index >= fonts_.size())
     return;
   *file_paths = fonts_[family_index].file_paths_;
+  *file_handles = fonts_[family_index].file_handles_;
 }
 
 void FakeFontCollection::OnMapCharacters(const base::string16& text,
