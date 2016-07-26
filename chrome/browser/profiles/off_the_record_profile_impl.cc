@@ -193,6 +193,10 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   // Clears any data the network stack contains that may be related to the
   // OTR session.
   g_browser_process->io_thread()->ChangedToOnTheRecord();
+
+  // This must be called before ProfileIOData::ShutdownOnUIThread but after
+  // other profile-related destroy notifications are dispatched.
+  ShutdownStoragePartitions();
 }
 
 void OffTheRecordProfileImpl::InitIoData() {

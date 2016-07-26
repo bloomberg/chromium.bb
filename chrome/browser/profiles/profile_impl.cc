@@ -717,6 +717,10 @@ ProfileImpl::~ProfileImpl() {
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
     SetExitType(EXIT_NORMAL);
+
+  // This must be called before ProfileIOData::ShutdownOnUIThread but after
+  // other profile-related destroy notifications are dispatched.
+  ShutdownStoragePartitions();
 }
 
 std::string ProfileImpl::GetProfileUserName() const {

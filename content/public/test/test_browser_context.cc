@@ -50,6 +50,7 @@ TestBrowserContext::TestBrowserContext() {
 }
 
 TestBrowserContext::~TestBrowserContext() {
+  ShutdownStoragePartitions();
 }
 
 base::FilePath TestBrowserContext::TakePath() {

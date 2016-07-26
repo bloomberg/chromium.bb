@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -43,18 +44,24 @@ class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
   CannedBrowsingDataAppCacheHelperTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
+  void TearDown() override {
+    // Make sure we run all pending tasks on IO thread before testing
+    // profile is destructed.
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  }
+
+ protected:
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
 };
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
-  TestingProfile profile;
-
   GURL manifest1("http://example1.com/manifest.xml");
   GURL manifest2("http://example2.com/path1/manifest.xml");
   GURL manifest3("http://example2.com/path2/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile));
+      new CannedBrowsingDataAppCacheHelper(&profile_));
   helper->AddAppCache(manifest1);
   helper->AddAppCache(manifest2);
   helper->AddAppCache(manifest3);
@@ -82,12 +89,10 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
-  TestingProfile profile;
-
   GURL manifest("http://example.com/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile));
+      new CannedBrowsingDataAppCacheHelper(&profile_));
   helper->AddAppCache(manifest);
   helper->AddAppCache(manifest);
 
@@ -106,12 +111,10 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
-  TestingProfile profile;
-
   GURL manifest("http://example.com/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile));
+      new CannedBrowsingDataAppCacheHelper(&profile_));
 
   ASSERT_TRUE(helper->empty());
   helper->AddAppCache(manifest);
@@ -121,14 +124,12 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
-  TestingProfile profile;
-
   GURL manifest1("http://example.com/manifest1.xml");
   GURL manifest2("http://foo.example.com/manifest2.xml");
   GURL manifest3("http://bar.example.com/manifest3.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile));
+      new CannedBrowsingDataAppCacheHelper(&profile_));
 
   EXPECT_TRUE(helper->empty());
   helper->AddAppCache(manifest1);
@@ -142,13 +143,11 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {
-  TestingProfile profile;
-
   GURL manifest1("chrome-extension://abcdefghijklmnopqrstuvwxyz/manifest.xml");
   GURL manifest2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile));
+      new CannedBrowsingDataAppCacheHelper(&profile_));
 
   ASSERT_TRUE(helper->empty());
   helper->AddAppCache(manifest1);

@@ -34,6 +34,9 @@ class CONTENT_EXPORT  StoragePartitionImpl
     : public StoragePartition,
       public NON_EXPORTED_BASE(mojom::StoragePartitionService) {
  public:
+  // It is guaranteed that storage partitions are destructed before the
+  // browser context starts shutting down its corresponding IO thread residents
+  // (e.g. resource context).
   ~StoragePartitionImpl() override;
 
   // Quota managed data uses a different bitmask for types than

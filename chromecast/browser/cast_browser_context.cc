@@ -57,6 +57,7 @@ CastBrowserContext::CastBrowserContext(
 }
 
 CastBrowserContext::~CastBrowserContext() {
+  ShutdownStoragePartitions();
   content::BrowserThread::DeleteSoon(
       content::BrowserThread::IO,
       FROM_HERE,

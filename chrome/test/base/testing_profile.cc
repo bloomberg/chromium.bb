@@ -532,6 +532,11 @@ TestingProfile::~TestingProfile() {
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
+
+  // Shutdown storage partitions before we post a task to delete
+  // the resource context.
+  ShutdownStoragePartitions();
+
   // Failing a post == leaks == heapcheck failure. Make that an immediate test
   // failure.
   if (resource_context_) {

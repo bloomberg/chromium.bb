@@ -108,8 +108,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   };
 
  private:
-  friend class base::RefCountedThreadSafe<OffTheRecordProfileIOData>;
-
   explicit OffTheRecordProfileIOData(Profile::ProfileType profile_type);
   ~OffTheRecordProfileIOData() override;
 

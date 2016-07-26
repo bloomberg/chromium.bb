@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_worker_context.h"
-#include "net/url_request/url_request_context_getter_observer.h"
 
 namespace base {
 class FilePath;
@@ -48,7 +47,6 @@ class StoragePartitionImpl;
 // is what is used internally in the service worker lib.
 class CONTENT_EXPORT ServiceWorkerContextWrapper
     : NON_EXPORTED_BASE(public ServiceWorkerContext),
-      public net::URLRequestContextGetterObserver,
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
@@ -71,12 +69,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void Shutdown();
 
   // Must be called on the IO thread.
-  void InitializeResourceContext(
-      ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
-
-  // For net::URLRequestContextGetterObserver
-  void OnContextShuttingDown() override;
+  void InitializeResourceContext(ResourceContext* resource_context);
 
   // Deletes all files on disk and restarts the system asynchronously. This
   // leaves the system in a disabled state until it's done. This should be
@@ -276,8 +269,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // The ResourceContext associated with this context.
   ResourceContext* resource_context_;
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextWrapper);
 };

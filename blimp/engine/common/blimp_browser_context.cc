@@ -80,6 +80,7 @@ BlimpBrowserContext::BlimpBrowserContext(bool off_the_record,
 }
 
 BlimpBrowserContext::~BlimpBrowserContext() {
+  ShutdownStoragePartitions();
   if (resource_context_) {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        resource_context_.release());

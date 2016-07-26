@@ -486,10 +486,18 @@ BrowserContext::~BrowserContext() {
       << "Attempting to destroy a BrowserContext that never called "
       << "Initialize()";
 
+  DCHECK(!GetUserData(kStoragePartitionMapKeyName))
+      << "StoragePartitionMap is not shut down properly";
+
   RemoveBrowserContextFromUserIdMap(this);
 
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
+}
+
+void BrowserContext::ShutdownStoragePartitions() {
+  if (GetUserData(kStoragePartitionMapKeyName))
+    RemoveUserData(kStoragePartitionMapKeyName);
 }
 
 }  // namespace content

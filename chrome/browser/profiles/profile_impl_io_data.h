@@ -147,8 +147,6 @@ class ProfileImplIOData : public ProfileIOData {
   };
 
  private:
-  friend class base::RefCountedThreadSafe<ProfileImplIOData>;
-
   struct LazyParams {
     LazyParams();
     ~LazyParams();
