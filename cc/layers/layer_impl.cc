@@ -123,22 +123,9 @@ void LayerImpl::SetDebugInfo(
 }
 
 void LayerImpl::DistributeScroll(ScrollState* scroll_state) {
-  DCHECK(scroll_state);
-  if (scroll_state->FullyConsumed())
-    return;
-
-  scroll_state->DistributeToScrollChainDescendant();
-
-  // If the scroll doesn't propagate, and we're currently scrolling
-  // a layer other than this one, prevent the scroll from
-  // propagating to this layer.
-  if (!scroll_state->should_propagate() &&
-      scroll_state->delta_consumed_for_scroll_sequence() &&
-      scroll_state->current_native_scrolling_node()->owner_id != id()) {
-    return;
-  }
-
-  ApplyScroll(scroll_state);
+  ScrollTree& scroll_tree = layer_tree_impl()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index());
+  return scroll_tree.DistributeScroll(scroll_node, scroll_state);
 }
 
 void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
