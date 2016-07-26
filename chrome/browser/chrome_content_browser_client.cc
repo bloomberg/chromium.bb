@@ -958,8 +958,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   net::URLRequestContextGetter* context =
       host->GetStoragePartition()->GetURLRequestContext();
 
-  host->AddFilter(new ChromeRenderMessageFilter(
-      id, profile, host->GetStoragePartition()->GetServiceWorkerContext()));
+  host->AddFilter(new ChromeRenderMessageFilter(id, profile));
 #if defined(ENABLE_EXTENSIONS)
   host->AddFilter(new cast::CastTransportHostFilter);
 #endif

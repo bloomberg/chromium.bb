@@ -31,7 +31,6 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/service_worker_context.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -47,23 +46,17 @@ const uint32_t kFilteredMessageClasses[] = {
     ChromeMsgStart, ContentSettingsMsgStart, NetworkHintsMsgStart,
 };
 
-void DidStartServiceWorkerForNavigationHint(bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 }  // namespace
 
-ChromeRenderMessageFilter::ChromeRenderMessageFilter(
-    int render_process_id,
-    Profile* profile,
-    content::ServiceWorkerContext* service_worker_context)
+ChromeRenderMessageFilter::ChromeRenderMessageFilter(int render_process_id,
+                                                     Profile* profile)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
       predictor_(profile_->GetNetworkPredictor()),
-      cookie_settings_(CookieSettingsFactory::GetForProfile(profile)),
-      service_worker_context_(service_worker_context) {}
+      cookie_settings_(CookieSettingsFactory::GetForProfile(profile)) {
+}
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
 }
@@ -101,7 +94,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
-    case NetworkHintsMsg_NavigationHint::ID:
 #if defined(ENABLE_PLUGINS)
     case ChromeViewHostMsg_IsCrashReportingEnabled::ID:
 #endif
@@ -142,10 +134,7 @@ void ChromeRenderMessageFilter::OnNavigationHint(
     blink::WebNavigationHintType type) {
   // TODO(horo): We don't need to have this method in //chrome. Move it to
   // //content while mojoifing network_hints. (crbug.com/610750)
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  service_worker_context_->StartServiceWorkerForNavigationHint(
-      url, type, render_process_id_,
-      base::Bind(&DidStartServiceWorkerForNavigationHint));
+  // TODO(horo): Implement this.
 }
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(
