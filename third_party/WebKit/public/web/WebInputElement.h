@@ -37,6 +37,7 @@ namespace blink {
 
 class HTMLInputElement;
 class WebElementCollection;
+class WebOptionElement;
 
 // Provides readonly access to some properties of a DOM input element node.
 class WebInputElement final : public WebFormControlElement {
@@ -76,7 +77,8 @@ public:
     BLINK_EXPORT bool isChecked() const;
     BLINK_EXPORT bool isMultiple() const;
 
-    BLINK_EXPORT WebElementCollection dataListOptions() const;
+    // Associated <datalsit> options which match to the current INPUT value.
+    BLINK_EXPORT WebVector<WebOptionElement> filteredDataListOptions() const;
 
     // Return the localized value for this input type.
     BLINK_EXPORT WebString localizeValue(const WebString&) const;

@@ -42,6 +42,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebElementCollection.h"
+#include "public/web/WebOptionElement.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -122,11 +123,9 @@ bool WebInputElement::isMultiple() const
     return constUnwrap<HTMLInputElement>()->multiple();
 }
 
-WebElementCollection WebInputElement::dataListOptions() const
+WebVector<WebOptionElement> WebInputElement::filteredDataListOptions() const
 {
-    if (HTMLDataListElement* dataList = toHTMLDataListElement(constUnwrap<HTMLInputElement>()->list()))
-        return WebElementCollection(dataList->options());
-    return WebElementCollection();
+    return WebVector<WebOptionElement>(constUnwrap<HTMLInputElement>()->filteredDataListOptions());
 }
 
 WebString WebInputElement::localizeValue(const WebString& proposedValue) const

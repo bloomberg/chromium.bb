@@ -1583,6 +1583,34 @@ bool HTMLInputElement::hasValidDataListOptions() const
     return false;
 }
 
+HeapVector<Member<HTMLOptionElement>> HTMLInputElement::filteredDataListOptions() const
+{
+    HeapVector<Member<HTMLOptionElement>> filtered;
+    HTMLDataListElement* dataList = this->dataList();
+    if (!dataList)
+        return filtered;
+
+    String prefix = innerEditorValue();
+    if (multiple() && type() == InputTypeNames::email) {
+        Vector<String> emails;
+        prefix.split(',', true, emails);
+        if (!emails.isEmpty())
+            prefix = emails.last().stripWhiteSpace();
+    }
+
+    HTMLDataListOptionsCollection* options = dataList->options();
+    filtered.reserveCapacity(options->length());
+    prefix = prefix.lower();
+    for (unsigned i = 0; i < options->length(); ++i) {
+        HTMLOptionElement* option = options->item(i);
+        DCHECK(option);
+        if (!option->value().lower().startsWith(prefix) || !isValidValue(option->value()))
+            continue;
+        filtered.append(option);
+    }
+    return filtered;
+}
+
 void HTMLInputElement::setListAttributeTargetObserver(ListAttributeTargetObserver* newObserver)
 {
     if (m_listAttributeTargetObserver)

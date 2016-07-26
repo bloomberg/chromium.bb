@@ -111,29 +111,7 @@ bool IsSingleClickEnabled() {
 void GetDataListSuggestions(const WebInputElement& element,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels) {
-  WebElementCollection options = element.dataListOptions();
-  if (options.isNull())
-    return;
-
-  // If the field accepts multiple email addresses, filter only on the last one.
-  base::string16 prefix = element.editingValue();
-  if (element.isMultiple() && element.isEmailField()) {
-    std::vector<base::string16> parts = base::SplitString(
-        prefix, base::ASCIIToUTF16(","), base::TRIM_WHITESPACE,
-        base::SPLIT_WANT_ALL);
-    if (!parts.empty())
-      base::TrimWhitespace(parts.back(), base::TRIM_LEADING, &prefix);
-  }
-
-  // Prefix filtering.
-  prefix = base::i18n::ToLower(prefix);
-  for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
-       !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
-    if (!base::StartsWith(base::i18n::ToLower(base::string16(option.value())),
-                          prefix, base::CompareCase::SENSITIVE) ||
-        !element.isValidValue(option.value()))
-      continue;
-
+  for (const auto& option : element.filteredDataListOptions()) {
     values->push_back(option.value());
     if (option.value() != option.label())
       labels->push_back(option.label());
