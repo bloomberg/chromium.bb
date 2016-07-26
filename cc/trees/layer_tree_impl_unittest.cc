@@ -11,18 +11,21 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_tree_host_common_test.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
 namespace {
 
-class LayerTreeImplTest : public LayerTreeHostCommonTest {
+class LayerTreeImplTest : public LayerTestCommon::LayerImplTest,
+                          public testing::Test {
  public:
   LayerTreeImplTest()
       : output_surface_(FakeOutputSurface::CreateDelegating3d()) {
@@ -42,6 +45,23 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   LayerImpl* root_layer() {
     return host_impl_->active_tree()->root_layer_for_testing();
   }
+
+  const LayerImplList& RenderSurfaceLayerList() const {
+    return host_impl_->active_tree()->RenderSurfaceLayerList();
+  }
+
+  void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
+    // We are probably not testing what is intended if the root_layer bounds are
+    // empty.
+    DCHECK(!root_layer->bounds().IsEmpty());
+
+    render_surface_layer_list_impl_.clear();
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root_layer, root_layer->bounds(), &render_surface_layer_list_impl_);
+    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  }
+
   int HitTestSimpleTree(int root_id,
                         int left_child_id,
                         int right_child_id,
@@ -50,10 +70,55 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
                         int right_child_sorting_context,
                         float root_depth,
                         float left_child_depth,
-                        float right_child_depth);
+                        float right_child_depth) {
+    std::unique_ptr<LayerImpl> root =
+        LayerImpl::Create(host_impl().active_tree(), root_id);
+    std::unique_ptr<LayerImpl> left_child =
+        LayerImpl::Create(host_impl().active_tree(), left_child_id);
+    std::unique_ptr<LayerImpl> right_child =
+        LayerImpl::Create(host_impl().active_tree(), right_child_id);
 
-  const LayerImplList& RenderSurfaceLayerList() const {
-    return host_impl_->active_tree()->RenderSurfaceLayerList();
+    gfx::Size bounds(100, 100);
+    {
+      gfx::Transform translate_z;
+      translate_z.Translate3d(0, 0, root_depth);
+      root->SetTransform(translate_z);
+      root->SetBounds(bounds);
+      root->SetDrawsContent(true);
+      root->Set3dSortingContextId(root_sorting_context);
+    }
+    {
+      gfx::Transform translate_z;
+      translate_z.Translate3d(0, 0, left_child_depth);
+      left_child->SetTransform(translate_z);
+      left_child->SetBounds(bounds);
+      left_child->SetDrawsContent(true);
+      left_child->Set3dSortingContextId(left_child_sorting_context);
+      left_child->test_properties()->should_flatten_transform = false;
+    }
+    {
+      gfx::Transform translate_z;
+      translate_z.Translate3d(0, 0, right_child_depth);
+      right_child->SetTransform(translate_z);
+      right_child->SetBounds(bounds);
+      right_child->SetDrawsContent(true);
+      right_child->Set3dSortingContextId(right_child_sorting_context);
+    }
+
+    root->test_properties()->AddChild(std::move(left_child));
+    root->test_properties()->AddChild(std::move(right_child));
+
+    host_impl().SetViewportSize(root->bounds());
+    host_impl().active_tree()->SetRootLayerForTesting(std::move(root));
+    host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+    CHECK_EQ(1u, RenderSurfaceLayerList().size());
+
+    gfx::PointF test_point = gfx::PointF(1.f, 1.f);
+    LayerImpl* result_layer =
+        host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
+
+    CHECK(result_layer);
+    return result_layer->id();
   }
 
  private:
@@ -62,6 +127,7 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   FakeImplTaskRunnerProvider task_runner_provider_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<FakeLayerTreeHostImpl> host_impl_;
+  std::vector<LayerImpl*> render_surface_layer_list_impl_;
 };
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
@@ -880,65 +946,6 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(4, result_layer->id());
-}
-
-int LayerTreeImplTest::HitTestSimpleTree(int root_id,
-                                         int left_child_id,
-                                         int right_child_id,
-                                         int root_sorting_context,
-                                         int left_child_sorting_context,
-                                         int right_child_sorting_context,
-                                         float root_depth,
-                                         float left_child_depth,
-                                         float right_child_depth) {
-  std::unique_ptr<LayerImpl> root =
-      LayerImpl::Create(host_impl().active_tree(), root_id);
-  std::unique_ptr<LayerImpl> left_child =
-      LayerImpl::Create(host_impl().active_tree(), left_child_id);
-  std::unique_ptr<LayerImpl> right_child =
-      LayerImpl::Create(host_impl().active_tree(), right_child_id);
-
-  gfx::Size bounds(100, 100);
-  {
-    gfx::Transform translate_z;
-    translate_z.Translate3d(0, 0, root_depth);
-    root->SetTransform(translate_z);
-    root->SetBounds(bounds);
-    root->SetDrawsContent(true);
-    root->Set3dSortingContextId(root_sorting_context);
-  }
-  {
-    gfx::Transform translate_z;
-    translate_z.Translate3d(0, 0, left_child_depth);
-    left_child->SetTransform(translate_z);
-    left_child->SetBounds(bounds);
-    left_child->SetDrawsContent(true);
-    left_child->Set3dSortingContextId(left_child_sorting_context);
-    left_child->test_properties()->should_flatten_transform = false;
-  }
-  {
-    gfx::Transform translate_z;
-    translate_z.Translate3d(0, 0, right_child_depth);
-    right_child->SetTransform(translate_z);
-    right_child->SetBounds(bounds);
-    right_child->SetDrawsContent(true);
-    right_child->Set3dSortingContextId(right_child_sorting_context);
-  }
-
-  root->test_properties()->AddChild(std::move(left_child));
-  root->test_properties()->AddChild(std::move(right_child));
-
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().active_tree()->SetRootLayerForTesting(std::move(root));
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
-  CHECK_EQ(1u, RenderSurfaceLayerList().size());
-
-  gfx::PointF test_point = gfx::PointF(1.f, 1.f);
-  LayerImpl* result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-
-  CHECK(result_layer);
-  return result_layer->id();
 }
 
 TEST_F(LayerTreeImplTest, HitTestingSameSortingContextTied) {

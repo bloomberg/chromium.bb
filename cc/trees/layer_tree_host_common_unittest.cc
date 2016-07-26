@@ -39,17 +39,17 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_tree_host_common_test.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
 #include "cc/trees/transform_node.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -59,55 +59,257 @@
 namespace cc {
 namespace {
 
+class VerifyTreeCalcsLayerTreeSettings : public LayerTreeSettings {
+ public:
+  VerifyTreeCalcsLayerTreeSettings() {
+    verify_transform_tree_calculations = true;
+  }
+};
+
+class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
+ public:
+  LayerTreeHostCommonTestBase()
+      : LayerTestCommon::LayerImplTest(VerifyTreeCalcsLayerTreeSettings()) {}
+  explicit LayerTreeHostCommonTestBase(const LayerTreeSettings& settings)
+      : LayerTestCommon::LayerImplTest(settings) {}
+
+  static void SetScrollOffsetDelta(LayerImpl* layer_impl,
+                                   const gfx::Vector2dF& delta) {
+    if (layer_impl->layer_tree_impl()
+            ->property_trees()
+            ->scroll_tree.SetScrollOffsetDeltaForTesting(layer_impl->id(),
+                                                         delta))
+      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
+          layer_impl->id(), layer_impl->transform_tree_index());
+  }
+
+  static float GetMaximumAnimationScale(LayerImpl* layer_impl) {
+    return layer_impl->layer_tree_impl()
+        ->property_trees()
+        ->GetAnimationScales(layer_impl->transform_tree_index(),
+                             layer_impl->layer_tree_impl())
+        .maximum_animation_scale;
+  }
+
+  static float GetStartingAnimationScale(LayerImpl* layer_impl) {
+    return layer_impl->layer_tree_impl()
+        ->property_trees()
+        ->GetAnimationScales(layer_impl->transform_tree_index(),
+                             layer_impl->layer_tree_impl())
+        .starting_animation_scale;
+  }
+
+  void ExecuteCalculateDrawProperties(Layer* root_layer,
+                                      float device_scale_factor,
+                                      float page_scale_factor,
+                                      Layer* page_scale_layer) {
+    PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
+
+    EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
+    gfx::Size device_viewport_size =
+        gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                  root_layer->bounds().height() * device_scale_factor);
+
+    // We are probably not testing what is intended if the root_layer bounds are
+    // empty.
+    DCHECK(!root_layer->bounds().IsEmpty());
+    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+        root_layer, device_viewport_size);
+    inputs.device_scale_factor = device_scale_factor;
+    inputs.page_scale_factor = page_scale_factor;
+    inputs.page_scale_layer = page_scale_layer;
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  }
+
+  void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
+                                      float device_scale_factor,
+                                      float page_scale_factor,
+                                      LayerImpl* page_scale_layer) {
+    if (device_scale_factor !=
+        root_layer->layer_tree_impl()->device_scale_factor())
+      root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
+    root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
+
+    EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
+
+    gfx::Size device_viewport_size =
+        gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                  root_layer->bounds().height() * device_scale_factor);
+
+    render_surface_layer_list_impl_.reset(new LayerImplList);
+
+    // We are probably not testing what is intended if the root_layer bounds are
+    // empty.
+    DCHECK(!root_layer->bounds().IsEmpty());
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root_layer, device_viewport_size,
+        render_surface_layer_list_impl_.get());
+    inputs.device_scale_factor = device_scale_factor;
+    inputs.page_scale_factor = page_scale_factor;
+    inputs.page_scale_layer = page_scale_layer;
+    inputs.can_adjust_raster_scales = true;
+
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  }
+
+  template <class LayerType>
+  void ExecuteCalculateDrawProperties(LayerType* root_layer) {
+    LayerType* page_scale_application_layer = nullptr;
+    ExecuteCalculateDrawProperties(root_layer, 1.f, 1.f,
+                                   page_scale_application_layer);
+  }
+
+  template <class LayerType>
+  void ExecuteCalculateDrawProperties(LayerType* root_layer,
+                                      float device_scale_factor) {
+    LayerType* page_scale_application_layer = nullptr;
+    ExecuteCalculateDrawProperties(root_layer, device_scale_factor, 1.f,
+                                   page_scale_application_layer);
+  }
+
+  void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* root_layer) {
+    DCHECK(root_layer->layer_tree_host());
+    PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
+
+    bool can_render_to_separate_surface = true;
+
+    const Layer* page_scale_layer =
+        root_layer->layer_tree_host()->page_scale_layer();
+    Layer* inner_viewport_scroll_layer =
+        root_layer->layer_tree_host()->inner_viewport_scroll_layer();
+    Layer* outer_viewport_scroll_layer =
+        root_layer->layer_tree_host()->outer_viewport_scroll_layer();
+    const Layer* overscroll_elasticity_layer =
+        root_layer->layer_tree_host()->overscroll_elasticity_layer();
+    gfx::Vector2dF elastic_overscroll =
+        root_layer->layer_tree_host()->elastic_overscroll();
+    float page_scale_factor = 1.f;
+    float device_scale_factor = 1.f;
+    gfx::Size device_viewport_size =
+        gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                  root_layer->bounds().height() * device_scale_factor);
+    PropertyTrees* property_trees =
+        root_layer->layer_tree_host()->property_trees();
+    update_layer_list_.clear();
+    PropertyTreeBuilder::BuildPropertyTrees(
+        root_layer, page_scale_layer, inner_viewport_scroll_layer,
+        outer_viewport_scroll_layer, overscroll_elasticity_layer,
+        elastic_overscroll, page_scale_factor, device_scale_factor,
+        gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
+    draw_property_utils::UpdatePropertyTrees(property_trees,
+                                             can_render_to_separate_surface);
+    draw_property_utils::FindLayersThatNeedUpdates(
+        root_layer->layer_tree_host(), property_trees->transform_tree,
+        property_trees->effect_tree, &update_layer_list_);
+    draw_property_utils::ComputeVisibleRectsForTesting(
+        property_trees, can_render_to_separate_surface, &update_layer_list_);
+  }
+
+  void ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* root_layer) {
+    DCHECK(root_layer->layer_tree_impl());
+    PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer);
+
+    bool can_render_to_separate_surface = true;
+
+    LayerImpl* page_scale_layer = nullptr;
+    LayerImpl* inner_viewport_scroll_layer =
+        root_layer->layer_tree_impl()->InnerViewportScrollLayer();
+    LayerImpl* outer_viewport_scroll_layer =
+        root_layer->layer_tree_impl()->OuterViewportScrollLayer();
+    LayerImpl* overscroll_elasticity_layer =
+        root_layer->layer_tree_impl()->OverscrollElasticityLayer();
+    gfx::Vector2dF elastic_overscroll =
+        root_layer->layer_tree_impl()->elastic_overscroll()->Current(
+            root_layer->layer_tree_impl()->IsActiveTree());
+    float page_scale_factor = 1.f;
+    float device_scale_factor = 1.f;
+    gfx::Size device_viewport_size =
+        gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                  root_layer->bounds().height() * device_scale_factor);
+    update_layer_list_impl_.reset(new LayerImplList);
+    root_layer->layer_tree_impl()->BuildLayerListForTesting();
+    draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
+        root_layer, page_scale_layer, inner_viewport_scroll_layer,
+        outer_viewport_scroll_layer, overscroll_elasticity_layer,
+        elastic_overscroll, page_scale_factor, device_scale_factor,
+        gfx::Rect(device_viewport_size), gfx::Transform(),
+        can_render_to_separate_surface,
+        root_layer->layer_tree_impl()->property_trees(),
+        update_layer_list_impl_.get());
+  }
+
+  void ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(
+      LayerImpl* root_layer) {
+    gfx::Size device_viewport_size =
+        gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
+    render_surface_layer_list_impl_.reset(new LayerImplList);
+
+    DCHECK(!root_layer->bounds().IsEmpty());
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root_layer, device_viewport_size,
+        render_surface_layer_list_impl_.get());
+    inputs.can_adjust_raster_scales = true;
+    inputs.can_render_to_separate_surface = false;
+
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  }
+
+  bool UpdateLayerListImplContains(int id) const {
+    for (auto* layer : *update_layer_list_impl_) {
+      if (layer->id() == id)
+        return true;
+    }
+    return false;
+  }
+
+  bool UpdateLayerListContains(int id) const {
+    for (const auto& layer : update_layer_list_) {
+      if (layer->id() == id)
+        return true;
+    }
+    return false;
+  }
+
+  const LayerImplList* render_surface_layer_list_impl() const {
+    return render_surface_layer_list_impl_.get();
+  }
+  const LayerImplList* update_layer_list_impl() const {
+    return update_layer_list_impl_.get();
+  }
+  const LayerList& update_layer_list() const { return update_layer_list_; }
+
+ private:
+  std::unique_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
+  LayerList update_layer_list_;
+  std::unique_ptr<LayerImplList> update_layer_list_impl_;
+};
+
+class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
+                                public testing::Test {};
+
 class LayerWithForcedDrawsContent : public Layer {
  public:
   LayerWithForcedDrawsContent() {}
 
-  bool DrawsContent() const override;
+  bool DrawsContent() const override { return true; }
 
  private:
   ~LayerWithForcedDrawsContent() override {}
 };
 
-bool LayerWithForcedDrawsContent::DrawsContent() const { return true; }
-
-class MockContentLayerClient : public ContentLayerClient {
- public:
-  MockContentLayerClient() {}
-  ~MockContentLayerClient() override {}
-  gfx::Rect PaintableRegion() override { return gfx::Rect(); }
-  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting picture_control) override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-  bool FillsBoundsCompletely() const override { return false; }
-  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
-};
-
-#define EXPECT_CONTENTS_SCALE_EQ(expected, layer)         \
-  do {                                                    \
-    EXPECT_FLOAT_EQ(expected, layer->contents_scale_x()); \
-    EXPECT_FLOAT_EQ(expected, layer->contents_scale_y()); \
-  } while (false)
-
-#define EXPECT_IDEAL_SCALE_EQ(expected, layer)                 \
-  do {                                                         \
-    EXPECT_FLOAT_EQ(expected, layer->GetIdealContentsScale()); \
-  } while (false)
-
-class LayerTreeSettingsScaleContent : public LayerTreeSettings {
+class LayerTreeSettingsScaleContent : public VerifyTreeCalcsLayerTreeSettings {
  public:
   LayerTreeSettingsScaleContent() {
     layer_transforms_should_scale_layer_contents = true;
-    verify_transform_tree_calculations = true;
   }
 };
 
-class LayerTreeHostCommonScalingTest : public LayerTreeHostCommonTest {
+class LayerTreeHostCommonScalingTest : public LayerTreeHostCommonTestBase,
+                                       public testing::Test {
  public:
   LayerTreeHostCommonScalingTest()
-      : LayerTreeHostCommonTest(LayerTreeSettingsScaleContent()) {}
+      : LayerTreeHostCommonTestBase(LayerTreeSettingsScaleContent()) {}
 };
 
 class LayerTreeHostCommonDrawRectsTest : public LayerTreeHostCommonTest {
@@ -4262,9 +4464,9 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   gfx::Size viewport_size(100, 100);
   ExecuteCalculateDrawProperties(root, device_scale_factor);
 
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor, root);
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor, child);
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor, child2);
+  EXPECT_FLOAT_EQ(device_scale_factor, root->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(device_scale_factor, child->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(device_scale_factor, child2->GetIdealContentsScale());
 
   EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
 
@@ -4368,9 +4570,10 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  root);
 
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor,
-                        perspective_surface);
+  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
+                  parent->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(device_scale_factor * page_scale_factor,
+                  perspective_surface->GetIdealContentsScale());
   // Ideal scale is the max 2d scale component of the combined transform up to
   // the nearest render target. Here this includes the layer transform as well
   // as the device and page scale factors.
@@ -4380,7 +4583,7 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   gfx::Vector2dF scales =
       MathUtil::ComputeTransform2dScaleComponents(transform, 0.f);
   float max_2d_scale = std::max(scales.x(), scales.y());
-  EXPECT_IDEAL_SCALE_EQ(max_2d_scale, scale_surface);
+  EXPECT_FLOAT_EQ(max_2d_scale, scale_surface->GetIdealContentsScale());
 
   // The ideal scale will draw 1:1 with its render target space along
   // the larger-scale axis.
@@ -4457,12 +4660,12 @@ TEST_F(LayerTreeHostCommonScalingTest, SmallIdealScale) {
     float expected_ideal_scale =
         device_scale_factor * page_scale_factor * initial_parent_scale;
     EXPECT_LT(expected_ideal_scale, 1.f);
-    EXPECT_IDEAL_SCALE_EQ(expected_ideal_scale, parent);
+    EXPECT_FLOAT_EQ(expected_ideal_scale, parent->GetIdealContentsScale());
 
     expected_ideal_scale = device_scale_factor * page_scale_factor *
                            initial_parent_scale * initial_child_scale;
     EXPECT_LT(expected_ideal_scale, 1.f);
-    EXPECT_IDEAL_SCALE_EQ(expected_ideal_scale, child_scale);
+    EXPECT_FLOAT_EQ(expected_ideal_scale, child_scale->GetIdealContentsScale());
   }
 }
 
@@ -4491,11 +4694,11 @@ TEST_F(LayerTreeHostCommonScalingTest, IdealScaleForAnimatingLayer) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_IDEAL_SCALE_EQ(initial_parent_scale, parent);
+  EXPECT_FLOAT_EQ(initial_parent_scale, parent->GetIdealContentsScale());
   // Animating layers compute ideal scale in the same way as when
   // they are static.
-  EXPECT_IDEAL_SCALE_EQ(initial_child_scale * initial_parent_scale,
-                        child_scale);
+  EXPECT_FLOAT_EQ(initial_child_scale * initial_parent_scale,
+                  child_scale->GetIdealContentsScale());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
@@ -4797,22 +5000,18 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
         host_impl_(LCDTextTestLayerTreeSettings(),
                    &task_runner_provider_,
                    &shared_bitmap_manager_,
-                   &task_graph_runner_),
-        root_(nullptr),
-        child_(nullptr),
-        grand_child_(nullptr) {}
+                   &task_graph_runner_) {}
 
   scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
 
  protected:
   LayerTreeSettings LCDTextTestLayerTreeSettings() {
-    LayerTreeSettings settings = LayerTreeSettings();
+    LayerTreeSettings settings = VerifyTreeCalcsLayerTreeSettings();
 
     can_use_lcd_text_ = std::tr1::get<0>(GetParam());
     layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
     settings.can_use_lcd_text = can_use_lcd_text_;
     settings.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text_;
-    settings.verify_transform_tree_calculations = true;
     return settings;
   }
 
@@ -4864,9 +5063,9 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
   FakeLayerTreeHostImpl host_impl_;
   scoped_refptr<AnimationTimeline> timeline_;
 
-  LayerImpl* root_;
-  LayerImpl* child_;
-  LayerImpl* grand_child_;
+  LayerImpl* root_ = nullptr;
+  LayerImpl* child_ = nullptr;
+  LayerImpl* grand_child_ = nullptr;
 };
 
 TEST_P(LCDTextTest, CanUseLCDText) {
@@ -4874,7 +5073,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   bool expect_not_lcd_text = layers_always_allowed_lcd_text_;
 
   // Case 1: Identity transform.
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
@@ -4884,7 +5083,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   integral_translation.Translate(1.0, 2.0);
   child_->SetTransform(integral_translation);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
@@ -4894,7 +5093,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   non_integral_translation.Translate(1.5, 2.5);
   child_->SetTransform(non_integral_translation);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, grand_child_->CanUseLCDText());
@@ -4904,7 +5103,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   rotation.Rotate(10.0);
   child_->SetTransform(rotation);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, grand_child_->CanUseLCDText());
@@ -4914,7 +5113,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   scale.Scale(2.0, 2.0);
   child_->SetTransform(scale);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, grand_child_->CanUseLCDText());
@@ -4924,7 +5123,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   skew.Skew(10.0, 0.0);
   child_->SetTransform(skew);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, grand_child_->CanUseLCDText());
@@ -4933,7 +5132,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   child_->SetTransform(gfx::Transform());
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
   child_->test_properties()->opacity = 0.5f;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, grand_child_->CanUseLCDText());
@@ -4942,21 +5141,21 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   child_->SetTransform(gfx::Transform());
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
   child_->test_properties()->opacity = 1.f;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
 
   // Case 9: Non-opaque content.
   child_->SetContentsOpaque(false);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
 
   // Case 10: Sanity check: restore content opaqueness.
   child_->SetContentsOpaque(true);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
@@ -4967,7 +5166,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   bool expect_not_lcd_text = layers_always_allowed_lcd_text_;
 
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
@@ -4980,7 +5179,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
 
   AddOpacityTransitionToElementWithPlayer(child_->element_id(), timeline(),
                                           10.0, 0.9f, 0.1f, false);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   // Text LCD should be adjusted while animation is active.
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
@@ -4992,7 +5191,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {
   bool expect_not_lcd_text = layers_always_allowed_lcd_text_;
 
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, child_->CanUseLCDText());
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
@@ -5002,7 +5201,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {
   child_->SetContentsOpaque(false);
   AddOpacityTransitionToElementWithPlayer(child_->element_id(), timeline(),
                                           10.0, 0.9f, 0.1f, false);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, nullptr);
   // LCD text should be disabled for non-opaque layers even during animations.
   EXPECT_EQ(expect_lcd_text, root_->CanUseLCDText());
   EXPECT_EQ(expect_not_lcd_text, child_->CanUseLCDText());
@@ -6885,7 +7084,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 }
 
-static void GatherDrawnLayers(LayerImplList* rsll,
+static void GatherDrawnLayers(const LayerImplList* rsll,
                               std::set<LayerImpl*>* drawn_layers) {
   for (LayerIterator it = LayerIterator::Begin(rsll),
                      end = LayerIterator::End(rsll);
@@ -7415,7 +7614,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
       &render_surface_layer_list_impl);
   inputs.device_scale_factor = 2.f;
   inputs.page_scale_factor = 1.f;
-  inputs.page_scale_layer = NULL;
+  inputs.page_scale_layer = nullptr;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // Layers in the root render surface have their visible content rect clipped
@@ -9020,10 +9219,9 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
                   std::isnan(child->DrawTransform().matrix().get(1, 1));
   EXPECT_TRUE(is_inf_or_nan);
 
-  std::vector<LayerImpl*>* rsll = render_surface_layer_list_impl();
-  bool root_in_rsll =
-      std::find(rsll->begin(), rsll->end(), root) != rsll->end();
-  EXPECT_TRUE(root_in_rsll);
+  // The root layer should be in the RenderSurfaceLayerListImpl.
+  const auto* rsll = render_surface_layer_list_impl();
+  EXPECT_NE(std::find(rsll->begin(), rsll->end(), root), rsll->end());
 }
 
 TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
@@ -9294,7 +9492,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   parent5->SetBounds(gfx::Size(10, 10));
 
-  host()->RegisterViewportLayers(NULL, page_scale_layer, parent2, NULL);
+  host()->RegisterViewportLayers(nullptr, page_scale_layer, parent2, nullptr);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root1.get());
 
   const int kInvalidPropertyTreeNodeId = -1;

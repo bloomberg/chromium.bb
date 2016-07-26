@@ -245,8 +245,6 @@
       'test/layer_internals_for_test.h',
       'test/layer_test_common.cc',
       'test/layer_test_common.h',
-      'test/layer_tree_host_common_test.cc',
-      'test/layer_tree_host_common_test.h',
       'test/layer_tree_json_parser.cc',
       'test/layer_tree_json_parser.h',
       'test/layer_tree_pixel_resource_test.cc',
