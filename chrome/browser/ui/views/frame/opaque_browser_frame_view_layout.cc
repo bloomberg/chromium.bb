@@ -274,7 +274,6 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
   bool use_hidden_icon_location = true;
 
   int size = delegate_->GetIconSize();
-  int frame_thickness = FrameBorderThickness(false);
   bool should_show_icon = delegate_->ShouldShowWindowIcon() && window_icon_;
   bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
 
@@ -331,6 +330,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     } else {
       // We set the icon bounds to a small rectangle in the top leading corner
       // if there are no icons on the leading side.
+      const int frame_thickness = FrameBorderThickness(false);
       window_icon_bounds_ = gfx::Rect(
           frame_thickness + kIconLeftSpacing, frame_thickness, size, size);
     }
