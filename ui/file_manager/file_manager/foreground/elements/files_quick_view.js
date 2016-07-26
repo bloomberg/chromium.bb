@@ -9,6 +9,8 @@ var FilesQuickView = Polymer({
     // File media type, e.g. image, video.
     type: String,
     filePath: String,
+    // URLs should be accessible from webview since contets are rendered inside
+    // it. Hint: use URL.createObjectURL.
     contentUrl: String,
     videoPoster: String,
     audioArtwork: String,
@@ -24,6 +26,7 @@ var FilesQuickView = Polymer({
 
   listeners: {
     'iron-overlay-closed': 'clear',
+    'files-safe-img-tap-outside': 'close',
   },
 
   // Clears fields.

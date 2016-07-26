@@ -48,6 +48,12 @@
     "webstoreWidgetPrivate",
     "webview"
   ],
+  "webview": {
+    "partitions": [{
+      "name": "trusted",
+      "accessible_resources": ["foreground/elements/files_safe_img_webview_content.*"]
+    }]
+  },
   "file_browser_handlers": [
     {
       "id": "mount-archive",

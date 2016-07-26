@@ -2419,6 +2419,10 @@ files-toggle-ripple {
   top: 0;
 }
 
+#quick-view {
+  z-index: 505; /* Must be above the scroll bar (500). */
+}
+
 /* Preventing FOUC */
 paper-input-container:unresolved {
   display: none;

@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="files_metadata_box.html">
+<link rel="import" href="files_safe_img.html">
 <link rel="import" href="files_tooltip.html">
 <link rel="import" href="icons.html">
 
@@ -32,7 +33,7 @@
           <div class='close-on-click' id="innerContentPanel" tabindex="0">
             <template is="dom-if" if="[[isImage_(type)]]">
               <div class="close-on-click" hidden="[[!contentUrl]]">
-                <img class="content" src="[[contentUrl]]">
+                <files-safe-img class="content" src="[[contentUrl]]"></files-safe-img>
               </div>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="image"></div>
@@ -45,7 +46,7 @@
               </template>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div class="thumbnail" hidden="[[!videoPoster]]">
-                  <img id="video-poster" src="[[videoPoster]]">
+                  <files-safe-img id="video-poster" src="[[videoPoster]]"></files-safe-img>
                 </div>
                 <div hidden="[[videoPoster]]" generic-thumbnail="video"></div>
                 <div class="no-preview" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
@@ -53,7 +54,7 @@
             </template>
             <template is="dom-if" if="[[isAudio_(type)]]">
               <template is="dom-if" if="[[audioArtwork]]">
-                <img id="audio-artwork" src="[[audioArtwork]]"></img>
+                <files-safe-img id="audio-artwork" src="[[audioArtwork]]"></files-safe-img>
               </template>
               <template is="dom-if" if="[[contentUrl]]">
                 <div>

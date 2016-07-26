@@ -84,7 +84,7 @@ function QuickViewController(
 QuickViewController.prototype.onOpenInNewButtonTap_ = function(event) {
   this.taskController_.executeDefaultTask();
   this.quickView_.close();
-}
+};
 
 /**
  * Handles key event on listContainer if it's relevent to quick view.
@@ -185,66 +185,109 @@ QuickViewController.prototype.updateQuickView_ = function() {
  * @private
  */
 QuickViewController.prototype.onMetadataLoaded_ = function(entry, items) {
+  return this.getQuickViewParameters_(entry, items).then(function(params) {
+    this.quickView_.contentUrl = params.contentUrl || '';
+    this.quickView_.type = params.type || '';
+    this.quickView_.filePath = params.filePath || '';
+    this.quickView_.videoPoster = params.videoPoster || '';
+    this.quickView_.audioArtwork = params.audioArtwork || '';
+    this.quickView_.autoplay = params.autoplay || false;
+  }.bind(this));
+};
+
+/**
+ * @typedef {{
+ *   type: string,
+ *   filePath: string,
+ *   contentUrl: (string|undefined),
+ *   videoPoster: (string|undefined),
+ *   audioArtwork: (string|undefined),
+ *   autoplay: (boolean|undefined)
+ * }}
+ */
+var QuickViewParams;
+
+/**
+ * @param {!FileEntry} entry
+ * @param {Array<MetadataItem>} items
+ * @return !Promise<!QuickViewParams>
+ *
+ * @private
+ */
+QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
   var item = items[0];
   var type = FileType.getType(entry).type;
 
-  this.quickView_.clear();
-  this.quickView_.filePath = entry.name;
-  this.quickView_.type = type;
+  /** @type {!QuickViewParams} */
+  var params = {
+    type: type,
+    filePath: entry.name,
+  };
+
   if (type === 'image') {
     if (item.externalFileUrl) {
       if (item.thumbnailUrl) {
-        this.loadThumbnailFromDrive_(item.thumbnailUrl, function(result) {
-          if (result.status !== 'success') {
-            return;
-          }
-          this.quickView_.contentUrl = result.data;
-        }.bind(this));
+        return this.loadThumbnailFromDrive_(item.thumbnailUrl)
+            .then(function(result) {
+              if (result.status === 'success')
+                params.contentUrl = result.data;
+              return params;
+            }.bind(this));
       }
     } else {
-      this.quickView_.contentUrl = item.thumbnailUrl || entry.toURL();
+      return new Promise(function(resolve, reject) {
+        entry.file(function(file) {
+          params.contentUrl = URL.createObjectURL(file);
+          resolve(params);
+        });
+      });
     }
   } else if (type === 'video') {
     if (item.externalFileUrl) {
       if (item.thumbnailUrl) {
-        this.loadThumbnailFromDrive_(item.thumbnailUrl, function(result) {
-          if (result.status !== 'success') {
-            return;
-          }
-          this.quickView_.videoPoster = result.data;
-        }.bind(this));
+        return this.loadThumbnailFromDrive_(item.thumbnailUrl)
+            .then(function(result) {
+              if (result.status === 'success') {
+                params.videoPoster = result.data;
+              }
+              return params;
+            });
       }
     } else {
-      this.quickView_.contentUrl = entry.toURL();
-      if (item.thumbnailUrl)
-        this.quickView_.videoPoster = item.thumbnailUrl;
-      this.quickView_.autoplay = true;
+      params.contentUrl = entry.toURL();
+      params.autoplay = true;
+      if (item.thumbnailUrl) {
+        params.videoPoster = item.thumbnailUrl;
+      }
     }
   } else if (type === 'audio') {
     if (item.externalFileUrl) {
       // If the file is in Drive, we ask user to open it with external app.
     } else {
-      this.quickView_.contentUrl = entry.toURL();
-      this.quickView_.autoplay = true;
-      this.metadataModel_.get([entry], ['contentThumbnailUrl'])
+      params.contentUrl = entry.toURL();
+      params.autoplay = true;
+      return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
           .then(function(entry, items) {
             var item = items[0];
-            if (item.contentThumbnailUrl)
-              this.quickView_.audioArtwork = item.contentThumbnailUrl;
+            if (item.contentThumbnailUrl) {
+              params.audioArtwork = item.contentThumbnailUrl;
+            }
+            return params;
           }.bind(this, entry));
     }
   }
+  return Promise.resolve(params);
 };
 
 /**
  * Loads a thumbnail from Drive.
  *
  * @param {string} url Thumbnail url
- * @param {function({status: string, data:string, width:number,
- *     height:number})} callback
+ * @return Promise<{{status: string, data:string, width:number, height:number}}>
  * @private
  */
-QuickViewController.prototype.loadThumbnailFromDrive_ = function(
-    url, callback) {
-  ImageLoaderClient.getInstance().load(url, callback);
+QuickViewController.prototype.loadThumbnailFromDrive_ = function(url) {
+  return new Promise(function(resolve) {
+    ImageLoaderClient.getInstance().load(url, resolve)
+  });
 };

@@ -1,0 +1,20 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#content {
+  background-color: transparent;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  max-height: 100%;
+  max-width: 100%;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#content[hidden] {
+  display: none;
+}
