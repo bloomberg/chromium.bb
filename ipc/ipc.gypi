@@ -57,8 +57,6 @@
           'ipc_endpoint.cc',
           'ipc_endpoint.h',
           'ipc_export.h',
-          'ipc_handle_win.cc',
-          'ipc_handle_win.h',
           'ipc_listener.h',
           'ipc_logging.cc',
           'ipc_logging.h',
