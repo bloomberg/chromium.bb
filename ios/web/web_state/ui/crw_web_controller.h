@@ -311,9 +311,6 @@ class WebStateImpl;
 - (void)resetInjectedWebViewContentView;
 // Returns the number of observers registered for this CRWWebController.
 - (NSUInteger)observerCount;
-// Returns the current window id.
-- (NSString*)windowId;
-- (void)setWindowId:(NSString*)windowId;
 - (void)setURLOnStartLoading:(const GURL&)url;
 - (void)simulateLoadRequestWithURL:(const GURL&)URL;
 - (NSString*)externalRequestWindowName;

@@ -2641,7 +2641,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script {
   NSString* kTemplate = @"if (__gCrWeb['windowId'] === '%@') { %@; }";
-  return [NSString stringWithFormat:kTemplate, [self windowId], script];
+  return [NSString
+      stringWithFormat:kTemplate, [_windowIDJSManager windowId], script];
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
@@ -2663,9 +2664,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   std::string windowID;
   message->GetString("crwWindowId", &windowID);
   // Check for correct windowID
-  if (![[self windowId] isEqualToString:base::SysUTF8ToNSString(windowID)]) {
+  if (base::SysNSStringToUTF8([_windowIDJSManager windowId]) != windowID) {
     DLOG(WARNING) << "Message from JS ignored due to non-matching windowID: " <<
-        [self windowId] << " != " << base::SysUTF8ToNSString(windowID);
+        [_windowIDJSManager windowId]
+                  << " != " << base::SysUTF8ToNSString(windowID);
     return NO;
   }
   base::DictionaryValue* command = nullptr;
@@ -5621,14 +5623,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (NSUInteger)observerCount {
   DCHECK_EQ(_observerBridges.size(), [_observers count]);
   return [_observers count];
-}
-
-- (NSString*)windowId {
-  return [_windowIDJSManager windowId];
-}
-
-- (void)setWindowId:(NSString*)windowId {
-  return [_windowIDJSManager setWindowId:windowId];
 }
 
 - (void)simulateLoadRequestWithURL:(const GURL&)URL {
