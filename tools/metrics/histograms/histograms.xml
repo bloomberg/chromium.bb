@@ -993,6 +993,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.CumulativeUseTime" units="seconds">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>
+    ARC use time. The use time is incremented in regular intervals while android
+    container is active. Reported at most once a day, at which point accumulated
+    time is reset (which means that sum of reported times for a OS version would
+    give an estimate of ARC usage time per OS version).
+  </summary>
+</histogram>
+
 <histogram name="Arc.IntentHandlerAction" enum="ArcIntentHandlerAction">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
