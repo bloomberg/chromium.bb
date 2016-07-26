@@ -320,7 +320,7 @@ unsigned int StreamMixerAlsa::DetermineOutputRate(unsigned int requested_rate) {
   // rate when the input sample rate is not supported.
   const int* kSupportedSampleRatesEnd =
       kSupportedSampleRates + arraysize(kSupportedSampleRates);
-  auto nearest_sample_rate =
+  auto* nearest_sample_rate =
       std::min_element(kSupportedSampleRates, kSupportedSampleRatesEnd,
                        [this](int r1, int r2) -> bool {
                          return abs(requested_output_samples_per_second_ - r1) <

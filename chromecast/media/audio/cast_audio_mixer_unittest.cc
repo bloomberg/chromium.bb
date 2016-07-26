@@ -280,7 +280,7 @@ TEST_F(CastAudioMixerTest, MultiStreamCycle) {
   EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
-  for (auto& stream : streams)
+  for (auto* stream : streams)
     ASSERT_TRUE(stream->Open());
 
   EXPECT_CALL(mock_mixer_stream(), Start(&mock_mixer()));
@@ -344,13 +344,13 @@ TEST_F(CastAudioMixerTest, OnErrorRecovery) {
 
   streams.push_back(CreateMixerStream());
   streams.push_back(CreateMixerStream());
-  for (auto stream : streams)
+  for (auto* stream : streams)
     ASSERT_TRUE(stream);
 
   EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
-  for (auto stream : streams)
+  for (auto* stream : streams)
     ASSERT_TRUE(stream->Open());
 
   EXPECT_CALL(mock_mixer_stream(), Start(&mock_mixer()));
@@ -373,7 +373,7 @@ TEST_F(CastAudioMixerTest, OnErrorRecovery) {
 
   EXPECT_CALL(mock_mixer_stream(), Stop());
   EXPECT_CALL(mock_mixer_stream(), Close());
-  for (auto stream : streams) {
+  for (auto* stream : streams) {
     EXPECT_CALL(mock_manager(), ReleaseOutputStream(stream));
     stream->Close();
   }
@@ -385,13 +385,13 @@ TEST_F(CastAudioMixerTest, OnErrorNoRecovery) {
 
   streams.push_back(CreateMixerStream());
   streams.push_back(CreateMixerStream());
-  for (auto stream : streams)
+  for (auto* stream : streams)
     ASSERT_TRUE(stream);
 
   EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
-  for (auto stream : streams)
+  for (auto* stream : streams)
     ASSERT_TRUE(stream->Open());
 
   EXPECT_CALL(mock_mixer_stream(), Start(&mock_mixer()));
@@ -412,7 +412,7 @@ TEST_F(CastAudioMixerTest, OnErrorNoRecovery) {
   ASSERT_TRUE(streams.back());
   ASSERT_FALSE(streams.back()->Open());
 
-  for (auto stream : streams) {
+  for (auto* stream : streams) {
     EXPECT_CALL(mock_manager(), ReleaseOutputStream(stream));
     stream->Close();
   }

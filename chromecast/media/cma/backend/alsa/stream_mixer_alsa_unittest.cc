@@ -208,13 +208,13 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
 std::unique_ptr<::media::AudioBus> GetMixedAudioData(
     const std::vector<testing::StrictMock<MockInputQueue>*>& inputs) {
   int read_size = std::numeric_limits<int>::max();
-  for (const auto input : inputs) {
+  for (auto* input : inputs) {
     CHECK(input);
     read_size = std::min(input->MaxReadSize(), read_size);
   }
 
   // Verify all inputs are the right size.
-  for (const auto input : inputs) {
+  for (auto* input : inputs) {
     CHECK_EQ(kNumChannels, input->data().channels());
     CHECK_LE(read_size, input->data().frames());
   }
@@ -228,7 +228,7 @@ std::unique_ptr<::media::AudioBus> GetMixedAudioData(
 
       // Sum the sample from each input stream, scaling each stream.
       *result = 0.0;
-      for (const auto input : inputs)
+      for (auto* input : inputs)
         *result += *(input->data().channel(c) + f) * input->multiplier();
 
       // Clamp the mixed sample between 1.0 and -1.0.
@@ -285,7 +285,7 @@ class StreamMixerAlsaTest : public testing::Test {
 };
 
 TEST_F(StreamMixerAlsaTest, AddSingleInput) {
-  auto input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
+  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
 
   EXPECT_CALL(*input, Initialize(_)).Times(1);
@@ -294,8 +294,8 @@ TEST_F(StreamMixerAlsaTest, AddSingleInput) {
 }
 
 TEST_F(StreamMixerAlsaTest, AddMultipleInputs) {
-  auto input1 = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  auto input2 =
+  auto* input1 = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
+  auto* input2 =
       new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond * 2);
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
 
@@ -362,7 +362,7 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   inputs[0]->SetMaxReadSize(1024);
   inputs[1]->SetMaxReadSize(512);
   inputs[2]->SetMaxReadSize(2048);
-  for (const auto input : inputs) {
+  for (auto* input : inputs) {
     EXPECT_CALL(*input, GetResampledData(_, 512)).Times(1);
     EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
   }
@@ -377,7 +377,7 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   inputs[1]->SetPrimary(false);
   inputs[1]->SetMaxReadSize(0);
   inputs[2]->SetPrimary(false);
-  for (const auto input : inputs) {
+  for (auto* input : inputs) {
     if (input != inputs[1])
       EXPECT_CALL(*input, GetResampledData(_, 1024)).Times(1);
     EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
@@ -394,7 +394,7 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
 }
 
 TEST_F(StreamMixerAlsaTest, OneStreamMixesProperly) {
-  auto input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
+  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
   input->SetPaused(false);
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
@@ -423,7 +423,7 @@ TEST_F(StreamMixerAlsaTest, OneStreamMixesProperly) {
 }
 
 TEST_F(StreamMixerAlsaTest, OneStreamIsScaledDownProperly) {
-  auto input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
+  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
   input->SetPaused(false);
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
@@ -565,7 +565,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
 }
 
 TEST_F(StreamMixerAlsaTest, WriteBuffersOfVaryingLength) {
-  auto input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
+  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
   input->SetPaused(false);
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();

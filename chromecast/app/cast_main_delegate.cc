@@ -180,7 +180,7 @@ void CastMainDelegate::InitializeResourceBundle() {
 #if defined(OS_ANDROID)
   // On Android, the renderer runs with a different UID and can never access
   // the file system. Use the file descriptor passed in at launch time.
-  auto global_descriptors = base::GlobalDescriptors::GetInstance();
+  auto* global_descriptors = base::GlobalDescriptors::GetInstance();
   int pak_fd = global_descriptors->MaybeGet(kAndroidPakDescriptor);
   base::MemoryMappedFile::Region pak_region;
   if (pak_fd >= 0) {
