@@ -382,7 +382,7 @@ void VTVideoEncodeAccelerator::CompressionCallback(void* encoder_opaque,
   // one that calls VTCompressionSessionEncodeFrame.
   DVLOG(3) << __FUNCTION__;
 
-  auto encoder = reinterpret_cast<VTVideoEncodeAccelerator*>(encoder_opaque);
+  auto* encoder = reinterpret_cast<VTVideoEncodeAccelerator*>(encoder_opaque);
   DCHECK(encoder);
 
   // InProgressFrameEncode holds timestamp information of the encoded frame.
@@ -441,10 +441,11 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
     return;
   }
 
-  auto sample_attachments = static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(
-      CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(
-          encode_output->sample_buffer.get(), true),
-      0));
+  auto* sample_attachments =
+      static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(
+          CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(
+              encode_output->sample_buffer.get(), true),
+          0));
   const bool keyframe = !CFDictionaryContainsKey(
       sample_attachments, CoreMediaGlue::kCMSampleAttachmentKey_NotSync());
 
@@ -481,7 +482,7 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
   const base::ScopedCFTypeRef<CFDictionaryRef> attributes =
       video_toolbox::DictionaryWithKeysAndValues(
           attributes_keys, attributes_values, arraysize(attributes_keys));
-  for (auto& v : attributes_values)
+  for (auto* v : attributes_values)
     CFRelease(v);
 
   bool session_rv =

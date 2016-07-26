@@ -445,7 +445,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
           input_devices.push_back(it.first);
       }
       {
-        for (const auto handle : input_devices) {
+        for (auto* handle : input_devices) {
           MMRESULT result = midiInClose(handle);
           if (result == MIDIERR_STILLPLAYING) {
             result = midiInReset(handle);
@@ -466,7 +466,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
           output_devices.push_back(it.first);
       }
       {
-        for (const auto handle : output_devices) {
+        for (auto* handle : output_devices) {
           MMRESULT result = midiOutClose(handle);
           if (result == MIDIERR_STILLPLAYING) {
             result = midiOutReset(handle);

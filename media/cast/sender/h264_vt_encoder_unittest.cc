@@ -177,10 +177,10 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
       video_frame_factory->MaybeCreateFrame(
           gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta());
   ASSERT_TRUE(video_frame.get());
-  auto cv_pixel_buffer = video_frame->cv_pixel_buffer();
+  auto* cv_pixel_buffer = video_frame->cv_pixel_buffer();
   ASSERT_TRUE(cv_pixel_buffer);
   CVPixelBufferLockBaseAddress(cv_pixel_buffer, 0);
-  auto ptr = CVPixelBufferGetBaseAddressOfPlane(cv_pixel_buffer, 0);
+  auto* ptr = CVPixelBufferGetBaseAddressOfPlane(cv_pixel_buffer, 0);
   ASSERT_TRUE(ptr);
   memset(ptr, 0xfe, CVPixelBufferGetBytesPerRowOfPlane(cv_pixel_buffer, 0) *
                         CVPixelBufferGetHeightOfPlane(cv_pixel_buffer, 0));

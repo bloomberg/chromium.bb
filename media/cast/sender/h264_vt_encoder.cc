@@ -183,7 +183,7 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
             weak_factory_.GetWeakPtr(), cast_environment_));
 
     // Register for power state changes.
-    auto power_monitor = base::PowerMonitor::Get();
+    auto* power_monitor = base::PowerMonitor::Get();
     if (power_monitor) {
       power_monitor->AddObserver(this);
       VLOG(1) << "Registered for power state changes.";
@@ -200,7 +200,7 @@ H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
   // If video_frame_factory_ is not null, the encoder registered for power state
   // changes in the ctor and it must now unregister.
   if (video_frame_factory_) {
-    auto power_monitor = base::PowerMonitor::Get();
+    auto* power_monitor = base::PowerMonitor::Get();
     if (power_monitor)
       power_monitor->RemoveObserver(this);
   }
@@ -253,7 +253,7 @@ void H264VideoToolboxEncoder::ResetCompressionSession() {
       video_toolbox::DictionaryWithKeysAndValues(
           buffer_attributes_keys, buffer_attributes_values,
           arraysize(buffer_attributes_keys));
-  for (auto& v : buffer_attributes_values)
+  for (auto* v : buffer_attributes_values)
     CFRelease(v);
 
   // Create the compression session.
@@ -515,7 +515,7 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
                                                   OSStatus status,
                                                   VTEncodeInfoFlags info,
                                                   CMSampleBufferRef sbuf) {
-  auto encoder = reinterpret_cast<H264VideoToolboxEncoder*>(encoder_opaque);
+  auto* encoder = reinterpret_cast<H264VideoToolboxEncoder*>(encoder_opaque);
   const std::unique_ptr<InProgressFrameEncode> request(
       reinterpret_cast<InProgressFrameEncode*>(request_opaque));
   bool keyframe = false;
@@ -529,7 +529,7 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
   } else if ((info & VideoToolboxGlue::kVTEncodeInfo_FrameDropped)) {
     DVLOG(2) << " frame dropped";
   } else {
-    auto sample_attachments =
+    auto* sample_attachments =
         static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(
             CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(sbuf, true),
             0));

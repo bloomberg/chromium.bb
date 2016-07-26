@@ -35,7 +35,7 @@ base::ScopedCFTypeRef<CFArrayRef> ArrayWithIntegers(const int* v, size_t size) {
   base::ScopedCFTypeRef<CFArrayRef> array(CFArrayCreate(
       kCFAllocatorDefault, reinterpret_cast<const void**>(&numbers[0]),
       numbers.size(), &kCFTypeArrayCallBacks));
-  for (auto& number : numbers) {
+  for (auto* number : numbers) {
     CFRelease(number);
   }
   return array;
@@ -49,7 +49,7 @@ base::ScopedCFTypeRef<CFArrayRef> ArrayWithIntegerAndFloat(int int_val,
   base::ScopedCFTypeRef<CFArrayRef> array(CFArrayCreate(
       kCFAllocatorDefault, reinterpret_cast<const void**>(numbers.data()),
       numbers.size(), &kCFTypeArrayCallBacks));
-  for (auto& number : numbers)
+  for (auto* number : numbers)
     CFRelease(number);
   return array;
 }
@@ -142,9 +142,9 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
   OSStatus status;
 
   // Get the sample buffer's block buffer and format description.
-  auto bb = CoreMediaGlue::CMSampleBufferGetDataBuffer(sbuf);
+  auto* bb = CoreMediaGlue::CMSampleBufferGetDataBuffer(sbuf);
   DCHECK(bb);
-  auto fdesc = CoreMediaGlue::CMSampleBufferGetFormatDescription(sbuf);
+  auto* fdesc = CoreMediaGlue::CMSampleBufferGetFormatDescription(sbuf);
   DCHECK(fdesc);
 
   size_t bb_size = CoreMediaGlue::CMBlockBufferGetDataLength(bb);

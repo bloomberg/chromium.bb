@@ -1437,7 +1437,7 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     DVLOG(1) << "Failed to set Low latency mode on decoder. Error: " << hr;
   }
 
-  auto gl_context = get_gl_context_cb_.Run();
+  auto* gl_context = get_gl_context_cb_.Run();
   RETURN_ON_FAILURE(gl_context, "Couldn't get GL context", false);
 
   // The decoder should use DX11 iff

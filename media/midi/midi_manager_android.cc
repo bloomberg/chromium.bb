@@ -106,14 +106,14 @@ void MidiManagerAndroid::OnAttached(JNIEnv* env,
 void MidiManagerAndroid::OnDetached(JNIEnv* env,
                                     const JavaParamRef<jobject>& caller,
                                     const JavaParamRef<jobject>& raw_device) {
-  for (const auto& device : devices_) {
+  for (auto* device : devices_) {
     if (device->HasRawDevice(env, raw_device)) {
-      for (const auto& port : device->input_ports()) {
+      for (auto* port : device->input_ports()) {
         DCHECK(input_port_to_index_.end() != input_port_to_index_.find(port));
         size_t index = input_port_to_index_[port];
         SetInputPortState(index, MIDI_PORT_DISCONNECTED);
       }
-      for (const auto& port : device->output_ports()) {
+      for (auto* port : device->output_ports()) {
         DCHECK(output_port_to_index_.end() != output_port_to_index_.find(port));
         size_t index = output_port_to_index_[port];
         SetOutputPortState(index, MIDI_PORT_DISCONNECTED);
@@ -123,7 +123,7 @@ void MidiManagerAndroid::OnDetached(JNIEnv* env,
 }
 
 void MidiManagerAndroid::AddDevice(std::unique_ptr<MidiDeviceAndroid> device) {
-  for (auto& port : device->input_ports()) {
+  for (auto* port : device->input_ports()) {
     // We implicitly open input ports here, because there are no signal
     // from the renderer when to open.
     // TODO(yhirano): Implement open operation in Blink.
@@ -142,7 +142,7 @@ void MidiManagerAndroid::AddDevice(std::unique_ptr<MidiDeviceAndroid> device) {
                               device->GetProductName(),
                               device->GetDeviceVersion(), state));
   }
-  for (const auto& port : device->output_ports()) {
+  for (auto* port : device->output_ports()) {
     const size_t index = all_output_ports_.size();
     all_output_ports_.push_back(port);
 

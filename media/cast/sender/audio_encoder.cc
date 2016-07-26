@@ -542,7 +542,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
         source_offset * sizeof(float) % AudioBus::kChannelAlignment == 0) {
       DCHECK_EQ(buffer_fill_offset, 0);
       for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-        auto samples = const_cast<float*>(audio_bus->channel(ch));
+        auto* samples = const_cast<float*>(audio_bus->channel(ch));
         input_bus_->SetChannelData(ch, samples + source_offset);
       }
       return;
@@ -605,9 +605,9 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
       AudioStreamPacketDescription** out_packet_desc,
       void* in_encoder) {
     DCHECK(in_encoder);
-    auto encoder = reinterpret_cast<AppleAacImpl*>(in_encoder);
-    auto input_buffer = encoder->input_buffer_.get();
-    auto input_bus = encoder->input_bus_.get();
+    auto* encoder = reinterpret_cast<AppleAacImpl*>(in_encoder);
+    auto* input_buffer = encoder->input_buffer_.get();
+    auto* input_bus = encoder->input_bus_.get();
 
     DCHECK_EQ(static_cast<int>(*io_num_packets), kAccessUnitSamples);
     DCHECK_EQ(io_data->mNumberBuffers,
@@ -644,8 +644,8 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
                                     UInt32* out_size) {
     DCHECK(in_encoder);
     DCHECK(in_buffer);
-    auto encoder = reinterpret_cast<const AppleAacImpl*>(in_encoder);
-    auto buffer = reinterpret_cast<const std::string::value_type*>(in_buffer);
+    auto* encoder = reinterpret_cast<const AppleAacImpl*>(in_encoder);
+    auto* buffer = reinterpret_cast<const std::string::value_type*>(in_buffer);
 
     std::string* const output_buffer = encoder->output_buffer_;
     DCHECK(output_buffer);
