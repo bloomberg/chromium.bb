@@ -1174,8 +1174,11 @@ template("ios_xctest_test") {
 
     testonly = true
     output_name = _host_output
-    info_plist = "//build/config/ios/Host-Info.plist"
     configs += [ "//build/config/ios:xctest_config" ]
+
+    if (!defined(invoker.info_plist) && !defined(invoker.info_plist_target)) {
+      info_plist = "//build/config/ios/Host-Info.plist"
+    }
 
     # Xcode needs those two framework installed in the application (and signed)
     # for the XCTest to run, so install them using extra_system_frameworks.
