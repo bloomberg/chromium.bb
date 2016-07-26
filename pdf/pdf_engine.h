@@ -27,6 +27,7 @@
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var_array.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace pp {
 class InputEvent;
@@ -36,12 +37,6 @@ class VarDictionary;
 namespace chrome_pdf {
 
 class Stream;
-
-#if defined(OS_MACOSX)
-const uint32_t kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_METAKEY;
-#else  // !OS_MACOSX
-const uint32_t kDefaultKeyModifier = PP_INPUTEVENT_MODIFIER_CONTROLKEY;
-#endif  // OS_MACOSX
 
 // Do one time initialization of the SDK.
 bool InitializeSDK();
@@ -80,7 +75,8 @@ class PDFEngine {
     virtual void ScrollToPage(int page) = 0;
 
     // Navigate to the given url.
-    virtual void NavigateTo(const std::string& url, bool open_in_new_tab) = 0;
+    virtual void NavigateTo(const std::string& url,
+                            WindowOpenDisposition disposition) = 0;
 
     // Updates the cursor.
     virtual void UpdateCursor(PP_CursorType_Dev cursor) = 0;

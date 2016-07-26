@@ -14,6 +14,7 @@
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
         '../ppapi/ppapi.gyp:ppapi_internal_module',
+        '../ui/base/ui_base.gyp:ui_base',
       ],
       'ldflags': [ '-L<(PRODUCT_DIR)',],
       'sources': [

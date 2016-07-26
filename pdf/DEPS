@@ -2,6 +2,7 @@ include_rules = [
   "+chrome/common/content_restriction.h",
   "+net",
   "+ppapi",
+  "+ui/base/window_open_disposition.h",
   "+ui/events/keycodes/keyboard_codes.h",
   "+v8/include/v8.h"
 ]

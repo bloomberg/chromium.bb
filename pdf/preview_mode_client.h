@@ -33,7 +33,8 @@ class PreviewModeClient : public PDFEngine::Client {
   void ScrollToX(int position) override;
   void ScrollToY(int position) override;
   void ScrollToPage(int page) override;
-  void NavigateTo(const std::string& url, bool open_in_new_tab) override;
+  void NavigateTo(const std::string& url,
+                  WindowOpenDisposition disposition) override;
   void UpdateCursor(PP_CursorType_Dev cursor) override;
   void UpdateTickMarks(const std::vector<pp::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;

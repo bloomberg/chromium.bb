@@ -11,20 +11,34 @@
  * @param {Object} paramsParser The object for URL parsing.
  * @param {Function} navigateInCurrentTabCallback The Callback function that
  *    gets called when navigation happens in the current tab.
- * @param {Function} navigateInNewBackgroundTabCallback The Callback function
- *    that gets called when navigation happens in the new background tab.
+ * @param {Function} navigateInNewTabCallback The Callback function
+ *    that gets called when navigation happens in the new tab.
  */
 function Navigator(originalUrl,
                    viewport,
                    paramsParser,
                    navigateInCurrentTabCallback,
-                   navigateInNewBackgroundTabCallback) {
+                   navigateInNewTabCallback) {
   this.originalUrl_ = originalUrl;
   this.viewport_ = viewport;
   this.paramsParser_ = paramsParser;
   this.navigateInCurrentTabCallback_ = navigateInCurrentTabCallback;
-  this.navigateInNewBackgroundTabCallback_ = navigateInNewBackgroundTabCallback;
+  this.navigateInNewTabCallback_ = navigateInNewTabCallback;
 }
+
+/**
+ * Represents options when navigating to a new url. C++ counterpart of
+ * the enum is in ui/base/window_open_disposition.h. This enum represents
+ * the only values that are passed from Plugin.
+ * @enum {number}
+ */
+Navigator.WindowOpenDisposition = {
+  CURRENT_TAB: 1,
+  NEW_FOREGROUND_TAB: 3,
+  NEW_BACKGROUND_TAB: 4,
+  NEW_WINDOW: 6,
+  SAVE_TO_DISK: 7
+};
 
 Navigator.prototype = {
   /**
@@ -32,10 +46,10 @@ Navigator.prototype = {
    * Function to navigate to the given URL. This might involve navigating
    * within the PDF page or opening a new url (in the same tab or a new tab).
    * @param {string} url The URL to navigate to.
-   * @param {boolean} newTab Whether to perform the navigation in a new tab or
-   *    in the current tab.
+   * @param {number} disposition The window open disposition when
+   *    navigating to the new URL.
    */
-  navigate: function(url, newTab) {
+  navigate: function(url, disposition) {
     if (url.length == 0)
       return;
 
@@ -58,11 +72,31 @@ Navigator.prototype = {
     if (!this.isValidUrl_(url))
       return;
 
-    if (newTab) {
-      this.navigateInNewBackgroundTabCallback_(url);
-    } else {
-      this.paramsParser_.getViewportFromUrlParams(
-          url, this.onViewportReceived_.bind(this));
+    switch (disposition) {
+      case Navigator.WindowOpenDisposition.CURRENT_TAB:
+        this.paramsParser_.getViewportFromUrlParams(
+            url, this.onViewportReceived_.bind(this));
+        break;
+      case Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
+        this.navigateInNewTabCallback_(url, false);
+        break;
+      case Navigator.WindowOpenDisposition.NEW_FOREGROUND_TAB:
+        this.navigateInNewTabCallback_(url, true);
+        break;
+      case Navigator.WindowOpenDisposition.NEW_WINDOW:
+        // TODO(jaepark): Shift + left clicking a link in PDF should open the
+        // link in a new window. See http://crbug.com/628057.
+        this.paramsParser_.getViewportFromUrlParams(
+            url, this.onViewportReceived_.bind(this));
+        break;
+      case Navigator.WindowOpenDisposition.SAVE_TO_DISK:
+        // TODO(jaepark): Alt + left clicking a link in PDF should
+        // download the link.
+        this.paramsParser_.getViewportFromUrlParams(
+            url, this.onViewportReceived_.bind(this));
+        break;
+      default:
+        break;
     }
   },
 

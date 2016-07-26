@@ -37,13 +37,13 @@ function NavigateInNewTabCallback() {
 function doNavigationUrlTest(
     navigator,
     url,
-    openInNewTab,
+    disposition,
     expectedResultUrl,
     viewportChangedCallback,
     navigateCallback) {
   viewportChangedCallback.reset();
   navigateCallback.reset();
-  navigator.navigate(url, openInNewTab);
+  navigator.navigate(url, disposition);
   chrome.test.assertFalse(viewportChangedCallback.wasCalled);
   chrome.test.assertTrue(navigateCallback.navigateCalled);
   chrome.test.assertEq(expectedResultUrl, navigateCallback.url);
@@ -60,9 +60,11 @@ function doNavigationUrlTestInCurrentTabAndNewTab(
     viewportChangedCallback,
     navigateInCurrentTabCallback,
     navigateInNewTabCallback) {
-  doNavigationUrlTest(navigator, url, false, expectedResultUrl,
+  doNavigationUrlTest(navigator, url,
+      Navigator.WindowOpenDisposition.CURRENT_TAB, expectedResultUrl,
       viewportChangedCallback, navigateInCurrentTabCallback);
-  doNavigationUrlTest(navigator, url, true, expectedResultUrl,
+  doNavigationUrlTest(navigator, url,
+      Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB, expectedResultUrl,
       viewportChangedCallback, navigateInNewTabCallback);
 }
 
@@ -103,7 +105,8 @@ var tests = [
 
     mockCallback.reset();
     // This should move viewport to page 0.
-    navigator.navigate(url + "#US", false);
+    navigator.navigate(url + "#US",
+        Navigator.WindowOpenDisposition.CURRENT_TAB);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(0, viewport.position.y);
@@ -112,7 +115,8 @@ var tests = [
     navigateInNewTabCallback.reset();
     // This should open "http://xyz.pdf#US" in a new tab. So current tab
     // viewport should not update and viewport position should remain same.
-    navigator.navigate(url + "#US", true);
+    navigator.navigate(url + "#US",
+        Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
     chrome.test.assertFalse(mockCallback.wasCalled);
     chrome.test.assertTrue(navigateInNewTabCallback.navigateCalled);
     chrome.test.assertEq(0, viewport.position.x);
@@ -120,7 +124,8 @@ var tests = [
 
     mockCallback.reset();
     // This should move viewport to page 2.
-    navigator.navigate(url + "#UY", false);
+    navigator.navigate(url + "#UY",
+        Navigator.WindowOpenDisposition.CURRENT_TAB);
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(300, viewport.position.y);
@@ -130,7 +135,8 @@ var tests = [
     // #ABC is not a named destination in the page so viewport should not
     // update and viewport position should remain same. As this link will open
     // in the same tab.
-    navigator.navigate(url + "#ABC", false);
+    navigator.navigate(url + "#ABC",
+        Navigator.WindowOpenDisposition.CURRENT_TAB);
     chrome.test.assertFalse(mockCallback.wasCalled);
     chrome.test.assertTrue(navigateInCurrentTabCallback.navigateCalled);
     chrome.test.assertEq(0, viewport.position.x);

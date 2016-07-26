@@ -104,7 +104,7 @@ const char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
 const char kJSNavigateType[] = "navigate";
 const char kJSNavigateUrl[] = "url";
-const char kJSNavigateNewTab[] = "newTab";
+const char kJSNavigateWindowOpenDisposition[] = "disposition";
 // Open the email editor with the given parameters (Plugin -> Page)
 const char kJSEmailType[] = "email";
 const char kJSEmailTo[] = "to";
@@ -977,11 +977,11 @@ void OutOfProcessInstance::ScrollToPage(int page) {
 }
 
 void OutOfProcessInstance::NavigateTo(const std::string& url,
-                                      bool open_in_new_tab) {
+                                      WindowOpenDisposition disposition) {
   pp::VarDictionary message;
   message.Set(kType, kJSNavigateType);
   message.Set(kJSNavigateUrl, url);
-  message.Set(kJSNavigateNewTab, open_in_new_tab);
+  message.Set(kJSNavigateWindowOpenDisposition, pp::Var(disposition));
   PostMessage(message);
 }
 

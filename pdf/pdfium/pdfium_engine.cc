@@ -1643,9 +1643,19 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   // Open link on mouse up for same link for which mouse down happened earlier.
   if (mouse_down_state_.Matches(area, target)) {
     if (area == PDFiumPage::WEBLINK_AREA) {
-      bool open_in_new_tab = !!(event.GetModifiers() & kDefaultKeyModifier) ||
-          !!(event.GetModifiers() & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
-      client_->NavigateTo(target.url, open_in_new_tab);
+      uint32_t modifiers = event.GetModifiers();
+      bool middle_button =
+          !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
+      bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
+      bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
+      bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
+      bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
+
+      WindowOpenDisposition disposition =
+          ui::DispositionFromClick(middle_button, alt_key, ctrl_key, meta_key,
+                                   shift_key);
+
+      client_->NavigateTo(target.url, disposition);
       client_->FormTextFieldFocusChange(false);
       return true;
     }
@@ -3524,7 +3534,7 @@ void PDFiumEngine::Form_SetTextFieldFocus(FPDF_FORMFILLINFO* param,
 void PDFiumEngine::Form_DoURIAction(FPDF_FORMFILLINFO* param,
                                     FPDF_BYTESTRING uri) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->client_->NavigateTo(std::string(uri), false);
+  engine->client_->NavigateTo(std::string(uri), CURRENT_TAB);
 }
 
 void PDFiumEngine::Form_DoGoToAction(FPDF_FORMFILLINFO* param,

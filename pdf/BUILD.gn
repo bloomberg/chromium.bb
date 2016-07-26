@@ -16,6 +16,7 @@ static_library("pdf") {
     "//net",
     "//ppapi/cpp:objects",
     "//ppapi/cpp/private:internal_module",
+    "//ui/base",
   ]
 
   sources = [

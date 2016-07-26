@@ -60,6 +60,12 @@
 
 const int kNumberLoadTestParts = 10;
 
+#if defined(OS_MACOSX)
+const int kDefaultKeyModifier = blink::WebInputEvent::MetaKey;
+#else
+const int kDefaultKeyModifier = blink::WebInputEvent::ControlKey;
+#endif
+
 // Using ASSERT_TRUE deliberately instead of ASSERT_EQ or ASSERT_STREQ
 // in order to print a more readable message if the strings differ.
 #define ASSERT_MULTILINE_STREQ(expected, actual) \
@@ -715,16 +721,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-#if defined(OS_MACOSX)
-  int modifiers = blink::WebInputEvent::MetaKey;
-#else
-  int modifiers = blink::WebInputEvent::ControlKey;
-#endif
-
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, modifiers,
+  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
       blink::WebMouseEvent::ButtonLeft, link_position);
   observer.Wait();
 
@@ -778,5 +778,71 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
   ASSERT_NE(web_contents, new_web_contents);
 
   const GURL& url = new_web_contents->GetURL();
+  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // The link position of the test-link.pdf in page coordinates is (110, 110).
+  // Convert the link position from page coordinates to screen coordinates.
+  gfx::Point link_position(110, 110);
+  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  int modifiers = blink::WebInputEvent::ShiftKey | kDefaultKeyModifier;
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, modifiers,
+      blink::WebMouseEvent::ButtonLeft, link_position);
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  const GURL& url = active_web_contents->GetURL();
+  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // The link position of the test-link.pdf in page coordinates is (110, 110).
+  // Convert the link position from page coordinates to screen coordinates.
+  gfx::Point link_position(110, 110);
+  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::ShiftKey,
+      blink::WebMouseEvent::ButtonMiddle, link_position);
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  const GURL& url = active_web_contents->GetURL();
   ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
 }

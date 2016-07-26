@@ -56,14 +56,15 @@ function onNavigateInCurrentTab(isInTab, isSourceFileUrl, url) {
 }
 
 /**
- * Called when navigation happens in the new background tab.
- * @param {string} url The url to be opened in the new background tab.
+ * Called when navigation happens in the new tab.
+ * @param {string} url The url to be opened in the new tab.
+ * @param {boolean} active Indicates if the new tab should be the active tab.
  */
-function onNavigateInNewBackgroundTab(url) {
+function onNavigateInNewTab(url, active) {
   // Prefer the tabs API because it guarantees we can just open a new tab.
   // window.open doesn't have this guarantee.
   if (chrome.tabs)
-    chrome.tabs.create({url: url, active: false});
+    chrome.tabs.create({url: url, active: active});
   else
     window.open(url);
 }
@@ -238,7 +239,10 @@ function PDFViewer(browserApi) {
   }.bind(this));
 
   document.body.addEventListener('navigate', function(e) {
-    this.navigator_.navigate(e.detail.uri, e.detail.newtab);
+    var disposition =
+        e.detail.newtab ? Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
+                          Navigator.WindowOpenDisposition.CURRENT_TAB;
+    this.navigator_.navigate(e.detail.uri, disposition);
   }.bind(this));
 
   this.toolbarManager_ =
@@ -264,7 +268,7 @@ function PDFViewer(browserApi) {
                                   onNavigateInCurrentTab.bind(undefined,
                                                               isInTab,
                                                               isSourceFileUrl),
-                                  onNavigateInNewBackgroundTab);
+                                  onNavigateInNewTab);
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
 
@@ -627,10 +631,13 @@ PDFViewer.prototype = {
         break;
       case 'navigate':
         // If in print preview, always open a new tab.
-        if (this.isPrintPreview_)
-          this.navigator_.navigate(message.data.url, true);
-        else
-          this.navigator_.navigate(message.data.url, message.data.newTab);
+        if (this.isPrintPreview_) {
+          this.navigator_.navigate(
+              message.data.url,
+              Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
+        } else {
+          this.navigator_.navigate(message.data.url, message.data.disposition);
+        }
         break;
       case 'setScrollPosition':
         var position = this.viewport_.position;
