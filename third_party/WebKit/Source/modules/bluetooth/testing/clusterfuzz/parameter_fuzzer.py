@@ -26,4 +26,8 @@ def FuzzParameters(test_file_data):
                                      constraints.GetRequestDeviceOptions,
                                      test_file_data)
 
+    test_file_data = FillInParameter('TRANSFORM_FAKE_ADAPTER',
+                                     constraints.GetFakeAdapter,
+                                     test_file_data)
+
     return test_file_data

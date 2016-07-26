@@ -176,6 +176,10 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetDelayedServicesDiscoveryAdapter();
   if (fake_adapter_name.empty())
     return nullptr;
+  // New adapters that can be used when fuzzing the Web Bluetooth API
+  // should also be added to
+  // src/third_party/WebKit/Source/modules/
+  //   bluetooth/testing/clusterfuzz/constraints.py.
 
   NOTREACHED() << fake_adapter_name;
   return nullptr;

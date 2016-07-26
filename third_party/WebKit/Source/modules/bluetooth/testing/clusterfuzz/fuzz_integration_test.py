@@ -11,7 +11,6 @@ import sys
 import tempfile
 import unittest
 
-import fuzz_main_run
 import setup
 
 
@@ -30,6 +29,7 @@ class WebBluetoothFuzzerTest(unittest.TestCase):
                     '--input_dir={}'.format(self._output_dir),
                     '--output_dir={}'.format(self._output_dir)]
 
+        import fuzz_main_run
         fuzz_main_run.main()
 
         written_files = glob.glob(os.path.join(self._output_dir, '*.html'))

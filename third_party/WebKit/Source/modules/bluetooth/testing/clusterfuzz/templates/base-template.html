@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
 INCLUDE_TESTHARNESS
 INCLUDE_REPORT
 INCLUDE_BLUETOOTH_HELPERS
 <script>
 promise_test(() => {
-  return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
+  return setBluetoothFakeAdapter(TRANSFORM_FAKE_ADAPTER)
     .then(() => {
 TRANSFORM_RANDOM_TOKENS
 });
