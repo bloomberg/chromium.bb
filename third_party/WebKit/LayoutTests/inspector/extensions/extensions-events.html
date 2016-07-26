@@ -12,7 +12,7 @@ function initialize_extensionsSidebarTest()
     {
         var sidebar = InspectorTest._extensionSidebar();
         InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-            sidebar.requestReveal();
+            sidebar.revealWidget();
             callback();
         });
     }

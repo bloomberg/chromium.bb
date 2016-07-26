@@ -37,6 +37,6 @@ category.onAuditStarted fired, results dump follows:
     }
     expanded : false
 }
- Extension audits
+    Extension audits
 All tests done.
 

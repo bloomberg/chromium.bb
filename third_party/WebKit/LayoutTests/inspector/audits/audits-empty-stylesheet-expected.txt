@@ -1,6 +1,6 @@
 Tests running audits with a single empty stylesheet.
 
 Page reloaded.
- Network Utilization
- Web Page Performance
+    Network Utilization
+    Web Page Performance
 
