@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -211,7 +212,7 @@ class UpdateCheckDriver {
   // Runs an update check on |task_runner|, invoking methods of |delegate| on
   // the caller's thread to report progress and final results.
   static void RunUpdateCheck(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& locale,
       bool install_update_if_possible,
       gfx::AcceleratedWidget elevation_window,
@@ -221,7 +222,7 @@ class UpdateCheckDriver {
   friend class base::DeleteHelper<UpdateCheckDriver>;
 
   UpdateCheckDriver(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& locale,
       bool install_update_if_possible,
       gfx::AcceleratedWidget elevation_window,
@@ -229,6 +230,16 @@ class UpdateCheckDriver {
 
   // Invokes a completion or error method on all delegates, as appropriate.
   ~UpdateCheckDriver();
+
+  // If an UpdateCheckDriver is already running, the delegate is added to the
+  // existing one instead of creating a new one.
+  void AddDelegate(const base::WeakPtr<UpdateCheckDelegate>& delegate);
+
+  // Notifies delegates of an update's progress. |progress|, a number between 0
+  // and 100 (inclusive), is an estimation as to what percentage of the upgrade
+  // has completed. |new_version| indicates the version that is being download
+  // and installed.
+  void NotifyUpgradeProgress(int progress, const base::string16& new_version);
 
   // Starts an update check.
   void BeginUpdateCheck();
@@ -305,10 +316,7 @@ class UpdateCheckDriver {
   // previous notification) and another future poll will be scheduled.
   void PollGoogleUpdate();
 
-  // If an UpdateCheckDriver is already running, the delegate is added to the
-  // existing one instead of creating a new one.
-  void AddDelegate(const base::WeakPtr<UpdateCheckDelegate>& delegate);
-
+  // The global driver instance. Accessed only on the caller's thread.
   static UpdateCheckDriver* driver_;
 
   // The task runner on which the update checks runs.
@@ -327,7 +335,8 @@ class UpdateCheckDriver {
   // A parent window in case any UX is required (e.g., an elevation prompt).
   gfx::AcceleratedWidget elevation_window_;
 
-  // Contains all delegates by which feedback is conveyed.
+  // Contains all delegates by which feedback is conveyed. Accessed only on the
+  // caller's thread.
   std::vector<base::WeakPtr<UpdateCheckDelegate>> delegates_;
 
   // Number of remaining retries allowed when errors occur.
@@ -364,7 +373,7 @@ UpdateCheckDriver* UpdateCheckDriver::driver_ = nullptr;
 
 // static
 void UpdateCheckDriver::RunUpdateCheck(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
@@ -388,25 +397,24 @@ void UpdateCheckDriver::RunUpdateCheck(
 
 // Runs on the caller's thread.
 UpdateCheckDriver::UpdateCheckDriver(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate)
-    : task_runner_(task_runner),
+    : task_runner_(std::move(task_runner)),
       result_runner_(base::ThreadTaskRunnerHandle::Get()),
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),
       elevation_window_(elevation_window),
+      delegates_(1, delegate),
       allowed_retries_(kGoogleAllowedRetries),
       system_level_install_(false),
       last_reported_progress_(0),
       status_(UPGRADE_ERROR),
       error_code_(GOOGLE_UPDATE_NO_ERROR),
       hresult_(S_OK),
-      installer_exit_code_(-1) {
-  delegates_.push_back(delegate);
-}
+      installer_exit_code_(-1) {}
 
 UpdateCheckDriver::~UpdateCheckDriver() {
   DCHECK(result_runner_->BelongsToCurrentThread());
@@ -427,7 +435,7 @@ UpdateCheckDriver::~UpdateCheckDriver() {
 
   // Clear the driver before calling the delegates because they might call
   // BeginUpdateCheck() and they must not add themselves to the current
-  // instance of UpdateCheckDriver, which is currently being destroyed.
+  // instance of UpdateCheckDriver, which is being destroyed.
   driver_ = nullptr;
 
   for (const auto& delegate : delegates_) {
@@ -439,6 +447,23 @@ UpdateCheckDriver::~UpdateCheckDriver() {
       else
         delegate->OnUpdateCheckComplete(new_version_);
     }
+  }
+}
+
+void UpdateCheckDriver::AddDelegate(
+    const base::WeakPtr<UpdateCheckDelegate>& delegate) {
+  DCHECK(result_runner_->BelongsToCurrentThread());
+  delegates_.push_back(delegate);
+}
+
+void UpdateCheckDriver::NotifyUpgradeProgress(
+    int progress,
+    const base::string16& new_version) {
+  DCHECK(result_runner_->BelongsToCurrentThread());
+
+  for (const auto& delegate : delegates_) {
+    if (delegate)
+      delegate->OnUpgradeProgress(progress, new_version);
   }
 }
 
@@ -783,12 +808,10 @@ void UpdateCheckDriver::PollGoogleUpdate() {
 
       // It is safe to post this task with an unretained pointer since the task
       // is guaranteed to run before a subsequent DeleteSoon is handled.
-      for (const auto& delegate : delegates_) {
-        result_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&UpdateCheckDelegate::OnUpgradeProgress, delegate,
-                       last_reported_progress_, new_version_));
-      }
+      result_runner_->PostTask(
+          FROM_HERE, base::Bind(&UpdateCheckDriver::NotifyUpgradeProgress,
+                                base::Unretained(this), last_reported_progress_,
+                                new_version_));
     }
 
     // Schedule the next check.
@@ -808,11 +831,6 @@ void UpdateCheckDriver::PollGoogleUpdate() {
   google_update_.Release();
 
   result_runner_->DeleteSoon(FROM_HERE, this);
-}
-
-void UpdateCheckDriver::AddDelegate(
-    const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-  delegates_.push_back(delegate);
 }
 
 void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
@@ -855,12 +873,12 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
 // Globals ---------------------------------------------------------------------
 
 void BeginUpdateCheck(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate) {
-  UpdateCheckDriver::RunUpdateCheck(task_runner, locale,
+  UpdateCheckDriver::RunUpdateCheck(std::move(task_runner), locale,
                                     install_update_if_possible,
                                     elevation_window, delegate);
 }

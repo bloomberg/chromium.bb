@@ -94,7 +94,7 @@ class UpdateCheckDelegate {
 // invoked on the caller's thread to provide feedback on the operation, with
 // messages localized to |locale| if possible.
 void BeginUpdateCheck(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const std::string& locale,
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
