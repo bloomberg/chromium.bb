@@ -120,28 +120,6 @@ void ReturnThreadId(base::Thread* thread,
 
 }  // namespace
 
-TEST_F(ThreadTest, Restart) {
-  Thread a("Restart");
-  a.Stop();
-  EXPECT_FALSE(a.message_loop());
-  EXPECT_FALSE(a.IsRunning());
-  EXPECT_TRUE(a.Start());
-  EXPECT_TRUE(a.message_loop());
-  EXPECT_TRUE(a.IsRunning());
-  a.Stop();
-  EXPECT_FALSE(a.message_loop());
-  EXPECT_FALSE(a.IsRunning());
-  EXPECT_TRUE(a.Start());
-  EXPECT_TRUE(a.message_loop());
-  EXPECT_TRUE(a.IsRunning());
-  a.Stop();
-  EXPECT_FALSE(a.message_loop());
-  EXPECT_FALSE(a.IsRunning());
-  a.Stop();
-  EXPECT_FALSE(a.message_loop());
-  EXPECT_FALSE(a.IsRunning());
-}
-
 TEST_F(ThreadTest, StartWithOptions_StackSize) {
   Thread a("StartWithStackSize");
   // Ensure that the thread can work with only 12 kb and still process a
@@ -216,9 +194,13 @@ TEST_F(ThreadTest, StopTwiceNop) {
 TEST_F(ThreadTest, StartTwice) {
   Thread a("StartTwice");
 
+  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.IsRunning());
+
   EXPECT_TRUE(a.Start());
   EXPECT_TRUE(a.message_loop());
   EXPECT_TRUE(a.IsRunning());
+
   a.Stop();
   EXPECT_FALSE(a.message_loop());
   EXPECT_FALSE(a.IsRunning());
@@ -226,6 +208,7 @@ TEST_F(ThreadTest, StartTwice) {
   EXPECT_TRUE(a.Start());
   EXPECT_TRUE(a.message_loop());
   EXPECT_TRUE(a.IsRunning());
+
   a.Stop();
   EXPECT_FALSE(a.message_loop());
   EXPECT_FALSE(a.IsRunning());
