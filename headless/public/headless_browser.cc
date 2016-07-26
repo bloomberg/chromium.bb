@@ -20,7 +20,8 @@ Options::Options(int argc, const char** argv)
       argv(argv),
       user_agent(content::BuildUserAgentFromProduct(kProductName)),
       message_pump(nullptr),
-      single_process_mode(false) {}
+      single_process_mode(false),
+      disable_sandbox(false) {}
 
 Options::Options(Options&& options) = default;
 
@@ -61,6 +62,11 @@ Builder& Builder::SetHostResolverRules(const std::string& host_resolver_rules) {
 
 Builder& Builder::SetSingleProcessMode(bool single_process_mode) {
   options_.single_process_mode = single_process_mode;
+  return *this;
+}
+
+Builder& Builder::SetDisableSandbox(bool disable_sandbox) {
+  options_.disable_sandbox = disable_sandbox;
   return *this;
 }
 

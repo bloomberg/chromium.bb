@@ -44,6 +44,9 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   if (browser_->options()->single_process_mode)
     command_line->AppendSwitch(switches::kSingleProcess);
 
+  if (browser_->options()->disable_sandbox)
+    command_line->AppendSwitch(switches::kNoSandbox);
+
   // The headless backend is automatically chosen for a headless build, but also
   // adding it here allows us to run in a non-headless build too.
   command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
