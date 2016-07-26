@@ -306,6 +306,7 @@ TEST_P(CronetBidirectionalStreamTest, StartExampleBidiStream) {
   TestBidirectionalStreamCallback test;
   test.AddWriteData("Hello, ");
   test.AddWriteData("world!");
+  // Use small read buffer size to test that response is split properly.
   test.read_buffer_size = 2;
   test.stream =
       cronet_bidirectional_stream_create(engine(), &test, test.callback());
@@ -320,7 +321,32 @@ TEST_P(CronetBidirectionalStreamTest, StartExampleBidiStream) {
             test.response_headers[kHelloHeaderName]);
   ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
   ASSERT_EQ(std::string(kHelloBodyValue, 2), test.read_data.front());
+  // Verify that individual read data joined using empty separator match
+  // expected body.
   ASSERT_EQ(std::string(kHelloBodyValue), base::JoinString(test.read_data, ""));
+  ASSERT_EQ(std::string(kHelloTrailerValue),
+            test.response_trailers[kHelloTrailerName]);
+  cronet_bidirectional_stream_destroy(test.stream);
+}
+
+TEST_P(CronetBidirectionalStreamTest, SimplePutWithEmptyWriteDataAtTheEnd) {
+  TestBidirectionalStreamCallback test;
+  test.AddWriteData("Hello, ");
+  test.AddWriteData("world!");
+  test.AddWriteData("");
+  test.stream =
+      cronet_bidirectional_stream_create(engine(), &test, test.callback());
+  DCHECK(test.stream);
+  cronet_bidirectional_stream_delay_request_headers_until_flush(test.stream,
+                                                                GetParam());
+  cronet_bidirectional_stream_start(test.stream, kTestServerUrl, 0, "PUT",
+                                    &kTestHeadersArray, false);
+  test.BlockForDone();
+  ASSERT_EQ(std::string(kHelloStatus), test.response_headers[kStatusHeader]);
+  ASSERT_EQ(std::string(kHelloHeaderValue),
+            test.response_headers[kHelloHeaderName]);
+  ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
+  ASSERT_EQ(std::string(kHelloBodyValue), test.read_data.front());
   ASSERT_EQ(std::string(kHelloTrailerValue),
             test.response_trailers[kHelloTrailerName]);
   cronet_bidirectional_stream_destroy(test.stream);
