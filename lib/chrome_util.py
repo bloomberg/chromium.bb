@@ -401,7 +401,7 @@ _COPY_PATHS_ENVOY = (
 
 _COPY_PATHS_MASH = (
     Path('mojo_runner', exe=True),
-    Path('Mojo Applications/'),
+    Path('Packages/'),
     Path('*_manifest.json'),
 ) + _COPY_PATHS_CHROME
 
@@ -425,7 +425,7 @@ def GetCopyPaths(deployment_type='chrome'):
 
   Args:
     deployment_type: String describing the deployment type. Either "app_shell",
-                     "chrome", or "envoy".
+                     "chrome", "envoy" or "mash".
 
   Returns:
     The list of paths to use as a filter for staging files.
