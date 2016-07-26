@@ -237,6 +237,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   TRACE_EVENT1("omnibox", "AutocompleteController::Start",
                "text", base::UTF16ToUTF8(input.text()));
   const base::string16 old_input_text(input_.text());
+  const bool old_allow_exact_keyword_match = input_.allow_exact_keyword_match();
   const bool old_want_asynchronous_matches = input_.want_asynchronous_matches();
   const bool old_from_omnibox_focus = input_.from_omnibox_focus();
   input_ = input;
@@ -252,6 +253,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // can change the text string (e.g. by stripping off a leading '?').
   const bool minimal_changes =
       (input_.text() == old_input_text) &&
+      (input_.allow_exact_keyword_match() == old_allow_exact_keyword_match) &&
       (input_.want_asynchronous_matches() == old_want_asynchronous_matches) &&
       (input.from_omnibox_focus() == old_from_omnibox_focus);
 
@@ -481,8 +483,8 @@ void AutocompleteController::UpdateAssociatedKeywords(
     return;
 
   // Determine if the user's input is an exact keyword match.
-  base::string16 exact_keyword = keyword_provider_->GetKeywordForText(
-      TemplateURLService::CleanUserInputKeyword(input_.text()));
+  base::string16 exact_keyword =
+      keyword_provider_->GetKeywordForText(input_.text());
 
   std::set<base::string16> keywords;
   for (ACMatches::iterator match(result->begin()); match != result->end();
