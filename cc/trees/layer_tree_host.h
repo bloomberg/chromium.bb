@@ -299,6 +299,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
+  bool has_output_surface() const { return !!current_output_surface_; }
+
   // CreateUIResource creates a resource given a bitmap.  The bitmap is
   // generated via an interface function, which is called when initializing the
   // resource and when the resource has been lost (due to lost context).  The

@@ -198,6 +198,12 @@ class COMPOSITOR_EXPORT Compositor
 
   ui::ContextFactory* context_factory() { return context_factory_; }
 
+  void AddSurfaceClient(uint32_t client_id);
+  void RemoveSurfaceClient(uint32_t client_id);
+  const std::unordered_map<uint32_t, uint32_t>& SurfaceClientsForTesting() {
+    return surface_clients_;
+  }
+
   void SetOutputSurface(std::unique_ptr<cc::OutputSurface> surface);
 
   // Schedules a redraw of the layer tree associated with this compositor.
@@ -379,6 +385,7 @@ class COMPOSITOR_EXPORT Compositor
   base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
 
   gfx::AcceleratedWidget widget_;
+  std::unordered_map<uint32_t, uint32_t> surface_clients_;
   bool widget_valid_;
   bool output_surface_requested_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;

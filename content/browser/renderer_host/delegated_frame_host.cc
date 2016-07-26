@@ -837,10 +837,7 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
   vsync_manager_ = compositor_->vsync_manager();
   vsync_manager_->AddObserver(this);
 
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  uint32_t parent = compositor->surface_id_allocator()->client_id();
-  factory->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
-      parent, id_allocator_->client_id());
+  compositor_->AddSurfaceClient(id_allocator_->client_id());
 }
 
 void DelegatedFrameHost::ResetCompositor() {
@@ -857,11 +854,7 @@ void DelegatedFrameHost::ResetCompositor() {
     vsync_manager_ = NULL;
   }
 
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  uint32_t parent = compositor_->surface_id_allocator()->client_id();
-  factory->GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
-      parent, id_allocator_->client_id());
-
+  compositor_->RemoveSurfaceClient(id_allocator_->client_id());
   compositor_ = nullptr;
 }
 
