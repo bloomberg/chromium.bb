@@ -69,7 +69,7 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
         continue;
       }
 
-      outer_->task_tracker_->RunTask(sequence->PeekTask());
+      outer_->task_tracker_->RunNextTaskInSequence(sequence.get());
 
       const bool sequence_became_empty = sequence->PopTask();
 

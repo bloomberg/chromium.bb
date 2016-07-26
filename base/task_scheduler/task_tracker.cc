@@ -11,6 +11,7 @@
 #include "base/debug/task_annotator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequence_token.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -177,8 +178,11 @@ bool TaskTracker::WillPostTask(const Task* task) {
   return true;
 }
 
-void TaskTracker::RunTask(const Task* task) {
-  DCHECK(task);
+void TaskTracker::RunNextTaskInSequence(const Sequence* sequence) {
+  DCHECK(sequence);
+  DCHECK(sequence->PeekTask());
+
+  const Task* task = sequence->PeekTask();
 
   const TaskShutdownBehavior shutdown_behavior =
       task->traits.shutdown_behavior();
@@ -193,6 +197,10 @@ void TaskTracker::RunTask(const Task* task) {
       TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
 
   {
+    // Set up SequenceToken as expected for the scope of the task.
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(sequence->token());
+
     // Set up TaskRunnerHandle as expected for the scope of the task.
     std::unique_ptr<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
     std::unique_ptr<ThreadTaskRunnerHandle> single_thread_task_runner_handle;

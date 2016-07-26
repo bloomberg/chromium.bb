@@ -13,6 +13,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_token.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
@@ -56,9 +57,14 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   // be called on an empty sequence.
   SequenceSortKey GetSortKey() const;
 
+  // Returns a token that uniquely identifies this Sequence.
+  const SequenceToken& token() const { return token_; }
+
  private:
   friend class RefCountedThreadSafe<Sequence>;
   ~Sequence();
+
+  const SequenceToken token_ = SequenceToken::Create();
 
   // Synchronizes access to all members.
   mutable SchedulerLock lock_;
