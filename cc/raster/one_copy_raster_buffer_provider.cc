@@ -219,10 +219,7 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
         resource_provider_->gpu_memory_buffer_manager()
             ->AllocateGpuMemoryBuffer(
                 staging_buffer->size, BufferFormat(resource->format()),
-                use_partial_raster_
-                    ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
-                    : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-                gpu::kNullSurfaceHandle);
+                StagingBufferUsage(), gpu::kNullSurfaceHandle);
   }
 
   gfx::Rect playback_rect = raster_full_rect;
@@ -283,8 +280,8 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
       gl, resource_lock, async_worker_context_enabled_);
 
   unsigned resource_texture_id = scoped_texture.texture_id();
-  unsigned image_target =
-      resource_provider_->GetImageTextureTarget(resource_lock->format());
+  unsigned image_target = resource_provider_->GetImageTextureTarget(
+      StagingBufferUsage(), staging_buffer->format);
 
   // Create and bind staging texture.
   if (!staging_buffer->texture_id) {
@@ -381,6 +378,12 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, resource_sync_token.GetData());
   resource_lock->set_sync_token(resource_sync_token);
   resource_lock->set_synchronized(!async_worker_context_enabled_);
+}
+
+gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {
+  return use_partial_raster_
+             ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
+             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 }
 
 }  // namespace cc

@@ -8,6 +8,12 @@ package cc.proto;
 
 option optimize_for = LITE_RUNTIME;
 
+message BufferToTextureTarget {
+  optional uint32 buffer_usage = 1;
+  optional uint32 buffer_format = 2;
+  optional uint32 texture_target = 3;
+};
+
 message RendererSettings {
   optional bool allow_antialiasing = 1;
   optional bool force_antialiasing = 2;
@@ -22,4 +28,5 @@ message RendererSettings {
   optional uint32 texture_id_allocation_chunk_size = 11;
   optional bool use_gpu_memory_buffer_resources = 12;
   optional uint32 preferred_tile_format = 13;
+  repeated BufferToTextureTarget buffer_to_texture_target = 14;
 }

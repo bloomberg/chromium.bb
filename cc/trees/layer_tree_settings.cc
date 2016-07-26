@@ -50,9 +50,6 @@ LayerTreeSettings::LayerTreeSettings()
     : default_tile_size(gfx::Size(256, 256)),
       max_untiled_layer_size(gfx::Size(512, 512)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
-      use_image_texture_targets(
-          static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
-          GL_TEXTURE_2D),
       memory_policy_(64 * 1024 * 1024,
                      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                      ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
@@ -108,7 +105,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          use_zero_copy == other.use_zero_copy &&
          use_partial_raster == other.use_partial_raster &&
          enable_elastic_overscroll == other.enable_elastic_overscroll &&
-         use_image_texture_targets == other.use_image_texture_targets &&
          ignore_root_layer_flings == other.ignore_root_layer_flings &&
          scheduled_raster_task_limit == other.scheduled_raster_task_limit &&
          use_occlusion_for_tile_prioritization ==
@@ -182,9 +178,6 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
   memory_policy_.ToProtobuf(proto->mutable_memory_policy());
   initial_debug_state.ToProtobuf(proto->mutable_initial_debug_state());
   proto->set_use_cached_picture_raster(use_cached_picture_raster);
-
-  for (unsigned u : use_image_texture_targets)
-    proto->add_use_image_texture_targets(u);
 }
 
 void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
@@ -232,8 +225,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   use_zero_copy = proto.use_zero_copy();
   use_partial_raster = proto.use_partial_raster();
   enable_elastic_overscroll = proto.enable_elastic_overscroll();
-  // |use_image_texture_targets| contains default values, so clear first.
-  use_image_texture_targets.clear();
   ignore_root_layer_flings = proto.ignore_root_layer_flings();
   scheduled_raster_task_limit = proto.scheduled_raster_task_limit();
   use_occlusion_for_tile_prioritization =
@@ -244,9 +235,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   memory_policy_.FromProtobuf(proto.memory_policy());
   initial_debug_state.FromProtobuf(proto.initial_debug_state());
   use_cached_picture_raster = proto.use_cached_picture_raster();
-
-  for (int i = 0; i < proto.use_image_texture_targets_size(); ++i)
-    use_image_texture_targets.push_back(proto.use_image_texture_targets(i));
 }
 
 SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {

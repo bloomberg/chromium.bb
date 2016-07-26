@@ -44,6 +44,7 @@
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "components/memory_coordinator/browser/memory_coordinator.h"
 #include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/scheduler/common/scheduler_switches.h"
@@ -442,16 +443,6 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
       session_storage_namespaces_awaiting_close_;
   DISALLOW_COPY_AND_ASSIGN(SessionStorageHolder);
 };
-
-std::string UintVectorToString(const std::vector<unsigned>& vector) {
-  std::string str;
-  for (auto it : vector) {
-    if (!str.empty())
-      str += ",";
-    str += base::UintToString(it);
-  }
-  return str;
-}
 
 void CreateMemoryCoordinatorHandle(
     int render_process_id,
@@ -1314,36 +1305,23 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsMainFrameBeforeActivationEnabled())
     command_line->AppendSwitch(cc::switches::kEnableMainFrameBeforeActivation);
 
-  // Persistent buffers may come at a performance hit (not all platform specific
-  // buffers support it), so only enable them if partial raster is enabled and
-  // we are actually going to use them.
-  // TODO(dcastagna): Once GPU_READ_CPU_READ_WRITE_PERSISTENT is removed
-  // kContentImageTextureTarget and kVideoImageTextureTarget can be merged into
-  // one flag.
-  gfx::BufferUsage buffer_usage =
-      IsPartialRasterEnabled()
-          ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
-          : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
-  std::vector<unsigned> image_targets(
-      static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
-  for (size_t format = 0;
-       format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
-    image_targets[format] =
-        BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-            static_cast<gfx::BufferFormat>(format), buffer_usage);
+  cc::BufferToTextureTargetMap image_targets;
+  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
+       ++usage_idx) {
+    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
+    for (int format_idx = 0;
+         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
+         ++format_idx) {
+      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
+      uint32_t target =
+          BrowserGpuMemoryBufferManager::GetImageTextureTarget(format, usage);
+      image_targets.insert(cc::BufferToTextureTargetMap::value_type(
+          cc::BufferToTextureTargetKey(usage, format), target));
+    }
   }
-  command_line->AppendSwitchASCII(switches::kContentImageTextureTarget,
-                                  UintVectorToString(image_targets));
-
-  for (size_t format = 0;
-       format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
-    image_targets[format] =
-        BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-            static_cast<gfx::BufferFormat>(format),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
-  }
-  command_line->AppendSwitchASCII(switches::kVideoImageTextureTarget,
-                                  UintVectorToString(image_targets));
+  command_line->AppendSwitchASCII(
+      switches::kContentImageTextureTarget,
+      cc::BufferToTextureTargetMapToString(image_targets));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

@@ -77,8 +77,6 @@ TEST(LayerTreeSettingsTest, AllMembersChanged) {
   settings.use_zero_copy = !settings.use_zero_copy;
   settings.use_partial_raster = !settings.use_partial_raster;
   settings.enable_elastic_overscroll = !settings.enable_elastic_overscroll;
-  settings.use_image_texture_targets.push_back(54);
-  settings.use_image_texture_targets.push_back(55);
   settings.ignore_root_layer_flings = !settings.ignore_root_layer_flings;
   settings.scheduled_raster_task_limit =
       settings.scheduled_raster_task_limit * 3 + 1;
@@ -135,8 +133,6 @@ TEST(LayerTreeSettingsTest, ArbitraryValues) {
   settings.use_zero_copy = true;
   settings.use_partial_raster = true;
   settings.enable_elastic_overscroll = false;
-  settings.use_image_texture_targets.push_back(10);
-  settings.use_image_texture_targets.push_back(19);
   settings.ignore_root_layer_flings = true;
   settings.scheduled_raster_task_limit = 41;
   settings.use_occlusion_for_tile_prioritization = true;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "cc/output/renderer_settings.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -44,7 +45,7 @@ class CompositorDependencies {
   virtual bool IsPartialRasterEnabled() = 0;
   virtual bool IsGpuMemoryBufferCompositorResourcesEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
-  virtual std::vector<unsigned> GetImageTextureTargets() = 0;
+  virtual const cc::BufferToTextureTargetMap& GetBufferToTextureTargetMap() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() = 0;
   // Returns null if the compositor is in single-threaded mode (ie. there is no

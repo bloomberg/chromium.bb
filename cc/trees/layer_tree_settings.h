@@ -85,8 +85,6 @@ class CC_EXPORT LayerTreeSettings {
   bool use_zero_copy = false;
   bool use_partial_raster = false;
   bool enable_elastic_overscroll = false;
-  // An array of image texture targets for each GpuMemoryBuffer format.
-  std::vector<unsigned> use_image_texture_targets;
   bool ignore_root_layer_flings = false;
   size_t scheduled_raster_task_limit = 32;
   bool use_occlusion_for_tile_prioritization = false;

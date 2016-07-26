@@ -107,6 +107,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                           const RasterSource* raster_source,
                           uint64_t previous_content_id,
                           uint64_t new_content_id);
+  gfx::BufferUsage StagingBufferUsage() const;
 
   ContextProvider* const compositor_context_provider_;
   ContextProvider* const worker_context_provider_;

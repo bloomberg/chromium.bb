@@ -19,6 +19,7 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -825,6 +826,8 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
   settings_.background_animation_rate = 200.0;
   settings_.verify_clip_tree_calculations = true;
   settings_.verify_transform_tree_calculations = true;
+  settings_.renderer_settings.buffer_to_texture_target_map =
+      DefaultBufferToTextureTargetMapForTesting();
   InitializeSettings(&settings_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

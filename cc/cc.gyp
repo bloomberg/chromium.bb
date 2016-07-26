@@ -260,6 +260,8 @@
         'output/bsp_tree.h',
         'output/bsp_walk_action.cc',
         'output/bsp_walk_action.h',
+        'output/buffer_to_texture_target_map.cc',
+        'output/buffer_to_texture_target_map.h',
         'output/ca_layer_overlay.cc',
         'output/ca_layer_overlay.h',
         'output/compositor_frame.cc',

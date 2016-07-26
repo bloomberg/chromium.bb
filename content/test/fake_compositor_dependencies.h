@@ -6,6 +6,7 @@
 #define CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_
 
 #include "base/macros.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -30,7 +31,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsPartialRasterEnabled() override;
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
-  std::vector<unsigned> GetImageTextureTargets() override;
+  const cc::BufferToTextureTargetMap& GetBufferToTextureTargetMap() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -50,6 +51,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   cc::TestTaskGraphRunner task_graph_runner_;
   FakeRendererScheduler renderer_scheduler_;
+  cc::BufferToTextureTargetMap buffer_to_texture_target_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorDependencies);
 };

@@ -50,7 +50,7 @@ RendererGpuVideoAcceleratorFactories::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    std::vector<unsigned> image_texture_targets,
+    const cc::BufferToTextureTargetMap& image_texture_targets,
     bool enable_video_accelerator) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
@@ -66,7 +66,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    std::vector<unsigned> image_texture_targets,
+    const cc::BufferToTextureTargetMap& image_texture_targets,
     bool enable_video_accelerator)
     : main_thread_task_runner_(main_thread_task_runner),
       task_runner_(task_runner),
@@ -229,7 +229,10 @@ bool RendererGpuVideoAcceleratorFactories::
 
 unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget(
     gfx::BufferFormat format) {
-  return image_texture_targets_[static_cast<int>(format)];
+  auto found = image_texture_targets_.find(cc::BufferToTextureTargetKey(
+      gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format));
+  DCHECK(found != image_texture_targets_.end());
+  return found->second;
 }
 
 media::VideoPixelFormat

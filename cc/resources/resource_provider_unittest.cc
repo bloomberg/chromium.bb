@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -48,9 +49,6 @@ namespace {
 
 static const bool kUseGpuMemoryBufferResources = false;
 static const bool kDelegatedSyncPointsRequired = true;
-static const std::vector<unsigned> kUseImageTextureTargets(
-    static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
-    GL_TEXTURE_2D);
 
 MATCHER_P(MatchesSyncToken, sync_token, "") {
   gpu::SyncToken other;
@@ -469,13 +467,14 @@ class ResourceProviderTest
         output_surface_->context_provider(), shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
         kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-        kUseImageTextureTargets);
+        DefaultBufferToTextureTargetMapForTesting());
     child_resource_provider_ = base::MakeUnique<ResourceProvider>(
         child_output_surface_->context_provider(), shared_bitmap_manager_.get(),
         child_gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
         0, 1,
         child_output_surface_->capabilities().delegated_sync_points_required,
-        kUseGpuMemoryBufferResources, kUseImageTextureTargets);
+        kUseGpuMemoryBufferResources,
+        DefaultBufferToTextureTargetMapForTesting());
   }
 
   ResourceProviderTest() : ResourceProviderTest(true) {}
@@ -1456,7 +1455,8 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
           child_output_surface->context_provider(),
           shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
           nullptr, 0, 1, kDelegatedSyncPointsRequired,
-          kUseGpuMemoryBufferResources, kUseImageTextureTargets));
+          kUseGpuMemoryBufferResources,
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -1972,7 +1972,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
             child_output_surface->context_provider(),
             shared_bitmap_manager.get(), nullptr, nullptr, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kUseImageTextureTargets));
+            DefaultBufferToTextureTargetMapForTesting()));
 
     std::unique_ptr<TextureStateTrackingContext> parent_context_owned(
         new TextureStateTrackingContext);
@@ -1988,7 +1988,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
             parent_output_surface->context_provider(),
             shared_bitmap_manager.get(), nullptr, nullptr, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kUseImageTextureTargets));
+            DefaultBufferToTextureTargetMapForTesting()));
 
     gfx::Size size(1, 1);
     ResourceFormat format = RGBA_8888;
@@ -2625,7 +2625,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2706,7 +2706,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2751,7 +2751,7 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2797,7 +2797,7 @@ TEST_P(ResourceProviderTest, TextureHint) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2858,7 +2858,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0,
           1, kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken release_sync_token;
   bool lost_resource = false;
@@ -2909,7 +2909,7 @@ class ResourceProviderTestTextureMailboxGLFilters
             output_surface->context_provider(), shared_bitmap_manager,
             gpu_memory_buffer_manager, main_thread_task_runner, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kUseImageTextureTargets));
+            DefaultBufferToTextureTargetMapForTesting()));
 
     unsigned texture_id = 1;
     gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
@@ -3056,7 +3056,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -3128,7 +3128,7 @@ TEST_P(ResourceProviderTest,
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -3186,7 +3186,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gpu::SyncToken sync_token;
   const GLuint64 current_fence_sync = context->GetNextFenceSync();
@@ -3310,7 +3310,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(2, 2);
   gfx::Vector2d offset(0, 0);
@@ -3368,7 +3368,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(2, 2);
 
@@ -3426,7 +3426,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(2, 2);
   const ResourceFormat formats[2] = {RGBA_8888, BGRA_8888};
@@ -3487,7 +3487,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
 
   id = resource_provider->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
@@ -3567,7 +3567,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
   int texture_id = 123;
 
   ResourceId id = resource_provider->CreateResource(
@@ -3601,7 +3601,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
           output_surface->context_provider(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-          kUseImageTextureTargets));
+          DefaultBufferToTextureTargetMapForTesting()));
   int texture_id = 123;
   uint8_t pixels[8];
 
@@ -3660,7 +3660,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
             output_surface->context_provider(), shared_bitmap_manager.get(),
             nullptr, nullptr, 0, kTextureAllocationChunkSize,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kUseImageTextureTargets));
+            DefaultBufferToTextureTargetMapForTesting()));
 
     ResourceId id = resource_provider->CreateResource(
         size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
@@ -3678,7 +3678,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
             output_surface->context_provider(), shared_bitmap_manager.get(),
             nullptr, nullptr, 0, kTextureAllocationChunkSize,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kUseImageTextureTargets));
+            DefaultBufferToTextureTargetMapForTesting()));
 
     ResourceId id = resource_provider->CreateResource(
         size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);

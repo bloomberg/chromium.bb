@@ -57,7 +57,6 @@ message LayerTreeSettings {
   optional bool use_zero_copy = 35;
   optional bool use_partial_raster = 36;
   optional bool enable_elastic_overscroll = 37;
-  repeated uint32 use_image_texture_targets = 38;
   optional bool ignore_root_layer_flings = 39;
   optional uint32 scheduled_raster_task_limit = 40;
   optional bool use_occlusion_for_tile_prioritization = 41;

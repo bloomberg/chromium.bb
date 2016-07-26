@@ -47,6 +47,13 @@ void RendererSettings::ToProtobuf(proto::RendererSettings* proto) const {
   proto->set_texture_id_allocation_chunk_size(texture_id_allocation_chunk_size);
   proto->set_use_gpu_memory_buffer_resources(use_gpu_memory_buffer_resources);
   proto->set_preferred_tile_format(preferred_tile_format);
+
+  for (const auto& target : buffer_to_texture_target_map) {
+    auto* proto_target = proto->add_buffer_to_texture_target();
+    proto_target->set_buffer_usage(static_cast<uint32_t>(target.first.first));
+    proto_target->set_buffer_format(static_cast<uint32_t>(target.first.second));
+    proto_target->set_texture_target(target.second);
+  }
 }
 
 void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
@@ -68,6 +75,16 @@ void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
             static_cast<uint32_t>(RESOURCE_FORMAT_MAX));
   preferred_tile_format =
       static_cast<ResourceFormat>(proto.preferred_tile_format());
+
+  // |buffer_to_texture_target_map| may contain existing values, so clear first.
+  buffer_to_texture_target_map.clear();
+  for (const auto& proto_target : proto.buffer_to_texture_target()) {
+    buffer_to_texture_target_map.insert(BufferToTextureTargetMap::value_type(
+        BufferToTextureTargetKey(
+            static_cast<gfx::BufferUsage>(proto_target.buffer_usage()),
+            static_cast<gfx::BufferFormat>(proto_target.buffer_format())),
+        proto_target.texture_target()));
+  }
 }
 
 bool RendererSettings::operator==(const RendererSettings& other) const {
@@ -86,7 +103,8 @@ bool RendererSettings::operator==(const RendererSettings& other) const {
              other.texture_id_allocation_chunk_size &&
          use_gpu_memory_buffer_resources ==
              other.use_gpu_memory_buffer_resources &&
-         preferred_tile_format == other.preferred_tile_format;
+         preferred_tile_format == other.preferred_tile_format &&
+         buffer_to_texture_target_map == other.buffer_to_texture_target_map;
 }
 
 }  // namespace cc

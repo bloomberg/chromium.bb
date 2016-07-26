@@ -38,7 +38,6 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -165,19 +164,19 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
-  // Use CPU_READ_WRITE_PERSISTENT memory buffers to support partial tile
-  // raster if needed.
-  gfx::BufferUsage usage =
-      settings.use_partial_raster
-          ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
-          : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
-
-  for (size_t format = 0;
-      format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
-    DCHECK_GT(settings.use_image_texture_targets.size(), format);
-    settings.use_image_texture_targets[format] =
-        context_factory_->GetImageTextureTarget(
-            static_cast<gfx::BufferFormat>(format), usage);
+  // Populate buffer_to_texture_target_map for all buffer usage/formats.
+  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
+       ++usage_idx) {
+    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
+    for (int format_idx = 0;
+         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
+         ++format_idx) {
+      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
+      uint32_t target = context_factory_->GetImageTextureTarget(format, usage);
+      settings.renderer_settings.buffer_to_texture_target_map.insert(
+          cc::BufferToTextureTargetMap::value_type(
+              cc::BufferToTextureTargetKey(usage, format), target));
+    }
   }
 
   // Note: Only enable image decode tasks if we have more than one worker

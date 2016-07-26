@@ -27,6 +27,7 @@
 #include "cc/base/resource_id.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/renderer_settings.h"
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/return_callback.h"
@@ -86,15 +87,16 @@ class CC_EXPORT ResourceProvider
     RESOURCE_TYPE_BITMAP,
   };
 
-  ResourceProvider(ContextProvider* compositor_context_provider,
-                   SharedBitmapManager* shared_bitmap_manager,
-                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                   BlockingTaskRunner* blocking_main_thread_task_runner,
-                   int highp_threshold_min,
-                   size_t id_allocation_chunk_size,
-                   bool delegated_sync_points_required,
-                   bool use_gpu_memory_buffer_resources,
-                   const std::vector<unsigned>& use_image_texture_targets);
+  ResourceProvider(
+      ContextProvider* compositor_context_provider,
+      SharedBitmapManager* shared_bitmap_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      BlockingTaskRunner* blocking_main_thread_task_runner,
+      int highp_threshold_min,
+      size_t id_allocation_chunk_size,
+      bool delegated_sync_points_required,
+      bool use_gpu_memory_buffer_resources,
+      const BufferToTextureTargetMap& buffer_to_texture_target_map);
   ~ResourceProvider() override;
 
   void Initialize();
@@ -476,7 +478,7 @@ class CC_EXPORT ResourceProvider
 
   void ValidateResource(ResourceId id) const;
 
-  GLenum GetImageTextureTarget(ResourceFormat format);
+  GLenum GetImageTextureTarget(gfx::BufferUsage usage, ResourceFormat format);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -694,7 +696,7 @@ class CC_EXPORT ResourceProvider
   std::unique_ptr<IdAllocator> buffer_id_allocator_;
 
   bool use_sync_query_;
-  std::vector<unsigned> use_image_texture_targets_;
+  BufferToTextureTargetMap buffer_to_texture_target_map_;
 
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.

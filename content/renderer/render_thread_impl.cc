@@ -40,6 +40,7 @@
 #include "cc/base/switches.h"
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/task_graph_runner.h"
@@ -414,19 +415,6 @@ void CreateEmbeddedWorkerSetup(
   new EmbeddedWorkerSetupImpl(std::move(request));
 }
 
-void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
-  DCHECK(vector->empty());
-  std::vector<std::string> pieces = base::SplitString(
-      str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  DCHECK_EQ(pieces.size(), static_cast<size_t>(gfx::BufferFormat::LAST) + 1);
-  for (size_t i = 0; i < pieces.size(); ++i) {
-    unsigned number = 0;
-    bool succeed = base::StringToUint(pieces[i], &number);
-    DCHECK(succeed);
-    vector->push_back(number);
-  }
-}
-
 scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const gpu::SharedMemoryLimits& limits,
@@ -781,7 +769,8 @@ void RenderThreadImpl::Init(
 
   std::string image_texture_target_string =
       command_line.GetSwitchValueASCII(switches::kContentImageTextureTarget);
-  StringToUintVector(image_texture_target_string, &use_image_texture_targets_);
+  buffer_to_texture_target_map_ =
+      cc::StringToBufferToTextureTargetMap(image_texture_target_string);
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
@@ -1482,16 +1471,11 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 #else
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
-  std::vector<unsigned> image_texture_targets;
-  std::string video_frame_image_texture_target_string =
-      cmd_line->GetSwitchValueASCII(switches::kVideoImageTextureTarget);
-  StringToUintVector(video_frame_image_texture_target_string,
-                     &image_texture_targets);
 
   gpu_factories_.push_back(RendererGpuVideoAcceleratorFactories::Create(
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
       media_task_runner, std::move(media_context_provider),
-      enable_gpu_memory_buffer_video_frames, image_texture_targets,
+      enable_gpu_memory_buffer_video_frames, buffer_to_texture_target_map_,
       enable_video_accelerator));
   return gpu_factories_.back();
 }
@@ -1608,8 +1592,9 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
 }
 
-std::vector<unsigned> RenderThreadImpl::GetImageTextureTargets() {
-  return use_image_texture_targets_;
+const cc::BufferToTextureTargetMap&
+RenderThreadImpl::GetBufferToTextureTargetMap() {
+  return buffer_to_texture_target_map_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

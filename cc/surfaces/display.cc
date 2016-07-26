@@ -156,8 +156,7 @@ void Display::InitializeRenderer() {
       settings_.texture_id_allocation_chunk_size,
       output_surface_->capabilities().delegated_sync_points_required,
       settings_.use_gpu_memory_buffer_resources,
-      std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
-                            GL_TEXTURE_2D)));
+      settings_.buffer_to_texture_target_map));
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);

@@ -390,7 +390,7 @@ ResourceProvider::ResourceProvider(
     size_t id_allocation_chunk_size,
     bool delegated_sync_points_required,
     bool use_gpu_memory_buffer_resources,
-    const std::vector<unsigned>& use_image_texture_targets)
+    const BufferToTextureTargetMap& buffer_to_texture_target_map)
     : compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -413,7 +413,7 @@ ResourceProvider::ResourceProvider(
       best_render_buffer_format_(RGBA_8888),
       id_allocation_chunk_size_(id_allocation_chunk_size),
       use_sync_query_(false),
-      use_image_texture_targets_(use_image_texture_targets),
+      buffer_to_texture_target_map_(buffer_to_texture_target_map),
       tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
   DCHECK(id_allocation_chunk_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -599,8 +599,12 @@ ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
   DCHECK_LE(size.height(), max_texture_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // TODO(crbug.com/590317): We should not assume that all resources created by
+  // ResourceProvider are GPU_READ_CPU_READ_WRITE. We should determine this
+  // based on the current RasterBufferProvider's needs.
   GLenum target = type == RESOURCE_TYPE_GPU_MEMORY_BUFFER
-                      ? GetImageTextureTarget(format)
+                      ? GetImageTextureTarget(
+                            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format)
                       : GL_TEXTURE_2D;
 
   ResourceId id = next_id_++;
@@ -1902,11 +1906,13 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
   return active_unit;
 }
 
-GLenum ResourceProvider::GetImageTextureTarget(ResourceFormat format) {
+GLenum ResourceProvider::GetImageTextureTarget(gfx::BufferUsage usage,
+                                               ResourceFormat format) {
   gfx::BufferFormat buffer_format = BufferFormat(format);
-  DCHECK_GT(use_image_texture_targets_.size(),
-            static_cast<size_t>(buffer_format));
-  return use_image_texture_targets_[static_cast<size_t>(buffer_format)];
+  auto found = buffer_to_texture_target_map_.find(
+      BufferToTextureTargetKey(usage, buffer_format));
+  DCHECK(found != buffer_to_texture_target_map_.end());
+  return found->second;
 }
 
 void ResourceProvider::ValidateResource(ResourceId id) const {

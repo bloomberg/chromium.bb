@@ -69,6 +69,7 @@
       'layers/viewport_unittest.cc',
       'output/begin_frame_args_unittest.cc',
       'output/bsp_tree_unittest.cc',
+      'output/buffer_to_texture_target_map_unittest.cc',
       'output/delegating_renderer_unittest.cc',
       'output/filter_operations_unittest.cc',
       'output/gl_renderer_unittest.cc',
