@@ -101,20 +101,20 @@ TEST(AnimationTimingCalculationsTest, IterationTime)
 {
     Timing timing;
 
-    // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, timing)
+    // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, phase, timing)
 
     // if the scaled active time is null
-    EXPECT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, timing)));
+    EXPECT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, AnimationEffect::PhaseActive, timing)));
 
     // if (complex-conditions)...
-    EXPECT_EQ(12, calculateIterationTime(12, 12, 12, 0, timing));
+    EXPECT_EQ(12, calculateIterationTime(12, 12, 12, 0, AnimationEffect::PhaseActive, timing));
 
     // otherwise
     timing.iterationCount = 10;
-    EXPECT_EQ(5, calculateIterationTime(10, 100, 25, 4, timing));
-    EXPECT_EQ(7, calculateIterationTime(11, 110, 29, 1, timing));
+    EXPECT_EQ(5, calculateIterationTime(10, 100, 25, 4, AnimationEffect::PhaseActive, timing));
+    EXPECT_EQ(7, calculateIterationTime(11, 110, 29, 1, AnimationEffect::PhaseActive, timing));
     timing.iterationStart = 1.1;
-    EXPECT_EQ(8, calculateIterationTime(12, 120, 20, 7, timing));
+    EXPECT_EQ(8, calculateIterationTime(12, 120, 20, 7, AnimationEffect::PhaseActive, timing));
 }
 
 TEST(AnimationTimingCalculationsTest, CurrentIteration)

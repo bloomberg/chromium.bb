@@ -89,7 +89,7 @@ static inline double calculateActiveTime(double activeDuration, Timing::FillMode
         return nullValue();
     case AnimationEffect::PhaseAfter:
         if (fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth)
-            return activeDuration;
+            return std::max(0.0, std::min(activeDuration, activeDuration + specified.endDelay));
         return nullValue();
     case AnimationEffect::PhaseNone:
         ASSERT(isNull(localTime));
@@ -125,7 +125,8 @@ static inline bool endsOnIterationBoundary(double iterationCount, double iterati
     return !fmod(iterationCount + iterationStart, 1);
 }
 
-static inline double calculateIterationTime(double iterationDuration, double repeatedDuration, double scaledActiveTime, double startOffset, const Timing& specified)
+// TODO(crbug.com/630915): Align this function with current Web Animations spec text.
+static inline double calculateIterationTime(double iterationDuration, double repeatedDuration, double scaledActiveTime, double startOffset, AnimationEffect::Phase phase, const Timing& specified)
 {
     ASSERT(iterationDuration > 0);
     ASSERT(repeatedDuration == multiplyZeroAlwaysGivesZero(iterationDuration, specified.iterationCount));
@@ -141,7 +142,17 @@ static inline double calculateIterationTime(double iterationDuration, double rep
         return iterationDuration;
 
     ASSERT(std::isfinite(scaledActiveTime));
-    return fmod(scaledActiveTime, iterationDuration);
+    double iterationTime = fmod(scaledActiveTime, iterationDuration);
+
+    // This implements step 3 of
+    // http://w3c.github.io/web-animations/#calculating-the-simple-iteration-progress
+    if (iterationTime == 0
+        && phase == AnimationEffect::PhaseAfter
+        && repeatedDuration != 0
+        && scaledActiveTime != 0)
+        return iterationDuration;
+
+    return iterationTime;
 }
 
 static inline double calculateCurrentIteration(double iterationDuration, double iterationTime, double scaledActiveTime, const Timing& specified)

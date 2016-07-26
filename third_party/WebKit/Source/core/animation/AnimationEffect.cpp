@@ -156,7 +156,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
             const double startOffset = multiplyZeroAlwaysGivesZero(m_timing.iterationStart, iterationDuration);
             ASSERT(startOffset >= 0);
             const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_timing);
-            const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, m_timing);
+            const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, currentPhase, m_timing);
 
             currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_timing);
             const double transformedTime = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_timing);
@@ -187,7 +187,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
             const double startOffset = m_timing.iterationStart * localIterationDuration;
             ASSERT(startOffset >= 0);
             const double scaledActiveTime = calculateScaledActiveTime(localActiveDuration, localActiveTime, startOffset, m_timing);
-            const double iterationTime = calculateIterationTime(localIterationDuration, localRepeatedDuration, scaledActiveTime, startOffset, m_timing);
+            const double iterationTime = calculateIterationTime(localIterationDuration, localRepeatedDuration, scaledActiveTime, startOffset, currentPhase, m_timing);
 
             currentIteration = calculateCurrentIteration(localIterationDuration, iterationTime, scaledActiveTime, m_timing);
             progress = calculateTransformedTime(currentIteration, localIterationDuration, iterationTime, m_timing);

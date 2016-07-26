@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Tests for effect clipping via negative end delay</title>
+<link rel="help" href="http://w3c.github.io/web-animations/#calculating-the-active-time">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+<body>
+<script>
+'use strict';
+
+test(function(t) {
+  var animation = createDiv(t).animate(null, {
+    fill: 'forwards',
+    duration: 1,
+    endDelay: -1,
+  });
+  animation.currentTime = 10;
+  assert_equals(animation.effect.getComputedTiming().progress, 0,
+      'Progress should be zero since we clip to the start of the animation');
+}, 'Negative end delay clipping into the start of the animation');
+
+test(function(t) {
+  var animation = createDiv(t).animate(null, {
+    fill: 'forwards',
+    duration: 1,
+    iterations: 2,
+    endDelay: -1,
+  });
+  animation.currentTime = 10;
+  assert_equals(animation.effect.getComputedTiming().progress, 1,
+      'Progress should be 1 since we clip to the end of the first iteration ' +
+      'and the second iteration does not have a chance to start');
+}, 'Negative end delay clipping to the end of the the first iteration');
+
+test(function(t) {
+  var animation = createDiv(t).animate(null, {
+    fill: 'forwards',
+    duration: 1,
+    iterations: 2,
+    endDelay: -0.75,
+  });
+  animation.currentTime = 10;
+  assert_equals(animation.effect.getComputedTiming().progress, 0.25,
+      'Progress should be 0.25 since we clip part way through the second iteration');
+}, 'Negative end delay clipping part way into the second iteration');
+
+test(function(t) {
+  var animation = createDiv(t).animate(null, {
+    fill: 'forwards',
+    duration: 1,
+    iterations: 0,
+    endDelay: -1,
+  });
+  animation.currentTime = 10;
+  assert_equals(animation.effect.getComputedTiming().progress, 0,
+      'Progress should be 0 since there are no iterations to make progress in');
+}, 'Negative end delay clipping into zero iterations');
+
+</script>
+</body>
