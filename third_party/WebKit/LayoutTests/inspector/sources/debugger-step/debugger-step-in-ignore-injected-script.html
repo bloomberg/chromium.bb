@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function testFunction()
+{
+    debugger;
+    console.log(123);
+    return 239; // stack result should point here
+}
+</script>
+<script>
+
+function test()
+{
+    InspectorTest.startDebuggerTestPromise(/* quiet */ true)
+        .then(() => InspectorTest.runTestFunctionAndWaitUntilPausedPromise())
+        .then(() => stepIntoPromise())
+        .then(() => stepIntoPromise())
+        .then((callFrames) => InspectorTest.captureStackTrace(callFrames))
+        .then(() => InspectorTest.completeDebuggerTest());
+
+    function stepIntoPromise()
+    {
+        var cb;
+        var p = new Promise(fullfill => cb = fullfill);
+        InspectorTest.stepInto();
+        InspectorTest.waitUntilResumed(() => InspectorTest.waitUntilPaused(cb));
+        return p;
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that stepInto doesn't pause in InjectedScriptSource.</p>
+</body>
+</html>

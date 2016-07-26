@@ -878,9 +878,6 @@ void V8DebuggerAgentImpl::willExecuteScript(int scriptId)
     // Fast return.
     if (m_scheduledDebuggerStep != StepInto)
         return;
-    // Skip unknown scripts (e.g. InjectedScript).
-    if (m_scripts.find(String16::fromInteger(scriptId)) == m_scripts.end())
-        return;
     schedulePauseOnNextStatementIfSteppingInto();
 }
 
@@ -1058,6 +1055,13 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
 {
     JavaScriptCallFrames callFrames = debugger().currentCallFrames(1);
     JavaScriptCallFrame* topCallFrame = !callFrames.empty() ? callFrames.begin()->get() : nullptr;
+
+    // Skip pause in internal scripts (e.g. InjectedScriptSource.js).
+    if (topCallFrame) {
+        ScriptsMap::iterator it = m_scripts.find(String16::fromInteger(topCallFrame->sourceID()));
+        if (it != m_scripts.end() && it->second->isInternalScript())
+            return RequestStepFrame;
+    }
 
     V8DebuggerAgentImpl::SkipPauseRequest result;
     if (m_skipAllPauses)

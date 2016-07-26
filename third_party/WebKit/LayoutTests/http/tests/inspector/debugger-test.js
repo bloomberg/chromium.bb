@@ -19,6 +19,14 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
     InspectorTest.safeWrap(callback)();
 };
 
+InspectorTest.startDebuggerTestPromise = function(quiet)
+{
+    var cb;
+    var p = new Promise(fullfill => cb = fullfill);
+    InspectorTest.startDebuggerTest(cb, quiet);
+    return p;
+}
+
 InspectorTest.completeDebuggerTest = function()
 {
     WebInspector.breakpointManager.setBreakpointsActive(true);
@@ -85,6 +93,14 @@ InspectorTest.runTestFunctionAndWaitUntilPaused = function(callback)
     InspectorTest.runTestFunction();
     InspectorTest.waitUntilPaused(callback);
 };
+
+InspectorTest.runTestFunctionAndWaitUntilPausedPromise = function()
+{
+    var cb;
+    var p = new Promise(fullfill => cb = fullfill);
+    InspectorTest.runTestFunctionAndWaitUntilPaused(cb);
+    return p;
+}
 
 InspectorTest.runAsyncCallStacksTest = function(totalDebuggerStatements, maxAsyncCallStackDepth)
 {

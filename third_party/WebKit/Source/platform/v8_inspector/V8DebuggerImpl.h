@@ -114,7 +114,7 @@ public:
     v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Context>, v8::Local<v8::Script>);
     v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]);
     v8::MaybeLocal<v8::Value> compileAndRunInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>);
-    v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String16& fileName);
+    v8::Local<v8::Script> compileScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String16& fileName, bool markAsInternal);
     v8::Local<v8::Context> regexContext();
 
     void enableStackCapturingIfNeeded();

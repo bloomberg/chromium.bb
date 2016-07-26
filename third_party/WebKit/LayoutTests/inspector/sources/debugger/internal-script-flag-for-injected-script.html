@@ -12,13 +12,13 @@ function newWorld()
 function test()
 {
     InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, step2);
-    InspectorTest.evaluateInPage("newWorld()");
+    InspectorTest.evaluateInPage("newWorld()\n//# sourceURL=foo.js");
 
     var expectedScriptParsed = 2;
     function step2(event)
     {
         var script = event.data;
-        InspectorTest.addResult(script._isInternalScript ? "Internal script" : "Not internal script");
+        InspectorTest.addResult(script.sourceURL + ":" + (script._isInternalScript ? "Internal script" : "Not internal script"));
         --expectedScriptParsed;
         if (!expectedScriptParsed)
             InspectorTest.completeTest();

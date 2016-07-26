@@ -1,0 +1,7 @@
+CONSOLE MESSAGE: line 9: 123
+Tests that stepInto doesn't pause in InjectedScriptSource.
+
+Set timer for test function.
+Call stack:
+    0) testFunction (debugger-step-in-ignore-injected-script.html:10)
+

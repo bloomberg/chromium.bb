@@ -809,24 +809,22 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::callFunction(v8::Local<v8::Function> f
 
 v8::MaybeLocal<v8::Value> V8DebuggerImpl::compileAndRunInternalScript(v8::Local<v8::Context> context, v8::Local<v8::String> source)
 {
-    v8::Local<v8::Script> script = compileInternalScript(context, source, String());
+    v8::Local<v8::Script> script = compileScript(context, source, String(), true);
     if (script.IsEmpty())
         return v8::MaybeLocal<v8::Value>();
     v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     return script->Run(context);
 }
 
-v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Context> context, v8::Local<v8::String> code, const String16& fileName)
+v8::Local<v8::Script> V8DebuggerImpl::compileScript(v8::Local<v8::Context> context, v8::Local<v8::String> code, const String16& fileName, bool markAsInternal)
 {
-    // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
-    // 1, whereas v8 starts at 0.
     v8::ScriptOrigin origin(
         toV8String(m_isolate, fileName),
         v8::Integer::New(m_isolate, 0),
         v8::Integer::New(m_isolate, 0),
         v8::False(m_isolate), // sharable
         v8::Local<v8::Integer>(),
-        v8::True(m_isolate), // internal
+        v8::Boolean::New(m_isolate, markAsInternal), // internal
         toV8String(m_isolate, String16()), // sourceMap
         v8::True(m_isolate)); // opaqueresource
     v8::ScriptCompiler::Source source(code, origin);
