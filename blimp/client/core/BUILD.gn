@@ -8,18 +8,19 @@ if (is_android) {
 }
 
 declare_args() {
-  # Enables blimp. This is required to get the real implementation of blimp.
+  # Enables the blimp client. This is required to get the actual implementation
+  # of blimp.
   # By default, only a dummy-implementation is provided.
-  enable_blimp = false
+  enable_blimp_client = false
 }
 
 # This target is here to let //chrome depend on //blimp/client/public
 # and automatically get the correct implementation of //blimp/client/core
-# depending on whether enable_blimp is set or not.
+# depending on whether enable_blimp_client is set or not.
 group("core_shim") {
   visibility = [ "//blimp/client/public" ]
 
-  if (enable_blimp) {
+  if (enable_blimp_client) {
     deps = [
       ":core",
     ]
@@ -125,12 +126,12 @@ source_set("switches") {
 if (is_android) {
   # This target is here to let //chrome depend on
   # //blimp/client/public:public_java and automatically get the correct
-  # implementation of //blimp/client/core depending on whether enable_blimp is
-  # set or not.
+  # implementation of //blimp/client/core depending on whether
+  # enable_blimp_client is set or not.
   java_group("core_shim_java") {
     visibility = [ "//blimp/client/public/*" ]
 
-    if (enable_blimp) {
+    if (enable_blimp_client) {
       deps = [
         ":core_java",
       ]

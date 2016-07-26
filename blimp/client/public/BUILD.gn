@@ -22,7 +22,7 @@ group("public") {
 
 # All code in //blimp/client/* should depend on this target instead of
 # //blimp/client/public to ensure there are no circular dependencies or
-# duplicate symbols regardless of whether enable_blimp is set or not.
+# duplicate symbols regardless of whether enable_blimp_client is set or not.
 source_set("public_headers") {
   visibility = [ "//blimp/client/*" ]
 
@@ -61,8 +61,8 @@ if (is_android) {
 
   # All code in //blimp/client/* should depend on this target instead of
   # //blimp/client/public:public_java to ensure there are no circular
-  # dependencies or duplicate files regardless of whether enable_blimp is set or
-  # not.
+  # dependencies or duplicate files regardless of whether enable_blimp_client is
+  # set or not.
   android_library("public_headers_java") {
     visibility = [ "//blimp/client/*" ]
 
