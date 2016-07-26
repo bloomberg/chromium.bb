@@ -30,11 +30,20 @@ class GpuIntegrationTest(
       yield test_name, (url, test_name, args)
 
   def _RestartBrowser(self, reason):
-    logging.warning('Restarting browser due to ' + reason)
-    self.StopBrowser()
-    self.SetBrowserOptions(self._finder_options)
-    self.StartBrowser()
-    self.tab = self.browser.tabs[0]
+    for x in range(0, 3):
+      try:
+        restart_attempt = ('Restarting browser %d time due to '
+          % (x + 1))
+        logging.warning(restart_attempt + reason)
+        self.StopBrowser()
+        self.SetBrowserOptions(self._finder_options)
+        self.StartBrowser()
+        self.tab = self.browser.tabs[0]
+        return
+      except Exception:
+        # If we are on the last try and there is an exception raise it
+        if x == 2:
+          raise
 
   def _RunGpuTest(self, url, test_name, args):
     temp_page = _EmulatedPage(url, test_name)
