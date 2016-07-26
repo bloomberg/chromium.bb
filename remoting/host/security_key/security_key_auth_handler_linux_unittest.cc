@@ -4,21 +4,22 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <string>
+
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
-#include "base/timer/mock_timer.h"
-#include "base/values.h"
+#include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "remoting/host/security_key/security_key_socket.h"
-#include "remoting/proto/internal.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -44,32 +45,56 @@ const unsigned char kRequestData[] = {
     0x5e, 0xa3, 0xbc, 0x02, 0x5b, 0xec, 0xe4, 0x4b, 0xae, 0x0e, 0xf2, 0xbd,
     0xc8, 0xaa};
 
+void RunUntilIdle() {
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
 }  // namespace
 
 class SecurityKeyAuthHandlerLinuxTest : public testing::Test {
  public:
   SecurityKeyAuthHandlerLinuxTest()
-      : run_loop_(new base::RunLoop()), last_connection_id_received_(-1) {
+      : run_loop_(new base::RunLoop()),
+        file_thread_("SecurityKeyAuthHandlerLinuxTest_FileThread") {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.path().Append(kSocketFilename);
     remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(socket_path_);
 
+    EXPECT_TRUE(file_thread_.StartWithOptions(
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+
     send_message_callback_ =
         base::Bind(&SecurityKeyAuthHandlerLinuxTest::SendMessageToClient,
                    base::Unretained(this));
+
     auth_handler_ = remoting::SecurityKeyAuthHandler::Create(
-        nullptr, send_message_callback_);
+        /*client_session_details=*/nullptr, send_message_callback_,
+        file_thread_.task_runner());
+    EXPECT_NE(auth_handler_.get(), nullptr);
   }
 
-  void WaitForSendMessageToClient() {
+  void CreateSocketAndWait() {
+    ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
+    auth_handler_->CreateSecurityKeyConnection();
+
+    ASSERT_TRUE(file_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&RunUntilIdle), run_loop_->QuitClosure()));
     run_loop_->Run();
     run_loop_.reset(new base::RunLoop);
+
+    ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
   }
 
   void SendMessageToClient(int connection_id, const std::string& data) {
     last_connection_id_received_ = connection_id;
     last_message_received_ = data;
     run_loop_->Quit();
+  }
+
+  void WaitForSendMessageToClient() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop);
   }
 
   void CheckHostDataMessage(int id, const std::string& expected_data) {
@@ -117,12 +142,14 @@ class SecurityKeyAuthHandlerLinuxTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
+  base::Thread file_thread_;
+
   // Object under test.
   std::unique_ptr<SecurityKeyAuthHandler> auth_handler_;
 
   SecurityKeyAuthHandler::SendMessageCallback send_message_callback_;
 
-  int last_connection_id_received_;
+  int last_connection_id_received_ = -1;
   std::string last_message_received_;
 
   base::ScopedTempDir temp_dir_;
@@ -134,9 +161,7 @@ class SecurityKeyAuthHandlerLinuxTest : public testing::Test {
 };
 
 TEST_F(SecurityKeyAuthHandlerLinuxTest, NotClosedAfterRequest) {
-  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
-
-  auth_handler_->CreateSecurityKeyConnection();
+  CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
@@ -156,9 +181,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, NotClosedAfterRequest) {
 }
 
 TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoRequests) {
-  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
-
-  auth_handler_->CreateSecurityKeyConnection();
+  CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
@@ -186,9 +209,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoRequests) {
 }
 
 TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
-  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
-
-  auth_handler_->CreateSecurityKeyConnection();
+  CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
@@ -221,8 +242,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
 }
 
 TEST_F(SecurityKeyAuthHandlerLinuxTest, DidReadTimeout) {
-  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
-  auth_handler_->CreateSecurityKeyConnection();
+  CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
@@ -233,8 +253,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, DidReadTimeout) {
 }
 
 TEST_F(SecurityKeyAuthHandlerLinuxTest, ClientErrorMessageDelivered) {
-  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
-  auth_handler_->CreateSecurityKeyConnection();
+  CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;

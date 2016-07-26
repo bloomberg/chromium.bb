@@ -5,6 +5,8 @@
 #include "remoting/host/security_key/security_key_extension.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/security_key/security_key_extension_session.h"
 
 namespace {
@@ -15,7 +17,9 @@ const char kCapability[] = "";
 
 namespace remoting {
 
-SecurityKeyExtension::SecurityKeyExtension() {}
+SecurityKeyExtension::SecurityKeyExtension(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    : file_task_runner_(file_task_runner) {}
 
 SecurityKeyExtension::~SecurityKeyExtension() {}
 
@@ -31,7 +35,7 @@ SecurityKeyExtension::CreateExtensionSession(
   //               extension will only send messages through the initial
   //               |client_stub| and |details| with the current design.
   return base::WrapUnique(
-      new SecurityKeyExtensionSession(details, client_stub));
+      new SecurityKeyExtensionSession(details, client_stub, file_task_runner_));
 }
 
 }  // namespace remoting

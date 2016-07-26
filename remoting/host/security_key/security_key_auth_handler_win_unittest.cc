@@ -122,7 +122,8 @@ SecurityKeyAuthHandlerWinTest::SecurityKeyAuthHandlerWinTest()
   auth_handler_ = remoting::SecurityKeyAuthHandler::Create(
       &mock_client_session_details_,
       base::Bind(&SecurityKeyAuthHandlerWinTest::SendMessageToClient,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      /*file_task_runner=*/nullptr);
 }
 
 SecurityKeyAuthHandlerWinTest::~SecurityKeyAuthHandlerWinTest() {}

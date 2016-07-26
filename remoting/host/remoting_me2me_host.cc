@@ -5,8 +5,8 @@
 // This file implements a standalone host process for Me2Me.
 
 #include <stddef.h>
-#include <stdint.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -1461,7 +1461,8 @@ void HostProcess::StartHost() {
                                  context_->video_encode_task_runner()));
 
   if (security_key_auth_policy_enabled_ && security_key_extension_supported_) {
-    host_->AddExtension(base::WrapUnique(new SecurityKeyExtension()));
+    host_->AddExtension(base::WrapUnique(
+        new SecurityKeyExtension(context_->file_task_runner())));
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.

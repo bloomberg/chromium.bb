@@ -10,12 +10,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/host/host_extension_session.h"
 
 namespace base {
 class DictionaryValue;
-}
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 
@@ -29,8 +31,10 @@ class ClientStub;
 // A HostExtensionSession implementation that enables Security Key support.
 class SecurityKeyExtensionSession : public HostExtensionSession {
  public:
-  SecurityKeyExtensionSession(ClientSessionDetails* client_session_details,
-                              protocol::ClientStub* client_stub);
+  SecurityKeyExtensionSession(
+      ClientSessionDetails* client_session_details,
+      protocol::ClientStub* client_stub,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
   ~SecurityKeyExtensionSession() override;
 
   // HostExtensionSession interface.

@@ -4,19 +4,26 @@
 
 #include "remoting/host/security_key/security_key_auth_handler.h"
 
-#include <stdint.h>
 #include <unistd.h>
 
+#include <cstdint>
+#include <map>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/values.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -53,11 +60,12 @@ namespace remoting {
 
 class SecurityKeyAuthHandlerLinux : public SecurityKeyAuthHandler {
  public:
-  SecurityKeyAuthHandlerLinux();
+  explicit SecurityKeyAuthHandlerLinux(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
   ~SecurityKeyAuthHandlerLinux() override;
 
  private:
-  typedef std::map<int, SecurityKeySocket*> ActiveSockets;
+  typedef std::map<int, std::unique_ptr<SecurityKeySocket>> ActiveSockets;
 
   // SecurityKeyAuthHandler interface.
   void CreateSecurityKeyConnection() override;
@@ -68,6 +76,9 @@ class SecurityKeyAuthHandlerLinux : public SecurityKeyAuthHandler {
   void SetSendMessageCallback(const SendMessageCallback& callback) override;
   size_t GetActiveConnectionCountForTest() const override;
   void SetRequestTimeoutForTest(base::TimeDelta timeout) override;
+
+  // Sets up the socket used for accepting new connections.
+  void CreateSocket();
 
   // Starts listening for connection.
   void DoAccept();
@@ -101,22 +112,28 @@ class SecurityKeyAuthHandlerLinux : public SecurityKeyAuthHandler {
   SendMessageCallback send_message_callback_;
 
   // The last assigned security key connection id.
-  int last_connection_id_;
+  int last_connection_id_ = 0;
 
   // Sockets by connection id used to process gnubbyd requests.
   ActiveSockets active_sockets_;
 
+  // Used to perform blocking File IO.
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+
   // Timeout used for a request.
   base::TimeDelta request_timeout_;
+
+  base::WeakPtrFactory<SecurityKeyAuthHandlerLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerLinux);
 };
 
 std::unique_ptr<SecurityKeyAuthHandler> SecurityKeyAuthHandler::Create(
     ClientSessionDetails* client_session_details,
-    const SendMessageCallback& send_message_callback) {
+    const SendMessageCallback& send_message_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   std::unique_ptr<SecurityKeyAuthHandler> auth_handler(
-      new SecurityKeyAuthHandlerLinux());
+      new SecurityKeyAuthHandlerLinux(file_task_runner));
   auth_handler->SetSendMessageCallback(send_message_callback);
   return auth_handler;
 }
@@ -126,31 +143,32 @@ void SecurityKeyAuthHandler::SetSecurityKeySocketName(
   g_security_key_socket_name.Get() = security_key_socket_name;
 }
 
-SecurityKeyAuthHandlerLinux::SecurityKeyAuthHandlerLinux()
-    : last_connection_id_(0),
+SecurityKeyAuthHandlerLinux::SecurityKeyAuthHandlerLinux(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    : file_task_runner_(file_task_runner),
       request_timeout_(
-          base::TimeDelta::FromSeconds(kDefaultRequestTimeoutSeconds)) {}
+          base::TimeDelta::FromSeconds(kDefaultRequestTimeoutSeconds)),
+      weak_factory_(this) {}
 
-SecurityKeyAuthHandlerLinux::~SecurityKeyAuthHandlerLinux() {
-  STLDeleteValues(&active_sockets_);
-}
+SecurityKeyAuthHandlerLinux::~SecurityKeyAuthHandlerLinux() {}
 
 void SecurityKeyAuthHandlerLinux::CreateSecurityKeyConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!g_security_key_socket_name.Get().empty());
 
-  {
-    // DeleteFile() is a blocking operation, but so is creation of the unix
-    // socket below. Consider moving this class to a different thread if this
-    // causes any problems. See crbug.com/509807.
-    // TODO(joedow): Since this code now runs as a host extension, we should
-    //               perform our IO on a separate thread: crbug.com/591739
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+  // We need to run the DeleteFile method on |file_task_runner_| as it is a
+  // blocking function call which cannot be run on the main thread.  Once
+  // that task has completed, the main thread will be called back and we will
+  // resume setting up our security key auth socket there.
+  file_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(base::IgnoreResult(&base::DeleteFile),
+                            g_security_key_socket_name.Get(), false),
+      base::Bind(&SecurityKeyAuthHandlerLinux::CreateSocket,
+                 weak_factory_.GetWeakPtr()));
+}
 
-    // If the file already exists, a socket in use error is returned.
-    base::DeleteFile(g_security_key_socket_name.Get(), false);
-  }
-
+void SecurityKeyAuthHandlerLinux::CreateSocket() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   HOST_LOG << "Listening for security key requests on "
            << g_security_key_socket_name.Get().value();
 
@@ -212,6 +230,7 @@ void SecurityKeyAuthHandlerLinux::SetRequestTimeoutForTest(
 }
 
 void SecurityKeyAuthHandlerLinux::DoAccept() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   int result = auth_socket_->Accept(
       &accept_socket_, base::Bind(&SecurityKeyAuthHandlerLinux::OnAccepted,
                                   base::Unretained(this)));
@@ -233,7 +252,7 @@ void SecurityKeyAuthHandlerLinux::OnAccepted(int result) {
       std::move(accept_socket_), request_timeout_,
       base::Bind(&SecurityKeyAuthHandlerLinux::RequestTimedOut,
                  base::Unretained(this), security_key_connection_id));
-  active_sockets_[security_key_connection_id] = socket;
+  active_sockets_[security_key_connection_id] = base::WrapUnique(socket);
   socket->StartReadingRequest(
       base::Bind(&SecurityKeyAuthHandlerLinux::OnReadComplete,
                  base::Unretained(this), security_key_connection_id));
@@ -272,7 +291,6 @@ SecurityKeyAuthHandlerLinux::GetSocketForConnectionId(
 void SecurityKeyAuthHandlerLinux::SendErrorAndCloseActiveSocket(
     const ActiveSockets::const_iterator& iter) {
   iter->second->SendSshError();
-  delete iter->second;
   active_sockets_.erase(iter);
 }
 

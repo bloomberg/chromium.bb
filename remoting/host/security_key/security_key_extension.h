@@ -9,7 +9,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "remoting/host/host_extension.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 
@@ -19,7 +24,8 @@ class HostExtensionSession;
 // SecurityKeyExtension extends HostExtension to enable Security Key support.
 class SecurityKeyExtension : public HostExtension {
  public:
-  SecurityKeyExtension();
+  explicit SecurityKeyExtension(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
   ~SecurityKeyExtension() override;
 
   // HostExtension interface.
@@ -29,6 +35,9 @@ class SecurityKeyExtension : public HostExtension {
       protocol::ClientStub* client_stub) override;
 
  private:
+  // Allows underlying auth handler to perform blocking file IO.
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyExtension);
 };
 

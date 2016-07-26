@@ -9,10 +9,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 
 namespace base {
 class FilePath;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
@@ -36,7 +38,8 @@ class SecurityKeyAuthHandler {
   // |client_session_details| will be valid until this instance is destroyed.
   static std::unique_ptr<SecurityKeyAuthHandler> Create(
       ClientSessionDetails* client_session_details,
-      const SendMessageCallback& send_message_callback);
+      const SendMessageCallback& send_message_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
 #if defined(OS_LINUX)
   // Specify the name of the socket to listen to security key requests on.

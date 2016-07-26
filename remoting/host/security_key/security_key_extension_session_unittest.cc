@@ -169,7 +169,9 @@ class SecurityKeyExtensionSessionTest : public testing::Test {
 
 SecurityKeyExtensionSessionTest::SecurityKeyExtensionSessionTest()
     : security_key_extension_session_(
-          new SecurityKeyExtensionSession(&client_details_, &client_stub_)) {
+          new SecurityKeyExtensionSession(&client_details_,
+                                          &client_stub_,
+                                          /*file_task_runner=*/nullptr)) {
   // We want to retain ownership of mock object so we can use it to inject
   // events into the extension session.  The mock object should not be used
   // once |security_key_extension_session_| is destroyed.

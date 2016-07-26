@@ -133,7 +133,8 @@ class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler,
 
 std::unique_ptr<SecurityKeyAuthHandler> SecurityKeyAuthHandler::Create(
     ClientSessionDetails* client_session_details,
-    const SendMessageCallback& send_message_callback) {
+    const SendMessageCallback& send_message_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   std::unique_ptr<SecurityKeyAuthHandler> auth_handler(
       new SecurityKeyAuthHandlerWin(client_session_details));
   auth_handler->SetSendMessageCallback(send_message_callback);
