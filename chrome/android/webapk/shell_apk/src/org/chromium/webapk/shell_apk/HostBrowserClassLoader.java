@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Looper;
 import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkVersionUtils;
@@ -44,21 +45,15 @@ public class HostBrowserClassLoader {
     private static ClassLoader sClassLoader;
 
     /**
-     * Guards all access to {@link sClassLoader}.
-     */
-    private static final Object sLock = new Object();
-
-    /**
      * Gets / creates ClassLoader for WebAPK dex.
      * @param context WebAPK's context.
      * @param canaryClassname Class to load to check that ClassLoader is valid.
      * @return The ClassLoader.
      */
     public static ClassLoader getClassLoaderInstance(Context context, String canaryClassName) {
-        synchronized (sLock) {
-            if (sClassLoader == null) {
-                sClassLoader = createClassLoader(context, canaryClassName);
-            }
+        assertRunningOnUiThread();
+        if (sClassLoader == null) {
+            sClassLoader = createClassLoader(context, canaryClassName);
         }
         return sClassLoader;
     }
@@ -154,5 +149,12 @@ public class HostBrowserClassLoader {
             }
         }
         return value;
+    }
+
+    /**
+     * Asserts that current thread is the UI thread.
+     */
+    private static void assertRunningOnUiThread() {
+        assert Looper.getMainLooper().equals(Looper.myLooper());
     }
 }
