@@ -1,50 +1,23 @@
-<html> 
-<head>
-
-<style>
-body {
-    font-size: 24px; 
-}
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-}
-p {
-    border: 2px solid blue; 
-    padding: 12px; 
-}
-br {
-    background-color: green; 
-}
-
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-
-function editingTest() {
-    for (i = 0; i < 3; i++)
-        moveSelectionForwardByCharacterCommand();
-    insertParagraphCommand();
-    typeCharacterCommand();
-}
-
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '<p id="test"><b>foo|</b><br>bar</p>',
+        '</div>',
+    ].join(''),
+    selection => {
+        selection.document.execCommand('insertParagraph');
+        selection.document.execCommand('insertText', false, 'x');
+    },
+    [
+        '<div contenteditable>',
+            '<p id="test"><b>foo</b></p>',
+            '<p id="test"><b>x|<br></b>bar</p>',
+        '</div>',
+    ].join('')),
+    'Insert "x" before BR, since insertParagraph puts caret before BR');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body contenteditable id="root" style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-
-Test inserting paragraphs: should see "foo" in a blue box, then a blue box with with two lines in it: First line a bold "x"; second line a non-bold "bar". Fix for this bug:
-<a href="rdar://problem/3924579">&lt;rdar://problem/3927554&gt;</a> Style info applied to remainder of document after a newline is entered
-
-<div style="height: 12px"></div>
-
-<p id="test"><b>foo</b><br>bar</p>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
