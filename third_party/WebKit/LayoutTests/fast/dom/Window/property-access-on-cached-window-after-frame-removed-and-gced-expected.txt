@@ -225,8 +225,6 @@ PASS childWindow.styleMedia.type is ''
 PASS childWindow.toolbar.visible is false
 FAIL childWindow.visualViewport.clientHeight should be 0. Threw exception TypeError: Cannot read property 'clientHeight' of null
 FAIL childWindow.visualViewport.clientWidth should be 0. Threw exception TypeError: Cannot read property 'clientWidth' of null
-FAIL childWindow.visualViewport.onresize should be null. Threw exception TypeError: Cannot read property 'onresize' of null
-FAIL childWindow.visualViewport.onscroll should be null. Threw exception TypeError: Cannot read property 'onscroll' of null
 FAIL childWindow.visualViewport.pageX should be 0. Threw exception TypeError: Cannot read property 'pageX' of null
 FAIL childWindow.visualViewport.pageY should be 0. Threw exception TypeError: Cannot read property 'pageY' of null
 FAIL childWindow.visualViewport.scale should be 0. Threw exception TypeError: Cannot read property 'scale' of null

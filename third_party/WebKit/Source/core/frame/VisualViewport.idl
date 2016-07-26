@@ -40,7 +40,4 @@
     [Measure] readonly attribute double clientHeight;
 
     [Measure] readonly attribute double scale;
-
-    attribute EventHandler onresize;
-    attribute EventHandler onscroll;
 };

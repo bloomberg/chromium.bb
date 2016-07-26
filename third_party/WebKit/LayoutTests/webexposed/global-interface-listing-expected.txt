@@ -6568,16 +6568,12 @@ interface VisualViewport : EventTarget
     attribute @@toStringTag
     getter clientHeight
     getter clientWidth
-    getter onresize
-    getter onscroll
     getter pageX
     getter pageY
     getter scale
     getter scrollLeft
     getter scrollTop
     method constructor
-    setter onresize
-    setter onscroll
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
     getter curve

@@ -23,12 +23,13 @@
     // Turn off smooth scrolling.
     internals.settings.setScrollAnimatorEnabled(false);
 
-    window.visualViewport.onscroll = function() {
+    window.visualViewport.addEventListener('scroll', function(e) {
       numCallsScroll++;
-    }
-    window.visualViewport.onresize = function() {
+    });
+
+    window.visualViewport.addEventListener('resize', function(e) {
       numCallsResize++;
-    }
+    });
 
     // Scroll both viewports.
     eventSender.mouseMoveTo(100, 100);

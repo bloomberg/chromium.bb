@@ -104,8 +104,6 @@ PASS window.cached_styleMedia.type is ''
 PASS window.cached_toolbar.visible is false
 PASS window.cached_visualViewport.clientHeight is 0
 PASS window.cached_visualViewport.clientWidth is 0
-PASS window.cached_visualViewport.onresize is null
-PASS window.cached_visualViewport.onscroll is null
 PASS window.cached_visualViewport.pageX is 0
 PASS window.cached_visualViewport.pageY is 0
 PASS window.cached_visualViewport.scale is 0
