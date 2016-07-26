@@ -54,6 +54,7 @@ protocol/*.[ch]
 weston-calibrator
 weston-clickdot
 weston-cliptest
+weston-confine
 weston-dnd
 weston-editor
 weston-eventdemo
