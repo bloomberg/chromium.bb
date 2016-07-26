@@ -272,6 +272,7 @@ class StreamMixerAlsaTest : public testing::Test {
 
   ~StreamMixerAlsaTest() override {
     StreamMixerAlsa::Get()->ClearInputsForTest();
+    StreamMixerAlsa::Get()->SetAlsaWrapperForTest(nullptr);
   }
 
   MockAlsaWrapper* mock_alsa() { return mock_alsa_; }

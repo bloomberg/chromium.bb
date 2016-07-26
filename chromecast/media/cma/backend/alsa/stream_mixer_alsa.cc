@@ -548,9 +548,12 @@ void StreamMixerAlsa::Stop() {
     observer->OnLoopbackInterrupted();
   }
 
-  alsa_->PcmStatusFree(pcm_status_);
+  if (alsa_) {
+    alsa_->PcmStatusFree(pcm_status_);
+    alsa_->PcmHwParamsFree(pcm_hw_params_);
+  }
+
   pcm_status_ = nullptr;
-  alsa_->PcmHwParamsFree(pcm_hw_params_);
   pcm_hw_params_ = nullptr;
   state_ = kStateUninitialized;
   output_samples_per_second_ = kInvalidSampleRate;
