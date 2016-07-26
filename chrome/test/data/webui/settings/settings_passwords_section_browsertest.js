@@ -84,6 +84,19 @@ SettingsPasswordSectionBrowserTest.prototype = {
   },
 
   /**
+   * Returns all children of an element that has children added by a dom-repeat.
+   * @param {!Element} element
+   * @return {!Array<!Element>}
+   * @private
+   */
+  getDomRepeatChildren_: function(element) {
+    var template = element.children[element.children.length - 1];
+    assertEquals('TEMPLATE', template.tagName);
+    // The template is at the end of the list of children and should be skipped.
+    return Array.prototype.slice.call(element.children, 0, -1);
+  },
+
+  /**
    * Skips over the template and returns all visible children of an iron-list.
    * @param {!Element} ironList
    * @return {!Array<!Element>}
@@ -159,7 +172,6 @@ SettingsPasswordSectionBrowserTest.prototype = {
    */
   flushPasswordSection_: function(passwordsSection) {
     passwordsSection.$.passwordList.notifyResize();
-    passwordsSection.$.passwordExceptionsList.notifyResize();
     Polymer.dom.flush();
   },
 };
@@ -316,7 +328,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       ];
 
       self.validateExceptionList_(
-          self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),
+          self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList),
           expectedExceptionList);
     });
 
@@ -332,13 +344,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
 
-      // Assert that the data is passed into the iron list. If this fails,
-      // then other expectations will also fail.
-      assertEquals(exceptionList,
-                   passwordsSection.$.passwordExceptionsList.items);
-
       self.validateExceptionList_(
-          self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),
+          self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList),
           exceptionList);
     });
 
@@ -356,7 +363,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
 
       self.validateExceptionList_(
-          self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),
+          self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList),
           exceptionList);
 
       // Simulate 'mail.com' being removed from the list.
@@ -367,7 +374,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       self.flushPasswordSection_(passwordsSection);
 
       self.validateExceptionList_(
-          self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),
+          self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList),
           exceptionList);
     });
 
@@ -386,7 +393,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
 
       var exceptions =
-          self.getIronListChildren_(passwordsSection.$.passwordExceptionsList);
+          self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList);
 
       // The index of the button currently being checked.
       var index = 0;

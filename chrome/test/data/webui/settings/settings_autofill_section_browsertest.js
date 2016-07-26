@@ -129,17 +129,6 @@ SettingsAutofillSectionBrowserTest.prototype = {
   },
 
   /**
-   * Allow the iron-list to be sized properly.
-   * @param {!Object} autofillSection
-   * @private
-   */
-  flushAutofillSection_: function(autofillSection) {
-    autofillSection.$.addressList.notifyResize();
-    autofillSection.$.creditCardList.notifyResize();
-    Polymer.dom.flush();
-  },
-
-  /**
    * Creates the autofill section for the given lists.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
    * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
@@ -151,7 +140,7 @@ SettingsAutofillSectionBrowserTest.prototype = {
     section.addresses = addresses;
     section.creditCards = creditCards;
     document.body.appendChild(section);
-    this.flushAutofillSection_(section);
+    Polymer.dom.flush();
     return section;
   },
 
@@ -205,7 +194,6 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       assertTrue(!!section);
       var creditCardList = section.$.creditCardList;
       assertTrue(!!creditCardList);
-      assertEquals(creditCards, creditCardList.items);
       // +1 for the template element.
       assertEquals(creditCards.length + 1, creditCardList.children.length);
     });
@@ -214,7 +202,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var creditCard = FakeDataMaker.creditCardEntry();
       var section = self.createAutofillSection_([], [creditCard]);
       var creditCardList = section.$.creditCardList;
-      var row = creditCardList.children[1];  // Skip over the template.
+      var row = creditCardList.children[0];
       assertTrue(!!row);
 
       assertEquals(creditCard.metadata.summaryLabel,
@@ -346,7 +334,6 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       assertTrue(!!section);
       var addressList = section.$.addressList;
       assertTrue(!!addressList);
-      assertEquals(addresses, addressList.items);
       // +1 for the template element.
       assertEquals(addresses.length + 1, addressList.children.length);
     });
@@ -355,7 +342,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       var address = FakeDataMaker.addressEntry();
       var section = self.createAutofillSection_([address], []);
       var addressList = section.$.addressList;
-      var row = addressList.children[1];  // Skip over the template.
+      var row = addressList.children[0];
       assertTrue(!!row);
 
       var addressSummary = address.metadata.summaryLabel +

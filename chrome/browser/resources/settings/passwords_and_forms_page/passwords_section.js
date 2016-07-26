@@ -113,18 +113,14 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} passwordExceptions
    * @param {string} filter
-   * @return {!Array<!chrome.passwordsPrivate.ExceptionPair>}
+   * @return {function(!chrome.passwordsPrivate.ExceptionPair): boolean}
    * @private
    */
-  getFilteredExceptions_: function(passwordExceptions, filter) {
-    if (!filter)
-      return passwordExceptions;
-
-    return passwordExceptions.filter(function(exception) {
+  passwordExceptionFilter_: function(filter) {
+    return function(exception) {
       return exception.exceptionUrl.includes(filter);
-    });
+    };
   },
 
   /**
