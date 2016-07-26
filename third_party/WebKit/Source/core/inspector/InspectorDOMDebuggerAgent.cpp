@@ -519,8 +519,7 @@ void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpo
     if ((1 << breakpointType) & inheritableDOMBreakpointTypesMask) {
         // For inheritable breakpoint types, target node isn't always the same as the node that owns a breakpoint.
         // Target node may be unknown to frontend, so we need to push it first.
-        std::unique_ptr<protocol::Runtime::API::RemoteObject> targetNodeObject = m_domAgent->resolveNode(target, V8InspectorSession::backtraceObjectGroup);
-        description->setValue("targetNode", protocol::SerializedValue::create(targetNodeObject->toJSONString()));
+        description->setInteger("targetNodeId", m_domAgent->pushNodePathToFrontend(target));
 
         // Find breakpoint owner node.
         if (!insertion)

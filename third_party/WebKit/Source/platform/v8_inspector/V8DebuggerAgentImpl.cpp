@@ -51,6 +51,7 @@ static const char skipAllPauses[] = "skipAllPauses";
 } // namespace DebuggerAgentState;
 
 static const int maxSkipStepFrameCount = 128;
+static const char backtraceObjectGroup[] = "backtrace";
 
 static String16 breakpointIdSuffix(V8DebuggerAgentImpl::BreakpointSource source)
 {
@@ -650,7 +651,7 @@ void V8DebuggerAgentImpl::resume(ErrorString* errorString)
         return;
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
-    m_session->releaseObjectGroup(V8InspectorSession::backtraceObjectGroup);
+    m_session->releaseObjectGroup(backtraceObjectGroup);
     debugger().continueProgram();
 }
 
@@ -666,7 +667,7 @@ void V8DebuggerAgentImpl::stepOver(ErrorString* errorString)
     }
     m_scheduledDebuggerStep = StepOver;
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
-    m_session->releaseObjectGroup(V8InspectorSession::backtraceObjectGroup);
+    m_session->releaseObjectGroup(backtraceObjectGroup);
     debugger().stepOverStatement();
 }
 
@@ -676,7 +677,7 @@ void V8DebuggerAgentImpl::stepInto(ErrorString* errorString)
         return;
     m_scheduledDebuggerStep = StepInto;
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
-    m_session->releaseObjectGroup(V8InspectorSession::backtraceObjectGroup);
+    m_session->releaseObjectGroup(backtraceObjectGroup);
     debugger().stepIntoStatement();
 }
 
@@ -688,7 +689,7 @@ void V8DebuggerAgentImpl::stepOut(ErrorString* errorString)
     m_skipNextDebuggerStepOut = false;
     m_recursionLevelForStepOut = 1;
     m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
-    m_session->releaseObjectGroup(V8InspectorSession::backtraceObjectGroup);
+    m_session->releaseObjectGroup(backtraceObjectGroup);
     debugger().stepOutOfFunction();
 }
 
@@ -949,12 +950,12 @@ std::unique_ptr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorSt
             if (hasInternalError(errorString, !details->Get(debuggerContext, toV8StringInternalized(m_isolate, "scopeChain")).ToLocal(&scopeChain) || !scopeChain->IsArray()))
                 return Array<CallFrame>::create();
             v8::Local<v8::Array> scopeChainArray = scopeChain.As<v8::Array>();
-            if (!injectedScript->wrapPropertyInArray(errorString, scopeChainArray, toV8StringInternalized(m_isolate, "object"), V8InspectorSession::backtraceObjectGroup))
+            if (!injectedScript->wrapPropertyInArray(errorString, scopeChainArray, toV8StringInternalized(m_isolate, "object"), backtraceObjectGroup))
                 return Array<CallFrame>::create();
-            if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "this"), V8InspectorSession::backtraceObjectGroup))
+            if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "this"), backtraceObjectGroup))
                 return Array<CallFrame>::create();
             if (details->Has(debuggerContext, toV8StringInternalized(m_isolate, "returnValue")).FromMaybe(false)) {
-                if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "returnValue"), V8InspectorSession::backtraceObjectGroup))
+                if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "returnValue"), backtraceObjectGroup))
                     return Array<CallFrame>::create();
             }
         } else {
@@ -1094,7 +1095,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         if (injectedScript) {
             m_breakReason = isPromiseRejection ? protocol::Debugger::Paused::ReasonEnum::PromiseRejection : protocol::Debugger::Paused::ReasonEnum::Exception;
             ErrorString errorString;
-            auto obj = injectedScript->wrapObject(&errorString, exception, V8InspectorSession::backtraceObjectGroup);
+            auto obj = injectedScript->wrapObject(&errorString, exception, backtraceObjectGroup);
             m_breakAuxData = obj ? obj->serialize() : nullptr;
             // m_breakAuxData might be null after this.
         }

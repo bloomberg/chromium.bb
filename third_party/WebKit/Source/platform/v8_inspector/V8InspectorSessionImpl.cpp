@@ -19,8 +19,6 @@
 
 namespace blink {
 
-const char V8InspectorSession::backtraceObjectGroup[] = "backtrace";
-
 // static
 bool V8InspectorSession::canDispatchMethod(const String16& method)
 {

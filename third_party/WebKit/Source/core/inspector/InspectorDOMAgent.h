@@ -173,6 +173,7 @@ public:
     void setDOMListener(DOMListener*);
     void inspect(Node*);
     void nodeHighlightedInOverlay(Node*);
+    int pushNodePathToFrontend(Node*);
 
     static String documentURLString(Document*);
 
@@ -210,7 +211,6 @@ private:
     Element* assertEditableElement(ErrorString*, int nodeId);
 
     int pushNodePathToFrontend(Node*, NodeToIdMap* nodeMap);
-    int pushNodePathToFrontend(Node*);
     void pushChildNodesToFrontend(int nodeId, int depth = 1);
 
     void invalidateFrameOwnerElement(LocalFrame*);
