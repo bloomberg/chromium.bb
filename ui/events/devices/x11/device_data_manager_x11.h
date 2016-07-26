@@ -364,6 +364,9 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // by valuator_lookup_[device_id][data_type].
   std::vector<int> valuator_lookup_[kMaxDeviceNum];
 
+  // Indicates if the user has disabled high precision scrolling support.
+  bool high_precision_scrolling_disabled_;
+
   // Index table to find the horizontal and vertical scroll valuator
   // numbers, scroll increments and scroll position.
   ScrollInfo scroll_data_[kMaxDeviceNum];

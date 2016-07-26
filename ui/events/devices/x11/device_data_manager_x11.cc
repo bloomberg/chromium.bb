@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -124,6 +125,15 @@ Iterator FindDeviceWithId(Iterator begin, Iterator end, int id) {
   return end;
 }
 
+// Disables high precision scrolling in X11
+const char kDisableHighPrecisionScrolling[] =
+    "disable-high-precision-scrolling";
+
+bool IsHighPrecisionScrollingDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableHighPrecisionScrolling);
+}
+
 }  // namespace
 
 bool DeviceDataManagerX11::IsCMTDataType(const int type) {
@@ -155,6 +165,7 @@ DeviceDataManagerX11* DeviceDataManagerX11::GetInstance() {
 
 DeviceDataManagerX11::DeviceDataManagerX11()
     : xi_opcode_(-1),
+      high_precision_scrolling_disabled_(IsHighPrecisionScrollingDisabled()),
       atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
       button_map_count_(0) {
   CHECK(gfx::GetXDisplay());
@@ -774,12 +785,11 @@ bool DeviceDataManagerX11::UpdateValuatorClassDevice(
 void DeviceDataManagerX11::UpdateScrollClassDevice(
     XIScrollClassInfo* scroll_class_info,
     int deviceid) {
+  if (high_precision_scrolling_disabled_)
+    return;
+
   DCHECK(deviceid >= 0 && deviceid < kMaxDeviceNum);
   ScrollInfo& info = scroll_data_[deviceid];
-
-  // TODO: xinput2 is disabled until edge cases are fixed.
-  // http://crbug.com/616308
-  return;
 
   bool legacy_scroll_available =
       (scroll_class_info->flags & XIScrollFlagNoEmulation) == 0;
