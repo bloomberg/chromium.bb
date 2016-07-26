@@ -110,7 +110,6 @@ InputMultipleFieldsUI status=stable
 InstalledApp status=experimental
 IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
-LinkPreconnect status=stable
 LinkPreload status=stable
 LinkHeader status=stable
 LinkServiceWorker status=experimental

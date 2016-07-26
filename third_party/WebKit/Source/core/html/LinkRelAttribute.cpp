@@ -74,8 +74,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         } else if (equalIgnoringCase(linkType, "dns-prefetch")) {
             m_isDNSPrefetch = true;
         } else if (equalIgnoringCase(linkType, "preconnect")) {
-            if (RuntimeEnabledFeatures::linkPreconnectEnabled())
-                m_isPreconnect = true;
+            m_isPreconnect = true;
         } else if (equalIgnoringCase(linkType, "preload")) {
             if (RuntimeEnabledFeatures::linkPreloadEnabled())
                 m_isLinkPreload = true;

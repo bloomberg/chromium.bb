@@ -159,7 +159,6 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
         UseCounter::count(document, UseCounter::LinkRelPreconnect);
         if (caller == LinkCalledFromHeader)
             UseCounter::count(document, UseCounter::LinkHeaderPreconnect);
-        ASSERT(RuntimeEnabledFeatures::linkPreconnectEnabled());
         Settings* settings = document.settings();
         if (settings && settings->logDnsPrefetchAndPreconnect()) {
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preconnect triggered for ") + href.getString()));
@@ -325,8 +324,7 @@ void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& base
             if (RuntimeEnabledFeatures::linkHeaderEnabled())
                 dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
 
-            if (RuntimeEnabledFeatures::linkPreconnectEnabled())
-                preconnectIfNeeded(relAttribute, url, *document, crossOriginAttributeValue(header.crossOrigin()), networkHintsInterface, LinkCalledFromHeader);
+            preconnectIfNeeded(relAttribute, url, *document, crossOriginAttributeValue(header.crossOrigin()), networkHintsInterface, LinkCalledFromHeader);
         }
         if (canLoadResources != DoNotLoadResources) {
             bool errorOccurred = false;
