@@ -29,13 +29,6 @@ void RecordOfflinerResultUMA(Offliner::RequestStatus request_status) {
                             Offliner::RequestStatus::STATUS_COUNT);
 }
 
-// Timeout is 2.5 minutes based on the size of Marshmallow doze mode
-// maintenance window (3 minutes)
-// TODO(petewil): Find the optimal timeout based on data for 2G connections and
-// common EM websites. crbug.com/625204
-// TODO(petewil): Move this value into the policy object.
-long OFFLINER_TIMEOUT_SECONDS = 150;
-
 }  // namespace
 
 RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
@@ -44,13 +37,14 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<Scheduler> scheduler)
     : is_busy_(false),
       is_canceled_(false),
-      offliner_timeout_(base::TimeDelta::FromSeconds(OFFLINER_TIMEOUT_SECONDS)),
       offliner_(nullptr),
       policy_(std::move(policy)),
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
+      offliner_timeout_(base::TimeDelta::FromSeconds(
+          policy_->GetSinglePageTimeLimitInSeconds())),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
   picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
@@ -121,6 +115,10 @@ bool RequestCoordinator::StartProcessing(
   current_conditions_.reset(new DeviceConditions(device_conditions));
   if (is_busy_) return false;
 
+  // Mark the time at which we started processing so we can check our time
+  // budget.
+  operation_start_time_ = base::Time::Now();
+
   is_canceled_ = false;
   scheduler_callback_ = callback;
   // TODO(petewil): Check existing conditions (should be passed down from
@@ -132,6 +130,19 @@ bool RequestCoordinator::StartProcessing(
 }
 
 void RequestCoordinator::TryNextRequest() {
+  // If there is no time left in the budget, return to the scheduler.
+  // We do not remove the pending task that was set up earlier in case
+  // we run out of time, so the background scheduler will return to us
+  // at the next opportunity to run background tasks.
+  if (base::Time::Now() - operation_start_time_ >
+      base::TimeDelta::FromSeconds(
+          policy_->GetBackgroundProcessingTimeBudgetSeconds())) {
+    // Let the scheduler know we are done processing.
+    scheduler_callback_.Run(true);
+
+    return;
+  }
+
   // Choose a request to process that meets the available conditions.
   // This is an async call, and returns right away.
   picker_->ChooseNextRequest(
@@ -222,8 +233,6 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // TODO(petewil): Check time budget. Return to the scheduler if we are out.
-  // Start another request if we have time.
   TryNextRequest();
 }
 

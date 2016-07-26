@@ -33,9 +33,11 @@ const GURL kUrl("http://universe.com/everything");
 const ClientId kClientId("bookmark", "42");
 const int kRequestId(1);
 const long kTestTimeoutSeconds = 1;
+const long kTestTimeBudgetSeconds = 200;
 const int kBatteryPercentageHigh = 75;
 const bool kPowerRequired = true;
 const bool kUserRequested = true;
+const int kAttemptCount = 1;
 }  // namespace
 
 class SchedulerStub : public Scheduler {
@@ -512,6 +514,53 @@ TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
   EXPECT_TRUE(OfflinerWasCanceled());
   EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
             last_offlining_status());
+}
+
+
+TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
+  // Build a request to use with the pre-renderer, and put it on the queue.
+  offline_pages::SavePageRequest request1(
+      kRequestId, kUrl, kClientId, base::Time::Now(), kUserRequested);
+  offline_pages::SavePageRequest request2(
+      kRequestId + 1, kUrl, kClientId, base::Time::Now(), kUserRequested);
+  request2.set_attempt_count(kAttemptCount);
+  coordinator()->queue()->AddRequest(
+      request1,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+    coordinator()->queue()->AddRequest(
+      request1,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // Set up for the call to StartProcessing.
+  DeviceConditions device_conditions(
+      !kPowerRequired, kBatteryPercentageHigh,
+      net::NetworkChangeNotifier::CONNECTION_3G);
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::WaitingCallbackFunction,
+                 base::Unretained(this));
+
+  // Sending the request to the offliner.
+  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+  PumpLoop();
+
+  // Advance the mock clock far enough to exceed our time budget.
+  AdvanceClockBy(base::TimeDelta::FromSeconds(kTestTimeBudgetSeconds));
+  PumpLoop();
+
+  // TryNextRequest should decide that there is no more work to be done,
+  // and call back to the scheduler, even though there is another request in the
+  // queue.  There should be one request left in the queue.
+  // Verify the request gets removed from the queue, and wait for callbacks.
+  coordinator()->queue()->GetRequests(
+      base::Bind(&RequestCoordinatorTest::GetRequestsDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // We should find one request in the queue.
+  EXPECT_EQ(1UL, last_requests().size());
 }
 
 }  // namespace offline_pages

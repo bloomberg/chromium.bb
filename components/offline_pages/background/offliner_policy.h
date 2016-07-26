@@ -7,8 +7,8 @@
 
 namespace {
 const int kMaxRetries = 2;
-const int kBackgroundTimeBudgetSeconds = 170;
-const int kSinglePageTimeBudgetSeconds = 120;
+const int kBackgroundProcessingTimeBudgetSeconds = 170;
+const int kSinglePageTimeLimitSeconds = 120;
 const int kMinimumBatteryPercentageForNonUserRequestOfflining = 50;
 }  // namespace
 
@@ -68,12 +68,12 @@ class OfflinerPolicy {
   // How many seconds to keep trying new pages for, before we give up,  and
   // return to the scheduler.
   int GetBackgroundProcessingTimeBudgetSeconds() const {
-    return kBackgroundTimeBudgetSeconds;
+    return kBackgroundProcessingTimeBudgetSeconds;
   }
 
   // How long do we allow a page to load before giving up on it
-  int GetSinglePageTimeBudgetInSeconds() const {
-    return kSinglePageTimeBudgetSeconds;
+  int GetSinglePageTimeLimitInSeconds() const {
+    return kSinglePageTimeLimitSeconds;
   }
 
   // How much battery must we have before fetching a page not explicitly

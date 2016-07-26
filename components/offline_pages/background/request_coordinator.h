@@ -135,10 +135,9 @@ class RequestCoordinator : public KeyedService {
   bool is_busy_;
   // True if the current request has been canceled.
   bool is_canceled_;
-  // How long to wait for an offliner request before giving up.
-  base::TimeDelta offliner_timeout_;
   // Unowned pointer to the current offliner, if any.
   Offliner* offliner_;
+  base::Time operation_start_time_;
   // Last known conditions for network, battery
   std::unique_ptr<DeviceConditions> current_conditions_;
   // RequestCoordinator takes over ownership of the policy
@@ -159,6 +158,8 @@ class RequestCoordinator : public KeyedService {
   RequestCoordinatorEventLogger event_logger_;
   // Timer to watch for pre-render attempts running too long.
   base::OneShotTimer watchdog_timer_;
+  // How long to wait for an offliner request before giving up.
+  base::TimeDelta offliner_timeout_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
