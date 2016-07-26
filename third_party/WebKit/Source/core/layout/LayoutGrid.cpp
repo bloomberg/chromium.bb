@@ -2187,20 +2187,23 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
 
     auto& childStyle = child.styleRef();
     bool isHorizontalMode = isHorizontalWritingMode();
-    bool hasAutoSizeInColumnAxis = isHorizontalMode ? childStyle.height().isAuto() : childStyle.width().isAuto();
-    bool allowedToStretchChildAlongColumnAxis = hasAutoSizeInColumnAxis && !childStyle.marginBeforeUsing(style()).isAuto() && !childStyle.marginAfterUsing(style()).isAuto();
-    if (allowedToStretchChildAlongColumnAxis && ComputedStyle::resolveAlignment(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch) {
-        // TODO (lajava): If the child has orthogonal flow, then it already has an override height set, so use it.
-        // TODO (lajava): grid track sizing and positioning do not support orthogonal modes yet.
-        if (child.isHorizontalWritingMode() == isHorizontalMode) {
-            LayoutUnit stretchedLogicalHeight = availableAlignmentSpaceForChildBeforeStretching(child.overrideContainingBlockContentLogicalHeight(), child);
-            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, LayoutUnit(-1));
-            child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
-            if (desiredLogicalHeight != child.logicalHeight()) {
-                // TODO (lajava): Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-                child.setLogicalHeight(LayoutUnit());
-                child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
-            }
+    bool childHasAutoSizeInColumnAxis = isHorizontalMode ? childStyle.height().isAuto() : childStyle.width().isAuto();
+    bool childHasAutoSizeInRowAxis = isHorizontalMode ? childStyle.width().isAuto() : childStyle.height().isAuto();
+    bool allowedToStretchChildAlongColumnAxis = childHasAutoSizeInColumnAxis && !hasAutoMarginsInColumnAxis(child);
+    bool allowedToStretchChildAlongRowAxis = childHasAutoSizeInRowAxis && !hasAutoMarginsInRowAxis(child);
+    bool stretchingAlongRowAxis = ComputedStyle::resolveJustification(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch;
+    bool stretchingAlongColumnAxis = ComputedStyle::resolveAlignment(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch;
+
+    GridTrackSizingDirection childBlockDirection = flowAwareDirectionForChild(child, ForRows);
+    bool allowedToStretchChildBlockSize = childBlockDirection == ForRows ? allowedToStretchChildAlongColumnAxis && stretchingAlongColumnAxis : allowedToStretchChildAlongRowAxis && stretchingAlongRowAxis;
+    if (allowedToStretchChildBlockSize) {
+        LayoutUnit stretchedLogicalHeight = availableAlignmentSpaceForChildBeforeStretching(overrideContainingBlockContentSizeForChild(child, childBlockDirection), child);
+        LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, LayoutUnit(-1));
+        child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
+        if (desiredLogicalHeight != child.logicalHeight()) {
+            // TODO (lajava): Can avoid laying out here in some cases. See https://webkit.org/b/87905.
+            child.setLogicalHeight(LayoutUnit());
+            child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
         }
     }
 }
