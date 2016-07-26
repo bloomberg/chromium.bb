@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/set_as_default_browser_ui.h"
+#include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
 
 #include <string>
 #include <vector>
@@ -67,14 +67,13 @@ enum MakeChromeDefaultResult {
 };
 
 content::WebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
-  content::WebUIDataSource* data_source = content::WebUIDataSource::Create(
-      chrome::kChromeUIMetroFlowHost);
+  content::WebUIDataSource* data_source =
+      content::WebUIDataSource::Create(chrome::kChromeUIMetroFlowHost);
   data_source->AddLocalizedString("page-title", IDS_METRO_FLOW_TAB_TITLE);
   data_source->AddLocalizedString("flowTitle", IDS_METRO_FLOW_TITLE_SHORT);
   data_source->AddLocalizedString("flowDescription",
                                   IDS_METRO_FLOW_DESCRIPTION);
-  data_source->AddLocalizedString("flowNext",
-                                  IDS_METRO_FLOW_SET_DEFAULT);
+  data_source->AddLocalizedString("flowNext", IDS_METRO_FLOW_SET_DEFAULT);
   data_source->AddLocalizedString("chromeLogoString",
                                   IDS_METRO_FLOW_LOGO_STRING_ALT);
   data_source->SetJsonPath("strings.js");
@@ -91,7 +90,7 @@ class ResponseDelegate {
   virtual void SetDialogInteractionResult(MakeChromeDefaultResult result) = 0;
 
  protected:
-  virtual ~ResponseDelegate() { }
+  virtual ~ResponseDelegate() {}
 };
 
 // Event handler for SetAsDefaultBrowserUI. Capable of setting Chrome as the
@@ -186,10 +185,11 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
                                       public ResponseDelegate,
                                       public chrome::BrowserListObserver {
  public:
-  SetAsDefaultBrowserDialogImpl(Profile* profile, Browser* browser);
+  explicit SetAsDefaultBrowserDialogImpl(Profile* profile);
   ~SetAsDefaultBrowserDialogImpl() override;
   // Show a modal web dialog with kChromeUIMetroFlowURL page.
   void ShowDialog();
+  static views::Widget* dialog_widget() { return dialog_widget_; }
 
  protected:
   // Overridden from WebDialogDelegate:
@@ -209,6 +209,7 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   void SetDialogInteractionResult(MakeChromeDefaultResult result) override;
 
   // Overridden from BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
  private:
@@ -219,13 +220,17 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   SetAsDefaultBrowserHandler* handler_;
   MakeChromeDefaultResult dialog_interaction_result_;
 
+  static views::Widget* dialog_widget_;
+
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultBrowserDialogImpl);
 };
 
-SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
-                                                             Browser* browser)
+// static
+views::Widget* SetAsDefaultBrowserDialogImpl::dialog_widget_ = nullptr;
+
+SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile)
     : profile_(profile),
-      browser_(browser),
+      browser_(nullptr),
       owns_handler_(true),
       response_delegate_ptr_factory_(this),
       handler_(new SetAsDefaultBrowserHandler(
@@ -246,9 +251,9 @@ void SetAsDefaultBrowserDialogImpl::ShowDialog() {
   // in the Windows task bar. The code below will make it highlight if the
   // dialog is not in the foreground.
   gfx::NativeWindow native_window = chrome::ShowWebDialog(NULL, profile_, this);
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
-      native_window);
-  widget->FlashFrame(true);
+  DCHECK(!dialog_widget_);
+  dialog_widget_ = views::Widget::GetWidgetForNativeWindow(native_window);
+  dialog_widget_->FlashFrame(true);
 }
 
 ui::ModalType SetAsDefaultBrowserDialogImpl::GetDialogModalType() const {
@@ -276,9 +281,9 @@ void SetAsDefaultBrowserDialogImpl::GetDialogSize(gfx::Size* size) const {
       prefs->GetString(prefs::kWebKitSansSerifFontFamily),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
-  *size = ui::GetLocalizedContentsSizeForFont(
-      IDS_METRO_FLOW_WIDTH_CHARS, IDS_METRO_FLOW_HEIGHT_LINES,
-      approximate_web_font);
+  *size = ui::GetLocalizedContentsSizeForFont(IDS_METRO_FLOW_WIDTH_CHARS,
+                                              IDS_METRO_FLOW_HEIGHT_LINES,
+                                              approximate_web_font);
 }
 
 std::string SetAsDefaultBrowserDialogImpl::GetDialogArgs() const {
@@ -308,6 +313,9 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
       contents->SetInitialFocus();
   }
 
+  DCHECK(dialog_widget_);
+  dialog_widget_ = nullptr;
+
   delete this;
 }
 
@@ -330,6 +338,13 @@ void SetAsDefaultBrowserDialogImpl::SetDialogInteractionResult(
   dialog_interaction_result_ = result;
 }
 
+void SetAsDefaultBrowserDialogImpl::OnBrowserAdded(Browser* browser) {
+  if (browser_ || !browser || !browser->is_type_tabbed())
+    return;
+  browser_ = browser;
+  ShowDialog();
+}
+
 void SetAsDefaultBrowserDialogImpl::OnBrowserRemoved(Browser* browser) {
   if (browser_ == browser) {
     browser_ = NULL;
@@ -341,14 +356,17 @@ void SetAsDefaultBrowserDialogImpl::OnBrowserRemoved(Browser* browser) {
 
 SetAsDefaultBrowserUI::SetAsDefaultBrowserUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
-  content::WebUIDataSource::Add(
-      Profile::FromWebUI(web_ui), CreateSetAsDefaultBrowserUIHTMLSource());
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
+                                CreateSetAsDefaultBrowserUIHTMLSource());
 }
 
 // static
-void SetAsDefaultBrowserUI::Show(Profile* profile, Browser* browser) {
+void SetAsDefaultBrowserUI::Show(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetAsDefaultBrowserDialogImpl* dialog =
-      new SetAsDefaultBrowserDialogImpl(profile, browser);
-  dialog->ShowDialog();
+  new SetAsDefaultBrowserDialogImpl(profile);
+}
+
+// static
+views::Widget* SetAsDefaultBrowserUI::GetDialogWidgetForTesting() {
+  return SetAsDefaultBrowserDialogImpl::dialog_widget();
 }

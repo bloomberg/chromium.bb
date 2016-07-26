@@ -2030,6 +2030,8 @@
       'browser/ui/webui/quota_internals/quota_internals_types.h',
       'browser/ui/webui/quota_internals/quota_internals_ui.cc',
       'browser/ui/webui/quota_internals/quota_internals_ui.h',
+      'browser/ui/webui/set_as_default_browser_ui_win.cc',
+      'browser/ui/webui/set_as_default_browser_ui_win.h',
       'browser/ui/webui/settings/about_handler.cc',
       'browser/ui/webui/settings/about_handler.h',
       'browser/ui/webui/settings/appearance_handler.cc',
@@ -2591,8 +2593,6 @@
       'browser/ui/webui/cast/cast_ui.h',
       'browser/ui/webui/conflicts_ui.cc',
       'browser/ui/webui/conflicts_ui.h',
-      'browser/ui/webui/set_as_default_browser_ui.cc',
-      'browser/ui/webui/set_as_default_browser_ui.h',
     ],
     # Compiled for X11: desktop Linux and ChromeOS. We assume aura/views/ash.
     'chrome_browser_ui_x11_sources': [

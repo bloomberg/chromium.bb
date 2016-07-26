@@ -162,7 +162,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/conflicts_ui.h"
-#include "chrome/browser/ui/webui/set_as_default_browser_ui.h"
+#include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
 #endif
 
 #if (defined(USE_NSS_CERTS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
