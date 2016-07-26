@@ -46,18 +46,18 @@ from webkitpy.tool.commands.commit_announcer import CommitAnnouncerCommand
 from webkitpy.tool.commands.flaky_tests import FlakyTests
 from webkitpy.tool.commands.help_command import HelpCommand
 from webkitpy.tool.commands.layout_tests_server import LayoutTestsServer
+from webkitpy.tool.commands.optimize_baselines import OptimizeBaselines
 from webkitpy.tool.commands.pretty_diff import PrettyDiff
 from webkitpy.tool.commands.queries import CrashLog
 from webkitpy.tool.commands.queries import PrintBaselines
 from webkitpy.tool.commands.queries import PrintExpectations
-from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
 from webkitpy.tool.commands.rebaseline import AutoRebaseline
 from webkitpy.tool.commands.rebaseline import CopyExistingBaselinesInternal
-from webkitpy.tool.commands.rebaseline import OptimizeBaselines
 from webkitpy.tool.commands.rebaseline import Rebaseline
 from webkitpy.tool.commands.rebaseline import RebaselineExpectations
 from webkitpy.tool.commands.rebaseline import RebaselineJson
 from webkitpy.tool.commands.rebaseline import RebaselineTest
+from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
 from webkitpy.tool.commands.rebaseline_server import RebaselineServer
 
 
