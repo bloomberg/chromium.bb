@@ -28,7 +28,7 @@ class OriginFilterBuilder : public BrowsingDataFilterBuilder {
   // Constructs a filter with the given |mode| - whitelist or blacklist.
   explicit OriginFilterBuilder(Mode mode);
 
-  ~OriginFilterBuilder();
+  ~OriginFilterBuilder() override;
 
   // Adds the |origin| to the (white- or black-) list.
   void AddOrigin(const url::Origin& origin);

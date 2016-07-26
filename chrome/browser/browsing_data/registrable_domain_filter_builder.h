@@ -47,7 +47,7 @@ class RegistrableDomainFilterBuilder : public BrowsingDataFilterBuilder {
   // Constructs a filter with the given |mode| - whitelist or blacklist.
   explicit RegistrableDomainFilterBuilder(Mode mode);
 
-  ~RegistrableDomainFilterBuilder();
+  ~RegistrableDomainFilterBuilder() override;
 
   // Adds a registerable domain to the (white- or black-) list. This is expected
   // to not include subdomains, so basically tld+1. This can also be an IP

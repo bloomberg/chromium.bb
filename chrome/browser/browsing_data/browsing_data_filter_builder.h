@@ -39,7 +39,7 @@ class BrowsingDataFilterBuilder {
   // Constructs a filter with the given |mode| - whitelist or blacklist.
   explicit BrowsingDataFilterBuilder(Mode mode);
 
-  ~BrowsingDataFilterBuilder();
+  virtual ~BrowsingDataFilterBuilder();
 
   // Sets the |mode| of the filter.
   void SetMode(Mode mode);
