@@ -71,6 +71,12 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_FETCH_WAITUNTIL";
     case ServiceWorkerMetrics::EventType::FOREIGN_FETCH_WAITUNTIL:
       return "_FOREIGN_FETCH_WAITUNTIL";
+    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
+      return "_NAVIGATION_HINT_LINK_MOUSE_DOWN";
+    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
+      return "_NAVIGATION_HINT_LINK_TAP_UNCONFIRMED";
+    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
+      return "_NAVIGATION_HINT_LINK_TAP_DOWN";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -194,6 +200,12 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Fetch WaitUntil";
     case EventType::FOREIGN_FETCH_WAITUNTIL:
       return "Foreign Fetch WaitUntil";
+    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
+      return "Navigation Hint Link Mouse Down";
+    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
+      return "Navigation Hint Link Tap Unconfirmed";
+    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
+      return "Navigation Hint Link Tap Down";
     case EventType::NUM_TYPES:
       break;
   }
@@ -461,6 +473,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ExtendableMessageEvent.Time",
                                  time);
       break;
+    // Those navigation hints should not be sent as request events.
+    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
+    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
+    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
 
     case EventType::UNKNOWN:
     case EventType::NUM_TYPES:

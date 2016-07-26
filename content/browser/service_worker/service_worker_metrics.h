@@ -106,6 +106,9 @@ class ServiceWorkerMetrics {
     FOREIGN_FETCH = 15,
     FETCH_WAITUNTIL = 16,
     FOREIGN_FETCH_WAITUNTIL = 17,
+    NAVIGATION_HINT_LINK_MOUSE_DOWN = 18,
+    NAVIGATION_HINT_LINK_TAP_UNCONFIRMED = 19,
+    NAVIGATION_HINT_LINK_TAP_DOWN = 20,
     // Add new events to record here.
     NUM_TYPES
   };
