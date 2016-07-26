@@ -466,6 +466,11 @@
               'include_dirs': [
                 '../breakpad/src',
               ],
+              'direct_dependent_settings': {
+                'include_dirs': [
+                  '../breakpad/src',
+                ],
+              },
               'target_conditions': [
                 # Need 'target_conditions' to override default filename_rules to include
                 # the files on Android.
