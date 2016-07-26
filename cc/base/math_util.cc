@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#ifdef __SSE__
+#include <xmmintrin.h>
+#endif
 
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
@@ -916,6 +919,20 @@ gfx::Vector3dF MathUtil::GetYAxis(const gfx::Transform& transform) {
   return gfx::Vector3dF(transform.matrix().getFloat(0, 1),
                         transform.matrix().getFloat(1, 1),
                         transform.matrix().getFloat(2, 1));
+}
+
+ScopedSubnormalFloatDisabler::ScopedSubnormalFloatDisabler() {
+#ifdef __SSE__
+  // Turn on "subnormals are zero" and "flush to zero" CSR flags.
+  orig_state_ = _mm_getcsr();
+  _mm_setcsr(orig_state_ | 0x8040);
+#endif
+}
+
+ScopedSubnormalFloatDisabler::~ScopedSubnormalFloatDisabler() {
+#ifdef __SSE__
+  _mm_setcsr(orig_state_);
+#endif
 }
 
 }  // namespace cc

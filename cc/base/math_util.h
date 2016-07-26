@@ -323,6 +323,18 @@ class CC_EXPORT MathUtil {
   }
 };
 
+class ScopedSubnormalFloatDisabler {
+ public:
+  ScopedSubnormalFloatDisabler();
+  ~ScopedSubnormalFloatDisabler();
+
+ private:
+#ifdef __SSE__
+  unsigned int orig_state_;
+#endif
+  DISALLOW_COPY_AND_ASSIGN(ScopedSubnormalFloatDisabler);
+};
+
 }  // namespace cc
 
 #endif  // CC_BASE_MATH_UTIL_H_

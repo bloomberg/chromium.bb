@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/trace_event/trace_event.h"
+#include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/playback/display_item_list.h"
@@ -73,6 +74,8 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   if (!canvas_playback_rect.IsEmpty() &&
       !raster_bounds.intersect(gfx::RectToSkIRect(canvas_playback_rect)))
     return;
+  // Treat all subnormal values as zero for performance.
+  ScopedSubnormalFloatDisabler disabler;
 
   raster_canvas->save();
   raster_canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());

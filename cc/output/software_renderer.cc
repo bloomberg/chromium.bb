@@ -678,6 +678,8 @@ sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
   }
 
   SkPaint paint;
+  // Treat subnormal float values as zero for performance.
+  ScopedSubnormalFloatDisabler disabler;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
   surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
   surface->getCanvas()->drawBitmap(to_filter, quad->rect.x(), quad->rect.y(),
