@@ -6,7 +6,9 @@
 #define IOS_WEB_NET_CRW_SSL_STATUS_UPDATER_H_
 
 #import <Foundation/Foundation.h>
+#import <Security/Security.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "ios/web/public/security_style.h"
 #include "net/cert/cert_status_flags.h"
 
@@ -38,7 +40,8 @@ class NavigationManager;
 // obtained from |host|, |chain| and |hasOnlySecureContent| flag.
 - (void)updateSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem
                             withCertHost:(NSString*)host
-                               certChain:(NSArray*)chain
+                                   trust:
+                                       (base::ScopedCFTypeRef<SecTrustRef>)trust
                     hasOnlySecureContent:(BOOL)hasOnlySecureContent;
 
 @end
@@ -56,9 +59,9 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
 // |completionHandler| is called asynchronously when web::SecurityStyle and
 // net::CertStatus are computed.
 - (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
-    querySSLStatusForCertChain:(NSArray*)certChain
-                          host:(NSString*)host
-             completionHandler:(StatusQueryHandler)completionHandler;
+    querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                      host:(NSString*)host
+         completionHandler:(StatusQueryHandler)completionHandler;
 
 @end
 

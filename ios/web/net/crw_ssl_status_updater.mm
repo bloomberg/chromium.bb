@@ -15,6 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
+using base::ScopedCFTypeRef;
 using net::CertStatus;
 using web::SecurityStyle;
 
@@ -34,17 +35,17 @@ using web::SecurityStyle;
 // Updates |security_style| and |cert_status| for the NavigationItem with ID
 // |navigationItemID|, if URL and certificate chain still match |host| and
 // |certChain|.
-- (void)updateSSLStatusForNavigationItemWithID:(int)navigationItemID
-                                     certChain:(NSArray*)chain
-                                          host:(NSString*)host
-                             withSecurityStyle:(SecurityStyle)style
-                                    certStatus:(CertStatus)certStatus;
+- (void)updateSSLStatusForItemWithID:(int)navigationItemID
+                               trust:(ScopedCFTypeRef<SecTrustRef>)trust
+                                host:(NSString*)host
+                   withSecurityStyle:(SecurityStyle)style
+                          certStatus:(CertStatus)certStatus;
 
-// Asynchronously obtains SSL status from given |certChain| and |host| and
+// Asynchronously obtains SSL status from given |secTrust| and |host| and
 // updates current navigation item. Before scheduling update changes SSLStatus'
 // cert_status and security_style to default.
-- (void)scheduleSSLStatusUpdateUsingCertChain:(NSArray*)chain
-                                         host:(NSString*)host;
+- (void)scheduleSSLStatusUpdateUsingTrust:(ScopedCFTypeRef<SecTrustRef>)trust
+                                     host:(NSString*)host;
 
 // Notifies delegate about SSLStatus change.
 - (void)didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navItem;
@@ -81,7 +82,7 @@ using web::SecurityStyle;
 
 - (void)updateSSLStatusForNavigationItem:(web::NavigationItem*)item
                             withCertHost:(NSString*)host
-                               certChain:(NSArray*)chain
+                                   trust:(ScopedCFTypeRef<SecTrustRef>)trust
                     hasOnlySecureContent:(BOOL)hasOnlySecureContent {
   web::SSLStatus previousSSLStatus = item->GetSSL();
 
@@ -94,7 +95,7 @@ using web::SecurityStyle;
   // Try updating SSLStatus for current NavigationItem asynchronously.
   scoped_refptr<net::X509Certificate> cert;
   if (item->GetURL().SchemeIsCryptographic()) {
-    cert = web::CreateCertFromChain(chain);
+    cert = web::CreateCertFromTrust(trust);
     if (cert) {
       int oldCertID = item->GetSSL().cert_id;
       std::string oldHost = item->GetSSL().cert_status_host;
@@ -107,11 +108,11 @@ using web::SecurityStyle;
           oldHost != item->GetSSL().cert_status_host) {
         // Real SSL status is unknown, reset cert status and security style.
         // They will be asynchronously updated in
-        // |scheduleSSLStatusUpdateUsingCertChain|.
+        // |scheduleSSLStatusUpdateUsingTrust:host:|.
         item->GetSSL().cert_status = CertStatus();
         item->GetSSL().security_style = web::SECURITY_STYLE_UNKNOWN;
 
-        [self scheduleSSLStatusUpdateUsingCertChain:chain host:host];
+        [self scheduleSSLStatusUpdateUsingTrust:std::move(trust) host:host];
       }
     }
   }
@@ -134,11 +135,11 @@ using web::SecurityStyle;
 
 #pragma mark - Private
 
-- (void)updateSSLStatusForNavigationItemWithID:(int)navigationItemID
-                                     certChain:(NSArray*)chain
-                                          host:(NSString*)host
-                             withSecurityStyle:(SecurityStyle)style
-                                    certStatus:(CertStatus)certStatus {
+- (void)updateSSLStatusForItemWithID:(int)navigationItemID
+                               trust:(ScopedCFTypeRef<SecTrustRef>)trust
+                                host:(NSString*)host
+                   withSecurityStyle:(SecurityStyle)style
+                          certStatus:(CertStatus)certStatus {
   // The searched item almost always be the last one, so walk backward rather
   // than forward.
   for (int i = _navigationManager->GetItemCount() - 1; 0 <= i; i--) {
@@ -148,7 +149,7 @@ using web::SecurityStyle;
 
     // NavigationItem's UniqueID is preserved even after redirects, so
     // checking that cert and URL match is necessary.
-    scoped_refptr<net::X509Certificate> cert(web::CreateCertFromChain(chain));
+    scoped_refptr<net::X509Certificate> cert(web::CreateCertFromTrust(trust));
     int certID =
         web::CertStore::GetInstance()->StoreCert(cert.get(), self.certGroupID);
     std::string GURLHost = base::SysNSStringToUTF8(host);
@@ -166,8 +167,8 @@ using web::SecurityStyle;
   }
 }
 
-- (void)scheduleSSLStatusUpdateUsingCertChain:(NSArray*)chain
-                                         host:(NSString*)host {
+- (void)scheduleSSLStatusUpdateUsingTrust:(ScopedCFTypeRef<SecTrustRef>)trust
+                                     host:(NSString*)host {
   // Use Navigation Item's unique ID to locate requested item after
   // obtaining cert status asynchronously.
   int itemID = _navigationManager->GetLastCommittedItem()->GetUniqueID();
@@ -175,15 +176,15 @@ using web::SecurityStyle;
   DCHECK(_dataSource);
   base::WeakNSObject<CRWSSLStatusUpdater> weakSelf(self);
   [_dataSource SSLStatusUpdater:self
-      querySSLStatusForCertChain:chain
-                            host:host
-               completionHandler:^(SecurityStyle style, CertStatus certStatus) {
-                 [weakSelf updateSSLStatusForNavigationItemWithID:itemID
-                                                        certChain:chain
-                                                             host:host
-                                                withSecurityStyle:style
-                                                       certStatus:certStatus];
-               }];
+         querySSLStatusForTrust:trust
+                           host:host
+              completionHandler:^(SecurityStyle style, CertStatus certStatus) {
+                [weakSelf updateSSLStatusForItemWithID:itemID
+                                                 trust:std::move(trust)
+                                                  host:host
+                                     withSecurityStyle:style
+                                            certStatus:certStatus];
+              }];
 }
 
 - (void)didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navItem {
