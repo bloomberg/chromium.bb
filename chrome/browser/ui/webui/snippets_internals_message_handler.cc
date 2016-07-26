@@ -235,7 +235,7 @@ void SnippetsInternalsMessageHandler::HandleDownload(
       hosts_string, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::set<std::string> hosts(hosts_vector.begin(), hosts_vector.end());
 
-  ntp_snippets_service_->FetchSnippetsFromHosts(hosts);
+  ntp_snippets_service_->FetchSnippetsFromHosts(hosts, /*force_requests=*/true);
 }
 
 void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(

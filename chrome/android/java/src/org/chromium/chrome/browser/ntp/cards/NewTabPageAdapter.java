@@ -239,7 +239,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     /** Start a request for new snippets. */
     public void reloadSnippets() {
-        SnippetsBridge.fetchSnippets();
+        SnippetsBridge.fetchSnippets(/*forceRequest=*/true);
     }
 
     private void loadSnippets(List<SnippetArticleListItem> snippets) {

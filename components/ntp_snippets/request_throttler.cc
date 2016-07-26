@@ -19,13 +19,6 @@
 
 namespace ntp_snippets {
 
-// Used internally for working with a RequestType.
-struct RequestTypeInfo {
-  const char* name;
-  const char* count_pref;
-  const char* day_pref;
-};
-
 namespace {
 
 // Enumeration listing all possible outcomes for fetch attempts. Used for UMA
@@ -38,18 +31,23 @@ enum class RequestStatus {
   REQUEST_STATUS_COUNT
 };
 
-// When adding a new type here, extend also the "RequestCounterTypes"
-// <histogram_suffixes> in histograms.xml with the |name| string.
-const RequestTypeInfo kRequestTypeInfo[] = {
-    // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER,
-    {"SuggestionFetcher", prefs::kSnippetFetcherQuotaCount,
-     prefs::kSnippetFetcherQuotaDay}};
-
 }  // namespace
 
-RequestThrottler::RequestThrottler(PrefService* pref_service,
-                               RequestType type,
-                               int default_quota)
+struct RequestThrottler::RequestTypeInfo {
+    const char* name;
+    const char* count_pref;
+    const char* day_pref;
+    const int default_quota;
+};
+
+// When adding a new type here, extend also the "RequestCounterTypes"
+// <histogram_suffixes> in histograms.xml with the |name| string.
+const RequestThrottler::RequestTypeInfo RequestThrottler::kRequestTypeInfo[] = {
+    // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER,
+    {"SuggestionFetcher", prefs::kSnippetFetcherQuotaCount,
+     prefs::kSnippetFetcherQuotaDay, 50}};
+
+RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
     : pref_service_(pref_service),
       type_info_(kRequestTypeInfo[static_cast<int>(type)]) {
   DCHECK(pref_service);
@@ -61,7 +59,7 @@ RequestThrottler::RequestThrottler(PrefService* pref_service,
     LOG_IF(WARNING, !quota.empty())
         << "Invalid variation parameter for quota for "
         << GetRequestTypeAsString();
-    quota_ = default_quota;
+    quota_ = type_info_.default_quota;
   }
 
   // Since the histogram names are dynamic, we cannot use the standard macros

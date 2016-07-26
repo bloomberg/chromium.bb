@@ -269,6 +269,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
         test_url_(base::StringPrintf(kTestContentSnippetsServerFormat,
                                      google_apis::GetAPIKey().c_str())) {
     NTPSnippetsService::RegisterProfilePrefs(pref_service()->registry());
+    RequestThrottler::RegisterProfilePrefs(pref_service()->registry());
 
     // Since no SuggestionsService is injected in tests, we need to force the
     // service to fetch from all hosts.
@@ -311,7 +312,8 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher =
         base::MakeUnique<NTPSnippetsFetcher>(
             fake_signin_manager(), fake_token_service_.get(),
-            std::move(request_context_getter), base::Bind(&ParseJson),
+            std::move(request_context_getter), pref_service(),
+            base::Bind(&ParseJson),
             /*is_stable_channel=*/true);
 
     fake_signin_manager()->SignIn("foo@bar.com");
@@ -352,7 +354,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
 
   void LoadFromJSONString(const std::string& json) {
     SetUpFetchResponse(json);
-    service()->FetchSnippets();
+    service()->FetchSnippets(true);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -876,7 +878,7 @@ TEST_F(NTPSnippetsServiceTest, HistorySyncStateChanges) {
   service()->OnDisabledReasonChanged(DisabledReason::SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::DISABLED, service()->state_);
-  EXPECT_THAT(service()->snippets(), IsEmpty()); // No fetch should be made.
+  EXPECT_THAT(service()->snippets(), IsEmpty());  // No fetch should be made.
 
   // Simulate user sign in. The service should be ready again and load snippets.
   SetUpFetchResponse(GetTestJson({GetSnippet()}));

@@ -56,9 +56,11 @@ static jlong Init(JNIEnv* env,
 }
 
 static void FetchSnippets(JNIEnv* env,
-                          const JavaParamRef<jclass>& caller) {
+                          const JavaParamRef<jclass>& caller,
+                          jboolean j_force_request) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
-  NTPSnippetsServiceFactory::GetForProfile(profile)->FetchSnippets();
+  NTPSnippetsServiceFactory::GetForProfile(profile)->FetchSnippets(
+      j_force_request);
 }
 
 // Reschedules the fetching of snippets. Used to support different fetching

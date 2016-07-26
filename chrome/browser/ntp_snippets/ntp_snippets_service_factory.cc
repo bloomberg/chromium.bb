@@ -124,6 +124,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
           g_browser_process->GetApplicationLocale(), scheduler,
           base::MakeUnique<ntp_snippets::NTPSnippetsFetcher>(
               signin_manager, token_service, request_context,
+              profile->GetPrefs(),
               base::Bind(&safe_json::SafeJsonParser::Parse),
               chrome::GetChannel() == version_info::Channel::STABLE),
           base::MakeUnique<ImageFetcherImpl>(

@@ -101,12 +101,17 @@ class NTPSnippetsService : public KeyedService,
   bool initialized() const { return ready() || state_ == State::DISABLED; }
 
   // Fetches snippets from the server and adds them to the current ones.
-  void FetchSnippets();
+  // Requests can be marked more important by setting |force_request| to true
+  // (such request might circumvent the daily quota for requests, etc.) Useful
+  // for requests triggered by the user.
+  void FetchSnippets(bool force_request);
+
   // Fetches snippets from the server for specified hosts (overriding
   // suggestions from the suggestion service) and adds them to the current ones.
   // Only called from chrome://snippets-internals, DO NOT USE otherwise!
   // Ignored while |loaded()| is false.
-  void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
+  void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
+                              bool force_request);
 
   // Available snippets.
   const NTPSnippet::PtrVector& snippets() const { return snippets_; }

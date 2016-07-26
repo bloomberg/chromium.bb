@@ -18,8 +18,6 @@ class HistogramBase;
 
 namespace ntp_snippets {
 
-struct RequestTypeInfo;
-
 // Counts requests to external services, compares them to a daily quota, reports
 // them to UMA. In the application code, create one local instance for each type
 // of requests, identified by the RequestType. The request counter is based on:
@@ -45,9 +43,7 @@ class RequestThrottler {
     CONTENT_SUGGESTION_FETCHER
   };
 
-  RequestThrottler(PrefService* pref_service,
-                 RequestType type,
-                 int default_quota);
+  RequestThrottler(PrefService* pref_service, RequestType type);
 
   // Registers profile prefs for all RequestTypes. Called from browser_prefs.cc.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -59,6 +55,13 @@ class RequestThrottler {
   bool DemandQuotaForRequest(bool force_request);
 
  private:
+  friend class RequestThrottlerTest;
+  // Used internally for working with a RequestType.
+  struct RequestTypeInfo;
+
+  // The array of info entries - one per each RequestType.
+  static const RequestTypeInfo kRequestTypeInfo[];
+
   // Also emits the PerDay histogram if the day changed.
   void ResetCounterIfDayChanged();
 

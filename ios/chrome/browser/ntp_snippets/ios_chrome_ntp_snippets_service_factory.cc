@@ -113,20 +113,21 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
+  PrefService* prefs = chrome_browser_state->GetPrefs();
   // TODO(treib,markusheintz): Inject an image_fetcher::ImageDecoder once that's
   // implemented on iOS. crbug.com/609127
   return base::WrapUnique(new ntp_snippets::NTPSnippetsService(
-      false /* enabled */, chrome_browser_state->GetPrefs(),
-      suggestions_service, GetApplicationContext()->GetApplicationLocale(),
-      scheduler, base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
-                     signin_manager, token_service, request_context,
-                     base::Bind(&ParseJson),
-                     GetChannel() == version_info::Channel::STABLE)),
+      false /* enabled */, prefs, suggestions_service,
+      GetApplicationContext()->GetApplicationLocale(), scheduler,
+      base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
+          signin_manager, token_service, request_context, prefs,
+          base::Bind(&ParseJson),
+          GetChannel() == version_info::Channel::STABLE)),
       base::WrapUnique(new ImageFetcherImpl(request_context.get(),
                                             web::WebThread::GetBlockingPool())),
       base::MakeUnique<IOSImageDecoderImpl>(),
       base::WrapUnique(
           new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)),
       base::WrapUnique(new ntp_snippets::NTPSnippetsStatusService(
-          signin_manager, sync_service, chrome_browser_state->GetPrefs()))));
+          signin_manager, sync_service, prefs))));
 }

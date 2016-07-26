@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -16,10 +17,12 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/request_throttler.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class PrefService;
 class SigninManagerBase;
 
 namespace base {
@@ -76,6 +79,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       SigninManagerBase* signin_manager,
       OAuth2TokenService* oauth2_token_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      PrefService* pref_service,
       const ParseJSONCallback& parse_json_callback,
       bool is_stable_channel);
   ~NTPSnippetsFetcher() override;
@@ -90,9 +94,13 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // If an ongoing fetch exists, it will be cancelled and a new one started,
   // without triggering an additional callback (i.e. not noticeable by
   // subscriber of SetCallback()).
+  //
+  // Fetches snippets only if the daily quota not exceeded, unless
+  // |force_request| is set to true. Use force only for user-initiated fetches.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
                               const std::string& language_code,
-                              int count);
+                              int count,
+                              bool force_request);
 
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
@@ -216,6 +224,9 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;
+
+  // Request throttler for limiting requests.
+  RequestThrottler request_throttler_;
 
   base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
 

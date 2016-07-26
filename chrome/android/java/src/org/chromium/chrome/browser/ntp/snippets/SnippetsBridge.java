@@ -67,8 +67,8 @@ public class SnippetsBridge {
     /**
      * Fetches new snippets.
      */
-    public static void fetchSnippets() {
-        nativeFetchSnippets();
+    public static void fetchSnippets(boolean forceRequest) {
+        nativeFetchSnippets(forceRequest);
     }
 
     /**
@@ -148,7 +148,7 @@ public class SnippetsBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
-    private static native void nativeFetchSnippets();
+    private static native void nativeFetchSnippets(boolean forceRequest);
     private static native void nativeRescheduleFetching();
     private native void nativeDiscardSnippet(long nativeNTPSnippetsBridge, String snippetId);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);

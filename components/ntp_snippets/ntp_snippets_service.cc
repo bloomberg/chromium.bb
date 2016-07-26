@@ -247,19 +247,20 @@ void NTPSnippetsService::Shutdown() {
   EnterState(State::SHUT_DOWN, ContentSuggestionsCategoryStatus::NOT_PROVIDED);
 }
 
-void NTPSnippetsService::FetchSnippets() {
+void NTPSnippetsService::FetchSnippets(bool force_request) {
   if (ready())
-    FetchSnippetsFromHosts(GetSuggestionsHosts());
+    FetchSnippetsFromHosts(GetSuggestionsHosts(), force_request);
   else
     fetch_after_load_ = true;
 }
 
 void NTPSnippetsService::FetchSnippetsFromHosts(
-    const std::set<std::string>& hosts) {
+    const std::set<std::string>& hosts,
+    bool force_request) {
   if (!ready())
     return;
   snippets_fetcher_->FetchSnippetsFromHosts(hosts, application_language_code_,
-                                            kMaxSnippetCount);
+                                            kMaxSnippetCount, force_request);
 }
 
 void NTPSnippetsService::RescheduleFetching() {
@@ -440,7 +441,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
 
   NotifyNewSuggestions();
 
-  FetchSnippetsFromHosts(hosts);
+  FetchSnippetsFromHosts(hosts, /*force_request=*/false);
 }
 
 void NTPSnippetsService::OnFetchFinished(
@@ -655,7 +656,7 @@ void NTPSnippetsService::FetchSnippetImageFromNetwork(
 
 void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
   if (fetch_snippets)
-    FetchSnippets();
+    FetchSnippets(/*force_request=*/false);
 
   // If host restrictions are enabled, register for host list updates.
   // |suggestions_service_| can be null in tests.
