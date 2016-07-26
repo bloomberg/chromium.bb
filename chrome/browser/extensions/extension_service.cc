@@ -73,6 +73,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/update_observer.h"
@@ -309,6 +310,9 @@ ExtensionService::ExtensionService(Profile* profile,
       extensions_enabled_(extensions_enabled),
       ready_(ready),
       shared_module_service_(new extensions::SharedModuleService(profile_)),
+      renderer_helper_(
+          extensions::RendererStartupHelperFactory::GetForBrowserContext(
+              profile_)),
       app_data_migrator_(new extensions::AppDataMigrator(profile_, registry_)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
@@ -1030,27 +1034,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       base::Bind(&ExtensionService::OnExtensionRegisteredWithRequestContexts,
                  AsWeakPtr(), make_scoped_refptr(extension)));
 
-  // Tell renderers about the new extension, unless it's a theme (renderers
-  // don't need to know about themes).
-  if (!extension->is_theme()) {
-    for (content::RenderProcessHost::iterator i(
-            content::RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd(); i.Advance()) {
-      content::RenderProcessHost* host = i.GetCurrentValue();
-      Profile* host_profile =
-          Profile::FromBrowserContext(host->GetBrowserContext());
-      if (host_profile->GetOriginalProfile() ==
-          profile_->GetOriginalProfile()) {
-        // We don't need to include tab permisisons here, since the extension
-        // was just loaded.
-        std::vector<ExtensionMsg_Loaded_Params> loaded_extensions(
-            1, ExtensionMsg_Loaded_Params(extension,
-                                          false /* no tab permissions */));
-        host->Send(
-            new ExtensionMsg_Loaded(loaded_extensions));
-      }
-    }
-  }
+  renderer_helper_->OnExtensionLoaded(*extension);
 
   // Tell subsystems that use the EXTENSION_LOADED notification about the new
   // extension.
@@ -1122,15 +1106,7 @@ void ExtensionService::NotifyExtensionUnloaded(
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    content::RenderProcessHost* host = i.GetCurrentValue();
-    Profile* host_profile =
-        Profile::FromBrowserContext(host->GetBrowserContext());
-    if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile())
-      host->Send(new ExtensionMsg_Unloaded(extension->id()));
-  }
+  renderer_helper_->OnExtensionUnloaded(extension->id());
 
   system_->UnregisterExtensionWithRequestContexts(extension->id(), reason);
 

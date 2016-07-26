@@ -28,6 +28,8 @@ RendererStartupHelper::RendererStartupHelper(BrowserContext* browser_context)
   DCHECK(browser_context);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 RendererStartupHelper::~RendererStartupHelper() {}
@@ -36,9 +38,21 @@ void RendererStartupHelper::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
+  switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
+      InitializeProcess(
+          content::Source<content::RenderProcessHost>(source).ptr());
+      break;
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+      UntrackProcess(content::Source<content::RenderProcessHost>(source).ptr());
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification: " << type;
+  }
+}
+
+void RendererStartupHelper::InitializeProcess(
+    content::RenderProcessHost* process) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   if (!client->IsSameContext(browser_context_, process->GetBrowserContext()))
     return;
@@ -91,6 +105,58 @@ void RendererStartupHelper::Observe(
     }
   }
   process->Send(new ExtensionMsg_Loaded(loaded_extensions));
+  auto iter = pending_active_extensions_.find(process);
+  if (iter != pending_active_extensions_.end()) {
+    for (const ExtensionId& id : iter->second) {
+      DCHECK(extensions.Contains(id));
+      process->Send(new ExtensionMsg_ActivateExtension(id));
+    }
+  }
+
+  initialized_processes_.insert(process);
+}
+
+void RendererStartupHelper::UntrackProcess(
+    content::RenderProcessHost* process) {
+  if (!ExtensionsBrowserClient::Get()->IsSameContext(
+          browser_context_, process->GetBrowserContext())) {
+    return;
+  }
+
+  initialized_processes_.erase(process);
+  pending_active_extensions_.erase(process);
+}
+
+void RendererStartupHelper::ActivateExtensionInProcess(
+    const ExtensionId& id,
+    content::RenderProcessHost* process) {
+  if (initialized_processes_.count(process))
+    process->Send(new ExtensionMsg_ActivateExtension(id));
+  else
+    pending_active_extensions_[process].insert(id);
+}
+
+void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
+  // Renderers don't need to know about themes.
+  if (extension.is_theme())
+    return;
+
+  // We don't need to include tab permisisons here, since the extension
+  // was just loaded.
+  // Uninitialized renderers will be informed of the extension load during the
+  // first batch of messages.
+  std::vector<ExtensionMsg_Loaded_Params> params(
+      1,
+      ExtensionMsg_Loaded_Params(&extension, false /* no tab permissions */));
+  for (content::RenderProcessHost* process : initialized_processes_)
+    process->Send(new ExtensionMsg_Loaded(params));
+}
+
+void RendererStartupHelper::OnExtensionUnloaded(const ExtensionId& id) {
+  for (content::RenderProcessHost* process : initialized_processes_)
+    process->Send(new ExtensionMsg_Unloaded(id));
+  for (auto& process_extensions_pair : pending_active_extensions_)
+    process_extensions_pair.second.erase(id);
 }
 
 //////////////////////////////////////////////////////////////////////////////

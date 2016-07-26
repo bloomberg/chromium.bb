@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_RENDERER_STARTUP_HELPER_H_
 #define EXTENSIONS_BROWSER_RENDERER_STARTUP_HELPER_H_
 
+#include <map>
+#include <set>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -12,6 +15,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_id.h"
 
 namespace content {
 class BrowserContext;
@@ -19,12 +23,17 @@ class RenderProcessHost;
 }
 
 namespace extensions {
+class Extension;
 
 // Informs renderers about extensions-related data (loaded extensions, available
 // functions, etc.) when they start. Sends this information to both extension
 // and non-extension renderers, as the non-extension renderers may have content
 // scripts. Lives on the UI thread. Shared between incognito and non-incognito
-// browser contexts.
+// browser contexts. Also handles sending the loaded, unloaded, and activated
+// extension messages, since these can *only* be sent once the process is
+// initialized.
+// TODO(devlin): "StartupHelper" is no longer sufficient to describe the entire
+// behavior of this class.
 class RendererStartupHelper : public KeyedService,
                               public content::NotificationObserver {
  public:
@@ -37,8 +46,39 @@ class RendererStartupHelper : public KeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Sends a message to the specified |process| activating the given extension
+  // once the process is initialized.
+  void ActivateExtensionInProcess(const ExtensionId& id,
+                                  content::RenderProcessHost* process);
+
+  // Sends a message to all initialized processes to [un]load the given
+  // extension. We have explicit calls for these (rather than using an
+  // ExtensionRegistryObserver) because this needs to happen before other
+  // initialization which might rely on the renderers being notified.
+  void OnExtensionUnloaded(const ExtensionId& id);
+  void OnExtensionLoaded(const Extension& extension);
+
  private:
+  // Initializes the specified process, informing it of system state and loaded
+  // extensions.
+  void InitializeProcess(content::RenderProcessHost* process);
+
+  // Untracks the given process.
+  void UntrackProcess(content::RenderProcessHost* process);
+
   content::BrowserContext* browser_context_;  // Not owned.
+
+  // The set of render processes that have had the initial batch of IPC messages
+  // sent, including the set of loaded extensions. Further messages that
+  // activate, load, or unload extensions should not be sent until after this
+  // happens.
+  std::set<content::RenderProcessHost*> initialized_processes_;
+
+  // The set of ids for extensions that are active in a process that has not
+  // been initialized. The activation message will be sent the process is
+  // initialized.
+  std::map<content::RenderProcessHost*, std::set<ExtensionId>>
+      pending_active_extensions_;
 
   content::NotificationRegistrar registrar_;
 

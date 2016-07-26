@@ -292,6 +292,7 @@
       'browser/extensions/process_management_browsertest.cc',
       'browser/extensions/process_manager_browsertest.cc',
       'browser/extensions/requirements_checker_browsertest.cc',
+      'browser/extensions/renderer_initialization_browsertest.cc',
       'browser/extensions/sandboxed_pages_apitest.cc',
       'browser/extensions/service_worker_apitest.cc',
       'browser/extensions/shared_module_apitest.cc',

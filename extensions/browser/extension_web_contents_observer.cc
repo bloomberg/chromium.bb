@@ -18,6 +18,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/mojo/service_registration.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -105,7 +106,9 @@ void ExtensionWebContentsObserver::RenderViewCreated(
   //
   // Plus, we can delete the concept of activating an extension once site
   // isolation is turned on.
-  render_view_host->Send(new ExtensionMsg_ActivateExtension(extension->id()));
+  RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
+      ->ActivateExtensionInProcess(extension->id(),
+                                   render_view_host->GetProcess());
 }
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
