@@ -930,8 +930,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                     SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
 }
 
+// Has errors under TSan. See https://crbug.com/631323.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_InstallWithWaitUntil_RejectConsoleMessage \
+  DISABLED_InstallWithWaitUntil_RejectConsoleMessage
+#else
+#define MAYBE_InstallWithWaitUntil_RejectConsoleMessage \
+  InstallWithWaitUntil_RejectConsoleMessage
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       InstallWithWaitUntil_RejectConsoleMessage) {
+                       MAYBE_InstallWithWaitUntil_RejectConsoleMessage) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
                            "/service_worker/worker_install_rejected.js"));
 
@@ -968,7 +976,14 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
   base::Closure quit_;
 };
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
+// Has errors under TSan. See https://crbug.com/631323.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_TimeoutStartingWorker DISABLED_TimeoutStartingWorker
+#else
+#define MAYBE_TimeoutStartingWorker TimeoutStartingWorker
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       MAYBE_TimeoutStartingWorker) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
                            "/service_worker/while_true_worker.js"));
 
@@ -1079,8 +1094,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ("cache_name", response2.cache_storage_cache_name);
 }
 
+// Has errors under TSan. See https://crbug.com/631323.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_FetchEvent_respondWithRejection \
+  DISABLED_FetchEvent_respondWithRejection
+#else
+#define MAYBE_FetchEvent_respondWithRejection FetchEvent_respondWithRejection
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       FetchEvent_respondWithRejection) {
+                       MAYBE_FetchEvent_respondWithRejection) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;

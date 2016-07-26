@@ -240,7 +240,13 @@ class InterstitialPageImplTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImplTest);
 };
 
-IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Cut) {
+// Has errors on TSan. See https://crbug.com/631322.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_Cut DISABLED_Cut
+#else
+#define MAYBE_Cut Cut
+#endif
+IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, MAYBE_Cut) {
   SetUpInterstitialPage();
 
   ASSERT_TRUE(CreateInputAndSetText("text-to-cut"));
