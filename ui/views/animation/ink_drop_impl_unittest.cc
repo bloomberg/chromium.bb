@@ -8,7 +8,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
 
@@ -251,6 +250,61 @@ TEST_F(InkDropImplTest, LayersArentRemovedWhenPreemptingFadeOut) {
 
   ink_drop_.SetHovered(true);
   EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+}
+
+TEST_F(InkDropImplTest, AnimationWhenDeactivated) {
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.AnimateToState(InkDropState::ACTIVATED);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  test_api_.CompleteAnimations();
+
+  ink_drop_.AnimateToState(InkDropState::DEACTIVATED);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_TRUE(test_api_.HasActiveAnimations());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
+}
+
+TEST_F(InkDropImplTest, AnimationSkippedWhenFocusedAndDeactivated) {
+  ink_drop_host_.set_should_show_highlight(true);
+
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.SetFocused(true);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.AnimateToState(InkDropState::ACTIVATED);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  test_api_.CompleteAnimations();
+
+  ink_drop_.AnimateToState(InkDropState::DEACTIVATED);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_FALSE(test_api_.HasActiveAnimations());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_.GetTargetInkDropState());
+}
+
+TEST_F(InkDropImplTest, FocusHighlightComesBackImmediatelyAfterAction) {
+  ink_drop_host_.set_should_show_highlight(true);
+
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.SetFocused(true);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.AnimateToState(InkDropState::ACTION_PENDING);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+
+  test_api_.CompleteAnimations();
+
+  // No delay (unlike in the hover case).
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+
+  // Highlight should be back.
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 }
 
 }  // namespace views

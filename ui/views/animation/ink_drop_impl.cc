@@ -17,23 +17,23 @@ namespace {
 
 // The duration, in milliseconds, of the highlight state fade in animation when
 // it is triggered by user input.
-const int kHighlightFadeInFromUserInputDurationInMs = 250;
+const int kHighlightFadeInFromUserInputDurationMs = 250;
 
 // The duration, in milliseconds, of the highlight state fade out animation when
 // it is triggered by user input.
-const int kHighlightFadeOutFromUserInputDurationInMs = 250;
+const int kHighlightFadeOutFromUserInputDurationMs = 250;
 
 // The duration, in milliseconds, of the highlight state fade in animation when
 // it is triggered by an ink drop ripple animation ending.
-const int kHighlightFadeInAfterRippleDurationInMs = 250;
+const int kHighlightFadeInAfterRippleDurationMs = 250;
 
 // The duration, in milliseconds, of the highlight state fade out animation when
 // it is triggered by an ink drop ripple animation starting.
-const int kHighlightFadeOutBeforeRippleDurationInMs = 120;
+const int kHighlightFadeOutBeforeRippleDurationMs = 120;
 
 // The amount of time in milliseconds that |highlight_| should delay after a
-// ripple animation before fading in.
-const int kHighlightFadeInAfterRippleDelayInMs = 1000;
+// ripple animation before fading in, for highlight due to mouse hover.
+const int kHoverFadeInAfterRippleDelayMs = 1000;
 
 // Returns true if an ink drop with the given |ink_drop_state| should
 // automatically transition to the InkDropState::HIDDEN state.
@@ -78,9 +78,18 @@ void InkDropImpl::AnimateToState(InkDropState ink_drop_state) {
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
 
+  // When deactivating and the host is focused, snap back to the highlight
+  // state. (In the case of highlighting due to hover, we'll animate the
+  // highlight back in after a delay.)
+  if (ink_drop_state == views::InkDropState::DEACTIVATED && is_focused_) {
+    ink_drop_ripple_->HideImmediately();
+    SetHighlight(true, base::TimeDelta(), false);
+    return;
+  }
+
   if (ink_drop_state != views::InkDropState::HIDDEN) {
     SetHighlight(false, base::TimeDelta::FromMilliseconds(
-                            kHighlightFadeOutBeforeRippleDurationInMs),
+                            kHighlightFadeOutBeforeRippleDurationMs),
                  true);
   }
 
@@ -102,9 +111,9 @@ void InkDropImpl::SetHovered(bool is_hovered) {
   SetHighlight(ShouldHighlight(),
                ShouldHighlight()
                    ? base::TimeDelta::FromMilliseconds(
-                         kHighlightFadeInFromUserInputDurationInMs)
+                         kHighlightFadeInFromUserInputDurationMs)
                    : base::TimeDelta::FromMilliseconds(
-                         kHighlightFadeOutFromUserInputDurationInMs),
+                         kHighlightFadeOutFromUserInputDurationMs),
                false);
 }
 
@@ -188,8 +197,13 @@ void InkDropImpl::AnimationEnded(InkDropState ink_drop_state,
   if (ShouldAnimateToHidden(ink_drop_state)) {
     ink_drop_ripple_->AnimateToState(views::InkDropState::HIDDEN);
   } else if (ink_drop_state == views::InkDropState::HIDDEN) {
-    if (is_hovered_)
+    // Re-highlight, as necessary. For hover, there's a delay; for focus, jump
+    // straight into the animation.
+    if (is_focused_)
+      HighlightAfterRippleTimerFired();
+    else if (is_hovered_)
       StartHighlightAfterRippleTimer();
+
     // TODO(bruthig): Investigate whether creating and destroying
     // InkDropRipples is expensive and consider creating an
     // InkDropRipplePool. See www.crbug.com/522175.
@@ -214,7 +228,7 @@ void InkDropImpl::AnimationEnded(InkDropHighlight::AnimationType animation_type,
 void InkDropImpl::SetHighlight(bool should_highlight,
                                base::TimeDelta animation_duration,
                                bool explode) {
-  StopHighlightAfterRippleTimer();
+  highlight_after_ripple_timer_.reset();
 
   if (IsHighlightFadingInOrVisible() == should_highlight)
     return;
@@ -233,26 +247,17 @@ bool InkDropImpl::ShouldHighlight() const {
 }
 
 void InkDropImpl::StartHighlightAfterRippleTimer() {
-  StopHighlightAfterRippleTimer();
-
-  if (!highlight_after_ripple_timer_)
-    highlight_after_ripple_timer_.reset(new base::OneShotTimer);
-
+  highlight_after_ripple_timer_.reset(new base::OneShotTimer);
   highlight_after_ripple_timer_->Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kHighlightFadeInAfterRippleDelayInMs),
+      base::TimeDelta::FromMilliseconds(kHoverFadeInAfterRippleDelayMs),
       base::Bind(&InkDropImpl::HighlightAfterRippleTimerFired,
                  base::Unretained(this)));
 }
 
-void InkDropImpl::StopHighlightAfterRippleTimer() {
-  if (highlight_after_ripple_timer_)
-    highlight_after_ripple_timer_.reset();
-}
-
 void InkDropImpl::HighlightAfterRippleTimerFired() {
   SetHighlight(true, base::TimeDelta::FromMilliseconds(
-                         kHighlightFadeInAfterRippleDurationInMs),
+                         kHighlightFadeInAfterRippleDurationMs),
                true);
   highlight_after_ripple_timer_.reset();
 }

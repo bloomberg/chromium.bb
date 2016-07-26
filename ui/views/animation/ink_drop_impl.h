@@ -107,9 +107,6 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // |highlight_after_ripple_timer_| instance if it exists.
   void StartHighlightAfterRippleTimer();
 
-  // Stops and destroys the current |highlight_after_ripple_timer_| instance.
-  void StopHighlightAfterRippleTimer();
-
   // Callback for when the |highlight_after_ripple_timer_| fires.
   void HighlightAfterRippleTimerFired();
 
