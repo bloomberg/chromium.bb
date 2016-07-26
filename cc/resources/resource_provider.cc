@@ -244,6 +244,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       bound_image_id(0),
       hint(hint),
       type(type),
+      usage(gfx::BufferUsage::GPU_READ_CPU_READ_WRITE),
       format(format),
       shared_bitmap(nullptr) {}
 
@@ -556,11 +557,13 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
       // GPU memory buffers don't support LUMINANCE_F16.
       if (format != LUMINANCE_F16) {
         return CreateGLTexture(size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER,
-                               format);
+                               format,
+                               gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
       }
     // Fall through and use a regular texture.
     case RESOURCE_TYPE_GL_TEXTURE:
-      return CreateGLTexture(size, hint, RESOURCE_TYPE_GL_TEXTURE, format);
+      return CreateGLTexture(size, hint, RESOURCE_TYPE_GL_TEXTURE, format,
+                             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
 
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
@@ -574,13 +577,14 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
 ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
     const gfx::Size& size,
     TextureHint hint,
-    ResourceFormat format) {
+    ResourceFormat format,
+    gfx::BufferUsage usage) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case RESOURCE_TYPE_GL_TEXTURE: {
       return CreateGLTexture(size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER,
-                             format);
+                             format, usage);
     }
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
@@ -594,7 +598,8 @@ ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
 ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
                                              TextureHint hint,
                                              ResourceType type,
-                                             ResourceFormat format) {
+                                             ResourceFormat format,
+                                             gfx::BufferUsage usage) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -603,14 +608,14 @@ ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
   // ResourceProvider are GPU_READ_CPU_READ_WRITE. We should determine this
   // based on the current RasterBufferProvider's needs.
   GLenum target = type == RESOURCE_TYPE_GPU_MEMORY_BUFFER
-                      ? GetImageTextureTarget(
-                            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format)
+                      ? GetImageTextureTarget(usage, format)
                       : GL_TEXTURE_2D;
 
   ResourceId id = next_id_++;
   Resource* resource =
       InsertResource(id, Resource(0, size, Resource::INTERNAL, target,
                                   GL_LINEAR, hint, type, format));
+  resource->usage = usage;
   resource->allocated = false;
   return id;
 }
@@ -1229,6 +1234,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   DCHECK(IsGpuResourceType(resource->type));
   format_ = resource->format;
   size_ = resource->size;
+  usage_ = resource->usage;
   gpu_memory_buffer_ = std::move(resource->gpu_memory_buffer);
   resource->gpu_memory_buffer = nullptr;
 }
@@ -1260,8 +1266,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
   if (!gpu_memory_buffer_) {
     gpu_memory_buffer_ =
         resource_provider_->gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-            size_, BufferFormat(format_),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+            size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
   }
   return gpu_memory_buffer_.get();
 }
@@ -1819,8 +1824,8 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   if (resource->type == RESOURCE_TYPE_GPU_MEMORY_BUFFER) {
     resource->gpu_memory_buffer =
         gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-            size, BufferFormat(format),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+            size, BufferFormat(format), resource->usage,
+            gpu::kNullSurfaceHandle);
     LazyCreateImage(resource);
     resource->dirty_image = true;
     resource->is_overlay_candidate = true;

@@ -31,7 +31,8 @@ class CC_EXPORT ScopedResource : public Resource {
                 ResourceProvider::TextureHint hint,
                 ResourceFormat format);
   void AllocateWithGpuMemoryBuffer(const gfx::Size& size,
-                                   ResourceFormat format);
+                                   ResourceFormat format,
+                                   gfx::BufferUsage usage);
   void Free();
 
  protected:

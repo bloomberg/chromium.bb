@@ -141,7 +141,8 @@ class CC_EXPORT ResourceProvider
   // texture targets has no effect in software mode).
   ResourceId CreateGpuMemoryBufferResource(const gfx::Size& size,
                                            TextureHint hint,
-                                           ResourceFormat format);
+                                           ResourceFormat format,
+                                           gfx::BufferUsage usage);
 
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
@@ -396,6 +397,7 @@ class CC_EXPORT ResourceProvider
     ResourceProvider* resource_provider_;
     ResourceId resource_id_;
     ResourceFormat format_;
+    gfx::BufferUsage usage_;
     gfx::Size size_;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
     base::ThreadChecker thread_checker_;
@@ -586,6 +588,10 @@ class CC_EXPORT ResourceProvider
     unsigned bound_image_id;
     TextureHint hint;
     ResourceType type;
+
+    // GpuMemoryBuffer resource allocation needs to know how the resource will
+    // be used.
+    gfx::BufferUsage usage;
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
@@ -622,7 +628,8 @@ class CC_EXPORT ResourceProvider
   ResourceId CreateGLTexture(const gfx::Size& size,
                              TextureHint hint,
                              ResourceType type,
-                             ResourceFormat format);
+                             ResourceFormat format,
+                             gfx::BufferUsage usage);
   ResourceId CreateBitmap(const gfx::Size& size);
   Resource* InsertResource(ResourceId id, Resource resource);
   Resource* GetResource(ResourceId id);

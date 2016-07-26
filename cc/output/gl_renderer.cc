@@ -3645,7 +3645,8 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
   for (const CALayerOverlay& ca_layer_overlay : frame->ca_layer_overlay_list) {
     if (!overlay_resource_pool_) {
       overlay_resource_pool_ = ResourcePool::CreateForGpuMemoryBufferResources(
-          resource_provider_, base::ThreadTaskRunnerHandle::Get().get());
+          resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
+          gfx::BufferUsage::SCANOUT);
     }
 
     ResourceId contents_resource_id = ca_layer_overlay.contents_resource_id;
@@ -3761,8 +3762,6 @@ void GLRenderer::CopyRenderPassToOverlayResource(
       render_pass_textures_[render_pass_id].get();
   DCHECK(contents_texture);
   DCHECK(contents_texture->id());
-  // TODO(erikchen): Fix this to allow the creation of IOSurfaces.
-  // https://crbug.com/581526.
   *resource = overlay_resource_pool_->AcquireResource(
       contents_texture->size(), ResourceFormat::RGBA_8888);
   ResourceProvider::ScopedWriteLockGL destination(resource_provider_,

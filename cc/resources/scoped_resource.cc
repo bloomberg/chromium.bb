@@ -30,13 +30,14 @@ void ScopedResource::Allocate(const gfx::Size& size,
 }
 
 void ScopedResource::AllocateWithGpuMemoryBuffer(const gfx::Size& size,
-                                                 ResourceFormat format) {
+                                                 ResourceFormat format,
+                                                 gfx::BufferUsage usage) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
   set_id(resource_provider_->CreateGpuMemoryBufferResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format));
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format, usage));
 
 #if DCHECK_IS_ON()
   allocate_thread_id_ = base::PlatformThread::CurrentId();

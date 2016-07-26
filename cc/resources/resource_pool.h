@@ -27,9 +27,12 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
   static std::unique_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
       ResourceProvider* resource_provider,
-      base::SingleThreadTaskRunner* task_runner) {
-    return base::WrapUnique(
+      base::SingleThreadTaskRunner* task_runner,
+      gfx::BufferUsage usage) {
+    std::unique_ptr<ResourcePool> pool(
         new ResourcePool(resource_provider, task_runner, true));
+    pool->usage_ = usage;
+    return pool;
   }
 
   static std::unique_ptr<ResourcePool> Create(
@@ -136,6 +139,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   ResourceProvider* resource_provider_;
   bool use_gpu_memory_buffers_;
+  gfx::BufferUsage usage_;
   size_t max_memory_usage_bytes_;
   size_t max_resource_count_;
   size_t in_use_memory_usage_bytes_;

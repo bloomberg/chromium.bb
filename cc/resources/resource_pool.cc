@@ -121,7 +121,7 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
       PoolResource::Create(resource_provider_);
 
   if (use_gpu_memory_buffers_) {
-    pool_resource->AllocateWithGpuMemoryBuffer(size, format);
+    pool_resource->AllocateWithGpuMemoryBuffer(size, format, usage_);
   } else {
     pool_resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                             format);

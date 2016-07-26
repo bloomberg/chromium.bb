@@ -2235,7 +2235,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
 
   if (use_zero_copy) {
     *resource_pool = ResourcePool::CreateForGpuMemoryBufferResources(
-        resource_provider_.get(), GetTaskRunner());
+        resource_provider_.get(), GetTaskRunner(),
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
 
     *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
         resource_provider_.get(),
