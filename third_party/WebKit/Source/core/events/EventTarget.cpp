@@ -299,6 +299,10 @@ void EventTarget::addedEventListener(const AtomicString& eventType, RegisteredEv
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
             UseCounter::count(executingWindow->document(), UseCounter::PointerEventAddListenerCount);
         }
+    } else if (eventType == EventTypeNames::slotchange) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+            UseCounter::count(executingWindow->document(), UseCounter::SlotChangeEventAddListener);
+        }
     }
 }
 

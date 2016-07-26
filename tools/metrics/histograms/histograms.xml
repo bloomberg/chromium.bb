@@ -77279,6 +77279,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1465" label="VisualViewportScrollFired"/>
   <int value="1466" label="VisualViewportResizeFired"/>
   <int value="1467" label="NodeGetRootNode"/>
+  <int value="1468" label="SlotChangeEventAddListener"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
