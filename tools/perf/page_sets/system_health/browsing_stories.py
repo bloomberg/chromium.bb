@@ -94,6 +94,9 @@ class FacebookMobileStory(_NewsBrowsingStory):
   NAME = 'browse:social:facebook'
   URL = 'https://www.facebook.com/rihanna'
   ITEM_SELECTOR = 'article ._5msj'
+  # We scroll further than usual so that Facebook fetches enough items
+  # (crbug.com/631022)
+  MAIN_PAGE_SCROLL_REPEAT = 1
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
