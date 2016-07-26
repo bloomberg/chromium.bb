@@ -205,6 +205,10 @@ def _CreateRJavaFile(package, resources_by_type, shared_resources):
   create_id_arr = ('{{ e.resource_type }}.{{ e.name }}[i] = '
                    '({{ e.resource_type }}.{{ e.name }}[i] & 0x00ffffff) |'
                    ' (packageId << 24);')
+  # Here we diverge from what aapt does. Because we have so many
+  # resources, the onResourcesLoaded method was exceeding the 64KB limit that
+  # Java imposes. For this reason we split onResourcesLoaded into different
+  # methods for each resource type.
   template = Template("""/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
 package {{ package }};
@@ -224,11 +228,7 @@ public final class R {
     {% if shared_resources %}
     public static void onResourcesLoaded(int packageId) {
         {% for resource_type in resource_types %}
-        {% for e in resources[resource_type] %}
-        {% if resource_type != 'styleable' and e.java_type != 'int[]' %}
-        """ + create_id + """
-        {% endif %}
-        {% endfor %}
+        onResourcesLoaded{{ resource_type|title }}(packageId);
         {% for e in resources[resource_type] %}
         {% if e.java_type == 'int[]' %}
         for(int i = 0; i < {{ e.resource_type }}.{{ e.name }}.length; ++i) {
@@ -238,6 +238,15 @@ public final class R {
         {% endfor %}
         {% endfor %}
     }
+    {% for res_type in resource_types %}
+    private static void onResourcesLoaded{{ res_type|title }}(int packageId) {
+        {% for e in resources[res_type] %}
+        {% if res_type != 'styleable' and e.java_type != 'int[]' %}
+        """ + create_id + """
+        {% endif %}
+        {% endfor %}
+    }
+    {% endfor %}
     {% endif %}
 }
 """, trim_blocks=True, lstrip_blocks=True)
