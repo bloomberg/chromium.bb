@@ -291,7 +291,6 @@ TEST_F(AutofillFieldTest, FillPhoneNumber) {
     size_t field_max_length;
     std::string value_to_fill;
     std::string expected_value;
-
   } TestCase;
 
   TestCase test_cases[] = {
@@ -336,7 +335,6 @@ TEST_F(AutofillFieldTest, FillExpirationYearInput) {
     size_t field_max_length;
     std::string value_to_fill;
     std::string expected_value;
-
   } TestCase;
 
   TestCase test_cases[] = {
@@ -347,10 +345,10 @@ TEST_F(AutofillFieldTest, FillExpirationYearInput) {
        "23"},
       {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 2, "2023", "23"},
       {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 12, "2023", "23"},
-      // A field predicted as a 2 digits expiration year should fill the last
+      // A field predicted as a 2 digit expiration year should fill the last
       // digit of the expiration year if the field has a max length of 1.
       {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 1, "2023", "3"},
-      // A field predicted as a 4 digits expiration year should fill the 4
+      // A field predicted as a 4 digit expiration year should fill the 4
       // digits of the expiration year if the field has an unspecified max
       // length (0) or if it's greater than 3 .
       {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, /* default value */ 0, "2023",
@@ -374,6 +372,89 @@ TEST_F(AutofillFieldTest, FillExpirationYearInput) {
     AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
                                  "en-US", "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
+  }
+}
+
+TEST_F(AutofillFieldTest, FillExpirationDateInput) {
+  typedef struct {
+    HtmlFieldType field_type;
+    size_t field_max_length;
+    std::string value_to_fill;
+    std::string expected_value;
+    bool expected_response;
+  } TestCase;
+
+  TestCase test_cases[] = {
+      // Test invalid inputs
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "1/21", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "01-21", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "1/2021", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "01-2021", "", false},
+      // Trim whitespace
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 0, "01/22   ", "01/22",
+       true},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 0, "01/2022   ", "01/2022",
+       true},
+      // A field predicted as a expiration date w/ 2 digit year should fill
+      // with a format of MM/YY unless it has max-length of:
+      // 4: Use format MMYY
+      // 6: Use format MMYYYY
+      // 7: Use format MM/YYYY
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, /* default value */ 0,
+       "01/23", "01/23", true},
+      // Unsupported max lengths of 1-3, fail
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 1, "01/23", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 2, "02/23", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 3, "03/23", "", false},
+      // A max length of 4 indicates a format of MMYY.
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 4, "02/23", "0223", true},
+      // A max length of 6 indicates a format of MMYYYY, the 21st century is
+      // assumed.
+      // Desired case of proper max length >= 5
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 5, "03/23", "03/23", true},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 6, "04/23", "042023", true},
+      // A max length of 7 indicates a format of MM/YYYY, the 21st century is
+      // assumed.
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 7, "05/23", "05/2023",
+       true},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, 12, "06/23", "06/23", true},
+
+      // A field predicted as a expiration date w/ 4 digit year should fill
+      // with a format of MM/YYYY unless it has max-length of:
+      // 4: Use format MMYY
+      // 5: Use format MM/YY
+      // 6: Use format MMYYYY
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, /* default value */ 0,
+       "01/2024", "01/2024", true},
+      // Unsupported max lengths of 1-3, fail
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 1, "01/2024", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 2, "02/2024", "", false},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 3, "03/2024", "", false},
+      // A max length of 4 indicates a format of MMYY.
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 4, "02/2024", "0224", true},
+      // A max length of 5 indicates a format of MM/YY.
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 5, "03/2024", "03/24",
+       true},
+      // A max length of 6 indicates a format of MMYYYY.
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 6, "04/2024", "042024",
+       true},
+      // Desired case of proper max length >= 7
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 7, "05/2024", "05/2024",
+       true},
+      {HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, 12, "06/2024", "06/2024",
+       true},
+  };
+
+  for (TestCase test_case : test_cases) {
+    AutofillField field;
+    field.form_control_type = "text";
+    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+    field.max_length = test_case.field_max_length;
+
+    bool response = AutofillField::FillFormField(
+      field, ASCIIToUTF16(test_case.value_to_fill), "en-US", "en-US", &field);
+    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
+    EXPECT_EQ(response, test_case.expected_response);
   }
 }
 
