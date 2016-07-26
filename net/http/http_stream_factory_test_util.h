@@ -14,6 +14,9 @@
 #include "net/proxy/proxy_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using testing::_;
+using testing::Invoke;
+
 namespace net {
 
 class HttpStreamFactoryImplPeer {
@@ -113,7 +116,7 @@ class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
 
   ~MockHttpStreamFactoryImplJob() override;
 
-  MOCK_METHOD1(Start, void(HttpStreamRequest::StreamType stream_type));
+  MOCK_METHOD0(Resume, void());
 
   MOCK_METHOD1(MarkOtherJobComplete, void(const Job& job));
 
@@ -156,9 +159,16 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
     return alternative_job_;
   }
 
+  void UseDifferentURLForMainJob(GURL url) {
+    override_main_job_url_ = true;
+    main_job_alternative_url_ = url;
+  }
+
  private:
   MockHttpStreamFactoryImplJob* main_job_;
   MockHttpStreamFactoryImplJob* alternative_job_;
+  bool override_main_job_url_;
+  GURL main_job_alternative_url_;
 };
 
 }  // namespace net

@@ -577,6 +577,8 @@
         'http/http_stream_factory_test_util.h',
         'http/http_transaction_test_util.cc',
         'http/http_transaction_test_util.h',
+        'http/http_stream_factory_test_util.cc',
+        'http/http_stream_factory_test_util.h',
         'log/test_net_log.cc',
         'log/test_net_log.h',
         'log/test_net_log_entry.cc',
