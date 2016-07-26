@@ -38,6 +38,7 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
 
 + (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text
                                         inWebState:(web::WebState*)webState {
+  std::string textCopyForBlock = text;
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[WKWebView class]]) {
       return NO;
@@ -57,7 +58,7 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
             std::string response;
             if (value && value->IsType(base::Value::TYPE_STRING) &&
                 value->GetAsString(&response)) {
-              didSucceed = response.find(text) != std::string::npos;
+              didSucceed = response.find(textCopyForBlock) != std::string::npos;
             }
           }));
       base::test::ios::SpinRunLoopWithMaxDelay(
@@ -68,7 +69,7 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"web view containing "];
-    [description appendText:base::SysUTF8ToNSString(text)];
+    [description appendText:base::SysUTF8ToNSString(textCopyForBlock)];
   };
 
   return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
