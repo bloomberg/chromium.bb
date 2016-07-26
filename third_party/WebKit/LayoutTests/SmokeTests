@@ -173,8 +173,6 @@ fast/xsl/import-non-document-node.xhtml
 fast/xsl/xslt-doc-enc.xml
 fullscreen/full-screen-request-rejected.html
 http/tests/download/inherited-encoding-form-submission-result.html
-http/tests/media/media-source/mediasource-play.html
-http/tests/media/media-source/webkitmediasource-play.html
 http/tests/security/no-javascript-refresh.php
 inspector-protocol/input/dispatchMouseEvent.html
 loader/reload-subresource-when-type-changes.html
@@ -208,6 +206,10 @@ userstyles/simple-stylesheet.html
 virtual/deferred/fast/images/link-body-content-imageDimensionChanged-crash.html
 virtual/prefer_compositing_to_lcd_text/compositing/scrollbars/scrollbar-large-overflow-rectangle.html
 virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
+virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-play.html
+virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html
+virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html
+virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html
 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html
 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html
 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html

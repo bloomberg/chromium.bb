@@ -1511,6 +1511,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.
     switches::kUseGL,
+    switches::kUseGpuInTests,
     switches::kUseMobileUserAgent,
     switches::kUseRemoteCompositing,
     switches::kV,

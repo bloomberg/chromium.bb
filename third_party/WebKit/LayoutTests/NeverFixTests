@@ -91,6 +91,14 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
 
+# These tests are only supposed be run as virtual test. See /virtual/media-gpu-accelerated/http/tests/media/media-source/.
+[ Android ] http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ WontFix ]
+[ Android ] http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html [ WontFix ]
+[ Android ] http/tests/media/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ WontFix ]
+[ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-bitrate.html [ WontFix ]
+[ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ WontFix ]
+[ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ WontFix ]
+
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
 
