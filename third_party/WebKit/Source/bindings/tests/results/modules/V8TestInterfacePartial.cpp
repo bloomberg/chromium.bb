@@ -354,6 +354,16 @@ static void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
     TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethod(info);
 }
 
+static void partial4StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePartial4::partial4StaticVoidMethod();
+}
+
+static void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethod(info);
+}
+
 } // namespace TestInterfaceImplementationPartialV8Internal
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
@@ -399,6 +409,8 @@ void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scrip
     V8DOMConfiguration::installAccessor(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, accessorpartial4StaticLongAttributeConfiguration);
     const V8DOMConfiguration::ConstantConfiguration constantPartial4UnsignedShortConfiguration = {"PARTIAL4_UNSIGNED_SHORT", 4, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
     V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantPartial4UnsignedShortConfiguration);
+    const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration = {"partial4StaticVoidMethod", TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
+    V8DOMConfiguration::installMethod(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, methodPartial4StaticvoidmethodConfiguration);
     const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration = {"partial4VoidMethod", TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
     V8DOMConfiguration::installMethod(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, methodPartial4VoidmethodConfiguration);
 }

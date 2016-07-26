@@ -16,5 +16,5 @@
 
     // TODO(chasej): Uncomment when methods are supported for origin trials (crbug.com/621641)
     void partial4VoidMethod();
-    //static void partial4StaticVoidMethod();
+    static void partial4StaticVoidMethod();
 };

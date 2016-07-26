@@ -50,6 +50,14 @@ expect_failure = (t) => {
         assert_not_exists(window.internals, 'frobulateMethodPartial');
         assert_equals(window.internals['frobulateMethodPartial'], undefined);
       }
+  }, {
+    desc: 'Static method should not exist on partial interface, with trial disabled',
+    code: () => {
+        var internalsInterface = window.internals.constructor;
+        assert_false('frobulateStaticMethodPartial' in internalsInterface);
+        assert_not_exists(internalsInterface, 'frobulateStaticMethodPartial');
+        assert_equals(internalsInterface['frobulateStaticMethodPartial'], undefined);
+      }
   }];
 
   fetch_tests_from_worker(new Worker('resources/disabled-worker.js'));
@@ -106,6 +114,12 @@ test(() => {
     assert_exists(internalsInterface, 'frobulateStatic');
     assert_true(internalsInterface.frobulateStatic, 'Static attribute should return boolean value');
   }, 'Static attribute should exist on partial interface and return value');
+
+test(() => {
+    var internalsInterface = window.internals.constructor;
+    assert_exists(internalsInterface, 'frobulateStaticMethodPartial');
+    assert_true(internalsInterface.frobulateStaticMethodPartial(), 'Static method should return boolean value');
+  }, 'Static method should exist on partial interface and return value');
 
 fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
 };

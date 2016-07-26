@@ -16,6 +16,7 @@ class InternalsFrobulateInterfaceBindings final {
 public:
     static bool frobulatePartial(Internals&) { return true; }
     static bool frobulateMethodPartial(Internals&) { return true; }
+    static bool frobulateStaticMethodPartial() { return true; }
 };
 
 } // namespace blink
