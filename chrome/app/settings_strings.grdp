@@ -952,8 +952,8 @@
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Use a prediction service to load pages more quickly
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
-    Enable phishing and malware protection
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Protect you and your device from dangerous sites' checkbox">
+    Protect you and your device from dangerous sites
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING" desc="Checkbox label: should Chrome upload information about suspicious downloads and websites to Safe Browsing">
     Automatically report details of possible security incidents to Google
@@ -977,7 +977,7 @@
     Manage Certificates
   </message>
   <message name="IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION" desc="Secondary, continued explanation of how to manage SSL certificates and settings in Privacy options">
-    Manage your SSL certificates and settings
+    Manage HTTPS/SSL certificates and settings
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS" desc="Text of the button that takes a user to settings page thats allows users to modify site settings. Also the title of that settings page.">
     Site Settings
