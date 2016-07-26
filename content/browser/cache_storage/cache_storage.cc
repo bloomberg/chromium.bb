@@ -182,7 +182,6 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
   }
 
   void CleanUpDeletedCache(const std::string& cache_name) override {
-    DCHECK(!ContainsKey(cache_handles_, cache_name));
   }
 
   void WriteIndex(const StringVector& cache_names,
@@ -928,20 +927,16 @@ void CacheStorage::DropCacheHandleRef(CacheStorageCache* cache) {
 
   iter->second -= 1;
   if (iter->second == 0) {
-    // Delete the CacheStorageCache object. It's either in the main cache map or
-    // the CacheStorage::Delete operation has run on the cache, in which case
-    // it's in the doomed caches map.
-    auto cache_map_iter = cache_map_.find(cache->cache_name());
-
-    if (cache_map_iter == cache_map_.end()) {
-      auto doomed_caches_iter = doomed_caches_.find(cache);
-      DCHECK(doomed_caches_iter != doomed_caches_.end());
-
+    auto doomed_caches_iter = doomed_caches_.find(cache);
+    if (doomed_caches_iter != doomed_caches_.end()) {
       // The last reference to a doomed cache is gone, perform clean up.
       DeleteCacheFinalize(std::move(doomed_caches_iter->second));
       doomed_caches_.erase(doomed_caches_iter);
       return;
     }
+
+    auto cache_map_iter = cache_map_.find(cache->cache_name());
+    DCHECK(cache_map_iter != cache_map_.end());
 
     cache_map_iter->second.reset();
     cache_handle_counts_.erase(iter);

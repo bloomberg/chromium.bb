@@ -548,6 +548,31 @@ TEST_F(CacheStorageManagerTest, StorageReuseCacheName) {
   EXPECT_TRUE(CachePut(callback_cache_handle_->value(), kTestURL));
 }
 
+TEST_P(CacheStorageManagerTestP, DropRefAfterNewCacheWithSameNameCreated) {
+  // Make sure that dropping the final cache handle to a doomed cache doesn't
+  // affect newer caches with the same name. (see crbug.com/631467)
+
+  // 1. Create cache A and hang onto the handle
+  const GURL kTestURL = GURL("http://example.com/foo");
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(), kTestURL));
+  std::unique_ptr<CacheStorageCacheHandle> cache_handle =
+      std::move(callback_cache_handle_);
+
+  // 2. Doom the cache
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+
+  // 3. Create cache B (with the same name)
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(), kTestURL));
+
+  // 4. Drop handle to A
+  cache_handle.reset();
+
+  // 5. Verify that B still works
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(), kTestURL));
+}
+
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePutWithStatusCode(callback_cache_handle_->value(),
