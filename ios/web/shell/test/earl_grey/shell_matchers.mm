@@ -19,6 +19,10 @@ id<GREYMatcher> webViewContainingText(const std::string& text) {
   return [GREYMatchers matcherForWebViewContainingText:text];
 }
 
+id<GREYMatcher> webViewCssSelector(const std::string& selector) {
+  return [GREYMatchers matcherForWebWithCSSSelector:selector];
+}
+
 id<GREYMatcher> webViewScrollView() {
   return [GREYMatchers matcherForWebViewScrollView];
 }
@@ -46,6 +50,11 @@ id<GREYMatcher> addressField() {
 + (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text {
   web::WebState* webState = web::shell_test_util::GetCurrentWebState();
   return web::webViewContainingText(text, webState);
+}
+
++ (id<GREYMatcher>)matcherForWebWithCSSSelector:(const std::string&)selector {
+  web::WebState* webState = web::shell_test_util::GetCurrentWebState();
+  return web::webViewCssSelector(selector, webState);
 }
 
 + (id<GREYMatcher>)matcherForWebViewScrollView {
