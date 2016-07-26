@@ -2154,6 +2154,7 @@ def CMDrevert(parser, args):
   options.force = True
   options.reset = False
   options.delete_unversioned_trees = False
+  options.merge = False
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
