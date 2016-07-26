@@ -58,8 +58,11 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point to the WebView. The system framework talks to this class to get instances of the
@@ -72,6 +75,72 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private static final String CHROMIUM_PREFS_NAME = "WebViewChromiumPrefs";
     private static final String VERSION_CODE_PREF = "lastVersionCodeUsed";
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/webview-command-line";
+
+    private class WebViewChromiumRunQueue {
+        public WebViewChromiumRunQueue() {
+            mQueue = new ConcurrentLinkedQueue<Runnable>();
+        }
+
+        public void addTask(Runnable task) {
+            mQueue.add(task);
+            if (WebViewChromiumFactoryProvider.this.hasStarted()) {
+                ThreadUtils.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        drainQueue();
+                    }
+                });
+            }
+        }
+
+        public void drainQueue() {
+            if (mQueue == null || mQueue.isEmpty()) {
+                return;
+            }
+
+            Runnable task = mQueue.poll();
+            while (task != null) {
+                task.run();
+                task = mQueue.poll();
+            }
+        }
+
+        private Queue<Runnable> mQueue;
+    }
+
+    private final WebViewChromiumRunQueue mRunQueue = new WebViewChromiumRunQueue();
+
+    private <T> T runBlockingFuture(FutureTask<T> task) {
+        if (!hasStarted()) throw new RuntimeException("Must be started before we block!");
+        if (ThreadUtils.runningOnUiThread()) {
+            throw new IllegalStateException("This method should only be called off the UI thread");
+        }
+        mRunQueue.addTask(task);
+        try {
+            return task.get(4, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.TimeoutException e) {
+            throw new RuntimeException("Probable deadlock detected due to WebView API being called "
+                            + "on incorrect thread while the UI thread is blocked.", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // We have a 4 second timeout to try to detect deadlocks to detect and aid in debuggin
+    // deadlocks.
+    // Do not call this method while on the UI thread!
+    /* package */ void runVoidTaskOnUiThreadBlocking(Runnable r) {
+        FutureTask<Void> task = new FutureTask<Void>(r, null);
+        runBlockingFuture(task);
+    }
+
+    /* package */ <T> T runOnUiThreadBlocking(Callable<T> c) {
+        return runBlockingFuture(new FutureTask<T>(c));
+    }
+
+    /* package */ void addTask(Runnable task) {
+        mRunQueue.addTask(task);
+    }
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
@@ -86,9 +155,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
     private AwDevToolsServer mDevToolsServer;
-
-    private ArrayList<WeakReference<WebViewChromium>> mWebViewsToStart =
-            new ArrayList<WeakReference<WebViewChromium>>();
 
     // Read/write protected by mLock.
     private boolean mStarted;
@@ -300,15 +366,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     }
                 });
         mStarted = true;
-
-        for (WeakReference<WebViewChromium> wvc : mWebViewsToStart) {
-            WebViewChromium w = wvc.get();
-            if (w != null) {
-                w.startYourEngine();
-            }
-        }
-        mWebViewsToStart.clear();
-        mWebViewsToStart = null;
+        mRunQueue.drainQueue();
     }
 
     boolean hasStarted() {
@@ -415,15 +473,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @Override
     public WebViewProvider createWebView(WebView webView, WebView.PrivateAccess privateAccess) {
-        WebViewChromium wvc = new WebViewChromium(this, webView, privateAccess);
-
-        synchronized (mLock) {
-            if (mWebViewsToStart != null) {
-                mWebViewsToStart.add(new WeakReference<WebViewChromium>(wvc));
-            }
-        }
-
-        return wvc;
+        return new WebViewChromium(this, webView, privateAccess);
     }
 
     @Override
