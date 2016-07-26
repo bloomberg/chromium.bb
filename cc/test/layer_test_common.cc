@@ -128,7 +128,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
   host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
   root_layer_for_testing()->SetHasRenderSurface(true);
   host_->host_impl()->SetVisible(true);
-  host_->host_impl()->InitializeRenderer(output_surface_.get());
+  EXPECT_TRUE(host_->host_impl()->InitializeRenderer(output_surface_.get()));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);
