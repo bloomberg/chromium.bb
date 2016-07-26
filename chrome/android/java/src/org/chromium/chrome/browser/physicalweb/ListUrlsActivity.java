@@ -34,6 +34,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.components.location.LocationUtils;
 
 import java.util.Collection;
 
@@ -71,7 +72,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     private boolean mIsInitialDisplayRecorded;
     private boolean mIsRefreshing;
     private boolean mIsRefreshUserInitiated;
-    private PhysicalWebBleClient mPhysicalWebBleClient;
+    private NearbyForegroundSubscription mNearbyForegroundSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +122,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         mIsInitialDisplayRecorded = false;
         mIsRefreshing = false;
         mIsRefreshUserInitiated = false;
-        mPhysicalWebBleClient = PhysicalWebBleClient.getInstance();
+        mNearbyForegroundSubscription = new NearbyForegroundSubscription(this);
     }
 
     @Override
@@ -156,24 +157,22 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         return super.onOptionsItemSelected(item);
     }
 
-    private void foregroundSubscribe() {
-        mPhysicalWebBleClient.foregroundSubscribe(this);
-    }
-
-    private void foregroundUnsubscribe() {
-        mPhysicalWebBleClient.foregroundUnsubscribe();
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
         UrlManager.getInstance().addObserver(this);
+        // Only connect so that we can subscribe to Nearby if we have the location permission.
+        LocationUtils locationUtils = LocationUtils.getInstance();
+        if (locationUtils.hasAndroidLocationPermission(this)
+                && locationUtils.isSystemLocationSettingEnabled(this)) {
+            mNearbyForegroundSubscription.connect();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        foregroundSubscribe();
+        mNearbyForegroundSubscription.subscribe();
         startRefresh(false, false);
 
         int bottomBarDisplayCount = getBottomBarDisplayCount();
@@ -185,7 +184,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     protected void onPause() {
-        foregroundUnsubscribe();
+        mNearbyForegroundSubscription.unsubscribe();
         super.onPause();
     }
 
@@ -197,6 +196,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     @Override
     protected void onStop() {
         UrlManager.getInstance().removeObserver(this);
+        mNearbyForegroundSubscription.disconnect();
         super.onStop();
     }
 

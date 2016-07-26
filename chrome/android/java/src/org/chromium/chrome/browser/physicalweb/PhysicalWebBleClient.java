@@ -6,9 +6,16 @@ package org.chromium.chrome.browser.physicalweb;
 
 import android.app.Activity;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.nearby.Nearby;
+import com.google.android.gms.nearby.messages.Message;
+import com.google.android.gms.nearby.messages.MessageFilter;
+import com.google.android.gms.nearby.messages.MessageListener;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
+
 
 /**
  * The Client that harvests URLs from BLE signals.
@@ -20,10 +27,16 @@ public class PhysicalWebBleClient {
     private static PhysicalWebBleClient sInstance = null;
     private static final String TAG = "PhysicalWeb";
 
+    // We don't actually listen to any of the onFound or onLost events in the foreground.
+    // The background listener will get these.
+    protected static class ForegroundMessageListener extends MessageListener {
+        @Override
+        public void onFound(Message message) {}
+    }
+
     /**
      * Get a singleton instance of this class.
-     * @return an instance of this class (or subclass) as decided by the
-     * application parameter
+     * @return an instance of this class (or subclass).
      */
     public static PhysicalWebBleClient getInstance() {
         if (sInstance == null) {
@@ -90,5 +103,31 @@ public class PhysicalWebBleClient {
      */
     void foregroundUnsubscribe() {
         Log.d(TAG, "foreground unsubscribing in empty client");
+    }
+
+    /**
+     * Create a MessageListener that listens during a foreground scan.
+     * @return the MessageListener.
+     */
+    MessageListener createForegroundMessageListener() {
+        return new ForegroundMessageListener();
+    }
+
+    /**
+     * Modify a GoogleApiClient.Builder as necessary for doing Physical Web scanning.
+     * @param builder The builder to be modified.
+     * @return The Builder.
+     */
+    GoogleApiClient.Builder modifyGoogleApiClientBuilder(GoogleApiClient.Builder builder) {
+        return builder.addApi(Nearby.MESSAGES_API);
+    }
+
+    /**
+     * Modify a MessageFilter.Builder as necessary for doing Physical Web scanning.
+     * @param builder The builder to be modified.
+     * @return The Builder.
+     */
+    MessageFilter.Builder modifyMessageFilterBuilder(MessageFilter.Builder builder) {
+        return builder.includeAllMyTypes();
     }
 }
