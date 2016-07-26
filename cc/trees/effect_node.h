@@ -7,6 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 
 namespace base {
 namespace trace_event {
@@ -35,6 +36,8 @@ struct CC_EXPORT EffectNode {
 
   FilterOperations filters;
   FilterOperations background_filters;
+
+  SkXfermode::Mode blend_mode;
 
   gfx::Vector2dF surface_contents_scale;
 

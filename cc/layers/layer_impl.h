@@ -212,15 +212,10 @@ class CC_EXPORT LayerImpl {
   void SetMutableProperties(uint32_t properties);
   uint32_t mutable_properties() const { return mutable_properties_; }
 
-  void SetBlendMode(SkXfermode::Mode);
-  SkXfermode::Mode blend_mode() const { return blend_mode_; }
   void set_draw_blend_mode(SkXfermode::Mode blend_mode) {
     draw_blend_mode_ = blend_mode;
   }
   SkXfermode::Mode draw_blend_mode() const { return draw_blend_mode_; }
-  bool uses_default_blend_mode() const {
-    return blend_mode_ == SkXfermode::kSrcOver_Mode;
-  }
 
   void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
@@ -541,9 +536,6 @@ class CC_EXPORT LayerImpl {
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
 
-  SkXfermode::Mode blend_mode_;
-  // draw_blend_mode may be different than blend_mode_,
-  // when a RenderSurface re-parents the layer's blend_mode.
   SkXfermode::Mode draw_blend_mode_;
   gfx::PointF position_;
   gfx::Transform transform_;

@@ -190,8 +190,7 @@ void OcclusionTracker::FinishedRenderTarget(const LayerImpl* finished_target) {
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
   if (surface->MaskLayer() || surface->draw_opacity() < 1 ||
-      !finished_target->uses_default_blend_mode() ||
-      target_is_only_for_copy_request ||
+      !surface->UsesDefaultBlendMode() || target_is_only_for_copy_request ||
       surface->Filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
     stack_.back().occlusion_from_inside_target.Clear();

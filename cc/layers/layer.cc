@@ -1159,7 +1159,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
   layer->SetTouchEventHandlerRegion(inputs_.touch_event_handler_region);
   layer->SetContentsOpaque(inputs_.contents_opaque);
-  layer->SetBlendMode(inputs_.blend_mode);
   layer->SetPosition(inputs_.position);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);

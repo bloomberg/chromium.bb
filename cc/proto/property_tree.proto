@@ -8,6 +8,7 @@ import "element_id.proto";
 import "rectf.proto";
 import "scroll_offset.proto";
 import "size.proto";
+import "skxfermode.proto";
 import "synced_property.proto";
 import "transform.proto";
 import "vector2df.proto";
@@ -86,10 +87,11 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 25
+// NEXT ID: 26
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
+  optional SkXfermode.Mode blend_mode = 25;
   optional bool has_render_surface = 3;
   optional bool has_copy_request = 4;
   optional bool hidden_by_backface_visibility = 14;

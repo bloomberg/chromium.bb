@@ -5,6 +5,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/property_tree.pb.h"
+#include "cc/proto/skia_conversions.h"
 #include "cc/trees/effect_node.h"
 
 namespace cc {
@@ -15,6 +16,7 @@ EffectNode::EffectNode()
       owner_id(-1),
       opacity(1.f),
       screen_space_opacity(1.f),
+      blend_mode(SkXfermode::kSrcOver_Mode),
       has_render_surface(false),
       render_surface(nullptr),
       has_copy_request(false),
@@ -46,6 +48,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
          background_filters == other.background_filters &&
+         blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
@@ -74,6 +77,7 @@ void EffectNode::ToProtobuf(proto::TreeNode* proto) const {
   proto::EffectNodeData* data = proto->mutable_effect_node_data();
   data->set_opacity(opacity);
   data->set_screen_space_opacity(screen_space_opacity);
+  data->set_blend_mode(SkXfermodeModeToProto(blend_mode));
   data->set_has_render_surface(has_render_surface);
   data->set_has_copy_request(has_copy_request);
   data->set_hidden_by_backface_visibility(hidden_by_backface_visibility);
@@ -106,6 +110,7 @@ void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
 
   opacity = data.opacity();
   screen_space_opacity = data.screen_space_opacity();
+  blend_mode = SkXfermodeModeFromProto(data.blend_mode());
   has_render_surface = data.has_render_surface();
   has_copy_request = data.has_copy_request();
   hidden_by_backface_visibility = data.hidden_by_backface_visibility();

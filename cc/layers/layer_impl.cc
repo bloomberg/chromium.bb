@@ -69,7 +69,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
       safe_opaque_background_color_(0),
-      blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       transform_tree_index_(-1),
       effect_tree_index_(-1),
@@ -337,7 +336,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->touch_event_handler_region_ = touch_event_handler_region_;
   layer->background_color_ = background_color_;
   layer->safe_opaque_background_color_ = safe_opaque_background_color_;
-  layer->blend_mode_ = blend_mode_;
   layer->draw_blend_mode_ = draw_blend_mode_;
   layer->position_ = position_;
   layer->transform_ = transform_;
@@ -847,10 +845,6 @@ void LayerImpl::SetMutableProperties(uint32_t properties) {
   mutable_properties_ = properties;
   // If this layer is already in the element map, update its properties.
   layer_tree_impl_->AddToElementMap(this);
-}
-
-void LayerImpl::SetBlendMode(SkXfermode::Mode blend_mode) {
-  blend_mode_ = blend_mode;
 }
 
 void LayerImpl::SetPosition(const gfx::PointF& position) {

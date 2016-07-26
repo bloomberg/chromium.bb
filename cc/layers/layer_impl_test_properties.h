@@ -12,6 +12,7 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/output/filter_operations.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 namespace cc {
@@ -40,6 +41,7 @@ struct CC_EXPORT LayerImplTestProperties {
   float opacity;
   FilterOperations filters;
   FilterOperations background_filters;
+  SkXfermode::Mode blend_mode;
   LayerPositionConstraint position_constraint;
   gfx::Point3F transform_origin;
   LayerImpl* scroll_parent;

@@ -102,7 +102,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   ASSERT_TRUE(owning_layer->render_surface());
 
   SkXfermode::Mode blend_mode = SkXfermode::kSoftLight_Mode;
-  owning_layer->SetBlendMode(blend_mode);
+  owning_layer->test_properties()->blend_mode = blend_mode;
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
   root_layer->test_properties()->AddChild(std::move(owning_layer));

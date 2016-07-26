@@ -1973,7 +1973,8 @@ class OcclusionTrackerTestBlendModeDoesNotOcclude
 
     // Blend mode makes the layer own a surface.
     blend_mode_layer->test_properties()->force_render_surface = true;
-    blend_mode_layer->SetBlendMode(SkXfermode::kMultiply_Mode);
+    blend_mode_layer->test_properties()->blend_mode =
+        SkXfermode::kMultiply_Mode;
 
     this->CalcDrawEtc(parent);
 

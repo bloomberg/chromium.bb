@@ -150,10 +150,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
   SkXfermode::Mode draw_blend_mode() const { return draw_blend_mode_; }
 
-  bool uses_default_blend_mode() const {
-    return inputs_.blend_mode == SkXfermode::kSrcOver_Mode;
-  }
-
   // A layer is root for an isolated group when it and all its descendants are
   // drawn over a black and fully transparent background, creating an isolated
   // group. It should be used along with SetBlendMode(), in order to restrict

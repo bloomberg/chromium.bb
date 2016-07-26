@@ -105,6 +105,14 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   return drawable_content_rect;
 }
 
+SkXfermode::Mode RenderSurfaceImpl::BlendMode() const {
+  return OwningEffectNode()->blend_mode;
+}
+
+bool RenderSurfaceImpl::UsesDefaultBlendMode() const {
+  return BlendMode() == SkXfermode::kSrcOver_Mode;
+}
+
 SkColor RenderSurfaceImpl::GetDebugBorderColor() const {
   return DebugColors::SurfaceBorderColor();
 }
@@ -362,11 +370,11 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(
-      draw_transform, content_rect().size(), content_rect(),
-      draw_properties_.clip_rect, draw_properties_.is_clipped,
-      draw_properties_.draw_opacity, owning_layer_->blend_mode(),
-      owning_layer_->sorting_context_id());
+  shared_quad_state->SetAll(draw_transform, content_rect().size(),
+                            content_rect(), draw_properties_.clip_rect,
+                            draw_properties_.is_clipped,
+                            draw_properties_.draw_opacity, BlendMode(),
+                            owning_layer_->sorting_context_id());
 
   if (owning_layer_->ShowDebugBorders()) {
     DebugBorderDrawQuad* debug_border_quad =

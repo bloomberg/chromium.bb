@@ -21,6 +21,7 @@ LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
       num_descendants_that_draw_content(0),
       num_unclipped_descendants(0),
       opacity(1.f),
+      blend_mode(SkXfermode::kSrcOver_Mode),
       scroll_parent(nullptr),
       clip_parent(nullptr),
       mask_layer(nullptr),
